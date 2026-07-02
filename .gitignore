@@ -1,0 +1,23 @@
+.DS_Store
+.playwright-mcp/
+output/
+
+# Local experiments and references
+apple_ribbon.html
+apple-ribbon-reference.png
+linear-algebra-intro.html
+linear-algebra-one-stroke-3d*.html
+linear-one-stroke-3d.html
+linear-algebra-redesign-*.png
+liquid-glass-sidebar.html
+perplexity-computer-clone.html
+preview*.html
+reference-*.png
+two-pages-*.png
+
+# Separate experiments
+portfolio/
+portfolio.html
+
+# Source documents
+*.pdf

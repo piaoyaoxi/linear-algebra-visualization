@@ -56,6 +56,7 @@ jobs:
           echo "url=$PREVIEW_URL" >> "$GITHUB_OUTPUT"
 
       - name: Post or update preview link
+        continue-on-error: true
         uses: actions/github-script@v7
         env:
           PREVIEW_URL: ${{ steps.publish.outputs.url }}
@@ -89,7 +90,7 @@ jobs:
           cd pages
           rm -rf "docs/previews/pr-${{ github.event.pull_request.number }}"
           git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git config user.email "41898282+github-actions[bot]@users.noreply.com"
           git add -A docs/previews
           if ! git diff --cached --quiet; then
             git commit -m "preview: remove PR #${{ github.event.pull_request.number }}"

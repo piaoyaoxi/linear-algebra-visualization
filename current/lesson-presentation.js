@@ -11,7 +11,7 @@
       <div class="lesson-formal-layout">
         <p class="lesson-formal-intro">这一节先把矩阵当作一个有位置的数表来读：先认清它有几行、几列，每个数字处在哪个位置；再回头看它为什么能够记录方程组和方向变化。</p>
         <div class="matrix-anatomy">
-          <div class="matrix-anatomy-main">${display("A=\\begin{bmatrix}a_{11}&\\cdots&a_{1n}\\\\\\vdots&\\ddots&\\vdots\\\\a_{m1}&\\cdots&a_{mn}\\end{bmatrix}")}</div>
+          <div class="matrix-anatomy-main">${display("A=(a_{ij})_{m\\times n}")}</div>
           <dl class="lesson-meta-list">
             <div><dt>矩阵的阶</dt><dd>${inline("m\\times n")}：m 行，n 列。</dd></div>
             <div><dt>元素的位置</dt><dd>${inline("a_{ij}")}：第 i 行第 j 列。先读行，再读列。</dd></div>
@@ -84,20 +84,14 @@
   function renderSectionTwoInteractive() {
     const section = document.querySelector("#matrix-operations-interactive");
     if (!section || section.dataset.presentationReady === "true") return;
-
     section.innerHTML = `
       <h2>交互实验</h2>
       <div class="multiply-lab">
         <div class="multiply-lab-head"><h3>同一个 AB，三种读法</h3><p>用同一组矩阵，在“复合”“看列”“行列公式”之间切换。别把它们当成三条不同结论；它们是同一个乘法的三种语言。</p></div>
-        <div class="segmented" data-golden-tabs>
-          <button type="button" class="is-active" data-golden-view="compose">复合</button>
-          <button type="button" data-golden-view="columns">看列</button>
-          <button type="button" data-golden-view="formula">行列公式</button>
-        </div>
+        <div class="segmented" data-golden-tabs><button type="button" class="is-active" data-golden-view="compose">复合</button><button type="button" data-golden-view="columns">看列</button><button type="button" data-golden-view="formula">行列公式</button></div>
         <div class="multiply-lab-view" data-golden-view-panel>${multiplyView("compose")}</div>
       </div>
     `;
-
     section.querySelectorAll("[data-golden-view]").forEach((button) => {
       button.addEventListener("click", () => {
         const view = button.dataset.goldenView;
@@ -116,7 +110,6 @@
       const summary = details?.querySelector("summary");
       const question = details?.querySelector(".example-question");
       if (!details || !summary || !question) return;
-
       const title = document.createElement("h3");
       title.className = "example-title";
       title.textContent = summary.textContent.trim();

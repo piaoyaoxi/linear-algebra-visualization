@@ -15,7 +15,7 @@
           question: "矩阵为什么会出现？它为什么不只是一张数字表格？",
           goal: "认识矩阵的行、列、阶与元素；从方程组和坐标记录进入，并建立“先看列”的基本直觉。",
           tags: ["矩阵背景", "行列与阶", "基向量"],
-          intro: `矩阵首先把一组彼此相关的数字组织成一个对象。一个 ${texInline("m\\times n")} 矩阵有 ${texInline("m")} 行、${texInline("n")} 列；第 ${texInline("i")} 行第 ${texInline("j")} 列的元素记为 ${texInline("a_{ij}")}。当它记录线性关系时，每一列还可以理解为一个基本方向的去向。`,
+          intro: `矩阵首先把一组彼此相关的数字组织成一个对象。<span style="display:inline-flex;align-items:center;gap:8px;vertical-align:middle;margin:0 4px;padding:6px 9px;border:1px solid rgba(28,43,61,.14);border-radius:8px;background:rgba(15,143,136,.05)">${texInline("A=\\begin{bmatrix}a_{11}&\\cdots&a_{1n}\\\\\\vdots&\\ddots&\\vdots\\\\a_{m1}&\\cdots&a_{mn}\\end{bmatrix}")}<span style="display:inline-grid;gap:1px;font-size:12px;line-height:1.2;color:#66717f"><span>m 行</span><span>n 列</span></span></span>一个 ${texInline("m\\times n")} 矩阵有 ${texInline("m")} 行、${texInline("n")} 列；第 ${texInline("i")} 行第 ${texInline("j")} 列的元素记为 ${texInline("a_{ij}")}。当它记录线性关系时，每一列还可以理解为一个基本方向的去向。`,
           concepts: [
             {
               label: "行、列与阶",

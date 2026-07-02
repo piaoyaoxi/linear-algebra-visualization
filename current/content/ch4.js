@@ -7,7 +7,7 @@ registerAlgebraChapter({
     "本章严格按教材 §1 到 §7 的顺序组织：先建立矩阵概念，再讨论运算、矩阵乘积的行列式与秩、逆、分块、初等矩阵，以及分块乘法中的初等变换与应用。现有交互和例题按对应教材节重新落位。",
   sections: [
     {
-      id: "matrix-background",
+      id: "matrix-language",
       number: "§1",
       textbookSection: "矩阵概念的一些背景",
       title: "矩阵概念的一些背景",

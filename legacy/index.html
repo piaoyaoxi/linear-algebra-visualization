@@ -1,0 +1,1124 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Linear Algebra</title>
+  <meta name="description" content="线性代数图谱：用几何视角进入向量空间、线性映射、行列式和特征系统。">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%23000504'/%3E%3Cpath d='M14 40c13-22 27-25 36-10M18 20l28 28' fill='none' stroke='%2374f5df' stroke-width='5' stroke-linecap='round'/%3E%3Ccircle cx='46' cy='18' r='4' fill='%23f08852'/%3E%3C/svg%3E">
+  <style>
+    :root {
+      --black: #000;
+      --night: #020504;
+      --night-2: #07100f;
+      --ink: #1f211d;
+      --ink-soft: rgba(31, 33, 29, .66);
+      --cream: #f6f1e8;
+      --paper: #fffdf8;
+      --paper-2: #ebe3d5;
+      --line-dark: rgba(255, 255, 255, .12);
+      --line-light: rgba(31, 33, 29, .14);
+      --aqua: #74f5df;
+      --blue: #70a9ff;
+      --gold: #ffd17a;
+      --rose: #e46f99;
+      --r-card: 8px;
+      --r-panel: 8px;
+      --r-soft: 8px;
+      --shadow-dark: 0 34px 110px rgba(0, 0, 0, .42);
+      --shadow-light: 0 24px 70px rgba(41, 35, 24, .1);
+      --ease: cubic-bezier(.22, 1, .36, 1);
+      --intro-scale: 1;
+      --title-opacity: 1;
+      --wave-opacity: 0;
+      color-scheme: dark light;
+      font-family: ui-serif, "Songti SC", "Noto Serif SC", "Times New Roman", serif;
+      text-rendering: geometricPrecision;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    html {
+      background: var(--black);
+      scroll-behavior: smooth;
+    }
+
+    body {
+      margin: 0;
+      min-width: 320px;
+      color: #f7f3eb;
+      background: var(--black);
+      overflow-x: hidden;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+    }
+
+    img,
+    svg {
+      display: block;
+      max-width: 100%;
+    }
+
+    a {
+      color: inherit;
+      text-decoration: none;
+    }
+
+    button,
+    a {
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    ::selection {
+      color: #07100f;
+      background: var(--aqua);
+    }
+
+    .sr-only {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      padding: 0;
+      margin: -1px;
+      overflow: hidden;
+      clip: rect(0, 0, 0, 0);
+      white-space: nowrap;
+      border: 0;
+    }
+
+    .intro {
+      position: relative;
+      min-height: 160vh;
+      background: #000;
+    }
+
+    .intro-sticky {
+      position: sticky;
+      top: 0;
+      min-height: 100vh;
+      display: grid;
+      place-items: center;
+      overflow: hidden;
+      isolation: isolate;
+    }
+
+    .liquid-wave-canvas {
+      position: fixed;
+      inset: 0;
+      z-index: 5;
+      width: 100vw;
+      height: 100vh;
+      pointer-events: none;
+      opacity: var(--wave-opacity);
+      will-change: opacity;
+    }
+
+    .intro-sticky::before {
+      content: "";
+      position: absolute;
+      inset: -20%;
+      z-index: -2;
+      background: radial-gradient(circle at 50% 50%, rgba(116, 245, 223, .08), transparent 30%);
+      filter: blur(32px);
+      opacity: calc(.14 * var(--title-opacity));
+      transform: scale(var(--intro-scale));
+      transition: opacity .1s linear;
+    }
+
+    .intro-sticky::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      z-index: -1;
+      background: transparent;
+      mask-image: radial-gradient(circle at center, rgba(0, 0, 0, .52), transparent 64%);
+      -webkit-mask-image: radial-gradient(circle at center, rgba(0, 0, 0, .52), transparent 64%);
+      opacity: 0;
+    }
+
+    .ribbon-stage {
+      position: relative;
+      z-index: 8;
+      width: min(1180px, 88vw);
+      transform: translate3d(0, calc((1 - var(--title-opacity)) * -30px), 0) scale(var(--intro-scale));
+      opacity: var(--title-opacity);
+      transition: opacity .1s linear, transform .1s linear;
+      will-change: opacity, transform;
+    }
+
+    .word-grid {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) minmax(0, 1.18fr);
+      align-items: center;
+      gap: clamp(8px, 2vw, 28px);
+    }
+
+    .word-svg {
+      overflow: visible;
+      filter:
+        drop-shadow(0 0 14px rgba(116, 245, 223, .34))
+        drop-shadow(0 0 44px rgba(112, 169, 255, .18));
+    }
+
+    .word-svg:first-child {
+      transform: translate3d(0, 10px, 0);
+    }
+
+    .word-svg:last-child {
+      transform: translate3d(0, 46px, 0);
+    }
+
+    .ribbon-path {
+      fill: none;
+      stroke-width: 18;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+      stroke-dasharray: var(--path-length, 1);
+      stroke-dashoffset: var(--path-length, 1);
+      transition: stroke-dashoffset 3.8s linear;
+      will-change: stroke-dashoffset;
+    }
+
+    #path-linear {
+      stroke: url(#ribbon-gradient-linear);
+    }
+
+    #path-algebra {
+      stroke: url(#ribbon-gradient-algebra);
+      stroke-width: 20;
+      transition-duration: 4.8s;
+      transition-delay: 1.55s;
+    }
+
+    .i-dot {
+      fill: #f08852;
+      opacity: 0;
+      transform: scale(.72);
+      transform-origin: center;
+      filter: drop-shadow(0 0 16px rgba(240, 136, 82, .52));
+      transition: opacity .28s ease 3.15s, transform .36s var(--ease) 3.15s;
+    }
+
+    .ribbon-stage.is-drawn .ribbon-path {
+      stroke-dashoffset: 0;
+    }
+
+    .ribbon-stage.is-drawn .i-dot {
+      opacity: 1;
+      transform: scale(1);
+    }
+
+    .liquid-object {
+      position: fixed;
+      right: clamp(18px, 4vw, 48px);
+      top: clamp(18px, 4vw, 42px);
+      z-index: 12;
+      width: 58px;
+      height: 58px;
+      border-radius: 29px;
+      border: 1px solid rgba(255, 255, 255, .22);
+      color: rgba(248, 252, 255, .92);
+      background:
+        linear-gradient(135deg, rgba(255, 255, 255, .24), rgba(255, 255, 255, .06)),
+        rgba(8, 18, 28, .36);
+      box-shadow:
+        inset 0 1px 0 rgba(255, 255, 255, .34),
+        inset 0 -18px 42px rgba(12, 96, 132, .12),
+        0 22px 70px rgba(0, 0, 0, .34);
+      backdrop-filter: blur(18px) saturate(1.35);
+      -webkit-backdrop-filter: blur(18px) saturate(1.35);
+      overflow: hidden;
+      transform: translateZ(0);
+      transition: width .62s var(--ease), height .62s var(--ease), border-radius .62s var(--ease), background .32s ease;
+      will-change: width, height, border-radius;
+    }
+
+    .liquid-object::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background:
+        radial-gradient(circle at 28% 18%, rgba(255, 255, 255, .78), transparent 0 7px, transparent 70%),
+        linear-gradient(120deg, rgba(255, 255, 255, .26), transparent 32% 70%, rgba(116, 245, 223, .16));
+      opacity: .72;
+      pointer-events: none;
+    }
+
+    .liquid-object::after {
+      content: "";
+      position: absolute;
+      inset: 8px;
+      border-radius: inherit;
+      border: 1px solid rgba(255, 255, 255, .15);
+      box-shadow: inset 0 0 28px rgba(116, 245, 223, .12);
+      pointer-events: none;
+    }
+
+    .liquid-object.is-open {
+      width: 296px;
+      height: 364px;
+      border-radius: var(--r-panel);
+      background:
+        linear-gradient(135deg, rgba(255, 255, 255, .26), rgba(255, 255, 255, .07)),
+        rgba(8, 18, 28, .48);
+    }
+
+    .liquid-toggle {
+      position: absolute;
+      top: 0;
+      right: 0;
+      z-index: 3;
+      width: 58px;
+      height: 58px;
+      border: 0;
+      border-radius: 50%;
+      color: #f9fffd;
+      background: transparent;
+      cursor: pointer;
+      font: 520 25px/1 ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+
+    .liquid-toggle:focus-visible {
+      outline: 2px solid rgba(116, 245, 223, .95);
+      outline-offset: -6px;
+    }
+
+    .liquid-menu {
+      position: absolute;
+      inset: 70px 18px 18px;
+      z-index: 2;
+      display: grid;
+      align-content: start;
+      gap: 12px;
+      opacity: 0;
+      transform: translate3d(0, -10px, 0);
+      transition: opacity .28s ease, transform .42s var(--ease);
+      pointer-events: none;
+    }
+
+    .liquid-object.is-open .liquid-menu {
+      opacity: 1;
+      transform: translate3d(0, 0, 0);
+      pointer-events: auto;
+    }
+
+    .liquid-menu a {
+      display: grid;
+      grid-template-columns: 32px minmax(0, 1fr);
+      gap: 12px;
+      align-items: center;
+      min-height: 50px;
+      padding: 10px;
+      border-radius: var(--r-card);
+      border: 1px solid rgba(255, 255, 255, .14);
+      background: rgba(255, 255, 255, .055);
+      font-family: ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      font-size: 14px;
+      line-height: 1.2;
+    }
+
+    .liquid-menu span {
+      color: rgba(246, 255, 252, .58);
+      font-size: 12px;
+      font-weight: 680;
+      letter-spacing: .08em;
+    }
+
+    .liquid-menu strong {
+      color: rgba(250, 255, 254, .92);
+      font-weight: 520;
+    }
+
+    .course-section {
+      position: relative;
+      z-index: 1;
+      min-height: 122vh;
+      margin-top: -14vh;
+      padding: clamp(80px, 12vw, 150px) clamp(18px, 5vw, 72px);
+      color: var(--ink);
+      background:
+        radial-gradient(circle at 70% 12%, rgba(110, 184, 255, .22), transparent 30%),
+        radial-gradient(circle at 12% 0%, rgba(116, 245, 223, .18), transparent 24%),
+        linear-gradient(180deg, #f8f5ef 0%, #f4efe5 52%, #e7ded0 100%);
+      overflow: hidden;
+    }
+
+    .course-section::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+      background-image:
+        linear-gradient(rgba(31, 33, 29, .055) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(31, 33, 29, .045) 1px, transparent 1px);
+      background-size: 56px 56px;
+      mask-image: linear-gradient(180deg, transparent, #000 18%, #000 74%, transparent);
+      -webkit-mask-image: linear-gradient(180deg, transparent, #000 18%, #000 74%, transparent);
+      opacity: .42;
+    }
+
+    .course-shell {
+      position: relative;
+      z-index: 1;
+      width: min(1220px, 100%);
+      margin: 0 auto;
+      display: grid;
+      grid-template-columns: minmax(260px, 330px) minmax(0, 1fr);
+      gap: clamp(22px, 4vw, 46px);
+      align-items: start;
+    }
+
+    .chapter-rail {
+      position: sticky;
+      top: 42px;
+      display: grid;
+      gap: 10px;
+    }
+
+    .section-kicker,
+    .chapter-number,
+    .metric-label {
+      font-family: ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+    }
+
+    .section-kicker {
+      margin: 0 0 18px;
+      color: rgba(31, 33, 29, .54);
+      font-size: 12px;
+    }
+
+    .course-title {
+      margin: 0 0 22px;
+      max-width: 9ch;
+      color: var(--ink);
+      font-size: clamp(36px, 5vw, 66px);
+      font-weight: 400;
+      line-height: .96;
+      letter-spacing: 0;
+    }
+
+    .chapter-card {
+      display: grid;
+      grid-template-columns: 34px minmax(0, 1fr);
+      gap: 14px;
+      min-height: 124px;
+      padding: 16px;
+      border-radius: var(--r-card);
+      border: 1px solid rgba(255, 255, 255, .64);
+      background: rgba(249, 246, 238, .9);
+      box-shadow: 0 18px 44px rgba(41, 35, 24, .1);
+      color: var(--ink);
+      transform: translateZ(0);
+    }
+
+    .chapter-card.is-active {
+      border-color: rgba(96, 180, 255, .68);
+      background:
+        linear-gradient(180deg, rgba(255, 255, 255, .96), rgba(240, 249, 255, .88)),
+        rgba(249, 246, 238, .92);
+    }
+
+    .chapter-card:hover,
+    .chapter-card:focus-visible {
+      border-color: rgba(46, 199, 183, .62);
+      outline: none;
+    }
+
+    .chapter-number {
+      width: auto;
+      height: auto;
+      display: block;
+      color: rgba(31, 33, 29, .62);
+      background: transparent;
+      font-size: 13px;
+      font-weight: 650;
+      font-family: ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+
+    .chapter-card h3 {
+      margin: 0 0 7px;
+      color: var(--ink);
+      font-size: 18px;
+      font-weight: 430;
+      line-height: 1.08;
+      letter-spacing: 0;
+    }
+
+    .chapter-card p {
+      margin: 0;
+      color: rgba(31, 33, 29, .62);
+      font-size: 14px;
+      line-height: 1.55;
+      font-family: ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+
+    .visual-column {
+      display: grid;
+      gap: 18px;
+    }
+
+    .visual-panel {
+      position: relative;
+      min-height: clamp(620px, 68vw, 780px);
+      border-radius: var(--r-panel);
+      overflow: hidden;
+      background: #020714;
+      box-shadow: var(--shadow-dark);
+      isolation: isolate;
+    }
+
+    .visual-panel img {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      opacity: .96;
+      transform: scale(1.02);
+    }
+
+    .visual-panel::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      z-index: 1;
+      background:
+        radial-gradient(circle at 42% 42%, transparent 0 32%, rgba(0, 0, 0, .34) 76%),
+        linear-gradient(180deg, rgba(0, 0, 0, .04), rgba(0, 0, 0, .76));
+    }
+
+    .visual-panel::after {
+      content: "";
+      position: absolute;
+      inset: 14px;
+      z-index: 2;
+      border: 1px solid rgba(255, 255, 255, .18);
+      border-radius: 6px;
+      pointer-events: none;
+      box-shadow: inset 0 0 42px rgba(116, 245, 223, .08);
+    }
+
+    .glass-caption {
+      position: absolute;
+      z-index: 3;
+      left: 24px;
+      right: 24px;
+      bottom: 24px;
+      display: grid;
+      gap: 14px;
+      max-width: 520px;
+      padding: 18px;
+      border-radius: var(--r-soft);
+      border: 1px solid rgba(255, 255, 255, .18);
+      background: rgba(3, 10, 19, .76);
+      box-shadow: inset 0 1px 0 rgba(255, 255, 255, .14);
+      backdrop-filter: blur(10px) saturate(1.1);
+      -webkit-backdrop-filter: blur(10px) saturate(1.1);
+    }
+
+    @supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+      .glass-caption {
+        background: rgba(3, 12, 10, .78);
+      }
+    }
+
+    .glass-caption h2 {
+      margin: 0;
+      color: #fffaf2;
+      font-size: clamp(24px, 3.2vw, 42px);
+      font-weight: 420;
+      line-height: 1.02;
+      letter-spacing: 0;
+    }
+
+    .glass-caption p {
+      margin: 0;
+      max-width: 55ch;
+      color: rgba(246, 241, 232, .72);
+      font-size: 15px;
+      line-height: 1.65;
+      font-family: ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+
+    .metrics {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 10px;
+    }
+
+    .metric {
+      padding: 14px;
+      border-radius: var(--r-card);
+      border: 1px solid rgba(255, 255, 255, .11);
+      background: rgba(255, 255, 255, .055);
+    }
+
+    .metric strong {
+      display: block;
+      color: #fffaf2;
+      font-size: 22px;
+      font-weight: 520;
+      line-height: 1;
+    }
+
+    .metric-label {
+      display: block;
+      margin-top: 8px;
+      color: rgba(246, 241, 232, .54);
+      font-size: 10px;
+      font-family: ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+
+    @media (max-width: 980px) {
+      .intro {
+        min-height: 178vh;
+      }
+
+      .word-grid {
+        grid-template-columns: 1fr;
+        gap: 0;
+      }
+
+      .word-svg {
+        width: 100%;
+      }
+
+      .word-svg:first-child,
+      .word-svg:last-child {
+        transform: none;
+      }
+
+      .course-shell {
+        grid-template-columns: 1fr;
+      }
+
+      .chapter-rail {
+        position: relative;
+        top: auto;
+      }
+
+      .course-title {
+        max-width: 9ch;
+      }
+
+      .visual-panel {
+        min-height: 560px;
+      }
+
+    }
+
+    @media (max-width: 680px) {
+      .ribbon-stage {
+        width: 92vw;
+      }
+
+      .intro-sticky::after {
+        background-size: 44px 44px;
+      }
+
+      .course-section {
+        padding-left: 16px;
+        padding-right: 16px;
+      }
+
+      .chapter-card {
+        grid-template-columns: 42px minmax(0, 1fr);
+        gap: 12px;
+        min-height: 104px;
+      }
+
+      .chapter-number {
+        width: 34px;
+        height: 34px;
+        font-size: 11px;
+      }
+
+      .visual-panel {
+        min-height: 470px;
+        border-radius: var(--r-panel);
+      }
+
+      .visual-panel::after {
+        inset: 10px;
+        border-radius: 6px;
+      }
+
+      .glass-caption {
+        left: 14px;
+        right: 14px;
+        bottom: 14px;
+        padding: 14px;
+        border-radius: var(--r-soft);
+      }
+
+      .metrics {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 6px;
+      }
+
+      .metric {
+        padding: 10px 8px;
+      }
+
+      .metric strong {
+        font-size: 18px;
+      }
+
+      .metric-label {
+        font-size: 9px;
+        letter-spacing: .04em;
+      }
+
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      html {
+        scroll-behavior: auto;
+      }
+
+      .ribbon-path,
+      .i-dot,
+      .ribbon-stage {
+        transition: none;
+      }
+
+      .ribbon-path {
+        stroke-dashoffset: 0 !important;
+      }
+
+      .i-dot {
+        opacity: 1;
+        transform: none;
+      }
+
+      .liquid-wave-canvas {
+        display: none;
+      }
+
+    }
+  </style>
+</head>
+<body>
+  <a class="sr-only" href="#course">跳到课程内容</a>
+
+  <canvas id="liquid-wave" class="liquid-wave-canvas" aria-hidden="true"></canvas>
+
+  <main>
+    <section class="intro" aria-label="Linear Algebra opening">
+      <div class="intro-sticky">
+        <nav class="liquid-object" aria-label="章节玻璃菜单">
+          <button class="liquid-toggle" type="button" aria-label="展开章节菜单" aria-expanded="false" title="章节">≋</button>
+          <div class="liquid-menu" aria-hidden="true">
+            <a href="learning.html#vector-space"><span>01</span><strong>向量空间</strong></a>
+            <a href="learning.html#linear-map"><span>02</span><strong>线性映射</strong></a>
+            <a href="learning.html#determinant"><span>03</span><strong>行列式</strong></a>
+            <a href="learning.html#eigen-system"><span>04</span><strong>特征系统</strong></a>
+          </div>
+        </nav>
+        <div class="ribbon-stage" aria-label="Linear Algebra">
+          <div class="word-grid" aria-hidden="true">
+            <svg class="word-svg" viewBox="-40 -40 992 356" preserveAspectRatio="xMidYMid meet">
+              <defs>
+                <linearGradient id="ribbon-gradient-linear" x1="0%" y1="0%" x2="100%" y2="0%">
+                  <stop offset="0%" stop-color="#74f5df" />
+                  <stop offset="18%" stop-color="#f8d77d" />
+                  <stop offset="38%" stop-color="#f08852" />
+                  <stop offset="58%" stop-color="#e46f99" />
+                  <stop offset="78%" stop-color="#9078d7" />
+                  <stop offset="100%" stop-color="#70a9ff" />
+                </linearGradient>
+              </defs>
+              <path id="path-linear" class="ribbon-path" d="M154.448 68.4993C101.67 61.653 45.9717 63.1242 30.998 113.716C16.0242 164.309 132.172 190.549 140.448 189.999C148.723 189.45 179.72 191.223 225.998 162.217C272.276 133.21 364.481 61.6702 323.998 8.21649C307.22 -6.6298 280.878 2.18544 250.498 27.7165C191.762 100.602 151.927 191.249 125.998 218.217C100.069 245.184 68.0263 284.463 18.7204 271.716C-12.5661 263.628 4.19584 246.038 18.7201 242.999C57.8046 234.822 72.1497 241.403 78.2202 242.999C128.005 256.094 152.605 275.622 203.448 274.499C251.894 273.429 283.8 236.236 350.498 162.217C306.642 220.278 284.999 266.717 323.998 252.217C362.998 237.717 378.08 182.919 428.998 162.217C479.916 141.514 413.97 262.064 394.498 252.217C448.689 188.525 509.498 133.21 509.498 162.217C509.498 191.223 464.837 235.302 484.998 252.217C505.16 269.131 611.998 235.217 628.998 198.717C645.998 162.217 614.498 162.217 614.498 162.217C581.72 166.37 540.72 222.063 571.72 252.217C595.074 274.933 641.688 239.11 663.791 216.353C679.047 185.964 689.5 175.905 709.948 166.37C736.918 156.375 754.654 152.157 762.948 167.999C769.494 180.504 766.518 184.6 766.448 188.499C766.448 188.499 743.263 223.166 735.948 229.999C728.633 236.833 688.172 267.021 675.448 261.499C659.375 254.524 658.929 249.199 663.791 229.999C671.721 198.688 680.067 187.513 693.948 178.499C717.898 162.947 726.454 154.481 747.948 160.198C795.411 172.823 727.891 225.792 735.948 245.499C744.004 265.207 766.159 253.693 769.448 250.999C808.783 218.775 825.449 188.094 846.448 145.999C846.319 154.945 845.857 158.76 843.948 162.217C862.238 171.617 868.176 176.425 869.448 183.999C860.79 204.046 827.084 206.588 832.948 252.217C835.255 270.166 853.168 269.207 883.948 252.217C896.693 245.181 910.448 225.999 910.448 225.999" />
+              <circle id="i-dot" class="i-dot" cx="372" cy="76" r="14" />
+            </svg>
+
+            <svg class="word-svg" viewBox="-40 -40 1141 454" preserveAspectRatio="xMidYMid meet">
+              <defs>
+                <linearGradient id="ribbon-gradient-algebra" x1="0%" y1="0%" x2="100%" y2="0%">
+                  <stop offset="0%" stop-color="#74f5df" />
+                  <stop offset="18%" stop-color="#f8d77d" />
+                  <stop offset="38%" stop-color="#f08852" />
+                  <stop offset="58%" stop-color="#e46f99" />
+                  <stop offset="78%" stop-color="#9078d7" />
+                  <stop offset="100%" stop-color="#70a9ff" />
+                </linearGradient>
+              </defs>
+              <path id="path-algebra" class="ribbon-path" d="M127.48 171.328C88.4533 133.367 29.1274 124.944 4.98048 180.828C-19.1665 236.712 59.9802 249.212 106.481 244.328C133.229 241.518 144.729 226.847 167.981 213.328C254.569 162.983 327.98 64.3279 355.48 38.3279C382.98 12.3279 437.48 5.32793 420.98 34.3279C404.48 63.3279 312.98 226.828 312.98 226.828C304.32 197.556 294.864 180.585 273.98 149.828C226.31 88.8803 211.359 88.6299 191.981 85.3279C172.602 82.026 121.756 106.754 162.481 155.328C216.239 194.586 244.284 208.614 288.98 213.328C315.769 216.989 333.642 225.224 352.48 218.328C414.886 195.486 433.391 168.49 467.98 136.328C505.833 101.132 525.986 77.77 541.981 34.3279C557.726 -8.43517 534.568 -9.7733 493.481 25.3279C463.834 50.6556 450.878 82.9919 420.98 136.328C406.42 179.487 406.647 192.985 409.98 213.328C422.339 237.632 437.471 231.888 467.98 213.328C481.63 202.755 490.981 197.249 497.98 188.828C492.472 205.052 491.796 213.115 500.981 223.043C531.125 236.144 568.899 199.328 577.44 188.828C585.981 178.328 594.122 171.204 600.98 149.828C591.818 119.761 567.641 121.696 548.481 131.828C527.478 142.934 518.617 153.142 505.48 171.328C492.49 191.509 489.411 203.457 491.48 215.828C493.58 226.763 505.262 229.805 516.872 231.328C546.702 226.736 556.676 209.836 573.372 196.828L505.48 319.328C445.817 392.634 423.761 381.721 428.98 342.328C436.308 311.39 451.071 301.649 477.48 284.328L575.48 233.328C624.915 205.812 652.23 203.131 696.48 171.328C704.75 164.536 709.098 158.573 709.98 147.828C705.415 118.029 672.496 136.405 658.981 147.828C635.503 167.67 620.546 205.064 630.981 218.328C638.315 227.651 666.304 238.399 696.48 218.328C755.614 174.282 775.047 154.734 812.48 118.828C812.48 118.828 850.2 90.3583 860.98 63.8279C882.246 11.4947 875.023 7.73802 836.48 35.3279C776.179 95.548 732.981 190.294 738.48 218.328C740.172 226.952 759.791 241.132 790.98 218.328C811.247 198.124 827.38 170.39 821.98 155.328C810.492 123.281 797.488 145.908 797.48 156.828C797.47 171.635 826.98 182.828 836.48 179.828C845.981 176.828 859.482 151.573 882.48 118.828C882.48 118.828 869.67 132.118 879.981 138.328C890.292 144.538 900.361 153.472 896.98 156.828C876.182 177.474 854.457 189.026 853.98 218.328C853.68 236.825 890.481 232.828 896.98 226.828C903.48 220.828 916.515 203.513 928.73 188.328C941.327 172.669 946.997 156.604 960.481 147.828C995.988 128.834 1017.28 131.093 1028.98 155.328C1030.8 176.572 1000.74 194.876 987.48 213.328C961.153 237.572 936.251 239.827 922.98 218.328C910.886 198.734 945.981 164.828 945.981 164.828C945.981 164.828 972.91 137.886 989.981 136.828C1008.73 134.318 1018.25 139.226 1023.98 152.828C1030.42 168.124 1016.6 177.648 1005.98 191.328C993.297 205.004 994.98 219.328 999.48 226.828C1003.98 234.328 1020.92 231.816 1038.48 218.328C1047.61 209.01 1052.31 204.089 1059.98 195.828" />
+            </svg>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="course" class="course-section" aria-labelledby="course-title">
+      <div class="course-shell">
+        <aside class="chapter-rail" aria-label="章节导航">
+          <p class="section-kicker">课程目录</p>
+          <h1 id="course-title" class="course-title">线性代数图谱</h1>
+
+          <a class="chapter-card is-active" href="learning.html#vector-space">
+            <span class="chapter-number">01</span>
+            <div>
+              <h3>向量空间</h3>
+              <p>从线性组合、张成空间和基开始，把抽象空间变成可移动的对象。</p>
+            </div>
+          </a>
+
+          <a class="chapter-card" href="learning.html#linear-map">
+            <span class="chapter-number">02</span>
+            <div>
+              <h3>线性映射</h3>
+              <p>矩阵不只是表格，而是一种把空间压缩、旋转、投影的动作。</p>
+            </div>
+          </a>
+
+          <a class="chapter-card" href="learning.html#determinant">
+            <span class="chapter-number">03</span>
+            <div>
+              <h3>行列式</h3>
+              <p>用面积、体积和方向解释符号，避免只把它当成计算公式。</p>
+            </div>
+          </a>
+
+          <a class="chapter-card" href="learning.html#eigen-system">
+            <span class="chapter-number">04</span>
+            <div>
+              <h3>特征系统</h3>
+              <p>找到变换中保持方向的轴，再连接对角化、动力系统和稳定性。</p>
+            </div>
+          </a>
+        </aside>
+
+        <div class="visual-column">
+          <figure class="visual-panel">
+            <img src="assets/algebra-hero.png" alt="Dark linear algebra visualization with translucent coordinate planes, vectors, and geometric surfaces.">
+            <figcaption class="glass-caption">
+              <h2>把公式还原成空间。</h2>
+              <p>每一章都对应一个几何动作：拖动、压缩、投影、寻找不变方向。先建立图像，再进入计算和证明。</p>
+              <div class="metrics" aria-label="课程结构">
+                <div class="metric">
+                  <strong>4</strong>
+                  <span class="metric-label">核心章节</span>
+                </div>
+                <div class="metric">
+                  <strong>12</strong>
+                  <span class="metric-label">图解证明</span>
+                </div>
+                <div class="metric">
+                  <strong>1</strong>
+                  <span class="metric-label">连续路径</span>
+                </div>
+              </div>
+            </figcaption>
+          </figure>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <script>
+    const root = document.documentElement;
+    const intro = document.querySelector(".intro");
+    const stage = document.querySelector(".ribbon-stage");
+    const waveCanvas = document.getElementById("liquid-wave");
+    const liquidObject = document.querySelector(".liquid-object");
+    const liquidToggle = document.querySelector(".liquid-toggle");
+    const liquidMenu = document.querySelector(".liquid-menu");
+    const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
+
+    const clamp = (value, min, max) => Math.min(max, Math.max(min, value));
+    const smoothstep = (edge0, edge1, value) => {
+      const x = clamp((value - edge0) / (edge1 - edge0), 0, 1);
+      return x * x * (3 - 2 * x);
+    };
+
+    function setupRibbon() {
+      document.querySelectorAll(".ribbon-path").forEach((path) => {
+        const length = path.getTotalLength();
+        path.style.setProperty("--path-length", length);
+      });
+
+      window.requestAnimationFrame(() => {
+        stage.classList.add("is-drawn");
+      });
+    }
+
+    let rafId = 0;
+    const waveState = {
+      gl: null,
+      program: null,
+      uniforms: {},
+      reveal: 0,
+      scroll: 0,
+      startedAt: performance.now(),
+      dpr: 1,
+      running: false
+    };
+
+    function createShader(gl, type, source) {
+      const shader = gl.createShader(type);
+      gl.shaderSource(shader, source);
+      gl.compileShader(shader);
+
+      if (!gl.getShaderParameter(shader, gl.COMPILE_STATUS)) {
+        throw new Error(gl.getShaderInfoLog(shader) || "Shader failed to compile");
+      }
+
+      return shader;
+    }
+
+    function initLiquidWave() {
+      if (!waveCanvas || reduceMotion.matches) {
+        return;
+      }
+
+      const gl = waveCanvas.getContext("webgl", {
+        alpha: true,
+        antialias: false,
+        premultipliedAlpha: false,
+        powerPreference: "high-performance"
+      });
+
+      if (!gl) {
+        document.body.classList.add("no-webgl");
+        return;
+      }
+
+      const vertexSource = `
+        attribute vec2 a_position;
+        void main() {
+          gl_Position = vec4(a_position, 0.0, 1.0);
+        }
+      `;
+
+      const fragmentSource = `
+        #ifdef GL_FRAGMENT_PRECISION_HIGH
+        precision highp float;
+        #else
+        precision mediump float;
+        #endif
+
+        uniform vec2 u_resolution;
+        uniform float u_time;
+        uniform float u_reveal;
+        uniform float u_scroll;
+
+        float hash21(vec2 p) {
+          p = fract(p * vec2(123.34, 456.21));
+          p += dot(p, p + 45.32);
+          return fract(p.x * p.y);
+        }
+
+        float noise(vec2 p) {
+          vec2 i = floor(p);
+          vec2 f = fract(p);
+          f = f * f * (3.0 - 2.0 * f);
+          float a = hash21(i);
+          float b = hash21(i + vec2(1.0, 0.0));
+          float c = hash21(i + vec2(0.0, 1.0));
+          float d = hash21(i + vec2(1.0, 1.0));
+          return mix(mix(a, b, f.x), mix(c, d, f.x), f.y);
+        }
+
+        float fbm(vec2 p) {
+          float value = 0.0;
+          float amplitude = 0.52;
+          mat2 rot = mat2(0.80, -0.60, 0.60, 0.80);
+          for (int i = 0; i < 5; i++) {
+            value += amplitude * noise(p);
+            p = rot * p * 2.03 + 17.17;
+            amplitude *= 0.52;
+          }
+          return value;
+        }
+
+        void main() {
+          vec2 uv = gl_FragCoord.xy / u_resolution.xy;
+          vec2 p = uv;
+          p.x *= u_resolution.x / u_resolution.y;
+
+          float top = 1.0 - uv.y;
+          float reveal = clamp(u_reveal, 0.0, 1.0);
+          float time = u_time;
+          float edgeWave =
+            sin(p.x * 5.2 + time * 0.72) * 0.034 +
+            sin(p.x * 10.7 - time * 1.13) * 0.017 +
+            (fbm(vec2(p.x * 2.2, time * 0.085)) - 0.5) * 0.085;
+          float front = -0.14 + reveal * 1.30 + edgeWave;
+          float signedDistance = top - front;
+          float waterMask = 1.0 - smoothstep(-0.025, 0.082, signedDistance);
+          float edge = 1.0 - smoothstep(0.0, 0.060, abs(signedDistance));
+
+          vec2 flow = p * vec2(1.35, 1.95);
+          flow += vec2(
+            fbm(flow * 1.16 + vec2(time * 0.055, -time * 0.025)),
+            fbm(flow * 1.33 + vec2(-time * 0.030, time * 0.050))
+          ) * 0.92;
+
+          float marble = fbm(flow * 2.22 + vec2(time * 0.035, -time * 0.045));
+          float cloud = fbm(flow * 4.20 + vec2(-time * 0.075, time * 0.035));
+          float vein = smoothstep(0.52, 0.82, fbm(flow * 7.40 + vec2(time * 0.11, 0.0)));
+          float caustic = pow(max(0.0, sin((flow.x + marble * 1.7) * 13.0 + time * 1.2)), 7.0);
+
+          vec3 deep = vec3(0.006, 0.020, 0.027);
+          vec3 ink = vec3(0.012, 0.055, 0.064);
+          vec3 teal = vec3(0.035, 0.345, 0.360);
+          vec3 pale = vec3(0.610, 0.945, 0.855);
+          vec3 foam = vec3(0.980, 0.940, 0.800);
+
+          vec3 color = mix(deep, ink, smoothstep(0.0, 0.9, top));
+          color = mix(color, teal, marble * 0.70);
+          color = mix(color, pale, vein * 0.50);
+          color += vec3(0.12, 0.72, 0.82) * caustic * 0.25;
+          color += foam * edge * (0.72 + 0.28 * sin(p.x * 38.0 + time * 2.4));
+          color += vec3(0.85, 1.0, 0.92) * smoothstep(0.78, 1.0, cloud) * 0.15;
+
+          float topMist = smoothstep(0.02, 0.24, waterMask) * (1.0 - smoothstep(0.96, 1.18, top));
+          float alpha = waterMask * (0.985 + 0.015 * marble) + edge * 0.32;
+          alpha *= smoothstep(0.018, 0.08, reveal);
+          alpha *= 1.0 - smoothstep(0.86, 1.0, u_scroll);
+          alpha = max(alpha, waterMask * 0.998);
+          alpha = clamp(alpha * topMist, 0.0, 1.0);
+
+          gl_FragColor = vec4(color, alpha);
+        }
+      `;
+
+      const vertexShader = createShader(gl, gl.VERTEX_SHADER, vertexSource);
+      const fragmentShader = createShader(gl, gl.FRAGMENT_SHADER, fragmentSource);
+      const program = gl.createProgram();
+      gl.attachShader(program, vertexShader);
+      gl.attachShader(program, fragmentShader);
+      gl.linkProgram(program);
+
+      if (!gl.getProgramParameter(program, gl.LINK_STATUS)) {
+        throw new Error(gl.getProgramInfoLog(program) || "Program failed to link");
+      }
+
+      const positionBuffer = gl.createBuffer();
+      gl.bindBuffer(gl.ARRAY_BUFFER, positionBuffer);
+      gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([-1, -1, 3, -1, -1, 3]), gl.STATIC_DRAW);
+
+      const position = gl.getAttribLocation(program, "a_position");
+      gl.enableVertexAttribArray(position);
+      gl.vertexAttribPointer(position, 2, gl.FLOAT, false, 0, 0);
+
+      waveState.gl = gl;
+      waveState.program = program;
+      waveState.uniforms = {
+        resolution: gl.getUniformLocation(program, "u_resolution"),
+        time: gl.getUniformLocation(program, "u_time"),
+        reveal: gl.getUniformLocation(program, "u_reveal"),
+        scroll: gl.getUniformLocation(program, "u_scroll")
+      };
+      waveState.running = true;
+      resizeLiquidWave();
+      window.requestAnimationFrame(renderLiquidWave);
+    }
+
+    function resizeLiquidWave() {
+      if (!waveCanvas || !waveState.gl) return;
+      const dpr = Math.min(1.25, window.devicePixelRatio || 1);
+      const width = Math.max(1, Math.floor(window.innerWidth * dpr));
+      const height = Math.max(1, Math.floor(window.innerHeight * dpr));
+
+      if (waveCanvas.width !== width || waveCanvas.height !== height) {
+        waveCanvas.width = width;
+        waveCanvas.height = height;
+        waveState.dpr = dpr;
+        waveState.gl.viewport(0, 0, width, height);
+      }
+    }
+
+    function renderLiquidWave(now) {
+      if (!waveState.running || !waveState.gl || reduceMotion.matches) {
+        return;
+      }
+
+      resizeLiquidWave();
+      const gl = waveState.gl;
+      gl.useProgram(waveState.program);
+      gl.clearColor(0, 0, 0, 0);
+      gl.clear(gl.COLOR_BUFFER_BIT);
+
+      if (waveState.reveal <= 0.002 || waveState.scroll >= 0.995) {
+        window.requestAnimationFrame(renderLiquidWave);
+        return;
+      }
+
+      gl.uniform2f(waveState.uniforms.resolution, waveCanvas.width, waveCanvas.height);
+      gl.uniform1f(waveState.uniforms.time, (now - waveState.startedAt) * 0.001);
+      gl.uniform1f(waveState.uniforms.reveal, waveState.reveal);
+      gl.uniform1f(waveState.uniforms.scroll, waveState.scroll);
+      gl.drawArrays(gl.TRIANGLES, 0, 3);
+      window.requestAnimationFrame(renderLiquidWave);
+    }
+
+    function updateScene() {
+      rafId = 0;
+
+      if (!intro || reduceMotion.matches) {
+        return;
+      }
+
+      const viewport = window.innerHeight || 1;
+      const maxScroll = Math.max(1, intro.offsetHeight - viewport + viewport * .45);
+      const progress = clamp(-intro.getBoundingClientRect().top / maxScroll, 0, 1);
+      const titleFade = 1 - smoothstep(.58, .9, progress);
+      const waveOpacity = smoothstep(.06, .18, progress) * (1 - smoothstep(.92, 1, progress));
+      waveState.reveal = smoothstep(.10, .98, progress);
+      waveState.scroll = progress;
+
+      root.style.setProperty("--title-opacity", titleFade.toFixed(3));
+      root.style.setProperty("--intro-scale", (1 + progress * .06).toFixed(3));
+      root.style.setProperty("--wave-opacity", waveOpacity.toFixed(3));
+    }
+
+    function requestSceneUpdate() {
+      if (rafId) return;
+      rafId = window.requestAnimationFrame(updateScene);
+    }
+
+    function setupLiquidMenu() {
+      if (!liquidObject || !liquidToggle || !liquidMenu) return;
+
+      liquidToggle.addEventListener("click", () => {
+        const isOpen = liquidObject.classList.toggle("is-open");
+        liquidToggle.setAttribute("aria-expanded", String(isOpen));
+        liquidToggle.setAttribute("aria-label", isOpen ? "收起章节菜单" : "展开章节菜单");
+        liquidMenu.setAttribute("aria-hidden", String(!isOpen));
+      });
+
+      liquidMenu.addEventListener("click", (event) => {
+        if (event.target.closest("a")) {
+          liquidObject.classList.remove("is-open");
+          liquidToggle.setAttribute("aria-expanded", "false");
+          liquidToggle.setAttribute("aria-label", "展开章节菜单");
+          liquidMenu.setAttribute("aria-hidden", "true");
+        }
+      });
+    }
+
+    setupRibbon();
+    setupLiquidMenu();
+    initLiquidWave();
+    updateScene();
+
+    window.addEventListener("scroll", requestSceneUpdate, { passive: true });
+    window.addEventListener("resize", () => {
+      resizeLiquidWave();
+      requestSceneUpdate();
+    });
+    if (typeof reduceMotion.addEventListener === "function") {
+      reduceMotion.addEventListener("change", requestSceneUpdate);
+    } else if (typeof reduceMotion.addListener === "function") {
+      reduceMotion.addListener(requestSceneUpdate);
+    }
+  </script>
+</body>
+</html>

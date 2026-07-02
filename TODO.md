@@ -2,9 +2,9 @@
 
 ## 当前状态
 
-- 主应用在 `prototype/`。
-- 第四章内容已拆到 `prototype/content/ch4.js`。
-- KaTeX 已本地化到 `prototype/vendor/katex/`。
+- 主应用在 `current/`。
+- 第四章内容已拆到 `current/content/ch4.js`。
+- KaTeX 已本地化到 `current/vendor/katex/`。
 - 第 1 步的基础修复已完成：公式渲染、内容分离、进度联动、搜索恢复、路由滚动、第四章总览卡片。
 
 ## 下一步

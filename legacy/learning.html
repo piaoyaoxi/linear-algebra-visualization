@@ -1,0 +1,547 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Linear Algebra | 学习内容</title>
+  <meta name="description" content="线性代数学习内容：向量空间、线性映射、行列式和特征系统的图像化讲解与动画视频。">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%23000504'/%3E%3Cpath d='M14 40c13-22 27-25 36-10M18 20l28 28' fill='none' stroke='%2374f5df' stroke-width='5' stroke-linecap='round'/%3E%3Ccircle cx='46' cy='18' r='4' fill='%23f08852'/%3E%3C/svg%3E">
+  <style>
+    :root {
+      --ink: #1f211d;
+      --cream: #f6f1e8;
+      --paper: #fffdf8;
+      --aqua: #74f5df;
+      --blue: #70a9ff;
+      --r-card: 8px;
+      --r-panel: 8px;
+      --shadow-light: 0 24px 70px rgba(41, 35, 24, .1);
+      color-scheme: light;
+      font-family: ui-serif, "Songti SC", "Noto Serif SC", "Times New Roman", serif;
+      text-rendering: geometricPrecision;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    html {
+      background: #f8f5ef;
+      scroll-behavior: smooth;
+    }
+
+    body {
+      margin: 0;
+      min-width: 320px;
+      color: var(--ink);
+      background:
+        radial-gradient(circle at 78% 0%, rgba(112, 169, 255, .18), transparent 28%),
+        radial-gradient(circle at 12% 6%, rgba(116, 245, 223, .16), transparent 24%),
+        linear-gradient(180deg, #f2eadc 0%, #fffdf8 38%, #eee4d6 100%);
+      overflow-x: hidden;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+    }
+
+    a {
+      color: inherit;
+      text-decoration: none;
+    }
+
+    img,
+    video {
+      display: block;
+      max-width: 100%;
+    }
+
+    ::selection {
+      color: #07100f;
+      background: var(--aqua);
+    }
+
+    .topbar {
+      position: sticky;
+      top: 0;
+      z-index: 20;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 16px;
+      min-height: 64px;
+      padding: 0 clamp(16px, 5vw, 64px);
+      border-bottom: 1px solid rgba(31, 33, 29, .09);
+      background: rgba(248, 245, 239, .78);
+      backdrop-filter: blur(18px) saturate(1.25);
+      -webkit-backdrop-filter: blur(18px) saturate(1.25);
+    }
+
+    .brand {
+      flex: 0 0 auto;
+      font-size: 18px;
+      line-height: 1;
+      letter-spacing: 0;
+    }
+
+    .topbar nav {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      max-width: 100%;
+      overflow-x: auto;
+      padding: 10px 0;
+    }
+
+    .topbar a {
+      display: inline-flex;
+      align-items: center;
+      min-height: 34px;
+      padding: 0 12px;
+      border-radius: var(--r-card);
+      color: rgba(31, 33, 29, .68);
+      font: 13px/1 ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      white-space: nowrap;
+    }
+
+    .topbar nav a {
+      border: 1px solid rgba(31, 33, 29, .11);
+      background: rgba(255, 255, 255, .48);
+    }
+
+    .page-shell {
+      width: min(1220px, calc(100% - clamp(32px, 10vw, 144px)));
+      margin: 0 auto;
+      padding: clamp(72px, 10vw, 124px) 0 clamp(96px, 14vw, 170px);
+    }
+
+    .learning-header {
+      display: grid;
+      grid-template-columns: minmax(260px, 440px) minmax(0, 1fr);
+      gap: clamp(24px, 5vw, 72px);
+      align-items: end;
+      margin-bottom: clamp(34px, 6vw, 72px);
+    }
+
+    .section-kicker,
+    .lesson-eyebrow {
+      margin: 0;
+      color: rgba(31, 33, 29, .52);
+      font: 700 12px/1 ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+    }
+
+    .learning-header h1 {
+      margin: 18px 0 0;
+      max-width: 10ch;
+      color: var(--ink);
+      font-size: clamp(44px, 6vw, 88px);
+      font-weight: 400;
+      line-height: .95;
+      letter-spacing: 0;
+    }
+
+    .learning-header p {
+      margin: 0;
+      max-width: 58ch;
+      color: rgba(31, 33, 29, .66);
+      font: 16px/1.75 ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+
+    .lesson-nav {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 22px;
+    }
+
+    .lesson-nav a {
+      display: inline-flex;
+      align-items: center;
+      min-height: 34px;
+      padding: 0 12px;
+      border-radius: var(--r-card);
+      border: 1px solid rgba(31, 33, 29, .13);
+      color: rgba(31, 33, 29, .72);
+      background: rgba(255, 255, 255, .52);
+      font: 13px/1 ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+
+    .lesson-stack {
+      display: grid;
+      gap: 22px;
+    }
+
+    .lesson-block {
+      display: grid;
+      grid-template-columns: minmax(300px, 420px) minmax(0, 1fr);
+      gap: clamp(20px, 4vw, 46px);
+      align-items: start;
+      padding: clamp(18px, 3vw, 28px);
+      border-radius: var(--r-panel);
+      border: 1px solid rgba(31, 33, 29, .11);
+      background: rgba(255, 253, 248, .82);
+      box-shadow: var(--shadow-light);
+      scroll-margin-top: 92px;
+    }
+
+    .lesson-copy {
+      display: grid;
+      gap: 18px;
+    }
+
+    .lesson-copy h2 {
+      margin: 0;
+      color: var(--ink);
+      font-size: clamp(30px, 4vw, 52px);
+      font-weight: 400;
+      line-height: .98;
+      letter-spacing: 0;
+    }
+
+    .lesson-copy p {
+      margin: 0;
+      color: rgba(31, 33, 29, .68);
+      font: 15px/1.75 ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+
+    .formula {
+      display: block;
+      padding: 14px 16px;
+      border-radius: var(--r-card);
+      border: 1px solid rgba(31, 33, 29, .1);
+      color: #111815;
+      background:
+        linear-gradient(90deg, rgba(116, 245, 223, .16), rgba(112, 169, 255, .12)),
+        rgba(255, 255, 255, .68);
+      font: 18px/1.45 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+      overflow-x: auto;
+    }
+
+    .lesson-points {
+      display: grid;
+      gap: 8px;
+      margin: 0;
+      padding: 0;
+      list-style: none;
+      font: 14px/1.6 ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+
+    .lesson-points li {
+      display: grid;
+      grid-template-columns: 22px minmax(0, 1fr);
+      gap: 8px;
+      color: rgba(31, 33, 29, .72);
+    }
+
+    .lesson-points li::before {
+      content: "";
+      width: 8px;
+      height: 8px;
+      margin-top: .65em;
+      border-radius: 50%;
+      background: #2ec7b7;
+      box-shadow: 0 0 0 4px rgba(46, 199, 183, .13);
+    }
+
+    .practice {
+      padding-top: 14px;
+      border-top: 1px solid rgba(31, 33, 29, .1);
+    }
+
+    .practice strong {
+      display: block;
+      margin-bottom: 8px;
+      color: rgba(31, 33, 29, .86);
+      font: 700 13px/1 ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+    }
+
+    .lesson-media {
+      display: grid;
+      gap: 12px;
+    }
+
+    .lesson-video {
+      position: relative;
+      overflow: hidden;
+      margin: 0;
+      border-radius: var(--r-panel);
+      border: 1px solid rgba(31, 33, 29, .14);
+      background: #f8f5ef;
+      box-shadow: 0 26px 72px rgba(31, 33, 29, .14);
+      aspect-ratio: 16 / 9;
+    }
+
+    .lesson-video video {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      background: #f8f5ef;
+    }
+
+    .lesson-caption {
+      margin: 0;
+      color: rgba(31, 33, 29, .58);
+      font: 13px/1.55 ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+
+    .lesson-summary {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 10px;
+    }
+
+    .lesson-summary div {
+      min-height: 86px;
+      padding: 12px;
+      border-radius: var(--r-card);
+      border: 1px solid rgba(31, 33, 29, .1);
+      background: rgba(255, 255, 255, .58);
+    }
+
+    .lesson-summary b {
+      display: block;
+      margin-bottom: 8px;
+      color: rgba(31, 33, 29, .82);
+      font: 700 12px/1 ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      letter-spacing: .06em;
+      text-transform: uppercase;
+    }
+
+    .lesson-summary span {
+      color: rgba(31, 33, 29, .66);
+      font: 13px/1.45 ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+
+    @media (max-width: 980px) {
+      .topbar {
+        align-items: start;
+        flex-direction: column;
+        padding-top: 14px;
+        padding-bottom: 10px;
+      }
+
+      .page-shell {
+        width: min(100% - 32px, 760px);
+      }
+
+      .learning-header,
+      .lesson-block {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    @media (max-width: 680px) {
+      .topbar {
+        gap: 8px;
+        padding-top: 12px;
+        padding-bottom: 12px;
+      }
+
+      .topbar nav {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        width: 100%;
+        gap: 8px;
+        overflow: visible;
+        padding: 0;
+      }
+
+      .topbar nav a {
+        justify-content: center;
+        min-width: 0;
+        padding: 0 8px;
+      }
+
+      .learning-header h1 {
+        max-width: 9ch;
+      }
+
+      .lesson-block {
+        padding: 14px;
+      }
+
+      .lesson-summary {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      html {
+        scroll-behavior: auto;
+      }
+    }
+  </style>
+</head>
+<body>
+  <header class="topbar">
+    <a class="brand" href="index.html" aria-label="回到 Linear Algebra 首页">Linear Algebra</a>
+    <nav aria-label="学习章节">
+      <a href="#vector-space">01 向量空间</a>
+      <a href="#linear-map">02 线性映射</a>
+      <a href="#determinant">03 行列式</a>
+      <a href="#eigen-system">04 特征系统</a>
+    </nav>
+  </header>
+
+  <main class="page-shell">
+    <header class="learning-header">
+      <div>
+        <p class="section-kicker">学习内容</p>
+        <h1>从图像进入证明</h1>
+      </div>
+      <div>
+        <p>这部分把线性代数拆成四个可视化单元。每一章先看动画，再读公式和解释，最后用一个小练习检验是否真正理解。目标不是背公式，而是让学生能说清楚每个公式在空间里做了什么。</p>
+        <nav class="lesson-nav" aria-label="学习单元导航">
+          <a href="#vector-space">01 向量空间</a>
+          <a href="#linear-map">02 线性映射</a>
+          <a href="#determinant">03 行列式</a>
+          <a href="#eigen-system">04 特征系统</a>
+        </nav>
+      </div>
+    </header>
+
+    <div class="lesson-stack">
+      <article id="vector-space" class="lesson-block">
+        <div class="lesson-copy">
+          <p class="lesson-eyebrow">Chapter 01</p>
+          <h2>向量空间</h2>
+          <p>向量空间不是一堆箭头，而是一套允许“相加”和“数乘”的对象系统。只要选定一组基，空间里的每个点都可以被写成这些基向量的线性组合。</p>
+          <code class="formula">span(a, b) = {s a + t b | s, t in R}</code>
+          <ul class="lesson-points">
+            <li>线性组合描述“沿着几个方向走多少”。</li>
+            <li>张成空间是所有可能走法形成的区域。</li>
+            <li>基是一组不重复、不缺失的方向。</li>
+          </ul>
+          <div class="practice">
+            <strong>练习</strong>
+            <p>给定 a = (2, 1), b = (-1, 2)，试着解释为什么 3a - b 仍然在 span(a, b) 中。再判断 a 和 2a 是否能作为平面的一组基。</p>
+          </div>
+        </div>
+        <div class="lesson-media">
+          <figure class="lesson-video">
+            <video src="assets/lessons/vector-space.mp4" poster="assets/lessons/vector-space.png" autoplay loop muted playsinline controls aria-label="向量空间线性组合动画"></video>
+          </figure>
+          <p class="lesson-caption">动画中橙色和蓝色是两个方向，黑色向量是它们的线性组合。系数变化时，黑色向量在平面中连续移动。</p>
+          <div class="lesson-summary" aria-label="向量空间学习要点">
+            <div><b>观察</b><span>两个不共线方向可以铺开一个平面。</span></div>
+            <div><b>公式</b><span>所有 s a + t b 构成张成空间。</span></div>
+            <div><b>证明入口</b><span>检查封闭性：相加和数乘后仍在空间内。</span></div>
+          </div>
+        </div>
+      </article>
+
+      <article id="linear-map" class="lesson-block">
+        <div class="lesson-copy">
+          <p class="lesson-eyebrow">Chapter 02</p>
+          <h2>线性映射</h2>
+          <p>矩阵表示一种空间动作：它不只移动一个点，而是同时移动整张坐标网格。线性映射保留原点，并且保留加法与数乘的结构。</p>
+          <code class="formula">T(u + v) = T(u) + T(v),  T(cu) = cT(u)</code>
+          <ul class="lesson-points">
+            <li>矩阵列向量告诉我们基向量被送到哪里。</li>
+            <li>网格线变弯就不是线性映射；网格线保持直线才可能线性。</li>
+            <li>理解矩阵乘法时，先看“先做哪个空间动作”。</li>
+          </ul>
+          <div class="practice">
+            <strong>练习</strong>
+            <p>设 A 把 e1 送到 (2, 1)，把 e2 送到 (-1, 1)。不用直接套公式，先画出单位正方形会变成什么图形，再写出矩阵 A。</p>
+          </div>
+        </div>
+        <div class="lesson-media">
+          <figure class="lesson-video">
+            <video src="assets/lessons/linear-map.mp4" poster="assets/lessons/linear-map.png" autoplay loop muted playsinline controls aria-label="线性映射网格变换动画"></video>
+          </figure>
+          <p class="lesson-caption">动画展示同一张坐标网格被矩阵整体拉伸和倾斜。矩形变成平行四边形，说明面积、角度和方向都会被矩阵改变。</p>
+          <div class="lesson-summary" aria-label="线性映射学习要点">
+            <div><b>观察</b><span>直线仍是直线，原点仍在原点。</span></div>
+            <div><b>公式</b><span>线性映射必须兼容加法和数乘。</span></div>
+            <div><b>证明入口</b><span>只要知道基向量去向，就知道整个映射。</span></div>
+          </div>
+        </div>
+      </article>
+
+      <article id="determinant" class="lesson-block">
+        <div class="lesson-copy">
+          <p class="lesson-eyebrow">Chapter 03</p>
+          <h2>行列式</h2>
+          <p>行列式不是一串展开公式，而是“有符号面积缩放因子”。二维中，单位正方形被矩阵变成平行四边形，面积放大多少就是行列式的绝对值。</p>
+          <code class="formula">det([a b]) = a1 b2 - a2 b1</code>
+          <ul class="lesson-points">
+            <li>det(A) = 0 表示空间被压扁到低维。</li>
+            <li>det(A) 的符号表示方向是否被翻转。</li>
+            <li>det(AB) = det(A)det(B)，因为面积缩放会连续相乘。</li>
+          </ul>
+          <div class="practice">
+            <strong>练习</strong>
+            <p>解释为什么两个列向量共线时行列式一定为 0。然后用面积缩放的角度说明为什么可逆矩阵的行列式不能为 0。</p>
+          </div>
+        </div>
+        <div class="lesson-media">
+          <figure class="lesson-video">
+            <video src="assets/lessons/determinant.mp4" poster="assets/lessons/determinant.png" autoplay loop muted playsinline controls aria-label="行列式面积缩放动画"></video>
+          </figure>
+          <p class="lesson-caption">动画中的平行四边形面积随两个列向量变化。面积越大，行列式绝对值越大；如果图形被压成一条线，行列式归零。</p>
+          <div class="lesson-summary" aria-label="行列式学习要点">
+            <div><b>观察</b><span>列向量围成的面积就是核心图像。</span></div>
+            <div><b>公式</b><span>a1b2 - a2b1 是有方向的面积。</span></div>
+            <div><b>证明入口</b><span>用面积缩放理解乘法性质和可逆性。</span></div>
+          </div>
+        </div>
+      </article>
+
+      <article id="eigen-system" class="lesson-block">
+        <div class="lesson-copy">
+          <p class="lesson-eyebrow">Chapter 04</p>
+          <h2>特征系统</h2>
+          <p>特征向量是变换中“不转向”的方向。矩阵作用在它身上，只改变长度和朝向，不把它推离原来的直线。特征值就是这条方向上的伸缩倍数。</p>
+          <code class="formula">A v = lambda v,  v != 0</code>
+          <ul class="lesson-points">
+            <li>特征方向揭示矩阵真正偏爱的方向。</li>
+            <li>不同特征方向足够多时，矩阵可以被对角化。</li>
+            <li>动力系统里，最大特征值常决定长期趋势。</li>
+          </ul>
+          <div class="practice">
+            <strong>练习</strong>
+            <p>如果 A 把某个向量 v 变成 3v，解释 v 为什么是特征向量。再思考：如果 A 把 v 变成 v + w，它还可能是同一方向的特征向量吗？</p>
+          </div>
+        </div>
+        <div class="lesson-media">
+          <figure class="lesson-video">
+            <video src="assets/lessons/eigen-system.mp4" poster="assets/lessons/eigen-system.png" autoplay loop muted playsinline controls aria-label="特征方向伸缩动画"></video>
+          </figure>
+          <p class="lesson-caption">黑色箭头代表一般方向，变换后会偏转；彩色方向保持在同一条直线上，只发生伸缩，这就是特征方向。</p>
+          <div class="lesson-summary" aria-label="特征系统学习要点">
+            <div><b>观察</b><span>不是所有向量都会转向。</span></div>
+            <div><b>公式</b><span>Av 与 v 共线时，v 是特征向量。</span></div>
+            <div><b>证明入口</b><span>把 Av = lambda v 改写为 (A - lambda I)v = 0。</span></div>
+          </div>
+        </div>
+      </article>
+    </div>
+  </main>
+
+  <script>
+    const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
+    const syncVideos = () => {
+      document.querySelectorAll("video").forEach((video) => {
+        if (reduceMotion.matches) {
+          video.pause();
+          video.removeAttribute("autoplay");
+        } else {
+          video.setAttribute("autoplay", "");
+          video.play().catch(() => {});
+        }
+      });
+    };
+
+    syncVideos();
+    if (typeof reduceMotion.addEventListener === "function") {
+      reduceMotion.addEventListener("change", syncVideos);
+    } else if (typeof reduceMotion.addListener === "function") {
+      reduceMotion.addListener(syncVideos);
+    }
+  </script>
+</body>
+</html>

@@ -72,7 +72,7 @@ registerAlgebraChapter({
       },
       visual: {
         type: "slot",
-        label: "概念短片",
+        label: "运算图示",
         title: "图示：列向量怎样相加",
         description: "两组列向量逐渐叠加，最后落到对应元素相加的公式。",
         text: `用两组颜色区分 ${texInline("A")} 与 ${texInline("B")} 的列向量，先看列向量叠加，再回到矩阵同位置相加。`,
@@ -105,6 +105,16 @@ registerAlgebraChapter({
       tags: ["复合变换", "顺序敏感", "核心动画"],
       intro:
         "矩阵乘法适合从线性变换复合进入。先看空间动作的先后顺序，再把这个过程压缩成坐标公式，顺序敏感就会变得自然。",
+      video: {
+        title: "矩阵乘法为什么对应复合",
+        duration: "约 2 分钟",
+        script: [
+          "先让一个向量经过 B，得到中间结果。",
+          "再把中间结果交给 A，得到最终结果。",
+          "把两个动作合成一次动作，记作 AB。",
+          "回到坐标，解释为什么右边的矩阵先作用。",
+        ],
+      },
       concepts: [
         { label: "复合", text: `${texInline("ABx")} 表示 ${texInline("B")} 先作用在 ${texInline("x")} 上，${texInline("A")} 再作用在 ${texInline("Bx")} 上。` },
         { label: "列的意义", text: `${texInline("AB")} 的第 ${texInline("j")} 列等于 ${texInline("A")} 作用到 ${texInline("B")} 的第 ${texInline("j")} 列。` },
@@ -119,6 +129,7 @@ registerAlgebraChapter({
         type: "multiply",
         title: "交互图：AB 是先 B 后 A",
         description: "切换视角，比较复合、列向量与行列公式。",
+        task: `先选“复合”观察 ${texInline("x\\to Bx\\to A(Bx)")}，再切到“看列”，说明 ${texInline("AB")} 的每一列为什么来自 ${texInline("A")} 作用到 ${texInline("B")} 的对应列。`,
         prompts: [
           `第一步：向量 ${texInline("x")} 经过 ${texInline("B")} 到达中间位置。`,
           `第二步：中间向量再经过 ${texInline("A")} 到达最终位置。`,
@@ -134,6 +145,20 @@ registerAlgebraChapter({
           "右上角不同，说明剪切量与拉伸顺序发生耦合。第二个变换面对的是第一个变换已经改变后的图形。",
         ],
       },
+      quiz: [
+        {
+          question: `判断：${texInline("ABx")} 中，${texInline("A")} 先作用在 ${texInline("x")} 上。`,
+          answer: "错。右边的矩阵先作用，所以先得到 Bx，再由 A 作用到 Bx。",
+        },
+        {
+          question: `${texInline("AB")} 的第 ${texInline("j")} 列可以怎样理解？`,
+          answer: `${texInline("AB")} 的第 ${texInline("j")} 列是 ${texInline("A")} 作用到 ${texInline("B")} 的第 ${texInline("j")} 列后的结果。`,
+        },
+        {
+          question: "为什么一般不能把 AB 和 BA 互换？",
+          answer: "两个变换的先后顺序会改变第二个变换面对的对象，因此最终效果通常不同。",
+        },
+      ],
       summary: ["矩阵乘法的核心是复合。", "右边的矩阵先作用，左边的矩阵后作用。"],
       exercises: ["用两个简单 2 阶矩阵再找一个 AB 与 BA 不相等的例子。"],
     },

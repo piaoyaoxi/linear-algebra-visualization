@@ -150,6 +150,24 @@ function getVisualPrompts(section) {
   return getVisual(section).prompts || section.script || [];
 }
 
+function getVideo(section) {
+  const video = section.video;
+  if (!video) return null;
+  return video.src || video.embed ? video : null;
+}
+
+function getInteractive(section) {
+  if (section.interactive) return section.interactive;
+  const visual = section.visual;
+  if (!visual) return null;
+  return ["transform", "multiply", "rank"].includes(visual.type) ? visual : null;
+}
+
+function getSelfTestItems(section) {
+  if (section.quiz?.length) return section.quiz;
+  return (section.exercises || []).map((question) => ({ question }));
+}
+
 function getProgress() {
   const total = getChapter4Sections().length;
   const done = getChapter4Sections().filter((section) => state.completed.has(section.id)).length;
@@ -336,7 +354,7 @@ function renderHome() {
           <h2>把抽象概念放进可操作的视觉讲义</h2>
         </div>
       </div>
-      <p class="lead">页面按照教材路径组织内容，在正文中嵌入动画、交互实验和代表例题。学生可以沿着章节阅读，也可以直接进入可视化演示。</p>
+      <p class="lead">页面按照教材路径组织内容，在正文中嵌入概念短讲、交互实验和代表例题。学生可以沿着章节阅读，也可以直接进入重点小节。</p>
       <div class="overview-grid">
         <div class="info-panel">
           <strong>概念优先</strong>
@@ -381,6 +399,15 @@ function renderChapter4() {
   const chapter = getChapterById("ch4");
   const chapter4Sections = getChapter4Sections();
   const activeLesson = chapter4Sections.find((section) => section.id === state.section);
+  const interactiveCount = chapter4Sections.filter(getInteractive).length;
+  const videoCount = chapter4Sections.filter(getVideo).length;
+  const exampleCount = chapter4Sections.filter((section) => section.example).length;
+  const metaTags = [
+    `${chapter4Sections.length} 个小节`,
+    interactiveCount ? `${interactiveCount} 个交互实验` : "",
+    videoCount ? `${videoCount} 个概念短讲` : "",
+    exampleCount ? `${exampleCount} 个代表例题` : "",
+  ].filter(Boolean);
   if (activeLesson) {
     renderLessonPage(activeLesson);
     return;
@@ -393,9 +420,7 @@ function renderChapter4() {
         <h1>从数字表格走向线性结构</h1>
         <p>${chapter.summary}</p>
         <div class="meta-row">
-          <span class="tag accent">${chapter4Sections.length} 个小节</span>
-          <span class="tag">2 个交互实验</span>
-          <span class="tag">7 个折叠例题</span>
+          ${metaTags.map((tag, index) => `<span class="tag${index === 0 ? " accent" : ""}">${tag}</span>`).join("")}
         </div>
       </div>
     </section>
@@ -439,7 +464,8 @@ function renderChapter4() {
 
 function renderLessonPage(section) {
   const concepts = getConcepts(section);
-  const prompts = getVisualPrompts(section);
+  const video = getVideo(section);
+  const interactive = getInteractive(section);
   els.main.innerHTML = `
     <section class="lesson-cover" id="${section.id}">
       <div class="lesson-cover-copy">
@@ -455,34 +481,91 @@ function renderLessonPage(section) {
       <p>${section.intro}</p>
     </section>
 
-    <section class="section-band lesson-page-section" id="${section.id}-visual">
-      <h2>可视化演示</h2>
-      ${renderVisualPanel(section)}
-    </section>
+    ${renderVideoSection(section, video)}
 
-    <section class="section-band lesson-page-section" id="${section.id}-meaning">
-      <h2>直观解释</h2>
-      <p>${concepts.map((concept) => `<span class="term-chip">${concept.label}</span> ${concept.text}`).join(" ")}</p>
-      ${renderConceptStrip(concepts)}
-    </section>
+    ${renderInteractiveSection(section, interactive)}
 
-    <section class="section-band lesson-page-section" id="${section.id}-experiment">
-      <h2>交互实验</h2>
-      <div class="script-panel">
-        <h3>观察提示</h3>
-        <ol>${prompts.map((item) => `<li>${item}</li>`).join("")}</ol>
+    ${renderFormalSection(section, concepts)}
+
+    ${renderExampleSection(section)}
+
+    ${renderSelfTestSection(section)}
+
+    <section class="section-band lesson-page-section" id="${section.id}-summary">
+      <h2>小结</h2>
+      ${renderSummary(section)}
+      <button class="button mark-button" type="button" data-complete="${section.id}">标记掌握</button>
+    </section>
+  `;
+}
+
+function renderVideoSection(section, video) {
+  if (!video) return "";
+  const media = video.embed
+    ? `<iframe src="${escapeAttribute(video.embed)}" title="${escapeAttribute(video.title || "概念短讲")}" allowfullscreen loading="lazy"></iframe>`
+    : `<video controls preload="metadata"${video.poster ? ` poster="${escapeAttribute(video.poster)}"` : ""}>
+        <source src="${escapeAttribute(video.src)}" type="${escapeAttribute(video.type || "video/mp4")}" />
+      </video>`;
+
+  const transcript = video.transcript
+    ? `<details class="transcript-box"><summary>文字稿</summary><p>${video.transcript}</p></details>`
+    : "";
+
+  return `
+    <section class="section-band lesson-page-section" id="${section.id}-video">
+      <h2>概念短讲</h2>
+      <div class="video-panel">
+        <div class="video-frame">${media}</div>
+        <div class="video-meta">
+          <strong>${video.title || section.title}</strong>
+          ${video.duration ? `<span>${video.duration}</span>` : ""}
+        </div>
+        ${transcript}
       </div>
     </section>
+  `;
+}
 
-    <section class="section-band lesson-page-section" id="${section.id}-textbook">
-      <h2>教材对应</h2>
+function renderInteractiveSection(section, interactive) {
+  if (!interactive) return "";
+  const prompts = interactive.prompts || getVisualPrompts(section);
+  const task = interactive.task || section.task || "";
+  const promptBlock =
+    task || prompts.length
+      ? `<div class="script-panel">
+          <h3>操作任务</h3>
+          ${task ? `<p>${task}</p>` : ""}
+          ${prompts.length ? `<ol>${prompts.map((item) => `<li>${item}</li>`).join("")}</ol>` : ""}
+        </div>`
+      : "";
+
+  return `
+    <section class="section-band lesson-page-section" id="${section.id}-interactive">
+      <h2>交互实验</h2>
+      ${renderVisualPanel(interactive)}
+      ${promptBlock}
+    </section>
+  `;
+}
+
+function renderFormalSection(section, concepts) {
+  return `
+    <section class="section-band lesson-page-section" id="${section.id}-formal">
+      <h2>定理概念</h2>
+      ${concepts.length ? `<p>${concepts.map((concept) => `<span class="term-chip">${concept.label}</span> ${concept.text}`).join(" ")}</p>` : ""}
+      ${concepts.length ? renderConceptStrip(concepts) : ""}
       <div class="script-panel textbook-panel">
         <h3>${section.textbookSection} · ${section.textbook?.reference || "北大版《高等代数》第四章"}</h3>
         ${section.textbook?.page ? `<p>页码：${section.textbook.page}</p>` : ""}
         <ul>${(section.textbook?.items || []).map((item) => `<li>${item}</li>`).join("")}</ul>
       </div>
     </section>
+  `;
+}
 
+function renderExampleSection(section) {
+  if (!section.example) return "";
+  return `
     <section class="section-band lesson-page-section" id="${section.id}-example">
       <h2>代表例题</h2>
       <details class="example-box">
@@ -494,11 +577,28 @@ function renderLessonPage(section) {
         </div>
       </details>
     </section>
+  `;
+}
 
-    <section class="section-band lesson-page-section" id="${section.id}-summary">
-      <h2>小结</h2>
-      ${renderSummary(section)}
-      <button class="button mark-button" type="button" data-complete="${section.id}">标记掌握</button>
+function renderSelfTestSection(section) {
+  const items = getSelfTestItems(section);
+  if (!items.length) return "";
+  return `
+    <section class="section-band lesson-page-section" id="${section.id}-quiz">
+      <h2>自测</h2>
+      <div class="self-test-list">
+        ${items
+          .map((item, index) =>
+            item.answer || item.feedback
+              ? `<details class="self-test-item">
+                  <summary>${index + 1}. ${item.question}</summary>
+                  ${item.answer ? `<p>${item.answer}</p>` : ""}
+                  ${item.feedback ? `<p class="muted-note">${item.feedback}</p>` : ""}
+                </details>`
+              : `<div class="self-test-item"><strong>${index + 1}.</strong><span>${item.question}</span></div>`,
+          )
+          .join("")}
+      </div>
     </section>
   `;
 }
@@ -532,10 +632,7 @@ function renderSummary(section) {
   const summary = section.summary?.length
     ? `<ul>${section.summary.map((item) => `<li>${item}</li>`).join("")}</ul>`
     : `<p class="lead">这一节的核心是把公式、图像和线性结构连成同一个对象。</p>`;
-  const exercises = section.exercises?.length
-    ? `<div class="exercise-list"><h3>思考题</h3><ol>${section.exercises.map((item) => `<li>${item}</li>`).join("")}</ol></div>`
-    : "";
-  return `${summary}${exercises}`;
+  return summary;
 }
 
 function renderLessonCard(section) {
@@ -551,8 +648,8 @@ function renderLessonCard(section) {
   `;
 }
 
-function renderVisualPanel(section) {
-  const visual = getVisual(section);
+function renderVisualPanel(item) {
+  const visual = item?.type ? item : getVisual(item);
 
   if (visual.type === "transform") {
     return `

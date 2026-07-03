@@ -72,6 +72,7 @@ const state = {
   route: "home",
   section: "",
   completed: new Set(JSON.parse(localStorage.getItem("la-visual-progress") || "[]")),
+  closedChapters: new Set(),
 };
 
 const els = {
@@ -271,7 +272,30 @@ function renderNav() {
     })
     .join("");
 
+  bindChapterToggles();
   updateProgressUI();
+}
+
+function bindChapterToggles() {
+  els.nav.querySelectorAll(".nav-chapter").forEach((link) => {
+    link.addEventListener("click", (event) => {
+      const group = link.closest(".chapter-group");
+      if (!group) return;
+      const chapterId = group.dataset.chapter;
+      const isOpen = group.classList.contains("is-open");
+
+      if (isOpen) {
+        event.preventDefault();
+        state.closedChapters.add(chapterId);
+        group.classList.remove("is-open");
+        return;
+      }
+
+      state.closedChapters.delete(chapterId);
+      group.classList.add("is-open");
+      if (link.getAttribute("href") === window.location.hash) event.preventDefault();
+    });
+  });
 }
 
 function getChapterSubtitle(id) {
@@ -498,6 +522,66 @@ function renderLessonPage(section) {
       ${renderSummary(section)}
       <button class="button mark-button" type="button" data-complete="${section.id}">标记掌握</button>
     </section>
+
+    ${renderLessonNavigation(section)}
+  `;
+}
+
+function getCourseNavigationNodes() {
+  return getChapters()
+    .filter((chapter) => chapter.id !== "home")
+    .flatMap((chapter) => {
+      if (chapter.id === "ch4") {
+        return getChapter4Sections().map((section) => ({
+          id: `${chapter.id}/${section.id}`,
+          href: `#${chapter.id}/${section.id}`,
+          title: `${section.number} ${section.navTitle}`,
+          context: chapter.title,
+          type: "section",
+        }));
+      }
+
+      return [
+        {
+          id: chapter.id,
+          href: `#${chapter.id}`,
+          title: chapter.title,
+          context: chapter.subtitle || "章节导览",
+          type: "chapter",
+        },
+      ];
+    });
+}
+
+function renderLessonNavigation(section) {
+  const nodes = getCourseNavigationNodes();
+  const currentIndex = nodes.findIndex((node) => node.id === `ch4/${section.id}`);
+  if (currentIndex < 0) return "";
+
+  const previous = nodes[currentIndex - 1] || null;
+  const next = nodes[currentIndex + 1] || null;
+  if (!previous && !next) return "";
+
+  const renderCard = (node, direction) => {
+    if (!node) return `<span class="lesson-neighbor-spacer" aria-hidden="true"></span>`;
+    const isPrevious = direction === "previous";
+    const label = node.type === "chapter" ? (isPrevious ? "上一章" : "下一章") : isPrevious ? "上一节" : "下一节";
+    const arrow = isPrevious ? "←" : "→";
+
+    return `
+      <a class="lesson-neighbor-card ${isPrevious ? "is-previous" : "is-next"}" href="${node.href}">
+        <span class="lesson-neighbor-label">${isPrevious ? `${arrow} ${label}` : `${label} ${arrow}`}</span>
+        <strong>${node.title}</strong>
+        <span>${node.context}</span>
+      </a>
+    `;
+  };
+
+  return `
+    <nav class="lesson-neighbor-nav" aria-label="上下节导航">
+      ${renderCard(previous, "previous")}
+      ${renderCard(next, "next")}
+    </nav>
   `;
 }
 
@@ -1104,7 +1188,7 @@ function updateNavActive() {
   document.querySelectorAll(".chapter-group").forEach((group) => {
     const isActive = group.dataset.chapter === state.route;
     group.classList.toggle("is-active", isActive);
-    group.classList.toggle("is-open", isActive || group.dataset.chapter === "ch4");
+    group.classList.toggle("is-open", isActive && !state.closedChapters.has(group.dataset.chapter));
     group.querySelector(".nav-chapter")?.classList.toggle("is-active", isActive);
   });
 

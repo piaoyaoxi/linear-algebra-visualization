@@ -31,7 +31,7 @@
 
     formal.innerHTML = formalShell(
       "先把“缩放”和“有效方向”分开",
-      "行列式和秩都在描述变换，但问的不是同一个问题：行列式问面积或体积缩放了多少；秩问最后还剩多少条彼此独立的方向能够到达。",
+      "行列式和秩都在描述变换，它们关注的侧面不同：行列式问面积或体积缩放了多少；秩问最后还剩多少条彼此独立的方向能够到达。",
       display("\\det(AB)=\\det(A)\\det(B)"),
       [
         metaRow("行列式", "连续变换时，缩放因子相乘。"),
@@ -91,7 +91,7 @@
     if (!formal || formal.dataset.corePresentationReady === "true") return;
     formal.innerHTML = formalShell(
       "可逆的本质是信息可以倒推",
-      "逆矩阵不是“另一个刚好能相乘得到 I 的公式”。它表示一次反向过程：先经过 A，再经过逆矩阵，所有输入都能准确回到原处。",
+      "逆矩阵表示一次反向过程：先经过 A，再经过逆矩阵，所有输入都能准确回到原处。公式中的 I 记录的正是这个回到原处的结果。",
       display("A^{-1}A=AA^{-1}=I"),
       [
         metaRow("谁可能有逆", "首先必须是方阵；输入和输出维数要相同。"),
@@ -130,7 +130,7 @@
     section.innerHTML = `
       <h2>对照实验</h2>
       <div class="core-lab">
-        <div class="core-lab-head"><h3>可逆和不可逆只差在哪里</h3><p>看两列是否仍独立，而不是只盯着“有没有公式”。</p></div>
+        <div class="core-lab-head"><h3>可逆和不可逆只差在哪里</h3><p>先看两列是否仍独立，再回到求逆公式。</p></div>
         <div class="inverse-choice-row"><button type="button" class="core-choice is-active" data-inverse-mode="invertible">可逆</button><button type="button" class="core-choice" data-inverse-mode="singular">不可逆</button></div>
         <div class="core-lab-panel" data-inverse-panel>${inverseView("invertible")}</div>
       </div>
@@ -163,7 +163,7 @@
       left: "E=\\begin{pmatrix}1&0\\\\-3&1\\end{pmatrix}",
       rightTitle: "A 还没有计算",
       right: "A=\\begin{pmatrix}1&2\\\\3&7\\end{pmatrix}",
-      caption: "构造 E 的方法不是背模板：对单位矩阵做同样的操作。",
+      caption: "构造 E 的方法很直接：对单位矩阵做同样的操作。",
     },
     {
       label: "第 3 步 / 3：左乘 E，就是对 A 做同一行变换",

@@ -44,13 +44,13 @@
           </article>
           <article class="foundation-card">
             <span class="foundation-card-kicker">背景二</span>
-            <h3>矩阵不是把数字随便摆成表格</h3>
-            <p>行和列的位置本身带有信息。调换位置通常就改变了矩阵，也改变了它能表达的关系。</p>
+            <h3>矩阵的行列位置带有信息</h3>
+            <p>数字放在不同位置，通常就改变了矩阵，也改变了它能表达的关系。</p>
           </article>
           <article class="foundation-card">
             <span class="foundation-card-kicker">背景三</span>
             <h3>相等先比结构，再比数字</h3>
-            <p>两个矩阵不能只看数字像不像；尺寸不同就不是同一种对象，也谈不上逐项相等。</p>
+            <p>两个矩阵先要尺寸相同，再比较对应位置的数字是否相等。</p>
           </article>
         </div>
 

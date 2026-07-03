@@ -1,6 +1,6 @@
 /* Apply the section patches after ch4.js has registered the base chapter. */
 (() => {
-  const chapter = window.getChapterById?.("ch4");
+  const chapter = algebraContent.chapters.find((item) => item.id === "ch4");
   const patches = window.getChapter4SectionPatches?.();
   if (!chapter || !patches) return;
 

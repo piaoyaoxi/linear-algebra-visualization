@@ -2,7 +2,7 @@ registerAlgebraChapter({
   id: "ch8",
   icon: "8",
   title: "第八章 λ-矩阵",
-  subtitle: "教材 §1—§7",
+  subtitle: "标准形入口",
   sections: [
     "§1 λ-矩阵",
     "§2 λ-矩阵在初等变换下的标准形",

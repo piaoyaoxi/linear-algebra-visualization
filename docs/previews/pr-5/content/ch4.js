@@ -70,7 +70,7 @@ registerAlgebraChapter({
       tags: ["加法与数乘", "矩阵乘法", "复合变换"],
       intro:
         "矩阵加法和数乘让同型矩阵像向量一样形成线性组合；矩阵乘法把两个线性变换的复合过程压缩成一个新的矩阵。",
-      video: {
+      videoPlan: {
         title: "矩阵乘法为什么对应复合",
         duration: "约 2 分钟",
         script: [

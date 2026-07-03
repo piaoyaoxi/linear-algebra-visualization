@@ -28,6 +28,16 @@
             page: "",
             items: ["矩阵的分块", "分块加法与数乘", "分块乘法", "块对角矩阵"],
           },
+          interactive: {
+            type: "block",
+            title: "图示：把大矩阵看成小系统",
+            description: "分块让输入、输出和子结构更清楚。",
+            prompts: [
+              "把一个大矩阵切成四块，并标出每块的输入输出含义。",
+              "演示块乘法时，只高亮真正发生配对的块。",
+              "用块对角矩阵展示两个子系统互不干扰的情况。",
+            ],
+          },
           example: {
             title: "例题：从块行和块列读出一个输出块",
             question: `设 ${texInline("A=\\begin{pmatrix}A_{11}&A_{12}\\\\A_{21}&A_{22}\\end{pmatrix}")}，${texInline("B=\\begin{pmatrix}B_{11}&B_{12}\\\\B_{21}&B_{22}\\end{pmatrix}")}。写出 ${texInline("AB")} 的右上块，并说明它为什么只用到 A 的第一块行和 B 的第二块列。`,
@@ -80,6 +90,12 @@
             reference: "北大版《高等代数》第四章",
             page: "",
             items: ["分块乘法中的初等变换", "块行操作的尺寸条件", "块消元", "应用举例"],
+          },
+          interactive: {
+            type: "slot",
+            label: "块消元逐步演示",
+            title: "实验：把普通行变换升级成块行变换",
+            description: "按步骤看块行操作如何消去耦合项，并把系统改写成更容易求解的结构。",
           },
           example: {
             title: "例题：用块行操作解一个耦合系统",

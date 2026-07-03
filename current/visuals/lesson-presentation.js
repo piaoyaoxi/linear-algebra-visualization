@@ -36,19 +36,21 @@
     formal.innerHTML = `
       <h2>先分清三类运算</h2>
       <div class="lesson-formal-layout">
-        <p class="lesson-formal-intro">矩阵运算最容易混的地方，是把“逐项组合”和“过程复合”当成同一件事。加法、数乘和转置先解决读写规则；矩阵乘法则另起一层，它要求尺寸匹配，并把两个连续步骤压缩成一个新矩阵。</p>
+        <p class="lesson-formal-intro">矩阵运算最容易混的地方，是把“逐项组合”和“过程复合”混在一起。加法、数乘和转置先解决读写规则；矩阵乘法进入过程复合，它要求尺寸匹配，并把两个连续步骤压缩成一个新矩阵。</p>
         <div class="operation-map">
           <div class="operation-map-main">${display("A_{m\\times n}B_{n\\times p}=C_{m\\times p}")}</div>
           <dl class="lesson-meta-list">
             <div><dt>加法与数乘</dt><dd>同型矩阵才能逐项相加；数乘把每个元素同时缩放。</dd></div>
             <div><dt>转置</dt><dd>${inline("(A^T)_{ij}=a_{ji}")}：行和列互换。</dd></div>
             <div><dt>矩阵乘法</dt><dd>A 的列数要等于 B 的行数；外侧尺寸决定 AB 的阶。</dd></div>
+            <div><dt>单位矩阵</dt><dd>${inline("IA=A")}，${inline("AI=A")}；它表示不改变输入的操作。</dd></div>
           </dl>
         </div>
         <div class="definition-stack">
           <article class="definition-row"><strong>加法与数乘</strong><p>${inline("(A+B)_{ij}=a_{ij}+b_{ij}")}。它们要求 A 与 B 同型，因为每一个位置都必须找到对应位置。</p></article>
           <article class="definition-row"><strong>转置</strong><p>${inline("A^T")} 把 A 的行和列互换，从而改变我们读取同一个数字表的位置方向。</p></article>
           <article class="definition-row"><strong>矩阵乘法</strong><p>若 ${inline("A=(a_{ik})_{m\\times n}")}，${inline("B=(b_{kj})_{n\\times p}")}，那么 ${inline("(AB)_{ij}=\\sum_{k=1}^n a_{ik}b_{kj}")}。先检查中间尺寸 n 是否匹配，再做“第 i 行配第 j 列”。</p></article>
+          <article class="definition-row"><strong>基本性质</strong><p>矩阵乘法满足结合律 ${inline("(AB)C=A(BC)")}；交换顺序通常会改变结果，所以计算前必须保留顺序。</p></article>
         </div>
         <div class="lesson-reading-note"><strong>这一节的核心</strong><p>请把 ${inline("AB")} 同时记成三句话：先 B 后 A；AB 的第 j 列是 A 作用到 B 的第 j 列；${inline("(AB)_{ij}")} 是 A 的第 i 行与 B 的第 j 列的配对。这三句话是在描述同一件事。</p></div>
       </div>
@@ -87,7 +89,7 @@
     section.innerHTML = `
       <h2>交互实验</h2>
       <div class="multiply-lab">
-        <div class="multiply-lab-head"><h3>同一个 AB，三种读法</h3><p>用同一组矩阵，在“复合”“看列”“行列公式”之间切换。别把它们当成三条不同结论；它们是同一个乘法的三种语言。</p></div>
+        <div class="multiply-lab-head"><h3>同一个 AB，三种读法</h3><p>用同一组矩阵，在“复合”“看列”“行列公式”之间切换。三种语言要互相对上，最后都指向同一个乘积矩阵。</p></div>
         <div class="segmented" data-golden-tabs><button type="button" class="is-active" data-golden-view="compose">复合</button><button type="button" data-golden-view="columns">看列</button><button type="button" data-golden-view="formula">行列公式</button></div>
         <div class="multiply-lab-view" data-golden-view-panel>${multiplyView("compose")}</div>
       </div>

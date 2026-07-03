@@ -104,16 +104,17 @@ renderNav = function renderLearningNav() {
 
       return `
         <div class="chapter-group" data-chapter="${chapter.id}" data-search-text="${normalizeSearchText(`${chapter.title} ${getChapterSectionText(chapter)}`)}">
-          <a class="nav-chapter" href="${chapterHref}">
+          <button class="nav-chapter" type="button" aria-expanded="false">
             <span class="chapter-icon">${chapter.icon}</span>
             <span class="chapter-label"><strong>${chapter.title}</strong><small>${getChapterSubtitle(chapter.id)}</small></span>
             <span class="chapter-arrow">›</span>
-          </a>
+          </button>
           <div class="section-list">${sectionLinks}</div>
         </div>`;
     })
     .join("");
 
+  bindChapterToggles();
   updateProgressUI();
 };
 
@@ -192,6 +193,7 @@ renderRoute = function renderLearningRoute() {
 
   state.route = chapter.id;
   state.section = validSection;
+  state.openChapters.add(state.route);
   document.body.dataset.route = state.route;
   document.body.dataset.view = state.section ? "lesson" : "overview";
 

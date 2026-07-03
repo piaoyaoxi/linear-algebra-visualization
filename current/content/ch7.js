@@ -2,7 +2,7 @@ registerAlgebraChapter({
   id: "ch7",
   icon: "7",
   title: "第七章 线性变换",
-  subtitle: "教材 §1—§9",
+  subtitle: "映射结构",
   sections: [
     "§1 线性变换的定义",
     "§2 线性变换的运算",

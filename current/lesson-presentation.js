@@ -20,8 +20,8 @@
         </div>
         <div class="lesson-card-grid">
           <article class="lesson-card"><span class="lesson-card-kicker">背景一</span><h3>方程组把系数排成矩阵</h3><p>多个方程会反复出现同一批未知数和系数。把系数按行排开，计算与比较才有统一的对象可操作。</p></article>
-          <article class="lesson-card"><span class="lesson-card-kicker">背景二</span><h3>矩阵不是把数字随便摆成表格</h3><p>行和列的位置本身带有信息。调换位置通常就改变了矩阵，也改变了它能表达的关系。</p></article>
-          <article class="lesson-card"><span class="lesson-card-kicker">背景三</span><h3>相等先比结构，再比数字</h3><p>两个矩阵不能只看数字像不像；尺寸不同就不是同一种对象，也谈不上逐项相等。</p></article>
+          <article class="lesson-card"><span class="lesson-card-kicker">背景二</span><h3>矩阵的行列位置带有信息</h3><p>数字放在不同位置，通常就改变了矩阵，也改变了它能表达的关系。</p></article>
+          <article class="lesson-card"><span class="lesson-card-kicker">背景三</span><h3>相等先比结构，再比数字</h3><p>两个矩阵先要尺寸相同，再比较对应位置的数字是否相等。</p></article>
         </div>
         <div class="lesson-reading-note"><strong>后面的观察法</strong><p>当我们把二维矩阵看成平面变换的记录时，第一列告诉右向的基本方向去了哪里，第二列告诉上向的基本方向去了哪里。下面的交互只用来体验这句话，不取代本节的基本定义。</p></div>
       </div>
@@ -47,7 +47,7 @@
         </div>
         <div class="definition-stack">
           <article class="definition-row"><strong>加法与数乘</strong><p>${inline("(A+B)_{ij}=a_{ij}+b_{ij}")}。它们要求 A 与 B 同型，因为每一个位置都必须找到对应位置。</p></article>
-          <article class="definition-row"><strong>转置</strong><p>${inline("A^T")} 把 A 的行和列互换。它不是新的计算技巧，而是在改变我们读取同一个数字表的位置方向。</p></article>
+          <article class="definition-row"><strong>转置</strong><p>${inline("A^T")} 把 A 的行和列互换，从而改变我们读取同一个数字表的位置方向。</p></article>
           <article class="definition-row"><strong>矩阵乘法</strong><p>若 ${inline("A=(a_{ik})_{m\\times n}")}，${inline("B=(b_{kj})_{n\\times p}")}，那么 ${inline("(AB)_{ij}=\\sum_{k=1}^n a_{ik}b_{kj}")}。先检查中间尺寸 n 是否匹配，再做“第 i 行配第 j 列”。</p></article>
         </div>
         <div class="lesson-reading-note"><strong>这一节的核心</strong><p>请把 ${inline("AB")} 同时记成三句话：先 B 后 A；AB 的第 j 列是 A 作用到 B 的第 j 列；${inline("(AB)_{ij}")} 是 A 的第 i 行与 B 的第 j 列的配对。这三句话是在描述同一件事。</p></div>
@@ -71,11 +71,11 @@
         <p>乘积矩阵的一个位置只看两部分：A 的一行和 B 的一列。它们逐项相乘再相加，给出一个输出坐标。</p>
         <div class="multiply-lab-math">${display("(AB)_{12}=\\begin{bmatrix}2&0\\end{bmatrix}\\begin{bmatrix}1\\\\1\\end{bmatrix}=2\\cdot1+0\\cdot1=2")}</div>
         <div class="multiply-lab-math">${display("AB=\\begin{bmatrix}2&0\\\\0&1\\end{bmatrix}\\begin{bmatrix}1&1\\\\0&1\\end{bmatrix}=\\begin{bmatrix}2&2\\\\0&1\\end{bmatrix}")}</div>
-        <ul class="multiply-lab-check"><li>“行乘列”不是口诀：它在计算输出的第 i 个坐标。</li><li>尺寸不匹配时，根本找不到可以配对的整行和整列。</li></ul>`;
+        <ul class="multiply-lab-check"><li>“行乘列”给出输出的第 i 个坐标。</li><li>尺寸不匹配时，根本找不到可以配对的整行和整列。</li></ul>`;
     }
     return `
       <h4>复合：右边先作用</h4>
-      <p>把 ${inline("A")} 和 ${inline("B")} 当成两个连续步骤。${inline("ABx")} 的含义不是 A 先碰到 x，而是先算 ${inline("Bx")}，再算 ${inline("A(Bx)")}。</p>
+      <p>把 ${inline("A")} 和 ${inline("B")} 当成两个连续步骤。${inline("ABx")} 的计算顺序是先算 ${inline("Bx")}，再算 ${inline("A(Bx)")}。</p>
       <div class="multiply-chain-row"><span class="multiply-chain-pill">${inline("x=(1,1)^T")}</span><span class="multiply-arrow">→ B →</span><span class="multiply-chain-pill">${inline("Bx=(2,1)^T")}</span><span class="multiply-arrow">→ A →</span><span class="multiply-chain-pill">${inline("A(Bx)=(4,1)^T")}</span></div>
       <div class="multiply-lab-math">${display("A(Bx)=(AB)x")}</div>
       <ul class="multiply-lab-check"><li>从右向左读是函数复合的习惯：离 x 最近的 B 先做。</li><li>把两步压成一步，才得到矩阵 AB。</li></ul>`;

@@ -2,7 +2,7 @@ registerAlgebraChapter({
   id: "ch2",
   icon: "2",
   title: "第二章 行列式",
-  subtitle: "教材 §1—§8",
+  subtitle: "面积与塌缩",
   sections: [
     "§1 引言",
     "§2 排列",

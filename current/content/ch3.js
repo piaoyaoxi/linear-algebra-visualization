@@ -2,7 +2,7 @@ registerAlgebraChapter({
   id: "ch3",
   icon: "3",
   title: "第三章 线性方程组",
-  subtitle: "教材 §1—§7",
+  subtitle: "解空间",
   sections: [
     "§1 消元法",
     "§2 n维向量空间",

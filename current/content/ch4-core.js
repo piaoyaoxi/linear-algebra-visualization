@@ -93,6 +93,12 @@
             title: "对照：不坍缩与坍缩",
             description: "用两组 2 阶矩阵比较可逆和不可逆；重点观察两个独立方向能否继续保持独立。",
           },
+          interactive: {
+            type: "slot",
+            label: "可逆性对照",
+            title: "对照：不坍缩与坍缩",
+            description: "用两组 2 阶矩阵比较可逆和不可逆；重点观察两个独立方向能否继续保持独立。",
+          },
           example: {
             title: "例题：求一个 2 阶逆矩阵并解释它为什么存在",
             question: `设 ${texInline("A=\\begin{pmatrix}2&1\\\\1&1\\end{pmatrix}")}。求 ${texInline("A^{-1}")}，并说明为什么这个逆矩阵存在。`,
@@ -147,6 +153,12 @@
             items: ["三类初等行变换", "由单位矩阵构造初等矩阵", "左乘对应行变换", "初等矩阵的逆"],
           },
           visual: {
+            type: "slot",
+            label: "逐步演示",
+            title: "实验：同一行变换如何同时作用于 I 和 A",
+            description: "按步骤看 R₂ ← R₂ − 3R₁：先作用于单位矩阵得到 E，再左乘到 A。",
+          },
+          interactive: {
             type: "slot",
             label: "逐步演示",
             title: "实验：同一行变换如何同时作用于 I 和 A",

@@ -157,10 +157,12 @@ function getVideo(section) {
 }
 
 function getInteractive(section) {
-  if (section.interactive) return section.interactive;
+  if (Object.prototype.hasOwnProperty.call(section, "interactive")) {
+    return section.interactive || null;
+  }
   const visual = section.visual;
   if (!visual) return null;
-  return ["transform", "multiply", "rank"].includes(visual.type) ? visual : null;
+  return ["transform", "multiply", "rank", "block"].includes(visual.type) ? visual : null;
 }
 
 function getSelfTestItems(section) {

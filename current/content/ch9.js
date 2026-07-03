@@ -2,7 +2,7 @@ registerAlgebraChapter({
   id: "ch9",
   icon: "9",
   title: "第九章 欧几里得空间",
-  subtitle: "教材 §1—§8",
+  subtitle: "度量与正交",
   sections: [
     "§1 定义与基本性质",
     "§2 标准正交基",

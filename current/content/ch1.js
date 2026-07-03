@@ -2,7 +2,7 @@ registerAlgebraChapter({
   id: "ch1",
   icon: "1",
   title: "第一章 多项式",
-  subtitle: "教材 §1—§11",
+  subtitle: "铺垫",
   sections: [
     "§1 数域",
     "§2 一元多项式",

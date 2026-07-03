@@ -72,7 +72,7 @@ const state = {
   route: "home",
   section: "",
   completed: new Set(JSON.parse(localStorage.getItem("la-visual-progress") || "[]")),
-  closedChapters: new Set(),
+  openChapters: new Set(),
 };
 
 const els = {
@@ -258,14 +258,14 @@ function renderNav() {
         <div class="chapter-group" data-chapter="${chapter.id}" data-search-text="${normalizeSearchText(
           `${chapter.title} ${getChapterSectionText(chapter)}`,
         )}">
-          <a class="nav-chapter" href="${chapterHref}">
+          <button class="nav-chapter" type="button" aria-expanded="false">
             <span class="chapter-icon">${chapter.icon}</span>
             <span class="chapter-label">
               <strong>${chapter.title}</strong>
               <small>${getChapterSubtitle(chapter.id)}</small>
             </span>
             <span class="chapter-arrow">›</span>
-          </a>
+          </button>
           <div class="section-list">${sectionLinks}</div>
         </div>
       `;
@@ -277,23 +277,23 @@ function renderNav() {
 }
 
 function bindChapterToggles() {
-  els.nav.querySelectorAll(".nav-chapter").forEach((link) => {
-    link.addEventListener("click", (event) => {
-      const group = link.closest(".chapter-group");
+  els.nav.querySelectorAll(".nav-chapter").forEach((button) => {
+    button.addEventListener("click", () => {
+      const group = button.closest(".chapter-group");
       if (!group) return;
       const chapterId = group.dataset.chapter;
       const isOpen = group.classList.contains("is-open");
 
       if (isOpen) {
-        event.preventDefault();
-        state.closedChapters.add(chapterId);
+        state.openChapters.delete(chapterId);
         group.classList.remove("is-open");
+        button.setAttribute("aria-expanded", "false");
         return;
       }
 
-      state.closedChapters.delete(chapterId);
+      state.openChapters.add(chapterId);
       group.classList.add("is-open");
-      if (link.getAttribute("href") === window.location.hash) event.preventDefault();
+      button.setAttribute("aria-expanded", "true");
     });
   });
 }
@@ -310,6 +310,7 @@ function renderRoute() {
 
   const chapter = getChapterById(state.route);
   state.route = chapter.id;
+  state.openChapters.add(state.route);
   document.body.dataset.route = state.route;
   document.body.dataset.view = state.section ? "lesson" : "overview";
 
@@ -1187,9 +1188,12 @@ function setupTocObserver() {
 function updateNavActive() {
   document.querySelectorAll(".chapter-group").forEach((group) => {
     const isActive = group.dataset.chapter === state.route;
+    const isOpen = state.openChapters.has(group.dataset.chapter);
     group.classList.toggle("is-active", isActive);
-    group.classList.toggle("is-open", isActive && !state.closedChapters.has(group.dataset.chapter));
-    group.querySelector(".nav-chapter")?.classList.toggle("is-active", isActive);
+    group.classList.toggle("is-open", isOpen);
+    const button = group.querySelector(".nav-chapter");
+    button?.classList.toggle("is-active", isActive);
+    button?.setAttribute("aria-expanded", isOpen ? "true" : "false");
   });
 
   document.querySelectorAll("[data-section-link]").forEach((link) => {

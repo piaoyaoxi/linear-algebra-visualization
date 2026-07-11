@@ -265,12 +265,12 @@ body.dark .icon-button:hover {
 .sidebar-brand {
   display: flex;
   flex-wrap: wrap;
-  align-items: center;
+  align-items: baseline;
   align-content: center;
-  gap: 4px 10px;
-  margin: 0 2px 12px;
-  padding: 4px 4px 14px;
-  border-bottom: 1px solid color-mix(in srgb, var(--line) 55%, transparent);
+  gap: 2px 8px;
+  margin: 0 2px 10px;
+  padding: 2px 2px 8px;
+  border-bottom: 1px solid color-mix(in srgb, var(--line) 50%, transparent);
   text-decoration: none;
   transition: opacity 160ms ease;
 }
@@ -288,11 +288,11 @@ body.dark .icon-button:hover {
 .sidebar-brand-mark {
   display: block;
   flex: 0 1 auto;
-  height: 26px;
+  height: 22px;
   width: auto;
-  max-width: min(128px, 48%);
+  max-width: min(132px, 50%);
   object-fit: contain;
-  object-position: left center;
+  object-position: left bottom;
   /* Black transparent ink → deep sidebar green #0b463f */
   filter: brightness(0) saturate(100%) invert(17%) sepia(24%) saturate(1406%) hue-rotate(131deg) brightness(0.92) contrast(1.05);
   user-select: none;
@@ -300,11 +300,11 @@ body.dark .icon-button:hover {
 }
 
 .sidebar-brand-linear {
-  max-width: min(120px, 46%);
+  max-width: min(124px, 48%);
 }
 
 .sidebar-brand-algebra {
-  max-width: min(110px, 48%);
+  max-width: min(112px, 48%);
 }
 
 body.dark .sidebar-brand {
@@ -1537,21 +1537,21 @@ body.dark .sidebar {
 }
 
 .sidebar-brand {
-  margin: 0 2px 14px;
-  padding: 6px 4px 16px;
-  gap: 4px 12px;
+  margin: 0 2px 10px;
+  padding: 2px 2px 8px;
+  gap: 2px 10px;
 }
 
 .sidebar-brand-mark {
-  height: 28px;
+  height: 24px;
 }
 
 .sidebar-brand-linear {
-  max-width: min(130px, 48%);
+  max-width: min(136px, 50%);
 }
 
 .sidebar-brand-algebra {
-  max-width: min(118px, 48%);
+  max-width: min(120px, 48%);
 }
 
 .chapter-nav {
@@ -2552,19 +2552,21 @@ body.sidebar-collapsed:not([data-route="home"]) .page-toc {
   }
 
   .sidebar-brand {
-    gap: 2px 8px;
+    gap: 1px 6px;
+    margin-bottom: 8px;
+    padding-bottom: 7px;
   }
 
   .sidebar-brand-mark {
-    height: 22px;
+    height: 20px;
   }
 
   .sidebar-brand-linear {
-    max-width: min(104px, 48%);
+    max-width: min(108px, 50%);
   }
 
   .sidebar-brand-algebra {
-    max-width: min(96px, 48%);
+    max-width: min(98px, 48%);
   }
 
   .app-layout,

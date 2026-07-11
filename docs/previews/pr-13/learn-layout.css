@@ -1,0 +1,35 @@
+/* Learning-page layout alignment.
+   The sidebar starts on the same vertical line as the topbar menu button.
+   The page-section rail lives outside .app-layout and is never a grid column. */
+
+@media (min-width: 921px) {
+  .app-layout {
+    grid-template-columns: var(--sidebar-width) minmax(0, 1fr);
+    gap: 34px;
+    width: min(1278px, calc(100% - 12px));
+    margin-right: auto;
+    margin-left: 12px;
+    padding-right: 18px;
+    padding-left: 18px;
+  }
+
+  /* 12px layout offset + 18px inner padding = 30px.
+     The topbar menu button also starts at 18px inset + 12px padding = 30px. */
+  .sidebar {
+    justify-self: stretch;
+  }
+
+  body.sidebar-collapsed .app-layout {
+    grid-template-columns: minmax(0, var(--content-max));
+    width: min(936px, 100%);
+    margin-right: auto;
+    margin-left: auto;
+    padding-right: 18px;
+    padding-left: 18px;
+  }
+
+  body[data-route="home"].sidebar-collapsed .app-layout {
+    grid-template-columns: minmax(0, 1180px);
+    width: min(1240px, 100%);
+  }
+}

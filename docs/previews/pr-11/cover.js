@@ -194,19 +194,20 @@ function startCoverAnimation() {
   if (reduceMotion) { drawCoverFrame(canvas, staticMatrix); return; }
 
   const segment = 5200;
-  const total = COVER_KEYFRAMES.length * segment;
-  // rAF's frame timestamp can briefly precede performance.now() at schedule time.
-  // Clamp elapsed so local time never goes negative (negative % in JS stays negative
-  // and would yield COVER_KEYFRAMES[-1] === undefined, killing the grid animation).
+  const keyCount = COVER_KEYFRAMES.length;
+  const total = keyCount * segment;
+  // rAF frame timestamps can precede a schedule-time clock. Always derive elapsed
+  // from the first rAF timestamp and use a non-negative modulo so index stays valid.
   let startTime = null;
   const frame = (now) => {
     if (startTime == null) startTime = now;
     const elapsed = Math.max(0, now - startTime);
     const local = elapsed % total;
-    const index = Math.floor(local / segment) % COVER_KEYFRAMES.length;
-    const t = easeInOutCubic((local % segment) / segment);
-    const from = COVER_KEYFRAMES[index];
-    const to = COVER_KEYFRAMES[(index + 1) % COVER_KEYFRAMES.length];
+    const index = ((Math.floor(local / segment) % keyCount) + keyCount) % keyCount;
+    const next = (index + 1) % keyCount;
+    const from = COVER_KEYFRAMES[index] || COVER_KEYFRAMES[0];
+    const to = COVER_KEYFRAMES[next] || from;
+    const t = easeInOutCubic((local - index * segment) / segment);
     drawCoverFrame(canvas, {
       a: lerp(from.a, to.a, t),
       b: lerp(from.b, to.b, t),
@@ -215,14 +216,32 @@ function startCoverAnimation() {
     });
     coverAnim.raf = window.requestAnimationFrame(frame);
   };
+  if (coverAnim.raf) window.cancelAnimationFrame(coverAnim.raf);
   coverAnim.raf = window.requestAnimationFrame(frame);
+}
+
+function stopCoverAnimation() {
+  if (coverAnim.raf) {
+    window.cancelAnimationFrame(coverAnim.raf);
+    coverAnim.raf = 0;
+  }
+  if (coverAnim.resize) {
+    window.removeEventListener("resize", coverAnim.resize);
+    coverAnim.resize = null;
+  }
 }
 
 function initCover() {
   renderChapterOrbit();
   updateStartLink();
+  stopCoverAnimation();
   startCoverAnimation();
 }
 
 if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", initCover, { once: true });
 else initCover();
+
+// bfcache / back-forward can freeze rAF; restart when the cover is shown again.
+window.addEventListener("pageshow", () => {
+  if (document.querySelector("#coverCanvas")) initCover();
+});

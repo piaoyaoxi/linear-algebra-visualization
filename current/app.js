@@ -82,27 +82,26 @@ const els = {
   sidebarToggle: document.querySelector("#sidebarToggle"),
   themeToggle: document.querySelector("#themeToggle"),
   drawerBackdrop: document.querySelector("#drawerBackdrop"),
-  search: document.querySelector("#searchInput"),
   progressBadge: document.querySelector("#progressBadge"),
 };
 
 const SUN_ICON = `
   <svg viewBox="0 0 24 24" aria-hidden="true">
-    <path d="M12 3v2" />
-    <path d="M12 19v2" />
-    <path d="m4.22 4.22 1.42 1.42" />
-    <path d="m18.36 18.36 1.42 1.42" />
-    <path d="M3 12h2" />
-    <path d="M19 12h2" />
-    <path d="m4.22 19.78 1.42-1.42" />
-    <path d="m18.36 5.64 1.42-1.42" />
     <circle cx="12" cy="12" r="4" />
+    <path d="M12 3.2v1.8" />
+    <path d="M12 19v1.8" />
+    <path d="M3.2 12h1.8" />
+    <path d="M19 12h1.8" />
+    <path d="m5.4 5.4 1.3 1.3" />
+    <path d="m17.3 17.3 1.3 1.3" />
+    <path d="m17.3 6.7 1.3-1.3" />
+    <path d="m5.4 18.6 1.3-1.3" />
   </svg>
 `;
 
 const MOON_ICON = `
   <svg viewBox="0 0 24 24" aria-hidden="true">
-    <path d="M20.4 13.4A7.7 7.7 0 0 1 10.6 3.6a8.4 8.4 0 1 0 9.8 9.8Z" />
+    <path d="M20.2 14.1A7.4 7.4 0 0 1 9.9 3.8 8.2 8.2 0 1 0 20.2 14.1Z" />
   </svg>
 `;
 
@@ -216,8 +215,6 @@ function bindChrome() {
     updateThemeIcon();
     drawTransformCanvas();
   });
-
-  els.search.addEventListener("input", () => filterNav(els.search.value));
 }
 
 function updateThemeIcon() {

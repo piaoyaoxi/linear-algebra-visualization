@@ -194,15 +194,25 @@ function startCoverAnimation() {
   if (reduceMotion) { drawCoverFrame(canvas, staticMatrix); return; }
 
   const segment = 5200;
-  const startTime = performance.now();
+  const total = COVER_KEYFRAMES.length * segment;
+  // rAF's frame timestamp can briefly precede performance.now() at schedule time.
+  // Clamp elapsed so local time never goes negative (negative % in JS stays negative
+  // and would yield COVER_KEYFRAMES[-1] === undefined, killing the grid animation).
+  let startTime = null;
   const frame = (now) => {
-    const total = COVER_KEYFRAMES.length * segment;
-    const local = (now - startTime) % total;
-    const index = Math.floor(local / segment);
+    if (startTime == null) startTime = now;
+    const elapsed = Math.max(0, now - startTime);
+    const local = elapsed % total;
+    const index = Math.floor(local / segment) % COVER_KEYFRAMES.length;
     const t = easeInOutCubic((local % segment) / segment);
     const from = COVER_KEYFRAMES[index];
     const to = COVER_KEYFRAMES[(index + 1) % COVER_KEYFRAMES.length];
-    drawCoverFrame(canvas, { a: lerp(from.a, to.a, t), b: lerp(from.b, to.b, t), c: lerp(from.c, to.c, t), d: lerp(from.d, to.d, t) });
+    drawCoverFrame(canvas, {
+      a: lerp(from.a, to.a, t),
+      b: lerp(from.b, to.b, t),
+      c: lerp(from.c, to.c, t),
+      d: lerp(from.d, to.d, t),
+    });
     coverAnim.raf = window.requestAnimationFrame(frame);
   };
   coverAnim.raf = window.requestAnimationFrame(frame);

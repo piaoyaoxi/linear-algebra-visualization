@@ -1,6 +1,6 @@
 /* Learning-page layout alignment.
    The desktop sidebar begins on the same vertical line as the topbar menu button.
-   The page-section rail is not part of this grid; it is a separate viewport layer. */
+   The page-section rail lives outside .app-layout and is never a grid column. */
 
 @media (min-width: 921px) {
   .app-layout {

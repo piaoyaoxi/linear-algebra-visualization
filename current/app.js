@@ -82,7 +82,6 @@ const els = {
   sidebarToggle: document.querySelector("#sidebarToggle"),
   themeToggle: document.querySelector("#themeToggle"),
   drawerBackdrop: document.querySelector("#drawerBackdrop"),
-  progressBadge: document.querySelector("#progressBadge"),
 };
 
 const SUN_ICON = `
@@ -1199,9 +1198,6 @@ function updateNavActive() {
 }
 
 function updateProgressUI() {
-  const { done, total } = getProgress();
-  els.progressBadge.textContent = `已掌握 ${done}/${total}`;
-
   document.querySelectorAll("[data-section-link]").forEach((link) => {
     const isDone = state.completed.has(link.dataset.sectionLink);
     link.classList.toggle("is-done", isDone);

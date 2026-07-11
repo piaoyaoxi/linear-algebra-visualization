@@ -42,22 +42,13 @@
   </head>
   <body>
     <header class="topbar">
-      <div class="topbar-cluster">
-        <button class="icon-button" id="sidebarToggle" type="button" aria-label="切换目录" title="切换目录">
-          <svg viewBox="0 0 24 24" aria-hidden="true">
-            <path d="M5 7h14" />
-            <path d="M5 12h14" />
-            <path d="M5 17h14" />
-          </svg>
-        </button>
-        <a class="icon-button home-button" href="./index.html" aria-label="返回封面" title="返回封面">
-          <svg viewBox="0 0 24 24" aria-hidden="true">
-            <path d="M4.5 11.2 12 4.8l7.5 6.4" />
-            <path d="M7.2 10.2V19h9.6v-8.8" />
-            <path d="M10.2 19v-5.2h3.6V19" />
-          </svg>
-        </a>
-      </div>
+      <button class="icon-button" id="sidebarToggle" type="button" aria-label="切换目录" title="切换目录">
+        <svg viewBox="0 0 24 24" aria-hidden="true">
+          <path d="M5 7h14" />
+          <path d="M5 12h14" />
+          <path d="M5 17h14" />
+        </svg>
+      </button>
       <div class="topbar-spacer"></div>
       <button class="icon-button" id="themeToggle" type="button" aria-label="切换明暗外观" title="切换明暗外观">
         <svg viewBox="0 0 24 24" aria-hidden="true">
@@ -77,10 +68,10 @@
     <div class="app-layout">
       <aside class="sidebar" id="sidebar">
         <div class="sidebar-scroll">
-          <div class="sidebar-head">
-            <span>学习路线</span>
-            <span class="progress-pill" id="progressBadge">目录</span>
-          </div>
+          <a class="sidebar-brand" href="./index.html" aria-label="Linear Algebra，返回封面" title="返回封面">
+            <img class="sidebar-brand-mark sidebar-brand-linear" src="./assets/brand/linear.png" alt="" width="118" height="36" draggable="false" />
+            <img class="sidebar-brand-mark sidebar-brand-algebra" src="./assets/brand/algebra.png" alt="" width="108" height="36" draggable="false" />
+          </a>
           <nav class="chapter-nav" id="chapterNav" aria-label="章节目录"></nav>
         </div>
       </aside>

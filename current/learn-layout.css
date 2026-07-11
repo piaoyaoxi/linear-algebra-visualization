@@ -1,35 +1,341 @@
-/* Learning-page layout alignment.
-   The sidebar starts on the same vertical line as the topbar menu button.
-   The page-section rail lives outside .app-layout and is never a grid column. */
+/* Learning-page layout.
+   Content stays centered and does not reflow when the chapter sidebar opens.
+   The sidebar is a fixed overlay; the page-section rail stays outside .app-layout. */
 
 @media (min-width: 921px) {
-  .app-layout {
-    grid-template-columns: var(--sidebar-width) minmax(0, 1fr);
-    gap: 34px;
-    width: min(1278px, calc(100% - 12px));
-    margin-right: auto;
-    margin-left: 12px;
-    padding-right: 18px;
-    padding-left: 18px;
-  }
-
-  /* 12px layout offset + 18px inner padding = 30px.
-     The topbar menu button also starts at 18px inset + 12px padding = 30px. */
-  .sidebar {
-    justify-self: stretch;
-  }
-
-  body.sidebar-collapsed .app-layout {
+  .app-layout,
+  body.sidebar-collapsed .app-layout,
+  body.sidebar-collapsed:not([data-route="home"]) .app-layout,
+  body[data-route="home"] .app-layout,
+  body[data-route="home"].sidebar-collapsed .app-layout {
+    display: grid;
     grid-template-columns: minmax(0, var(--content-max));
-    width: min(936px, 100%);
+    justify-content: center;
+    gap: 0;
+    width: min(calc(var(--content-max) + 36px), 100%);
     margin-right: auto;
     margin-left: auto;
     padding-right: 18px;
     padding-left: 18px;
   }
 
+  body[data-route="home"] .app-layout,
   body[data-route="home"].sidebar-collapsed .app-layout {
     grid-template-columns: minmax(0, 1180px);
     width: min(1240px, 100%);
+  }
+
+  /* Overlay sidebar: does not occupy a grid column. */
+  .sidebar {
+    position: fixed;
+    top: calc(14px + var(--topbar-height) + 10px);
+    left: 30px;
+    z-index: 46;
+    width: var(--sidebar-width);
+    height: calc(100vh - var(--topbar-height) - 48px);
+    justify-self: auto;
+    transition:
+      opacity 180ms ease,
+      transform 180ms ease,
+      visibility 180ms ease;
+  }
+
+  body.sidebar-collapsed .sidebar {
+    display: flex;
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+    transform: translateX(-16px);
+  }
+
+  body:not(.sidebar-collapsed) .sidebar {
+    display: flex;
+    opacity: 1;
+    visibility: visible;
+    pointer-events: auto;
+    transform: translateX(0);
+  }
+}
+
+/* Transparent top chrome: only free-floating chips + center search. */
+.topbar {
+  inset: 14px 18px auto 18px;
+  z-index: 50;
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 12px;
+  height: var(--topbar-height);
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+  pointer-events: none;
+}
+
+.topbar > * {
+  pointer-events: auto;
+}
+
+body.dark .topbar {
+  border: 0;
+  background: transparent;
+  box-shadow: none;
+}
+
+.topbar-center {
+  display: flex;
+  justify-content: center;
+  min-width: 0;
+}
+
+.topbar-right {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  flex: 0 0 auto;
+}
+
+.topbar-search {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  width: min(calc(var(--content-max) / 3), 100%);
+  height: 40px;
+  padding: 0 16px;
+  border: 1px solid rgba(255, 255, 255, 0.55);
+  border-radius: 999px;
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.5), rgba(255, 255, 255, 0.22)),
+    rgba(255, 255, 255, 0.36);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.78),
+    0 10px 24px rgba(42, 57, 49, 0.1);
+  backdrop-filter: blur(16px) saturate(160%);
+  -webkit-backdrop-filter: blur(16px) saturate(160%);
+  color: var(--muted);
+  font: inherit;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition:
+    border-color 160ms ease,
+    background-color 160ms ease,
+    box-shadow 160ms ease,
+    color 160ms ease;
+}
+
+.topbar-search:hover {
+  border-color: rgba(15, 143, 136, 0.28);
+  color: var(--text);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.9),
+    0 12px 28px rgba(42, 57, 49, 0.12);
+}
+
+.topbar-search:focus-visible {
+  outline: 3px solid rgba(15, 143, 136, 0.28);
+  outline-offset: 2px;
+}
+
+.topbar-search svg {
+  width: 18px;
+  height: 18px;
+  flex: 0 0 auto;
+}
+
+.topbar-search path,
+.topbar-search circle {
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.75;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.topbar-search-text {
+  overflow: hidden;
+  color: var(--faint);
+  font-weight: 600;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+body.dark .topbar-search {
+  border-color: rgba(255, 255, 255, 0.12);
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0.03)),
+    rgba(18, 28, 25, 0.48);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.08),
+    0 12px 28px rgba(0, 0, 0, 0.24);
+  color: rgba(236, 244, 241, 0.78);
+}
+
+body.dark .topbar-search-text {
+  color: rgba(226, 232, 228, 0.48);
+}
+
+.lang-button {
+  position: relative;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+}
+
+.lang-button-mark {
+  display: grid;
+  grid-template-columns: auto auto;
+  gap: 1px 2px;
+  align-items: end;
+  line-height: 1;
+}
+
+.lang-button-mark .lang-zh {
+  font-size: 13px;
+  font-weight: 800;
+}
+
+.lang-button-mark .lang-en {
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+/* Global search shell */
+.search-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 80;
+  display: grid;
+  place-items: center;
+  padding: 24px;
+}
+
+.search-modal[hidden] {
+  display: none !important;
+}
+
+.search-modal-backdrop {
+  position: absolute;
+  inset: 0;
+  background: rgba(12, 18, 16, 0.28);
+  backdrop-filter: blur(10px) saturate(140%);
+  -webkit-backdrop-filter: blur(10px) saturate(140%);
+}
+
+.search-modal-panel {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  grid-template-rows: auto minmax(180px, 42vh);
+  width: min(560px, calc(100vw - 32px));
+  overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, 0.62);
+  border-radius: 18px;
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.72), rgba(255, 255, 255, 0.48)),
+    rgba(255, 255, 255, 0.55);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.85),
+    0 28px 60px rgba(42, 57, 49, 0.18);
+  backdrop-filter: blur(22px) saturate(170%);
+  -webkit-backdrop-filter: blur(22px) saturate(170%);
+}
+
+.search-modal-bar {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-height: 54px;
+  padding: 0 16px;
+  border-bottom: 1px solid color-mix(in srgb, var(--line) 70%, transparent);
+  color: var(--muted);
+}
+
+.search-modal-bar svg {
+  width: 18px;
+  height: 18px;
+  flex: 0 0 auto;
+}
+
+.search-modal-bar path,
+.search-modal-bar circle {
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.75;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.search-modal-bar input {
+  width: 100%;
+  min-width: 0;
+  border: 0;
+  outline: 0;
+  background: transparent;
+  color: var(--text);
+  font: inherit;
+  font-size: 16px;
+  font-weight: 600;
+}
+
+.search-modal-bar input::placeholder {
+  color: var(--faint);
+  font-weight: 560;
+}
+
+.search-modal-body {
+  display: grid;
+  place-items: center;
+  padding: 28px 20px;
+  color: var(--faint);
+  font-size: 14px;
+  font-weight: 600;
+  text-align: center;
+}
+
+body.dark .search-modal-backdrop {
+  background: rgba(4, 8, 7, 0.52);
+}
+
+body.dark .search-modal-panel {
+  border-color: rgba(255, 255, 255, 0.12);
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0.04)),
+    rgba(18, 28, 25, 0.82);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.08),
+    0 28px 60px rgba(0, 0, 0, 0.4);
+}
+
+@media (max-width: 920px) {
+  .topbar {
+    inset: 8px 8px auto 8px;
+    grid-template-columns: auto minmax(0, 1fr) auto;
+    gap: 8px;
+  }
+
+  .topbar-search {
+    width: min(100%, 220px);
+    height: 38px;
+    padding: 0 12px;
+  }
+
+  .topbar-right {
+    gap: 6px;
+  }
+
+  .search-modal {
+    padding: 16px;
+    align-items: flex-start;
+    padding-top: 18vh;
+  }
+
+  .search-modal-panel {
+    width: min(100%, 420px);
   }
 }

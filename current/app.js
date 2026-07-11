@@ -214,6 +214,38 @@ function bindChrome() {
     updateThemeIcon();
     drawTransformCanvas();
   });
+
+  bindSearchModal();
+}
+
+function bindSearchModal() {
+  const openBtn = document.querySelector("#searchOpen");
+  const modal = document.querySelector("#searchModal");
+  const input = document.querySelector("#searchModalInput");
+  if (!openBtn || !modal) return;
+
+  function openSearch() {
+    modal.hidden = false;
+    document.body.classList.add("search-modal-open");
+    queueMicrotask(() => input?.focus());
+  }
+
+  function closeSearch() {
+    modal.hidden = true;
+    document.body.classList.remove("search-modal-open");
+    openBtn.focus();
+  }
+
+  openBtn.addEventListener("click", openSearch);
+  modal.querySelectorAll("[data-search-close]").forEach((el) => {
+    el.addEventListener("click", closeSearch);
+  });
+  document.addEventListener("keydown", (event) => {
+    if (event.key === "Escape" && !modal.hidden) {
+      event.preventDefault();
+      closeSearch();
+    }
+  });
 }
 
 function updateThemeIcon() {

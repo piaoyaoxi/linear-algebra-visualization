@@ -31,6 +31,12 @@ defineChapter4Section("matrix-language", {
   example: {
     title: "例题：从矩阵的两列读出平面变化",
     question: `设 ${texInline("A=\\begin{bmatrix}2&1\\\\0&1\\end{bmatrix}")}。不逐点代入，说明 A 对平面网格的大致作用，并判断它是否会把平面压扁。`,
+    choices: [
+      { correct: true, text: `第一列给出 ${texInline("Ae_1=(2,0)^T")}，第二列给出 ${texInline("Ae_2=(1,1)^T")}；网格横向拉伸并向右剪切，平面没有坍缩。` },
+      { text: `第一列给出 ${texInline("Ae_2=(2,0)^T")}，第二列给出 ${texInline("Ae_1=(1,1)^T")}；矩阵的列需要反向读取。` },
+      { text: "两列都含有非零元素，所以两个标准基向量都保持不变。" },
+      { text: "只看矩阵的两列无法判断网格怎样变化，必须逐点代入。" },
+    ],
     steps: [
       `先读第一列：${texInline("Ae_1=(2,0)^T")}，所以水平方向被送到 x 轴正方向并拉长为原来的 2 倍。`,
       `再读第二列：${texInline("Ae_2=(1,1)^T")}，所以竖直方向在保留向上的同时，额外向右偏移。`,

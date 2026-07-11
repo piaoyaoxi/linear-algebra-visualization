@@ -23,8 +23,14 @@ defineChapter4Section("block-matrices", {
   example: {
     title: "例题：从块行和块列读出一个输出块",
     question: `设 ${texInline("A=\\begin{pmatrix}A_{11}&A_{12}\\\\A_{21}&A_{22}\\end{pmatrix}")}，${texInline("B=\\begin{pmatrix}B_{11}&B_{12}\\\\B_{21}&B_{22}\\end{pmatrix}")}。写出 ${texInline("AB")} 的右上块，并说明它为什么只用到 A 的第一块行和 B 的第二块列。`,
+    choices: [
+      { text: `${texInline("(AB)_{12}=A_{11}B_{11}+A_{12}B_{21}")}。` },
+      { correct: true, text: `${texInline("(AB)_{12}=A_{11}B_{12}+A_{12}B_{22}")}。` },
+      { text: `${texInline("(AB)_{12}=A_{21}B_{12}+A_{22}B_{22}")}。` },
+      { text: `${texInline("(AB)_{12}=A_{12}B_{12}")}。` },
+    ],
     steps: [
-      `右上块的位置是 ${texInline("(1,2")}，所以先取 A 的第一块行 ${texInline("(A_{11},A_{12})")}。`,
+      `右上块的位置是 ${texInline("(1,2)")}，所以先取 A 的第一块行 ${texInline("(A_{11},A_{12})")}。`,
       `再取 B 的第二块列 ${texInline("(B_{12},B_{22})^T")}。`,
       `像普通矩阵的行乘列一样配对，得到 ${texInline("(AB)_{12}=A_{11}B_{12}+A_{12}B_{22}")}。`,
     ],
@@ -58,6 +64,12 @@ defineChapter4Section("block-elementary-applications", {
   example: {
     title: "例题：用块行操作解一个耦合系统",
     question: `设 ${texInline("x=f")}，${texInline("Cx+y=g")}。把它写成分块方程组后，用一次块行操作消去左下块，并写出 x、y。`,
+    choices: [
+      { correct: true, text: `执行 ${texInline("R_2\\leftarrow R_2-CR_1")} 后得到 ${texInline("x=f")}，${texInline("y=g-Cf")}。` },
+      { text: `执行 ${texInline("R_2\\leftarrow R_2+CR_1")} 后得到 ${texInline("x=f")}，${texInline("y=g+Cf")}。` },
+      { text: `消去左下块后得到 ${texInline("x=g")}，${texInline("y=f-Cg")}。` },
+      { text: `必须先求 ${texInline("C^{-1}")}；若 C 不可逆，就无法进行块消元。` },
+    ],
     steps: [
       `写成 ${texInline("\\begin{pmatrix}I&0\\\\C&I\\end{pmatrix}\\begin{pmatrix}x\\\\y\\end{pmatrix}=\\begin{pmatrix}f\\\\g\\end{pmatrix}")}。`,
       `对第二块行执行 ${texInline("R_2\\leftarrow R_2-CR_1")}，左下块 C 被消去，右侧变为 ${texInline("g-Cf")}。`,

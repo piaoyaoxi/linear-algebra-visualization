@@ -44,6 +44,12 @@ defineChapter4Section("matrix-operations", {
   example: {
     title: "例题：为什么 AB 和 BA 通常不同",
     question: `令 ${texInline("A=\\begin{bmatrix}2&0\\\\0&1\\end{bmatrix}")}，${texInline("B=\\begin{bmatrix}1&1\\\\0&1\\end{bmatrix}")}。计算 ${texInline("AB")} 与 ${texInline("BA")}；再用“先剪切还是先拉伸”的语言解释它们为什么不同。`,
+    choices: [
+      { correct: true, text: `${texInline("AB=\\begin{bmatrix}2&2\\\\0&1\\end{bmatrix}")}，${texInline("BA=\\begin{bmatrix}2&1\\\\0&1\\end{bmatrix}")}；先剪切再拉伸会把水平偏移一起放大。` },
+      { text: `${texInline("AB=\\begin{bmatrix}2&1\\\\0&1\\end{bmatrix}")}，${texInline("BA=\\begin{bmatrix}2&2\\\\0&1\\end{bmatrix}")}；矩阵按从左到右的顺序作用。` },
+      { text: `${texInline("AB=BA=\\begin{bmatrix}2&2\\\\0&1\\end{bmatrix}")}；拉伸与剪切的顺序不影响结果。` },
+      { text: `${texInline("AB")} 应按对应元素相乘，因此 ${texInline("AB=\\begin{bmatrix}2&0\\\\0&1\\end{bmatrix}")}。` },
+    ],
     steps: [
       `先检查尺寸：${texInline("A")} 和 ${texInline("B")} 都是 2 阶矩阵，所以 ${texInline("AB")} 与 ${texInline("BA")} 都有定义。`,
       `计算 ${texInline("AB")}：${texInline("\\begin{bmatrix}2&0\\\\0&1\\end{bmatrix}\\begin{bmatrix}1&1\\\\0&1\\end{bmatrix}=\\begin{bmatrix}2&2\\\\0&1\\end{bmatrix}")}。这表示先施加 B 的剪切，再施加 A 的横向拉伸。`,

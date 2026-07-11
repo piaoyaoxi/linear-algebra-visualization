@@ -18,6 +18,12 @@ defineChapter4Section("matrix-product-determinant-rank", {
   example: {
     title: "例题：从列关系判断乘积的秩上界",
     question: `设 ${texInline("B")} 的两列相同，且 ${texInline("A")} 是任意可相乘的矩阵。说明 ${texInline("AB")} 的两列有什么关系，并给出 ${texInline("\\operatorname{rank}(AB)")} 的上界。`,
+    choices: [
+      { correct: true, text: `${texInline("AB")} 的两列仍然相同，因此 ${texInline("\\operatorname{rank}(AB)\\leq1")}。` },
+      { text: `A 可以把相同的两列变成两个独立方向，因此 ${texInline("\\operatorname{rank}(AB)=2")}。` },
+      { text: `${texInline("AB")} 的两列互为相反数，因此 ${texInline("\\operatorname{rank}(AB)=1")}。` },
+      { text: `仅知道 B 的两列相同，无法判断 ${texInline("AB")} 的列关系。` },
+    ],
     steps: [
       `设 ${texInline("B")} 的两列都等于 ${texInline("b")}。那么 ${texInline("AB")} 的两列分别是 ${texInline("Ab")} 与 ${texInline("Ab")}。`,
       "所以 AB 的两列仍然相同，至多提供一个独立方向。",
@@ -54,6 +60,12 @@ defineChapter4Section("matrix-inverse", {
   example: {
     title: "例题：求一个 2 阶逆矩阵并解释它为什么存在",
     question: `设 ${texInline("A=\\begin{pmatrix}2&1\\\\1&1\\end{pmatrix}")}。求 ${texInline("A^{-1}")}，并说明为什么这个逆矩阵存在。`,
+    choices: [
+      { correct: true, text: `${texInline("A^{-1}=\\begin{pmatrix}1&-1\\\\-1&2\\end{pmatrix}")}；因为 ${texInline("\\det(A)=1\\ne0")}。` },
+      { text: `${texInline("A^{-1}=\\begin{pmatrix}2&-1\\\\-1&1\\end{pmatrix}")}；把非对角元素变号即可。` },
+      { text: `${texInline("A^{-1}=\\frac12\\begin{pmatrix}1&-1\\\\-1&2\\end{pmatrix}")}；分母取主对角线元素之和。` },
+      { text: `A 没有逆矩阵，因为它的两个非对角元素相同。` },
+    ],
     steps: [
       `先算 ${texInline("\\det(A)=2\\cdot1-1\\cdot1=1\\ne0")}，所以 A 可逆。`,
       `对 ${texInline("\\begin{pmatrix}a&b\\\\c&d\\end{pmatrix}")}，逆矩阵为 ${texInline("\\frac1{ad-bc}\\begin{pmatrix}d&-b\\\\-c&a\\end{pmatrix}")}。`,
@@ -90,6 +102,12 @@ defineChapter4Section("elementary-matrices", {
   example: {
     title: "例题：从一次行变换写出初等矩阵",
     question: `对任意 2 阶矩阵 ${texInline("A")} 执行 ${texInline("R_1\\leftarrow R_1+2R_2")}。写出对应初等矩阵 E，并说明为什么变换后的矩阵是 ${texInline("EA")}。`,
+    choices: [
+      { correct: true, text: `${texInline("E=\\begin{pmatrix}1&2\\\\0&1\\end{pmatrix}")}；它的第一行把 A 的第一行与第二行的 2 倍组合起来。` },
+      { text: `${texInline("E=\\begin{pmatrix}1&0\\\\2&1\\end{pmatrix}")}；左乘时应把 2 放在第一列。` },
+      { text: `${texInline("E=\\begin{pmatrix}1&-2\\\\0&1\\end{pmatrix}")}；加法行变换对应负号。` },
+      { text: `${texInline("E=\\begin{pmatrix}0&1\\\\1&0\\end{pmatrix}")}；所有初等行变换都由换行矩阵完成。` },
+    ],
     steps: [
       `先对单位矩阵 ${texInline("I")} 做同样操作，得到 ${texInline("E=\\begin{pmatrix}1&2\\\\0&1\\end{pmatrix}")}。`,
       `把 E 左乘到 A：E 的第一行 ${texInline("(1,2)")} 会把 A 的第一行加上 A 的第二行的 2 倍。`,

@@ -1,5 +1,6 @@
 /* Desktop-only magnetic page-section rail.
-   It is a viewport-fixed layer and never participates in the learning-page grid. */
+   It is a viewport-fixed layer and never participates in the learning-page grid.
+   Visibility is independent of the left chapter sidebar open/collapsed state. */
 
 .page-toc {
   position: fixed;
@@ -14,13 +15,23 @@
   max-height: none;
   padding: 0;
   border: 0;
+  border-left: 0;
   background: transparent;
   box-shadow: none;
   overflow: visible;
   transform: translateY(-50%);
 }
 
+/* Win over legacy styles.css rules that hid .page-toc with the sidebar. */
+.page-toc.has-toc-rail,
+body.sidebar-collapsed .page-toc.has-toc-rail,
+body[data-route="home"] .page-toc.has-toc-rail {
+  display: flex !important;
+  visibility: visible;
+}
+
 .page-toc:not(.has-toc-rail) {
+  display: none !important;
   visibility: hidden;
 }
 
@@ -79,8 +90,11 @@ body.dark .page-toc .toc-rail-item.is-active {
 
 /* Phones, narrow layouts and touch-first devices do not show this control. */
 @media (max-width: 920px), (hover: none), (pointer: coarse) {
-  .page-toc {
-    display: none;
+  .page-toc,
+  .page-toc.has-toc-rail,
+  body.sidebar-collapsed .page-toc.has-toc-rail,
+  body[data-route="home"] .page-toc.has-toc-rail {
+    display: none !important;
   }
 }
 

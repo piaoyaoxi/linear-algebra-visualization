@@ -1152,9 +1152,41 @@ function buildPageToc() {
 }
 
 let tocObserver;
+let tocScrollBound = false;
+
+function getPageSections() {
+  return [...document.querySelectorAll(".section-band[id], .lesson-section[id]")];
+}
+
+function setActiveTocLink(sectionId) {
+  if (!sectionId) return;
+  document.querySelectorAll("[data-toc-link]").forEach((link) => {
+    link.classList.toggle("is-active", link.dataset.tocLink === sectionId);
+  });
+}
+
+function isPageScrolledToBottom(slack = 12) {
+  const root = document.documentElement;
+  const bottom = window.scrollY + window.innerHeight;
+  return bottom >= root.scrollHeight - slack;
+}
+
+function syncTocActiveFromScroll() {
+  const sections = getPageSections();
+  if (!sections.length) return;
+
+  // Short final sections never reach the intersection band; pin the last
+  // heading once the viewport hits the document bottom.
+  if (isPageScrolledToBottom()) {
+    setActiveTocLink(sections[sections.length - 1].id);
+    return true;
+  }
+  return false;
+}
+
 function setupTocObserver() {
   if (tocObserver) tocObserver.disconnect();
-  const sections = [...document.querySelectorAll(".section-band[id], .lesson-section[id]")];
+  const sections = getPageSections();
   if (!sections.length) return;
 
   document.querySelectorAll("[data-scroll-to]").forEach((link) => {
@@ -1167,18 +1199,36 @@ function setupTocObserver() {
 
   tocObserver = new IntersectionObserver(
     (entries) => {
+      if (syncTocActiveFromScroll()) return;
       const visible = entries
         .filter((entry) => entry.isIntersecting)
         .sort((a, b) => b.intersectionRatio - a.intersectionRatio)[0];
       if (!visible) return;
-      document.querySelectorAll("[data-toc-link]").forEach((link) => {
-        link.classList.toggle("is-active", link.dataset.tocLink === visible.target.id);
-      });
+      setActiveTocLink(visible.target.id);
     },
     { rootMargin: "-90px 0px -60% 0px", threshold: [0.1, 0.2, 0.4] },
   );
 
   sections.forEach((section) => tocObserver.observe(section));
+  syncTocActiveFromScroll();
+
+  if (!tocScrollBound) {
+    tocScrollBound = true;
+    window.addEventListener(
+      "scroll",
+      () => {
+        syncTocActiveFromScroll();
+      },
+      { passive: true },
+    );
+    window.addEventListener(
+      "resize",
+      () => {
+        syncTocActiveFromScroll();
+      },
+      { passive: true },
+    );
+  }
 }
 
 function updateNavActive() {

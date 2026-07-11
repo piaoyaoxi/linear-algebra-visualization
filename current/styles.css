@@ -1291,10 +1291,6 @@ body[data-route="home"].sidebar-collapsed .app-layout {
     gap: 28px;
   }
 
-  .page-toc {
-    display: none;
-  }
-
   body.sidebar-collapsed .app-layout {
     grid-template-columns: minmax(0, 1fr);
     width: min(980px, 100%);
@@ -2492,18 +2488,10 @@ body[data-route="home"] .app-layout {
   width: min(1436px, 100%);
 }
 
-body[data-route="home"] .page-toc {
-  display: none;
-}
-
 body.sidebar-collapsed:not([data-route="home"]) .app-layout {
   grid-template-columns: minmax(0, var(--content-max));
   justify-content: center;
   width: min(calc(var(--content-max) + 56px), 100%);
-}
-
-body.sidebar-collapsed:not([data-route="home"]) .page-toc {
-  display: none;
 }
 
 @media (max-width: 1200px) {

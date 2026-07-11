@@ -28,6 +28,8 @@
     rafId = 0;
     if (!railItems.length || !finePointer.matches) return;
 
+    // Scroll state owns color only. Pointer proximity is the only source of
+    // temporary length changes, so active and inactive bars share a baseline.
     railItems.forEach((item) => {
       const rect = item.getBoundingClientRect();
       const centerY = rect.top + rect.height / 2;

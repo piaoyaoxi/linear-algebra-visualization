@@ -1,16 +1,5 @@
-/* Desktop-only magnetic page-section rail. The rail is fixed to the viewport
-   and intentionally independent from the left chapter sidebar. */
-
-/* The page TOC no longer owns a layout column; it floats at the viewport edge. */
-.app-layout {
-  grid-template-columns: var(--sidebar-width) minmax(0, var(--content-max));
-  width: min(1242px, 100%);
-}
-
-body.sidebar-collapsed .app-layout {
-  grid-template-columns: minmax(0, var(--content-max));
-  width: min(980px, 100%);
-}
+/* Desktop-only magnetic page-section rail.
+   It is a viewport-fixed layer and never participates in the learning-page grid. */
 
 .page-toc {
   position: fixed;
@@ -88,29 +77,10 @@ body.dark .page-toc .toc-rail-item.is-active {
   color: #277a6d;
 }
 
-@media (max-width: 1200px) {
-  .app-layout {
-    grid-template-columns: var(--sidebar-width) minmax(0, 1fr);
-    width: min(100%, 1242px);
-  }
-
-  body.sidebar-collapsed .app-layout {
-    grid-template-columns: minmax(0, 1fr);
-    width: min(980px, 100%);
-  }
-}
-
 /* Phones, narrow layouts and touch-first devices do not show this control. */
 @media (max-width: 920px), (hover: none), (pointer: coarse) {
   .page-toc {
     display: none;
-  }
-}
-
-@media (max-width: 920px) {
-  .app-layout,
-  body.sidebar-collapsed .app-layout {
-    display: block;
   }
 }
 

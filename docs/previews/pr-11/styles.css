@@ -138,13 +138,6 @@ svg {
   -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(150%);
 }
 
-.topbar-cluster {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  flex: 0 0 auto;
-}
-
 .icon-button {
   display: inline-grid;
   place-items: center;
@@ -269,27 +262,57 @@ body.dark .icon-button:hover {
   padding: 18px 14px 10px;
 }
 
-.sidebar-head {
+.sidebar-brand {
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-  padding: 0 8px 12px;
-  color: var(--muted);
-  font-size: 13px;
-  font-weight: 760;
+  align-content: center;
+  gap: 4px 10px;
+  margin: 0 2px 12px;
+  padding: 4px 4px 14px;
+  border-bottom: 1px solid color-mix(in srgb, var(--line) 55%, transparent);
+  text-decoration: none;
+  transition: opacity 160ms ease;
 }
 
-.progress-pill {
-  display: inline-flex;
-  align-items: center;
-  height: 24px;
-  padding: 0 8px;
-  border: 1px solid var(--line);
-  border-radius: 999px;
-  color: var(--accent-strong);
-  background: var(--accent-soft);
-  line-height: 1;
+.sidebar-brand:hover {
+  opacity: 0.8;
+}
+
+.sidebar-brand:focus-visible {
+  outline: 3px solid rgba(15, 143, 136, 0.28);
+  outline-offset: 3px;
+  border-radius: 8px;
+}
+
+.sidebar-brand-mark {
+  display: block;
+  flex: 0 1 auto;
+  height: 26px;
+  width: auto;
+  max-width: min(128px, 48%);
+  object-fit: contain;
+  object-position: left center;
+  /* Black transparent ink → deep sidebar green #0b463f */
+  filter: brightness(0) saturate(100%) invert(17%) sepia(24%) saturate(1406%) hue-rotate(131deg) brightness(0.92) contrast(1.05);
+  user-select: none;
+  pointer-events: none;
+}
+
+.sidebar-brand-linear {
+  max-width: min(120px, 46%);
+}
+
+.sidebar-brand-algebra {
+  max-width: min(110px, 48%);
+}
+
+body.dark .sidebar-brand {
+  border-bottom-color: color-mix(in srgb, var(--line) 70%, transparent);
+}
+
+body.dark .sidebar-brand-mark {
+  filter: brightness(0) saturate(100%) invert(89%) sepia(14%) saturate(520%) hue-rotate(118deg) brightness(1.03) contrast(0.95);
 }
 
 .chapter-nav {
@@ -1513,20 +1536,22 @@ body.dark .sidebar {
   padding: 18px 14px 12px;
 }
 
-.sidebar-head {
-  min-height: 44px;
+.sidebar-brand {
   margin: 0 2px 14px;
-  padding: 0 14px;
-  border-radius: 12px;
-  background: linear-gradient(100deg, #0b463f, #0d5c52);
-  color: #fff;
-  font-size: 15px;
+  padding: 6px 4px 16px;
+  gap: 4px 12px;
 }
 
-.progress-pill {
-  border-color: rgba(255, 255, 255, 0.14);
-  background: rgba(255, 255, 255, 0.13);
-  color: #d9fbf5;
+.sidebar-brand-mark {
+  height: 28px;
+}
+
+.sidebar-brand-linear {
+  max-width: min(130px, 48%);
+}
+
+.sidebar-brand-algebra {
+  max-width: min(118px, 48%);
 }
 
 .chapter-nav {
@@ -2521,13 +2546,25 @@ body.sidebar-collapsed:not([data-route="home"]) .page-toc {
     padding: 0 8px;
   }
 
-  .topbar-cluster {
-    gap: 6px;
-  }
-
   .icon-button {
     width: 38px;
     height: 38px;
+  }
+
+  .sidebar-brand {
+    gap: 2px 8px;
+  }
+
+  .sidebar-brand-mark {
+    height: 22px;
+  }
+
+  .sidebar-brand-linear {
+    max-width: min(104px, 48%);
+  }
+
+  .sidebar-brand-algebra {
+    max-width: min(96px, 48%);
   }
 
   .app-layout,

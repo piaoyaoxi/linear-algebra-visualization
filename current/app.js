@@ -980,64 +980,236 @@ function bindCompleteButtons() {
   });
 }
 
+const TRANSFORM_KEYS = ["a", "b", "c", "d"];
+const TRANSFORM_INPUT_STEP = "0.05";
+let transformAnimRaf = 0;
+let transformAnimResolve = null;
+let transformCanvasMetrics = { w: 0, h: 0, dpr: 0 };
+/** Live matrix while animating (avoids range `step` quantizing mid-lerp). */
+let transformLiveMatrix = null;
+
+function prefersReducedMotion() {
+  return Boolean(window.matchMedia?.("(prefers-reduced-motion: reduce)")?.matches);
+}
+
+function formatMatrixEntry(value) {
+  const n = Number(value);
+  if (!Number.isFinite(n)) return "0";
+  return n.toFixed(2).replace(/\.00$/, "");
+}
+
+function normalizeTransformMatrix(target) {
+  if (Array.isArray(target)) {
+    return {
+      a: Number(target[0]) || 0,
+      b: Number(target[1]) || 0,
+      c: Number(target[2]) || 0,
+      d: Number(target[3]) || 0,
+    };
+  }
+  return {
+    a: Number(target?.a) || 0,
+    b: Number(target?.b) || 0,
+    c: Number(target?.c) || 0,
+    d: Number(target?.d) || 0,
+  };
+}
+
+function readTransformMatrix() {
+  if (transformLiveMatrix) return { ...transformLiveMatrix };
+  return {
+    a: Number(document.querySelector("#matrix-a")?.value || 0),
+    b: Number(document.querySelector("#matrix-b")?.value || 0),
+    c: Number(document.querySelector("#matrix-c")?.value || 0),
+    d: Number(document.querySelector("#matrix-d")?.value || 0),
+  };
+}
+
+function clampTransformEntry(input, value) {
+  let next = value;
+  const min = Number(input?.min);
+  const max = Number(input?.max);
+  if (Number.isFinite(min)) next = Math.max(min, next);
+  if (Number.isFinite(max)) next = Math.min(max, next);
+  return next;
+}
+
+function writeTransformMatrix(matrix, { syncInputs = true } = {}) {
+  const next = normalizeTransformMatrix(matrix);
+  TRANSFORM_KEYS.forEach((key) => {
+    const input = document.querySelector(`#matrix-${key}`);
+    const value = clampTransformEntry(input, next[key]);
+    next[key] = value;
+    if (syncInputs && input) input.value = String(value);
+    const label = document.querySelector(`#matrix-${key}-value`);
+    if (label) label.textContent = formatMatrixEntry(value);
+  });
+  return next;
+}
+
+function matricesNearlyEqual(a, b, eps = 1e-5) {
+  return TRANSFORM_KEYS.every((key) => Math.abs(a[key] - b[key]) <= eps);
+}
+
+function lerpTransformMatrix(from, to, t) {
+  return {
+    a: from.a + (to.a - from.a) * t,
+    b: from.b + (to.b - from.b) * t,
+    c: from.c + (to.c - from.c) * t,
+    d: from.d + (to.d - from.d) * t,
+  };
+}
+
+function easeOutCubic(t) {
+  return 1 - (1 - t) ** 3;
+}
+
+function setTransformInputStep(step) {
+  document.querySelectorAll("[data-matrix]").forEach((input) => {
+    input.step = step;
+  });
+}
+
+function settleTransformAnimation(matrix) {
+  const resolve = transformAnimResolve;
+  transformAnimResolve = null;
+  if (resolve) resolve(matrix);
+}
+
+function cancelTransformAnimation() {
+  if (transformAnimRaf) {
+    cancelAnimationFrame(transformAnimRaf);
+    transformAnimRaf = 0;
+  }
+  const current = transformLiveMatrix ? { ...transformLiveMatrix } : readTransformMatrix();
+  transformLiveMatrix = null;
+  setTransformInputStep(TRANSFORM_INPUT_STEP);
+  settleTransformAnimation(current);
+}
+
+function setTransformMatrix(target) {
+  cancelTransformAnimation();
+  const matrix = writeTransformMatrix(target, { syncInputs: true });
+  drawTransformCanvas(matrix, { fullReadout: true });
+  return matrix;
+}
+
+function animateTransformMatrix(target, options = {}) {
+  const to = normalizeTransformMatrix(target);
+  const duration = Number.isFinite(options.duration) ? options.duration : 580;
+  const onUpdate = typeof options.onUpdate === "function" ? options.onUpdate : null;
+
+  cancelTransformAnimation();
+
+  if (!document.querySelector("#transformCanvas") || !document.querySelector("#matrix-a")) {
+    return Promise.resolve(to);
+  }
+
+  const from = readTransformMatrix();
+  if (prefersReducedMotion() || duration <= 0 || matricesNearlyEqual(from, to)) {
+    const matrix = writeTransformMatrix(to, { syncInputs: true });
+    drawTransformCanvas(matrix, { fullReadout: true });
+    onUpdate?.(matrix);
+    return Promise.resolve(matrix);
+  }
+
+  // Allow continuous thumb motion; range step would otherwise quantize the lerp.
+  setTransformInputStep("any");
+  const start = performance.now();
+
+  return new Promise((resolve) => {
+    transformAnimResolve = resolve;
+    const step = (now) => {
+      if (transformAnimResolve !== resolve) return;
+      const t = Math.min(1, (now - start) / duration);
+      const matrix = writeTransformMatrix(lerpTransformMatrix(from, to, easeOutCubic(t)), {
+        syncInputs: true,
+      });
+      transformLiveMatrix = matrix;
+      drawTransformCanvas(matrix, { fullReadout: false });
+      onUpdate?.(matrix);
+      if (t < 1) {
+        transformAnimRaf = requestAnimationFrame(step);
+        return;
+      }
+      transformAnimRaf = 0;
+      transformLiveMatrix = null;
+      setTransformInputStep(TRANSFORM_INPUT_STEP);
+      const finalMatrix = writeTransformMatrix(to, { syncInputs: true });
+      drawTransformCanvas(finalMatrix, { fullReadout: true });
+      onUpdate?.(finalMatrix);
+      settleTransformAnimation(finalMatrix);
+    };
+    transformAnimRaf = requestAnimationFrame(step);
+  });
+}
+
 function setupMatrixControls() {
   if (!document.querySelector("#transformCanvas")) return;
   document.querySelectorAll("[data-matrix]").forEach((input) => {
-    input.addEventListener("input", drawTransformCanvas);
+    input.addEventListener("input", (event) => {
+      if (event.isTrusted) cancelTransformAnimation();
+      if (event.isTrusted || !transformAnimRaf) drawTransformCanvas();
+    });
   });
   drawTransformCanvas();
 }
 
-function drawTransformCanvas() {
+function updateTransformReadout(matrix) {
+  const readout = document.querySelector("#matrixReadout");
+  if (!readout) return;
+  const det = matrix.a * matrix.d - matrix.b * matrix.c;
+  readout.innerHTML = `
+    ${texDisplay(`A=\\begin{bmatrix}${formatNumber(matrix.a)}&${formatNumber(matrix.b)}\\\\${formatNumber(matrix.c)}&${formatNumber(matrix.d)}\\end{bmatrix}`)}
+    ${texInline(`\\det(A)=${formatNumber(det)}`)}
+  `;
+}
+
+function drawTransformCanvas(matrixOverride, options = {}) {
   const canvas = document.querySelector("#transformCanvas");
   if (!canvas) return;
+  if (!matrixOverride && !document.querySelector("#matrix-a")) return;
 
-  const inputs = {
-    a: document.querySelector("#matrix-a"),
-    b: document.querySelector("#matrix-b"),
-    c: document.querySelector("#matrix-c"),
-    d: document.querySelector("#matrix-d"),
-  };
-  if (!inputs.a) return;
+  const matrix = matrixOverride ? normalizeTransformMatrix(matrixOverride) : readTransformMatrix();
+  const fullReadout = options.fullReadout !== false;
 
-  const matrix = {
-    a: Number(inputs.a.value),
-    b: Number(inputs.b.value),
-    c: Number(inputs.c.value),
-    d: Number(inputs.d.value),
-  };
-
-  Object.entries(matrix).forEach(([key, value]) => {
+  TRANSFORM_KEYS.forEach((key) => {
     const label = document.querySelector(`#matrix-${key}-value`);
-    if (label) label.textContent = value.toFixed(2).replace(/\.00$/, "");
+    if (label) label.textContent = formatMatrixEntry(matrix[key]);
   });
 
-  const readout = document.querySelector("#matrixReadout");
-  const det = matrix.a * matrix.d - matrix.b * matrix.c;
-  if (readout) {
-    readout.innerHTML = `
-      ${texDisplay(`A=\\begin{bmatrix}${formatNumber(matrix.a)}&${formatNumber(matrix.b)}\\\\${formatNumber(matrix.c)}&${formatNumber(matrix.d)}\\end{bmatrix}`)}
-      ${texInline(`\\det(A)=${formatNumber(det)}`)}
-    `;
-  }
+  if (fullReadout) updateTransformReadout(matrix);
 
   const rect = canvas.getBoundingClientRect();
   const dpr = window.devicePixelRatio || 1;
-  canvas.width = Math.max(1, Math.floor(rect.width * dpr));
-  canvas.height = Math.max(1, Math.floor(rect.height * dpr));
+  const cssW = Math.max(1, rect.width);
+  const cssH = Math.max(1, rect.height);
+
+  if (
+    transformCanvasMetrics.w !== cssW ||
+    transformCanvasMetrics.h !== cssH ||
+    transformCanvasMetrics.dpr !== dpr
+  ) {
+    canvas.width = Math.max(1, Math.floor(cssW * dpr));
+    canvas.height = Math.max(1, Math.floor(cssH * dpr));
+    transformCanvasMetrics = { w: cssW, h: cssH, dpr };
+  }
 
   const ctx = canvas.getContext("2d");
   ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-  ctx.clearRect(0, 0, rect.width, rect.height);
+  ctx.clearRect(0, 0, cssW, cssH);
 
   const styles = getComputedStyle(document.body);
-  const text = styles.getPropertyValue("--muted").trim();
-  const line = styles.getPropertyValue("--line-strong").trim();
-  const accent = styles.getPropertyValue("--accent").trim();
-  const coral = styles.getPropertyValue("--coral").trim();
-  const blue = styles.getPropertyValue("--blue").trim();
-  const origin = { x: rect.width / 2, y: rect.height / 2 };
-  const scale = Math.min(rect.width, rect.height) / 8.4;
+  const muted = styles.getPropertyValue("--muted").trim() || "#5f6965";
+  const lineStrong = styles.getPropertyValue("--line-strong").trim() || "rgba(21, 52, 45, 0.22)";
+  const accent = styles.getPropertyValue("--accent").trim() || "#078b7e";
+  const accentStrong = styles.getPropertyValue("--accent-strong").trim() || "#006f65";
+  const coral = styles.getPropertyValue("--coral").trim() || "#d69a48";
+  const text = styles.getPropertyValue("--text").trim() || "#071512";
+
+  const origin = { x: cssW / 2, y: cssH / 2 };
+  const scale = Math.min(cssW, cssH) / 8.8;
+  const extent = 5;
 
   function point(x, y, transformed = false) {
     const px = transformed ? matrix.a * x + matrix.b * y : x;
@@ -1050,6 +1222,7 @@ function drawTransformCanvas() {
     ctx.globalAlpha = alpha;
     ctx.strokeStyle = color;
     ctx.lineWidth = width;
+    ctx.lineCap = "round";
     ctx.beginPath();
     ctx.moveTo(from.x, from.y);
     ctx.lineTo(to.x, to.y);
@@ -1057,45 +1230,91 @@ function drawTransformCanvas() {
     ctx.restore();
   }
 
-  for (let i = -5; i <= 5; i += 1) {
-    drawLine(point(-5, i), point(5, i), line, 1, 0.34);
-    drawLine(point(i, -5), point(i, 5), line, 1, 0.34);
-    drawLine(point(-5, i, true), point(5, i, true), accent, 1.25, 0.5);
-    drawLine(point(i, -5, true), point(i, 5, true), coral, 1.25, 0.42);
+  // Layer 1 — quiet reference grid (axis-aligned, mathematical only).
+  for (let i = -extent; i <= extent; i += 1) {
+    const isAxis = i === 0;
+    drawLine(point(-extent, i), point(extent, i), lineStrong, isAxis ? 1.2 : 1, isAxis ? 0.3 : 0.11);
+    drawLine(point(i, -extent), point(i, extent), lineStrong, isAxis ? 1.2 : 1, isAxis ? 0.3 : 0.11);
   }
 
-  drawArrow(ctx, origin, point(1, 0, true), accent, "Ae1");
-  drawArrow(ctx, origin, point(0, 1, true), coral, "Ae2");
-  drawArrow(ctx, origin, point(1, 0), text, "e1", 0.42);
-  drawArrow(ctx, origin, point(0, 1), text, "e2", 0.42);
-
-  ctx.fillStyle = blue;
+  // Layer 2 — image of the unit square (visual subject of the linear map).
+  const p00 = point(0, 0, true);
+  const p10 = point(1, 0, true);
+  const p11 = point(1, 1, true);
+  const p01 = point(0, 1, true);
+  ctx.save();
   ctx.beginPath();
-  ctx.arc(origin.x, origin.y, 3.6, 0, Math.PI * 2);
+  ctx.moveTo(p00.x, p00.y);
+  ctx.lineTo(p10.x, p10.y);
+  ctx.lineTo(p11.x, p11.y);
+  ctx.lineTo(p01.x, p01.y);
+  ctx.closePath();
+  ctx.fillStyle = accent;
+  ctx.globalAlpha = 0.11;
   ctx.fill();
+  ctx.globalAlpha = 0.42;
+  ctx.strokeStyle = accent;
+  ctx.lineWidth = 1.5;
+  ctx.stroke();
+  ctx.restore();
+
+  // Layer 3 — transformed grid in one accent family (no dual-color clash).
+  for (let i = -extent; i <= extent; i += 1) {
+    if (i === 0) continue;
+    drawLine(point(-extent, i, true), point(extent, i, true), accent, 1.05, 0.26);
+    drawLine(point(i, -extent, true), point(i, extent, true), accent, 1.05, 0.26);
+  }
+  drawLine(point(-extent, 0, true), point(extent, 0, true), accentStrong, 1.3, 0.38);
+  drawLine(point(0, -extent, true), point(0, extent, true), accentStrong, 1.3, 0.38);
+
+  // Layer 4 — basis before / after.
+  drawArrow(ctx, origin, point(1, 0), muted, "e1", 0.32, 2.25);
+  drawArrow(ctx, origin, point(0, 1), muted, "e2", 0.32, 2.25);
+  drawArrow(ctx, origin, point(1, 0, true), accentStrong, "Ae1", 1, 3.1);
+  drawArrow(ctx, origin, point(0, 1, true), coral, "Ae2", 1, 3.1);
+
+  ctx.save();
+  ctx.fillStyle = text;
+  ctx.globalAlpha = 0.72;
+  ctx.beginPath();
+  ctx.arc(origin.x, origin.y, 3.2, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.restore();
 }
 
-function drawArrow(ctx, from, to, color, label, alpha = 1) {
-  const angle = Math.atan2(to.y - from.y, to.x - from.x);
+function drawArrow(ctx, from, to, color, label, alpha = 1, width = 3) {
+  const dx = to.x - from.x;
+  const dy = to.y - from.y;
+  const len = Math.hypot(dx, dy);
+  if (len < 3.5) return;
+
+  const angle = Math.atan2(dy, dx);
+  const head = Math.min(10, Math.max(6, len * 0.18));
+
   ctx.save();
   ctx.globalAlpha = alpha;
   ctx.strokeStyle = color;
   ctx.fillStyle = color;
-  ctx.lineWidth = 3;
+  ctx.lineWidth = width;
+  ctx.lineCap = "round";
+  ctx.lineJoin = "round";
   ctx.beginPath();
   ctx.moveTo(from.x, from.y);
   ctx.lineTo(to.x, to.y);
   ctx.stroke();
   ctx.beginPath();
   ctx.moveTo(to.x, to.y);
-  ctx.lineTo(to.x - 10 * Math.cos(angle - Math.PI / 6), to.y - 10 * Math.sin(angle - Math.PI / 6));
-  ctx.lineTo(to.x - 10 * Math.cos(angle + Math.PI / 6), to.y - 10 * Math.sin(angle + Math.PI / 6));
+  ctx.lineTo(to.x - head * Math.cos(angle - Math.PI / 6), to.y - head * Math.sin(angle - Math.PI / 6));
+  ctx.lineTo(to.x - head * Math.cos(angle + Math.PI / 6), to.y - head * Math.sin(angle + Math.PI / 6));
   ctx.closePath();
   ctx.fill();
-  ctx.font = "700 13px ui-monospace, SFMono-Regular, Menlo, Consolas, monospace";
+  ctx.font = "700 12px ui-monospace, SFMono-Regular, Menlo, Consolas, monospace";
   ctx.fillText(label, to.x + 8, to.y - 8);
   ctx.restore();
 }
+
+window.setTransformMatrix = setTransformMatrix;
+window.animateTransformMatrix = animateTransformMatrix;
 
 function setupMultiplyDemo() {
   const tabs = document.querySelector("[data-multiply-tabs]");

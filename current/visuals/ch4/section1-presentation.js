@@ -426,36 +426,54 @@
       `;
     };
 
-    const applyPreset = (values, id) => {
-      inputs.forEach((input, index) => {
-        if (!input) return;
-        input.value = values[index];
-        input.dispatchEvent(new Event("input", { bubbles: true }));
-      });
+    const markPreset = (id) => {
       toolbar.querySelectorAll("button").forEach((button) => {
-        const active = button.dataset.transformPreset === id;
+        const active = Boolean(id) && button.dataset.transformPreset === id;
         button.classList.toggle("is-active", active);
         button.setAttribute("aria-pressed", String(active));
       });
+    };
+
+    const writeInputsFallback = (values) => {
+      inputs.forEach((input, index) => {
+        if (!input) return;
+        input.value = values[index];
+      });
+    };
+
+    const applyPreset = (values, id, { animate = true } = {}) => {
+      markPreset(id);
+
+      if (animate && typeof window.animateTransformMatrix === "function") {
+        window.animateTransformMatrix(values).then(() => updateStatus());
+        return;
+      }
+
+      if (typeof window.setTransformMatrix === "function") {
+        window.setTransformMatrix(values);
+      } else {
+        writeInputsFallback(values);
+        inputs[0]?.dispatchEvent(new Event("input", { bubbles: true }));
+      }
       updateStatus();
     };
 
     toolbar.addEventListener("click", (event) => {
       const button = event.target.closest("[data-transform-preset]");
       if (!button) return;
-      const preset = presets.find(([id]) => id === button.dataset.transformPreset);
-      if (preset) applyPreset(preset[2], preset[0]);
+      const preset = presets.find(([presetId]) => presetId === button.dataset.transformPreset);
+      if (preset) applyPreset(preset[2], preset[0], { animate: true });
     });
 
-    inputs.forEach((input) => input?.addEventListener("input", () => {
-      toolbar.querySelectorAll("button").forEach((button) => {
-        button.classList.remove("is-active");
-        button.setAttribute("aria-pressed", "false");
-      });
-      updateStatus();
-    }));
+    inputs.forEach((input) =>
+      input?.addEventListener("input", (event) => {
+        if (!event.isTrusted) return;
+        markPreset(null);
+        updateStatus();
+      }),
+    );
 
-    applyPreset([1, 0, 0, 1], "identity");
+    applyPreset([1, 0, 0, 1], "identity", { animate: false });
     interactive.dataset.sectionOneEnhanced = "true";
   }
 

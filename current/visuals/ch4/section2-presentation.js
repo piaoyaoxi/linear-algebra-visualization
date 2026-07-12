@@ -138,7 +138,7 @@
               <div class="s2-dimension-card"><span>A</span><strong data-size-a>2 × 3</strong></div>
               <div class="s2-gate-symbol" data-gate-symbol aria-hidden="true">×</div>
               <div class="s2-dimension-card"><span>B</span><strong data-size-b>3 × 2</strong></div>
-              <div class="s2-gate-door" data-gate-door><span></span></div>
+              <div class="s2-gate-eq is-open" data-gate-eq aria-hidden="true">=</div>
               <div class="s2-dimension-card is-result" data-size-result-card><span>AB</span><strong data-size-result>2 × 2</strong></div>
             </div>
             <p class="s2-gate-message" data-size-message aria-live="polite"></p>
@@ -330,7 +330,11 @@
       gate.querySelector("[data-size-b]").textContent = `${r} × ${p}`;
       gate.querySelector("[data-size-result]").textContent = open ? `${m} × ${p}` : "—";
       gate.querySelector("[data-size-result-card]").classList.toggle("is-blocked", !open);
-      gate.querySelector("[data-gate-door]").classList.toggle("is-open", open);
+      const eq = gate.querySelector("[data-gate-eq]");
+      if (eq) {
+        eq.textContent = open ? "=" : "≠";
+        eq.classList.toggle("is-open", open);
+      }
       gate.classList.toggle("is-open", open);
       gate.querySelector("[data-size-message]").innerHTML = open
         ? `<strong>闸门打开：</strong>A 的列数 ${n} 与 B 的行数 ${r} 匹配，结果保留外侧尺寸 ${mathInline(`${m}\\times${p}`)}。`

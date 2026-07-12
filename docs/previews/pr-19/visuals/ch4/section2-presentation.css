@@ -63,10 +63,18 @@
   display: inline-flex;
   flex-wrap: wrap;
   gap: 7px;
+  width: fit-content;
+  max-width: 100%;
   padding: 5px;
   border: 1px solid var(--line);
   border-radius: 13px;
   background: var(--surface-soft);
+}
+
+/* Grid parents stretch children by default — keep the chip bar hug its buttons. */
+#matrix-operations-formal .s2-basic-lab > .s2-segmented,
+#matrix-operations-formal .s2-transpose-toolbar .s2-segmented {
+  justify-self: start;
 }
 
 #matrix-operations-formal .s2-segmented button,
@@ -425,7 +433,7 @@
 
 #matrix-operations-formal .s2-gate-stage {
   display: grid;
-  grid-template-columns: minmax(112px, 1fr) auto minmax(112px, 1fr) 54px minmax(112px, 1fr);
+  grid-template-columns: minmax(112px, 1fr) auto minmax(112px, 1fr) auto minmax(112px, 1fr);
   gap: 12px;
   align-items: center;
   padding: 22px;
@@ -468,49 +476,30 @@
 
 #matrix-operations-formal .s2-gate-symbol {
   color: var(--faint);
-  font-size: 21px;
+  font-size: 22px;
   font-weight: 800;
+  line-height: 1;
+  text-align: center;
 }
 
-#matrix-operations-formal .s2-gate-door {
-  position: relative;
-  width: 42px;
-  height: 86px;
-  justify-self: center;
-  border: 2px solid var(--line-strong);
-  border-radius: 13px;
-  background: var(--surface-solid);
-  transition: border-color 180ms ease, background 180ms ease;
+/* Plain equals / not-equals — no decorative double-bar “door”. */
+#matrix-operations-formal .s2-gate-eq {
+  display: grid;
+  place-items: center;
+  min-width: 1.5em;
+  color: var(--faint);
+  font-size: 28px;
+  font-weight: 800;
+  line-height: 1;
+  transition: color 160ms ease, opacity 160ms ease;
 }
 
-#matrix-operations-formal .s2-gate-door::before,
-#matrix-operations-formal .s2-gate-door::after {
-  position: absolute;
-  top: 9px;
-  bottom: 9px;
-  width: 11px;
-  border-radius: 7px;
-  background: var(--faint);
-  content: "";
-  transition: transform 240ms ease, background 180ms ease;
+#matrix-operations-formal .s2-gate-eq.is-open {
+  color: var(--accent-strong);
 }
 
-#matrix-operations-formal .s2-gate-door::before { left: 7px; }
-#matrix-operations-formal .s2-gate-door::after { right: 7px; }
-
-#matrix-operations-formal .s2-gate-door.is-open {
-  border-color: color-mix(in srgb, var(--accent) 36%, var(--line));
-  background: var(--accent-soft);
-}
-
-#matrix-operations-formal .s2-gate-door.is-open::before {
-  transform: translateX(-7px);
-  background: var(--accent);
-}
-
-#matrix-operations-formal .s2-gate-door.is-open::after {
-  transform: translateX(7px);
-  background: var(--accent);
+#matrix-operations-formal .s2-gate-eq:not(.is-open) {
+  opacity: 0.55;
 }
 
 #matrix-operations-formal .s2-gate-message {
@@ -1123,29 +1112,12 @@ body.dark #matrix-operations-interactive .s2-view-tabs button.is-active {
 
   #matrix-operations-formal .s2-gate-stage {
     grid-template-columns: 1fr;
+    justify-items: center;
   }
 
-  #matrix-operations-formal .s2-gate-symbol {
-    transform: rotate(90deg);
-    text-align: center;
+  #matrix-operations-formal .s2-dimension-card {
+    width: min(100%, 280px);
   }
-
-  #matrix-operations-formal .s2-gate-door {
-    width: 86px;
-    height: 42px;
-  }
-
-  #matrix-operations-formal .s2-gate-door::before,
-  #matrix-operations-formal .s2-gate-door::after {
-    top: 7px;
-    bottom: 7px;
-    width: 31px;
-  }
-
-  #matrix-operations-formal .s2-gate-door::before { left: 8px; }
-  #matrix-operations-formal .s2-gate-door::after { right: 8px; }
-  #matrix-operations-formal .s2-gate-door.is-open::before { transform: translateX(-5px); }
-  #matrix-operations-formal .s2-gate-door.is-open::after { transform: translateX(5px); }
 
   #matrix-operations-formal .s2-side-preview {
     margin-right: 18px;
@@ -1182,9 +1154,7 @@ body.dark #matrix-operations-interactive .s2-view-tabs button.is-active {
 @media (prefers-reduced-motion: reduce) {
   #matrix-operations-formal .s2-transpose-matrix,
   #matrix-operations-formal .s2-transpose-matrix span,
-  #matrix-operations-formal .s2-gate-door,
-  #matrix-operations-formal .s2-gate-door::before,
-  #matrix-operations-formal .s2-gate-door::after,
+  #matrix-operations-formal .s2-gate-eq,
   #matrix-operations-interactive .s2-view-panel {
     animation: none !important;
     transition: none !important;

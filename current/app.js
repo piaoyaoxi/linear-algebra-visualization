@@ -332,6 +332,7 @@ function getChapterSubtitle(id) {
 
 function renderRoute() {
   cancelTransformAnimation();
+  window.teardownSection2ContinuousLab?.();
 
   const raw = decodeURIComponent(window.location.hash.replace(/^#/, "")) || "home";
   const [route, section] = raw.split("/");
@@ -540,9 +541,9 @@ function renderLessonPage(section) {
 
     ${renderVideoSection(section, video)}
 
-    ${renderInteractiveSection(section, interactive)}
-
     ${renderFormalSection(section, concepts)}
+
+    ${renderInteractiveSection(section, interactive)}
 
     ${renderExampleSection(section)}
 

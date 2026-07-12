@@ -190,7 +190,7 @@ function init() {
 }
 
 function bindChrome() {
-  window.addEventListener("resize", drawTransformCanvas, { passive: true });
+  window.addEventListener("resize", () => drawTransformCanvas(), { passive: true });
 
   els.sidebarToggle.addEventListener("click", () => {
     if (window.matchMedia("(max-width: 920px)").matches) {
@@ -331,6 +331,8 @@ function getChapterSubtitle(id) {
 }
 
 function renderRoute() {
+  cancelTransformAnimation();
+
   const raw = decodeURIComponent(window.location.hash.replace(/^#/, "")) || "home";
   const [route, section] = raw.split("/");
   state.route = route || "home";
@@ -984,9 +986,9 @@ const TRANSFORM_KEYS = ["a", "b", "c", "d"];
 const TRANSFORM_INPUT_STEP = "0.05";
 let transformAnimRaf = 0;
 let transformAnimResolve = null;
-let transformCanvasMetrics = { w: 0, h: 0, dpr: 0 };
 /** Live matrix while animating (avoids range `step` quantizing mid-lerp). */
 let transformLiveMatrix = null;
+let transformResizeObserver = null;
 
 function prefersReducedMotion() {
   return Boolean(window.matchMedia?.("(prefers-reduced-motion: reduce)")?.matches);
@@ -998,30 +1000,70 @@ function formatMatrixEntry(value) {
   return n.toFixed(2).replace(/\.00$/, "");
 }
 
+function finiteNumber(value, fallback = 0) {
+  const n = Number(value);
+  return Number.isFinite(n) ? n : fallback;
+}
+
+/** Ignore Event / non-matrix first args (e.g. residual resize listeners). */
+function coerceTransformMatrixArg(value) {
+  if (value == null) return null;
+  if (typeof Event !== "undefined" && value instanceof Event) return null;
+  if (Array.isArray(value)) return normalizeTransformMatrix(value);
+  if (typeof value === "object" && ("a" in value || "b" in value || "c" in value || "d" in value)) {
+    return normalizeTransformMatrix(value);
+  }
+  return null;
+}
+
 function normalizeTransformMatrix(target) {
   if (Array.isArray(target)) {
     return {
-      a: Number(target[0]) || 0,
-      b: Number(target[1]) || 0,
-      c: Number(target[2]) || 0,
-      d: Number(target[3]) || 0,
+      a: finiteNumber(target[0]),
+      b: finiteNumber(target[1]),
+      c: finiteNumber(target[2]),
+      d: finiteNumber(target[3]),
     };
   }
   return {
-    a: Number(target?.a) || 0,
-    b: Number(target?.b) || 0,
-    c: Number(target?.c) || 0,
-    d: Number(target?.d) || 0,
+    a: finiteNumber(target?.a),
+    b: finiteNumber(target?.b),
+    c: finiteNumber(target?.c),
+    d: finiteNumber(target?.d),
+  };
+}
+
+function getTransformLab() {
+  const canvas = document.querySelector("#transformCanvas");
+  if (!canvas) return null;
+  const root = canvas.closest(".visual-panel") || canvas.closest("#matrix-language-interactive") || document;
+  const inputs = Object.fromEntries(
+    TRANSFORM_KEYS.map((key) => [key, root.querySelector(`#matrix-${key}`) || document.querySelector(`#matrix-${key}`)]),
+  );
+  if (!inputs.a) return null;
+  return {
+    canvas,
+    root,
+    inputs,
+    labels: Object.fromEntries(
+      TRANSFORM_KEYS.map((key) => [
+        key,
+        root.querySelector(`#matrix-${key}-value`) || document.querySelector(`#matrix-${key}-value`),
+      ]),
+    ),
+    readout: root.querySelector("#matrixReadout") || document.querySelector("#matrixReadout"),
   };
 }
 
 function readTransformMatrix() {
   if (transformLiveMatrix) return { ...transformLiveMatrix };
+  const lab = getTransformLab();
+  if (!lab) return { a: 1, b: 0, c: 0, d: 1 };
   return {
-    a: Number(document.querySelector("#matrix-a")?.value || 0),
-    b: Number(document.querySelector("#matrix-b")?.value || 0),
-    c: Number(document.querySelector("#matrix-c")?.value || 0),
-    d: Number(document.querySelector("#matrix-d")?.value || 0),
+    a: finiteNumber(lab.inputs.a?.value),
+    b: finiteNumber(lab.inputs.b?.value),
+    c: finiteNumber(lab.inputs.c?.value),
+    d: finiteNumber(lab.inputs.d?.value),
   };
 }
 
@@ -1034,14 +1076,39 @@ function clampTransformEntry(input, value) {
   return next;
 }
 
+function rememberNativeSteps(lab) {
+  TRANSFORM_KEYS.forEach((key) => {
+    const input = lab.inputs[key];
+    if (input && input.dataset.nativeStep == null) {
+      input.dataset.nativeStep = input.getAttribute("step") || TRANSFORM_INPUT_STEP;
+    }
+  });
+}
+
+function setTransformInputStep(step) {
+  const lab = getTransformLab();
+  if (!lab) return;
+  rememberNativeSteps(lab);
+  TRANSFORM_KEYS.forEach((key) => {
+    const input = lab.inputs[key];
+    if (!input) return;
+    if (step === "any") {
+      input.step = "any";
+      return;
+    }
+    input.step = input.dataset.nativeStep || TRANSFORM_INPUT_STEP;
+  });
+}
+
 function writeTransformMatrix(matrix, { syncInputs = true } = {}) {
+  const lab = getTransformLab();
   const next = normalizeTransformMatrix(matrix);
   TRANSFORM_KEYS.forEach((key) => {
-    const input = document.querySelector(`#matrix-${key}`);
+    const input = lab?.inputs[key];
     const value = clampTransformEntry(input, next[key]);
     next[key] = value;
     if (syncInputs && input) input.value = String(value);
-    const label = document.querySelector(`#matrix-${key}-value`);
+    const label = lab?.labels[key];
     if (label) label.textContent = formatMatrixEntry(value);
   });
   return next;
@@ -1064,12 +1131,6 @@ function easeOutCubic(t) {
   return 1 - (1 - t) ** 3;
 }
 
-function setTransformInputStep(step) {
-  document.querySelectorAll("[data-matrix]").forEach((input) => {
-    input.step = step;
-  });
-}
-
 function settleTransformAnimation(matrix) {
   const resolve = transformAnimResolve;
   transformAnimResolve = null;
@@ -1083,14 +1144,14 @@ function cancelTransformAnimation() {
   }
   const current = transformLiveMatrix ? { ...transformLiveMatrix } : readTransformMatrix();
   transformLiveMatrix = null;
-  setTransformInputStep(TRANSFORM_INPUT_STEP);
+  setTransformInputStep("native");
   settleTransformAnimation(current);
 }
 
 function setTransformMatrix(target) {
   cancelTransformAnimation();
   const matrix = writeTransformMatrix(target, { syncInputs: true });
-  drawTransformCanvas(matrix, { fullReadout: true });
+  drawTransformCanvas(matrix, { richReadout: true });
   return matrix;
 }
 
@@ -1101,19 +1162,18 @@ function animateTransformMatrix(target, options = {}) {
 
   cancelTransformAnimation();
 
-  if (!document.querySelector("#transformCanvas") || !document.querySelector("#matrix-a")) {
+  if (!getTransformLab()) {
     return Promise.resolve(to);
   }
 
   const from = readTransformMatrix();
   if (prefersReducedMotion() || duration <= 0 || matricesNearlyEqual(from, to)) {
     const matrix = writeTransformMatrix(to, { syncInputs: true });
-    drawTransformCanvas(matrix, { fullReadout: true });
-    onUpdate?.(matrix);
+    drawTransformCanvas(matrix, { richReadout: true });
+    onUpdate?.(matrix, { final: true });
     return Promise.resolve(matrix);
   }
 
-  // Allow continuous thumb motion; range step would otherwise quantize the lerp.
   setTransformInputStep("any");
   const start = performance.now();
 
@@ -1126,18 +1186,18 @@ function animateTransformMatrix(target, options = {}) {
         syncInputs: true,
       });
       transformLiveMatrix = matrix;
-      drawTransformCanvas(matrix, { fullReadout: false });
-      onUpdate?.(matrix);
+      drawTransformCanvas(matrix, { richReadout: false });
+      onUpdate?.(matrix, { final: t >= 1 });
       if (t < 1) {
         transformAnimRaf = requestAnimationFrame(step);
         return;
       }
       transformAnimRaf = 0;
       transformLiveMatrix = null;
-      setTransformInputStep(TRANSFORM_INPUT_STEP);
+      setTransformInputStep("native");
       const finalMatrix = writeTransformMatrix(to, { syncInputs: true });
-      drawTransformCanvas(finalMatrix, { fullReadout: true });
-      onUpdate?.(finalMatrix);
+      drawTransformCanvas(finalMatrix, { richReadout: true });
+      onUpdate?.(finalMatrix, { final: true });
       settleTransformAnimation(finalMatrix);
     };
     transformAnimRaf = requestAnimationFrame(step);
@@ -1145,55 +1205,92 @@ function animateTransformMatrix(target, options = {}) {
 }
 
 function setupMatrixControls() {
-  if (!document.querySelector("#transformCanvas")) return;
-  document.querySelectorAll("[data-matrix]").forEach((input) => {
+  const lab = getTransformLab();
+  if (!lab) return;
+
+  rememberNativeSteps(lab);
+
+  TRANSFORM_KEYS.forEach((key) => {
+    const input = lab.inputs[key];
+    if (!input || input.dataset.transformBound === "true") return;
+    input.dataset.transformBound = "true";
     input.addEventListener("input", (event) => {
       if (event.isTrusted) cancelTransformAnimation();
       if (event.isTrusted || !transformAnimRaf) drawTransformCanvas();
     });
   });
+
+  if (transformResizeObserver) {
+    transformResizeObserver.disconnect();
+    transformResizeObserver = null;
+  }
+  if (typeof ResizeObserver !== "undefined") {
+    transformResizeObserver = new ResizeObserver(() => {
+      drawTransformCanvas();
+    });
+    transformResizeObserver.observe(lab.canvas);
+    if (lab.canvas.parentElement) transformResizeObserver.observe(lab.canvas.parentElement);
+  }
+
   drawTransformCanvas();
 }
 
-function updateTransformReadout(matrix) {
-  const readout = document.querySelector("#matrixReadout");
+function updateTransformReadout(matrix, { rich = true } = {}) {
+  const lab = getTransformLab();
+  const readout = lab?.readout;
   if (!readout) return;
-  const det = matrix.a * matrix.d - matrix.b * matrix.c;
-  readout.innerHTML = `
-    ${texDisplay(`A=\\begin{bmatrix}${formatNumber(matrix.a)}&${formatNumber(matrix.b)}\\\\${formatNumber(matrix.c)}&${formatNumber(matrix.d)}\\end{bmatrix}`)}
-    ${texInline(`\\det(A)=${formatNumber(det)}`)}
-  `;
+
+  const a = formatMatrixEntry(matrix.a);
+  const b = formatMatrixEntry(matrix.b);
+  const c = formatMatrixEntry(matrix.c);
+  const d = formatMatrixEntry(matrix.d);
+
+  // Live frames: plain text only (no KaTeX thrash). Final frame: KaTeX matrix, no det in §1.
+  if (!rich) {
+    readout.innerHTML = `
+      <div class="matrix-readout-live" aria-hidden="true">
+        <span>A =</span>
+        <span class="matrix-readout-live-grid">
+          <i>${a}</i><i>${b}</i>
+          <i>${c}</i><i>${d}</i>
+        </span>
+      </div>
+    `;
+    return;
+  }
+
+  readout.innerHTML = texDisplay(
+    `A=\\begin{bmatrix}${formatNumber(matrix.a)}&${formatNumber(matrix.b)}\\\\${formatNumber(matrix.c)}&${formatNumber(matrix.d)}\\end{bmatrix}`,
+  );
+}
+
+function ensureTransformCanvasBuffer(canvas, cssW, cssH, dpr) {
+  const metrics = canvas._transformMetrics || { w: 0, h: 0, dpr: 0 };
+  if (metrics.w === cssW && metrics.h === cssH && metrics.dpr === dpr) return;
+  canvas.width = Math.max(1, Math.floor(cssW * dpr));
+  canvas.height = Math.max(1, Math.floor(cssH * dpr));
+  canvas._transformMetrics = { w: cssW, h: cssH, dpr };
 }
 
 function drawTransformCanvas(matrixOverride, options = {}) {
-  const canvas = document.querySelector("#transformCanvas");
-  if (!canvas) return;
-  if (!matrixOverride && !document.querySelector("#matrix-a")) return;
+  const lab = getTransformLab();
+  if (!lab) return;
 
-  const matrix = matrixOverride ? normalizeTransformMatrix(matrixOverride) : readTransformMatrix();
-  const fullReadout = options.fullReadout !== false;
+  const matrix = coerceTransformMatrixArg(matrixOverride) || readTransformMatrix();
+  const richReadout = options.richReadout !== false && options.fullReadout !== false;
 
   TRANSFORM_KEYS.forEach((key) => {
-    const label = document.querySelector(`#matrix-${key}-value`);
+    const label = lab.labels[key];
     if (label) label.textContent = formatMatrixEntry(matrix[key]);
   });
+  updateTransformReadout(matrix, { rich: richReadout });
 
-  if (fullReadout) updateTransformReadout(matrix);
-
+  const canvas = lab.canvas;
   const rect = canvas.getBoundingClientRect();
   const dpr = window.devicePixelRatio || 1;
   const cssW = Math.max(1, rect.width);
   const cssH = Math.max(1, rect.height);
-
-  if (
-    transformCanvasMetrics.w !== cssW ||
-    transformCanvasMetrics.h !== cssH ||
-    transformCanvasMetrics.dpr !== dpr
-  ) {
-    canvas.width = Math.max(1, Math.floor(cssW * dpr));
-    canvas.height = Math.max(1, Math.floor(cssH * dpr));
-    transformCanvasMetrics = { w: cssW, h: cssH, dpr };
-  }
+  ensureTransformCanvasBuffer(canvas, cssW, cssH, dpr);
 
   const ctx = canvas.getContext("2d");
   ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
@@ -1208,8 +1305,18 @@ function drawTransformCanvas(matrixOverride, options = {}) {
   const text = styles.getPropertyValue("--text").trim() || "#071512";
 
   const origin = { x: cssW / 2, y: cssH / 2 };
-  const scale = Math.min(cssW, cssH) / 8.8;
-  const extent = 5;
+  const scale = Math.min(cssW, cssH) / 9.2;
+  const halfW = cssW / (2 * scale);
+  const halfH = cssH / (2 * scale);
+  const screenReach = Math.hypot(halfW, halfH) + 1.25;
+
+  const col1Len = Math.hypot(matrix.a, matrix.c);
+  const col2Len = Math.hypot(matrix.b, matrix.d);
+  const minCol = Math.max(Math.min(col1Len || 0, col2Len || 0), 0);
+  const maxCol = Math.max(col1Len, col2Len, 0);
+  const allZero = maxCol < 1e-8;
+  // Expand domain so the image of the lattice still covers the viewport when A shrinks.
+  const domainReach = Math.min(56, Math.max(screenReach + 2, screenReach / Math.max(minCol || maxCol, 0.14) + 2));
 
   function point(x, y, transformed = false) {
     const px = transformed ? matrix.a * x + matrix.b * y : x;
@@ -1218,6 +1325,9 @@ function drawTransformCanvas(matrixOverride, options = {}) {
   }
 
   function drawLine(from, to, color, width = 1, alpha = 1) {
+    if (!Number.isFinite(from.x + from.y + to.x + to.y)) return;
+    const len = Math.hypot(to.x - from.x, to.y - from.y);
+    if (len < 0.4) return;
     ctx.save();
     ctx.globalAlpha = alpha;
     ctx.strokeStyle = color;
@@ -1230,54 +1340,80 @@ function drawTransformCanvas(matrixOverride, options = {}) {
     ctx.restore();
   }
 
-  // Layer 1 — quiet reference grid (axis-aligned, mathematical only).
-  for (let i = -extent; i <= extent; i += 1) {
+  // Layer 1 — reference grid filling the full stage (axis-aligned).
+  const refX = halfW + 1.5;
+  const refY = halfH + 1.5;
+  const ix0 = Math.floor(-refX);
+  const ix1 = Math.ceil(refX);
+  const iy0 = Math.floor(-refY);
+  const iy1 = Math.ceil(refY);
+  for (let i = iy0; i <= iy1; i += 1) {
     const isAxis = i === 0;
-    drawLine(point(-extent, i), point(extent, i), lineStrong, isAxis ? 1.2 : 1, isAxis ? 0.3 : 0.11);
-    drawLine(point(i, -extent), point(i, extent), lineStrong, isAxis ? 1.2 : 1, isAxis ? 0.3 : 0.11);
+    drawLine(point(-refX, i), point(refX, i), lineStrong, isAxis ? 1.15 : 1, isAxis ? 0.26 : 0.09);
+  }
+  for (let i = ix0; i <= ix1; i += 1) {
+    const isAxis = i === 0;
+    drawLine(point(i, -refY), point(i, refY), lineStrong, isAxis ? 1.15 : 1, isAxis ? 0.26 : 0.09);
   }
 
-  // Layer 2 — image of the unit square (visual subject of the linear map).
+  // Layer 2 — transformed lattice over the whole plane (image of ℤ-grid lines).
+  if (!allZero) {
+    const iMin = Math.floor(-domainReach);
+    const iMax = Math.ceil(domainReach);
+    for (let i = iMin; i <= iMax; i += 1) {
+      const isAxis = i === 0;
+      drawLine(
+        point(-domainReach, i, true),
+        point(domainReach, i, true),
+        isAxis ? accentStrong : accent,
+        isAxis ? 1.25 : 1.05,
+        isAxis ? 0.4 : 0.28,
+      );
+      drawLine(
+        point(i, -domainReach, true),
+        point(i, domainReach, true),
+        isAxis ? accentStrong : accent,
+        isAxis ? 1.25 : 1.05,
+        isAxis ? 0.4 : 0.28,
+      );
+    }
+  }
+
+  // Layer 3 — unit square image as a quiet anchor (not the whole story).
   const p00 = point(0, 0, true);
   const p10 = point(1, 0, true);
   const p11 = point(1, 1, true);
   const p01 = point(0, 1, true);
-  ctx.save();
-  ctx.beginPath();
-  ctx.moveTo(p00.x, p00.y);
-  ctx.lineTo(p10.x, p10.y);
-  ctx.lineTo(p11.x, p11.y);
-  ctx.lineTo(p01.x, p01.y);
-  ctx.closePath();
-  ctx.fillStyle = accent;
-  ctx.globalAlpha = 0.11;
-  ctx.fill();
-  ctx.globalAlpha = 0.42;
-  ctx.strokeStyle = accent;
-  ctx.lineWidth = 1.5;
-  ctx.stroke();
-  ctx.restore();
-
-  // Layer 3 — transformed grid in one accent family (no dual-color clash).
-  for (let i = -extent; i <= extent; i += 1) {
-    if (i === 0) continue;
-    drawLine(point(-extent, i, true), point(extent, i, true), accent, 1.05, 0.26);
-    drawLine(point(i, -extent, true), point(i, extent, true), accent, 1.05, 0.26);
+  const cellArea = Math.abs((p10.x - p00.x) * (p01.y - p00.y) - (p01.x - p00.x) * (p10.y - p00.y));
+  if (cellArea > 2) {
+    ctx.save();
+    ctx.beginPath();
+    ctx.moveTo(p00.x, p00.y);
+    ctx.lineTo(p10.x, p10.y);
+    ctx.lineTo(p11.x, p11.y);
+    ctx.lineTo(p01.x, p01.y);
+    ctx.closePath();
+    ctx.fillStyle = accent;
+    ctx.globalAlpha = 0.09;
+    ctx.fill();
+    ctx.globalAlpha = 0.34;
+    ctx.strokeStyle = accent;
+    ctx.lineWidth = 1.4;
+    ctx.stroke();
+    ctx.restore();
   }
-  drawLine(point(-extent, 0, true), point(extent, 0, true), accentStrong, 1.3, 0.38);
-  drawLine(point(0, -extent, true), point(0, extent, true), accentStrong, 1.3, 0.38);
 
   // Layer 4 — basis before / after.
-  drawArrow(ctx, origin, point(1, 0), muted, "e1", 0.32, 2.25);
-  drawArrow(ctx, origin, point(0, 1), muted, "e2", 0.32, 2.25);
-  drawArrow(ctx, origin, point(1, 0, true), accentStrong, "Ae1", 1, 3.1);
-  drawArrow(ctx, origin, point(0, 1, true), coral, "Ae2", 1, 3.1);
+  drawArrow(ctx, origin, point(1, 0), muted, "e1", 0.3, 2.2);
+  drawArrow(ctx, origin, point(0, 1), muted, "e2", 0.3, 2.2);
+  drawArrow(ctx, origin, point(1, 0, true), accentStrong, "Ae1", 1, 3.05);
+  drawArrow(ctx, origin, point(0, 1, true), coral, "Ae2", 1, 3.05);
 
   ctx.save();
   ctx.fillStyle = text;
-  ctx.globalAlpha = 0.72;
+  ctx.globalAlpha = 0.75;
   ctx.beginPath();
-  ctx.arc(origin.x, origin.y, 3.2, 0, Math.PI * 2);
+  ctx.arc(origin.x, origin.y, allZero ? 4.2 : 3.2, 0, Math.PI * 2);
   ctx.fill();
   ctx.restore();
 }

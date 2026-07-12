@@ -406,24 +406,83 @@
 
     const status = document.createElement("div");
     status.className = "section-one-transform-status";
-    status.setAttribute("aria-live", "polite");
+    status.setAttribute("aria-live", "off");
+    status.setAttribute("aria-busy", "false");
     controls.append(status);
 
     const inputs = ["a", "b", "c", "d"].map((key) => interactive.querySelector(`#matrix-${key}`));
-    const updateStatus = () => {
-      const [a, b, c, d] = inputs.map((input) => Number(input?.value || 0));
+    let statusSyncAt = 0;
+    let pendingStatusMatrix = null;
+    let statusSyncTimer = 0;
+
+    const shapeCopy = (a, b, c, d) => {
       const det = a * d - b * c;
       const allZero = [a, b, c, d].every((value) => Math.abs(value) < 1e-7);
-      const rank = allZero ? 0 : Math.abs(det) < 1e-7 ? 1 : 2;
-      const columnOne = `(${formatCompact(a)},${formatCompact(c)})^T`;
-      const columnTwo = `(${formatCompact(b)},${formatCompact(d)})^T`;
-      const description = rank === 2 ? "两列不共线，仍能铺开整个平面。" : rank === 1 ? "两列共线，只保留一条方向。" : "两列都是零向量，所有点落到原点。";
+      if (allZero) {
+        return {
+          title: "一点",
+          description: "两列都是零向量：整个平面被收到原点。",
+        };
+      }
+      if (Math.abs(det) < 1e-7) {
+        return {
+          title: "一条直线",
+          description: "两列共线：整张网格塌缩到一条直线上。",
+        };
+      }
+      return {
+        title: "整个平面",
+        description: "两列不共线：变换后的网格仍能铺满平面。",
+      };
+    };
+
+    const updateStatus = (matrix, { final = true } = {}) => {
+      const source = matrix || {
+        a: Number(inputs[0]?.value || 0),
+        b: Number(inputs[1]?.value || 0),
+        c: Number(inputs[2]?.value || 0),
+        d: Number(inputs[3]?.value || 0),
+      };
+      const a = source.a;
+      const b = source.b;
+      const c = source.c;
+      const d = source.d;
+      const shape = shapeCopy(a, b, c, d);
+      // Plain text keeps mid-animation sync cheap and consistent with the canvas.
       status.innerHTML = `
-        <div><span>第一列</span>${mathInline(columnOne)}</div>
-        <div><span>第二列</span>${mathInline(columnTwo)}</div>
-        <div><span>输出形状</span><strong>秩 ${rank}</strong></div>
-        <p>${description}</p>
+        <div><span>第一列</span><strong>(${formatCompact(a)}, ${formatCompact(c)})ᵀ</strong></div>
+        <div><span>第二列</span><strong>(${formatCompact(b)}, ${formatCompact(d)})ᵀ</strong></div>
+        <div><span>输出形状</span><strong>${shape.title}</strong></div>
+        <p>${shape.description}</p>
       `;
+      if (final) {
+        status.setAttribute("aria-busy", "false");
+        status.setAttribute("aria-live", "polite");
+        // Re-announce once at rest without spamming during the morph.
+        status.setAttribute("aria-live", "off");
+        requestAnimationFrame(() => status.setAttribute("aria-live", "polite"));
+      }
+    };
+
+    const scheduleStatus = (matrix, { final = false } = {}) => {
+      pendingStatusMatrix = matrix;
+      if (final) {
+        if (statusSyncTimer) {
+          clearTimeout(statusSyncTimer);
+          statusSyncTimer = 0;
+        }
+        updateStatus(matrix, { final: true });
+        statusSyncAt = performance.now();
+        return;
+      }
+      const now = performance.now();
+      const wait = Math.max(0, 100 - (now - statusSyncAt));
+      if (statusSyncTimer) return;
+      statusSyncTimer = window.setTimeout(() => {
+        statusSyncTimer = 0;
+        statusSyncAt = performance.now();
+        if (pendingStatusMatrix) updateStatus(pendingStatusMatrix, { final: false });
+      }, wait);
     };
 
     const markPreset = (id) => {
@@ -443,9 +502,15 @@
 
     const applyPreset = (values, id, { animate = true } = {}) => {
       markPreset(id);
+      status.setAttribute("aria-busy", "true");
+      status.setAttribute("aria-live", "off");
 
       if (animate && typeof window.animateTransformMatrix === "function") {
-        window.animateTransformMatrix(values).then(() => updateStatus());
+        window
+          .animateTransformMatrix(values, {
+            onUpdate: (matrix, meta) => scheduleStatus(matrix, { final: Boolean(meta?.final) }),
+          })
+          .then((matrix) => scheduleStatus(matrix, { final: true }));
         return;
       }
 
@@ -455,7 +520,10 @@
         writeInputsFallback(values);
         inputs[0]?.dispatchEvent(new Event("input", { bubbles: true }));
       }
-      updateStatus();
+      scheduleStatus(
+        { a: values[0], b: values[1], c: values[2], d: values[3] },
+        { final: true },
+      );
     };
 
     toolbar.addEventListener("click", (event) => {
@@ -469,7 +537,7 @@
       input?.addEventListener("input", (event) => {
         if (!event.isTrusted) return;
         markPreset(null);
-        updateStatus();
+        scheduleStatus(null, { final: true });
       }),
     );
 

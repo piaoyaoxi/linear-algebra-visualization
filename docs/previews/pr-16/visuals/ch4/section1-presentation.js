@@ -47,30 +47,44 @@
           <p>每一行对应一个方程，每一列对应一个未知量，位置把关系保存下来。</p>
         </article>
 
-        <article class="matrix-source-card">
+        <article class="matrix-source-card matrix-source-card-basis">
           <div class="matrix-source-kicker">方向变化</div>
-          <svg class="source-basis-svg" viewBox="0 0 260 132" role="img" aria-label="两个基本方向经过变换后成为矩阵的两列">
-            <defs>
-              <marker id="s1ArrowTeal" markerWidth="7" markerHeight="7" refX="6" refY="3.5" orient="auto">
-                <path d="M0,0 L7,3.5 L0,7 Z" fill="currentColor"></path>
-              </marker>
-              <marker id="s1ArrowCoral" markerWidth="7" markerHeight="7" refX="6" refY="3.5" orient="auto">
-                <path d="M0,0 L7,3.5 L0,7 Z" fill="currentColor"></path>
-              </marker>
-            </defs>
-            <g class="basis-axis">
-              <path d="M38 105H224"></path>
-              <path d="M58 120V18"></path>
-            </g>
-            <g class="basis-vector basis-vector-one">
-              <path d="M58 105L168 105" marker-end="url(#s1ArrowTeal)"></path>
-              <text x="174" y="109">Ae₁</text>
-            </g>
-            <g class="basis-vector basis-vector-two">
-              <path d="M58 105L126 42" marker-end="url(#s1ArrowCoral)"></path>
-              <text x="132" y="40">Ae₂</text>
-            </g>
-          </svg>
+          <div class="source-basis-stage" aria-hidden="true">
+            <svg class="source-basis-svg" viewBox="0 0 280 156" role="img" aria-label="两个基本方向经过变换后成为矩阵的两列">
+              <defs>
+                <marker id="s1ArrowTeal" markerWidth="10" markerHeight="10" refX="8.2" refY="5" orient="auto" markerUnits="userSpaceOnUse">
+                  <path class="basis-arrowhead basis-arrowhead-one" d="M1.2 1.1 L8.8 5 L1.2 8.9 Z"></path>
+                </marker>
+                <marker id="s1ArrowCoral" markerWidth="10" markerHeight="10" refX="8.2" refY="5" orient="auto" markerUnits="userSpaceOnUse">
+                  <path class="basis-arrowhead basis-arrowhead-two" d="M1.2 1.1 L8.8 5 L1.2 8.9 Z"></path>
+                </marker>
+              </defs>
+              <g class="basis-grid" opacity="0.55">
+                <path d="M34 34H246M34 58H246M34 82H246M34 106H246M34 130H246"></path>
+                <path d="M58 22V138M94 22V138M130 22V138M166 22V138M202 22V138"></path>
+              </g>
+              <g class="basis-axis">
+                <path d="M34 118H248"></path>
+                <path d="M58 138V24"></path>
+              </g>
+              <path class="basis-cell" d="M58 118 L178 118 L214 52 L94 52 Z"></path>
+              <g class="basis-vector basis-vector-one">
+                <path d="M58 118 L170 118" marker-end="url(#s1ArrowTeal)"></path>
+                <g class="basis-label" transform="translate(176 108)">
+                  <rect x="0" y="0" width="40" height="20" rx="10"></rect>
+                  <text x="20" y="14" text-anchor="middle">Ae₁</text>
+                </g>
+              </g>
+              <g class="basis-vector basis-vector-two">
+                <path d="M58 118 L128 48" marker-end="url(#s1ArrowCoral)"></path>
+                <g class="basis-label" transform="translate(132 28)">
+                  <rect x="0" y="0" width="40" height="20" rx="10"></rect>
+                  <text x="20" y="14" text-anchor="middle">Ae₂</text>
+                </g>
+              </g>
+              <circle class="basis-origin" cx="58" cy="118" r="3.4"></circle>
+            </svg>
+          </div>
           <h3>两列记录两个基本方向</h3>
           <p>二维矩阵的第一列和第二列，分别记录 ${mathInline("Ae_1")} 与 ${mathInline("Ae_2")}。</p>
         </article>

@@ -67,21 +67,23 @@
 #matrix-language-formal .matrix-source-card {
   display: grid;
   align-content: start;
-  gap: 12px;
+  gap: 14px;
   min-width: 0;
-  padding: 18px;
+  padding: 20px 18px 18px;
+  box-shadow: var(--shadow-soft);
 }
 
 #matrix-language-formal .matrix-source-kicker {
   color: var(--accent-strong);
   font-size: 12px;
   font-weight: 800;
-  letter-spacing: 0.04em;
+  letter-spacing: 0.06em;
 }
 
 #matrix-language-formal .matrix-source-card h3 {
   margin: 0;
   font-size: 17px;
+  line-height: 1.35;
 }
 
 #matrix-language-formal .matrix-source-card p {
@@ -92,12 +94,13 @@
 }
 
 #matrix-language-formal .pixel-matrix-demo,
-#matrix-language-formal .source-equation {
+#matrix-language-formal .source-equation,
+#matrix-language-formal .source-basis-stage {
   display: flex;
   align-items: center;
   justify-content: center;
   gap: 10px;
-  min-height: 132px;
+  min-height: 148px;
 }
 
 #matrix-language-formal .pixel-picture,
@@ -135,33 +138,103 @@
   font-size: 0.9rem;
 }
 
+#matrix-language-formal .source-basis-stage {
+  padding: 4px;
+  overflow: hidden;
+  border: 1px solid color-mix(in srgb, var(--line) 88%, var(--accent) 12%);
+  border-radius: 16px;
+  background:
+    radial-gradient(ellipse 70% 60% at 42% 62%, color-mix(in srgb, var(--accent) 10%, transparent), transparent 70%),
+    radial-gradient(ellipse 55% 50% at 68% 34%, color-mix(in srgb, var(--coral) 9%, transparent), transparent 72%),
+    linear-gradient(165deg, color-mix(in srgb, var(--surface-soft) 70%, #fff) 0%, var(--surface-solid) 100%);
+}
+
 #matrix-language-formal .source-basis-svg {
+  display: block;
   width: 100%;
-  height: 132px;
-  color: var(--accent);
+  height: 148px;
+  overflow: visible;
+}
+
+#matrix-language-formal .basis-arrowhead-one {
+  fill: var(--accent-strong);
+}
+
+#matrix-language-formal .basis-arrowhead-two {
+  fill: var(--coral);
+}
+
+#matrix-language-formal .basis-grid path {
+  fill: none;
+  stroke: color-mix(in srgb, var(--line-strong) 55%, transparent);
+  stroke-width: 1;
+  stroke-linecap: round;
 }
 
 #matrix-language-formal .basis-axis path {
   fill: none;
-  stroke: var(--line-strong);
+  stroke: color-mix(in srgb, var(--muted) 42%, var(--line-strong));
+  stroke-width: 1.35;
+  stroke-linecap: round;
+}
+
+#matrix-language-formal .basis-cell {
+  fill: color-mix(in srgb, var(--accent) 12%, transparent);
+  stroke: color-mix(in srgb, var(--accent) 34%, transparent);
   stroke-width: 1.25;
+  stroke-linejoin: round;
 }
 
 #matrix-language-formal .basis-vector path {
   fill: none;
-  stroke: currentColor;
-  stroke-width: 3;
+  stroke: var(--accent-strong);
+  stroke-width: 3.25;
   stroke-linecap: round;
+  stroke-linejoin: round;
 }
 
-#matrix-language-formal .basis-vector text {
-  fill: currentColor;
-  font-size: 13px;
-  font-weight: 750;
+#matrix-language-formal .basis-vector-two path {
+  stroke: var(--coral);
 }
 
-#matrix-language-formal .basis-vector-two {
-  color: var(--coral);
+#matrix-language-formal .basis-label rect {
+  fill: color-mix(in srgb, var(--surface-solid) 88%, #fff);
+  stroke: color-mix(in srgb, var(--accent) 28%, var(--line));
+  stroke-width: 1;
+  filter: drop-shadow(0 1px 2px rgba(17, 31, 46, 0.06));
+}
+
+#matrix-language-formal .basis-vector-two .basis-label rect {
+  stroke: color-mix(in srgb, var(--coral) 34%, var(--line));
+}
+
+#matrix-language-formal .basis-label text {
+  fill: var(--accent-strong);
+  font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+  font-size: 11.5px;
+  font-weight: 780;
+  letter-spacing: 0.01em;
+}
+
+#matrix-language-formal .basis-vector-two .basis-label text {
+  fill: color-mix(in srgb, var(--coral) 82%, #5a3a12);
+}
+
+#matrix-language-formal .basis-origin {
+  fill: var(--text);
+  opacity: 0.78;
+}
+
+body.dark #matrix-language-formal .source-basis-stage {
+  background:
+    radial-gradient(ellipse 70% 60% at 42% 62%, color-mix(in srgb, var(--accent) 14%, transparent), transparent 70%),
+    radial-gradient(ellipse 55% 50% at 68% 34%, color-mix(in srgb, var(--coral) 12%, transparent), transparent 72%),
+    linear-gradient(165deg, color-mix(in srgb, var(--surface-soft) 80%, #0c1210), var(--surface-solid));
+}
+
+body.dark #matrix-language-formal .basis-label rect {
+  fill: color-mix(in srgb, var(--surface-solid) 92%, #000);
+  filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.28));
 }
 
 #matrix-language-formal .anatomy-toolbar,
@@ -598,7 +671,7 @@
 
   #matrix-language-formal .pixel-matrix-demo,
   #matrix-language-formal .source-equation,
-  #matrix-language-formal .source-basis-svg {
+  #matrix-language-formal .source-basis-stage {
     grid-column: 1;
     grid-row: 2 / span 2;
   }
@@ -625,7 +698,7 @@
   #matrix-language-formal .matrix-source-card p,
   #matrix-language-formal .pixel-matrix-demo,
   #matrix-language-formal .source-equation,
-  #matrix-language-formal .source-basis-svg {
+  #matrix-language-formal .source-basis-stage {
     grid-column: auto;
     grid-row: auto;
   }

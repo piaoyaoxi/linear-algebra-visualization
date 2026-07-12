@@ -139,14 +139,14 @@
 }
 
 #matrix-language-formal .source-basis-stage {
-  padding: 4px;
+  padding: 6px;
   overflow: hidden;
-  border: 1px solid color-mix(in srgb, var(--line) 88%, var(--accent) 12%);
+  border: 1px solid color-mix(in srgb, var(--line) 90%, var(--accent) 10%);
   border-radius: 16px;
   background:
-    radial-gradient(ellipse 70% 60% at 42% 62%, color-mix(in srgb, var(--accent) 10%, transparent), transparent 70%),
-    radial-gradient(ellipse 55% 50% at 68% 34%, color-mix(in srgb, var(--coral) 9%, transparent), transparent 72%),
-    linear-gradient(165deg, color-mix(in srgb, var(--surface-soft) 70%, #fff) 0%, var(--surface-solid) 100%);
+    radial-gradient(ellipse 68% 58% at 40% 64%, color-mix(in srgb, var(--accent) 9%, transparent), transparent 72%),
+    radial-gradient(ellipse 52% 48% at 70% 32%, color-mix(in srgb, var(--coral) 8%, transparent), transparent 74%),
+    linear-gradient(165deg, color-mix(in srgb, var(--surface-soft) 65%, #fff) 0%, var(--surface-solid) 100%);
 }
 
 #matrix-language-formal .source-basis-svg {
@@ -156,85 +156,103 @@
   overflow: visible;
 }
 
-#matrix-language-formal .basis-arrowhead-one {
-  fill: var(--accent-strong);
-}
-
-#matrix-language-formal .basis-arrowhead-two {
-  fill: var(--coral);
-}
-
 #matrix-language-formal .basis-grid path {
   fill: none;
-  stroke: color-mix(in srgb, var(--line-strong) 55%, transparent);
+  stroke: color-mix(in srgb, var(--line-strong) 42%, transparent);
   stroke-width: 1;
   stroke-linecap: round;
 }
 
 #matrix-language-formal .basis-axis path {
   fill: none;
-  stroke: color-mix(in srgb, var(--muted) 42%, var(--line-strong));
-  stroke-width: 1.35;
+  stroke: color-mix(in srgb, var(--muted) 38%, var(--line-strong));
+  stroke-width: 1.2;
   stroke-linecap: round;
 }
 
+/* Unit parallelogram: soft teal wash, not a hard frame. */
 #matrix-language-formal .basis-cell {
-  fill: color-mix(in srgb, var(--accent) 12%, transparent);
-  stroke: color-mix(in srgb, var(--accent) 34%, transparent);
-  stroke-width: 1.25;
+  fill: color-mix(in srgb, var(--accent) 11%, transparent);
+  stroke: color-mix(in srgb, var(--accent) 26%, transparent);
+  stroke-width: 1.15;
   stroke-linejoin: round;
 }
 
-#matrix-language-formal .basis-vector path {
+/*
+ * Unified arrow colors:
+ *   Ae1 — full green (stem + head + label)
+ *   Ae2 — full warm gold/coral (stem + head + label)
+ * Drawn as path/line, not SVG markers (markers ignore CSS fills).
+ */
+#matrix-language-formal .basis-arrow-one {
+  color: var(--accent-strong);
+}
+
+#matrix-language-formal .basis-arrow-two {
+  color: var(--coral);
+}
+
+#matrix-language-formal .basis-arrow-stem {
   fill: none;
-  stroke: var(--accent-strong);
-  stroke-width: 3.25;
+  stroke: currentColor;
+  stroke-width: 3.6;
   stroke-linecap: round;
   stroke-linejoin: round;
 }
 
-#matrix-language-formal .basis-vector-two path {
-  stroke: var(--coral);
+#matrix-language-formal .basis-arrow-head {
+  fill: currentColor;
+  stroke: currentColor;
+  stroke-width: 1.1;
+  stroke-linejoin: round;
+  stroke-linecap: round;
 }
 
 #matrix-language-formal .basis-label rect {
-  fill: color-mix(in srgb, var(--surface-solid) 88%, #fff);
-  stroke: color-mix(in srgb, var(--accent) 28%, var(--line));
-  stroke-width: 1;
-  filter: drop-shadow(0 1px 2px rgba(17, 31, 46, 0.06));
-}
-
-#matrix-language-formal .basis-vector-two .basis-label rect {
-  stroke: color-mix(in srgb, var(--coral) 34%, var(--line));
+  fill: color-mix(in srgb, var(--surface-solid) 92%, #fff);
+  stroke-width: 1.15;
+  filter: drop-shadow(0 1px 3px rgba(17, 31, 46, 0.07));
 }
 
 #matrix-language-formal .basis-label text {
-  fill: var(--accent-strong);
   font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
   font-size: 11.5px;
   font-weight: 780;
   letter-spacing: 0.01em;
 }
 
-#matrix-language-formal .basis-vector-two .basis-label text {
-  fill: color-mix(in srgb, var(--coral) 82%, #5a3a12);
+#matrix-language-formal .basis-label-one rect {
+  stroke: color-mix(in srgb, var(--accent-strong) 38%, var(--line));
+}
+
+#matrix-language-formal .basis-label-one text {
+  fill: var(--accent-strong);
+}
+
+#matrix-language-formal .basis-label-two rect {
+  stroke: color-mix(in srgb, var(--coral) 42%, var(--line));
+}
+
+#matrix-language-formal .basis-label-two text {
+  fill: var(--coral);
 }
 
 #matrix-language-formal .basis-origin {
-  fill: var(--text);
-  opacity: 0.78;
+  fill: color-mix(in srgb, var(--text) 78%, var(--muted));
+  stroke: var(--surface-solid);
+  stroke-width: 1.5;
 }
 
 body.dark #matrix-language-formal .source-basis-stage {
   background:
-    radial-gradient(ellipse 70% 60% at 42% 62%, color-mix(in srgb, var(--accent) 14%, transparent), transparent 70%),
-    radial-gradient(ellipse 55% 50% at 68% 34%, color-mix(in srgb, var(--coral) 12%, transparent), transparent 72%),
+    radial-gradient(ellipse 68% 58% at 40% 64%, color-mix(in srgb, var(--accent) 13%, transparent), transparent 72%),
+    radial-gradient(ellipse 52% 48% at 70% 32%, color-mix(in srgb, var(--coral) 11%, transparent), transparent 74%),
     linear-gradient(165deg, color-mix(in srgb, var(--surface-soft) 80%, #0c1210), var(--surface-solid));
 }
 
 body.dark #matrix-language-formal .basis-label rect {
-  fill: color-mix(in srgb, var(--surface-solid) 92%, #000);
-  filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.28));
+  fill: color-mix(in srgb, var(--surface-solid) 94%, #000);
+  filter: drop-shadow(0 1px 3px rgba(0, 0, 0, 0.3));
 }
 
 #matrix-language-formal .anatomy-toolbar,

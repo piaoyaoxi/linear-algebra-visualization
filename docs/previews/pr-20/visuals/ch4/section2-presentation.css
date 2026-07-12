@@ -1,0 +1,1168 @@
+#matrix-operations-formal .s2-foundation,
+#matrix-operations-interactive .s2-multiplication-lab {
+  display: grid;
+  gap: 22px;
+}
+
+#matrix-operations-formal .s2-lead {
+  max-width: 76ch;
+  margin: 0;
+  color: var(--muted);
+  font-size: 16px;
+  line-height: 1.85;
+}
+
+#matrix-operations-formal .s2-module,
+#matrix-operations-interactive .s2-multiplication-lab {
+  overflow: hidden;
+  border: 1px solid var(--line);
+  border-radius: calc(var(--radius) + 2px);
+  background: var(--surface-solid);
+  box-shadow: var(--shadow-soft);
+}
+
+#matrix-operations-formal .s2-module-heading {
+  display: grid;
+  grid-template-columns: 42px minmax(0, 1fr);
+  gap: 14px;
+  align-items: start;
+  padding: 22px 24px 18px;
+  border-bottom: 1px solid var(--line);
+}
+
+#matrix-operations-formal .s2-module-heading > span {
+  display: grid;
+  place-items: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 11px;
+  background: var(--accent-soft);
+  color: var(--accent-strong);
+  font-size: 12px;
+  font-weight: 850;
+  letter-spacing: 0.05em;
+}
+
+#matrix-operations-formal .s2-module-heading h3,
+#matrix-operations-interactive .s2-lab-heading h3 {
+  margin: 0 0 6px;
+  font-size: clamp(19px, 2vw, 23px);
+  line-height: 1.35;
+}
+
+#matrix-operations-formal .s2-module-heading p,
+#matrix-operations-interactive .s2-lab-heading p {
+  margin: 0;
+  color: var(--muted);
+  font-size: 14px;
+  line-height: 1.7;
+}
+
+/* Chip bar: only as wide as its buttons — never stretch to full row. */
+#matrix-operations-formal .s2-chip-bar,
+#matrix-operations-interactive .s2-view-tabs {
+  display: inline-flex !important;
+  flex-wrap: wrap;
+  gap: 7px;
+  width: max-content !important;
+  max-width: 100%;
+  margin: 0;
+  padding: 5px;
+  border: 1px solid var(--line);
+  border-radius: 13px;
+  background: var(--surface-soft);
+  box-sizing: border-box;
+}
+
+#matrix-operations-formal .s2-basic-lab > .s2-chip-bar,
+#matrix-operations-formal .s2-transpose-toolbar .s2-chip-bar {
+  justify-self: start;
+  align-self: start;
+}
+
+#matrix-operations-formal .s2-chip-bar button,
+#matrix-operations-interactive .s2-view-tabs button,
+#matrix-operations-formal .s2-action-button {
+  flex: 0 0 auto;
+  min-height: 36px;
+  padding: 0 13px;
+  border: 0;
+  border-radius: 9px;
+  background: transparent;
+  color: var(--muted);
+  font: inherit;
+  font-size: 13px;
+  font-weight: 760;
+  cursor: pointer;
+  transition: background 150ms ease, color 150ms ease, box-shadow 150ms ease, transform 150ms ease;
+}
+
+#matrix-operations-formal .s2-chip-bar button:hover,
+#matrix-operations-interactive .s2-view-tabs button:hover,
+#matrix-operations-formal .s2-action-button:hover {
+  color: var(--text);
+}
+
+#matrix-operations-formal .s2-chip-bar button.is-active,
+#matrix-operations-interactive .s2-view-tabs button.is-active {
+  background: var(--surface-solid);
+  color: var(--accent-strong);
+  box-shadow: 0 4px 14px rgba(18, 61, 53, 0.08);
+}
+
+#matrix-operations-formal button:focus-visible,
+#matrix-operations-interactive button:focus-visible,
+#matrix-operations-formal select:focus-visible {
+  outline: 3px solid color-mix(in srgb, var(--accent) 28%, transparent);
+  outline-offset: 2px;
+}
+
+#matrix-operations-formal .s2-basic-lab {
+  display: grid;
+  gap: 20px;
+  padding: 22px 24px 24px;
+}
+
+#matrix-operations-formal .s2-operation-flow {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+  min-height: 172px;
+  overflow-x: auto;
+  padding: 12px 4px;
+}
+
+#matrix-operations-formal .s2-operation-matrix {
+  display: grid;
+  gap: 9px;
+  min-width: 150px;
+}
+
+#matrix-operations-formal .s2-operation-label {
+  color: var(--faint);
+  font-size: 12px;
+  font-weight: 800;
+  text-align: center;
+}
+
+#matrix-operations-formal .s2-matrix-grid,
+#matrix-operations-interactive .s2-lens-matrix {
+  position: relative;
+  display: grid;
+  grid-template-columns: repeat(var(--s2-cols), minmax(32px, 1fr));
+  gap: 6px;
+  padding: 10px 13px;
+}
+
+#matrix-operations-formal .s2-matrix-grid::before,
+#matrix-operations-formal .s2-matrix-grid::after,
+#matrix-operations-interactive .s2-lens-matrix::before,
+#matrix-operations-interactive .s2-lens-matrix::after {
+  position: absolute;
+  top: 3px;
+  bottom: 3px;
+  width: 8px;
+  content: "";
+}
+
+#matrix-operations-formal .s2-matrix-grid::before,
+#matrix-operations-interactive .s2-lens-matrix::before {
+  left: 0;
+  border-top: 2px solid var(--line-strong);
+  border-bottom: 2px solid var(--line-strong);
+  border-left: 2px solid var(--line-strong);
+  border-radius: 6px 0 0 6px;
+}
+
+#matrix-operations-formal .s2-matrix-grid::after,
+#matrix-operations-interactive .s2-lens-matrix::after {
+  right: 0;
+  border-top: 2px solid var(--line-strong);
+  border-right: 2px solid var(--line-strong);
+  border-bottom: 2px solid var(--line-strong);
+  border-radius: 0 6px 6px 0;
+}
+
+#matrix-operations-formal .s2-matrix-grid span,
+#matrix-operations-interactive .s2-lens-matrix span,
+#matrix-operations-interactive .s2-lens-matrix button {
+  display: grid;
+  place-items: center;
+  min-width: 34px;
+  min-height: 36px;
+  border: 0;
+  border-radius: 9px;
+  background: var(--surface-soft);
+  color: var(--text);
+  font: inherit;
+  font-size: 14px;
+  font-weight: 760;
+  font-variant-numeric: tabular-nums;
+}
+
+#matrix-operations-formal .s2-flow-symbol {
+  color: var(--faint);
+  font-size: 24px;
+  font-weight: 700;
+}
+
+#matrix-operations-formal .s2-scalar-token {
+  display: grid;
+  place-items: center;
+  width: 48px;
+  height: 48px;
+  flex: 0 0 auto;
+  border-radius: 15px;
+  background: var(--accent-soft);
+  color: var(--accent-strong);
+  font-size: 21px;
+  font-weight: 850;
+}
+
+#matrix-operations-formal .s2-rule-note {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 12px;
+  align-items: baseline;
+  padding: 15px 17px;
+  border-left: 4px solid var(--accent);
+  border-radius: 0 12px 12px 0;
+  background: var(--surface-soft);
+  color: var(--muted);
+  line-height: 1.7;
+}
+
+#matrix-operations-formal .s2-rule-note strong {
+  color: var(--text);
+}
+
+#matrix-operations-formal .s2-transpose-lab {
+  display: grid;
+  gap: 18px;
+  padding: 22px 24px 16px;
+}
+
+#matrix-operations-formal .s2-transpose-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  align-items: center;
+  justify-content: space-between;
+}
+
+#matrix-operations-formal .s2-action-button {
+  border: 1px solid color-mix(in srgb, var(--accent) 26%, var(--line));
+  background: var(--accent-soft);
+  color: var(--accent-strong);
+}
+
+#matrix-operations-formal .s2-transpose-stage {
+  position: relative;
+  display: grid;
+  grid-template-columns: minmax(120px, 0.42fr) minmax(220px, 1fr);
+  gap: 22px;
+  align-items: center;
+  min-height: 260px;
+  overflow: hidden;
+  padding: 24px;
+  border: 1px solid var(--line);
+  border-radius: 17px;
+  background:
+    radial-gradient(circle at 70% 44%, color-mix(in srgb, var(--accent) 8%, transparent), transparent 34%),
+    var(--surface-soft);
+}
+
+#matrix-operations-formal .s2-transpose-copy {
+  display: grid;
+  gap: 7px;
+  align-content: center;
+}
+
+#matrix-operations-formal .s2-transpose-copy span {
+  color: var(--accent-strong);
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: 34px;
+  font-style: italic;
+}
+
+#matrix-operations-formal .s2-transpose-copy strong {
+  color: var(--muted);
+  font-size: 14px;
+  font-weight: 760;
+}
+
+#matrix-operations-formal .s2-transpose-matrix {
+  --s2-cell-size: 54px;
+  position: relative;
+  width: calc(var(--s2-transpose-cols) * var(--s2-cell-size) + 24px);
+  height: calc(var(--s2-transpose-rows) * var(--s2-cell-size) + 24px);
+  justify-self: center;
+  transition: width 380ms cubic-bezier(.2,.8,.2,1), height 380ms cubic-bezier(.2,.8,.2,1);
+}
+
+#matrix-operations-formal .s2-transpose-matrix::before,
+#matrix-operations-formal .s2-transpose-matrix::after {
+  position: absolute;
+  top: 4px;
+  bottom: 4px;
+  z-index: 2;
+  width: 11px;
+  content: "";
+}
+
+#matrix-operations-formal .s2-transpose-matrix::before {
+  left: 0;
+  border-top: 2px solid var(--line-strong);
+  border-bottom: 2px solid var(--line-strong);
+  border-left: 2px solid var(--line-strong);
+  border-radius: 8px 0 0 8px;
+}
+
+#matrix-operations-formal .s2-transpose-matrix::after {
+  right: 0;
+  border-top: 2px solid var(--line-strong);
+  border-right: 2px solid var(--line-strong);
+  border-bottom: 2px solid var(--line-strong);
+  border-radius: 0 8px 8px 0;
+}
+
+#matrix-operations-formal .s2-transpose-matrix span {
+  position: absolute;
+  top: 12px;
+  left: 12px;
+  display: grid;
+  place-items: center;
+  width: 46px;
+  height: 46px;
+  transform: translate(calc(var(--cell-col) * var(--s2-cell-size)), calc(var(--cell-row) * var(--s2-cell-size)));
+  border: 1px solid color-mix(in srgb, var(--accent) 12%, var(--line));
+  border-radius: 12px;
+  background: var(--surface-solid);
+  color: var(--text);
+  font-size: 15px;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+  box-shadow: 0 6px 18px rgba(24, 59, 51, 0.07);
+  transition: transform 420ms cubic-bezier(.2,.8,.2,1), background 180ms ease, color 180ms ease;
+}
+
+#matrix-operations-formal .s2-transpose-lab.is-flipped .s2-transpose-matrix span {
+  background: color-mix(in srgb, var(--accent-soft) 72%, var(--surface-solid));
+  color: var(--accent-strong);
+}
+
+#matrix-operations-formal .s2-diagonal-cue {
+  position: absolute;
+  top: 50%;
+  right: 7%;
+  width: 150px;
+  height: 1px;
+  transform: rotate(-38deg);
+  transform-origin: center;
+  background: linear-gradient(90deg, transparent, color-mix(in srgb, var(--accent) 42%, transparent), transparent);
+  pointer-events: none;
+}
+
+#matrix-operations-formal .s2-transpose-readout {
+  min-height: 28px;
+  margin: 0;
+  color: var(--muted);
+  font-size: 14px;
+  line-height: 1.75;
+  text-align: center;
+}
+
+#matrix-operations-formal .s2-property-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 1px;
+  border-top: 1px solid var(--line);
+  background: var(--line);
+}
+
+#matrix-operations-formal .s2-property-grid article {
+  min-width: 0;
+  padding: 17px 14px;
+  background: var(--surface-solid);
+  text-align: center;
+}
+
+#matrix-operations-formal .s2-property-grid article > span {
+  display: block;
+  margin-bottom: 7px;
+  color: var(--faint);
+  font-size: 12px;
+  font-weight: 780;
+}
+
+#matrix-operations-formal .s2-property-grid .tex-display {
+  margin: 0;
+  overflow-x: auto;
+  font-size: 0.92rem;
+}
+
+#matrix-operations-formal .s2-size-gate {
+  display: grid;
+  gap: 20px;
+  padding: 22px 24px 24px;
+}
+
+#matrix-operations-formal .s2-size-controls {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 10px;
+}
+
+#matrix-operations-formal .s2-size-controls label {
+  display: grid;
+  gap: 7px;
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 760;
+}
+
+#matrix-operations-formal .s2-size-controls select {
+  width: 100%;
+  min-height: 38px;
+  padding: 0 10px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: var(--surface-solid);
+  color: var(--text);
+  font: inherit;
+  font-size: 14px;
+  font-weight: 760;
+}
+
+#matrix-operations-formal .s2-gate-stage {
+  display: grid;
+  grid-template-columns: minmax(112px, 1fr) auto minmax(112px, 1fr) auto minmax(112px, 1fr);
+  gap: 12px;
+  align-items: center;
+  padding: 22px;
+  border: 1px solid var(--line);
+  border-radius: 17px;
+  background: var(--surface-soft);
+}
+
+#matrix-operations-formal .s2-dimension-card {
+  display: grid;
+  gap: 5px;
+  place-items: center;
+  min-height: 94px;
+  padding: 15px;
+  border: 1px solid var(--line);
+  border-radius: 15px;
+  background: var(--surface-solid);
+}
+
+#matrix-operations-formal .s2-dimension-card span {
+  color: var(--faint);
+  font-size: 12px;
+  font-weight: 800;
+}
+
+#matrix-operations-formal .s2-dimension-card strong {
+  color: var(--text);
+  font-size: 21px;
+  font-variant-numeric: tabular-nums;
+}
+
+#matrix-operations-formal .s2-size-gate.is-open .s2-dimension-card.is-result {
+  border-color: color-mix(in srgb, var(--accent) 30%, var(--line));
+  background: var(--accent-soft);
+}
+
+#matrix-operations-formal .s2-dimension-card.is-blocked {
+  opacity: 0.55;
+}
+
+#matrix-operations-formal .s2-gate-symbol {
+  color: var(--faint);
+  font-size: 22px;
+  font-weight: 800;
+  line-height: 1;
+  text-align: center;
+}
+
+/* Clear = / ≠ between dimension cards (replaces old double-bar “door”). */
+#matrix-operations-formal .s2-gate-equals {
+  display: grid;
+  place-items: center;
+  min-width: 1.75em;
+  min-height: 1.75em;
+  color: var(--faint);
+  font-size: 32px;
+  font-weight: 800;
+  line-height: 1;
+  user-select: none;
+  transition: color 160ms ease, opacity 160ms ease;
+}
+
+#matrix-operations-formal .s2-gate-equals.is-open {
+  color: var(--accent-strong);
+}
+
+#matrix-operations-formal .s2-gate-equals:not(.is-open) {
+  opacity: 0.5;
+}
+
+#matrix-operations-formal .s2-gate-message {
+  margin: 0;
+  padding: 15px 17px;
+  border-radius: 12px;
+  background: var(--surface-soft);
+  color: var(--muted);
+  line-height: 1.75;
+}
+
+#matrix-operations-formal .s2-gate-message strong {
+  color: var(--text);
+}
+
+#matrix-operations-formal .s2-law-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 14px;
+  padding: 22px 24px 16px;
+}
+
+#matrix-operations-formal .s2-law-card {
+  display: grid;
+  gap: 13px;
+  min-width: 0;
+  padding: 18px;
+  border: 1px solid var(--line);
+  border-radius: 15px;
+  background: var(--surface-soft);
+}
+
+#matrix-operations-formal .s2-card-kicker,
+#matrix-operations-interactive .s2-card-kicker,
+#matrix-operations-interactive .s2-lab-kicker {
+  color: var(--accent-strong);
+  font-size: 12px;
+  font-weight: 820;
+  letter-spacing: 0.04em;
+}
+
+#matrix-operations-formal .s2-law-card p {
+  margin: 0;
+  color: var(--muted);
+  font-size: 14px;
+  line-height: 1.72;
+}
+
+#matrix-operations-formal .s2-machine-line,
+#matrix-operations-formal .s2-packaging-line,
+#matrix-operations-formal .s2-compare-matrices {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 9px;
+  align-items: center;
+  justify-content: center;
+  min-height: 64px;
+  color: var(--text);
+}
+
+#matrix-operations-formal .s2-machine-line strong,
+#matrix-operations-formal .s2-packaging-line span {
+  padding: 9px 13px;
+  border-radius: 11px;
+  background: var(--surface-solid);
+  color: var(--accent-strong);
+  font-weight: 820;
+}
+
+#matrix-operations-formal .s2-machine-line i,
+#matrix-operations-formal .s2-packaging-line i,
+#matrix-operations-formal .s2-compare-matrices i {
+  color: var(--faint);
+  font-style: normal;
+  font-weight: 800;
+}
+
+#matrix-operations-formal .s2-compare-matrices {
+  font-size: 0.86rem;
+}
+
+#matrix-operations-formal .s2-side-preview {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+  margin: 0 24px 24px;
+  padding: 16px;
+  border-left: 4px solid var(--accent);
+  border-radius: 0 14px 14px 0;
+  background: var(--surface-soft);
+}
+
+#matrix-operations-formal .s2-side-preview div {
+  display: grid;
+  gap: 5px;
+}
+
+#matrix-operations-formal .s2-side-preview span {
+  color: var(--faint);
+  font-size: 12px;
+  font-weight: 780;
+}
+
+#matrix-operations-formal .s2-side-preview strong {
+  color: var(--text);
+  font-size: 14px;
+}
+
+#matrix-operations-formal .s2-side-preview p {
+  grid-column: 1 / -1;
+  margin: 4px 0 0;
+  color: var(--muted);
+  font-size: 13px;
+  line-height: 1.7;
+}
+
+#matrix-operations-formal .s2-extension-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+  padding: 22px 24px 24px;
+}
+
+#matrix-operations-formal .s2-extension-grid details {
+  min-width: 0;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  background: var(--surface-soft);
+}
+
+#matrix-operations-formal .s2-extension-grid summary {
+  padding: 16px;
+  color: var(--text);
+  font-size: 14px;
+  font-weight: 780;
+  cursor: pointer;
+}
+
+#matrix-operations-formal .s2-extension-grid p {
+  margin: 0;
+  padding: 0 16px 16px;
+  color: var(--muted);
+  font-size: 13px;
+  line-height: 1.72;
+}
+
+#matrix-operations-interactive .s2-multiplication-lab {
+  gap: 0;
+  margin-top: 14px;
+}
+
+#matrix-operations-interactive .s2-lab-heading {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 20px;
+  align-items: center;
+  padding: 24px 26px 20px;
+  border-bottom: 1px solid var(--line);
+}
+
+#matrix-operations-interactive .s2-lab-kicker {
+  display: block;
+  margin-bottom: 7px;
+}
+
+#matrix-operations-interactive .s2-dataset-strip {
+  display: grid;
+  gap: 7px;
+  min-width: 220px;
+  padding: 12px 14px;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  background: var(--surface-soft);
+  color: var(--muted);
+  font-size: 0.84rem;
+}
+
+#matrix-operations-interactive .s2-dataset-strip > span {
+  white-space: nowrap;
+}
+
+#matrix-operations-interactive .s2-view-tabs {
+  margin: 16px 26px 0;
+  justify-self: start;
+}
+
+#matrix-operations-interactive .s2-view-stack {
+  padding: 18px 26px 26px;
+}
+
+#matrix-operations-interactive .s2-view-panel {
+  animation: s2-panel-enter 180ms ease both;
+}
+
+#matrix-operations-interactive .s2-view-panel[hidden] {
+  display: none !important;
+}
+
+@keyframes s2-panel-enter {
+  from { opacity: 0; transform: translateY(4px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+#matrix-operations-interactive .s2-compose-flow {
+  display: grid;
+  grid-template-columns: minmax(150px, 1fr) auto minmax(150px, 1fr) auto minmax(150px, 1fr);
+  gap: 12px;
+  align-items: center;
+}
+
+#matrix-operations-interactive .s2-vector-stage {
+  display: grid;
+  gap: 8px;
+  min-width: 0;
+  padding: 14px;
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  background: var(--surface-soft);
+  text-align: center;
+}
+
+#matrix-operations-interactive .s2-vector-stage > span {
+  color: var(--faint);
+  font-size: 12px;
+  font-weight: 780;
+}
+
+#matrix-operations-interactive .s2-vector-stage svg {
+  display: block;
+  width: 100%;
+  height: auto;
+  color: var(--accent);
+}
+
+#matrix-operations-interactive .s2-vector-stage.is-coral svg { color: var(--coral); }
+#matrix-operations-interactive .s2-vector-stage.is-blue svg { color: var(--blue); }
+
+#matrix-operations-interactive .s2-mini-grid,
+#matrix-operations-interactive .s2-mini-axis,
+#matrix-operations-interactive .s2-mini-vector {
+  fill: none;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+#matrix-operations-interactive .s2-mini-grid {
+  stroke: color-mix(in srgb, var(--line-strong) 42%, transparent);
+  stroke-width: 1;
+}
+
+#matrix-operations-interactive .s2-mini-axis {
+  stroke: color-mix(in srgb, var(--muted) 48%, var(--line-strong));
+  stroke-width: 1.15;
+}
+
+#matrix-operations-interactive .s2-mini-vector {
+  stroke: currentColor;
+  stroke-width: 3.5;
+}
+
+#matrix-operations-interactive .s2-mini-tip {
+  fill: currentColor;
+}
+
+#matrix-operations-interactive .s2-vector-stage text {
+  fill: currentColor;
+  font-family: ui-sans-serif, system-ui, sans-serif;
+  font-size: 12px;
+  font-weight: 800;
+}
+
+#matrix-operations-interactive .s2-vector-stage > strong {
+  color: var(--text);
+  font-size: 0.88rem;
+}
+
+#matrix-operations-interactive .s2-process-arrow,
+#matrix-operations-interactive .s2-column-operator {
+  display: grid;
+  gap: 4px;
+  place-items: center;
+  color: var(--faint);
+  text-align: center;
+}
+
+#matrix-operations-interactive .s2-process-arrow strong,
+#matrix-operations-interactive .s2-column-operator strong {
+  display: grid;
+  place-items: center;
+  width: 42px;
+  height: 42px;
+  border-radius: 13px;
+  background: var(--accent-soft);
+  color: var(--accent-strong);
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: 21px;
+}
+
+#matrix-operations-interactive .s2-process-arrow span,
+#matrix-operations-interactive .s2-column-operator span {
+  max-width: 72px;
+  font-size: 11px;
+  font-weight: 760;
+}
+
+#matrix-operations-interactive .s2-view-conclusion {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: 14px;
+  align-items: center;
+  margin-top: 16px;
+  padding: 16px 18px;
+  border-left: 4px solid var(--accent);
+  border-radius: 0 13px 13px 0;
+  background: var(--surface-soft);
+}
+
+#matrix-operations-interactive .s2-view-conclusion strong {
+  color: var(--accent-strong);
+  white-space: nowrap;
+}
+
+#matrix-operations-interactive .s2-view-conclusion p {
+  margin: 0;
+  color: var(--muted);
+  font-size: 14px;
+  line-height: 1.72;
+}
+
+#matrix-operations-interactive .s2-column-flow {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+  gap: 18px;
+  align-items: center;
+}
+
+#matrix-operations-interactive .s2-column-group {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+
+#matrix-operations-interactive .s2-column-group > span {
+  grid-column: 1 / -1;
+  color: var(--faint);
+  font-size: 12px;
+  font-weight: 800;
+  text-align: center;
+}
+
+#matrix-operations-interactive .s2-column-card {
+  display: grid;
+  gap: 8px;
+  place-items: center;
+  min-height: 148px;
+  padding: 16px;
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  background: var(--surface-soft);
+}
+
+#matrix-operations-interactive .s2-column-card.is-teal { border-top: 3px solid var(--accent); }
+#matrix-operations-interactive .s2-column-card.is-coral { border-top: 3px solid var(--coral); }
+
+#matrix-operations-interactive .s2-column-card > span {
+  color: var(--muted);
+  font-weight: 780;
+}
+
+#matrix-operations-interactive .s2-column-card .tex-display {
+  margin: 0;
+  font-size: 1.05rem;
+}
+
+#matrix-operations-interactive .s2-row-column-lens {
+  display: grid;
+  gap: 18px;
+}
+
+#matrix-operations-interactive .s2-lens-matrices {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+  overflow-x: auto;
+  padding: 14px 4px;
+}
+
+#matrix-operations-interactive .s2-lens-block {
+  display: grid;
+  gap: 9px;
+  min-width: 120px;
+}
+
+#matrix-operations-interactive .s2-lens-block > span {
+  color: var(--faint);
+  font-size: 12px;
+  font-weight: 800;
+  text-align: center;
+}
+
+#matrix-operations-interactive .s2-lens-symbol {
+  color: var(--faint);
+  font-size: 24px;
+  font-weight: 800;
+}
+
+#matrix-operations-interactive .s2-lens-matrix span,
+#matrix-operations-interactive .s2-lens-matrix button {
+  transition: background 160ms ease, color 160ms ease, transform 160ms ease, box-shadow 160ms ease;
+}
+
+#matrix-operations-interactive .s2-lens-matrix span.is-highlighted {
+  background: var(--accent-soft);
+  color: var(--accent-strong);
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--accent) 20%, transparent);
+}
+
+#matrix-operations-interactive .s2-lens-matrix button {
+  cursor: pointer;
+}
+
+#matrix-operations-interactive .s2-lens-matrix button:hover {
+  transform: translateY(-1px);
+}
+
+#matrix-operations-interactive .s2-lens-matrix button.is-active {
+  background: var(--accent);
+  color: white;
+  box-shadow: 0 8px 20px color-mix(in srgb, var(--accent) 22%, transparent);
+}
+
+#matrix-operations-interactive .s2-dot-product {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: 8px 16px;
+  align-items: center;
+  padding: 18px;
+  border: 1px solid color-mix(in srgb, var(--accent) 22%, var(--line));
+  border-radius: 15px;
+  background: var(--accent-soft);
+}
+
+#matrix-operations-interactive .s2-dot-product > span {
+  color: var(--faint);
+  font-size: 12px;
+  font-weight: 800;
+}
+
+#matrix-operations-interactive .s2-dot-product strong {
+  color: var(--accent-strong);
+}
+
+#matrix-operations-interactive .s2-dot-product p {
+  grid-column: 1 / -1;
+  margin: 2px 0 0;
+  color: var(--muted);
+  font-size: 13px;
+  line-height: 1.7;
+}
+
+#matrix-operations-interactive .s2-order-compare {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px;
+}
+
+#matrix-operations-interactive .s2-order-compare article {
+  display: grid;
+  gap: 14px;
+  min-width: 0;
+  padding: 19px;
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  background: var(--surface-soft);
+}
+
+#matrix-operations-interactive .s2-order-steps {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 7px;
+  align-items: center;
+  color: var(--muted);
+  font-size: 12px;
+}
+
+#matrix-operations-interactive .s2-order-steps b {
+  padding: 7px 9px;
+  border-radius: 9px;
+  background: var(--surface-solid);
+  color: var(--text);
+}
+
+#matrix-operations-interactive .s2-order-steps i {
+  color: var(--faint);
+  font-style: normal;
+}
+
+#matrix-operations-interactive .s2-order-compare .tex-display {
+  margin: 0;
+  font-size: 1rem;
+}
+
+#matrix-operations-interactive .s2-order-compare article > p {
+  margin: 0;
+  color: var(--muted);
+  font-size: 14px;
+  line-height: 1.72;
+}
+
+#matrix-operations-interactive .s2-task-panel {
+  margin-top: 18px;
+}
+
+#matrix-operations-interactive .s2-task-panel ol {
+  margin-bottom: 0;
+}
+
+body.dark #matrix-operations-formal .s2-module,
+body.dark #matrix-operations-interactive .s2-multiplication-lab,
+body.dark #matrix-operations-formal .s2-transpose-matrix span,
+body.dark #matrix-operations-formal .s2-dimension-card,
+body.dark #matrix-operations-formal .s2-chip-bar button.is-active,
+body.dark #matrix-operations-interactive .s2-view-tabs button.is-active {
+  box-shadow: none;
+}
+
+@media (max-width: 980px) {
+  #matrix-operations-formal .s2-property-grid,
+  #matrix-operations-formal .s2-size-controls {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  #matrix-operations-formal .s2-law-grid,
+  #matrix-operations-formal .s2-extension-grid {
+    grid-template-columns: 1fr;
+  }
+
+  #matrix-operations-interactive .s2-lab-heading {
+    grid-template-columns: 1fr;
+  }
+
+  #matrix-operations-interactive .s2-dataset-strip {
+    min-width: 0;
+  }
+
+  #matrix-operations-interactive .s2-compose-flow {
+    grid-template-columns: 1fr;
+  }
+
+  #matrix-operations-interactive .s2-process-arrow {
+    grid-template-columns: auto auto;
+    justify-content: center;
+  }
+
+  #matrix-operations-interactive .s2-process-arrow strong {
+    width: 38px;
+    height: 38px;
+  }
+
+  #matrix-operations-interactive .s2-column-flow {
+    grid-template-columns: 1fr;
+  }
+
+  #matrix-operations-interactive .s2-column-operator {
+    grid-template-columns: auto auto;
+    justify-content: center;
+  }
+}
+
+@media (max-width: 720px) {
+  #matrix-operations-formal .s2-module-heading,
+  #matrix-operations-interactive .s2-lab-heading {
+    padding: 19px 18px 16px;
+  }
+
+  #matrix-operations-formal .s2-basic-lab,
+  #matrix-operations-formal .s2-transpose-lab,
+  #matrix-operations-formal .s2-size-gate,
+  #matrix-operations-formal .s2-law-grid,
+  #matrix-operations-formal .s2-extension-grid {
+    padding-right: 18px;
+    padding-left: 18px;
+  }
+
+  #matrix-operations-formal .s2-operation-flow {
+    justify-content: flex-start;
+  }
+
+  #matrix-operations-formal .s2-transpose-stage {
+    grid-template-columns: 1fr;
+    min-height: 330px;
+    padding: 20px 16px;
+  }
+
+  #matrix-operations-formal .s2-transpose-copy {
+    justify-items: center;
+  }
+
+  #matrix-operations-formal .s2-diagonal-cue {
+    display: none;
+  }
+
+  #matrix-operations-formal .s2-property-grid,
+  #matrix-operations-formal .s2-size-controls,
+  #matrix-operations-formal .s2-side-preview,
+  #matrix-operations-interactive .s2-order-compare {
+    grid-template-columns: 1fr;
+  }
+
+  #matrix-operations-formal .s2-gate-stage {
+    grid-template-columns: 1fr;
+    justify-items: center;
+  }
+
+  #matrix-operations-formal .s2-dimension-card {
+    width: min(100%, 280px);
+  }
+
+  #matrix-operations-formal .s2-side-preview {
+    margin-right: 18px;
+    margin-left: 18px;
+  }
+
+  #matrix-operations-interactive .s2-view-tabs {
+    margin-right: 18px;
+    margin-left: 18px;
+  }
+
+  #matrix-operations-interactive .s2-view-stack {
+    padding: 16px 18px 20px;
+  }
+
+  #matrix-operations-interactive .s2-view-conclusion,
+  #matrix-operations-interactive .s2-dot-product {
+    grid-template-columns: 1fr;
+  }
+
+  #matrix-operations-interactive .s2-view-conclusion strong {
+    white-space: normal;
+  }
+
+  #matrix-operations-interactive .s2-column-group {
+    grid-template-columns: 1fr;
+  }
+
+  #matrix-operations-interactive .s2-lens-matrices {
+    justify-content: flex-start;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  #matrix-operations-formal .s2-transpose-matrix,
+  #matrix-operations-formal .s2-transpose-matrix span,
+  #matrix-operations-formal .s2-gate-equals,
+  #matrix-operations-interactive .s2-view-panel {
+    animation: none !important;
+    transition: none !important;
+  }
+}

@@ -58,28 +58,32 @@
   line-height: 1.7;
 }
 
-#matrix-operations-formal .s2-segmented,
+/* Chip bar: only as wide as its buttons — never stretch to full row. */
+#matrix-operations-formal .s2-chip-bar,
 #matrix-operations-interactive .s2-view-tabs {
-  display: inline-flex;
+  display: inline-flex !important;
   flex-wrap: wrap;
   gap: 7px;
-  width: fit-content;
+  width: max-content !important;
   max-width: 100%;
+  margin: 0;
   padding: 5px;
   border: 1px solid var(--line);
   border-radius: 13px;
   background: var(--surface-soft);
+  box-sizing: border-box;
 }
 
-/* Grid parents stretch children by default — keep the chip bar hug its buttons. */
-#matrix-operations-formal .s2-basic-lab > .s2-segmented,
-#matrix-operations-formal .s2-transpose-toolbar .s2-segmented {
+#matrix-operations-formal .s2-basic-lab > .s2-chip-bar,
+#matrix-operations-formal .s2-transpose-toolbar .s2-chip-bar {
   justify-self: start;
+  align-self: start;
 }
 
-#matrix-operations-formal .s2-segmented button,
+#matrix-operations-formal .s2-chip-bar button,
 #matrix-operations-interactive .s2-view-tabs button,
 #matrix-operations-formal .s2-action-button {
+  flex: 0 0 auto;
   min-height: 36px;
   padding: 0 13px;
   border: 0;
@@ -93,13 +97,13 @@
   transition: background 150ms ease, color 150ms ease, box-shadow 150ms ease, transform 150ms ease;
 }
 
-#matrix-operations-formal .s2-segmented button:hover,
+#matrix-operations-formal .s2-chip-bar button:hover,
 #matrix-operations-interactive .s2-view-tabs button:hover,
 #matrix-operations-formal .s2-action-button:hover {
   color: var(--text);
 }
 
-#matrix-operations-formal .s2-segmented button.is-active,
+#matrix-operations-formal .s2-chip-bar button.is-active,
 #matrix-operations-interactive .s2-view-tabs button.is-active {
   background: var(--surface-solid);
   color: var(--accent-strong);
@@ -482,24 +486,26 @@
   text-align: center;
 }
 
-/* Plain equals / not-equals — no decorative double-bar “door”. */
-#matrix-operations-formal .s2-gate-eq {
+/* Clear = / ≠ between dimension cards (replaces old double-bar “door”). */
+#matrix-operations-formal .s2-gate-equals {
   display: grid;
   place-items: center;
-  min-width: 1.5em;
+  min-width: 1.75em;
+  min-height: 1.75em;
   color: var(--faint);
-  font-size: 28px;
+  font-size: 32px;
   font-weight: 800;
   line-height: 1;
+  user-select: none;
   transition: color 160ms ease, opacity 160ms ease;
 }
 
-#matrix-operations-formal .s2-gate-eq.is-open {
+#matrix-operations-formal .s2-gate-equals.is-open {
   color: var(--accent-strong);
 }
 
-#matrix-operations-formal .s2-gate-eq:not(.is-open) {
-  opacity: 0.55;
+#matrix-operations-formal .s2-gate-equals:not(.is-open) {
+  opacity: 0.5;
 }
 
 #matrix-operations-formal .s2-gate-message {
@@ -1022,7 +1028,7 @@ body.dark #matrix-operations-formal .s2-module,
 body.dark #matrix-operations-interactive .s2-multiplication-lab,
 body.dark #matrix-operations-formal .s2-transpose-matrix span,
 body.dark #matrix-operations-formal .s2-dimension-card,
-body.dark #matrix-operations-formal .s2-segmented button.is-active,
+body.dark #matrix-operations-formal .s2-chip-bar button.is-active,
 body.dark #matrix-operations-interactive .s2-view-tabs button.is-active {
   box-shadow: none;
 }
@@ -1154,7 +1160,7 @@ body.dark #matrix-operations-interactive .s2-view-tabs button.is-active {
 @media (prefers-reduced-motion: reduce) {
   #matrix-operations-formal .s2-transpose-matrix,
   #matrix-operations-formal .s2-transpose-matrix span,
-  #matrix-operations-formal .s2-gate-eq,
+  #matrix-operations-formal .s2-gate-equals,
   #matrix-operations-interactive .s2-view-panel {
     animation: none !important;
     transition: none !important;

@@ -72,7 +72,7 @@
             </div>
           </div>
           <div class="s2-basic-lab" data-s2-basic-lab>
-            <div class="s2-segmented" role="group" aria-label="选择矩阵运算">
+            <div class="s2-chip-bar" role="group" aria-label="选择矩阵运算">
               <button type="button" class="is-active" data-basic-mode="add" aria-pressed="true">A + B</button>
               <button type="button" data-basic-mode="scale" aria-pressed="false">2A</button>
             </div>
@@ -91,7 +91,7 @@
           </div>
           <div class="s2-transpose-lab" data-s2-transpose-lab>
             <div class="s2-transpose-toolbar">
-              <div class="s2-segmented" role="group" aria-label="选择转置示例">
+              <div class="s2-chip-bar" role="group" aria-label="选择转置示例">
                 ${Object.entries(transposePresets)
                   .map(
                     ([id, item], index) =>
@@ -138,7 +138,7 @@
               <div class="s2-dimension-card"><span>A</span><strong data-size-a>2 × 3</strong></div>
               <div class="s2-gate-symbol" data-gate-symbol aria-hidden="true">×</div>
               <div class="s2-dimension-card"><span>B</span><strong data-size-b>3 × 2</strong></div>
-              <div class="s2-gate-eq is-open" data-gate-eq aria-hidden="true">=</div>
+              <div class="s2-gate-equals is-open" data-gate-eq aria-hidden="true" title="等于">=</div>
               <div class="s2-dimension-card is-result" data-size-result-card><span>AB</span><strong data-size-result>2 × 2</strong></div>
             </div>
             <p class="s2-gate-message" data-size-message aria-live="polite"></p>

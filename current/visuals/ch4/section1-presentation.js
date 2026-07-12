@@ -16,6 +16,87 @@
     "#f4f1df", "#e4d99c", "#cbbd68", "#a99742", "#7d722f",
   ];
 
+  /** Soft arrow: stem + filled head share one currentColor (never use SVG markers). */
+  function softArrow(x1, y1, x2, y2, className) {
+    const dx = x2 - x1;
+    const dy = y2 - y1;
+    const len = Math.hypot(dx, dy) || 1;
+    const ux = dx / len;
+    const uy = dy / len;
+    const px = -uy;
+    const py = ux;
+    const head = Math.min(16, Math.max(12, len * 0.24));
+    const half = head * 0.62;
+    const tipX = x2;
+    const tipY = y2;
+    const baseX = tipX - ux * head;
+    const baseY = tipY - uy * head;
+    // Stem stops under the head so the join reads as one piece.
+    const stemEndX = tipX - ux * (head * 0.42);
+    const stemEndY = tipY - uy * (head * 0.42);
+    const leftX = baseX + px * half;
+    const leftY = baseY + py * half;
+    const rightX = baseX - px * half;
+    const rightY = baseY - py * half;
+    // Pull the base corners slightly forward for a softer, less dagger-like tip.
+    const softLeftX = leftX + ux * (head * 0.08);
+    const softLeftY = leftY + uy * (head * 0.08);
+    const softRightX = rightX + ux * (head * 0.08);
+    const softRightY = rightY + uy * (head * 0.08);
+
+    const f = (n) => n.toFixed(2);
+    return `
+      <g class="basis-arrow ${className}">
+        <line class="basis-arrow-stem" x1="${f(x1)}" y1="${f(y1)}" x2="${f(stemEndX)}" y2="${f(stemEndY)}"></line>
+        <path
+          class="basis-arrow-head"
+          d="M ${f(tipX)} ${f(tipY)}
+             L ${f(softLeftX)} ${f(softLeftY)}
+             Q ${f(baseX)} ${f(baseY)} ${f(softRightX)} ${f(softRightY)}
+             Z"
+        ></path>
+      </g>
+    `;
+  }
+
+  function renderBasisFigure() {
+    // Origin and column images: Ae1=(1,0), Ae2≈(0.55,0.85) in screen-friendly coords.
+    const ox = 62;
+    const oy = 118;
+    const e1x = 186;
+    const e1y = 118;
+    const e2x = 128;
+    const e2y = 44;
+
+    return `
+      <svg class="source-basis-svg" viewBox="0 0 280 156" role="img" aria-label="两个基本方向经过变换后成为矩阵的两列">
+        <g class="basis-grid">
+          <path d="M36 36H244M36 60H244M36 84H244M36 108H244M36 132H244"></path>
+          <path d="M60 24V140M96 24V140M132 24V140M168 24V140M204 24V140"></path>
+        </g>
+        <g class="basis-axis">
+          <path d="M36 ${oy}H250"></path>
+          <path d="M${ox} 140V28"></path>
+        </g>
+        <path
+          class="basis-cell"
+          d="M${ox} ${oy} L${e1x} ${e1y} L${e1x + (e2x - ox)} ${e1y + (e2y - oy)} L${e2x} ${e2y} Z"
+        ></path>
+        ${softArrow(ox, oy, e1x, e1y, "basis-arrow-one")}
+        ${softArrow(ox, oy, e2x, e2y, "basis-arrow-two")}
+        <g class="basis-label basis-label-one" transform="translate(194 106)">
+          <rect x="0" y="0" width="42" height="22" rx="11"></rect>
+          <text x="21" y="15" text-anchor="middle">Ae₁</text>
+        </g>
+        <g class="basis-label basis-label-two" transform="translate(132 22)">
+          <rect x="0" y="0" width="42" height="22" rx="11"></rect>
+          <text x="21" y="15" text-anchor="middle">Ae₂</text>
+        </g>
+        <circle class="basis-origin" cx="${ox}" cy="${oy}" r="4"></circle>
+      </svg>
+    `;
+  }
+
   function renderSourceCards() {
     return `
       <div class="matrix-source-grid" aria-label="矩阵的三种来源">
@@ -50,40 +131,7 @@
         <article class="matrix-source-card matrix-source-card-basis">
           <div class="matrix-source-kicker">方向变化</div>
           <div class="source-basis-stage" aria-hidden="true">
-            <svg class="source-basis-svg" viewBox="0 0 280 156" role="img" aria-label="两个基本方向经过变换后成为矩阵的两列">
-              <defs>
-                <marker id="s1ArrowTeal" markerWidth="10" markerHeight="10" refX="8.2" refY="5" orient="auto" markerUnits="userSpaceOnUse">
-                  <path class="basis-arrowhead basis-arrowhead-one" d="M1.2 1.1 L8.8 5 L1.2 8.9 Z"></path>
-                </marker>
-                <marker id="s1ArrowCoral" markerWidth="10" markerHeight="10" refX="8.2" refY="5" orient="auto" markerUnits="userSpaceOnUse">
-                  <path class="basis-arrowhead basis-arrowhead-two" d="M1.2 1.1 L8.8 5 L1.2 8.9 Z"></path>
-                </marker>
-              </defs>
-              <g class="basis-grid" opacity="0.55">
-                <path d="M34 34H246M34 58H246M34 82H246M34 106H246M34 130H246"></path>
-                <path d="M58 22V138M94 22V138M130 22V138M166 22V138M202 22V138"></path>
-              </g>
-              <g class="basis-axis">
-                <path d="M34 118H248"></path>
-                <path d="M58 138V24"></path>
-              </g>
-              <path class="basis-cell" d="M58 118 L178 118 L214 52 L94 52 Z"></path>
-              <g class="basis-vector basis-vector-one">
-                <path d="M58 118 L170 118" marker-end="url(#s1ArrowTeal)"></path>
-                <g class="basis-label" transform="translate(176 108)">
-                  <rect x="0" y="0" width="40" height="20" rx="10"></rect>
-                  <text x="20" y="14" text-anchor="middle">Ae₁</text>
-                </g>
-              </g>
-              <g class="basis-vector basis-vector-two">
-                <path d="M58 118 L128 48" marker-end="url(#s1ArrowCoral)"></path>
-                <g class="basis-label" transform="translate(132 28)">
-                  <rect x="0" y="0" width="40" height="20" rx="10"></rect>
-                  <text x="20" y="14" text-anchor="middle">Ae₂</text>
-                </g>
-              </g>
-              <circle class="basis-origin" cx="58" cy="118" r="3.4"></circle>
-            </svg>
+            ${renderBasisFigure()}
           </div>
           <h3>两列记录两个基本方向</h3>
           <p>二维矩阵的第一列和第二列，分别记录 ${mathInline("Ae_1")} 与 ${mathInline("Ae_2")}。</p>

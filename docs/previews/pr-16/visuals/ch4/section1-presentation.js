@@ -16,7 +16,10 @@
     "#f4f1df", "#e4d99c", "#cbbd68", "#a99742", "#7d722f",
   ];
 
-  /** Soft arrow: stem + filled head share one currentColor (never use SVG markers). */
+  /**
+   * One filled path per arrow — stem and tip are the same color by construction.
+   * Rounded outline (no dagger marker geometry).
+   */
   function softArrow(x1, y1, x2, y2, className) {
     const dx = x2 - x1;
     const dy = y2 - y1;
@@ -25,74 +28,66 @@
     const uy = dy / len;
     const px = -uy;
     const py = ux;
-    const head = Math.min(16, Math.max(12, len * 0.24));
-    const half = head * 0.62;
+
+    const halfW = 2.35;
+    const headLen = Math.min(15.5, Math.max(13, len * 0.22));
+    const headHalf = 6.4;
     const tipX = x2;
     const tipY = y2;
-    const baseX = tipX - ux * head;
-    const baseY = tipY - uy * head;
-    // Stem stops under the head so the join reads as one piece.
-    const stemEndX = tipX - ux * (head * 0.42);
-    const stemEndY = tipY - uy * (head * 0.42);
-    const leftX = baseX + px * half;
-    const leftY = baseY + py * half;
-    const rightX = baseX - px * half;
-    const rightY = baseY - py * half;
-    // Pull the base corners slightly forward for a softer, less dagger-like tip.
-    const softLeftX = leftX + ux * (head * 0.08);
-    const softLeftY = leftY + uy * (head * 0.08);
-    const softRightX = rightX + ux * (head * 0.08);
-    const softRightY = rightY + uy * (head * 0.08);
+    const neckX = tipX - ux * headLen;
+    const neckY = tipY - uy * headLen;
 
     const f = (n) => n.toFixed(2);
-    return `
-      <g class="basis-arrow ${className}">
-        <line class="basis-arrow-stem" x1="${f(x1)}" y1="${f(y1)}" x2="${f(stemEndX)}" y2="${f(stemEndY)}"></line>
-        <path
-          class="basis-arrow-head"
-          d="M ${f(tipX)} ${f(tipY)}
-             L ${f(softLeftX)} ${f(softLeftY)}
-             Q ${f(baseX)} ${f(baseY)} ${f(softRightX)} ${f(softRightY)}
-             Z"
-        ></path>
-      </g>
-    `;
+    const pt = (x, y) => `${f(x)} ${f(y)}`;
+
+    // Rounded start cap + parallel stem + soft arrow head, single closed path.
+    const path = [
+      `M ${pt(x1 + px * halfW, y1 + py * halfW)}`,
+      `L ${pt(neckX + px * halfW, neckY + py * halfW)}`,
+      `L ${pt(neckX + px * headHalf, neckY + py * headHalf)}`,
+      `Q ${pt(tipX - ux * (headLen * 0.18) + px * 1.1, tipY - uy * (headLen * 0.18) + py * 1.1)} ${pt(tipX, tipY)}`,
+      `Q ${pt(tipX - ux * (headLen * 0.18) - px * 1.1, tipY - uy * (headLen * 0.18) - py * 1.1)} ${pt(neckX - px * headHalf, neckY - py * headHalf)}`,
+      `L ${pt(neckX - px * halfW, neckY - py * halfW)}`,
+      `L ${pt(x1 - px * halfW, y1 - py * halfW)}`,
+      `A ${halfW} ${halfW} 0 0 0 ${pt(x1 + px * halfW, y1 + py * halfW)}`,
+      "Z",
+    ].join(" ");
+
+    return `<path class="basis-arrow ${className}" d="${path}"></path>`;
   }
 
   function renderBasisFigure() {
-    // Origin and column images: Ae1=(1,0), Ae2≈(0.55,0.85) in screen-friendly coords.
-    const ox = 62;
-    const oy = 118;
-    const e1x = 186;
-    const e1y = 118;
-    const e2x = 128;
-    const e2y = 44;
+    const ox = 64;
+    const oy = 116;
+    const e1x = 188;
+    const e1y = 116;
+    const e2x = 132;
+    const e2y = 42;
+    const c3x = e1x + (e2x - ox);
+    const c3y = e1y + (e2y - oy);
 
     return `
       <svg class="source-basis-svg" viewBox="0 0 280 156" role="img" aria-label="两个基本方向经过变换后成为矩阵的两列">
         <g class="basis-grid">
-          <path d="M36 36H244M36 60H244M36 84H244M36 108H244M36 132H244"></path>
-          <path d="M60 24V140M96 24V140M132 24V140M168 24V140M204 24V140"></path>
+          <path d="M40 40H240M40 64H240M40 88H240M40 112H240M40 136H240"></path>
+          <path d="M64 28V140M100 28V140M136 28V140M172 28V140M208 28V140"></path>
         </g>
         <g class="basis-axis">
-          <path d="M36 ${oy}H250"></path>
-          <path d="M${ox} 140V28"></path>
+          <path d="M38 ${oy}H246"></path>
+          <path d="M${ox} 138V30"></path>
         </g>
-        <path
-          class="basis-cell"
-          d="M${ox} ${oy} L${e1x} ${e1y} L${e1x + (e2x - ox)} ${e1y + (e2y - oy)} L${e2x} ${e2y} Z"
-        ></path>
+        <path class="basis-cell" d="M${ox} ${oy} L${e1x} ${e1y} L${c3x} ${c3y} L${e2x} ${e2y} Z"></path>
         ${softArrow(ox, oy, e1x, e1y, "basis-arrow-one")}
         ${softArrow(ox, oy, e2x, e2y, "basis-arrow-two")}
-        <g class="basis-label basis-label-one" transform="translate(194 106)">
-          <rect x="0" y="0" width="42" height="22" rx="11"></rect>
-          <text x="21" y="15" text-anchor="middle">Ae₁</text>
+        <circle class="basis-origin" cx="${ox}" cy="${oy}" r="3.6"></circle>
+        <g class="basis-label basis-label-one">
+          <rect x="196" y="104" width="44" height="22" rx="11"></rect>
+          <text x="218" y="119" text-anchor="middle">Ae₁</text>
         </g>
-        <g class="basis-label basis-label-two" transform="translate(132 22)">
-          <rect x="0" y="0" width="42" height="22" rx="11"></rect>
-          <text x="21" y="15" text-anchor="middle">Ae₂</text>
+        <g class="basis-label basis-label-two">
+          <rect x="136" y="18" width="44" height="22" rx="11"></rect>
+          <text x="158" y="33" text-anchor="middle">Ae₂</text>
         </g>
-        <circle class="basis-origin" cx="${ox}" cy="${oy}" r="4"></circle>
       </svg>
     `;
   }

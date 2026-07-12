@@ -4,15 +4,15 @@
     sol: "./assets/theme/sol.webp",
   };
 
-  /** Total duration matches CSS --theme-tx-duration */
+  /** Matches CSS --theme-tx-duration */
   const NORMAL = {
-    duration: 1100,
-    /** Commit mid-hold (~44%): art fully in, page still blurred underneath */
-    commit: 480,
+    duration: 1700,
+    /** Shell at target + wave past midpoint — hide real theme swap */
+    commit: 780,
   };
   const REDUCED = {
-    duration: 280,
-    commit: 130,
+    duration: 320,
+    commit: 140,
   };
 
   let active = false;
@@ -20,7 +20,6 @@
   let image = null;
   let timers = [];
 
-  // Decode both artworks early so the first toggle never flashes empty.
   Object.values(ASSETS).forEach((src) => {
     const preload = new Image();
     preload.decoding = "async";
@@ -35,10 +34,13 @@
     overlay.setAttribute("aria-hidden", "true");
     overlay.innerHTML = `
       <div class="theme-transition__blur"></div>
-      <div class="theme-transition__veil"></div>
-      <div class="theme-transition__atmosphere"></div>
+      <div class="theme-transition__shell"></div>
       <div class="theme-transition__stage">
-        <img class="theme-transition__image" alt="" draggable="false" decoding="async" />
+        <div class="theme-transition__art">
+          <img class="theme-transition__image" alt="" draggable="false" decoding="async" />
+          <div class="theme-transition__sheen"></div>
+          <div class="theme-transition__sparks"></div>
+        </div>
       </div>
     `;
     image = overlay.querySelector(".theme-transition__image");
@@ -66,8 +68,6 @@
 
     if (typeof window.updateThemeIcon === "function") {
       window.updateThemeIcon();
-    } else if (button) {
-      // Fallback: app.js exposes updateThemeIcon as a free function in non-module scope
     }
 
     if (typeof window.drawTransformCanvas === "function") {
@@ -80,13 +80,15 @@
       }),
     );
 
-    // Let canvas labs / layout remeasure under the still-blurred overlay.
     requestAnimationFrame(() => window.dispatchEvent(new Event("resize")));
   }
 
   function finish(button) {
     clearTimers();
-    overlay?.classList.remove("is-active");
+    if (overlay) {
+      overlay.classList.remove("is-active");
+      overlay.removeAttribute("data-mode");
+    }
     document.body.classList.remove("theme-transitioning");
     button?.removeAttribute("aria-busy");
     if (button) button.disabled = false;
@@ -99,7 +101,7 @@
 
     const goingDark = !document.body.classList.contains("dark");
     const targetTheme = goingDark ? "dark" : "light";
-    // Luna escorts light → dark; Sol escorts dark → light
+    // Luna: light → dark. Sol: dark → light. Reveal always BL → TR.
     const mode = goingDark ? "luna" : "sol";
     const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
     const timing = reduced ? REDUCED : NORMAL;
@@ -112,24 +114,26 @@
 
     root.dataset.mode = mode;
     image.src = ASSETS[mode];
-    // Decode before kicking animation when possible (avoids first-frame empty).
+
+    const start = () => {
+      root.classList.remove("is-active");
+      void root.offsetWidth;
+      root.classList.add("is-active");
+
+      timers.push(window.setTimeout(() => commitTheme(targetTheme, button), timing.commit));
+      timers.push(window.setTimeout(() => finish(button), timing.duration + 64));
+    };
+
     if (typeof image.decode === "function") {
-      image.decode().catch(() => {});
+      image
+        .decode()
+        .catch(() => {})
+        .finally(start);
+    } else {
+      start();
     }
-
-    root.classList.remove("is-active");
-    void root.offsetWidth;
-    root.classList.add("is-active");
-
-    timers.push(
-      window.setTimeout(() => commitTheme(targetTheme, button), timing.commit),
-    );
-    timers.push(
-      window.setTimeout(() => finish(button), timing.duration + 48),
-    );
   }
 
-  // Capture phase: intercept before app.js bubble toggle so we own the transition.
   document.addEventListener(
     "click",
     (event) => {

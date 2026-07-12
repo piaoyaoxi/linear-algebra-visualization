@@ -529,10 +529,8 @@
         <div class="s2c-panels">
           <section class="s2c-panel is-active" data-s2c-panel="compose" role="tabpanel">
             <div class="s2c-stage-copy">
-              <div>
-                <span>核心画面</span>
-                <h4>同一张网格，先经过 B，再经过 A</h4>
-              </div>
+              <span class="s2c-stage-kicker">核心画面</span>
+              <h4>同一张网格，先经过 B，再经过 A</h4>
               <p>蓝向量是 x 在当前变换下的像；整张青色网格随矩阵连续变形。</p>
             </div>
             <div class="s2c-canvas-shell">
@@ -555,8 +553,9 @@
 
           <section class="s2c-panel" data-s2c-panel="columns" role="tabpanel" hidden>
             <div class="s2c-stage-copy">
-              <div><span>列视角</span><h4>B 的每一列，都继续接受 A 的作用</h4></div>
-              <p>两根向量从 ${texInline("b_1,b_2")} 连续移到 ${texInline("Ab_1,Ab_2")}；其间平行四边形跟着变形。</p>
+              <span class="s2c-stage-kicker">列视角</span>
+              <h4>B 的每一列，都继续接受 A 的作用</h4>
+              <p>两根向量从 ${texInline("b_1")}、${texInline("b_2")} 连续移到 ${texInline("Ab_1")}、${texInline("Ab_2")}；其间平行四边形跟着变形。</p>
             </div>
             <div class="s2c-columns-layout">
               <div class="s2c-canvas-shell"><canvas class="s2c-column-canvas" data-s2c-column-canvas aria-label="乘积矩阵的列动画"></canvas></div>
@@ -571,7 +570,8 @@
 
           <section class="s2c-panel" data-s2c-panel="formula" role="tabpanel" hidden>
             <div class="s2c-stage-copy">
-              <div><span>坐标视角</span><h4>一个结果元素怎样由一行和一列汇合</h4></div>
+              <span class="s2c-stage-kicker">坐标视角</span>
+              <h4>一个结果元素怎样由一行和一列汇合</h4>
               <p>点击结果矩阵中的位置，配对项会依次亮起，再汇入求和。</p>
             </div>
             <div class="s2c-formula-stage" data-s2c-formula-stage>
@@ -587,7 +587,8 @@
 
           <section class="s2c-panel" data-s2c-panel="order" role="tabpanel" hidden>
             <div class="s2c-stage-copy">
-              <div><span>顺序比较</span><h4>从同一个单位方格出发，左右同时播放</h4></div>
+              <span class="s2c-stage-kicker">顺序比较</span>
+              <h4>从同一个单位方格出发，左右同时播放</h4>
               <p>左边先剪切后拉伸，右边先拉伸后剪切；中间状态不同，最终结果也不同。</p>
             </div>
             <div class="s2c-order-grid">

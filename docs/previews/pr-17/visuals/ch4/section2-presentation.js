@@ -276,22 +276,32 @@
     let presetId = "rectangle";
     let flipped = false;
 
-    const render = () => {
+    const rebuildCells = (original) => {
+      stage.innerHTML = original
+        .flatMap((row, rowIndex) =>
+          row.map(
+            (value, colIndex) =>
+              `<span style="--cell-row:${rowIndex};--cell-col:${colIndex}" data-source-row="${rowIndex}" data-source-col="${colIndex}">${value}</span>`,
+          ),
+        )
+        .join("");
+      stage.dataset.transposePreset = presetId;
+    };
+
+    const render = ({ rebuild = false } = {}) => {
       const original = transposePresets[presetId].values;
       const shown = flipped ? transpose(original) : original;
       const rows = shown.length;
       const cols = shown[0].length;
+      if (rebuild || stage.dataset.transposePreset !== presetId) rebuildCells(original);
       stage.style.setProperty("--s2-transpose-rows", rows);
       stage.style.setProperty("--s2-transpose-cols", cols);
-      stage.innerHTML = original
-        .flatMap((row, rowIndex) =>
-          row.map((value, colIndex) => {
-            const targetRow = flipped ? colIndex : rowIndex;
-            const targetCol = flipped ? rowIndex : colIndex;
-            return `<span style="--cell-row:${targetRow};--cell-col:${targetCol}" data-source-row="${rowIndex}" data-source-col="${colIndex}">${value}</span>`;
-          }),
-        )
-        .join("");
+      stage.querySelectorAll("span[data-source-row]").forEach((cell) => {
+        const sourceRow = Number(cell.dataset.sourceRow);
+        const sourceCol = Number(cell.dataset.sourceCol);
+        cell.style.setProperty("--cell-row", flipped ? sourceCol : sourceRow);
+        cell.style.setProperty("--cell-col", flipped ? sourceRow : sourceCol);
+      });
       name.textContent = flipped ? "Aᵀ" : "A";
       shape.textContent = `${rows} × ${cols}`;
       toggle.textContent = flipped ? "翻折回 A" : "沿主对角线翻折";
@@ -315,10 +325,10 @@
           item.classList.toggle("is-active", active);
           item.setAttribute("aria-pressed", String(active));
         });
-        render();
+        render({ rebuild: true });
       });
     });
-    render();
+    render({ rebuild: true });
   }
 
   function bindSizeGate(root) {

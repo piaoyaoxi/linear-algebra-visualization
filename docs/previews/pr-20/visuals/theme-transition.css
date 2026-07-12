@@ -1,17 +1,18 @@
+/* Premium full-page theme transition: page Gaussian blur + artwork fade */
+
 :root {
-  --theme-transition-duration: 820ms;
-  --theme-transition-ease: cubic-bezier(0.22, 0.8, 0.2, 1);
+  --theme-tx-duration: 1100ms;
+  --theme-tx-ease: cubic-bezier(0.22, 0.72, 0.18, 1);
+  --theme-tx-ease-soft: cubic-bezier(0.4, 0, 0.2, 1);
+  --theme-tx-blur: 28px;
 }
 
 body.theme-transitioning {
   overflow: hidden;
+  cursor: progress;
 }
 
 .theme-transition {
-  --theme-origin-x: calc(100vw - 34px);
-  --theme-origin-y: 34px;
-  --theme-surface: #000;
-  --theme-particle: rgba(255, 255, 255, 0.82);
   position: fixed;
   inset: 0;
   z-index: 2147483000;
@@ -20,47 +21,86 @@ body.theme-transitioning {
   isolation: isolate;
 }
 
-.theme-transition[data-mode="sol"] {
-  --theme-surface: #fff;
-  --theme-particle: rgba(238, 157, 43, 0.78);
-}
-
 .theme-transition.is-active {
   visibility: visible;
+  pointer-events: auto;
 }
 
-.theme-transition__backdrop,
-.theme-transition__visual,
-.theme-transition__particles {
+/* --- Layer 1: true page Gaussian blur (samples live DOM, not a painted mask) --- */
+.theme-transition__blur {
   position: absolute;
   inset: 0;
-}
-
-.theme-transition__backdrop {
   opacity: 0;
-  background: rgba(0, 0, 0, 0.14);
-  -webkit-backdrop-filter: blur(16px) saturate(0.78);
-  backdrop-filter: blur(16px) saturate(0.78);
+  background: transparent;
+  /* Fixed radius — animate opacity only (smooth, cross-browser) */
+  -webkit-backdrop-filter: blur(var(--theme-tx-blur)) saturate(0.9);
+  backdrop-filter: blur(var(--theme-tx-blur)) saturate(0.9);
+  will-change: opacity;
 }
 
-.theme-transition[data-mode="sol"] .theme-transition__backdrop {
-  background: rgba(255, 255, 255, 0.2);
+.theme-transition.is-active .theme-transition__blur {
+  animation: theme-tx-fade-envelope var(--theme-tx-duration) var(--theme-tx-ease-soft) both;
 }
 
-.theme-transition.is-active .theme-transition__backdrop {
-  animation: theme-transition-backdrop var(--theme-transition-duration) ease both;
+/* Soft depth veil — hairline only, never a milky panel */
+.theme-transition__veil {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  pointer-events: none;
+  background: var(--theme-tx-veil);
 }
 
-.theme-transition__visual {
+.theme-transition[data-mode="luna"] {
+  --theme-tx-glow: #9bb4ff;
+  --theme-tx-veil: rgba(2, 4, 12, 0.12);
+}
+
+.theme-transition[data-mode="sol"] {
+  --theme-tx-glow: #ffb45a;
+  --theme-tx-veil: rgba(255, 250, 244, 0.1);
+}
+
+.theme-transition.is-active .theme-transition__veil {
+  animation: theme-tx-fade-envelope var(--theme-tx-duration) var(--theme-tx-ease-soft) both;
+}
+
+/* Subtle color bloom toward the celestial body */
+.theme-transition__atmosphere {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  pointer-events: none;
+  background:
+    radial-gradient(
+      120% 90% at 28% 48%,
+      color-mix(in srgb, var(--theme-tx-glow) 18%, transparent) 0%,
+      transparent 58%
+    ),
+    radial-gradient(
+      80% 70% at 72% 50%,
+      color-mix(in srgb, var(--theme-tx-glow) 8%, transparent) 0%,
+      transparent 55%
+    );
+}
+
+.theme-transition.is-active .theme-transition__atmosphere {
+  animation: theme-tx-atmosphere var(--theme-tx-duration) var(--theme-tx-ease-soft) both;
+}
+
+/* --- Layer 2: full-bleed cinematic artwork --- */
+.theme-transition__stage {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
   overflow: hidden;
-  background: var(--theme-surface);
-  -webkit-clip-path: circle(0 at var(--theme-origin-x) var(--theme-origin-y));
-  clip-path: circle(0 at var(--theme-origin-x) var(--theme-origin-y));
-  will-change: clip-path, opacity;
+  opacity: 0;
+  will-change: opacity;
 }
 
-.theme-transition.is-active .theme-transition__visual {
-  animation: theme-transition-reveal var(--theme-transition-duration) var(--theme-transition-ease) both;
+.theme-transition.is-active .theme-transition__stage {
+  animation: theme-tx-stage var(--theme-tx-duration) var(--theme-tx-ease) both;
 }
 
 .theme-transition__image {
@@ -68,48 +108,36 @@ body.theme-transitioning {
   width: 100%;
   height: 100%;
   object-fit: cover;
-  object-position: 50% 50%;
-  transform: scale(1.025);
-  will-change: transform;
+  object-position: 42% 50%;
+  image-rendering: auto;
+  -webkit-user-drag: none;
+  user-select: none;
+  will-change: transform, opacity;
+  opacity: 0;
+  transform: scale(1.03);
+}
+
+.theme-transition[data-mode="luna"] .theme-transition__image {
+  object-position: 38% 50%;
+}
+
+.theme-transition[data-mode="sol"] .theme-transition__image {
+  object-position: 40% 48%;
 }
 
 .theme-transition.is-active .theme-transition__image {
-  animation: theme-transition-image var(--theme-transition-duration) var(--theme-transition-ease) both;
+  animation: theme-tx-image var(--theme-tx-duration) var(--theme-tx-ease) both;
 }
 
-.theme-transition__particles {
-  overflow: hidden;
-}
-
-.theme-transition__particle {
-  --particle-x: 50vw;
-  --particle-y: 50vh;
-  --particle-dx: 0px;
-  --particle-dy: -12px;
-  --particle-size: 2px;
-  --particle-delay: 0ms;
-  position: absolute;
-  left: var(--particle-x);
-  top: var(--particle-y);
-  width: var(--particle-size);
-  height: var(--particle-size);
-  border-radius: 50%;
-  background: var(--theme-particle);
-  opacity: 0;
-  box-shadow: 0 0 8px color-mix(in srgb, var(--theme-particle) 60%, transparent);
-  transform: translate3d(0, 0, 0) scale(0.45);
-}
-
-.theme-transition.is-active .theme-transition__particle {
-  animation: theme-transition-particle 560ms ease-out var(--particle-delay) both;
-}
-
-@keyframes theme-transition-backdrop {
+/* Blur / veil: rise first (page softens alone), hold through commit, soft exit last */
+@keyframes theme-tx-fade-envelope {
   0% {
     opacity: 0;
   }
-  12%,
-  77% {
+  10% {
+    opacity: 1;
+  }
+  68% {
     opacity: 1;
   }
   100% {
@@ -117,102 +145,111 @@ body.theme-transitioning {
   }
 }
 
-@keyframes theme-transition-reveal {
+@keyframes theme-tx-atmosphere {
   0% {
-    opacity: 1;
-    -webkit-clip-path: circle(0 at var(--theme-origin-x) var(--theme-origin-y));
-    clip-path: circle(0 at var(--theme-origin-x) var(--theme-origin-y));
+    opacity: 0;
   }
-  58%,
-  78% {
-    opacity: 1;
-    -webkit-clip-path: circle(150vmax at var(--theme-origin-x) var(--theme-origin-y));
-    clip-path: circle(150vmax at var(--theme-origin-x) var(--theme-origin-y));
+  12% {
+    opacity: 0.85;
+  }
+  62% {
+    opacity: 0.85;
   }
   100% {
     opacity: 0;
-    -webkit-clip-path: circle(150vmax at var(--theme-origin-x) var(--theme-origin-y));
-    clip-path: circle(150vmax at var(--theme-origin-x) var(--theme-origin-y));
   }
 }
 
-@keyframes theme-transition-image {
-  0% {
-    transform: scale(1.035);
+@keyframes theme-tx-stage {
+  0%,
+  12% {
+    opacity: 0;
   }
-  76% {
+  16% {
+    opacity: 1;
+  }
+  70% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+  }
+}
+
+/*
+ * Artwork timing (1100ms total):
+ *  0–18%  invisible while page blurs in
+ * 18–34%  elegant fade-in + micro scale settle
+ * 34–64%  full hold (theme commits ~44% / 480ms)
+ * 64–100% long soft fade-out over still-blurred page
+ */
+@keyframes theme-tx-image {
+  0%,
+  16% {
+    opacity: 0;
+    transform: scale(1.04);
+  }
+  34% {
+    opacity: 1;
+    transform: scale(1.008);
+  }
+  48%,
+  64% {
+    opacity: 1;
     transform: scale(1);
   }
   100% {
-    transform: scale(0.995);
-  }
-}
-
-@keyframes theme-transition-particle {
-  0% {
     opacity: 0;
-    transform: translate3d(calc(var(--particle-dx) * -0.35), calc(var(--particle-dy) * -0.35), 0) scale(0.35);
-  }
-  28% {
-    opacity: 0.9;
-  }
-  100% {
-    opacity: 0;
-    transform: translate3d(var(--particle-dx), var(--particle-dy), 0) scale(1.15);
+    transform: scale(0.994);
   }
 }
 
 @media (max-width: 720px) {
-  .theme-transition__backdrop {
-    -webkit-backdrop-filter: blur(12px) saturate(0.82);
-    backdrop-filter: blur(12px) saturate(0.82);
+  :root {
+    --theme-tx-blur: 22px;
   }
 
   .theme-transition[data-mode="luna"] .theme-transition__image {
-    object-position: 28% 50%;
+    object-position: 22% 50%;
   }
 
   .theme-transition[data-mode="sol"] .theme-transition__image {
-    object-position: 27% 50%;
+    object-position: 24% 48%;
   }
 }
 
 @media (prefers-reduced-motion: reduce) {
   :root {
-    --theme-transition-duration: 180ms;
+    --theme-tx-duration: 280ms;
+    --theme-tx-blur: 12px;
   }
 
-  .theme-transition__backdrop {
-    -webkit-backdrop-filter: blur(5px);
-    backdrop-filter: blur(5px);
+  .theme-transition.is-active .theme-transition__blur,
+  .theme-transition.is-active .theme-transition__veil {
+    animation: theme-tx-reduced-fade 280ms ease both;
   }
 
-  .theme-transition__visual {
-    -webkit-clip-path: none;
-    clip-path: none;
+  .theme-transition.is-active .theme-transition__atmosphere {
+    animation: theme-tx-reduced-fade 280ms ease both;
   }
 
-  .theme-transition.is-active .theme-transition__visual {
-    animation: theme-transition-fade 180ms ease both;
+  .theme-transition.is-active .theme-transition__stage {
+    animation: theme-tx-reduced-fade 280ms ease both;
   }
 
   .theme-transition.is-active .theme-transition__image {
-    animation: none;
+    animation: theme-tx-reduced-fade 280ms ease both;
     transform: none;
-  }
-
-  .theme-transition__particles {
-    display: none;
   }
 }
 
-@keyframes theme-transition-fade {
+@keyframes theme-tx-reduced-fade {
   0%,
   100% {
     opacity: 0;
   }
-  36%,
-  72% {
+  40%,
+  70% {
     opacity: 1;
   }
 }

@@ -905,9 +905,12 @@
     }
     if (!globalThemeBound) {
       globalThemeBound = true;
-      document.querySelector("#themeToggle")?.addEventListener("click", () => {
+      const redrawTheme = () => {
         requestAnimationFrame(() => activeRoots.forEach((item) => redrawVisible(item)));
-      });
+      };
+      document.querySelector("#themeToggle")?.addEventListener("click", redrawTheme);
+      // Theme transition owns the toggle click; still redraw when theme commits.
+      window.addEventListener("la-themechange", redrawTheme);
     }
     return observer;
   }

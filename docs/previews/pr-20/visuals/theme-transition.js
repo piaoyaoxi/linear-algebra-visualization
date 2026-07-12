@@ -3,16 +3,24 @@
     luna: "./assets/theme/luna.webp",
     sol: "./assets/theme/sol.webp",
   };
-  const NORMAL_TIMING = { duration: 820, commit: 360, sharpen: 650 };
-  const REDUCED_TIMING = { duration: 180, commit: 70, sharpen: 130 };
-  const PARTICLE_COUNT = 20;
+
+  /** Total duration matches CSS --theme-tx-duration */
+  const NORMAL = {
+    duration: 1100,
+    /** Commit mid-hold (~44%): art fully in, page still blurred underneath */
+    commit: 480,
+  };
+  const REDUCED = {
+    duration: 280,
+    commit: 130,
+  };
 
   let active = false;
-  let overlay;
-  let image;
-  let particleLayer;
+  let overlay = null;
+  let image = null;
   let timers = [];
 
+  // Decode both artworks early so the first toggle never flashes empty.
   Object.values(ASSETS).forEach((src) => {
     const preload = new Image();
     preload.decoding = "async";
@@ -26,59 +34,20 @@
     overlay.className = "theme-transition";
     overlay.setAttribute("aria-hidden", "true");
     overlay.innerHTML = `
-      <div class="theme-transition__backdrop"></div>
-      <div class="theme-transition__visual">
+      <div class="theme-transition__blur"></div>
+      <div class="theme-transition__veil"></div>
+      <div class="theme-transition__atmosphere"></div>
+      <div class="theme-transition__stage">
         <img class="theme-transition__image" alt="" draggable="false" decoding="async" />
-        <div class="theme-transition__particles"></div>
       </div>
     `;
-
     image = overlay.querySelector(".theme-transition__image");
-    particleLayer = overlay.querySelector(".theme-transition__particles");
     document.body.append(overlay);
     return overlay;
   }
 
-  function seededRandom(seed) {
-    let value = seed >>> 0;
-    return () => {
-      value = (value * 1664525 + 1013904223) >>> 0;
-      return value / 4294967296;
-    };
-  }
-
-  function renderParticles(mode) {
-    const random = seededRandom(mode === "luna" ? 20260712 : 20260713);
-    const fragment = document.createDocumentFragment();
-    particleLayer.replaceChildren();
-
-    for (let index = 0; index < PARTICLE_COUNT; index += 1) {
-      const particle = document.createElement("span");
-      particle.className = "theme-transition__particle";
-
-      const leftBias = mode === "luna" ? 0.16 : 0.14;
-      const x = Math.round((leftBias + random() * 0.58) * 1000) / 10;
-      const y = Math.round((0.08 + random() * 0.82) * 1000) / 10;
-      const direction = mode === "luna" ? -1 : 1;
-      const dx = Math.round((random() * 22 - 11) * direction);
-      const dy = Math.round((random() * 24 - 12) * direction);
-      const size = (1.2 + random() * 2.5).toFixed(2);
-      const delay = Math.round(110 + random() * 210);
-
-      particle.style.setProperty("--particle-x", `${x}vw`);
-      particle.style.setProperty("--particle-y", `${y}vh`);
-      particle.style.setProperty("--particle-dx", `${dx}px`);
-      particle.style.setProperty("--particle-dy", `${dy}px`);
-      particle.style.setProperty("--particle-size", `${size}px`);
-      particle.style.setProperty("--particle-delay", `${delay}ms`);
-      fragment.append(particle);
-    }
-
-    particleLayer.append(fragment);
-  }
-
   function clearTimers() {
-    timers.forEach((timer) => window.clearTimeout(timer));
+    timers.forEach((id) => window.clearTimeout(id));
     timers = [];
   }
 
@@ -86,15 +55,24 @@
     const isDark = targetTheme === "dark";
     document.body.classList.toggle("dark", isDark);
     document.documentElement.style.colorScheme = targetTheme;
+
     try {
       localStorage.setItem("la-visual-theme", targetTheme);
     } catch (error) {
       console.warn("Theme preference could not be saved.", error);
     }
+
     button?.setAttribute("aria-pressed", String(isDark));
 
-    if (typeof window.updateThemeIcon === "function") window.updateThemeIcon();
-    if (typeof window.drawTransformCanvas === "function") window.drawTransformCanvas();
+    if (typeof window.updateThemeIcon === "function") {
+      window.updateThemeIcon();
+    } else if (button) {
+      // Fallback: app.js exposes updateThemeIcon as a free function in non-module scope
+    }
+
+    if (typeof window.drawTransformCanvas === "function") {
+      window.drawTransformCanvas();
+    }
 
     window.dispatchEvent(
       new CustomEvent("la-themechange", {
@@ -102,6 +80,7 @@
       }),
     );
 
+    // Let canvas labs / layout remeasure under the still-blurred overlay.
     requestAnimationFrame(() => window.dispatchEvent(new Event("resize")));
   }
 
@@ -118,12 +97,13 @@
     if (active) return;
     active = true;
 
-    const targetTheme = document.body.classList.contains("dark") ? "light" : "dark";
-    const mode = targetTheme === "dark" ? "luna" : "sol";
-    const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-    const timing = reducedMotion ? REDUCED_TIMING : NORMAL_TIMING;
+    const goingDark = !document.body.classList.contains("dark");
+    const targetTheme = goingDark ? "dark" : "light";
+    // Luna escorts light → dark; Sol escorts dark → light
+    const mode = goingDark ? "luna" : "sol";
+    const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    const timing = reduced ? REDUCED : NORMAL;
     const root = ensureOverlay();
-    const rect = button.getBoundingClientRect();
 
     clearTimers();
     button.disabled = true;
@@ -131,22 +111,25 @@
     document.body.classList.add("theme-transitioning");
 
     root.dataset.mode = mode;
-    root.style.setProperty("--theme-origin-x", `${rect.left + rect.width / 2}px`);
-    root.style.setProperty("--theme-origin-y", `${rect.top + rect.height / 2}px`);
     image.src = ASSETS[mode];
-    renderParticles(mode);
+    // Decode before kicking animation when possible (avoids first-frame empty).
+    if (typeof image.decode === "function") {
+      image.decode().catch(() => {});
+    }
 
     root.classList.remove("is-active");
     void root.offsetWidth;
     root.classList.add("is-active");
 
-    timers.push(window.setTimeout(() => commitTheme(targetTheme, button), timing.commit));
     timers.push(
-      window.setTimeout(() => document.body.classList.remove("theme-transitioning"), timing.sharpen),
+      window.setTimeout(() => commitTheme(targetTheme, button), timing.commit),
     );
-    timers.push(window.setTimeout(() => finish(button), timing.duration + 40));
+    timers.push(
+      window.setTimeout(() => finish(button), timing.duration + 48),
+    );
   }
 
+  // Capture phase: intercept before app.js bubble toggle so we own the transition.
   document.addEventListener(
     "click",
     (event) => {

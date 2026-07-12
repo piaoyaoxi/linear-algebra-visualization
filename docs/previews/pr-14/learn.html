@@ -8,6 +8,7 @@
     <link rel="stylesheet" href="./vendor/katex/katex.min.css" />
     <link rel="stylesheet" href="./styles.css" />
     <link rel="stylesheet" href="./learn-layout.css" />
+    <link rel="stylesheet" href="./search-modal-a11y.css" />
     <link rel="stylesheet" href="./guide.css" />
     <link rel="stylesheet" href="./visuals/lesson-presentation.css" />
     <link rel="stylesheet" href="./visuals/example-challenge.css" />
@@ -16,6 +17,7 @@
     <link rel="stylesheet" href="./visuals/page-toc-rail.css" />
     <script defer src="./vendor/katex/katex.min.js"></script>
     <script defer src="./app.js"></script>
+    <script defer src="./search-modal-state.js"></script>
     <script defer src="./content/ch1.js"></script>
     <script defer src="./content/ch2.js"></script>
     <script defer src="./content/ch3.js"></script>
@@ -53,7 +55,14 @@
         </svg>
       </button>
       <div class="topbar-center">
-        <button class="topbar-search" id="searchOpen" type="button" aria-haspopup="dialog" aria-controls="searchModal">
+        <button
+          class="topbar-search"
+          id="searchOpen"
+          type="button"
+          aria-haspopup="dialog"
+          aria-controls="searchModal"
+          aria-expanded="false"
+        >
           <svg viewBox="0 0 24 24" aria-hidden="true">
             <circle cx="11" cy="11" r="6.5" />
             <path d="m16.2 16.2 4.3 4.3" />
@@ -62,7 +71,7 @@
         </button>
       </div>
       <div class="topbar-right">
-        <button class="icon-button lang-button" id="langToggle" type="button" aria-label="切换语言（即将支持）" title="切换语言">
+        <button class="icon-button lang-button" id="langToggle" type="button" aria-label="切换显示语言" title="切换语言">
           <span class="lang-button-mark" aria-hidden="true">
             <span class="lang-zh">文</span>
             <span class="lang-en">A</span>
@@ -107,15 +116,24 @@
         role="dialog"
         aria-modal="true"
         aria-labelledby="searchModalTitle"
+        aria-describedby="searchModalDescription"
       >
+        <h2 class="visually-hidden" id="searchModalTitle">搜索课程内容</h2>
         <div class="search-modal-bar">
           <svg viewBox="0 0 24 24" aria-hidden="true">
             <circle cx="11" cy="11" r="6.5" />
             <path d="m16.2 16.2 4.3 4.3" />
           </svg>
-          <input id="searchModalInput" type="search" placeholder="搜索" autocomplete="off" enterkeyhint="search" />
+          <input
+            id="searchModalInput"
+            type="search"
+            aria-label="搜索课程内容"
+            placeholder="搜索"
+            autocomplete="off"
+            enterkeyhint="search"
+          />
         </div>
-        <div class="search-modal-body" id="searchModalTitle">输入关键词，全局搜索即将接入。</div>
+        <div class="search-modal-body" id="searchModalDescription">输入章节名称、概念或关键词。</div>
       </div>
     </div>
   </body>

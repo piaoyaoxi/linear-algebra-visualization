@@ -123,26 +123,72 @@
   to { opacity: 1; transform: translateY(0); }
 }
 
-/* Single column: never park KaTeX in a second grid track (that shreds math). */
+/*
+ * Stage intro is a plain block stack — never a multi-column grid.
+ * Prose here uses Unicode only (no .tex-inline chips) to avoid layout fights.
+ */
 #matrix-operations-interactive .s2c-stage-copy {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr);
-  gap: 8px;
-  margin-bottom: 16px;
-  max-width: 72ch;
+  display: block;
+  width: 100%;
+  max-width: 52rem;
+  margin: 0 0 16px;
+  padding: 0;
+}
+
+#matrix-operations-interactive .s2c-stage-copy > * {
+  display: block;
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
 }
 
 #matrix-operations-interactive .s2c-stage-copy h4 {
+  margin: 0 0 8px;
   font-size: clamp(18px, 2vw, 23px);
+  line-height: 1.35;
 }
 
 #matrix-operations-interactive .s2c-stage-copy p {
-  max-width: 68ch;
+  margin: 0;
+  max-width: 48rem;
+  color: var(--muted);
+  font-size: 14px;
+  line-height: 1.75;
+  white-space: normal;
 }
 
-/* Keep KaTeX inline; do not force every descendant span to block. */
-#matrix-operations-interactive .s2c-stage-copy .katex,
+#matrix-operations-interactive .s2c-stage-copy .s2c-math-plain {
+  font-family: "Times New Roman", "STIX Two Math", "Cambria Math", Georgia, serif;
+  font-weight: 700;
+  color: var(--accent-strong);
+  white-space: nowrap;
+}
+
+/* Never let chip styles / old span rules affect stage prose */
+#matrix-operations-interactive .s2c-stage-copy .tex,
 #matrix-operations-interactive .s2c-stage-copy .tex-inline,
+#matrix-operations-interactive .s2c-stage-copy .katex {
+  display: inline !important;
+  min-height: 0 !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  border: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  white-space: normal !important;
+}
+
+#matrix-operations-interactive .s2c-stage-copy .katex-mathml {
+  position: absolute !important;
+  width: 1px !important;
+  height: 1px !important;
+  padding: 0 !important;
+  margin: -1px !important;
+  overflow: hidden !important;
+  clip: rect(0, 0, 0, 0) !important;
+  border: 0 !important;
+}
+
 #matrix-operations-interactive .s2c-header .katex,
 #matrix-operations-interactive .s2c-header .tex-inline {
   display: inline-block;
@@ -328,11 +374,17 @@
   font-weight: 800;
 }
 
-#matrix-operations-interactive .s2c-column-readout strong {
+#matrix-operations-interactive .s2c-column-readout strong,
+#matrix-operations-interactive .s2c-plain-vec {
   justify-self: start;
   min-width: 0;
   overflow-x: auto;
   color: var(--text);
+  font-family: "Times New Roman", "STIX Two Math", "Cambria Math", Georgia, serif;
+  font-size: 15px;
+  font-weight: 750;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
 }
 
 #matrix-operations-interactive .s2c-column-readout strong .katex,

@@ -491,10 +491,11 @@
     if (!readout) return;
     const b1 = interpolateVector([1, 0], [2, 0], progress);
     const b2 = interpolateVector([1, 1], [2, 1], progress);
+    // Plain text vectors — avoids .tex-inline chip layout fights in the side panel.
     readout.innerHTML = `
-      <div><span>第一列</span><strong>${texInline(`\\begin{bmatrix}${formatNumber(b1[0])}\\\\${formatNumber(b1[1])}\\end{bmatrix}`)}</strong></div>
-      <div><span>第二列</span><strong>${texInline(`\\begin{bmatrix}${formatNumber(b2[0])}\\\\${formatNumber(b2[1])}\\end{bmatrix}`)}</strong></div>
-      <p>${progress < 0.98 ? "A 正在分别作用于 B 的两列；平行四边形随之变形。" : `两根向量现在正是 ${texInline("AB")} 的两列。`}</p>`;
+      <div><span>第一列</span><strong class="s2c-plain-vec">(${formatNumber(b1[0])}, ${formatNumber(b1[1])})ᵀ</strong></div>
+      <div><span>第二列</span><strong class="s2c-plain-vec">(${formatNumber(b2[0])}, ${formatNumber(b2[1])})ᵀ</strong></div>
+      <p>${progress < 0.98 ? "A 正在分别作用于 B 的两列；平行四边形随之变形。" : "两根向量现在正是 AB 的两列。"}</p>`;
   }
 
   function vectorLabelForCompose(stageIndex) {
@@ -531,7 +532,7 @@
             <div class="s2c-stage-copy">
               <span class="s2c-stage-kicker">核心画面</span>
               <h4>同一张网格，先经过 B，再经过 A</h4>
-              <p>蓝向量是 x 在当前变换下的像；整张青色网格随矩阵连续变形。</p>
+              <p>蓝向量是输入 <span class="s2c-math-plain">x</span> 在当前变换下的像；整张青色网格随矩阵连续变形。</p>
             </div>
             <div class="s2c-canvas-shell">
               <canvas class="s2c-main-canvas" data-s2c-compose-canvas aria-label="矩阵复合连续动画"></canvas>
@@ -555,10 +556,16 @@
             <div class="s2c-stage-copy">
               <span class="s2c-stage-kicker">列视角</span>
               <h4>B 的每一列，都继续接受 A 的作用</h4>
-              <p>两根向量从 ${texInline("b_1")}、${texInline("b_2")} 连续移到 ${texInline("Ab_1")}、${texInline("Ab_2")}；其间平行四边形跟着变形。</p>
+              <p>
+                两根向量从 <span class="s2c-math-plain">b₁</span>、<span class="s2c-math-plain">b₂</span>
+                连续移到 <span class="s2c-math-plain">Ab₁</span>、<span class="s2c-math-plain">Ab₂</span>；
+                其间平行四边形跟着变形。
+              </p>
             </div>
             <div class="s2c-columns-layout">
-              <div class="s2c-canvas-shell"><canvas class="s2c-column-canvas" data-s2c-column-canvas aria-label="乘积矩阵的列动画"></canvas></div>
+              <div class="s2c-canvas-shell">
+                <canvas class="s2c-column-canvas" data-s2c-column-canvas width="720" height="360" aria-label="乘积矩阵的列动画"></canvas>
+              </div>
               <aside class="s2c-column-readout" data-s2c-column-readout></aside>
             </div>
             <div class="s2c-controls">
@@ -658,7 +665,15 @@
         panel.classList.toggle("is-active", active);
         panel.hidden = !active;
       });
-      requestAnimationFrame(() => redrawVisible(root));
+      // Double rAF: wait until the panel is visible before measuring canvas size.
+      requestAnimationFrame(() => {
+        requestAnimationFrame(() => {
+          root.querySelectorAll("canvas").forEach((canvas) => {
+            canvas._s2cMetrics = null;
+          });
+          redrawVisible(root);
+        });
+      });
     };
     tabs.forEach((tab, index) => {
       tab.addEventListener("click", () => activate(tab.dataset.s2cTab), { signal });

@@ -1,0 +1,758 @@
+#matrix-language-formal .section-one-foundation {
+  display: grid;
+  gap: 28px;
+}
+
+#matrix-language-formal .section-one-lead {
+  max-width: 74ch;
+  margin: 0;
+  color: var(--muted);
+  font-size: 16px;
+  line-height: 1.85;
+}
+
+#matrix-language-formal .section-one-module {
+  display: grid;
+  gap: 18px;
+  padding-top: 6px;
+}
+
+#matrix-language-formal .module-heading {
+  display: grid;
+  grid-template-columns: 40px minmax(0, 1fr);
+  gap: 12px;
+  align-items: start;
+}
+
+#matrix-language-formal .module-heading > span {
+  display: grid;
+  place-items: center;
+  width: 34px;
+  height: 34px;
+  border: 1px solid color-mix(in srgb, var(--accent) 34%, var(--line));
+  border-radius: 50%;
+  color: var(--accent-strong);
+  background: var(--accent-soft);
+  font-size: 12px;
+  font-weight: 800;
+}
+
+#matrix-language-formal .module-heading h3 {
+  margin: 0 0 4px;
+  font-size: clamp(19px, 2vw, 23px);
+}
+
+#matrix-language-formal .module-heading p {
+  margin: 0;
+  color: var(--muted);
+  line-height: 1.65;
+}
+
+#matrix-language-formal .matrix-source-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 14px;
+}
+
+#matrix-language-formal .matrix-source-card,
+#matrix-language-formal .equality-case,
+#matrix-language-formal .matrix-type-card,
+#matrix-language-formal .shape-machine,
+#matrix-language-formal .anatomy-lab {
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: var(--surface-solid);
+}
+
+#matrix-language-formal .matrix-source-card {
+  display: grid;
+  align-content: start;
+  gap: 14px;
+  min-width: 0;
+  padding: 20px 18px 18px;
+  box-shadow: var(--shadow-soft);
+}
+
+#matrix-language-formal .matrix-source-kicker {
+  color: var(--accent-strong);
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+}
+
+#matrix-language-formal .matrix-source-card h3 {
+  margin: 0;
+  font-size: 17px;
+  line-height: 1.35;
+}
+
+#matrix-language-formal .matrix-source-card p {
+  margin: 0;
+  color: var(--muted);
+  font-size: 14px;
+  line-height: 1.7;
+}
+
+#matrix-language-formal .pixel-matrix-demo,
+#matrix-language-formal .source-equation,
+#matrix-language-formal .source-basis-stage {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  min-height: 148px;
+}
+
+#matrix-language-formal .pixel-picture,
+#matrix-language-formal .pixel-number-grid {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  width: 94px;
+  aspect-ratio: 1;
+  overflow: hidden;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+}
+
+#matrix-language-formal .pixel-picture span {
+  background: var(--pixel);
+}
+
+#matrix-language-formal .pixel-number-grid span {
+  display: grid;
+  place-items: center;
+  background: var(--surface-soft);
+  color: var(--muted);
+  font-size: 7px;
+  font-variant-numeric: tabular-nums;
+}
+
+#matrix-language-formal .source-arrow {
+  color: var(--faint);
+  font-size: 22px;
+  font-weight: 700;
+}
+
+#matrix-language-formal .source-equation .tex-display {
+  margin: 0;
+  font-size: 0.9rem;
+}
+
+#matrix-language-formal .source-basis-stage {
+  padding: 8px 6px;
+  overflow: hidden;
+  border: 1px solid color-mix(in srgb, var(--line) 92%, var(--accent) 8%);
+  border-radius: 16px;
+  background:
+    radial-gradient(ellipse 70% 60% at 38% 66%, color-mix(in srgb, var(--accent) 8%, transparent), transparent 74%),
+    radial-gradient(ellipse 50% 46% at 72% 30%, color-mix(in srgb, var(--coral) 7%, transparent), transparent 76%),
+    linear-gradient(168deg, color-mix(in srgb, var(--surface-soft) 58%, #fff) 0%, var(--surface-solid) 100%);
+}
+
+#matrix-language-formal .source-basis-svg {
+  display: block;
+  width: 100%;
+  height: 150px;
+  overflow: visible;
+}
+
+#matrix-language-formal .basis-grid path {
+  fill: none;
+  stroke: color-mix(in srgb, var(--line-strong) 28%, transparent);
+  stroke-width: 1;
+  stroke-linecap: round;
+}
+
+#matrix-language-formal .basis-axis path {
+  fill: none;
+  stroke: color-mix(in srgb, var(--muted) 32%, var(--line-strong));
+  stroke-width: 1.15;
+  stroke-linecap: round;
+}
+
+#matrix-language-formal .basis-cell {
+  fill: color-mix(in srgb, var(--accent) 10%, transparent);
+  stroke: color-mix(in srgb, var(--accent) 22%, transparent);
+  stroke-width: 1.1;
+  stroke-linejoin: round;
+}
+
+/* Whole arrow is one path → impossible for shaft/tip colors to diverge. */
+#matrix-language-formal .basis-arrow {
+  fill: currentColor;
+  stroke: currentColor;
+  stroke-width: 0.6;
+  stroke-linejoin: round;
+  stroke-linecap: round;
+}
+
+#matrix-language-formal .basis-arrow-one {
+  color: var(--accent-strong);
+}
+
+#matrix-language-formal .basis-arrow-two {
+  color: var(--coral);
+}
+
+#matrix-language-formal .basis-label rect {
+  stroke-width: 0;
+  filter: none;
+}
+
+#matrix-language-formal .basis-label text {
+  font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+  font-size: 12px;
+  font-weight: 780;
+  letter-spacing: 0.01em;
+}
+
+#matrix-language-formal .basis-label-one rect {
+  fill: color-mix(in srgb, var(--accent-strong) 12%, var(--surface-solid));
+}
+
+#matrix-language-formal .basis-label-one text {
+  fill: var(--accent-strong);
+}
+
+#matrix-language-formal .basis-label-two rect {
+  fill: color-mix(in srgb, var(--coral) 14%, var(--surface-solid));
+}
+
+#matrix-language-formal .basis-label-two text {
+  fill: var(--coral);
+}
+
+#matrix-language-formal .basis-origin {
+  fill: color-mix(in srgb, var(--text) 72%, var(--muted));
+  stroke: var(--surface-solid);
+  stroke-width: 2;
+}
+
+body.dark #matrix-language-formal .source-basis-stage {
+  background:
+    radial-gradient(ellipse 70% 60% at 38% 66%, color-mix(in srgb, var(--accent) 12%, transparent), transparent 74%),
+    radial-gradient(ellipse 50% 46% at 72% 30%, color-mix(in srgb, var(--coral) 10%, transparent), transparent 76%),
+    linear-gradient(168deg, color-mix(in srgb, var(--surface-soft) 78%, #0c1210), var(--surface-solid));
+}
+
+body.dark #matrix-language-formal .basis-label-one rect {
+  fill: color-mix(in srgb, var(--accent-strong) 18%, var(--surface-solid));
+}
+
+body.dark #matrix-language-formal .basis-label-two rect {
+  fill: color-mix(in srgb, var(--coral) 18%, var(--surface-solid));
+}
+
+#matrix-language-formal .anatomy-toolbar,
+.transform-preset-bar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+#matrix-language-formal .anatomy-toolbar button,
+.transform-preset-bar button,
+#matrix-language-formal .equality-actions button {
+  min-height: 36px;
+  padding: 0 14px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: var(--surface-solid);
+  color: var(--muted);
+  font: inherit;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: border-color 150ms ease, background 150ms ease, color 150ms ease, transform 150ms ease;
+}
+
+#matrix-language-formal .anatomy-toolbar button:hover,
+.transform-preset-bar button:hover,
+#matrix-language-formal .equality-actions button:hover {
+  border-color: color-mix(in srgb, var(--accent) 45%, var(--line));
+  color: var(--text);
+}
+
+#matrix-language-formal .anatomy-toolbar button.is-active,
+.transform-preset-bar button.is-active,
+#matrix-language-formal .equality-actions button.is-selected {
+  border-color: color-mix(in srgb, var(--accent) 52%, var(--line));
+  background: var(--accent-soft);
+  color: var(--accent-strong);
+}
+
+#matrix-language-formal .anatomy-toolbar button:focus-visible,
+.transform-preset-bar button:focus-visible,
+#matrix-language-formal .equality-actions button:focus-visible,
+#matrix-language-formal .anatomy-cell:focus-visible {
+  outline: 3px solid color-mix(in srgb, var(--accent) 30%, transparent);
+  outline-offset: 2px;
+}
+
+#matrix-language-formal .anatomy-lab {
+  display: grid;
+  grid-template-columns: minmax(300px, 1.1fr) minmax(240px, 0.9fr);
+  gap: 20px;
+  padding: 22px;
+}
+
+#matrix-language-formal .anatomy-matrix-shell {
+  position: relative;
+  display: grid;
+  place-items: center;
+  min-height: 230px;
+  padding: 24px 36px;
+  border-radius: calc(var(--radius) - 4px);
+  background: var(--surface-soft);
+}
+
+#matrix-language-formal .anatomy-matrix {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(44px, 1fr));
+  gap: 8px;
+  width: min(100%, 360px);
+}
+
+#matrix-language-formal .anatomy-cell {
+  display: grid;
+  place-items: center;
+  min-width: 0;
+  aspect-ratio: 1.28;
+  border: 1px solid transparent;
+  border-radius: 10px;
+  background: transparent;
+  color: var(--text);
+  font: 700 16px ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  cursor: pointer;
+  transition: opacity 150ms ease, border-color 150ms ease, background 150ms ease, transform 150ms ease;
+}
+
+#matrix-language-formal .anatomy-cell:hover {
+  border-color: var(--line-strong);
+  background: var(--surface-solid);
+}
+
+#matrix-language-formal .anatomy-cell.is-related {
+  border-color: color-mix(in srgb, var(--accent) 30%, var(--line));
+  background: var(--accent-soft);
+  color: var(--accent-strong);
+}
+
+#matrix-language-formal .anatomy-cell.is-selected {
+  border-color: var(--accent);
+  background: color-mix(in srgb, var(--accent-soft) 70%, var(--surface-solid));
+  color: var(--accent-strong);
+  transform: translateY(-1px);
+}
+
+#matrix-language-formal .anatomy-cell.is-muted {
+  opacity: 0.35;
+}
+
+#matrix-language-formal .matrix-bracket {
+  position: absolute;
+  top: 36px;
+  bottom: 36px;
+  width: 16px;
+  border-top: 2px solid var(--text);
+  border-bottom: 2px solid var(--text);
+  opacity: 0.72;
+}
+
+#matrix-language-formal .matrix-bracket-left {
+  left: 20px;
+  border-left: 2px solid var(--text);
+}
+
+#matrix-language-formal .matrix-bracket-right {
+  right: 20px;
+  border-right: 2px solid var(--text);
+}
+
+#matrix-language-formal .anatomy-readout {
+  display: grid;
+  align-content: center;
+  gap: 12px;
+  min-width: 0;
+  padding: 18px;
+  border-left: 3px solid var(--accent);
+}
+
+#matrix-language-formal .anatomy-readout .tex-display {
+  margin: 0;
+  text-align: left;
+}
+
+#matrix-language-formal .anatomy-order {
+  color: var(--muted);
+}
+
+#matrix-language-formal .anatomy-readout p {
+  margin: 0;
+  color: var(--muted);
+  line-height: 1.75;
+}
+
+#matrix-language-formal .equality-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 14px;
+}
+
+#matrix-language-formal .equality-case {
+  display: grid;
+  gap: 14px;
+  min-width: 0;
+  padding: 18px;
+}
+
+#matrix-language-formal .equality-case.is-correct {
+  border-color: color-mix(in srgb, var(--accent) 52%, var(--line));
+}
+
+#matrix-language-formal .equality-case.is-wrong {
+  border-color: color-mix(in srgb, var(--coral) 45%, var(--line));
+}
+
+#matrix-language-formal .equality-matrices {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+  gap: 6px;
+  align-items: center;
+  min-height: 118px;
+}
+
+#matrix-language-formal .equality-matrices .tex-display {
+  margin: 0;
+  overflow-x: auto;
+  font-size: 0.82rem;
+}
+
+#matrix-language-formal .equality-symbol {
+  color: var(--faint);
+  font-size: 22px;
+  font-weight: 800;
+}
+
+#matrix-language-formal .equality-actions {
+  display: flex;
+  gap: 8px;
+}
+
+#matrix-language-formal .equality-feedback {
+  min-height: 48px;
+  margin: 0;
+  color: var(--muted);
+  font-size: 13px;
+  line-height: 1.6;
+}
+
+#matrix-language-formal .matrix-type-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+}
+
+#matrix-language-formal .matrix-type-card {
+  display: grid;
+  grid-template-columns: minmax(90px, auto) minmax(0, 1fr);
+  gap: 10px;
+  align-items: center;
+  min-width: 0;
+  padding: 15px 16px;
+}
+
+#matrix-language-formal .matrix-type-card > span {
+  color: var(--accent-strong);
+  font-size: 13px;
+  font-weight: 780;
+}
+
+#matrix-language-formal .matrix-type-card .tex-display {
+  margin: 0;
+  overflow-x: auto;
+  font-size: 0.88rem;
+}
+
+#matrix-language-formal .shape-machine {
+  display: grid;
+  gap: 20px;
+  padding: 20px;
+}
+
+#matrix-language-formal .shape-controls {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px;
+}
+
+#matrix-language-formal .shape-controls label {
+  display: grid;
+  grid-template-columns: auto minmax(90px, 1fr) 28px;
+  gap: 10px;
+  align-items: center;
+  color: var(--muted);
+  font-size: 13px;
+  font-weight: 700;
+}
+
+#matrix-language-formal .shape-controls input {
+  width: 100%;
+  accent-color: var(--accent);
+}
+
+#matrix-language-formal .shape-controls output {
+  color: var(--accent-strong);
+  font-variant-numeric: tabular-nums;
+  text-align: right;
+}
+
+#matrix-language-formal .shape-flow {
+  display: grid;
+  grid-template-columns: minmax(100px, 1fr) auto minmax(120px, 1.2fr) auto minmax(100px, 1fr);
+  gap: 12px;
+  align-items: center;
+}
+
+#matrix-language-formal .shape-port-group,
+#matrix-language-formal .shape-matrix-card {
+  display: grid;
+  justify-items: center;
+  gap: 10px;
+  min-width: 0;
+  padding: 16px;
+  border: 1px solid var(--line);
+  border-radius: calc(var(--radius) - 4px);
+  background: var(--surface-soft);
+}
+
+#matrix-language-formal .shape-port-group strong,
+#matrix-language-formal .shape-matrix-card strong {
+  color: var(--muted);
+  font-size: 13px;
+}
+
+#matrix-language-formal .shape-ports {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 6px;
+}
+
+#matrix-language-formal .shape-ports span {
+  display: grid;
+  place-items: center;
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  background: var(--accent-soft);
+  color: var(--accent-strong);
+  font-size: 12px;
+  font-weight: 800;
+}
+
+#matrix-language-formal .shape-mini-matrix {
+  display: grid;
+  grid-template-columns: repeat(var(--shape-cols), 16px);
+  gap: 4px;
+  padding: 10px 12px;
+  border-left: 2px solid var(--text);
+  border-right: 2px solid var(--text);
+}
+
+#matrix-language-formal .shape-mini-matrix span {
+  width: 16px;
+  height: 16px;
+  border-radius: 4px;
+  background: color-mix(in srgb, var(--accent) 38%, var(--surface-solid));
+}
+
+#matrix-language-formal .shape-flow-arrow {
+  color: var(--faint);
+  font-size: 24px;
+  font-weight: 800;
+}
+
+#matrix-language-formal .shape-explanation {
+  margin: 0;
+  color: var(--muted);
+  line-height: 1.75;
+  text-align: center;
+}
+
+#matrix-language-formal .column-reading-note {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: 14px;
+  align-items: start;
+  padding: 18px 20px;
+  border-left: 4px solid var(--accent);
+  border-radius: 0 var(--radius) var(--radius) 0;
+  background: var(--surface-soft);
+}
+
+#matrix-language-formal .column-reading-note strong {
+  color: var(--accent-strong);
+  font-size: 14px;
+  white-space: nowrap;
+}
+
+#matrix-language-formal .column-reading-note p {
+  margin: 0;
+  color: var(--muted);
+  line-height: 1.75;
+}
+
+#matrix-language-interactive .visual-panel {
+  margin-top: 18px;
+}
+
+#matrix-language-interactive .transform-preset-bar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin: 0;
+  padding: 16px 28px 14px;
+  border-bottom: 1px solid var(--line);
+  background: color-mix(in srgb, var(--surface-soft) 55%, transparent);
+}
+
+#matrix-language-interactive .section-one-transform-status {
+  display: grid;
+  gap: 12px;
+  margin-top: 6px;
+  padding: 16px 16px 15px;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  background: var(--surface-solid);
+}
+
+#matrix-language-interactive .section-one-transform-status > div {
+  display: grid;
+  grid-template-columns: 4.5rem minmax(0, 1fr);
+  gap: 10px;
+  align-items: center;
+}
+
+#matrix-language-interactive .section-one-transform-status span {
+  color: var(--faint);
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+}
+
+#matrix-language-interactive .section-one-transform-status strong {
+  color: var(--accent-strong);
+  font-size: 14px;
+  font-weight: 780;
+  font-variant-numeric: tabular-nums;
+}
+
+#matrix-language-interactive .section-one-transform-status p {
+  margin: 2px 0 0;
+  color: var(--muted);
+  font-size: 13px;
+  line-height: 1.65;
+}
+
+@media (max-width: 980px) {
+  #matrix-language-formal .matrix-source-grid,
+  #matrix-language-formal .equality-grid {
+    grid-template-columns: 1fr;
+  }
+
+  #matrix-language-formal .matrix-source-card {
+    grid-template-columns: minmax(180px, 0.8fr) minmax(0, 1.2fr);
+    align-items: center;
+  }
+
+  #matrix-language-formal .matrix-source-card .matrix-source-kicker {
+    grid-column: 1 / -1;
+  }
+
+  #matrix-language-formal .matrix-source-card h3,
+  #matrix-language-formal .matrix-source-card p {
+    grid-column: 2;
+  }
+
+  #matrix-language-formal .pixel-matrix-demo,
+  #matrix-language-formal .source-equation,
+  #matrix-language-formal .source-basis-stage {
+    grid-column: 1;
+    grid-row: 2 / span 2;
+  }
+
+  #matrix-language-formal .matrix-type-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 720px) {
+  #matrix-language-formal .module-heading,
+  #matrix-language-formal .anatomy-lab,
+  #matrix-language-formal .column-reading-note,
+  #matrix-language-formal .shape-controls,
+  #matrix-language-formal .matrix-source-card {
+    grid-template-columns: 1fr;
+  }
+
+  #matrix-language-formal .module-heading > span {
+    display: none;
+  }
+
+  #matrix-language-formal .matrix-source-card h3,
+  #matrix-language-formal .matrix-source-card p,
+  #matrix-language-formal .pixel-matrix-demo,
+  #matrix-language-formal .source-equation,
+  #matrix-language-formal .source-basis-stage {
+    grid-column: auto;
+    grid-row: auto;
+  }
+
+  #matrix-language-formal .anatomy-lab {
+    padding: 14px;
+  }
+
+  #matrix-language-formal .anatomy-matrix-shell {
+    min-height: 210px;
+    padding: 20px 26px;
+  }
+
+  #matrix-language-formal .anatomy-matrix {
+    grid-template-columns: repeat(4, minmax(38px, 1fr));
+    gap: 5px;
+  }
+
+  #matrix-language-formal .matrix-bracket-left {
+    left: 10px;
+  }
+
+  #matrix-language-formal .matrix-bracket-right {
+    right: 10px;
+  }
+
+  #matrix-language-formal .matrix-type-grid {
+    grid-template-columns: 1fr;
+  }
+
+  #matrix-language-formal .shape-flow {
+    grid-template-columns: 1fr;
+  }
+
+  #matrix-language-formal .shape-flow-arrow {
+    transform: rotate(90deg);
+    text-align: center;
+  }
+
+  #matrix-language-formal .column-reading-note strong {
+    white-space: normal;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  #matrix-language-formal .anatomy-cell,
+  #matrix-language-formal button,
+  .transform-preset-bar button {
+    transition: none;
+  }
+}

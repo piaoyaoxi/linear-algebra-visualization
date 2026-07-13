@@ -1,4 +1,4 @@
-/* Chapter 4 §4: one-pass definitions and a real inverse-transformation lab. */
+/* Chapter 4 §4: one-pass definitions and rank/determinant invertibility lab. */
 .section4-formal {
   display: grid;
   gap: 18px;
@@ -22,7 +22,7 @@
 }
 
 .section4-formal .tex-inline,
-.inverse-lab .tex-inline {
+.rank-inverse-lab .tex-inline {
   max-width: 100%;
   white-space: nowrap;
   overflow-wrap: normal;
@@ -30,13 +30,13 @@
 }
 
 .section4-formal .tex-inline .katex,
-.inverse-lab .tex-inline .katex {
+.rank-inverse-lab .tex-inline .katex {
   white-space: nowrap;
 }
 
-.inverse-lab {
+.rank-inverse-lab {
   display: grid;
-  gap: 20px;
+  gap: 22px;
   margin-top: 18px;
   padding: 22px;
   border: 1px solid var(--line);
@@ -45,7 +45,7 @@
   box-shadow: var(--shadow-soft);
 }
 
-body.dark .inverse-lab {
+body.dark .rank-inverse-lab {
   border-color: var(--glass-border);
   background:
     linear-gradient(180deg, rgba(255, 255, 255, 0.08), rgba(255, 255, 255, 0.025)),
@@ -55,305 +55,528 @@ body.dark .inverse-lab {
     0 18px 44px rgba(0, 0, 0, 0.34);
 }
 
-.inverse-lab-head {
-  display: flex;
-  justify-content: space-between;
-  gap: 18px;
-  align-items: flex-start;
+.rank-inverse-head {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(310px, 0.72fr);
+  gap: 20px;
+  align-items: start;
 }
 
-.inverse-lab-head h3 {
+.rank-inverse-kicker {
+  display: block;
+  margin-bottom: 6px;
+  color: var(--accent-strong);
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+}
+
+.rank-inverse-head h3 {
   margin: 0 0 7px;
 }
 
-.inverse-lab-head p {
-  max-width: 66ch;
+.rank-inverse-head p {
+  max-width: 64ch;
   margin: 0;
   color: var(--muted);
   line-height: 1.75;
 }
 
-.inverse-preset-group {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: flex-end;
-  gap: 8px;
-  flex: 0 0 auto;
-}
-
-.inverse-preset-group button {
-  min-height: 38px;
-  padding: 0 13px;
-  border: 1px solid var(--line);
-  border-radius: 10px;
-  background: var(--surface-soft);
-  color: var(--muted);
-  cursor: pointer;
-  font-weight: 740;
-}
-
-.inverse-preset-group button:hover,
-.inverse-preset-group button.is-active {
-  border-color: color-mix(in srgb, var(--accent) 44%, var(--line));
-  background: var(--accent-soft);
-  color: var(--accent-strong);
-}
-
-.inverse-lab-body {
+.rank-equivalence {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(250px, 0.37fr);
-  gap: 18px;
-  align-items: stretch;
-}
-
-.inverse-stage-wrap {
-  min-width: 0;
-  overflow: hidden;
-  border: 1px solid var(--line);
-  border-radius: 14px;
-  background:
-    linear-gradient(180deg, color-mix(in srgb, var(--surface-soft) 70%, transparent), transparent),
-    var(--surface-solid);
-}
-
-.inverse-stage {
-  display: block;
-  width: 100%;
-  height: auto;
-  min-height: 360px;
-  overflow: hidden;
-}
-
-.inverse-grid-line,
-.inverse-axis,
-.inverse-vector,
-.inverse-original-shape,
-.inverse-current-shape {
-  vector-effect: non-scaling-stroke;
-}
-
-.inverse-grid-line {
-  stroke: color-mix(in srgb, var(--line) 72%, transparent);
-  stroke-width: 1;
-}
-
-.inverse-axis {
-  stroke: var(--line-strong);
-  stroke-width: 1.5;
-}
-
-.inverse-original-shape {
-  fill: none;
-  stroke: var(--faint);
-  stroke-width: 1.5;
-  stroke-dasharray: 7 6;
-  opacity: 0.72;
-}
-
-.inverse-current-shape {
-  fill: var(--accent-soft);
-  stroke: var(--accent-strong);
-  stroke-width: 2.4;
-}
-
-.inverse-vector {
-  stroke-width: 3;
-  stroke-linecap: round;
-}
-
-.inverse-vector-x {
-  stroke: var(--accent-strong);
-}
-
-.inverse-vector-y {
-  stroke: var(--coral);
-}
-
-.inverse-input-point {
-  fill: var(--surface-solid);
-  stroke: var(--faint);
-  stroke-width: 2;
-}
-
-.inverse-current-point {
-  fill: var(--accent);
-  stroke: var(--surface-solid);
-  stroke-width: 3;
-}
-
-.inverse-point-label {
-  fill: var(--text);
-  font-family: Georgia, "Times New Roman", serif;
-  font-size: 18px;
-  font-style: italic;
-  font-weight: 700;
-}
-
-.inverse-stage-caption {
-  display: flex;
-  justify-content: space-between;
-  gap: 18px;
-  align-items: center;
-  padding: 15px 18px;
-  border-top: 1px solid var(--line);
-  background: color-mix(in srgb, var(--surface-soft) 82%, transparent);
-}
-
-.inverse-stage-caption > div {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-  align-items: center;
-}
-
-.inverse-stage-caption span {
-  color: var(--accent-strong);
-  font-size: 13px;
-  font-weight: 780;
-}
-
-.inverse-stage-caption strong {
-  min-width: 0;
-}
-
-.inverse-stage-caption p {
-  margin: 0;
-  color: var(--muted);
-  font-size: 14px;
-  text-align: right;
-}
-
-.inverse-readout {
-  display: grid;
-  align-content: start;
-  gap: 12px;
-  min-width: 0;
-}
-
-.inverse-readout-card,
-.inverse-math-list {
+  gap: 9px;
+  padding: 15px 16px;
   border: 1px solid var(--line);
   border-radius: 13px;
   background: var(--surface-soft);
 }
 
-.inverse-readout-card {
-  padding: 16px;
+.rank-equivalence > div {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 7px;
+  align-items: center;
+  color: var(--muted);
+  font-size: 13px;
+  line-height: 1.55;
 }
 
-.inverse-readout-card span {
+.rank-equivalence b {
+  color: var(--faint);
+}
+
+.rank-dot {
+  width: 9px;
+  height: 9px;
+  flex: 0 0 auto;
+  border-radius: 50%;
+}
+
+.rank-dot.is-invertible {
+  background: var(--accent);
+}
+
+.rank-dot.is-singular {
+  background: var(--coral);
+}
+
+.rank-case-groups {
+  display: grid;
+  gap: 14px;
+}
+
+.rank-case-group {
+  display: grid;
+  grid-template-columns: minmax(180px, 0.28fr) minmax(0, 1fr);
+  gap: 14px;
+  align-items: stretch;
+}
+
+.rank-case-group-head {
+  padding: 16px;
+  border: 1px solid var(--line);
+  border-radius: 13px;
+  background: var(--surface-soft);
+}
+
+.rank-case-group-head h4 {
+  margin: 0 0 6px;
+  font-size: 16px;
+}
+
+.rank-case-group-head p {
+  margin: 0;
+  color: var(--muted);
+  font-size: 13px;
+  line-height: 1.65;
+}
+
+.rank-case-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 10px;
+}
+
+[data-rank-group="full-rank"] .rank-case-grid {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.rank-case-card {
+  position: relative;
+  display: grid;
+  min-width: 0;
+  min-height: 128px;
+  gap: 8px;
+  align-content: start;
+  padding: 14px;
+  border: 1px solid var(--line);
+  border-radius: 13px;
+  background: var(--surface-solid);
+  color: var(--text);
+  text-align: left;
+  cursor: pointer;
+  transition:
+    transform 150ms ease,
+    border-color 150ms ease,
+    background 150ms ease,
+    box-shadow 150ms ease;
+}
+
+.rank-case-card:hover {
+  transform: translateY(-1px);
+  border-color: color-mix(in srgb, var(--accent) 40%, var(--line));
+}
+
+.rank-case-card.is-active {
+  border-color: color-mix(in srgb, var(--accent) 58%, var(--line));
+  background: color-mix(in srgb, var(--accent-soft) 72%, var(--surface-solid));
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--accent) 18%, transparent);
+}
+
+[data-rank-group="rank-drop"] .rank-case-card.is-active {
+  border-color: color-mix(in srgb, var(--coral) 56%, var(--line));
+  background: color-mix(in srgb, var(--coral) 9%, var(--surface-solid));
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--coral) 16%, transparent);
+}
+
+.rank-case-status {
+  justify-self: start;
+  min-height: 22px;
+  padding: 2px 8px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 800;
+}
+
+.rank-case-status.is-invertible {
+  background: var(--accent-soft);
+  color: var(--accent-strong);
+}
+
+.rank-case-status.is-singular {
+  background: color-mix(in srgb, var(--coral) 13%, transparent);
+  color: var(--coral);
+}
+
+.rank-case-card strong {
+  font-size: 14px;
+}
+
+.rank-case-matrix {
+  min-width: 0;
+  overflow-x: auto;
+  color: var(--muted);
+  font-size: 13px;
+}
+
+.rank-stage-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(128px, 0.25fr) minmax(0, 1fr);
+  gap: 14px;
+  align-items: stretch;
+}
+
+.rank-plane-card {
+  min-width: 0;
+  margin: 0;
+  overflow: hidden;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  background:
+    linear-gradient(180deg, color-mix(in srgb, var(--surface-soft) 72%, transparent), transparent),
+    var(--surface-solid);
+}
+
+.rank-plane-title {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  align-items: center;
+  padding: 12px 15px;
+  border-bottom: 1px solid var(--line);
+}
+
+.rank-plane-title span {
+  color: var(--faint);
+  font-size: 12px;
+  font-weight: 760;
+}
+
+.rank-plane-title strong {
+  color: var(--accent-strong);
+  font-size: 14px;
+}
+
+.rank-inverse-lab.is-singular .rank-plane-card.is-output .rank-plane-title strong {
+  color: var(--coral);
+}
+
+.rank-plane {
+  display: block;
+  width: 100%;
+  height: auto;
+  min-height: 310px;
+  overflow: hidden;
+}
+
+.rank-plane-card figcaption {
+  min-height: 56px;
+  padding: 12px 15px;
+  border-top: 1px solid var(--line);
+  color: var(--muted);
+  font-size: 13px;
+  line-height: 1.55;
+}
+
+.rank-grid-line,
+.rank-axis,
+.rank-basis,
+.rank-input-shape,
+.rank-output-shape {
+  vector-effect: non-scaling-stroke;
+}
+
+.rank-grid-line {
+  stroke: color-mix(in srgb, var(--line) 72%, transparent);
+  stroke-width: 1;
+}
+
+.rank-axis {
+  stroke: var(--line-strong);
+  stroke-width: 1.5;
+}
+
+.rank-input-shape {
+  fill: color-mix(in srgb, var(--accent) 10%, transparent);
+  stroke: var(--accent-strong);
+  stroke-width: 2.2;
+}
+
+.rank-output-shape {
+  fill: color-mix(in srgb, var(--accent) 15%, transparent);
+  stroke: var(--accent-strong);
+  stroke-width: 2.5;
+}
+
+.rank-inverse-lab.is-singular .rank-output-shape {
+  fill: color-mix(in srgb, var(--coral) 9%, transparent);
+  stroke: var(--coral);
+  stroke-width: 3;
+}
+
+.rank-basis {
+  stroke-width: 3;
+  stroke-linecap: round;
+}
+
+.rank-basis-x {
+  stroke: var(--accent-strong);
+}
+
+.rank-basis-y {
+  stroke: var(--coral);
+}
+
+.rank-input-point,
+.rank-output-point {
+  stroke: var(--surface-solid);
+  stroke-width: 3;
+}
+
+.rank-input-point.is-first,
+.rank-output-point.is-first {
+  fill: var(--accent);
+}
+
+.rank-input-point.is-second,
+.rank-output-point.is-second {
+  fill: var(--coral);
+}
+
+.rank-point-label {
+  fill: var(--text);
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: 16px;
+  font-style: italic;
+  font-weight: 700;
+}
+
+.rank-stage-operator {
+  display: grid;
+  place-items: center;
+  align-content: center;
+  gap: 10px;
+  min-width: 0;
+  padding: 16px 10px;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  background: var(--surface-soft);
+  text-align: center;
+}
+
+.rank-stage-operator > span {
+  color: var(--faint);
+  font-size: 12px;
+  font-weight: 760;
+}
+
+.rank-stage-operator > strong {
+  max-width: 100%;
+  overflow-x: auto;
+}
+
+.rank-forward-arrow,
+.rank-back-arrow {
+  color: var(--accent-strong);
+  font-size: 34px;
+  font-weight: 360;
+  line-height: 1;
+}
+
+.rank-inverse-indicator {
+  display: grid;
+  place-items: center;
+  gap: 4px;
+  min-height: 72px;
+}
+
+.rank-inverse-indicator strong {
+  font-size: 13px;
+}
+
+.rank-inverse-indicator em {
+  color: var(--accent-strong);
+  font-size: 11px;
+  font-style: normal;
+  font-weight: 760;
+}
+
+.rank-inverse-indicator .is-disabled,
+.rank-inverse-lab.is-singular .rank-inverse-indicator em {
+  color: var(--coral);
+}
+
+.rank-analysis-grid {
+  display: grid;
+  grid-template-columns: minmax(180px, 0.28fr) minmax(250px, 0.34fr) minmax(0, 1fr);
+  gap: 12px;
+}
+
+.rank-verdict-card,
+.rank-math-list,
+.rank-reason-card {
+  min-width: 0;
+  border: 1px solid var(--line);
+  border-radius: 13px;
+  background: var(--surface-soft);
+}
+
+.rank-verdict-card {
+  padding: 17px;
+}
+
+.rank-verdict-card > span,
+.rank-reason-card > span {
   display: block;
   margin-bottom: 5px;
   color: var(--accent-strong);
   font-size: 12px;
-  font-weight: 780;
+  font-weight: 800;
 }
 
-.inverse-readout-card strong {
+.rank-verdict-card > strong {
   display: block;
-  margin-bottom: 7px;
-  font-size: 22px;
+  margin-bottom: 8px;
+  color: var(--accent-strong);
+  font-size: 28px;
+  line-height: 1.1;
 }
 
-.inverse-readout-card p {
+.rank-verdict-card p,
+.rank-reason-card p {
   margin: 0;
   color: var(--muted);
-  font-size: 14px;
+  font-size: 13px;
   line-height: 1.65;
 }
 
-.inverse-math-list {
+.rank-verdict-card.is-singular > span,
+.rank-verdict-card.is-singular > strong {
+  color: var(--coral);
+}
+
+.rank-math-list {
   display: grid;
   margin: 0;
   overflow: hidden;
 }
 
-.inverse-math-list > div {
+.rank-math-list > div {
   display: grid;
-  grid-template-columns: 78px minmax(0, 1fr);
+  grid-template-columns: 86px minmax(0, 1fr);
   gap: 10px;
   align-items: center;
-  min-height: 54px;
-  padding: 9px 12px;
+  min-height: 50px;
+  padding: 8px 12px;
   border-bottom: 1px solid var(--line);
 }
 
-.inverse-math-list > div:last-child {
+.rank-math-list > div:last-child {
   border-bottom: 0;
 }
 
-.inverse-math-list dt {
+.rank-math-list dt {
   color: var(--muted);
   font-size: 13px;
   font-weight: 720;
 }
 
-.inverse-math-list dd {
+.rank-math-list dd {
   min-width: 0;
   margin: 0;
   overflow-x: auto;
-  color: var(--text);
   text-align: right;
 }
 
-.inverse-no-value {
+.rank-no-inverse {
   color: var(--coral);
-  font-size: 14px;
-  font-weight: 780;
+  font-size: 13px;
+  font-weight: 800;
 }
 
-.inverse-controls {
+.rank-reason-card {
+  padding: 17px;
+}
+
+.rank-point-equation {
+  margin-top: 12px;
+  padding: 10px 12px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: var(--surface-solid);
+  color: var(--text);
+  font-size: 13px;
+  overflow-x: auto;
+}
+
+.rank-controls {
   display: grid;
-  gap: 8px;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: 10px 14px;
+  align-items: center;
 }
 
-.inverse-progress-labels {
-  display: grid;
-  grid-template-columns: 1fr 1fr 1fr;
-  color: var(--faint);
-  font-size: 12px;
-  font-weight: 700;
+.rank-controls > label {
+  color: var(--muted);
+  font-size: 13px;
+  font-weight: 720;
 }
 
-.inverse-progress-labels span:nth-child(2) {
-  text-align: center;
-}
-
-.inverse-progress-labels span:last-child {
-  text-align: right;
-}
-
-.inverse-controls input[type="range"] {
+.rank-controls input[type="range"] {
   width: 100%;
   accent-color: var(--accent);
 }
 
-.inverse-control-row {
+.rank-control-row {
+  grid-column: 1 / -1;
   display: flex;
   flex-wrap: wrap;
   gap: 10px;
   align-items: center;
 }
 
-.inverse-control-row > span {
-  flex: 1 1 260px;
+.rank-control-row > span {
+  flex: 1 1 280px;
   color: var(--muted);
   font-size: 14px;
   text-align: right;
 }
 
-.inverse-lab.is-singular .inverse-current-shape {
-  fill: color-mix(in srgb, var(--coral) 14%, transparent);
-  stroke: var(--coral);
+.rank-control-row .button:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
 }
 
-.inverse-lab.is-singular .inverse-current-point {
-  fill: var(--coral);
+@media (max-width: 1120px) {
+  .rank-case-group,
+  .rank-inverse-head {
+    grid-template-columns: 1fr;
+  }
+
+  .rank-case-grid,
+  [data-rank-group="full-rank"] .rank-case-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  [data-rank-group="rank-drop"] .rank-case-grid {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
 }
 
 @media (max-width: 920px) {
   .section4-formal .definition-row,
-  .inverse-lab-body {
+  .rank-stage-grid,
+  .rank-analysis-grid {
     grid-template-columns: 1fr;
   }
 
@@ -361,49 +584,94 @@ body.dark .inverse-lab {
     gap: 8px;
   }
 
-  .inverse-lab-head,
-  .inverse-stage-caption {
-    align-items: flex-start;
-    flex-direction: column;
+  .rank-stage-operator {
+    grid-template-columns: auto auto auto;
+    min-height: 96px;
   }
 
-  .inverse-preset-group {
-    justify-content: flex-start;
+  .rank-stage-operator > span {
+    grid-column: 1 / -1;
   }
 
-  .inverse-stage-caption p {
-    text-align: left;
+  .rank-forward-arrow {
+    transform: rotate(90deg);
   }
 
-  .inverse-readout {
-    grid-template-columns: minmax(0, 0.8fr) minmax(0, 1.2fr);
+  .rank-inverse-indicator {
+    grid-auto-flow: column;
+    min-height: 0;
+  }
+
+  .rank-back-arrow {
+    transform: rotate(90deg);
+  }
+
+  .rank-analysis-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .rank-reason-card {
+    grid-column: 1 / -1;
   }
 }
 
-@media (max-width: 620px) {
-  .inverse-lab {
-    padding: 16px;
+@media (max-width: 720px) {
+  .rank-case-grid,
+  [data-rank-group="full-rank"] .rank-case-grid,
+  [data-rank-group="rank-drop"] .rank-case-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
-  .inverse-stage {
-    min-height: 290px;
-  }
-
-  .inverse-readout {
+  .rank-analysis-grid {
     grid-template-columns: 1fr;
   }
 
-  .inverse-preset-group {
-    display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    width: 100%;
+  .rank-reason-card {
+    grid-column: auto;
+  }
+}
+
+@media (max-width: 560px) {
+  .rank-inverse-lab {
+    padding: 15px;
   }
 
-  .inverse-control-row .button {
-    flex: 1 1 140px;
+  .rank-case-grid,
+  [data-rank-group="full-rank"] .rank-case-grid,
+  [data-rank-group="rank-drop"] .rank-case-grid {
+    grid-template-columns: 1fr;
   }
 
-  .inverse-control-row > span {
+  .rank-case-card {
+    min-height: 112px;
+  }
+
+  .rank-plane {
+    min-height: 278px;
+  }
+
+  .rank-stage-operator {
+    grid-template-columns: 1fr;
+  }
+
+  .rank-forward-arrow,
+  .rank-back-arrow {
+    transform: rotate(90deg);
+  }
+
+  .rank-inverse-indicator {
+    grid-auto-flow: row;
+  }
+
+  .rank-controls {
+    grid-template-columns: 1fr;
+  }
+
+  .rank-control-row .button {
+    flex: 1 1 130px;
+  }
+
+  .rank-control-row > span {
     flex-basis: 100%;
     text-align: left;
   }

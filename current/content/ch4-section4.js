@@ -8,6 +8,8 @@ defineChapter4Section("matrix-inverse", {
   tags: ["逆矩阵", "撤销运算", "逆序法则", "伴随矩阵"],
   intro:
     "第三节已经给出可逆性的判定入口。本节从判定之后继续：若逆确实存在，它怎样撤销缩放、旋转、剪切和镜像，为什么复合过程必须倒序撤销，又怎样落回具体的求逆计算与方程求解。",
+  formalIntro:
+    "本节只处理逆矩阵怎样撤销、怎样计算和怎样用于方程；可逆性的面积与秩判定留在第三节。",
   videoPlan: {
     title: "把一次矩阵作用倒着走回来",
     duration: "约 1.5—2 分钟",
@@ -58,7 +60,6 @@ defineChapter4Section("matrix-inverse", {
       "余子式、代数余子式与伴随矩阵求逆",
     ],
   },
-  presentation: "generic",
   interactive: false,
   visual: false,
   example: {
@@ -94,7 +95,7 @@ defineChapter4Section("matrix-inverse", {
     },
     {
       question: `若 ${texInline("A,B")} 都可逆，${texInline("(AB)^{-1}")} 是什么？`,
-      answer: `${texInline("(AB)^{-1}=B^{-1}A^{-1")}。撤销复合过程要从最后发生的作用开始。`,
+      answer: `${texInline("(AB)^{-1}=B^{-1}A^{-1}")}。撤销复合过程要从最后发生的作用开始。`,
     },
     {
       question: `方程 ${texInline("XA=C")} 应怎样消去右侧的 A？`,

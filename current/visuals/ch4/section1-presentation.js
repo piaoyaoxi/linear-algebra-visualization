@@ -16,6 +16,82 @@
     "#f4f1df", "#e4d99c", "#cbbd68", "#a99742", "#7d722f",
   ];
 
+  /**
+   * One filled path per arrow — stem and tip are the same color by construction.
+   * Rounded outline (no dagger marker geometry).
+   */
+  function softArrow(x1, y1, x2, y2, className) {
+    const dx = x2 - x1;
+    const dy = y2 - y1;
+    const len = Math.hypot(dx, dy) || 1;
+    const ux = dx / len;
+    const uy = dy / len;
+    const px = -uy;
+    const py = ux;
+
+    const halfW = 2.35;
+    const headLen = Math.min(15.5, Math.max(13, len * 0.22));
+    const headHalf = 6.4;
+    const tipX = x2;
+    const tipY = y2;
+    const neckX = tipX - ux * headLen;
+    const neckY = tipY - uy * headLen;
+
+    const f = (n) => n.toFixed(2);
+    const pt = (x, y) => `${f(x)} ${f(y)}`;
+
+    // Rounded start cap + parallel stem + soft arrow head, single closed path.
+    const path = [
+      `M ${pt(x1 + px * halfW, y1 + py * halfW)}`,
+      `L ${pt(neckX + px * halfW, neckY + py * halfW)}`,
+      `L ${pt(neckX + px * headHalf, neckY + py * headHalf)}`,
+      `Q ${pt(tipX - ux * (headLen * 0.18) + px * 1.1, tipY - uy * (headLen * 0.18) + py * 1.1)} ${pt(tipX, tipY)}`,
+      `Q ${pt(tipX - ux * (headLen * 0.18) - px * 1.1, tipY - uy * (headLen * 0.18) - py * 1.1)} ${pt(neckX - px * headHalf, neckY - py * headHalf)}`,
+      `L ${pt(neckX - px * halfW, neckY - py * halfW)}`,
+      `L ${pt(x1 - px * halfW, y1 - py * halfW)}`,
+      `A ${halfW} ${halfW} 0 0 0 ${pt(x1 + px * halfW, y1 + py * halfW)}`,
+      "Z",
+    ].join(" ");
+
+    return `<path class="basis-arrow ${className}" d="${path}"></path>`;
+  }
+
+  function renderBasisFigure() {
+    const ox = 64;
+    const oy = 116;
+    const e1x = 188;
+    const e1y = 116;
+    const e2x = 132;
+    const e2y = 42;
+    const c3x = e1x + (e2x - ox);
+    const c3y = e1y + (e2y - oy);
+
+    return `
+      <svg class="source-basis-svg" viewBox="0 0 280 156" role="img" aria-label="两个基本方向经过变换后成为矩阵的两列">
+        <g class="basis-grid">
+          <path d="M40 40H240M40 64H240M40 88H240M40 112H240M40 136H240"></path>
+          <path d="M64 28V140M100 28V140M136 28V140M172 28V140M208 28V140"></path>
+        </g>
+        <g class="basis-axis">
+          <path d="M38 ${oy}H246"></path>
+          <path d="M${ox} 138V30"></path>
+        </g>
+        <path class="basis-cell" d="M${ox} ${oy} L${e1x} ${e1y} L${c3x} ${c3y} L${e2x} ${e2y} Z"></path>
+        ${softArrow(ox, oy, e1x, e1y, "basis-arrow-one")}
+        ${softArrow(ox, oy, e2x, e2y, "basis-arrow-two")}
+        <circle class="basis-origin" cx="${ox}" cy="${oy}" r="3.6"></circle>
+        <g class="basis-label basis-label-one">
+          <rect x="196" y="104" width="44" height="22" rx="11"></rect>
+          <text x="218" y="119" text-anchor="middle">Ae₁</text>
+        </g>
+        <g class="basis-label basis-label-two">
+          <rect x="136" y="18" width="44" height="22" rx="11"></rect>
+          <text x="158" y="33" text-anchor="middle">Ae₂</text>
+        </g>
+      </svg>
+    `;
+  }
+
   function renderSourceCards() {
     return `
       <div class="matrix-source-grid" aria-label="矩阵的三种来源">
@@ -47,30 +123,11 @@
           <p>每一行对应一个方程，每一列对应一个未知量，位置把关系保存下来。</p>
         </article>
 
-        <article class="matrix-source-card">
+        <article class="matrix-source-card matrix-source-card-basis">
           <div class="matrix-source-kicker">方向变化</div>
-          <svg class="source-basis-svg" viewBox="0 0 260 132" role="img" aria-label="两个基本方向经过变换后成为矩阵的两列">
-            <defs>
-              <marker id="s1ArrowTeal" markerWidth="7" markerHeight="7" refX="6" refY="3.5" orient="auto">
-                <path d="M0,0 L7,3.5 L0,7 Z" fill="currentColor"></path>
-              </marker>
-              <marker id="s1ArrowCoral" markerWidth="7" markerHeight="7" refX="6" refY="3.5" orient="auto">
-                <path d="M0,0 L7,3.5 L0,7 Z" fill="currentColor"></path>
-              </marker>
-            </defs>
-            <g class="basis-axis">
-              <path d="M38 105H224"></path>
-              <path d="M58 120V18"></path>
-            </g>
-            <g class="basis-vector basis-vector-one">
-              <path d="M58 105L168 105" marker-end="url(#s1ArrowTeal)"></path>
-              <text x="174" y="109">Ae₁</text>
-            </g>
-            <g class="basis-vector basis-vector-two">
-              <path d="M58 105L126 42" marker-end="url(#s1ArrowCoral)"></path>
-              <text x="132" y="40">Ae₂</text>
-            </g>
-          </svg>
+          <div class="source-basis-stage" aria-hidden="true">
+            ${renderBasisFigure()}
+          </div>
           <h3>两列记录两个基本方向</h3>
           <p>二维矩阵的第一列和第二列，分别记录 ${mathInline("Ae_1")} 与 ${mathInline("Ae_2")}。</p>
         </article>
@@ -406,56 +463,142 @@
 
     const status = document.createElement("div");
     status.className = "section-one-transform-status";
-    status.setAttribute("aria-live", "polite");
+    status.setAttribute("aria-live", "off");
+    status.setAttribute("aria-busy", "false");
     controls.append(status);
 
     const inputs = ["a", "b", "c", "d"].map((key) => interactive.querySelector(`#matrix-${key}`));
-    const updateStatus = () => {
-      const [a, b, c, d] = inputs.map((input) => Number(input?.value || 0));
+    let statusSyncAt = 0;
+    let pendingStatusMatrix = null;
+    let statusSyncTimer = 0;
+
+    const shapeCopy = (a, b, c, d) => {
       const det = a * d - b * c;
       const allZero = [a, b, c, d].every((value) => Math.abs(value) < 1e-7);
-      const rank = allZero ? 0 : Math.abs(det) < 1e-7 ? 1 : 2;
-      const columnOne = `(${formatCompact(a)},${formatCompact(c)})^T`;
-      const columnTwo = `(${formatCompact(b)},${formatCompact(d)})^T`;
-      const description = rank === 2 ? "两列不共线，仍能铺开整个平面。" : rank === 1 ? "两列共线，只保留一条方向。" : "两列都是零向量，所有点落到原点。";
-      status.innerHTML = `
-        <div><span>第一列</span>${mathInline(columnOne)}</div>
-        <div><span>第二列</span>${mathInline(columnTwo)}</div>
-        <div><span>输出形状</span><strong>秩 ${rank}</strong></div>
-        <p>${description}</p>
-      `;
+      if (allZero) {
+        return {
+          title: "一点",
+          description: "两列都是零向量：整个平面被收到原点。",
+        };
+      }
+      if (Math.abs(det) < 1e-7) {
+        return {
+          title: "一条直线",
+          description: "两列共线：整张网格塌缩到一条直线上。",
+        };
+      }
+      return {
+        title: "整个平面",
+        description: "两列不共线：变换后的网格仍能铺满平面。",
+      };
     };
 
-    const applyPreset = (values, id) => {
-      inputs.forEach((input, index) => {
-        if (!input) return;
-        input.value = values[index];
-        input.dispatchEvent(new Event("input", { bubbles: true }));
-      });
+    const updateStatus = (matrix, { final = true } = {}) => {
+      const source = matrix || {
+        a: Number(inputs[0]?.value || 0),
+        b: Number(inputs[1]?.value || 0),
+        c: Number(inputs[2]?.value || 0),
+        d: Number(inputs[3]?.value || 0),
+      };
+      const a = source.a;
+      const b = source.b;
+      const c = source.c;
+      const d = source.d;
+      const shape = shapeCopy(a, b, c, d);
+      // Plain text keeps mid-animation sync cheap and consistent with the canvas.
+      status.innerHTML = `
+        <div><span>第一列</span><strong>(${formatCompact(a)}, ${formatCompact(c)})ᵀ</strong></div>
+        <div><span>第二列</span><strong>(${formatCompact(b)}, ${formatCompact(d)})ᵀ</strong></div>
+        <div><span>输出形状</span><strong>${shape.title}</strong></div>
+        <p>${shape.description}</p>
+      `;
+      if (final) {
+        status.setAttribute("aria-busy", "false");
+        status.setAttribute("aria-live", "polite");
+        // Re-announce once at rest without spamming during the morph.
+        status.setAttribute("aria-live", "off");
+        requestAnimationFrame(() => status.setAttribute("aria-live", "polite"));
+      }
+    };
+
+    const scheduleStatus = (matrix, { final = false } = {}) => {
+      pendingStatusMatrix = matrix;
+      if (final) {
+        if (statusSyncTimer) {
+          clearTimeout(statusSyncTimer);
+          statusSyncTimer = 0;
+        }
+        updateStatus(matrix, { final: true });
+        statusSyncAt = performance.now();
+        return;
+      }
+      const now = performance.now();
+      const wait = Math.max(0, 100 - (now - statusSyncAt));
+      if (statusSyncTimer) return;
+      statusSyncTimer = window.setTimeout(() => {
+        statusSyncTimer = 0;
+        statusSyncAt = performance.now();
+        if (pendingStatusMatrix) updateStatus(pendingStatusMatrix, { final: false });
+      }, wait);
+    };
+
+    const markPreset = (id) => {
       toolbar.querySelectorAll("button").forEach((button) => {
-        const active = button.dataset.transformPreset === id;
+        const active = Boolean(id) && button.dataset.transformPreset === id;
         button.classList.toggle("is-active", active);
         button.setAttribute("aria-pressed", String(active));
       });
-      updateStatus();
+    };
+
+    const writeInputsFallback = (values) => {
+      inputs.forEach((input, index) => {
+        if (!input) return;
+        input.value = values[index];
+      });
+    };
+
+    const applyPreset = (values, id, { animate = true } = {}) => {
+      markPreset(id);
+      status.setAttribute("aria-busy", "true");
+      status.setAttribute("aria-live", "off");
+
+      if (animate && typeof window.animateTransformMatrix === "function") {
+        window
+          .animateTransformMatrix(values, {
+            onUpdate: (matrix, meta) => scheduleStatus(matrix, { final: Boolean(meta?.final) }),
+          })
+          .then((matrix) => scheduleStatus(matrix, { final: true }));
+        return;
+      }
+
+      if (typeof window.setTransformMatrix === "function") {
+        window.setTransformMatrix(values);
+      } else {
+        writeInputsFallback(values);
+        inputs[0]?.dispatchEvent(new Event("input", { bubbles: true }));
+      }
+      scheduleStatus(
+        { a: values[0], b: values[1], c: values[2], d: values[3] },
+        { final: true },
+      );
     };
 
     toolbar.addEventListener("click", (event) => {
       const button = event.target.closest("[data-transform-preset]");
       if (!button) return;
-      const preset = presets.find(([id]) => id === button.dataset.transformPreset);
-      if (preset) applyPreset(preset[2], preset[0]);
+      const preset = presets.find(([presetId]) => presetId === button.dataset.transformPreset);
+      if (preset) applyPreset(preset[2], preset[0], { animate: true });
     });
 
-    inputs.forEach((input) => input?.addEventListener("input", () => {
-      toolbar.querySelectorAll("button").forEach((button) => {
-        button.classList.remove("is-active");
-        button.setAttribute("aria-pressed", "false");
-      });
-      updateStatus();
-    }));
+    inputs.forEach((input) =>
+      input?.addEventListener("input", (event) => {
+        if (!event.isTrusted) return;
+        markPreset(null);
+        scheduleStatus(null, { final: true });
+      }),
+    );
 
-    applyPreset([1, 0, 0, 1], "identity");
+    applyPreset([1, 0, 0, 1], "identity", { animate: false });
     interactive.dataset.sectionOneEnhanced = "true";
   }
 

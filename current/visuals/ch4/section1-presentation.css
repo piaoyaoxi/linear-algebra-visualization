@@ -67,21 +67,23 @@
 #matrix-language-formal .matrix-source-card {
   display: grid;
   align-content: start;
-  gap: 12px;
+  gap: 14px;
   min-width: 0;
-  padding: 18px;
+  padding: 20px 18px 18px;
+  box-shadow: var(--shadow-soft);
 }
 
 #matrix-language-formal .matrix-source-kicker {
   color: var(--accent-strong);
   font-size: 12px;
   font-weight: 800;
-  letter-spacing: 0.04em;
+  letter-spacing: 0.06em;
 }
 
 #matrix-language-formal .matrix-source-card h3 {
   margin: 0;
   font-size: 17px;
+  line-height: 1.35;
 }
 
 #matrix-language-formal .matrix-source-card p {
@@ -92,12 +94,13 @@
 }
 
 #matrix-language-formal .pixel-matrix-demo,
-#matrix-language-formal .source-equation {
+#matrix-language-formal .source-equation,
+#matrix-language-formal .source-basis-stage {
   display: flex;
   align-items: center;
   justify-content: center;
   gap: 10px;
-  min-height: 132px;
+  min-height: 148px;
 }
 
 #matrix-language-formal .pixel-picture,
@@ -135,33 +138,112 @@
   font-size: 0.9rem;
 }
 
+#matrix-language-formal .source-basis-stage {
+  padding: 8px 6px;
+  overflow: hidden;
+  border: 1px solid color-mix(in srgb, var(--line) 92%, var(--accent) 8%);
+  border-radius: 16px;
+  background:
+    radial-gradient(ellipse 70% 60% at 38% 66%, color-mix(in srgb, var(--accent) 8%, transparent), transparent 74%),
+    radial-gradient(ellipse 50% 46% at 72% 30%, color-mix(in srgb, var(--coral) 7%, transparent), transparent 76%),
+    linear-gradient(168deg, color-mix(in srgb, var(--surface-soft) 58%, #fff) 0%, var(--surface-solid) 100%);
+}
+
 #matrix-language-formal .source-basis-svg {
+  display: block;
   width: 100%;
-  height: 132px;
-  color: var(--accent);
+  height: 150px;
+  overflow: visible;
+}
+
+#matrix-language-formal .basis-grid path {
+  fill: none;
+  stroke: color-mix(in srgb, var(--line-strong) 28%, transparent);
+  stroke-width: 1;
+  stroke-linecap: round;
 }
 
 #matrix-language-formal .basis-axis path {
   fill: none;
-  stroke: var(--line-strong);
-  stroke-width: 1.25;
-}
-
-#matrix-language-formal .basis-vector path {
-  fill: none;
-  stroke: currentColor;
-  stroke-width: 3;
+  stroke: color-mix(in srgb, var(--muted) 32%, var(--line-strong));
+  stroke-width: 1.15;
   stroke-linecap: round;
 }
 
-#matrix-language-formal .basis-vector text {
-  fill: currentColor;
-  font-size: 13px;
-  font-weight: 750;
+#matrix-language-formal .basis-cell {
+  fill: color-mix(in srgb, var(--accent) 10%, transparent);
+  stroke: color-mix(in srgb, var(--accent) 22%, transparent);
+  stroke-width: 1.1;
+  stroke-linejoin: round;
 }
 
-#matrix-language-formal .basis-vector-two {
+/* Whole arrow is one path → impossible for shaft/tip colors to diverge. */
+#matrix-language-formal .basis-arrow {
+  fill: currentColor;
+  stroke: currentColor;
+  stroke-width: 0.6;
+  stroke-linejoin: round;
+  stroke-linecap: round;
+}
+
+#matrix-language-formal .basis-arrow-one {
+  color: var(--accent-strong);
+}
+
+#matrix-language-formal .basis-arrow-two {
   color: var(--coral);
+}
+
+#matrix-language-formal .basis-label rect {
+  stroke-width: 0;
+  filter: none;
+}
+
+#matrix-language-formal .basis-label text {
+  font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+  font-size: 12px;
+  font-weight: 780;
+  letter-spacing: 0.01em;
+}
+
+#matrix-language-formal .basis-label-one rect {
+  fill: color-mix(in srgb, var(--accent-strong) 12%, var(--surface-solid));
+}
+
+#matrix-language-formal .basis-label-one text {
+  fill: var(--accent-strong);
+}
+
+#matrix-language-formal .basis-label-two rect {
+  fill: color-mix(in srgb, var(--coral) 14%, var(--surface-solid));
+}
+
+#matrix-language-formal .basis-label-two text {
+  fill: var(--coral);
+}
+
+#matrix-language-formal .basis-origin {
+  fill: color-mix(in srgb, var(--text) 72%, var(--muted));
+  stroke: var(--surface-solid);
+  stroke-width: 2;
+}
+
+#matrix-language-formal .source-basis-stage,
+body.dark #matrix-language-formal .source-basis-stage {
+  background:
+    radial-gradient(ellipse 70% 60% at 38% 66%, color-mix(in srgb, var(--accent) 12%, transparent), transparent 74%),
+    radial-gradient(ellipse 50% 46% at 72% 30%, color-mix(in srgb, var(--coral) 10%, transparent), transparent 76%),
+    linear-gradient(168deg, color-mix(in srgb, var(--surface-soft) 78%, var(--bg)), var(--surface-solid));
+}
+
+#matrix-language-formal .basis-label-one rect,
+body.dark #matrix-language-formal .basis-label-one rect {
+  fill: color-mix(in srgb, var(--accent-strong) 16%, var(--surface-solid));
+}
+
+#matrix-language-formal .basis-label-two rect,
+body.dark #matrix-language-formal .basis-label-two rect {
+  fill: color-mix(in srgb, var(--coral) 16%, var(--surface-solid));
 }
 
 #matrix-language-formal .anatomy-toolbar,
@@ -524,24 +606,34 @@
   line-height: 1.75;
 }
 
+#matrix-language-interactive .visual-panel {
+  margin-top: 18px;
+}
+
 #matrix-language-interactive .transform-preset-bar {
-  margin: 4px 0 16px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin: 0;
+  padding: 16px 28px 14px;
+  border-bottom: 1px solid var(--line);
+  background: color-mix(in srgb, var(--surface-soft) 55%, transparent);
 }
 
 #matrix-language-interactive .section-one-transform-status {
   display: grid;
-  gap: 10px;
-  margin-top: 4px;
-  padding: 14px;
+  gap: 12px;
+  margin-top: 6px;
+  padding: 16px 16px 15px;
   border: 1px solid var(--line);
-  border-radius: calc(var(--radius) - 4px);
-  background: var(--surface-soft);
+  border-radius: 14px;
+  background: var(--surface-solid);
 }
 
 #matrix-language-interactive .section-one-transform-status > div {
   display: grid;
-  grid-template-columns: 72px minmax(0, 1fr);
-  gap: 8px;
+  grid-template-columns: 4.5rem minmax(0, 1fr);
+  gap: 10px;
   align-items: center;
 }
 
@@ -549,18 +641,21 @@
   color: var(--faint);
   font-size: 12px;
   font-weight: 700;
+  letter-spacing: 0.02em;
 }
 
 #matrix-language-interactive .section-one-transform-status strong {
   color: var(--accent-strong);
   font-size: 14px;
+  font-weight: 780;
+  font-variant-numeric: tabular-nums;
 }
 
 #matrix-language-interactive .section-one-transform-status p {
   margin: 2px 0 0;
   color: var(--muted);
   font-size: 13px;
-  line-height: 1.6;
+  line-height: 1.65;
 }
 
 @media (max-width: 980px) {
@@ -585,7 +680,7 @@
 
   #matrix-language-formal .pixel-matrix-demo,
   #matrix-language-formal .source-equation,
-  #matrix-language-formal .source-basis-svg {
+  #matrix-language-formal .source-basis-stage {
     grid-column: 1;
     grid-row: 2 / span 2;
   }
@@ -612,7 +707,7 @@
   #matrix-language-formal .matrix-source-card p,
   #matrix-language-formal .pixel-matrix-demo,
   #matrix-language-formal .source-equation,
-  #matrix-language-formal .source-basis-svg {
+  #matrix-language-formal .source-basis-stage {
     grid-column: auto;
     grid-row: auto;
   }

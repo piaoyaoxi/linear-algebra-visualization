@@ -154,16 +154,10 @@ body.dark .example-burst-layer {
   animation: example-answer-shake 420ms cubic-bezier(0.36, 0.07, 0.19, 0.97);
 }
 
-.example-challenge[data-state="wrong"] .example-choice,
-.example-challenge[data-state="correct"] .example-choice {
-  cursor: default;
-}
-
-.example-challenge[data-state="wrong"] .example-choice:hover,
-.example-challenge[data-state="correct"] .example-choice:hover {
-  border-color: var(--line);
+/* Options stay clickable after check so students can change A–D at any time. */
+.example-challenge[data-state="wrong"] .example-choice.is-wrong:hover {
+  border-color: color-mix(in srgb, var(--coral) 48%, var(--line));
   background: var(--surface-solid);
-  transform: none;
 }
 
 .example-challenge[data-state="correct"] .example-choice.is-correct:hover {

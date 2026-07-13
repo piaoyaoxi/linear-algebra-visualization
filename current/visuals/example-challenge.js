@@ -224,13 +224,16 @@
     activeBursts.set(root, window.requestAnimationFrame(draw));
   }
 
+  function clearChoiceMarks(root) {
+    root.querySelectorAll(".example-choice").forEach((choice) => choice.classList.remove("is-correct", "is-wrong"));
+  }
+
   function resetChoiceChallenge(root) {
     root.dataset.state = "idle";
     root.querySelectorAll('input[type="radio"]').forEach((input) => {
       input.checked = false;
-      input.disabled = false;
     });
-    root.querySelectorAll(".example-choice").forEach((choice) => choice.classList.remove("is-correct", "is-wrong"));
+    clearChoiceMarks(root);
     const action = root.querySelector("[data-example-action]");
     const feedback = root.querySelector("[data-example-feedback]");
     const explanation = root.querySelector("[data-example-explanation]");
@@ -242,58 +245,88 @@
     pi.hidden = true;
   }
 
-  function bindChoiceChallenge(root, example) {
+  function prepareChoiceRecheck(root, { keepSelectionFeedback = false } = {}) {
+    const action = root.querySelector("[data-example-action]");
+    const feedback = root.querySelector("[data-example-feedback]");
+    const explanation = root.querySelector("[data-example-explanation]");
+    const pi = root.querySelector("[data-example-pi]");
+    const hasSelection = root.querySelector('input[type="radio"]:checked');
+
+    root.dataset.state = "idle";
+    clearChoiceMarks(root);
+    explanation.hidden = true;
+    pi.hidden = true;
+    action.textContent = "检查";
+    action.disabled = !hasSelection;
+    feedback.textContent = hasSelection
+      ? keepSelectionFeedback
+        ? "保留了上次选择，可以修改后再次检查。"
+        : "已经选择，可以检查。"
+      : "选择一个答案后再检查。";
+  }
+
+  function evaluateChoiceChallenge(root, example) {
     const action = root.querySelector("[data-example-action]");
     const feedback = root.querySelector("[data-example-feedback]");
     const explanation = root.querySelector("[data-example-explanation]");
     const pi = root.querySelector("[data-example-pi]");
     const inputs = [...root.querySelectorAll('input[type="radio"]')];
+    const selected = inputs.find((input) => input.checked);
+    if (!selected) return;
+
+    const selectedIndex = Number(selected.value);
+    const selectedChoice = example.choices[selectedIndex];
+    const selectedLabel = selected.closest(".example-choice");
+    clearChoiceMarks(root);
+
+    if (!selectedChoice?.correct) {
+      root.dataset.state = "wrong";
+      selectedLabel.classList.add("is-wrong");
+      action.textContent = "再试一次";
+      action.disabled = false;
+      feedback.innerHTML = "<strong>还差一点</strong>先重新判断这一步的结构，答案暂不展开。";
+      explanation.hidden = true;
+      pi.hidden = true;
+      return;
+    }
+
+    root.dataset.state = "correct";
+    selectedLabel.classList.add("is-correct");
+    action.textContent = "重做";
+    action.disabled = false;
+    feedback.innerHTML = "<strong>答对了</strong>解析已经展开。点击 π 可以再次播放反馈。";
+    explanation.hidden = false;
+    pi.hidden = false;
+    window.requestAnimationFrame(() => triggerPiBurst(root));
+  }
+
+  function bindChoiceChallenge(root, example) {
+    const action = root.querySelector("[data-example-action]");
+    const inputs = [...root.querySelectorAll('input[type="radio"]')];
 
     inputs.forEach((input) => {
       input.addEventListener("change", () => {
-        if (root.dataset.state !== "idle") return;
-        action.disabled = false;
-        feedback.textContent = "已经选择，可以检查。";
+        // Options stay interactive after check. Changing a choice always
+        // returns to a re-checkable idle state (same as the standalone demo).
+        if (root.dataset.state === "idle") {
+          action.disabled = false;
+          const feedback = root.querySelector("[data-example-feedback]");
+          feedback.textContent = "已经选择，可以检查。";
+          return;
+        }
+        prepareChoiceRecheck(root);
       });
     });
 
+    const pi = root.querySelector("[data-example-pi]");
     pi.addEventListener("click", () => triggerPiBurst(root));
     action.addEventListener("click", () => {
       if (root.dataset.state === "correct") {
         resetChoiceChallenge(root);
         return;
       }
-      if (root.dataset.state === "wrong") {
-        root.dataset.state = "idle";
-        inputs.forEach((input) => { input.disabled = false; });
-        root.querySelectorAll(".example-choice").forEach((choice) => choice.classList.remove("is-wrong"));
-        action.textContent = "检查";
-        feedback.textContent = "保留了上次选择，可以修改后再次检查。";
-        return;
-      }
-
-      const selected = inputs.find((input) => input.checked);
-      if (!selected) return;
-      const selectedIndex = Number(selected.value);
-      const selectedChoice = example.choices[selectedIndex];
-      const selectedLabel = selected.closest(".example-choice");
-      inputs.forEach((input) => { input.disabled = true; });
-
-      if (!selectedChoice?.correct) {
-        root.dataset.state = "wrong";
-        selectedLabel.classList.add("is-wrong");
-        action.textContent = "再试一次";
-        feedback.innerHTML = "<strong>还差一点</strong>先重新判断这一步的结构，答案暂不展开。";
-        return;
-      }
-
-      root.dataset.state = "correct";
-      selectedLabel.classList.add("is-correct");
-      action.textContent = "重做";
-      feedback.innerHTML = "<strong>答对了</strong>解析已经展开。点击 π 可以再次播放反馈。";
-      explanation.hidden = false;
-      pi.hidden = false;
-      window.requestAnimationFrame(() => triggerPiBurst(root));
+      // idle → 检查；wrong → 再试一次：都按当前选项重新判定
+      evaluateChoiceChallenge(root, example);
     });
   }
 

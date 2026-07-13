@@ -1,0 +1,1027 @@
+/*
+ * Liquid Glass chrome
+ * -------------------
+ * Navigation controls use a three-layer material: a translucent tint,
+ * a directional optical rim, and clear content above both. The lesson body
+ * deliberately remains on solid surfaces for reading and mathematics.
+ */
+
+:root {
+  --chrome-top: 14px;
+  --chrome-side: 18px;
+  --chrome-control-size: 44px;
+  --chrome-control-radius: 15px;
+  --chrome-search-width: min(430px, calc(100vw - 320px));
+  --chrome-sidebar-width: 304px;
+  --chrome-sidebar-radius: 26px;
+  --chrome-ease-morph: cubic-bezier(0.22, 1, 0.36, 1);
+  --chrome-ease-spring: cubic-bezier(0.34, 1.32, 0.64, 1);
+  --liquid-fill: color-mix(in srgb, var(--surface-solid) 61%, transparent);
+  --liquid-fill-strong: color-mix(in srgb, var(--surface-solid) 76%, transparent);
+  --liquid-border: color-mix(in srgb, #fff 72%, var(--line-strong));
+  --liquid-border-low: color-mix(in srgb, var(--line-strong) 76%, transparent);
+  --liquid-highlight: rgba(255, 255, 255, 0.92);
+  --liquid-highlight-soft: rgba(255, 255, 255, 0.42);
+  --liquid-shadow: 0 16px 38px color-mix(in srgb, var(--text) 12%, transparent);
+  --liquid-shadow-deep: 0 30px 78px color-mix(in srgb, var(--text) 18%, transparent);
+  --liquid-cyan: rgba(50, 214, 220, 0.18);
+  --liquid-warm: rgba(255, 194, 96, 0.16);
+}
+
+body.dark {
+  --liquid-fill: color-mix(in srgb, var(--surface-solid) 52%, transparent);
+  --liquid-fill-strong: color-mix(in srgb, var(--surface-solid) 68%, transparent);
+  --liquid-border: rgba(255, 255, 255, 0.22);
+  --liquid-border-low: rgba(255, 255, 255, 0.1);
+  --liquid-highlight: rgba(255, 255, 255, 0.54);
+  --liquid-highlight-soft: rgba(255, 255, 255, 0.16);
+  --liquid-shadow: 0 18px 42px rgba(0, 0, 0, 0.34);
+  --liquid-shadow-deep: 0 34px 88px rgba(0, 0, 0, 0.54);
+  --liquid-cyan: rgba(92, 238, 225, 0.2);
+  --liquid-warm: rgba(255, 206, 112, 0.1);
+}
+
+.liquid-filter-defs {
+  position: fixed;
+  inset: 0 auto auto 0;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+/* The topbar itself is invisible; each child owns its material. */
+.topbar,
+body.dark .topbar {
+  position: fixed;
+  inset: var(--chrome-top) var(--chrome-side) auto;
+  z-index: 55;
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  width: auto;
+  height: var(--chrome-control-size);
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+  -webkit-backdrop-filter: none;
+  backdrop-filter: none;
+  pointer-events: none;
+}
+
+.topbar > * {
+  pointer-events: auto;
+}
+
+.topbar-center {
+  position: absolute;
+  top: 0;
+  left: 50%;
+  display: block;
+  width: var(--chrome-search-width);
+  min-width: 0;
+  transform: translateX(-50%);
+}
+
+.topbar-right {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  margin-left: auto;
+}
+
+/* Shared control material. Content always stays outside the optical filter. */
+.icon-button,
+body.dark .icon-button,
+.topbar-search,
+body.dark .topbar-search,
+.liquid-control {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  border: 0;
+  background: transparent;
+  box-shadow: none;
+  -webkit-backdrop-filter: none;
+  backdrop-filter: none;
+  color: var(--text);
+  transform: translateZ(0);
+  transition:
+    color 180ms ease,
+    transform 260ms var(--chrome-ease-spring);
+  -webkit-tap-highlight-color: transparent;
+}
+
+.icon-button::before,
+.topbar-search::before,
+.search-morph-proxy::before {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  border-radius: inherit;
+  background:
+    radial-gradient(
+      120px 80px at var(--liquid-pointer-x, 18%) var(--liquid-pointer-y, 4%),
+      color-mix(in srgb, var(--liquid-highlight) 28%, transparent),
+      transparent 62%
+    ),
+    linear-gradient(155deg, color-mix(in srgb, #fff 24%, transparent), transparent 42%),
+    var(--liquid-fill);
+  -webkit-backdrop-filter: blur(18px) saturate(155%);
+  backdrop-filter: blur(18px) saturate(155%);
+  content: "";
+}
+
+.icon-button::after,
+.topbar-search::after,
+.search-morph-proxy::after {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  border: 1px solid var(--liquid-border);
+  border-radius: inherit;
+  background:
+    linear-gradient(122deg, var(--liquid-highlight) 0 1px, transparent 1.8px 64%, var(--liquid-highlight-soft) 100%),
+    linear-gradient(90deg, var(--liquid-cyan), transparent 15% 84%, var(--liquid-warm));
+  box-shadow:
+    inset 0 1px 0 color-mix(in srgb, var(--liquid-highlight) 72%, transparent),
+    inset 1px 0 0 var(--liquid-cyan),
+    inset -1px 0 0 var(--liquid-warm),
+    var(--liquid-shadow);
+  content: "";
+  pointer-events: none;
+}
+
+.icon-button > *,
+.topbar-search > *,
+.search-morph-proxy > * {
+  position: relative;
+  z-index: 2;
+}
+
+.icon-button,
+body.dark .icon-button {
+  display: inline-grid;
+  place-items: center;
+  width: var(--chrome-control-size);
+  height: var(--chrome-control-size);
+  padding: 0;
+  border-radius: var(--chrome-control-radius);
+  cursor: pointer;
+}
+
+.icon-button svg {
+  width: 20px;
+  height: 20px;
+  overflow: visible;
+}
+
+.icon-button path,
+.icon-button circle,
+.topbar-search path,
+.topbar-search circle {
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.7;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.icon-button:hover,
+body.dark .icon-button:hover,
+.topbar-search:hover,
+body.dark .topbar-search:hover {
+  color: var(--accent-strong);
+  transform: translateY(-1px) scale(1.018);
+}
+
+.topbar-search:hover,
+body.dark .topbar-search:hover {
+  transform: translateY(-1px);
+}
+
+.icon-button:active,
+.topbar-search:active {
+  transform: translateY(0) scale(0.965);
+  transition-duration: 90ms;
+}
+
+.icon-button:focus-visible,
+.topbar-search:focus-visible,
+.language-option:focus-visible,
+.search-close-button:focus-visible,
+.search-result-link:focus-visible {
+  outline: 3px solid color-mix(in srgb, var(--accent) 34%, transparent);
+  outline-offset: 3px;
+}
+
+.icon-button:disabled {
+  cursor: wait;
+  opacity: 0.72;
+}
+
+/* Search entry */
+.topbar-search,
+body.dark .topbar-search {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  width: 100%;
+  height: var(--chrome-control-size);
+  padding: 0 17px;
+  border-radius: 999px;
+  color: var(--muted);
+  font-size: 14px;
+  font-weight: 650;
+  text-align: left;
+  cursor: pointer;
+}
+
+.topbar-search svg {
+  width: 18px;
+  height: 18px;
+  flex: 0 0 auto;
+}
+
+.topbar-search-text,
+body.dark .topbar-search-text {
+  overflow: hidden;
+  color: color-mix(in srgb, var(--muted) 82%, transparent);
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.topbar-search.is-morph-source {
+  opacity: 0;
+  pointer-events: none;
+}
+
+.search-morph-proxy {
+  position: fixed;
+  z-index: 86;
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  margin: 0;
+  padding: 0 17px;
+  overflow: hidden;
+  border-radius: 999px;
+  color: var(--muted);
+  font-size: 14px;
+  font-weight: 650;
+  line-height: 1;
+  transform-origin: center;
+  will-change: left, top, width, height, border-radius, opacity, transform;
+  pointer-events: auto;
+}
+
+.search-morph-proxy svg {
+  width: 18px;
+  height: 18px;
+  flex: 0 0 auto;
+}
+
+.search-morph-proxy path,
+.search-morph-proxy circle {
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.7;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+/* Shared glass panel: tint + directional rim, with unfiltered content. */
+.liquid-panel {
+  position: relative;
+  isolation: isolate;
+  border: 1px solid var(--liquid-border);
+  background:
+    radial-gradient(180px 90px at 12% 0%, color-mix(in srgb, #fff 22%, transparent), transparent 72%),
+    linear-gradient(145deg, color-mix(in srgb, #fff 12%, transparent), transparent 45%),
+    var(--liquid-fill-strong);
+  box-shadow:
+    inset 0 1px 0 color-mix(in srgb, var(--liquid-highlight) 68%, transparent),
+    inset 1px 0 0 var(--liquid-cyan),
+    inset -1px 0 0 var(--liquid-warm),
+    var(--liquid-shadow-deep);
+  -webkit-backdrop-filter: blur(28px) saturate(165%);
+  backdrop-filter: blur(28px) saturate(165%);
+}
+
+.liquid-panel::before {
+  position: absolute;
+  inset: 0 0 auto;
+  z-index: -1;
+  height: 36%;
+  border-radius: inherit;
+  background: linear-gradient(175deg, color-mix(in srgb, #fff 26%, transparent), transparent 60%);
+  filter: url("#liquidEdgeRefraction");
+  opacity: 0.7;
+  content: "";
+  pointer-events: none;
+}
+
+/* Search morph destination */
+.search-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 80;
+  display: block;
+  padding: 0;
+  pointer-events: none;
+}
+
+.search-modal[hidden] {
+  display: none !important;
+}
+
+.search-modal-backdrop {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  background: color-mix(in srgb, var(--bg) 28%, rgba(8, 14, 12, 0.24));
+  -webkit-backdrop-filter: blur(15px) saturate(138%);
+  backdrop-filter: blur(15px) saturate(138%);
+  opacity: 0;
+  pointer-events: auto;
+  will-change: opacity;
+}
+
+body.dark .search-modal-backdrop {
+  background: rgba(2, 6, 5, 0.46);
+}
+
+.search-modal-panel,
+body.dark .search-modal-panel {
+  position: fixed;
+  top: clamp(96px, 14vh, 132px);
+  left: 50%;
+  z-index: 2;
+  display: grid;
+  grid-template-rows: 56px minmax(190px, 1fr);
+  width: min(590px, calc(100vw - 32px));
+  height: min(410px, calc(100dvh - 174px));
+  min-height: 270px;
+  padding: 0;
+  overflow: hidden;
+  border-radius: 25px;
+  transform: translate3d(-50%, 12px, 0) scale(0.985);
+  transform-origin: 50% 0;
+  opacity: 0;
+  pointer-events: none;
+  will-change: opacity, transform, clip-path;
+}
+
+.search-modal[data-phase="open"] .search-modal-panel,
+.search-modal[data-phase="opening"] .search-modal-panel,
+.search-modal[data-phase="closing"] .search-modal-panel {
+  pointer-events: auto;
+}
+
+.search-modal-bar {
+  position: relative;
+  z-index: 3;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-height: 56px;
+  padding: 0 12px 0 17px;
+  border: 0;
+  border-bottom: 1px solid color-mix(in srgb, var(--line-strong) 58%, transparent);
+  color: var(--muted);
+  opacity: 0;
+  pointer-events: none;
+}
+
+.search-modal-bar.is-interactive {
+  pointer-events: auto;
+}
+
+.search-modal-icon {
+  width: 19px;
+  height: 19px;
+  flex: 0 0 auto;
+}
+
+.search-modal-bar input {
+  width: 100%;
+  min-width: 0;
+  height: 100%;
+  padding: 0;
+  border: 0;
+  outline: 0;
+  background: transparent;
+  color: var(--text);
+  font-size: 16px;
+  font-weight: 620;
+  letter-spacing: -0.01em;
+}
+
+.search-modal-bar input::placeholder {
+  color: color-mix(in srgb, var(--faint) 88%, transparent);
+  font-weight: 560;
+}
+
+.search-modal-bar input::-webkit-search-cancel-button,
+.search-modal-bar input::-webkit-search-decoration {
+  display: none;
+  -webkit-appearance: none;
+  appearance: none;
+}
+
+.search-close-button {
+  display: grid;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  flex: 0 0 auto;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: color-mix(in srgb, var(--surface-soft) 74%, transparent);
+  color: var(--muted);
+  cursor: pointer;
+  transition: color 160ms ease, background 160ms ease, transform 180ms var(--chrome-ease-spring);
+}
+
+.search-close-button:hover {
+  background: color-mix(in srgb, var(--accent-soft) 78%, transparent);
+  color: var(--accent-strong);
+  transform: rotate(4deg) scale(1.04);
+}
+
+.search-close-button:active {
+  transform: scale(0.92);
+}
+
+.search-close-button svg {
+  width: 17px;
+  height: 17px;
+}
+
+.search-close-button path {
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.65;
+  stroke-linecap: round;
+}
+
+.search-modal-body {
+  position: relative;
+  z-index: 2;
+  display: block;
+  min-height: 0;
+  padding: 20px;
+  overflow: auto;
+  color: var(--muted);
+  opacity: 0;
+  transform: translateY(-14px);
+  will-change: opacity, transform, filter;
+}
+
+.search-empty-state {
+  display: grid;
+  place-items: center;
+  align-content: center;
+  min-height: 230px;
+  text-align: center;
+}
+
+.search-empty-kicker {
+  color: var(--accent-strong);
+  font-size: 12px;
+  font-weight: 760;
+  letter-spacing: 0.11em;
+}
+
+.search-empty-state p {
+  margin: 7px 0 0;
+  color: var(--faint);
+  font-size: 14px;
+  font-weight: 560;
+}
+
+.search-result-list {
+  display: grid;
+  gap: 8px;
+  width: 100%;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.search-result-link {
+  display: grid;
+  grid-template-columns: 34px minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 10px;
+  min-height: 52px;
+  padding: 7px 12px 7px 8px;
+  border: 1px solid transparent;
+  border-radius: 15px;
+  background: color-mix(in srgb, var(--surface-soft) 50%, transparent);
+  color: var(--text);
+  font-size: 14px;
+  font-weight: 640;
+  transition: background 160ms ease, border-color 160ms ease, transform 180ms var(--chrome-ease-spring);
+}
+
+.search-result-link:hover {
+  border-color: color-mix(in srgb, var(--accent) 24%, transparent);
+  background: color-mix(in srgb, var(--accent-soft) 72%, var(--surface-soft));
+  transform: translateX(3px);
+}
+
+.search-result-mark {
+  display: grid;
+  place-items: center;
+  width: 34px;
+  height: 34px;
+  border-radius: 11px;
+  background: color-mix(in srgb, var(--accent) 12%, transparent);
+  color: var(--accent-strong);
+  font-size: 13px;
+  font-weight: 790;
+}
+
+.search-result-arrow {
+  color: var(--faint);
+  font-size: 18px;
+  font-weight: 500;
+}
+
+/* Language button → menu morph */
+.language-control {
+  position: relative;
+  width: var(--chrome-control-size);
+  height: var(--chrome-control-size);
+  overflow: visible;
+}
+
+.language-trigger {
+  position: absolute !important;
+  inset: 0;
+  z-index: 4;
+}
+
+.language-trigger .language-globe {
+  width: 20px;
+  height: 20px;
+  transition: opacity 160ms ease;
+}
+
+.language-globe .globe-detail {
+  opacity: 0.72;
+  stroke-width: 1.42;
+}
+
+.language-menu,
+body.dark .language-menu {
+  position: absolute;
+  top: 0;
+  right: 0;
+  z-index: 2;
+  display: grid;
+  align-content: start;
+  width: var(--chrome-control-size);
+  height: var(--chrome-control-size);
+  padding: 10px;
+  overflow: hidden;
+  border-radius: var(--chrome-control-radius);
+  opacity: 0;
+  visibility: hidden;
+  transform-origin: 100% 0;
+  pointer-events: none;
+  will-change: width, height, border-radius, opacity;
+}
+
+.language-menu[aria-hidden="false"] {
+  visibility: visible;
+}
+
+.language-menu-heading {
+  display: flex;
+  align-items: center;
+  min-height: 32px;
+  padding: 0 42px 0 9px;
+  color: var(--faint);
+  font-size: 11px;
+  font-weight: 760;
+  letter-spacing: 0.08em;
+  white-space: nowrap;
+  opacity: 0;
+}
+
+.language-option {
+  display: grid;
+  grid-template-columns: 22px minmax(0, 1fr);
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  min-height: 39px;
+  padding: 2px 9px;
+  border: 0;
+  border-radius: 12px;
+  background: transparent;
+  color: var(--muted);
+  font-size: 14px;
+  font-weight: 640;
+  text-align: left;
+  white-space: nowrap;
+  opacity: 0;
+  cursor: pointer;
+  transform-origin: 100% 0;
+  will-change: opacity, transform, filter;
+}
+
+.language-option:hover,
+.language-option:focus-visible {
+  background: color-mix(in srgb, var(--accent-soft) 76%, transparent);
+  color: var(--text);
+}
+
+.language-option[aria-checked="true"] {
+  color: var(--accent-strong);
+}
+
+.language-check {
+  display: grid;
+  place-items: center;
+  width: 22px;
+  height: 22px;
+  color: var(--accent-strong);
+  opacity: 0;
+  transform: scale(0.72);
+}
+
+.language-option[aria-checked="true"] .language-check {
+  opacity: 1;
+  transform: scale(1);
+}
+
+.language-check svg {
+  width: 15px;
+  height: 15px;
+}
+
+.language-check path {
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.9;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+/* Sidebar: outer motion layer, clipped surface, and a clear content layer. */
+body.chrome-motion-ready .sidebar,
+body.chrome-motion-ready.sidebar-collapsed .sidebar,
+body.chrome-motion-ready:not(.sidebar-collapsed) .sidebar,
+body.chrome-motion-ready.sidebar-open .sidebar {
+  position: fixed;
+  top: var(--chrome-top);
+  left: var(--chrome-side);
+  z-index: 48;
+  display: block !important;
+  width: var(--chrome-sidebar-width);
+  height: calc(100dvh - var(--chrome-top) - 14px);
+  min-height: 0;
+  padding: 0;
+  overflow: visible;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+  -webkit-backdrop-filter: none;
+  backdrop-filter: none;
+  opacity: 1;
+  visibility: visible;
+  pointer-events: none;
+  transform: translate3d(calc(-100% - 36px), 0, 0);
+  transition: none;
+  will-change: transform, opacity;
+}
+
+body.chrome-motion-ready .sidebar[data-phase="open"],
+body.chrome-motion-ready .sidebar[data-phase="opening"],
+body.chrome-motion-ready .sidebar[data-phase="closing"] {
+  visibility: visible;
+}
+
+body.chrome-motion-ready .sidebar[data-phase="open"] {
+  pointer-events: auto;
+}
+
+.sidebar-surface,
+body.dark .sidebar-surface {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  height: 100%;
+  min-height: 0;
+  overflow: hidden;
+  border-radius: var(--chrome-sidebar-radius);
+  transform: translateZ(0);
+}
+
+.sidebar-header {
+  position: relative;
+  z-index: 2;
+  display: grid;
+  grid-template-columns: 57px minmax(0, 1fr);
+  align-items: center;
+  min-height: 58px;
+  padding: 0 10px 0 0;
+  border-bottom: 1px solid color-mix(in srgb, var(--line-strong) 52%, transparent);
+}
+
+.sidebar-toggle-slot {
+  width: 57px;
+  height: 100%;
+}
+
+.sidebar-header .sidebar-brand,
+body.dark .sidebar-header .sidebar-brand {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 58px;
+  margin: 0;
+  padding: 12px 16px 12px 5px;
+  border: 0;
+  color: var(--accent-strong);
+  opacity: 1;
+}
+
+.sidebar-header .sidebar-brand::after {
+  inset: 14px 16px 14px 5px;
+}
+
+.sidebar-header .sidebar-brand-mark {
+  width: min(100%, 194px);
+  max-height: 30px;
+}
+
+.sidebar .sidebar-scroll {
+  flex: 1 1 auto;
+  min-height: 0;
+  padding: 12px 13px 16px;
+  overflow: auto;
+  overscroll-behavior: contain;
+  scrollbar-width: thin;
+  scrollbar-color: color-mix(in srgb, var(--accent) 20%, transparent) transparent;
+}
+
+.sidebar .chapter-nav {
+  gap: 6px;
+}
+
+#sidebarToggle {
+  z-index: 58;
+}
+
+#sidebarToggle .menu-line {
+  transform-box: fill-box;
+  transform-origin: center;
+  will-change: transform;
+}
+
+#sidebarToggle.is-fused::before {
+  background: color-mix(in srgb, var(--liquid-fill) 42%, transparent);
+}
+
+#sidebarToggle.is-fused::after {
+  border-right-color: transparent;
+  border-radius: var(--chrome-control-radius) 8px 8px var(--chrome-control-radius);
+  box-shadow:
+    inset 1px 0 0 var(--liquid-cyan),
+    inset 0 1px 0 color-mix(in srgb, var(--liquid-highlight) 70%, transparent),
+    inset 0 -1px 0 color-mix(in srgb, var(--liquid-border-low) 72%, transparent);
+}
+
+.sidebar-liquid-bridge {
+  position: fixed;
+  inset: 0;
+  z-index: 49;
+  overflow: visible;
+  filter: url("#liquidGoo");
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  will-change: opacity;
+}
+
+.sidebar-goo {
+  position: fixed;
+  display: block;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--surface-solid) 82%, var(--accent-soft));
+  box-shadow: inset 0 1px 0 color-mix(in srgb, #fff 32%, transparent);
+  will-change: left, top, width, height, transform;
+}
+
+body.dark .sidebar-goo {
+  background: color-mix(in srgb, var(--surface-solid) 76%, var(--accent-soft));
+}
+
+.drawer-backdrop,
+body.sidebar-open .drawer-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 44;
+  display: block;
+  background: rgba(4, 9, 8, 0.36);
+  -webkit-backdrop-filter: blur(7px) saturate(125%);
+  backdrop-filter: blur(7px) saturate(125%);
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  transition: none;
+  will-change: opacity;
+}
+
+body.sidebar-layer-active {
+  overflow: hidden;
+}
+
+/* Keep fixed overlays above page TOC but below theme artwork. */
+body.search-modal-open {
+  overflow: hidden;
+}
+
+@media (max-width: 920px) {
+  :root {
+    --chrome-top: 8px;
+    --chrome-side: 8px;
+    --chrome-control-size: 42px;
+    --chrome-control-radius: 14px;
+    --chrome-sidebar-width: min(318px, calc(100vw - 16px));
+  }
+
+  .topbar,
+  body.dark .topbar {
+    inset: var(--chrome-top) var(--chrome-side) auto;
+    height: var(--chrome-control-size);
+    padding: 0;
+  }
+
+  .topbar-center {
+    right: 98px;
+    left: 50px;
+    width: auto;
+    transform: none;
+  }
+
+  .topbar-right {
+    gap: 6px;
+  }
+
+  .topbar-search,
+  body.dark .topbar-search {
+    height: var(--chrome-control-size);
+    padding: 0 13px;
+  }
+
+  .topbar-search-text {
+    font-size: 13px;
+  }
+
+  .search-modal-panel,
+  body.dark .search-modal-panel {
+    top: 68px;
+    grid-template-rows: 54px minmax(180px, 1fr);
+    width: calc(100vw - 24px);
+    height: min(420px, calc(100dvh - 86px));
+    min-height: 250px;
+    border-radius: 23px;
+  }
+
+  .search-modal-bar {
+    min-height: 54px;
+    padding-left: 15px;
+  }
+
+  .search-modal-bar input {
+    font-size: 16px;
+  }
+
+  .search-modal-body {
+    padding: 15px;
+  }
+
+  .search-empty-state {
+    min-height: 190px;
+  }
+
+  .search-result-link {
+    min-height: 50px;
+  }
+
+  body.chrome-motion-ready .sidebar,
+  body.chrome-motion-ready.sidebar-collapsed .sidebar,
+  body.chrome-motion-ready:not(.sidebar-collapsed) .sidebar,
+  body.chrome-motion-ready.sidebar-open .sidebar {
+    top: var(--chrome-top);
+    left: var(--chrome-side);
+    width: var(--chrome-sidebar-width);
+    height: calc(100dvh - 16px);
+  }
+
+  .sidebar-header {
+    grid-template-columns: 55px minmax(0, 1fr);
+    min-height: 56px;
+  }
+
+  .sidebar-header .sidebar-brand,
+  body.dark .sidebar-header .sidebar-brand {
+    height: 56px;
+  }
+
+  .sidebar-header .sidebar-brand::after {
+    inset: 14px 17px 14px 4px;
+  }
+
+  .language-menu,
+  body.dark .language-menu {
+    padding: 9px;
+  }
+
+  body.dark .sidebar-surface {
+    background:
+      radial-gradient(180px 90px at 12% 0%, rgba(255, 255, 255, 0.14), transparent 72%),
+      linear-gradient(145deg, rgba(255, 255, 255, 0.07), transparent 45%),
+      color-mix(in srgb, var(--surface-solid) 90%, rgba(7, 14, 12, 0.92));
+  }
+}
+
+@media (max-width: 390px) {
+  .topbar-center {
+    right: 94px;
+  }
+
+  .topbar-search,
+  body.dark .topbar-search {
+    gap: 8px;
+    padding-right: 11px;
+    padding-left: 11px;
+  }
+
+  .topbar-search svg {
+    width: 17px;
+    height: 17px;
+  }
+}
+
+@media (hover: none) {
+  .icon-button:hover,
+  body.dark .icon-button:hover,
+  .topbar-search:hover,
+  body.dark .topbar-search:hover {
+    color: var(--text);
+    transform: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .icon-button,
+  .topbar-search,
+  .language-option,
+  .search-close-button,
+  .search-result-link {
+    transition-duration: 80ms !important;
+  }
+
+  .sidebar-liquid-bridge {
+    display: none;
+  }
+
+  .liquid-panel::before {
+    filter: none;
+  }
+}
+
+/* Chromium can apply an SVG displacement map to the sampled backdrop. */
+@supports (backdrop-filter: url("#liquidEdgeRefraction") blur(1px)) {
+  .icon-button::before,
+  .topbar-search::before,
+  .search-morph-proxy::before {
+    backdrop-filter: url("#liquidEdgeRefraction") blur(18px) saturate(155%);
+  }
+}
+
+@supports not ((-webkit-backdrop-filter: blur(1px)) or (backdrop-filter: blur(1px))) {
+  .icon-button::before,
+  .topbar-search::before,
+  .search-morph-proxy::before {
+    background: color-mix(in srgb, var(--surface-solid) 92%, var(--bg));
+  }
+
+  .liquid-panel {
+    background: color-mix(in srgb, var(--surface-solid) 94%, var(--bg));
+  }
+
+  .search-modal-backdrop {
+    background: color-mix(in srgb, var(--bg) 90%, rgba(4, 9, 8, 0.36));
+  }
+}

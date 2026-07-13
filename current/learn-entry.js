@@ -209,7 +209,7 @@ renderRoute = function renderLearningRoute() {
   updateNavActive();
   updateContinueShortcut();
   buildPageToc();
-  document.body.classList.remove("sidebar-open");
+  window.chromeMotion?.closeForRouteChange();
 
   window.requestAnimationFrame(() => {
     setupInteractiveBlocks();

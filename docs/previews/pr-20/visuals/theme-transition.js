@@ -5,27 +5,27 @@
   };
 
   /**
-   * Timeline (ms):
-   * - luminance morph runs for nearly the whole duration (true continuous mix)
-   * - body.dark class only applied at the end, after vars already match target
-   * - no mid-animation palette snap
+   * Timeline (full duration):
+   * 0–morphEnd   continuous CSS-token luminance morph (无极)
+   * ~morphEnd    body.dark commit (under full art + blur; veil still 0)
+   * 68–100%      page veil 0→1 + blur/art fade (no green snap at teardown)
    */
   const NORMAL = {
     duration: 2800,
-    /** Luminance morph spans almost the full beat; class commit only at morphEnd */
     morphStart: 0.06,
-    morphEnd: 0.84,
+    /** Finalize class while art+blur still full and veil still off */
+    morphEnd: 0.66,
+    /** Start restoring body::before in the shared exit window */
+    veilRestoreStart: 0.68,
   };
   const REDUCED = {
     duration: 420,
     morphStart: 0.08,
-    morphEnd: 0.8,
+    morphEnd: 0.75,
+    veilRestoreStart: 0.7,
   };
 
-  /**
-   * Live site palettes from styles.css warm override (:root + body.dark).
-   * Must match exactly so end-of-morph class commit is luminance-invisible.
-   */
+  /** Live site palettes from styles.css warm override — must match for seamless commit */
   const LIGHT = {
     "--bg": [244, 241, 232, 1],
     "--surface": [255, 255, 255, 0.7],
@@ -78,7 +78,6 @@
     return t * t * (3 - 2 * t);
   }
 
-  /** Smooth continuous ease — no flat holds that read as jumps */
   function smootherstep(t) {
     const x = clamp01(t);
     return x * x * x * (x * (x * 6 - 15) + 10);
@@ -113,10 +112,6 @@
     });
   }
 
-  /**
-   * Knock out source paper once so reveal can stay transparent without a
-   * per-frame pixel loop.
-   */
   function prepareImage(img, mode) {
     const canvas = document.createElement("canvas");
     canvas.width = img.naturalWidth;
@@ -223,24 +218,38 @@
     document.body.style.removeProperty("--shadow");
     document.body.style.removeProperty("--shadow-soft");
     document.body.style.removeProperty("--theme-mix");
-    document.documentElement.style.removeProperty("color-scheme");
+    // Keep --theme-tx-page-veil until teardown — finalize must not snap atmosphere
   }
 
   /**
-   * Continuously write interpolated theme tokens onto body.
-   * t=0 → from palette, t=1 → to palette. No discrete class flip mid-way.
+   * body::before opacity over full timeline t∈[0,1].
+   * Off during mid (so light/dark ::before content can swap under art+blur),
+   * then continuous restore to 1 before teardown — eliminates green end jump.
    */
+  function pageVeilForTimeline(globalT, timing) {
+    const t = clamp01(globalT);
+    const start = timing.veilRestoreStart;
+    if (t <= 0.06) {
+      // Soft dip at start so entry is not a hard cut either
+      return lerp(1, 0, smootherstep(t / 0.06));
+    }
+    if (t < start) return 0;
+    return smootherstep((t - start) / Math.max(0.001, 1 - start));
+  }
+
+  function setPageVeil(value) {
+    document.body.style.setProperty("--theme-tx-page-veil", String(clamp01(value)));
+  }
+
   function applyMix(from, to, t) {
     const mix = smootherstep(t);
     document.body.style.setProperty("--theme-mix", String(mix));
 
     TOKEN_KEYS.forEach((key) => {
       if (key === "--shadow-rgb") return;
-      const color = mixChannel(from[key], to[key], mix);
-      document.body.style.setProperty(key, cssColor(color));
+      document.body.style.setProperty(key, cssColor(mixChannel(from[key], to[key], mix)));
     });
 
-    // Shadows are multi-value; rebuild from mixed RGB
     const shadow = mixChannel(from["--shadow-rgb"], to["--shadow-rgb"], mix);
     const softA = lerp(0.1, 0.24, mix);
     document.body.style.setProperty(
@@ -255,7 +264,6 @@
 
   function finalizeTheme(targetTheme, button) {
     const isDark = targetTheme === "dark";
-    // Class matches the already-lerped tokens, then drop overrides
     document.body.classList.toggle("dark", isDark);
     document.documentElement.style.colorScheme = targetTheme;
     clearInlineTokens();
@@ -286,50 +294,60 @@
   }
 
   function teardownOverlay(button) {
+    // Atmosphere already at 1 — removing the class cannot flash green radials
+    setPageVeil(1);
     if (overlay) {
       overlay.classList.remove("is-active");
       overlay.removeAttribute("data-mode");
     }
     document.body.classList.remove("theme-transitioning");
+    document.body.style.removeProperty("--theme-tx-page-veil");
     button?.removeAttribute("aria-busy");
     if (button) button.disabled = false;
     active = false;
   }
 
-  function startLuminanceMorph(from, to, timing, targetTheme, button) {
+  function startTimeline(from, to, timing, targetTheme, button) {
     const t0 = performance.now();
-    const span = Math.max(1, timing.duration * (timing.morphEnd - timing.morphStart));
-    const delay = timing.duration * timing.morphStart;
+    const morphSpan = Math.max(1, timing.duration * (timing.morphEnd - timing.morphStart));
+    const morphDelay = timing.duration * timing.morphStart;
     let finalized = false;
 
-    // Pin start palette immediately so the first paint is continuous
     applyMix(from, to, 0);
+    setPageVeil(1);
 
     const tick = (now) => {
       const elapsed = now - t0;
-      if (elapsed < delay) {
+      const globalT = clamp01(elapsed / timing.duration);
+
+      // Continuous page atmosphere (the end-jump fix)
+      setPageVeil(pageVeilForTimeline(globalT, timing));
+
+      // Continuous theme tokens
+      if (elapsed < morphDelay) {
         applyMix(from, to, 0);
-        morphRaf = requestAnimationFrame(tick);
-        return;
+      } else {
+        const local = clamp01((elapsed - morphDelay) / morphSpan);
+        applyMix(from, to, local);
+        if (local > 0.55) {
+          document.documentElement.style.colorScheme = targetTheme;
+        }
+        if (local >= 1 && !finalized) {
+          finalized = true;
+          // Class commit under art+blur while veil is still 0 — invisible
+          finalizeTheme(targetTheme, button);
+        }
       }
 
-      const local = clamp01((elapsed - delay) / span);
-      applyMix(from, to, local);
-
-      // Scrollbars / native controls track the late half of the morph
-      if (local > 0.55) {
-        document.documentElement.style.colorScheme = targetTheme;
-      }
-
-      if (local < 1) {
+      if (globalT < 1) {
         morphRaf = requestAnimationFrame(tick);
         return;
       }
 
       morphRaf = 0;
+      setPageVeil(1);
       if (!finalized) {
         finalized = true;
-        // Tokens already equal target — class flip has no visible luminance jump
         finalizeTheme(targetTheme, button);
       }
     };
@@ -356,15 +374,15 @@
     document.body.classList.add("theme-transitioning");
     root.dataset.mode = mode;
     root.style.setProperty("--theme-tx-duration", `${timing.duration}ms`);
+    setPageVeil(1);
 
     const run = () => {
       root.classList.remove("is-active");
       void root.offsetWidth;
       root.classList.add("is-active");
 
-      startLuminanceMorph(from, to, timing, targetTheme, button);
+      startTimeline(from, to, timing, targetTheme, button);
 
-      // Overlay teardown only — palette already continuous via rAF morph
       timers.push(
         window.setTimeout(() => {
           const wantDark = targetTheme === "dark";
@@ -374,9 +392,11 @@
             clearInlineTokens();
             document.documentElement.style.colorScheme = targetTheme;
           }
+          // Guarantee veil is full before class removal
+          setPageVeil(1);
           teardownOverlay(button);
           clearTimers();
-        }, timing.duration + 100),
+        }, timing.duration + 80),
       );
     };
 
@@ -401,6 +421,7 @@
       .catch((error) => {
         console.warn("Theme transition art failed.", error);
         finalizeTheme(targetTheme, button);
+        setPageVeil(1);
         teardownOverlay(button);
         clearTimers();
       });

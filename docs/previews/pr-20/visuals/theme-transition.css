@@ -11,11 +11,13 @@
   --theme-tx-ease: cubic-bezier(0.2, 0.72, 0.18, 1);
   --theme-tx-art-ease: cubic-bezier(0.55, 0, 0.24, 1);
   --theme-tx-blur: 14px;
+  /* Driven by JS; 1 = normal page atmosphere (body::before) */
+  --theme-tx-page-veil: 1;
 }
 
 /*
  * While morphing, freeze non-token transitions so random 160ms UI transitions
- * do not fight the continuous palette mix and create micro-jumps.
+ * do not fight the continuous palette mix.
  */
 body.theme-transitioning {
   overflow: hidden;
@@ -28,11 +30,13 @@ body.theme-transitioning * {
 }
 
 /*
- * Fixed body::before gradients are not tokenized — hide them during morph so
- * they cannot hard-switch when body.dark flips at the end of the lerp.
+ * Page atmosphere (cream / dark overlay). NEVER hard-kill with opacity:0 only
+ * at class remove — that was the green→normal end jump.
+ * JS sets --theme-tx-page-veil over the full timeline and restores to 1
+ * before teardown.
  */
 body.theme-transitioning::before {
-  opacity: 0 !important;
+  opacity: var(--theme-tx-page-veil) !important;
 }
 
 .theme-transition {
@@ -61,15 +65,11 @@ body.theme-transitioning::before {
 .theme-transition__blur {
   opacity: 0;
   background: transparent;
-  -webkit-backdrop-filter: blur(var(--theme-tx-blur)) saturate(0.94);
-  backdrop-filter: blur(var(--theme-tx-blur)) saturate(0.94);
+  -webkit-backdrop-filter: blur(var(--theme-tx-blur)) saturate(1);
+  backdrop-filter: blur(var(--theme-tx-blur)) saturate(1);
   will-change: opacity;
 }
 
-/*
- * Washes are hairline atmosphere only — never opaque covers that hide a
- * palette snap. Continuous luminance comes from JS token lerp.
- */
 .theme-transition__wash {
   opacity: 0;
   will-change: opacity;
@@ -139,12 +139,18 @@ body.theme-transitioning::before {
     theme-tx-art-opacity var(--theme-tx-duration) var(--theme-tx-ease) both;
 }
 
+/*
+ * Blur holds while art is up, then clears in the SAME window as page-veil
+ * restore (≈68–100%) so “becoming sharp” and “cream returning” are continuous.
+ */
 @keyframes theme-tx-blur {
   0% {
     opacity: 0;
   }
-  8%,
-  86% {
+  8% {
+    opacity: 1;
+  }
+  68% {
     opacity: 1;
   }
   100% {
@@ -152,16 +158,15 @@ body.theme-transitioning::before {
   }
 }
 
-/* Light atmospheric crossfade only — max ~0.22 so page tokens stay visible */
 @keyframes theme-tx-wash-from {
   0% {
     opacity: 0;
   }
   8% {
-    opacity: 0.12;
+    opacity: 0.1;
   }
   40% {
-    opacity: 0.05;
+    opacity: 0.04;
   }
   55%,
   100% {
@@ -175,13 +180,13 @@ body.theme-transitioning::before {
     opacity: 0;
   }
   35% {
-    opacity: 0.1;
+    opacity: 0.08;
   }
-  60% {
-    opacity: 0.18;
+  58% {
+    opacity: 0.12;
   }
-  78% {
-    opacity: 0.14;
+  72% {
+    opacity: 0.06;
   }
   100% {
     opacity: 0;
@@ -193,7 +198,7 @@ body.theme-transitioning::before {
     --theme-tx-reveal: -8%;
     transform: scale(1.012);
   }
-  72% {
+  68% {
     --theme-tx-reveal: 108%;
     transform: scale(1);
   }
@@ -210,8 +215,8 @@ body.theme-transitioning::before {
   8% {
     opacity: 0.18;
   }
-  18%,
-  84% {
+  16%,
+  68% {
     opacity: 1;
   }
   100% {

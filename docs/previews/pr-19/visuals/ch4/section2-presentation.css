@@ -1024,15 +1024,6 @@
   margin-bottom: 0;
 }
 
-body.dark #matrix-operations-formal .s2-module,
-body.dark #matrix-operations-interactive .s2-multiplication-lab,
-body.dark #matrix-operations-formal .s2-transpose-matrix span,
-body.dark #matrix-operations-formal .s2-dimension-card,
-body.dark #matrix-operations-formal .s2-chip-bar button.is-active,
-body.dark #matrix-operations-interactive .s2-view-tabs button.is-active {
-  box-shadow: none;
-}
-
 @media (max-width: 980px) {
   #matrix-operations-formal .s2-property-grid,
   #matrix-operations-formal .s2-size-controls {

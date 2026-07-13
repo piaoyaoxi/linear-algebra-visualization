@@ -1,0 +1,87 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>例题反馈动效</title>
+    <link rel="stylesheet" href="../current/vendor/katex/katex.min.css" />
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <main class="page">
+      <section class="example" id="example">
+        <canvas class="burst-layer" id="burst-layer" aria-hidden="true"></canvas>
+
+        <div class="vector-board" aria-hidden="true">
+          <div class="axis axis-x"></div>
+          <div class="axis axis-y"></div>
+          <div class="vector vector-a"></div>
+          <div class="vector vector-b"></div>
+          <span class="vector-label label-a">v</span>
+          <span class="vector-label label-b">w</span>
+        </div>
+
+        <form class="quiz" id="quiz">
+          <h1>
+            What are the two scalar values for <i>a</i> and <i>b</i> which form
+            the vector <span data-tex="\\begin{bmatrix}7\\\\4\\end{bmatrix}"></span>?
+          </h1>
+
+          <fieldset class="choices" aria-label="Scalar choices">
+            <label class="choice">
+              <input type="radio" name="answer" value="0" />
+              <span class="radio-dot"></span>
+              <span data-tex="a=1,\ b=-2"></span>
+              <span class="checkmark">✓</span>
+            </label>
+            <label class="choice">
+              <input type="radio" name="answer" value="1" />
+              <span class="radio-dot"></span>
+              <span data-tex="a=-1,\ b=2"></span>
+              <span class="checkmark">✓</span>
+            </label>
+            <label class="choice">
+              <input type="radio" name="answer" value="2" />
+              <span class="radio-dot"></span>
+              <span data-tex="a=2,\ b=-1"></span>
+              <span class="checkmark">✓</span>
+            </label>
+            <label class="choice">
+              <input type="radio" name="answer" value="3" />
+              <span class="radio-dot"></span>
+              <span data-tex="a=-2,\ b=-1"></span>
+              <span class="checkmark">✓</span>
+            </label>
+          </fieldset>
+
+          <div class="feedback-row">
+            <button class="action" id="action" type="submit" disabled>Check</button>
+            <button class="pi-creature" id="pi-creature" type="button" aria-label="Pi burst">
+              <svg viewBox="0 0 100 84" aria-hidden="true">
+                <path class="pi-top" d="M22 23 C38 28 65 28 80 23" />
+                <path class="pi-leg left" d="M39 25 C45 39 42 59 33 76" />
+                <path class="pi-leg right" d="M64 25 C66 42 74 58 82 73" />
+                <circle cx="47" cy="18" r="7" />
+                <circle cx="68" cy="18" r="7" />
+                <circle class="eye" cx="49" cy="17" r="2.1" />
+                <circle class="eye" cx="66" cy="17" r="2.1" />
+              </svg>
+            </button>
+            <span class="message" id="message">What could it be...</span>
+          </div>
+        </form>
+
+        <aside class="solution" id="solution" aria-live="polite">
+          <p>Start by writing down the coordinates of the vectors.</p>
+          <div class="formula-row">
+            <span data-tex="v=\\begin{bmatrix}2\\\\3\\end{bmatrix}"></span>
+            <span data-tex="w=\\begin{bmatrix}-3\\\\2\\end{bmatrix}"></span>
+          </div>
+        </aside>
+      </section>
+    </main>
+
+    <script src="../current/vendor/katex/katex.min.js"></script>
+    <script src="./script.js"></script>
+  </body>
+</html>

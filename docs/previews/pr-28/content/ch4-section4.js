@@ -103,7 +103,7 @@ defineChapter4Section("matrix-inverse", {
     },
     {
       question: `若 ${texInline("A,B")} 都可逆，${texInline("(AB)^{-1}")} 是什么？`,
-      answer: `${texInline("(AB)^{-1}=B^{-1}A^{-1")}。撤销复合过程要从最后发生的作用开始。`,
+      answer: `${texInline("(AB)^{-1}=B^{-1}A^{-1}")}。撤销复合过程要从最后发生的作用开始。`,
     },
     {
       question: `方程 ${texInline("XA=C")} 应怎样消去右侧的 A？`,
@@ -115,7 +115,7 @@ defineChapter4Section("matrix-inverse", {
     },
     {
       question: `对角矩阵 ${texInline("D=\\operatorname{diag}(2,-3,5)")} 的逆是什么？`,
-      answer: `${texInline("D^{-1}=\\operatorname{diag}(1/2,-1/3,1/5")}。每个非零缩放因子分别取倒数。`,
+      answer: `${texInline("D^{-1}=\\operatorname{diag}(1/2,-1/3,1/5)")}。每个非零缩放因子分别取倒数。`,
     },
     {
       question: "用伴随矩阵求逆时，代数余子式矩阵为什么还要转置？",

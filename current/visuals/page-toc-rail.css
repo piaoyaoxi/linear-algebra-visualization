@@ -44,7 +44,7 @@ body[data-route="home"] .page-toc.has-toc-rail {
 
 .page-toc .toc-rail-item {
   --toc-rail-width: 14px;
-  --toc-rail-color: #a6aaa7;
+  --toc-rail-color: color-mix(in srgb, var(--muted) 56%, transparent);
   position: relative;
   display: flex;
   align-items: center;
@@ -52,7 +52,7 @@ body[data-route="home"] .page-toc.has-toc-rail {
   width: 58px;
   height: 14px;
   padding: 0;
-  color: #a6aaa7;
+  color: color-mix(in srgb, var(--muted) 56%, transparent);
   line-height: 1;
   cursor: pointer;
   outline: none;
@@ -60,14 +60,14 @@ body[data-route="home"] .page-toc.has-toc-rail {
 
 /* Scroll position: deep gray only when the pointer is not on the rail. */
 .page-toc .toc-rail-item.is-active {
-  --toc-rail-color: #4a504e;
-  color: #4a504e;
+  --toc-rail-color: color-mix(in srgb, var(--text) 76%, transparent);
+  color: color-mix(in srgb, var(--text) 76%, transparent);
 }
 
 /* While hovering, scroll-active green/gray yields to the pointer wave
    (inline --toc-rail-color from JS wins for the bar fill). */
 .page-toc.is-hovering .toc-rail-item.is-active {
-  color: #a6aaa7;
+  color: color-mix(in srgb, var(--muted) 56%, transparent);
 }
 
 .toc-rail-bar {
@@ -96,17 +96,13 @@ body[data-route="home"] .page-toc.has-toc-rail {
   z-index: 2;
   max-width: min(42vw, 220px);
   padding: 6px 10px;
-  border: 1px solid rgba(255, 255, 255, 0.55);
+  border: 1px solid var(--line-strong);
   border-radius: 10px;
-  background:
-    linear-gradient(180deg, rgba(255, 255, 255, 0.52), rgba(255, 255, 255, 0.28)),
-    rgba(255, 255, 255, 0.42);
-  box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.72),
-    0 10px 24px rgba(42, 57, 49, 0.12);
+  background: color-mix(in srgb, var(--surface-solid) 78%, transparent);
+  box-shadow: var(--shadow-soft);
   backdrop-filter: blur(16px) saturate(160%);
   -webkit-backdrop-filter: blur(16px) saturate(160%);
-  color: #2a322f;
+  color: var(--text);
   font-size: 12px;
   font-weight: 650;
   line-height: 1.35;
@@ -128,32 +124,26 @@ body[data-route="home"] .page-toc.has-toc-rail {
 }
 
 body.dark .page-toc .toc-rail-item {
-  --toc-rail-color: rgba(226, 232, 228, 0.38);
-  color: rgba(226, 232, 228, 0.38);
+  --toc-rail-color: color-mix(in srgb, var(--muted) 56%, transparent);
+  color: color-mix(in srgb, var(--muted) 56%, transparent);
 }
 
 body.dark .page-toc .toc-rail-item.is-active {
-  --toc-rail-color: rgba(230, 238, 234, 0.92);
-  color: rgba(230, 238, 234, 0.92);
+  --toc-rail-color: color-mix(in srgb, var(--text) 76%, transparent);
+  color: color-mix(in srgb, var(--text) 76%, transparent);
 }
 
 body.dark .page-toc.is-hovering .toc-rail-item.is-active {
-  color: rgba(226, 232, 228, 0.4);
+  color: color-mix(in srgb, var(--muted) 56%, transparent);
 }
 
 body.dark .toc-rail-label {
-  border-color: var(--glass-border, rgba(255, 255, 255, 0.18));
-  background:
-    linear-gradient(180deg, rgba(255, 255, 255, 0.14), rgba(255, 255, 255, 0.04)),
-    rgba(14, 18, 17, 0.58);
-  box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.36),
-    inset 0 -0.5px 0 rgba(255, 255, 255, 0.08),
-    0 0 0 0.5px rgba(255, 255, 255, 0.04),
-    0 12px 28px rgba(0, 0, 0, 0.34);
-  backdrop-filter: blur(18px) saturate(170%);
-  -webkit-backdrop-filter: blur(18px) saturate(170%);
-  color: rgba(242, 245, 243, 0.94);
+  border-color: var(--line-strong);
+  background: color-mix(in srgb, var(--surface-solid) 78%, transparent);
+  box-shadow: var(--shadow-soft);
+  backdrop-filter: blur(16px) saturate(160%);
+  -webkit-backdrop-filter: blur(16px) saturate(160%);
+  color: var(--text);
 }
 
 @media (max-width: 920px), (hover: none), (pointer: coarse) {

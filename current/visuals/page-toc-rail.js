@@ -136,6 +136,7 @@
   const observer = new MutationObserver(() => queueMicrotask(transformToc));
   observer.observe(toc, { childList: true, subtree: true });
   finePointer.addEventListener?.("change", resetWave);
+  window.addEventListener("la-themestart", resetWave);
   window.addEventListener("la-themechange", resetWave);
   transformToc();
 })();

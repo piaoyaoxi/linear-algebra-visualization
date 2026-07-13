@@ -60,7 +60,15 @@ defineChapter4Section("matrix-inverse", {
       "余子式、代数余子式与伴随矩阵求逆",
     ],
   },
-  interactive: false,
+  interactive: {
+    type: "inverse",
+    task: "选择一种变换，把进度拖到中点得到 Ax，再继续向右施加 A^{-1}。最后切换到投影，比较信息丢失后为什么无法回到原输入。",
+    prompts: [
+      "观察同一个点、方格和基向量怎样先被 A 改变，再被 A^{-1} 送回原位。",
+      "比较剪切、旋转和缩放：撤销方式不同，但最终复合矩阵都回到 I。",
+      "切换到投影并继续拖动，说明为什么不存在能够唯一恢复所有输入的逆矩阵。",
+    ],
+  },
   visual: false,
   example: {
     title: "例题：求逆、解方程并完成验证",
@@ -95,7 +103,7 @@ defineChapter4Section("matrix-inverse", {
     },
     {
       question: `若 ${texInline("A,B")} 都可逆，${texInline("(AB)^{-1}")} 是什么？`,
-      answer: `${texInline("(AB)^{-1}=B^{-1}A^{-1}")}。撤销复合过程要从最后发生的作用开始。`,
+      answer: `${texInline("(AB)^{-1}=B^{-1}A^{-1")}。撤销复合过程要从最后发生的作用开始。`,
     },
     {
       question: `方程 ${texInline("XA=C")} 应怎样消去右侧的 A？`,
@@ -107,7 +115,7 @@ defineChapter4Section("matrix-inverse", {
     },
     {
       question: `对角矩阵 ${texInline("D=\\operatorname{diag}(2,-3,5)")} 的逆是什么？`,
-      answer: `${texInline("D^{-1}=\\operatorname{diag}(1/2,-1/3,1/5)")}。每个非零缩放因子分别取倒数。`,
+      answer: `${texInline("D^{-1}=\\operatorname{diag}(1/2,-1/3,1/5")}。每个非零缩放因子分别取倒数。`,
     },
     {
       question: "用伴随矩阵求逆时，代数余子式矩阵为什么还要转置？",

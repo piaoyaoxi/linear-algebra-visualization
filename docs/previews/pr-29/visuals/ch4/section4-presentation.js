@@ -417,7 +417,7 @@
       elements.verdictCard.classList.toggle("is-singular", isSingular);
       elements.verdictKicker.textContent = isSingular ? "降秩" : "不降秩";
       elements.verdict.textContent = isSingular ? "不可逆" : "可逆";
-      elements.outputTitle.textContent = isSingular && fullyApplied ? "降为一维" : "仍在变换中";
+      elements.outputTitle.textContent = fullyApplied ? (isSingular ? "降为一维" : "仍是二维") : "变换中";
 
       if (isSingular) {
         elements.inverseIndicator.innerHTML = `<span class="rank-back-arrow is-disabled">←</span><strong>${inline("A^{-1}")}</strong><em>不存在</em>`;

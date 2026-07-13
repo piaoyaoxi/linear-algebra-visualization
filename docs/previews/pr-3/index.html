@@ -3,83 +3,32 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="description" content="高等代数可视化：沿北大版教材，把抽象结构变成可观察、可操作的图像。" />
     <title>高等代数可视化</title>
     <link rel="icon" href="data:," />
-    <link rel="stylesheet" href="./vendor/katex/katex.min.css" />
-    <link rel="stylesheet" href="./styles.css" />
-    <link rel="stylesheet" href="./lesson-presentation.css" />
-    <script defer src="./vendor/katex/katex.min.js"></script>
-    <script defer src="./app.js"></script>
-    <script defer src="./content/ch1.js"></script>
-    <script defer src="./content/ch2.js"></script>
-    <script defer src="./content/ch3.js"></script>
-    <script defer src="./content/ch4-section1.js"></script>
-    <script defer src="./content/ch4-section2.js"></script>
-    <script defer src="./content/ch4.js"></script>
-    <script defer src="./lesson-presentation.js"></script>
-    <script defer src="./content/ch5.js"></script>
-    <script defer src="./content/ch6.js"></script>
-    <script defer src="./content/ch7.js"></script>
-    <script defer src="./content/ch8.js"></script>
-    <script defer src="./content/ch9.js"></script>
-    <script defer src="./content/ch10.js"></script>
+    <link rel="stylesheet" href="./cover.css" />
+    <script defer src="./cover.js"></script>
   </head>
   <body>
-    <header class="topbar">
-      <button class="icon-button" id="sidebarToggle" type="button" aria-label="切换目录">
-        <svg viewBox="0 0 24 24" aria-hidden="true">
-          <path d="M4 5.5A2.5 2.5 0 0 1 6.5 3H20v16H6.5A2.5 2.5 0 0 0 4 21.5v-16Z" />
-          <path d="M4 5.5A2.5 2.5 0 0 1 6.5 8H20" />
-          <path d="M8 3v13" />
-        </svg>
-      </button>
-      <a class="brand" href="#home" aria-label="高等代数可视化首页">
-        <span class="brand-mark">A</span>
-        <span class="brand-copy">
-          <span class="brand-name">高等代数可视化</span>
-          <span class="brand-subtitle">北大版教材伴学</span>
-        </span>
-      </a>
-      <div class="topbar-spacer"></div>
-      <label class="search-box">
-        <svg viewBox="0 0 24 24" aria-hidden="true">
-          <path d="m21 21-4.35-4.35" />
-          <circle cx="11" cy="11" r="7" />
-        </svg>
-        <input id="searchInput" type="search" placeholder="搜索章节" autocomplete="off" />
-      </label>
-      <a class="top-shortcut" href="#ch4/matrix-language">第四章 矩阵</a>
-      <button class="icon-button" id="themeToggle" type="button" aria-label="切换明暗外观">
-        <svg viewBox="0 0 24 24" aria-hidden="true">
-          <path d="M12 3v2" />
-          <path d="M12 19v2" />
-          <path d="m4.22 4.22 1.42 1.42" />
-          <path d="m18.36 18.36 1.42 1.42" />
-          <path d="M3 12h2" />
-          <path d="M19 12h2" />
-          <path d="m4.22 19.78 1.42-1.42" />
-          <path d="m18.36 5.64 1.42-1.42" />
-          <circle cx="12" cy="12" r="4" />
-        </svg>
-      </button>
-    </header>
-
-    <div class="app-layout">
-      <aside class="sidebar" id="sidebar">
-        <div class="sidebar-scroll">
-          <div class="sidebar-head">
-            <span>学习路线</span>
-            <span class="progress-pill" id="progressBadge">目录</span>
-          </div>
-          <nav class="chapter-nav" id="chapterNav" aria-label="章节目录"></nav>
+    <main class="cover" id="cover">
+      <canvas class="cover-canvas" id="coverCanvas" aria-hidden="true"></canvas>
+      <div class="cover-shade" aria-hidden="true"></div>
+      <header class="cover-top">
+        <span class="cover-brand"><span class="cover-brand-mark">A</span>高等代数可视化</span>
+        <a class="cover-top-link" href="./learn.html#guide">进入导学</a>
+      </header>
+      <nav class="cover-orbit" id="coverOrbit" aria-label="章节入口"></nav>
+      <section class="cover-center" aria-labelledby="coverTitle">
+        <span class="cover-eyebrow">北大版《高等代数》 · 可视化伴学</span>
+        <h1 class="cover-title" id="coverTitle"><span>高等代数</span><span class="cover-title-accent">可视化</span></h1>
+        <p class="cover-latin">visual algebra</p>
+        <p class="cover-tagline">把矩阵、线性空间与线性变换，变成看得见、拖得动的图像。</p>
+        <div class="cover-actions">
+          <a class="cover-button is-primary" id="coverStart" href="./learn.html#guide">开始学习</a>
+          <a class="cover-button" href="./learn.html#guide">了解怎么学</a>
         </div>
-      </aside>
-
-      <main class="content" id="mainContent" tabindex="-1"></main>
-
-      <aside class="page-toc" id="pageToc" aria-label="当前页目录"></aside>
-    </div>
-
-    <div class="drawer-backdrop" id="drawerBackdrop"></div>
+      </section>
+      <p class="cover-foot">十个章节沿教材展开 · 点击任意章节直接进入</p>
+    </main>
   </body>
 </html>

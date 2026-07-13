@@ -165,18 +165,32 @@ body.dark .topbar {
 }
 
 body.dark .topbar-search {
-  border-color: rgba(255, 255, 255, 0.12);
+  border-color: var(--glass-border, rgba(255, 255, 255, 0.18));
   background:
-    linear-gradient(180deg, rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0.03)),
-    rgba(18, 28, 25, 0.48);
+    linear-gradient(180deg, rgba(255, 255, 255, 0.14), rgba(255, 255, 255, 0.03)),
+    rgba(14, 18, 17, 0.48);
   box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.08),
-    0 12px 28px rgba(0, 0, 0, 0.24);
-  color: rgba(236, 244, 241, 0.78);
+    inset 0 1px 0 rgba(255, 255, 255, 0.38),
+    inset 0 -0.5px 0 rgba(255, 255, 255, 0.08),
+    0 0 0 0.5px rgba(255, 255, 255, 0.04),
+    0 12px 30px rgba(0, 0, 0, 0.34);
+  backdrop-filter: blur(20px) saturate(175%);
+  -webkit-backdrop-filter: blur(20px) saturate(175%);
+  color: rgba(236, 244, 241, 0.86);
+}
+
+body.dark .topbar-search:hover {
+  border-color: rgba(142, 240, 227, 0.32);
+  color: rgba(242, 245, 243, 0.96);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.48),
+    inset 0 -0.5px 0 rgba(255, 255, 255, 0.1),
+    0 0 0 0.5px rgba(142, 240, 227, 0.1),
+    0 14px 34px rgba(0, 0, 0, 0.38);
 }
 
 body.dark .topbar-search-text {
-  color: rgba(226, 232, 228, 0.48);
+  color: rgba(226, 232, 228, 0.52);
 }
 
 .lang-button {
@@ -299,17 +313,23 @@ body.dark .topbar-search-text {
 }
 
 body.dark .search-modal-backdrop {
-  background: rgba(4, 8, 7, 0.52);
+  background: rgba(4, 8, 7, 0.48);
+  backdrop-filter: blur(14px) saturate(150%);
+  -webkit-backdrop-filter: blur(14px) saturate(150%);
 }
 
 body.dark .search-modal-panel {
-  border-color: rgba(255, 255, 255, 0.12);
+  border-color: var(--glass-border, rgba(255, 255, 255, 0.18));
   background:
-    linear-gradient(180deg, rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0.04)),
-    rgba(18, 28, 25, 0.82);
+    linear-gradient(180deg, rgba(255, 255, 255, 0.14), rgba(255, 255, 255, 0.04)),
+    rgba(14, 18, 17, 0.72);
   box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.08),
-    0 28px 60px rgba(0, 0, 0, 0.4);
+    inset 0 1px 0 rgba(255, 255, 255, 0.38),
+    inset 0 -0.5px 0 rgba(255, 255, 255, 0.08),
+    0 0 0 0.5px rgba(255, 255, 255, 0.05),
+    0 32px 72px rgba(0, 0, 0, 0.48);
+  backdrop-filter: blur(28px) saturate(180%);
+  -webkit-backdrop-filter: blur(28px) saturate(180%);
 }
 
 @media (max-width: 920px) {

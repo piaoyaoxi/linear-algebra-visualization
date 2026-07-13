@@ -42,20 +42,21 @@
     "--shadow-rgb": [54, 65, 50, 0.14],
   };
 
+  /** Matches styles.css Liquid Glass dark tokens (must stay in sync) */
   const DARK = {
-    "--bg": [16, 23, 20, 1],
-    "--surface": [18, 29, 26, 0.72],
-    "--surface-solid": [20, 31, 28, 0.9],
-    "--surface-soft": [16, 49, 43, 0.58],
-    "--text": [240, 246, 239, 1],
-    "--muted": [186, 198, 191, 1],
-    "--faint": [135, 146, 140, 1],
-    "--line": [230, 242, 235, 0.13],
-    "--line-strong": [230, 242, 235, 0.24],
-    "--accent": [7, 139, 126, 1],
-    "--accent-strong": [0, 111, 101, 1],
-    "--accent-soft": [7, 139, 126, 0.12],
-    "--shadow-rgb": [0, 0, 0, 0.36],
+    "--bg": [11, 15, 14, 1],
+    "--surface": [255, 255, 255, 0.08],
+    "--surface-solid": [22, 28, 26, 0.78],
+    "--surface-soft": [255, 255, 255, 0.06],
+    "--text": [242, 245, 243, 1],
+    "--muted": [168, 179, 173, 1],
+    "--faint": [125, 136, 130, 1],
+    "--line": [255, 255, 255, 0.14],
+    "--line-strong": [255, 255, 255, 0.24],
+    "--accent": [94, 224, 208, 1],
+    "--accent-strong": [142, 240, 227, 1],
+    "--accent-soft": [94, 224, 208, 0.14],
+    "--shadow-rgb": [0, 0, 0, 0.42],
   };
 
   const TOKEN_KEYS = Object.keys(LIGHT);

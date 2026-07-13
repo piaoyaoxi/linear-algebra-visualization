@@ -11,7 +11,6 @@
   --theme-tx-ease: cubic-bezier(0.2, 0.72, 0.18, 1);
   --theme-tx-art-ease: cubic-bezier(0.55, 0, 0.24, 1);
   --theme-tx-blur: 14px;
-  --theme-tx-page-veil: 1;
 }
 
 /*
@@ -29,13 +28,11 @@ body.theme-transitioning * {
 }
 
 /*
- * Page atmosphere (body::before) is NOT hard-hidden.
- * JS drives --theme-tx-page-veil 1→dip→1 so the warm cream overlay returns
- * before teardown. Hard opacity:0 was the end jump (green radials flash,
- * then cream snaps back).
+ * Fixed body::before gradients are not tokenized — hide them during morph so
+ * they cannot hard-switch when body.dark flips at the end of the lerp.
  */
 body.theme-transitioning::before {
-  opacity: var(--theme-tx-page-veil, 1) !important;
+  opacity: 0 !important;
 }
 
 .theme-transition {
@@ -64,14 +61,14 @@ body.theme-transitioning::before {
 .theme-transition__blur {
   opacity: 0;
   background: transparent;
-  /* saturate(1) — desaturate under blur was tinting the exit */
-  -webkit-backdrop-filter: blur(var(--theme-tx-blur)) saturate(1);
-  backdrop-filter: blur(var(--theme-tx-blur)) saturate(1);
+  -webkit-backdrop-filter: blur(var(--theme-tx-blur)) saturate(0.94);
+  backdrop-filter: blur(var(--theme-tx-blur)) saturate(0.94);
   will-change: opacity;
 }
 
 /*
- * Washes are hairline atmosphere only — never opaque covers.
+ * Washes are hairline atmosphere only — never opaque covers that hide a
+ * palette snap. Continuous luminance comes from JS token lerp.
  */
 .theme-transition__wash {
   opacity: 0;
@@ -142,38 +139,29 @@ body.theme-transitioning::before {
     theme-tx-art-opacity var(--theme-tx-duration) var(--theme-tx-ease) both;
 }
 
-/*
- * Blur: rise early, hold, then a LONG soft clear — no sudden “sharp snap”.
- * Exit starts ~68% so clarity returns while page veil is already restoring.
- */
 @keyframes theme-tx-blur {
   0% {
     opacity: 0;
   }
-  8% {
+  8%,
+  86% {
     opacity: 1;
-  }
-  68% {
-    opacity: 1;
-  }
-  88% {
-    opacity: 0.35;
   }
   100% {
     opacity: 0;
   }
 }
 
-/* Light atmospheric crossfade only */
+/* Light atmospheric crossfade only — max ~0.22 so page tokens stay visible */
 @keyframes theme-tx-wash-from {
   0% {
     opacity: 0;
   }
   8% {
-    opacity: 0.1;
+    opacity: 0.12;
   }
   40% {
-    opacity: 0.04;
+    opacity: 0.05;
   }
   55%,
   100% {
@@ -187,13 +175,13 @@ body.theme-transitioning::before {
     opacity: 0;
   }
   35% {
-    opacity: 0.08;
+    opacity: 0.1;
   }
-  58% {
+  60% {
+    opacity: 0.18;
+  }
+  78% {
     opacity: 0.14;
-  }
-  72% {
-    opacity: 0.08;
   }
   100% {
     opacity: 0;
@@ -205,7 +193,7 @@ body.theme-transitioning::before {
     --theme-tx-reveal: -8%;
     transform: scale(1.012);
   }
-  68% {
+  72% {
     --theme-tx-reveal: 108%;
     transform: scale(1);
   }
@@ -215,7 +203,6 @@ body.theme-transitioning::before {
   }
 }
 
-/* Art exits in the same window as blur clear + veil restore */
 @keyframes theme-tx-art-opacity {
   0% {
     opacity: 0;
@@ -223,8 +210,8 @@ body.theme-transitioning::before {
   8% {
     opacity: 0.18;
   }
-  16%,
-  70% {
+  18%,
+  84% {
     opacity: 1;
   }
   100% {

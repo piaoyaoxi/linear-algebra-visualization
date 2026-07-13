@@ -223,27 +223,7 @@
     document.body.style.removeProperty("--shadow");
     document.body.style.removeProperty("--shadow-soft");
     document.body.style.removeProperty("--theme-mix");
-    // Do NOT clear --theme-tx-page-veil here — finalize runs mid-exit and
-    // must keep driving the cream atmosphere until teardown.
     document.documentElement.style.removeProperty("color-scheme");
-  }
-
-  /**
-   * body::before atmosphere opacity over the full 0–1 timeline.
-   * Must restore to 1 before teardown — hard 0→1 was the green→cream end jump
-   * (green page radials without the cream veil, then veil snaps on).
-   */
-  function pageVeilForTimeline(globalT) {
-    const t = clamp01(globalT);
-    if (t < 0.1) {
-      // Gentle dip only — keep cream present so green radials never dominate
-      return lerp(1, 0.42, smootherstep(t / 0.1));
-    }
-    if (t < 0.68) {
-      return 0.42;
-    }
-    // Restore fully in the exit window (alongside blur clear)
-    return lerp(0.42, 1, smootherstep((t - 0.68) / 0.3));
   }
 
   /**
@@ -271,10 +251,6 @@
       "--shadow-soft",
       `0 18px 42px rgba(${shadow[0]}, ${shadow[1]}, ${shadow[2]}, ${softA.toFixed(3)})`,
     );
-  }
-
-  function applyPageVeil(globalT) {
-    document.body.style.setProperty("--theme-tx-page-veil", String(pageVeilForTimeline(globalT)));
   }
 
   function finalizeTheme(targetTheme, button) {
@@ -310,14 +286,11 @@
   }
 
   function teardownOverlay(button) {
-    // Veil must already be 1 so removing theme-transitioning cannot flash green
-    document.body.style.setProperty("--theme-tx-page-veil", "1");
     if (overlay) {
       overlay.classList.remove("is-active");
       overlay.removeAttribute("data-mode");
     }
     document.body.classList.remove("theme-transitioning");
-    document.body.style.removeProperty("--theme-tx-page-veil");
     button?.removeAttribute("aria-busy");
     if (button) button.disabled = false;
     active = false;
@@ -329,15 +302,11 @@
     const delay = timing.duration * timing.morphStart;
     let finalized = false;
 
-    // Pin start palette + full page veil (no green flash on entry)
+    // Pin start palette immediately so the first paint is continuous
     applyMix(from, to, 0);
-    applyPageVeil(0);
 
     const tick = (now) => {
       const elapsed = now - t0;
-      const globalT = clamp01(elapsed / timing.duration);
-      applyPageVeil(globalT);
-
       if (elapsed < delay) {
         applyMix(from, to, 0);
         morphRaf = requestAnimationFrame(tick);
@@ -352,22 +321,15 @@
         document.documentElement.style.colorScheme = targetTheme;
       }
 
-      // Finalize under blur+art, while veil is still mid — content swap of
-      // body::before is masked; veil then restores to 1 before teardown.
-      if (local >= 1 && !finalized) {
-        finalized = true;
-        finalizeTheme(targetTheme, button);
-      }
-
-      if (globalT < 1) {
+      if (local < 1) {
         morphRaf = requestAnimationFrame(tick);
         return;
       }
 
       morphRaf = 0;
-      applyPageVeil(1);
       if (!finalized) {
         finalized = true;
+        // Tokens already equal target — class flip has no visible luminance jump
         finalizeTheme(targetTheme, button);
       }
     };

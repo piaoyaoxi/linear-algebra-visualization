@@ -203,8 +203,8 @@
   border: 1px solid color-mix(in srgb, var(--line) 92%, var(--accent) 8%);
   border-radius: 18px;
   background:
-    radial-gradient(ellipse 72% 58% at 50% 46%, rgba(7, 139, 126, 0.05), transparent 72%),
-    linear-gradient(180deg, #fbfcfb 0%, #f3f6f4 100%);
+    radial-gradient(ellipse 72% 58% at 50% 46%, var(--canvas-paper-glow), transparent 72%),
+    linear-gradient(180deg, var(--canvas-paper-top) 0%, var(--canvas-paper-bottom) 100%);
 }
 
 #matrix-operations-interactive .s2c-task-panel {
@@ -580,12 +580,6 @@
 #matrix-operations-interactive .s2c-order-grid .tex-display {
   margin: 12px 0 0;
   font-size: .95rem;
-}
-
-body.dark #matrix-operations-interactive .s2c-lab,
-body.dark #matrix-operations-interactive .s2c-tabs button.is-active,
-body.dark #matrix-operations-interactive .s2c-matrix button.is-active {
-  box-shadow: none;
 }
 
 @media (max-width: 980px) {

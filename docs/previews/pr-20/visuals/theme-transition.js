@@ -1,7 +1,7 @@
 (() => {
   const ASSETS = {
-    luna: "./assets/theme/luna.webp",
-    sol: "./assets/theme/sol.webp",
+    luna: "./assets/theme/luna-alpha.webp?v=21h",
+    sol: "./assets/theme/sol-alpha.webp?v=21h",
   };
 
   /**
@@ -28,6 +28,7 @@
   /** Live site palettes from styles.css warm override — must match for seamless commit */
   const LIGHT = {
     "--bg": [244, 241, 232, 1],
+    "--bg-grid": [40, 73, 105, 0.06],
     "--surface": [255, 255, 255, 0.7],
     "--surface-solid": [255, 255, 255, 0.86],
     "--surface-soft": [232, 245, 240, 0.72],
@@ -39,23 +40,31 @@
     "--accent": [7, 139, 126, 1],
     "--accent-strong": [0, 111, 101, 1],
     "--accent-soft": [7, 139, 126, 0.12],
+    "--canvas-paper-top": [251, 252, 251, 1],
+    "--canvas-paper-bottom": [243, 246, 244, 1],
+    "--canvas-paper-glow": [7, 139, 126, 0.05],
     "--shadow-rgb": [54, 65, 50, 0.14],
   };
 
+  /** Matches styles.css Liquid Glass dark tokens (must stay in sync) */
   const DARK = {
-    "--bg": [16, 23, 20, 1],
-    "--surface": [18, 29, 26, 0.72],
-    "--surface-solid": [20, 31, 28, 0.9],
-    "--surface-soft": [16, 49, 43, 0.58],
-    "--text": [240, 246, 239, 1],
-    "--muted": [186, 198, 191, 1],
-    "--faint": [135, 146, 140, 1],
-    "--line": [230, 242, 235, 0.13],
-    "--line-strong": [230, 242, 235, 0.24],
-    "--accent": [7, 139, 126, 1],
-    "--accent-strong": [0, 111, 101, 1],
-    "--accent-soft": [7, 139, 126, 0.12],
-    "--shadow-rgb": [0, 0, 0, 0.36],
+    "--bg": [11, 15, 14, 1],
+    "--bg-grid": [200, 230, 220, 0.045],
+    "--surface": [255, 255, 255, 0.08],
+    "--surface-solid": [22, 28, 26, 0.78],
+    "--surface-soft": [255, 255, 255, 0.06],
+    "--text": [242, 245, 243, 1],
+    "--muted": [168, 179, 173, 1],
+    "--faint": [125, 136, 130, 1],
+    "--line": [255, 255, 255, 0.14],
+    "--line-strong": [255, 255, 255, 0.24],
+    "--accent": [94, 224, 208, 1],
+    "--accent-strong": [142, 240, 227, 1],
+    "--accent-soft": [94, 224, 208, 0.14],
+    "--canvas-paper-top": [20, 26, 24, 1],
+    "--canvas-paper-bottom": [14, 19, 17, 1],
+    "--canvas-paper-glow": [94, 224, 208, 0.07],
+    "--shadow-rgb": [0, 0, 0, 0.42],
   };
 
   const TOKEN_KEYS = Object.keys(LIGHT);
@@ -71,11 +80,6 @@
 
   function clamp01(value) {
     return Math.max(0, Math.min(1, value));
-  }
-
-  function smoothstep(edge0, edge1, value) {
-    const t = clamp01((value - edge0) / (edge1 - edge0));
-    return t * t * (3 - 2 * t);
   }
 
   function smootherstep(t) {
@@ -106,76 +110,22 @@
     return new Promise((resolve, reject) => {
       const img = new Image();
       img.decoding = "async";
-      img.onload = () => resolve(img);
+      img.fetchPriority = "high";
+      img.onload = () => {
+        if (typeof img.decode !== "function") {
+          resolve(img);
+          return;
+        }
+        img.decode().then(() => resolve(img), reject);
+      };
       img.onerror = reject;
       img.src = src;
     });
   }
 
-  function prepareImage(img, mode) {
-    const canvas = document.createElement("canvas");
-    canvas.width = img.naturalWidth;
-    canvas.height = img.naturalHeight;
-    const context = canvas.getContext("2d", { willReadFrequently: true });
-    if (!context) return Promise.reject(new Error("2d context unavailable"));
-
-    context.drawImage(img, 0, 0);
-    const frame = context.getImageData(0, 0, canvas.width, canvas.height);
-    const { data } = frame;
-
-    for (let index = 0; index < data.length; index += 4) {
-      let strength;
-      if (mode === "luna") {
-        strength = smoothstep(5, 48, Math.max(data[index], data[index + 1], data[index + 2]));
-        data[index] = 204 + strength * 38;
-        data[index + 1] = 216 + strength * 35;
-        data[index + 2] = 224 + strength * 31;
-      } else {
-        const paper = 248;
-        const separation = Math.max(
-          Math.abs(paper - data[index]),
-          Math.abs(paper - data[index + 1]),
-          Math.abs(paper - data[index + 2]),
-        );
-        strength = smoothstep(5, 46, separation);
-      }
-      data[index + 3] = Math.round(strength * 255);
-    }
-
-    context.putImageData(frame, 0, 0);
-    return new Promise((resolve, reject) => {
-      canvas.toBlob(
-        (blob) => {
-          if (!blob) {
-            reject(new Error("Transparent theme art could not be encoded"));
-            return;
-          }
-          const prepared = new Image();
-          prepared.decoding = "async";
-          prepared.onload = () => resolve(prepared);
-          prepared.onerror = reject;
-          prepared.src = URL.createObjectURL(blob);
-        },
-        "image/webp",
-        0.94,
-      );
-    });
-  }
-
-  function prepareWhenIdle(img, mode) {
-    return new Promise((resolve, reject) => {
-      const prepare = () => prepareImage(img, mode).then(resolve, reject);
-      if ("requestIdleCallback" in window) {
-        window.requestIdleCallback(prepare, { timeout: 1200 });
-      } else {
-        window.setTimeout(prepare, 0);
-      }
-    });
-  }
-
   const preparations = {
-    luna: loadImage(ASSETS.luna).then((img) => prepareWhenIdle(img, "luna")),
-    sol: loadImage(ASSETS.sol).then((img) => prepareWhenIdle(img, "sol")),
+    luna: loadImage(ASSETS.luna),
+    sol: loadImage(ASSETS.sol),
   };
 
   Promise.all([preparations.luna, preparations.sol])
@@ -372,6 +322,7 @@
     button.disabled = true;
     button.setAttribute("aria-busy", "true");
     document.body.classList.add("theme-transitioning");
+    window.dispatchEvent(new Event("la-themestart"));
     root.dataset.mode = mode;
     root.style.setProperty("--theme-tx-duration", `${timing.duration}ms`);
     setPageVeil(1);

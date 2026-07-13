@@ -273,7 +273,7 @@
       elements.point.setAttribute("cy", pointY);
       elements.pointLabel.setAttribute("x", pointX + 10);
       elements.pointLabel.setAttribute("y", pointY - 10);
-      elements.pointLabel.textContent = progress < 0.04 || progress > 1.96 ? "x" : progress <= 1.02 ? "Ax" : preset.singular ? "Ax" : "A⁻¹Ax";
+      elements.pointLabel.textContent = progress < 0.04 ? "x" : preset.singular || progress <= 1.02 ? "Ax" : progress > 1.96 ? "x" : "A⁻¹Ax";
 
       elements.stageLabel.textContent = stage.label;
       elements.stageFormula.innerHTML = inline(stage.formula);

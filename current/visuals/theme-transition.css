@@ -1,4 +1,4 @@
-/* Theme transition: live page blur + native-composited Luna/Sol reveal */
+/* Theme transition: continuous luminance morph + Luna/Sol pixel reveal */
 
 @property --theme-tx-reveal {
   syntax: "<percentage>";
@@ -7,15 +7,32 @@
 }
 
 :root {
-  --theme-tx-duration: 2600ms;
+  --theme-tx-duration: 2800ms;
   --theme-tx-ease: cubic-bezier(0.2, 0.72, 0.18, 1);
   --theme-tx-art-ease: cubic-bezier(0.55, 0, 0.24, 1);
   --theme-tx-blur: 14px;
 }
 
+/*
+ * While morphing, freeze non-token transitions so random 160ms UI transitions
+ * do not fight the continuous palette mix and create micro-jumps.
+ */
 body.theme-transitioning {
   overflow: hidden;
   cursor: progress;
+}
+
+body.theme-transitioning,
+body.theme-transitioning * {
+  transition: none !important;
+}
+
+/*
+ * Fixed body::before gradients are not tokenized — hide them during morph so
+ * they cannot hard-switch when body.dark flips at the end of the lerp.
+ */
+body.theme-transitioning::before {
+  opacity: 0 !important;
 }
 
 .theme-transition {
@@ -49,6 +66,10 @@ body.theme-transitioning {
   will-change: opacity;
 }
 
+/*
+ * Washes are hairline atmosphere only — never opaque covers that hide a
+ * palette snap. Continuous luminance comes from JS token lerp.
+ */
 .theme-transition__wash {
   opacity: 0;
   will-change: opacity;
@@ -122,8 +143,8 @@ body.theme-transitioning {
   0% {
     opacity: 0;
   }
-  9%,
-  84% {
+  8%,
+  86% {
     opacity: 1;
   }
   100% {
@@ -131,17 +152,18 @@ body.theme-transitioning {
   }
 }
 
+/* Light atmospheric crossfade only — max ~0.22 so page tokens stay visible */
 @keyframes theme-tx-wash-from {
   0% {
     opacity: 0;
   }
-  10% {
-    opacity: 0.14;
+  8% {
+    opacity: 0.12;
   }
-  36% {
-    opacity: 0.07;
+  40% {
+    opacity: 0.05;
   }
-  60%,
+  55%,
   100% {
     opacity: 0;
   }
@@ -149,21 +171,17 @@ body.theme-transitioning {
 
 @keyframes theme-tx-wash-to {
   0%,
-  7% {
+  8% {
     opacity: 0;
   }
-  24% {
-    opacity: 0.2;
+  35% {
+    opacity: 0.1;
   }
-  48% {
-    opacity: 0.5;
+  60% {
+    opacity: 0.18;
   }
-  68% {
-    opacity: 0.94;
-  }
-  72%,
-  84% {
-    opacity: 1;
+  78% {
+    opacity: 0.14;
   }
   100% {
     opacity: 0;
@@ -192,8 +210,8 @@ body.theme-transitioning {
   8% {
     opacity: 0.18;
   }
-  20%,
-  82% {
+  18%,
+  84% {
     opacity: 1;
   }
   100% {

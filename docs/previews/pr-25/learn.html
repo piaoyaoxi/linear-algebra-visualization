@@ -1,0 +1,154 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>高等代数可视化</title>
+    <link rel="icon" href="data:," />
+    <link rel="preload" as="image" href="./assets/theme/luna-alpha.webp?v=21h" />
+    <link rel="preload" as="image" href="./assets/theme/sol-alpha.webp?v=21h" />
+    <link rel="stylesheet" href="./vendor/katex/katex.min.css" />
+    <link rel="stylesheet" href="./styles.css?v=21i" />
+    <link rel="stylesheet" href="./learn-layout.css?v=21i" />
+    <link rel="stylesheet" href="./search-modal-a11y.css" />
+    <link rel="stylesheet" href="./guide.css?v=21i" />
+    <link rel="stylesheet" href="./visuals/lesson-presentation.css" />
+    <link rel="stylesheet" href="./visuals/example-challenge.css" />
+    <link rel="stylesheet" href="./visuals/ch4/section1-presentation.css?v=21i" />
+    <link rel="stylesheet" href="./visuals/ch4/section2-presentation.css?v=21i" />
+    <link rel="stylesheet" href="./visuals/ch4/section2-continuous.css?v=21i" />
+    <link rel="stylesheet" href="./visuals/ch4/core-presentation.css" />
+    <link rel="stylesheet" href="./visuals/ch4/section3-presentation.css?v=22a" />
+    <link rel="stylesheet" href="./visuals/ch4/block-presentation.css" />
+    <link rel="stylesheet" href="./visuals/page-toc-rail.css?v=21i" />
+    <link rel="stylesheet" href="./visuals/theme-transition.css?v=21i" />
+    <script defer src="./vendor/katex/katex.min.js"></script>
+    <script defer src="./app.js?v=21i"></script>
+    <script defer src="./visuals/theme-transition.js?v=21i"></script>
+    <script defer src="./search-modal-state.js"></script>
+    <script defer src="./content/ch1.js"></script>
+    <script defer src="./content/ch2.js"></script>
+    <script defer src="./content/ch3.js"></script>
+    <script defer src="./content/ch4-registry.js"></script>
+    <script defer src="./content/ch4-section1.js"></script>
+    <script defer src="./content/ch4-section2.js"></script>
+    <script defer src="./content/ch4-core.js"></script>
+    <script defer src="./content/ch4-section3.js?v=22a"></script>
+    <script defer src="./content/ch4-section4.js?v=24a"></script>
+    <script defer src="./content/ch4-block.js"></script>
+    <script defer src="./content/ch4.js"></script>
+    <script defer src="./content/ch4-assemble.js"></script>
+    <script defer src="./visuals/ch4/registry.js?v=24a"></script>
+    <script defer src="./visuals/lesson-presentation.js"></script>
+    <script defer src="./visuals/example-challenge.js"></script>
+    <script defer src="./visuals/ch4/section1-presentation.js"></script>
+    <script defer src="./visuals/ch4/section2-presentation.js?v=19e"></script>
+    <script defer src="./visuals/ch4/section2-continuous.js?v=21i"></script>
+    <script defer src="./visuals/ch4/core-presentation.js"></script>
+    <script defer src="./visuals/ch4/section3-presentation.js?v=22a"></script>
+    <script defer src="./visuals/ch4/block-presentation.js"></script>
+    <script defer src="./visuals/ch4/mount.js"></script>
+    <script defer src="./content/ch5.js"></script>
+    <script defer src="./content/ch6.js"></script>
+    <script defer src="./content/ch7.js"></script>
+    <script defer src="./content/ch8.js"></script>
+    <script defer src="./content/ch9.js"></script>
+    <script defer src="./content/ch10.js"></script>
+    <script defer src="./learn-entry.js"></script>
+    <script defer src="./learn-placeholder.js"></script>
+    <script defer src="./guide-nav.js"></script>
+    <script defer src="./visuals/page-toc-rail.js?v=21i"></script>
+  </head>
+  <body>
+    <header class="topbar">
+      <button class="icon-button" id="sidebarToggle" type="button" aria-label="切换目录" title="切换目录">
+        <svg viewBox="0 0 24 24" aria-hidden="true">
+          <path d="M5 7h14" />
+          <path d="M5 12h14" />
+          <path d="M5 17h14" />
+        </svg>
+      </button>
+      <div class="topbar-center">
+        <button
+          class="topbar-search"
+          id="searchOpen"
+          type="button"
+          aria-haspopup="dialog"
+          aria-controls="searchModal"
+          aria-expanded="false"
+        >
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <circle cx="11" cy="11" r="6.5" />
+            <path d="m16.2 16.2 4.3 4.3" />
+          </svg>
+          <span class="topbar-search-text">搜索</span>
+        </button>
+      </div>
+      <div class="topbar-right">
+        <button class="icon-button lang-button" id="langToggle" type="button" aria-label="切换显示语言" title="切换语言">
+          <span class="lang-button-mark" aria-hidden="true">
+            <span class="lang-zh">文</span>
+            <span class="lang-en">A</span>
+          </span>
+        </button>
+        <button class="icon-button" id="themeToggle" type="button" aria-label="切换明暗外观" title="切换明暗外观">
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <circle cx="12" cy="12" r="4" />
+            <path d="M12 3.2v1.8" />
+            <path d="M12 19v1.8" />
+            <path d="M3.2 12h1.8" />
+            <path d="M19 12h1.8" />
+            <path d="m5.4 5.4 1.3 1.3" />
+            <path d="m17.3 17.3 1.3 1.3" />
+            <path d="m17.3 6.7 1.3-1.3" />
+            <path d="m5.4 18.6 1.3-1.3" />
+          </svg>
+        </button>
+      </div>
+    </header>
+
+    <div class="app-layout">
+      <aside class="sidebar" id="sidebar">
+        <div class="sidebar-scroll">
+          <a class="sidebar-brand" href="./index.html" aria-label="Linear Algebra，返回封面" title="返回封面">
+            <img class="sidebar-brand-mark" src="./assets/brand/linear-algebra.png" alt="Linear Algebra" draggable="false" />
+          </a>
+          <nav class="chapter-nav" id="chapterNav" aria-label="章节目录"></nav>
+        </div>
+      </aside>
+
+      <main class="content" id="mainContent" tabindex="-1"></main>
+    </div>
+
+    <aside class="page-toc" id="pageToc" aria-label="当前页目录"></aside>
+    <div class="drawer-backdrop" id="drawerBackdrop"></div>
+
+    <div class="search-modal" id="searchModal" hidden>
+      <div class="search-modal-backdrop" data-search-close tabindex="-1"></div>
+      <div
+        class="search-modal-panel"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="searchModalTitle"
+        aria-describedby="searchModalDescription"
+      >
+        <h2 class="visually-hidden" id="searchModalTitle">搜索课程内容</h2>
+        <div class="search-modal-bar">
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <circle cx="11" cy="11" r="6.5" />
+            <path d="m16.2 16.2 4.3 4.3" />
+          </svg>
+          <input
+            id="searchModalInput"
+            type="search"
+            aria-label="搜索课程内容"
+            placeholder="搜索"
+            autocomplete="off"
+            enterkeyhint="search"
+          />
+        </div>
+        <div class="search-modal-body" id="searchModalDescription">输入章节名称、概念或关键词。</div>
+      </div>
+    </div>
+  </body>
+</html>

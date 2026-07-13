@@ -1,4 +1,4 @@
-/* Chapter 4 §4: inverse transformation journey and readable concept layout. */
+/* Chapter 4 §4: compact inverse-transformation workbench. */
 .section4-formal-head {
   display: flex;
   justify-content: space-between;
@@ -47,17 +47,17 @@
   background: var(--surface-solid);
 }
 
-.section4-formal .definition-row.is-anchor {
+.section4-formal .definition-row.is-anchor,
+.section4-formal .definition-row:last-child:nth-child(even) {
   grid-column: 1 / -1;
+}
+
+.section4-formal .definition-row.is-anchor {
   padding: 22px;
   border-color: color-mix(in srgb, var(--accent) 32%, var(--line));
   background:
     linear-gradient(135deg, color-mix(in srgb, var(--accent-soft) 66%, transparent), transparent 72%),
     var(--surface-solid);
-}
-
-.section4-formal .definition-row:last-child:nth-child(even) {
-  grid-column: 1 / -1;
 }
 
 .section4-formal .definition-index {
@@ -105,14 +105,14 @@
   --inverse-green: var(--accent-strong);
   --inverse-coral: var(--coral);
   display: grid;
-  gap: 24px;
-  margin-top: 18px;
-  padding: 24px;
+  gap: 16px;
+  margin-top: 14px;
+  padding: 18px;
   overflow: hidden;
   border: 1px solid var(--line);
-  border-radius: 18px;
+  border-radius: 17px;
   background:
-    radial-gradient(circle at 90% -10%, color-mix(in srgb, var(--accent-soft) 78%, transparent), transparent 32%),
+    radial-gradient(circle at 92% -12%, color-mix(in srgb, var(--accent-soft) 76%, transparent), transparent 31%),
     var(--surface-solid);
   box-shadow: var(--shadow-soft);
 }
@@ -120,140 +120,129 @@
 body.dark .inverse-transform-lab {
   border-color: var(--glass-border);
   background:
-    radial-gradient(circle at 90% -10%, rgba(64, 196, 176, 0.13), transparent 32%),
-    linear-gradient(180deg, rgba(255, 255, 255, 0.07), rgba(255, 255, 255, 0.025)),
-    rgba(14, 18, 17, 0.7);
+    radial-gradient(circle at 92% -12%, rgba(64, 196, 176, 0.13), transparent 31%),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.065), rgba(255, 255, 255, 0.02)),
+    rgba(14, 18, 17, 0.72);
   box-shadow:
     inset 0 1px 0 var(--glass-rim),
-    0 18px 44px rgba(0, 0, 0, 0.34);
+    0 16px 38px rgba(0, 0, 0, 0.32);
 }
 
 .inverse-lab-head {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(270px, 0.48fr);
-  gap: 24px;
-  align-items: start;
+  grid-template-columns: minmax(0, 1fr) minmax(260px, 0.42fr);
+  gap: 18px;
+  align-items: center;
 }
 
 .inverse-lab-kicker {
   display: block;
-  margin-bottom: 7px;
+  margin-bottom: 4px;
   color: var(--inverse-green);
-  font-size: 12px;
+  font-size: 11px;
   font-weight: 850;
   letter-spacing: 0.08em;
 }
 
 .inverse-lab-head h3 {
-  max-width: 30ch;
-  margin: 0 0 9px;
-  font-size: clamp(22px, 2.2vw, 31px);
+  max-width: 31ch;
+  margin: 0 0 5px;
+  font-size: clamp(21px, 2vw, 28px);
   letter-spacing: -0.025em;
-  line-height: 1.25;
+  line-height: 1.2;
 }
 
 .inverse-lab-head > div > p {
-  max-width: 66ch;
+  max-width: 68ch;
   margin: 0;
   color: var(--muted);
-  line-height: 1.75;
+  font-size: 13px;
+  line-height: 1.58;
 }
 
 .inverse-core-rule {
   display: grid;
-  gap: 8px;
-  padding: 17px 18px;
+  grid-template-columns: auto auto;
+  gap: 5px 10px;
+  align-items: center;
+  padding: 11px 13px;
   border: 1px solid color-mix(in srgb, var(--accent) 24%, var(--line));
-  border-radius: 14px;
-  background: color-mix(in srgb, var(--accent-soft) 58%, var(--surface-solid));
+  border-radius: 13px;
+  background: color-mix(in srgb, var(--accent-soft) 56%, var(--surface-solid));
 }
 
 .inverse-core-rule > span,
 .inverse-composition > span {
   color: var(--inverse-green);
-  font-size: 12px;
+  font-size: 10px;
   font-weight: 820;
 }
 
 .inverse-core-rule > strong {
   min-width: 0;
   overflow-x: auto;
-  font-size: 18px;
+  font-size: 15px;
+  text-align: right;
 }
 
 .inverse-core-rule p {
+  grid-column: 1 / -1;
   margin: 0;
   color: var(--muted);
-  font-size: 13px;
-  line-height: 1.65;
+  font-size: 11px;
+  line-height: 1.45;
 }
 
 .inverse-preset-section,
 .inverse-journey-section {
   display: grid;
-  gap: 15px;
+  gap: 9px;
 }
 
-.inverse-section-label {
+.inverse-compact-heading,
+.inverse-control-heading {
   display: flex;
-  gap: 11px;
-  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  align-items: baseline;
 }
 
-.inverse-section-label > span,
-.inverse-conclusion > span {
-  display: grid;
-  width: 31px;
-  height: 31px;
-  flex: 0 0 auto;
-  place-items: center;
-  border: 1px solid color-mix(in srgb, var(--accent) 30%, var(--line));
-  border-radius: 50%;
-  color: var(--inverse-green);
-  font-size: 11px;
-  font-weight: 850;
+.inverse-compact-heading strong,
+.inverse-control-heading strong {
+  font-size: 13px;
 }
 
-.inverse-section-label div {
-  display: grid;
-  gap: 2px;
-}
-
-.inverse-section-label strong {
-  font-size: 15px;
-}
-
-.inverse-section-label small {
+.inverse-compact-heading small,
+.inverse-control-heading small {
   color: var(--muted);
-  font-size: 12px;
-  line-height: 1.5;
+  font-size: 10px;
 }
 
 .inverse-preset-grid {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: 10px;
+  gap: 8px;
 }
 
 .inverse-preset {
   display: flex;
   min-width: 0;
-  min-height: 86px;
+  min-height: 64px;
   justify-content: space-between;
-  gap: 10px;
+  gap: 8px;
   align-items: center;
-  padding: 13px 14px;
+  padding: 9px 11px;
   border: 1px solid var(--line);
-  border-radius: 13px;
+  border-radius: 11px;
   background: color-mix(in srgb, var(--surface-solid) 92%, transparent);
   color: var(--text);
   text-align: left;
   cursor: pointer;
   transition:
-    transform 160ms ease,
-    border-color 160ms ease,
-    background 160ms ease,
-    box-shadow 160ms ease;
+    transform 150ms ease,
+    border-color 150ms ease,
+    background 150ms ease,
+    box-shadow 150ms ease;
 }
 
 .inverse-preset:hover {
@@ -276,12 +265,12 @@ body.dark .inverse-transform-lab {
 .inverse-preset-copy {
   display: grid;
   min-width: 0;
-  gap: 4px;
+  gap: 2px;
 }
 
 .inverse-preset-copy small {
   color: var(--inverse-green);
-  font-size: 10px;
+  font-size: 9px;
   font-weight: 820;
 }
 
@@ -290,102 +279,21 @@ body.dark .inverse-transform-lab {
 }
 
 .inverse-preset-copy strong {
-  font-size: 14px;
+  font-size: 12px;
 }
 
 .inverse-preset-matrix {
-  min-width: 48px;
+  min-width: 42px;
   overflow-x: auto;
   color: var(--muted);
-  font-size: 12px;
-}
-
-.inverse-journey {
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 0;
-  margin: 0;
-  padding: 0;
-  list-style: none;
-}
-
-.inverse-journey li {
-  position: relative;
-  display: grid;
-  grid-template-columns: 32px minmax(0, 1fr);
-  gap: 10px;
-  align-items: center;
-  min-width: 0;
-  padding: 12px 14px;
-  border-block: 1px solid var(--line);
-  border-right: 1px solid var(--line);
-  background: var(--surface-soft);
-  transition: background 180ms ease, border-color 180ms ease;
-}
-
-.inverse-journey li:first-child {
-  border-left: 1px solid var(--line);
-  border-radius: 13px 0 0 13px;
-}
-
-.inverse-journey li:last-child {
-  border-radius: 0 13px 13px 0;
-}
-
-.inverse-journey li > span {
-  display: grid;
-  width: 30px;
-  height: 30px;
-  place-items: center;
-  border: 1px solid var(--line);
-  border-radius: 50%;
-  background: var(--surface-solid);
-  color: var(--faint);
-  font-size: 12px;
-  font-weight: 820;
-}
-
-.inverse-journey li > div {
-  display: grid;
-  min-width: 0;
-  gap: 2px;
-}
-
-.inverse-journey small {
-  color: var(--faint);
   font-size: 10px;
-  font-weight: 780;
-}
-
-.inverse-journey strong {
-  min-width: 0;
-  overflow-x: auto;
-  font-size: 13px;
-}
-
-.inverse-journey li.is-current {
-  z-index: 1;
-  border-color: color-mix(in srgb, var(--accent) 55%, var(--line));
-  background: color-mix(in srgb, var(--accent-soft) 70%, var(--surface-solid));
-}
-
-.inverse-journey li.is-current > span,
-.inverse-journey li.is-complete > span {
-  border-color: var(--accent);
-  background: var(--accent);
-  color: white;
-}
-
-.inverse-journey li.is-unavailable {
-  opacity: 0.48;
-  background: color-mix(in srgb, var(--inverse-coral) 5%, var(--surface-soft));
 }
 
 .inverse-workbench {
   display: grid;
-  grid-template-columns: minmax(0, 1.46fr) minmax(270px, 0.54fr);
-  gap: 14px;
-  align-items: stretch;
+  grid-template-columns: minmax(0, 1fr) minmax(330px, 0.58fr);
+  gap: 12px;
+  align-items: start;
 }
 
 .inverse-plane-card {
@@ -393,51 +301,52 @@ body.dark .inverse-transform-lab {
   margin: 0;
   overflow: hidden;
   border: 1px solid var(--line);
-  border-radius: 15px;
+  border-radius: 13px;
   background: var(--surface-solid);
 }
 
 .inverse-plane-toolbar {
   display: flex;
+  min-height: 48px;
   justify-content: space-between;
-  gap: 16px;
+  gap: 12px;
   align-items: center;
-  padding: 13px 16px;
+  padding: 9px 13px;
   border-bottom: 1px solid var(--line);
 }
 
 .inverse-plane-toolbar > div:first-child {
   display: grid;
-  gap: 2px;
+  gap: 1px;
 }
 
 .inverse-plane-toolbar > div:first-child span {
   color: var(--inverse-green);
-  font-size: 10px;
+  font-size: 9px;
   font-weight: 850;
   letter-spacing: 0.05em;
 }
 
 .inverse-plane-toolbar > div:first-child strong {
-  font-size: 15px;
+  font-size: 13px;
 }
 
 .inverse-plane-legend {
   display: flex;
   flex-wrap: wrap;
-  gap: 10px;
+  gap: 8px;
   color: var(--muted);
-  font-size: 11px;
+  font-size: 9px;
 }
 
 .inverse-plane-legend span {
   display: flex;
-  gap: 5px;
+  gap: 4px;
   align-items: center;
 }
 
 .inverse-plane-legend i {
-  width: 14px;
+  width: 12px;
   height: 2px;
   background: var(--line-strong);
 }
@@ -450,17 +359,17 @@ body.dark .inverse-transform-lab {
 .inverse-plane-wrap {
   position: relative;
   display: grid;
+  height: 320px;
   place-items: center;
-  min-height: 420px;
   overflow: hidden;
   background:
-    radial-gradient(circle at 50% 50%, color-mix(in srgb, var(--accent-soft) 26%, transparent), transparent 57%),
+    radial-gradient(circle at 50% 50%, color-mix(in srgb, var(--accent-soft) 25%, transparent), transparent 57%),
     var(--surface-solid);
 }
 
 .inverse-plane {
   display: block;
-  width: min(100%, 520px);
+  width: min(100%, 500px);
   height: auto;
   overflow: hidden;
 }
@@ -486,8 +395,8 @@ body.dark .inverse-transform-lab {
 
 .inverse-reference-square {
   fill: transparent;
-  stroke: color-mix(in srgb, var(--text) 22%, transparent);
-  stroke-width: 1.3;
+  stroke: color-mix(in srgb, var(--text) 24%, transparent);
+  stroke-width: 1.35;
   stroke-dasharray: 5 5;
 }
 
@@ -539,7 +448,7 @@ body.dark .inverse-transform-lab {
 .inverse-vector-label {
   fill: var(--text);
   font-family: Georgia, "Times New Roman", serif;
-  font-size: 16px;
+  font-size: 15px;
   font-style: italic;
   font-weight: 700;
 }
@@ -555,7 +464,7 @@ body.dark .inverse-transform-lab {
 .inverse-sample-vector {
   marker-end: url(#inverse-vector-arrow);
   stroke: color-mix(in srgb, var(--text) 72%, transparent);
-  stroke-width: 2.2;
+  stroke-width: 2.15;
 }
 
 #inverse-vector-arrow path {
@@ -573,95 +482,306 @@ body.dark .inverse-transform-lab {
 }
 
 .inverse-vector-label {
-  font-size: 14px;
+  font-size: 13px;
 }
 
 .inverse-stage-chip {
   position: absolute;
-  top: 13px;
-  right: 13px;
-  max-width: calc(100% - 26px);
-  padding: 6px 10px;
+  top: 9px;
+  right: 9px;
+  max-width: calc(100% - 18px);
+  padding: 4px 8px;
   overflow-x: auto;
   border: 1px solid color-mix(in srgb, var(--accent) 30%, var(--line));
   border-radius: 999px;
-  background: color-mix(in srgb, var(--surface-solid) 90%, transparent);
+  background: color-mix(in srgb, var(--surface-solid) 91%, transparent);
   color: var(--accent-strong);
-  font-size: 12px;
+  font-size: 10px;
   font-weight: 800;
   backdrop-filter: blur(8px);
 }
 
 .inverse-plane-card figcaption {
-  min-height: 52px;
-  padding: 12px 16px;
+  min-height: 43px;
+  padding: 9px 13px;
   border-top: 1px solid var(--line);
   color: var(--muted);
-  font-size: 13px;
-  line-height: 1.6;
+  font-size: 10px;
+  line-height: 1.5;
 }
 
-.inverse-state-panel {
+.inverse-control-panel {
   display: grid;
   min-width: 0;
-  gap: 12px;
+  gap: 8px;
   align-content: start;
 }
 
-.inverse-composition,
-.inverse-facts,
-.inverse-verdict {
+.inverse-stage-control,
+.inverse-state-summary,
+.inverse-verdict,
+.inverse-conclusion {
   min-width: 0;
-  margin: 0;
   border: 1px solid var(--line);
-  border-radius: 14px;
+  border-radius: 12px;
   background: var(--surface-soft);
+}
+
+.inverse-stage-control {
+  display: grid;
+  gap: 8px;
+  padding: 11px;
+}
+
+.inverse-journey {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 5px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.inverse-journey li,
+.inverse-journey button {
+  min-width: 0;
+}
+
+.inverse-journey button {
+  display: grid;
+  width: 100%;
+  min-height: 61px;
+  grid-template-columns: 22px minmax(0, 1fr);
+  gap: 1px 5px;
+  align-content: center;
+  align-items: center;
+  padding: 6px;
+  border: 1px solid var(--line);
+  border-radius: 9px;
+  background: var(--surface-solid);
+  color: var(--text);
+  text-align: left;
+  cursor: pointer;
+}
+
+.inverse-journey button > span {
+  display: grid;
+  width: 21px;
+  height: 21px;
+  grid-row: 1 / span 2;
+  place-items: center;
+  border: 1px solid var(--line);
+  border-radius: 50%;
+  color: var(--faint);
+  font-size: 9px;
+  font-weight: 820;
+}
+
+.inverse-journey small {
+  min-width: 0;
+  overflow: hidden;
+  color: var(--faint);
+  font-size: 8px;
+  font-weight: 760;
+  line-height: 1.2;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.inverse-journey strong {
+  min-width: 0;
+  overflow-x: auto;
+  font-size: 11px;
+}
+
+.inverse-journey li:last-child strong {
+  font-size: 9px;
+}
+
+.inverse-journey li.is-current button {
+  border-color: color-mix(in srgb, var(--accent) 58%, var(--line));
+  background: color-mix(in srgb, var(--accent-soft) 70%, var(--surface-solid));
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--accent) 12%, transparent);
+}
+
+.inverse-journey li.is-current button > span,
+.inverse-journey li.is-complete button > span {
+  border-color: var(--accent);
+  background: var(--accent);
+  color: white;
+}
+
+.inverse-journey li.is-unavailable button {
+  opacity: 0.42;
+  cursor: not-allowed;
+}
+
+.inverse-range-shell {
+  position: relative;
+  height: 27px;
+  padding: 0 16.666%;
+}
+
+.inverse-range-shell input[type="range"] {
+  position: relative;
+  z-index: 2;
+  width: 100%;
+  height: 27px;
+  margin: 0;
+  appearance: none;
+  background: transparent;
+  cursor: grab;
+}
+
+.inverse-range-shell input[type="range"]:active {
+  cursor: grabbing;
+}
+
+.inverse-range-shell input[type="range"]::-webkit-slider-runnable-track {
+  height: 4px;
+  border-radius: 999px;
+  background: linear-gradient(
+    to right,
+    var(--accent) 0,
+    var(--accent) var(--journey-progress),
+    var(--line-strong) var(--journey-progress),
+    var(--line-strong) 100%
+  );
+}
+
+.inverse-range-shell input[type="range"]::-webkit-slider-thumb {
+  width: 16px;
+  height: 16px;
+  margin-top: -6px;
+  appearance: none;
+  border: 3px solid var(--surface-solid);
+  border-radius: 50%;
+  background: var(--accent);
+  box-shadow: 0 0 0 1px var(--accent);
+}
+
+.inverse-range-shell input[type="range"]::-moz-range-track {
+  height: 4px;
+  border-radius: 999px;
+  background: var(--line-strong);
+}
+
+.inverse-range-shell input[type="range"]::-moz-range-progress {
+  height: 4px;
+  border-radius: 999px;
+  background: var(--accent);
+}
+
+.inverse-range-shell input[type="range"]::-moz-range-thumb {
+  width: 12px;
+  height: 12px;
+  border: 3px solid var(--surface-solid);
+  border-radius: 50%;
+  background: var(--accent);
+  box-shadow: 0 0 0 1px var(--accent);
+}
+
+.inverse-range-marks {
+  position: absolute;
+  z-index: 1;
+  top: 8px;
+  right: calc(16.666% - 7px);
+  left: calc(16.666% - 7px);
+  display: flex;
+  justify-content: space-between;
+  pointer-events: none;
+}
+
+.inverse-range-marks i {
+  width: 10px;
+  height: 10px;
+  border: 2px solid var(--surface-solid);
+  border-radius: 50%;
+  background: var(--line-strong);
+  box-shadow: 0 0 0 1px var(--line);
+}
+
+.inverse-control-row {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 6px;
+}
+
+.inverse-control-row .button {
+  min-width: 0;
+  padding: 7px 6px;
+  font-size: 11px;
+  white-space: nowrap;
+}
+
+.inverse-control-row .button:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.inverse-result {
+  min-height: 31px;
+  margin: 0;
+  color: var(--muted);
+  font-size: 10px;
+  line-height: 1.45;
+}
+
+.inverse-state-summary {
+  display: grid;
+  gap: 7px;
+  padding: 9px;
 }
 
 .inverse-composition {
   display: grid;
-  gap: 7px;
-  padding: 17px;
+  grid-template-columns: minmax(0, 0.65fr) minmax(0, 1fr);
+  gap: 3px 8px;
+  align-items: center;
+  min-width: 0;
 }
 
 .inverse-composition > strong {
   min-width: 0;
   overflow-x: auto;
-  font-size: clamp(20px, 2vw, 27px);
+  font-size: 18px;
+  text-align: right;
 }
 
 .inverse-composition p {
+  grid-column: 1 / -1;
   min-width: 0;
   margin: 0;
-  padding-top: 7px;
+  padding-top: 5px;
   overflow-x: auto;
   border-top: 1px solid var(--line);
   color: var(--muted);
-  font-size: 13px;
+  font-size: 10px;
+  text-align: center;
 }
 
 .inverse-facts {
   display: grid;
-  overflow: hidden;
+  grid-template-columns: 1.25fr repeat(3, minmax(0, 0.7fr));
+  gap: 5px;
+  margin: 0;
 }
 
 .inverse-facts > div {
   display: grid;
-  grid-template-columns: 108px minmax(0, 1fr);
-  gap: 10px;
-  align-items: center;
-  min-height: 48px;
-  padding: 8px 13px;
-  border-bottom: 1px solid var(--line);
-}
-
-.inverse-facts > div:last-child {
-  border-bottom: 0;
+  min-width: 0;
+  min-height: 49px;
+  gap: 3px;
+  align-content: center;
+  padding: 5px 6px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--surface-solid);
 }
 
 .inverse-facts dt {
-  color: var(--muted);
-  font-size: 12px;
+  color: var(--faint);
+  font-size: 8px;
   font-weight: 760;
 }
 
@@ -669,160 +789,106 @@ body.dark .inverse-transform-lab {
   min-width: 0;
   margin: 0;
   overflow-x: auto;
-  font-size: 13px;
-  text-align: right;
+  color: var(--text);
+  font-size: 10px;
+}
+
+.inverse-facts .is-matrix dd {
+  text-align: center;
 }
 
 .inverse-verdict {
-  padding: 17px;
-  border-color: color-mix(in srgb, var(--accent) 24%, var(--line));
-  background: color-mix(in srgb, var(--accent-soft) 52%, var(--surface-solid));
+  display: grid;
+  grid-template-columns: minmax(92px, 0.6fr) minmax(0, 1fr);
+  gap: 9px;
+  align-items: center;
+  padding: 9px 10px;
+  border-color: color-mix(in srgb, var(--accent) 25%, var(--line));
+  background: color-mix(in srgb, var(--accent-soft) 50%, var(--surface-solid));
 }
 
-.inverse-verdict > span {
-  display: block;
-  margin-bottom: 4px;
+.inverse-verdict > div {
+  display: grid;
+  gap: 1px;
+}
+
+.inverse-verdict span {
   color: var(--inverse-green);
-  font-size: 11px;
+  font-size: 8px;
   font-weight: 850;
 }
 
-.inverse-verdict > strong {
-  display: block;
-  margin-bottom: 7px;
+.inverse-verdict strong {
   color: var(--inverse-green);
-  font-size: 21px;
+  font-size: 15px;
 }
 
 .inverse-verdict p {
   margin: 0;
   color: var(--muted);
-  font-size: 13px;
-  line-height: 1.65;
+  font-size: 9px;
+  line-height: 1.4;
 }
 
 .inverse-verdict.is-singular {
-  border-color: color-mix(in srgb, var(--inverse-coral) 26%, var(--line));
+  border-color: color-mix(in srgb, var(--inverse-coral) 27%, var(--line));
   background: color-mix(in srgb, var(--inverse-coral) 7%, var(--surface-solid));
 }
 
-.inverse-verdict.is-singular > span,
-.inverse-verdict.is-singular > strong {
+.inverse-verdict.is-singular span,
+.inverse-verdict.is-singular strong {
   color: var(--inverse-coral);
 }
 
-.inverse-controls {
-  display: grid;
-  grid-template-columns: auto minmax(0, 1fr);
-  gap: 11px 14px;
-  align-items: center;
-  padding: 15px;
-  border: 1px solid var(--line);
-  border-radius: 14px;
-  background: var(--surface-soft);
-}
-
-.inverse-controls > label {
-  color: var(--muted);
-  font-size: 12px;
-  font-weight: 760;
-}
-
-.inverse-controls input[type="range"] {
-  width: 100%;
-  accent-color: var(--accent);
-}
-
-.inverse-control-row {
-  grid-column: 1 / -1;
-  display: flex;
-  flex-wrap: wrap;
-  gap: 9px;
-  align-items: center;
-}
-
-.inverse-control-row .button:disabled {
-  opacity: 0.42;
-  cursor: not-allowed;
-}
-
-.inverse-control-row > span {
-  flex: 1 1 280px;
-  color: var(--muted);
-  font-size: 13px;
-  line-height: 1.55;
-  text-align: right;
-}
-
 .inverse-conclusion {
-  display: grid;
-  grid-template-columns: 31px minmax(0, 1fr);
-  gap: 12px;
-  align-items: start;
-  padding: 18px;
-  border: 1px solid var(--line);
-  border-radius: 15px;
-  background: var(--surface-soft);
-  transition: border-color 220ms ease, background 220ms ease, box-shadow 220ms ease;
-}
-
-.inverse-conclusion > div {
-  display: grid;
-  min-width: 0;
-  gap: 6px;
+  display: flex;
+  min-height: 39px;
+  justify-content: space-between;
+  gap: 8px;
+  align-items: center;
+  padding: 7px 10px;
+  transition: border-color 180ms ease, background 180ms ease, box-shadow 180ms ease;
 }
 
 .inverse-conclusion small {
   color: var(--faint);
-  font-size: 11px;
+  font-size: 8px;
   font-weight: 800;
 }
 
 .inverse-conclusion strong {
   min-width: 0;
   overflow-x: auto;
-  font-size: 18px;
-}
-
-.inverse-conclusion p {
-  margin: 0;
-  color: var(--muted);
-  font-size: 13px;
-  line-height: 1.7;
+  font-size: 11px;
+  text-align: right;
 }
 
 .inverse-conclusion.is-active {
-  border-color: color-mix(in srgb, var(--accent) 45%, var(--line));
+  border-color: color-mix(in srgb, var(--accent) 46%, var(--line));
   background: color-mix(in srgb, var(--accent-soft) 60%, var(--surface-solid));
   box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--accent) 12%, transparent);
 }
 
-@media (max-width: 1120px) {
-  .inverse-preset-grid {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
-}
-
-@media (max-width: 920px) {
+@media (max-width: 1100px) {
   .inverse-lab-head,
   .inverse-workbench {
     grid-template-columns: 1fr;
   }
 
-  .inverse-lab-head h3 {
-    max-width: 28ch;
-  }
-
-  .inverse-state-panel {
+  .inverse-control-panel {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
-  .inverse-composition {
+  .inverse-stage-control {
     grid-row: span 2;
+  }
+
+  .inverse-conclusion {
+    grid-column: 2;
   }
 }
 
-@media (max-width: 720px) {
+@media (max-width: 760px) {
   .section4-formal-head {
     display: grid;
     gap: 8px;
@@ -832,8 +898,7 @@ body.dark .inverse-transform-lab {
     text-align: left;
   }
 
-  .section4-formal .definition-stack,
-  .inverse-state-panel {
+  .section4-formal .definition-stack {
     grid-template-columns: 1fr;
   }
 
@@ -842,73 +907,130 @@ body.dark .inverse-transform-lab {
     grid-column: auto;
   }
 
-  .inverse-journey {
-    grid-template-columns: 1fr;
+  .inverse-preset-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
-  .inverse-journey li {
-    border-right: 1px solid var(--line);
-    border-bottom: 0;
-    border-left: 1px solid var(--line);
+  .inverse-control-panel {
+    display: contents;
   }
 
-  .inverse-journey li:first-child {
-    border-radius: 13px 13px 0 0;
-  }
-
-  .inverse-journey li:last-child {
-    border-bottom: 1px solid var(--line);
-    border-radius: 0 0 13px 13px;
-  }
-
-  .inverse-composition {
+  .inverse-stage-control {
     grid-row: auto;
+    order: 0;
+  }
+
+  .inverse-plane-card {
+    order: 1;
+  }
+
+  .inverse-state-summary {
+    order: 2;
+  }
+
+  .inverse-verdict {
+    order: 3;
+  }
+
+  .inverse-conclusion {
+    grid-column: auto;
+    order: 4;
   }
 }
 
 @media (max-width: 560px) {
   .inverse-transform-lab {
-    gap: 20px;
-    padding: 15px;
+    gap: 13px;
+    padding: 12px;
   }
 
-  .inverse-preset-grid {
-    grid-template-columns: 1fr;
+  .inverse-lab-head {
+    gap: 10px;
+  }
+
+  .inverse-lab-head h3 {
+    font-size: 21px;
+  }
+
+  .inverse-lab-head > div > p {
+    font-size: 12px;
+  }
+
+  .inverse-core-rule {
+    padding: 9px 10px;
+  }
+
+  .inverse-compact-heading {
+    display: grid;
+    gap: 2px;
   }
 
   .inverse-preset {
-    min-height: 74px;
+    min-height: 57px;
+    padding: 7px 8px;
+  }
+
+  .inverse-preset-matrix {
+    font-size: 9px;
   }
 
   .inverse-plane-toolbar {
-    display: grid;
+    min-height: 44px;
+    padding: 7px 10px;
   }
 
   .inverse-plane-wrap {
-    min-height: 310px;
+    height: 250px;
   }
 
   .inverse-plane {
     width: 100%;
   }
 
-  .inverse-controls {
+  .inverse-plane-card figcaption {
+    min-height: 40px;
+    padding: 8px 10px;
+  }
+
+  .inverse-journey button {
+    min-height: 57px;
+    grid-template-columns: 19px minmax(0, 1fr);
+    padding: 5px;
+  }
+
+  .inverse-journey button > span {
+    width: 19px;
+    height: 19px;
+  }
+
+  .inverse-journey small {
+    font-size: 7px;
+  }
+
+  .inverse-journey strong {
+    font-size: 10px;
+  }
+
+  .inverse-facts {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .inverse-facts > div {
+    min-height: 45px;
+  }
+
+  .inverse-verdict {
     grid-template-columns: 1fr;
+    gap: 5px;
   }
 
-  .inverse-control-row .button {
-    flex: 1 1 125px;
-  }
-
-  .inverse-control-row > span {
-    flex-basis: 100%;
-    text-align: left;
+  .inverse-conclusion {
+    flex-wrap: wrap;
   }
 }
 
 @media (prefers-reduced-motion: reduce) {
   .inverse-preset,
-  .inverse-journey li,
   .inverse-conclusion {
     transition: none;
   }

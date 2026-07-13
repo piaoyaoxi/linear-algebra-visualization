@@ -23,7 +23,7 @@
   window.mountChapter4Lesson = function mountChapter4Lesson(section, root) {
     if (!section?.id || !root) return;
 
-    const renderer = section.presentation === "generic" ? null : renderers.get(section.id);
+    const renderer = renderers.get(section.id);
     if (renderer) {
       const formal = root.querySelector(`#${CSS.escape(section.id)}-formal`);
       const interactive = root.querySelector(`#${CSS.escape(section.id)}-interactive`);

@@ -19,12 +19,12 @@ defineChapter4Section("matrix-inverse", {
       "画面收束到 AA^{-1}=A^{-1}A=I 与 (AB)^{-1}=B^{-1}A^{-1}。",
     ],
     ttsDraft:
-      "逆矩阵把已经发生的矩阵作用完整撤销。单个过程按相反方式执行；多个过程组成复合后，撤销必须从最后一步开始。因此 AB 的逆不是按原顺序书写，而是 B 的逆乘 A 的逆。",
+      "逆矩阵把已经发生的矩阵作用完整撤销。单个过程按相反方式执行；多个过程组成复合后，撤销必须从最后一步开始。因此 AB 的逆按相反顺序书写：B 的逆乘 A 的逆。",
   },
   concepts: [
     {
       label: "定义与唯一性",
-      text: `若 n 阶方阵 ${texInline("A")} 存在方阵 ${texInline("B")}，使 ${texInline("AB=BA=I")}，则 ${texInline("B=A^{-1}")}。逆矩阵一旦存在便唯一；若 B、C 都是 A 的逆，则 ${texInline("B=B(AC)=(BA)C=C")}。`,
+      text: `若 n 阶方阵 ${texInline("A")} 存在方阵 ${texInline("B")}，使 ${texInline("AB=BA=I")}，则 ${texInline("B=A^{-1}")}。这里讨论双侧逆，因此 A 必须是方阵；非方阵的左逆、右逆不在本节展开。逆矩阵一旦存在便唯一；若 B、C 都是 A 的逆，则 ${texInline("B=B(AC)=(BA)C=C")}。`,
     },
     {
       label: "撤销方程中的矩阵作用",
@@ -94,7 +94,7 @@ defineChapter4Section("matrix-inverse", {
     },
     {
       question: `若 ${texInline("A,B")} 都可逆，${texInline("(AB)^{-1}")} 是什么？`,
-      answer: `${texInline("(AB)^{-1}=B^{-1}A^{-1}")}。撤销复合过程要从最后发生的作用开始。`,
+      answer: `${texInline("(AB)^{-1}=B^{-1}A^{-1")}。撤销复合过程要从最后发生的作用开始。`,
     },
     {
       question: `方程 ${texInline("XA=C")} 应怎样消去右侧的 A？`,

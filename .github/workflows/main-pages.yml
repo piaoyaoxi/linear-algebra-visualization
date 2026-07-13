@@ -1,0 +1,59 @@
+name: Main site deployment
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: main-site-deploy
+  cancel-in-progress: true
+
+jobs:
+  publish-main:
+    runs-on: ubuntu-latest
+    environment:
+      name: pages/main
+      url: https://${{ github.repository_owner }}.github.io/${{ github.event.repository.name }}/
+    steps:
+      - name: Check out main source
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.sha }}
+          path: source
+          persist-credentials: false
+
+      - name: Check out Pages branch
+        uses: actions/checkout@v4
+        with:
+          ref: gh-pages
+          path: pages
+          persist-credentials: true
+
+      - name: Publish current website at the Pages root
+        run: |
+          target="pages/docs"
+          mkdir -p "$target"
+          rsync -a --delete --exclude '.DS_Store' --exclude 'previews/' source/current/ "$target/"
+          touch pages/docs/.nojekyll
+
+          cd pages
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add docs
+          if ! git diff --cached --quiet; then
+            git commit -m "deploy: update main site"
+            for attempt in 1 2 3 4 5; do
+              if git push origin HEAD:gh-pages; then
+                break
+              fi
+              if [ "$attempt" -eq 5 ]; then
+                exit 1
+              fi
+              git fetch origin gh-pages
+              git rebase origin/gh-pages
+            done
+          fi

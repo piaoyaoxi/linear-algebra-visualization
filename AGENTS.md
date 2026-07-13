@@ -18,7 +18,7 @@
 - Do not build long stacks of dependent PRs. A temporary two-PR dependency is allowed only when unavoidable; merge the prerequisite first, then rebase or merge `main` into the dependent branch and retarget it to `main`.
 - Before final review, an active branch must incorporate the latest `main` so its preview includes already-accepted work from the other lane.
 - Treat `current/learn.html`, `current/app.js`, and shared registries/mount files as integration hotspots. Avoid concurrent edits; coordinate ownership and recheck the combined page after syncing `main`.
-- Delete merged task branches. Keep `gh-pages` only for GitHub Pages deployment and PR previews; never use it as a development base.
+- Delete merged task branches. Keep `gh-pages` only for the automatic `main` site deployment and PR previews; never use it as a development base or edit it directly.
 
 ## UI verification before commit
 

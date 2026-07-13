@@ -255,7 +255,7 @@ _dev/research/3b1b_eola_chapter10.py
 - 新任务必须从最新 `main` 创建。另一条线有 PR 合并后，尚未合并的分支应同步最新 `main`，再做组合页面验收。
 - 不再长期堆叠 PR。确有依赖时最多短暂两层；前置 PR 合并后立即把后续 PR 迁回 `main`。
 - `current/learn.html`、`current/app.js` 和共享 registry/mount 文件是集成热点，不让两个 Agent 同时无协调修改。
-- `gh-pages` 只负责公开 Pages 与 PR 预览，不作为开发基线。预览工作流会在并发推送冲突时自动 fetch、rebase 并重试。
+- `gh-pages` 只负责公开 Pages，不作为开发基线，也不直接编辑。`main` 每次更新后，部署工作流会把 `current/` 同步到 Pages 固定根地址；每个 PR 仍发布到独立的 `previews/pr-<编号>/` 地址。两个工作流都会在并发推送冲突时自动 fetch、rebase 并重试，首页同步会保留所有 PR 预览目录。
 
 ## 当前状态
 
@@ -273,6 +273,7 @@ _dev/research/3b1b_eola_chapter10.py
 - 原 PR #1—#5、#7—#22 的 stacked PR 链已在 2026-07-13 整理并合并；默认分支已统一为 `main`。
 - 旧功能分支已经清理；常态只保留 `main` 与部署分支 `gh-pages`，有任务时再增加一条内容分支和一条 UI 分支。
 - PR 预览工作流已支持并行推送重试，避免不同 PR 同时写 `gh-pages` 时发生 non-fast-forward 失败。
+- Pages 固定根地址自动跟随已验收的 `main`；不提交 PR 时也可以从固定首页查看当前主干网站，PR 页面继续用于查看尚未合并的改动。
 - 第四章 §1—§7 已接入统一例题反馈：先选择、错误重试、正确后展开解析，并播放 π 粒子反馈。
 - 统一例题组件位于 `current/visuals/example-challenge.js` 与 `current/visuals/example-challenge.css`；没有选择项的例题自动使用逐步展开模式。
 - 例题公式继续使用本地 KaTeX；手机端粒子数量已降低，并支持 `prefers-reduced-motion`。

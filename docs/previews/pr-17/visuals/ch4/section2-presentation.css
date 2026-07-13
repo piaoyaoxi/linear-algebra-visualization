@@ -58,20 +58,32 @@
   line-height: 1.7;
 }
 
-#matrix-operations-formal .s2-segmented,
+/* Chip bar: only as wide as its buttons — never stretch to full row. */
+#matrix-operations-formal .s2-chip-bar,
 #matrix-operations-interactive .s2-view-tabs {
-  display: inline-flex;
+  display: inline-flex !important;
   flex-wrap: wrap;
   gap: 7px;
+  width: max-content !important;
+  max-width: 100%;
+  margin: 0;
   padding: 5px;
   border: 1px solid var(--line);
   border-radius: 13px;
   background: var(--surface-soft);
+  box-sizing: border-box;
 }
 
-#matrix-operations-formal .s2-segmented button,
+#matrix-operations-formal .s2-basic-lab > .s2-chip-bar,
+#matrix-operations-formal .s2-transpose-toolbar .s2-chip-bar {
+  justify-self: start;
+  align-self: start;
+}
+
+#matrix-operations-formal .s2-chip-bar button,
 #matrix-operations-interactive .s2-view-tabs button,
 #matrix-operations-formal .s2-action-button {
+  flex: 0 0 auto;
   min-height: 36px;
   padding: 0 13px;
   border: 0;
@@ -85,13 +97,13 @@
   transition: background 150ms ease, color 150ms ease, box-shadow 150ms ease, transform 150ms ease;
 }
 
-#matrix-operations-formal .s2-segmented button:hover,
+#matrix-operations-formal .s2-chip-bar button:hover,
 #matrix-operations-interactive .s2-view-tabs button:hover,
 #matrix-operations-formal .s2-action-button:hover {
   color: var(--text);
 }
 
-#matrix-operations-formal .s2-segmented button.is-active,
+#matrix-operations-formal .s2-chip-bar button.is-active,
 #matrix-operations-interactive .s2-view-tabs button.is-active {
   background: var(--surface-solid);
   color: var(--accent-strong);
@@ -425,7 +437,7 @@
 
 #matrix-operations-formal .s2-gate-stage {
   display: grid;
-  grid-template-columns: minmax(112px, 1fr) auto minmax(112px, 1fr) 54px minmax(112px, 1fr);
+  grid-template-columns: minmax(112px, 1fr) auto minmax(112px, 1fr) auto minmax(112px, 1fr);
   gap: 12px;
   align-items: center;
   padding: 22px;
@@ -468,49 +480,32 @@
 
 #matrix-operations-formal .s2-gate-symbol {
   color: var(--faint);
-  font-size: 21px;
+  font-size: 22px;
   font-weight: 800;
+  line-height: 1;
+  text-align: center;
 }
 
-#matrix-operations-formal .s2-gate-door {
-  position: relative;
-  width: 42px;
-  height: 86px;
-  justify-self: center;
-  border: 2px solid var(--line-strong);
-  border-radius: 13px;
-  background: var(--surface-solid);
-  transition: border-color 180ms ease, background 180ms ease;
+/* Clear = / ≠ between dimension cards (replaces old double-bar “door”). */
+#matrix-operations-formal .s2-gate-equals {
+  display: grid;
+  place-items: center;
+  min-width: 1.75em;
+  min-height: 1.75em;
+  color: var(--faint);
+  font-size: 32px;
+  font-weight: 800;
+  line-height: 1;
+  user-select: none;
+  transition: color 160ms ease, opacity 160ms ease;
 }
 
-#matrix-operations-formal .s2-gate-door::before,
-#matrix-operations-formal .s2-gate-door::after {
-  position: absolute;
-  top: 9px;
-  bottom: 9px;
-  width: 11px;
-  border-radius: 7px;
-  background: var(--faint);
-  content: "";
-  transition: transform 240ms ease, background 180ms ease;
+#matrix-operations-formal .s2-gate-equals.is-open {
+  color: var(--accent-strong);
 }
 
-#matrix-operations-formal .s2-gate-door::before { left: 7px; }
-#matrix-operations-formal .s2-gate-door::after { right: 7px; }
-
-#matrix-operations-formal .s2-gate-door.is-open {
-  border-color: color-mix(in srgb, var(--accent) 36%, var(--line));
-  background: var(--accent-soft);
-}
-
-#matrix-operations-formal .s2-gate-door.is-open::before {
-  transform: translateX(-7px);
-  background: var(--accent);
-}
-
-#matrix-operations-formal .s2-gate-door.is-open::after {
-  transform: translateX(7px);
-  background: var(--accent);
+#matrix-operations-formal .s2-gate-equals:not(.is-open) {
+  opacity: 0.5;
 }
 
 #matrix-operations-formal .s2-gate-message {
@@ -1029,15 +1024,6 @@
   margin-bottom: 0;
 }
 
-body.dark #matrix-operations-formal .s2-module,
-body.dark #matrix-operations-interactive .s2-multiplication-lab,
-body.dark #matrix-operations-formal .s2-transpose-matrix span,
-body.dark #matrix-operations-formal .s2-dimension-card,
-body.dark #matrix-operations-formal .s2-segmented button.is-active,
-body.dark #matrix-operations-interactive .s2-view-tabs button.is-active {
-  box-shadow: none;
-}
-
 @media (max-width: 980px) {
   #matrix-operations-formal .s2-property-grid,
   #matrix-operations-formal .s2-size-controls {
@@ -1123,29 +1109,12 @@ body.dark #matrix-operations-interactive .s2-view-tabs button.is-active {
 
   #matrix-operations-formal .s2-gate-stage {
     grid-template-columns: 1fr;
+    justify-items: center;
   }
 
-  #matrix-operations-formal .s2-gate-symbol {
-    transform: rotate(90deg);
-    text-align: center;
+  #matrix-operations-formal .s2-dimension-card {
+    width: min(100%, 280px);
   }
-
-  #matrix-operations-formal .s2-gate-door {
-    width: 86px;
-    height: 42px;
-  }
-
-  #matrix-operations-formal .s2-gate-door::before,
-  #matrix-operations-formal .s2-gate-door::after {
-    top: 7px;
-    bottom: 7px;
-    width: 31px;
-  }
-
-  #matrix-operations-formal .s2-gate-door::before { left: 8px; }
-  #matrix-operations-formal .s2-gate-door::after { right: 8px; }
-  #matrix-operations-formal .s2-gate-door.is-open::before { transform: translateX(-5px); }
-  #matrix-operations-formal .s2-gate-door.is-open::after { transform: translateX(5px); }
 
   #matrix-operations-formal .s2-side-preview {
     margin-right: 18px;
@@ -1182,9 +1151,7 @@ body.dark #matrix-operations-interactive .s2-view-tabs button.is-active {
 @media (prefers-reduced-motion: reduce) {
   #matrix-operations-formal .s2-transpose-matrix,
   #matrix-operations-formal .s2-transpose-matrix span,
-  #matrix-operations-formal .s2-gate-door,
-  #matrix-operations-formal .s2-gate-door::before,
-  #matrix-operations-formal .s2-gate-door::after,
+  #matrix-operations-formal .s2-gate-equals,
   #matrix-operations-interactive .s2-view-panel {
     animation: none !important;
     transition: none !important;

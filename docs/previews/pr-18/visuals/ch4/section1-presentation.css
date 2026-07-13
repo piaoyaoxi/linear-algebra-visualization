@@ -228,19 +228,22 @@
   stroke-width: 2;
 }
 
+#matrix-language-formal .source-basis-stage,
 body.dark #matrix-language-formal .source-basis-stage {
   background:
     radial-gradient(ellipse 70% 60% at 38% 66%, color-mix(in srgb, var(--accent) 12%, transparent), transparent 74%),
     radial-gradient(ellipse 50% 46% at 72% 30%, color-mix(in srgb, var(--coral) 10%, transparent), transparent 76%),
-    linear-gradient(168deg, color-mix(in srgb, var(--surface-soft) 78%, #0c1210), var(--surface-solid));
+    linear-gradient(168deg, color-mix(in srgb, var(--surface-soft) 78%, var(--bg)), var(--surface-solid));
 }
 
+#matrix-language-formal .basis-label-one rect,
 body.dark #matrix-language-formal .basis-label-one rect {
-  fill: color-mix(in srgb, var(--accent-strong) 18%, var(--surface-solid));
+  fill: color-mix(in srgb, var(--accent-strong) 16%, var(--surface-solid));
 }
 
+#matrix-language-formal .basis-label-two rect,
 body.dark #matrix-language-formal .basis-label-two rect {
-  fill: color-mix(in srgb, var(--coral) 18%, var(--surface-solid));
+  fill: color-mix(in srgb, var(--coral) 16%, var(--surface-solid));
 }
 
 #matrix-language-formal .anatomy-toolbar,

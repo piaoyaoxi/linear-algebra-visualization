@@ -93,8 +93,6 @@
       text: styles.getPropertyValue("--text").trim() || "#10211d",
       muted: styles.getPropertyValue("--muted").trim() || "#68736f",
       line: styles.getPropertyValue("--line-strong").trim() || "rgba(16, 40, 34, .22)",
-      paperTop: "#fbfcfb",
-      paperBottom: "#f3f6f4",
       teal: styles.getPropertyValue("--accent").trim() || "#078b7e",
       tealStrong: styles.getPropertyValue("--accent-strong").trim() || "#006f65",
       coral: styles.getPropertyValue("--coral").trim() || "#d69a48",
@@ -176,26 +174,6 @@
     ctx.restore();
   }
 
-  function fillPaper(ctx, width, height, palette) {
-    const gradient = ctx.createLinearGradient(0, 0, 0, height);
-    gradient.addColorStop(0, palette.paperTop);
-    gradient.addColorStop(1, palette.paperBottom);
-    ctx.fillStyle = gradient;
-    ctx.fillRect(0, 0, width, height);
-    const glow = ctx.createRadialGradient(
-      width * 0.5,
-      height * 0.46,
-      8,
-      width * 0.5,
-      height * 0.46,
-      Math.max(width, height) * 0.42,
-    );
-    glow.addColorStop(0, "rgba(7, 139, 126, 0.05)");
-    glow.addColorStop(1, "rgba(7, 139, 126, 0)");
-    ctx.fillStyle = glow;
-    ctx.fillRect(0, 0, width, height);
-  }
-
   function drawTransformScene(canvas, matrix, options = {}) {
     if (!canvas) return;
     currentMatrices.set(canvas, matrix);
@@ -213,8 +191,6 @@
     const maxCol = Math.max(col1Len, col2Len, 0);
     const allZero = maxCol < 1e-8;
     const domainReach = Math.min(48, Math.max(screenReach + 2, screenReach / Math.max(minCol || maxCol, 0.14) + 2));
-
-    fillPaper(ctx, width, height, palette);
 
     const refX = halfW + 1.4;
     const refY = halfH + 1.4;
@@ -402,7 +378,6 @@
     const v2 = interpolateVector([1, 1], [2, 1], t);
     const toPoint = (vector) => ({ x: origin.x + vector[0] * scale, y: origin.y - vector[1] * scale });
 
-    fillPaper(ctx, width, height, palette);
     for (let i = -5; i <= 5; i += 1) {
       const isAxis = i === 0;
       drawLine(

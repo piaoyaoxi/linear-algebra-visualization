@@ -5,32 +5,26 @@
   };
 
   /**
-   * Timeline (ms) — slow enough to read the pixel wave.
-   * 0–10%    real page blur rises (page still visible underneath)
-   * 10–70%   image pixels light up along BL → TR wave
-   * ~50%     theme commit under blur
-   * 70–80%   hold full image
-   * 80–100%  image + blur dissolve together
+   * The page atmosphere and the artwork reveal share one timeline. The page
+   * reaches the target palette under the blurred wash before the wash exits.
    */
   const NORMAL = {
-    duration: 3400,
-    commit: 1700,
-    revealStart: 0.1,
-    revealEnd: 0.7,
+    duration: 3000,
+    commit: 1920,
+    revealStart: 0.04,
+    revealEnd: 0.72,
   };
   const REDUCED = {
-    duration: 420,
-    commit: 180,
-    revealStart: 0.15,
-    revealEnd: 0.55,
+    duration: 480,
+    commit: 220,
+    revealStart: 0,
+    revealEnd: 0.2,
   };
 
-  /** Soft width of the sparkle front (diagonal 0–1) */
-  const WAVE_SOFT = 0.13;
-  /** Max luminance boost on the wave-front pixels */
-  const FRONT_BOOST = 2.1;
-  /** Cap working resolution for stable frame times */
-  const MAX_WORK = 1200;
+  /** Width of the soft ignition band in normalized ripple distance. */
+  const WAVE_SOFT = 0.072;
+  /** Working-size cap keeps the per-frame pixel pass stable on large screens. */
+  const MAX_WORK = 1080;
 
   let active = false;
   let overlay = null;
@@ -55,8 +49,21 @@
    *   w: number,
    *   h: number,
    *   src: Uint8ClampedArray,
+   *   pixels: Uint32Array,
+   *   strength: Float32Array,
+   *   distance: Float32Array,
+   *   phase: Float32Array,
    * }} FrameField
    */
+
+  function clamp01(value) {
+    return Math.max(0, Math.min(1, value));
+  }
+
+  function smoothstep(edge0, edge1, value) {
+    const t = clamp01((value - edge0) / (edge1 - edge0));
+    return t * t * (3 - 2 * t);
+  }
 
   function loadImage(src) {
     return new Promise((resolve, reject) => {
@@ -76,7 +83,23 @@
     .catch((error) => console.warn("Theme art preload failed.", error));
 
   /**
-   * Cover-fit source image into a working RGBA buffer.
+   * Convert the source paper into transparency while preserving the artwork's
+   * own halftone pixels. Luna is light ink on black; Sol is coloured ink on a
+   * warm-white sheet.
+   */
+  function getInkStrength(mode, r, g, b) {
+    if (mode === "luna") {
+      const light = Math.max(r, g, b);
+      return smoothstep(5, 48, light);
+    }
+
+    const paper = 248;
+    const separation = Math.max(Math.abs(paper - r), Math.abs(paper - g), Math.abs(paper - b));
+    return smoothstep(5, 46, separation);
+  }
+
+  /**
+   * Cover-fit source art and cache only pixels that genuinely belong to it.
    * @param {HTMLImageElement} img
    * @param {"luna"|"sol"} mode
    * @param {number} viewW
@@ -94,36 +117,73 @@
     const octx = off.getContext("2d", { willReadFrequently: true });
     if (!octx) throw new Error("2d context unavailable");
 
-    const ir = img.naturalWidth / img.naturalHeight;
-    const cr = w / h;
-    let dw;
-    let dh;
-    let dx;
-    let dy;
-    if (ir > cr) {
-      dh = h;
-      dw = h * ir;
-      dx = (w - dw) / 2;
-      dy = 0;
+    const imageRatio = img.naturalWidth / img.naturalHeight;
+    const canvasRatio = w / h;
+    let drawWidth;
+    let drawHeight;
+    let drawX;
+    let drawY;
+
+    if (imageRatio > canvasRatio) {
+      drawHeight = h;
+      drawWidth = h * imageRatio;
+      drawX = (w - drawWidth) / 2;
+      drawY = 0;
     } else {
-      dw = w;
-      dh = w / ir;
-      dx = 0;
-      dy = (h - dh) / 2;
+      drawWidth = w;
+      drawHeight = w / imageRatio;
+      drawX = 0;
+      drawY = (h - drawHeight) / 2;
     }
 
-    // Match art paper so letterboxed cover edges never flash the wrong plate
-    octx.fillStyle = mode === "luna" ? "#000000" : "#f7f7f7";
-    octx.fillRect(0, 0, w, h);
-    octx.drawImage(img, dx, dy, dw, dh);
+    octx.clearRect(0, 0, w, h);
+    octx.drawImage(img, drawX, drawY, drawWidth, drawHeight);
 
     const { data } = octx.getImageData(0, 0, w, h);
+    const activePixels = [];
+    const strengths = [];
+    const distances = [];
+    const phases = [];
+    const aspect = w / h;
+    const maxRadius = Math.hypot(aspect, 1);
+    const invW = w > 1 ? 1 / (w - 1) : 1;
+    const invH = h > 1 ? 1 / (h - 1) : 1;
+
+    for (let pixel = 0; pixel < w * h; pixel += 1) {
+      const sourceIndex = pixel * 4;
+      const strength = getInkStrength(mode, data[sourceIndex], data[sourceIndex + 1], data[sourceIndex + 2]);
+      if (strength < 0.012) continue;
+
+      const x = pixel % w;
+      const y = (pixel / w) | 0;
+      const nx = x * invW;
+      const ny = y * invH;
+
+      // A true ripple expanding from the lower-left, with a very slight
+      // contour variation so the artwork grows organically rather than being
+      // cut by a geometric diagonal.
+      const radius = Math.hypot(nx * aspect, 1 - ny) / maxRadius;
+      const contour =
+        Math.sin(nx * 17.3 + ny * 11.7) * 0.006 +
+        Math.sin(nx * 31.1 - ny * 23.9) * 0.0035;
+      const hash = ((x * 73856093) ^ (y * 19349663)) >>> 0;
+
+      activePixels.push(pixel);
+      strengths.push(strength);
+      distances.push(clamp01(radius + contour));
+      phases.push((hash % 2048) / 2048);
+    }
+
     return {
       key: `${mode}:${w}x${h}`,
       mode,
       w,
       h,
       src: new Uint8ClampedArray(data),
+      pixels: new Uint32Array(activePixels),
+      strength: new Float32Array(strengths),
+      distance: new Float32Array(distances),
+      phase: new Float32Array(phases),
     };
   }
 
@@ -135,7 +195,8 @@
     overlay.setAttribute("aria-hidden", "true");
     overlay.innerHTML = `
       <div class="theme-transition__blur"></div>
-      <div class="theme-transition__tint"></div>
+      <div class="theme-transition__wash theme-transition__wash--from"></div>
+      <div class="theme-transition__wash theme-transition__wash--to"></div>
       <canvas class="theme-transition__canvas"></canvas>
     `;
     canvas = overlay.querySelector(".theme-transition__canvas");
@@ -197,28 +258,16 @@
     active = false;
   }
 
-  function easeOutCubic(t) {
-    return 1 - (1 - t) ** 3;
-  }
-
   function waveProgress(t, timing) {
     if (t <= timing.revealStart) return 0;
-    if (t >= timing.revealEnd) return 1;
+    if (t >= timing.revealEnd) return 1 + WAVE_SOFT;
     const u = (t - timing.revealStart) / (timing.revealEnd - timing.revealStart);
-    return easeOutCubic(u);
+    return u * u * (3 - 2 * u);
   }
 
   /**
-   * Is this source pixel part of the stipple (can sparkle), vs pure paper/void?
-   */
-  function isStipple(mode, r, g, b) {
-    if (mode === "luna") return Math.max(r, g, b) > 18;
-    return Math.min(r, g, b) < 236;
-  }
-
-  /**
-   * Paint full image pixels with a BL→TR wave; stipple pixels flash on the front.
-   * Unrevealed region stays fully transparent so the real blurred page shows through.
+   * Reveal only source-art pixels. Pixels at the ripple front briefly lift in
+   * luminance, then settle back to their original colour.
    * @param {FrameField} field
    * @param {number} progress
    * @param {number} timeSec
@@ -226,7 +275,7 @@
   function paintField(field, progress, timeSec) {
     if (!ctx || !canvas) return;
 
-    const { w, h, src, mode } = field;
+    const { w, h, src, pixels, strength, distance, phase, mode } = field;
     if (canvas.width !== w || canvas.height !== h) {
       canvas.width = w;
       canvas.height = h;
@@ -241,69 +290,46 @@
     }
 
     const out = outBuffer.data;
-    const soft = WAVE_SOFT;
-    const invSoft = 1 / soft;
-    const invW = w > 1 ? 1 / (w - 1) : 1;
-    const invH = h > 1 ? 1 / (h - 1) : 1;
-    const total = w * h;
+    const leadingEdge = WAVE_SOFT * 0.68;
+    const trailingEdge = WAVE_SOFT * 0.9;
 
-    for (let i = 0; i < total; i += 1) {
-      const x = i % w;
-      const y = (i / w) | 0;
-      const nx = x * invW;
-      const ny = y * invH;
-      // 0 at bottom-left → 1 at top-right
-      const dist = (nx + (1 - ny)) * 0.5;
-      const behind = progress - dist;
+    for (let index = 0; index < pixels.length; index += 1) {
+      const behind = progress - distance[index];
+      if (behind < -leadingEdge) continue;
 
-      const si = i * 4;
-      let r = src[si];
-      let g = src[si + 1];
-      let b = src[si + 2];
-      const stipple = isStipple(mode, r, g, b);
+      const reveal = smoothstep(-leadingEdge, trailingEdge, behind);
+      if (reveal <= 0) continue;
 
-      /*
-       * Paper / void (non-stipple): hard reveal so the front is not a milky fog.
-       * Stipple pixels (the image’s own dots): soft ignition + luminance twinkle.
-       */
-      let alpha;
-      let boost = 1;
+      const front = Math.exp(-((behind / (WAVE_SOFT * 0.62)) ** 2));
+      const shimmer = 0.82 + 0.18 * Math.sin(timeSec * 8.5 + phase[index] * Math.PI * 2);
+      const glow = front * shimmer;
+      const pixel = pixels[index];
+      const sourceIndex = pixel * 4;
+      let r = src[sourceIndex];
+      let g = src[sourceIndex + 1];
+      let b = src[sourceIndex + 2];
 
-      if (!stipple) {
-        if (behind < 0) continue;
-        alpha = 1;
-      } else if (behind < -soft) {
-        continue;
-      } else if (behind < 0) {
-        // Leading edge: this pixel first lights up
-        const u = (behind + soft) * invSoft;
-        const spark = u * u * u;
-        alpha = Math.min(1, spark * 1.15);
-        const phase = ((x * 73856093) ^ (y * 19349663)) % 1000 / 1000;
-        const tw = 0.45 + 0.55 * Math.sin(timeSec * 18 + phase * 14.0);
-        boost = 1 + (FRONT_BOOST - 1) * spark * (0.5 + 0.5 * tw);
-      } else if (behind < soft) {
-        // Just crossed: settle flash → normal
-        const u = behind * invSoft;
-        const flash = (1 - u) * (1 - u);
-        alpha = 1;
-        const phase = ((x * 73856093) ^ (y * 19349663)) % 1000 / 1000;
-        const tw = 0.6 + 0.4 * Math.sin(timeSec * 12 + phase * 7.0);
-        boost = 1 + (FRONT_BOOST - 1) * flash * (0.55 + 0.45 * tw);
+      if (mode === "luna") {
+        // The source uses luminance to describe lunar density. Encode that
+        // density in alpha, then return every surviving dot to a cool silver
+        // so faint source greys never read as black ink on the light page.
+        r = 204 + strength[index] * 38;
+        g = 216 + strength[index] * 35;
+        b = 224 + strength[index] * 31;
+        r += (238 - r) * glow * 0.48;
+        g += (248 - g) * glow * 0.54;
+        b += (255 - b) * glow * 0.62;
       } else {
-        alpha = 1;
+        r += (255 - r) * glow * 0.24;
+        g += (246 - g) * glow * 0.2;
+        b += (196 - b) * glow * 0.08;
       }
 
-      if (boost !== 1) {
-        r = Math.min(255, r * boost);
-        g = Math.min(255, g * boost);
-        b = Math.min(255, b * boost);
-      }
-
-      out[si] = r;
-      out[si + 1] = g;
-      out[si + 2] = b;
-      out[si + 3] = Math.round(alpha * 255);
+      const alpha = Math.min(1, strength[index] * (reveal + glow * 0.32));
+      out[sourceIndex] = Math.min(255, Math.round(r));
+      out[sourceIndex + 1] = Math.min(255, Math.round(g));
+      out[sourceIndex + 2] = Math.min(255, Math.round(b));
+      out[sourceIndex + 3] = Math.round(alpha * 255);
     }
 
     ctx.putImageData(outBuffer, 0, 0);
@@ -330,35 +356,40 @@
     const viewH = window.innerHeight || 900;
 
     const run = (img) => {
-      const scale = Math.min(1, MAX_WORK / Math.max(viewW, viewH));
-      const workW = Math.max(2, Math.round(viewW * scale));
-      const workH = Math.max(2, Math.round(viewH * scale));
-      const cacheKey = `${mode}:${workW}x${workH}`;
+      let field = null;
+      if (!reduced) {
+        const scale = Math.min(1, MAX_WORK / Math.max(viewW, viewH));
+        const workW = Math.max(2, Math.round(viewW * scale));
+        const workH = Math.max(2, Math.round(viewH * scale));
+        const cacheKey = `${mode}:${workW}x${workH}`;
 
-      let field = fields[mode];
-      if (!field || field.key !== cacheKey) {
-        field = buildField(img, mode, viewW, viewH);
-        fields[mode] = field;
+        field = fields[mode];
+        if (!field || field.key !== cacheKey) {
+          field = buildField(img, mode, viewW, viewH);
+          fields[mode] = field;
+        }
       }
 
       root.classList.remove("is-active");
       void root.offsetWidth;
       root.classList.add("is-active");
 
-      const t0 = performance.now();
+      if (field) {
+        const startedAt = performance.now();
+        const tick = (now) => {
+          const elapsed = now - startedAt;
+          const t = Math.min(1, elapsed / timing.duration);
+          const complete = t >= timing.revealEnd;
+          paintField(field, waveProgress(t, timing), elapsed / 1000);
+          if (!complete) {
+            raf = requestAnimationFrame(tick);
+          } else {
+            raf = 0;
+          }
+        };
 
-      const tick = (now) => {
-        const elapsed = now - t0;
-        const t = Math.min(1, elapsed / timing.duration);
-        paintField(field, waveProgress(t, timing), elapsed / 1000);
-        if (t < 1) {
-          raf = requestAnimationFrame(tick);
-        } else {
-          raf = 0;
-        }
-      };
-
-      raf = requestAnimationFrame(tick);
+        raf = requestAnimationFrame(tick);
+      }
       timers.push(window.setTimeout(() => commitTheme(targetTheme, button), timing.commit));
       timers.push(window.setTimeout(() => finish(button), timing.duration + 80));
     };

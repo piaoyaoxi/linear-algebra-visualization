@@ -93,8 +93,9 @@
       text: styles.getPropertyValue("--text").trim() || "#10211d",
       muted: styles.getPropertyValue("--muted").trim() || "#68736f",
       line: styles.getPropertyValue("--line-strong").trim() || "rgba(16, 40, 34, .22)",
-      paperTop: "#fbfcfb",
-      paperBottom: "#f3f6f4",
+      paperTop: styles.getPropertyValue("--canvas-paper-top").trim() || "#fbfcfb",
+      paperBottom: styles.getPropertyValue("--canvas-paper-bottom").trim() || "#f3f6f4",
+      paperGlow: styles.getPropertyValue("--canvas-paper-glow").trim() || "rgba(7, 139, 126, 0.05)",
       teal: styles.getPropertyValue("--accent").trim() || "#078b7e",
       tealStrong: styles.getPropertyValue("--accent-strong").trim() || "#006f65",
       coral: styles.getPropertyValue("--coral").trim() || "#d69a48",
@@ -190,8 +191,8 @@
       height * 0.46,
       Math.max(width, height) * 0.42,
     );
-    glow.addColorStop(0, "rgba(7, 139, 126, 0.05)");
-    glow.addColorStop(1, "rgba(7, 139, 126, 0)");
+    glow.addColorStop(0, palette.paperGlow);
+    glow.addColorStop(1, "transparent");
     ctx.fillStyle = glow;
     ctx.fillRect(0, 0, width, height);
   }

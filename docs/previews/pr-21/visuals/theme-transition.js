@@ -1,7 +1,7 @@
 (() => {
   const ASSETS = {
-    luna: "./assets/theme/luna.webp",
-    sol: "./assets/theme/sol.webp",
+    luna: "./assets/theme/luna-alpha.webp?v=21h",
+    sol: "./assets/theme/sol-alpha.webp?v=21h",
   };
 
   /**
@@ -74,11 +74,6 @@
     return Math.max(0, Math.min(1, value));
   }
 
-  function smoothstep(edge0, edge1, value) {
-    const t = clamp01((value - edge0) / (edge1 - edge0));
-    return t * t * (3 - 2 * t);
-  }
-
   function smootherstep(t) {
     const x = clamp01(t);
     return x * x * x * (x * (x * 6 - 15) + 10);
@@ -107,76 +102,22 @@
     return new Promise((resolve, reject) => {
       const img = new Image();
       img.decoding = "async";
-      img.onload = () => resolve(img);
+      img.fetchPriority = "high";
+      img.onload = () => {
+        if (typeof img.decode !== "function") {
+          resolve(img);
+          return;
+        }
+        img.decode().then(() => resolve(img), reject);
+      };
       img.onerror = reject;
       img.src = src;
     });
   }
 
-  function prepareImage(img, mode) {
-    const canvas = document.createElement("canvas");
-    canvas.width = img.naturalWidth;
-    canvas.height = img.naturalHeight;
-    const context = canvas.getContext("2d", { willReadFrequently: true });
-    if (!context) return Promise.reject(new Error("2d context unavailable"));
-
-    context.drawImage(img, 0, 0);
-    const frame = context.getImageData(0, 0, canvas.width, canvas.height);
-    const { data } = frame;
-
-    for (let index = 0; index < data.length; index += 4) {
-      let strength;
-      if (mode === "luna") {
-        strength = smoothstep(5, 48, Math.max(data[index], data[index + 1], data[index + 2]));
-        data[index] = 204 + strength * 38;
-        data[index + 1] = 216 + strength * 35;
-        data[index + 2] = 224 + strength * 31;
-      } else {
-        const paper = 248;
-        const separation = Math.max(
-          Math.abs(paper - data[index]),
-          Math.abs(paper - data[index + 1]),
-          Math.abs(paper - data[index + 2]),
-        );
-        strength = smoothstep(5, 46, separation);
-      }
-      data[index + 3] = Math.round(strength * 255);
-    }
-
-    context.putImageData(frame, 0, 0);
-    return new Promise((resolve, reject) => {
-      canvas.toBlob(
-        (blob) => {
-          if (!blob) {
-            reject(new Error("Transparent theme art could not be encoded"));
-            return;
-          }
-          const prepared = new Image();
-          prepared.decoding = "async";
-          prepared.onload = () => resolve(prepared);
-          prepared.onerror = reject;
-          prepared.src = URL.createObjectURL(blob);
-        },
-        "image/webp",
-        0.94,
-      );
-    });
-  }
-
-  function prepareWhenIdle(img, mode) {
-    return new Promise((resolve, reject) => {
-      const prepare = () => prepareImage(img, mode).then(resolve, reject);
-      if ("requestIdleCallback" in window) {
-        window.requestIdleCallback(prepare, { timeout: 1200 });
-      } else {
-        window.setTimeout(prepare, 0);
-      }
-    });
-  }
-
   const preparations = {
-    luna: loadImage(ASSETS.luna).then((img) => prepareWhenIdle(img, "luna")),
-    sol: loadImage(ASSETS.sol).then((img) => prepareWhenIdle(img, "sol")),
+    luna: loadImage(ASSETS.luna),
+    sol: loadImage(ASSETS.sol),
   };
 
   Promise.all([preparations.luna, preparations.sol])

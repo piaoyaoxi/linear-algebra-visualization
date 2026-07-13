@@ -28,6 +28,9 @@
   --glass-blur: 20px;
   --hero-bg: #101821;
   --hero-line: rgba(255, 255, 255, 0.14);
+  --canvas-paper-top: #fbfcfb;
+  --canvas-paper-bottom: #f3f6f4;
+  --canvas-paper-glow: rgba(7, 139, 126, 0.05);
 }
 
 body.dark {
@@ -63,6 +66,9 @@ body.dark {
   --glass-sheen-bot: rgba(255, 255, 255, 0.03);
   --glass-base: rgba(14, 18, 17, 0.48);
   --glass-base-strong: rgba(16, 22, 20, 0.64);
+  --canvas-paper-top: #141a18;
+  --canvas-paper-bottom: #0e1311;
+  --canvas-paper-glow: rgba(94, 224, 208, 0.07);
 }
 
 * {
@@ -2682,8 +2688,9 @@ body.dark .control-stack {
   min-width: 0;
   padding: 16px 18px;
   border: 1px solid var(--line);
-  border-radius: 14px;
-  background: rgba(255, 255, 255, 0.58);
+  border-radius: 16px;
+  background: var(--surface-solid);
+  box-shadow: var(--shadow-soft);
   color: var(--text);
 }
 

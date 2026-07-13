@@ -1,9 +1,16 @@
-/* Theme transition: live page blur + source-pixel Luna/Sol ripple */
+/* Theme transition: live page blur + native-composited Luna/Sol reveal */
+
+@property --theme-tx-reveal {
+  syntax: "<percentage>";
+  inherits: false;
+  initial-value: -8%;
+}
 
 :root {
-  --theme-tx-duration: 3000ms;
-  --theme-tx-ease: cubic-bezier(0.22, 0.74, 0.16, 1);
-  --theme-tx-blur: 18px;
+  --theme-tx-duration: 2600ms;
+  --theme-tx-ease: cubic-bezier(0.2, 0.72, 0.18, 1);
+  --theme-tx-art-ease: cubic-bezier(0.55, 0, 0.24, 1);
+  --theme-tx-blur: 14px;
 }
 
 body.theme-transitioning {
@@ -28,7 +35,7 @@ body.theme-transitioning {
 
 .theme-transition__blur,
 .theme-transition__wash,
-.theme-transition__canvas {
+.theme-transition__art {
   position: absolute;
   inset: 0;
   pointer-events: none;
@@ -37,8 +44,8 @@ body.theme-transitioning {
 .theme-transition__blur {
   opacity: 0;
   background: transparent;
-  -webkit-backdrop-filter: blur(var(--theme-tx-blur)) saturate(0.9);
-  backdrop-filter: blur(var(--theme-tx-blur)) saturate(0.9);
+  -webkit-backdrop-filter: blur(var(--theme-tx-blur)) saturate(0.94);
+  backdrop-filter: blur(var(--theme-tx-blur)) saturate(0.94);
   will-change: opacity;
 }
 
@@ -65,13 +72,32 @@ body.theme-transitioning {
   background: var(--theme-tx-to);
 }
 
-.theme-transition__canvas {
+.theme-transition__art {
   width: 100%;
   height: 100%;
   display: block;
   opacity: 0;
-  image-rendering: auto;
-  will-change: opacity;
+  object-fit: cover;
+  object-position: center;
+  transform: scale(1.012);
+  transform-origin: 0 100%;
+  -webkit-mask-image: radial-gradient(
+    circle farthest-corner at 0% 100%,
+    #000 0,
+    #000 calc(var(--theme-tx-reveal) - 8%),
+    rgba(0, 0, 0, 0.74) calc(var(--theme-tx-reveal) - 3%),
+    rgba(0, 0, 0, 0.18) calc(var(--theme-tx-reveal) + 4%),
+    transparent calc(var(--theme-tx-reveal) + 9%)
+  );
+  mask-image: radial-gradient(
+    circle farthest-corner at 0% 100%,
+    #000 0,
+    #000 calc(var(--theme-tx-reveal) - 8%),
+    rgba(0, 0, 0, 0.74) calc(var(--theme-tx-reveal) - 3%),
+    rgba(0, 0, 0, 0.18) calc(var(--theme-tx-reveal) + 4%),
+    transparent calc(var(--theme-tx-reveal) + 9%)
+  );
+  will-change: opacity, transform;
 }
 
 .theme-transition.is-active .theme-transition__blur {
@@ -86,16 +112,18 @@ body.theme-transitioning {
   animation: theme-tx-wash-to var(--theme-tx-duration) var(--theme-tx-ease) both;
 }
 
-.theme-transition.is-active .theme-transition__canvas {
-  animation: theme-tx-art var(--theme-tx-duration) var(--theme-tx-ease) both;
+.theme-transition.is-active .theme-transition__art {
+  animation:
+    theme-tx-art-reveal var(--theme-tx-duration) var(--theme-tx-art-ease) both,
+    theme-tx-art-opacity var(--theme-tx-duration) var(--theme-tx-ease) both;
 }
 
 @keyframes theme-tx-blur {
   0% {
     opacity: 0;
   }
-  8%,
-  78% {
+  9%,
+  80% {
     opacity: 1;
   }
   100% {
@@ -107,13 +135,13 @@ body.theme-transitioning {
   0% {
     opacity: 0;
   }
-  9% {
-    opacity: 0.2;
+  10% {
+    opacity: 0.14;
   }
-  38% {
-    opacity: 0.1;
+  36% {
+    opacity: 0.07;
   }
-  64%,
+  60%,
   100% {
     opacity: 0;
   }
@@ -121,32 +149,50 @@ body.theme-transitioning {
 
 @keyframes theme-tx-wash-to {
   0%,
-  5% {
+  7% {
     opacity: 0;
   }
-  12% {
-    opacity: 0.18;
+  24% {
+    opacity: 0.2;
   }
-  32% {
-    opacity: 0.4;
+  48% {
+    opacity: 0.5;
   }
-  58% {
-    opacity: 0.68;
+  72% {
+    opacity: 0.86;
   }
-  76% {
-    opacity: 0.88;
+  84% {
+    opacity: 0.9;
   }
   100% {
     opacity: 0;
   }
 }
 
-@keyframes theme-tx-art {
+@keyframes theme-tx-art-reveal {
+  0% {
+    --theme-tx-reveal: -8%;
+    transform: scale(1.012);
+  }
+  72% {
+    --theme-tx-reveal: 108%;
+    transform: scale(1);
+  }
+  100% {
+    --theme-tx-reveal: 108%;
+    transform: scale(1);
+  }
+}
+
+@keyframes theme-tx-art-opacity {
   0% {
     opacity: 0;
   }
-  7%,
-  78% {
+  8% {
+    opacity: 0.18;
+  }
+  20%,
+  82% {
     opacity: 1;
   }
   100% {
@@ -156,17 +202,21 @@ body.theme-transitioning {
 
 @media (max-width: 720px) {
   :root {
-    --theme-tx-blur: 15px;
+    --theme-tx-blur: 11px;
+  }
+
+  .theme-transition__art {
+    transform: scale(1.008);
   }
 }
 
 @media (prefers-reduced-motion: reduce) {
   :root {
-    --theme-tx-duration: 480ms;
-    --theme-tx-blur: 8px;
+    --theme-tx-duration: 420ms;
+    --theme-tx-blur: 7px;
   }
 
-  .theme-transition__canvas {
+  .theme-transition__art {
     display: none;
   }
 }

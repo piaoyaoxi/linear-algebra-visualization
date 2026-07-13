@@ -2984,3 +2984,264 @@ body.sidebar-collapsed:not([data-route="home"]) .app-layout {
     height: 320px;
   }
 }
+
+/*
+ * Unified lesson surfaces. Every color below is derived from the same live
+ * theme tokens, so navigation, content frames and Canvas shells cannot remain
+ * in the previous theme while the page background is already changing.
+ */
+body,
+body.dark {
+  background-image:
+    radial-gradient(circle at 78% 8%, color-mix(in srgb, var(--accent) 14%, transparent), transparent 36%),
+    radial-gradient(circle at 18% 72%, color-mix(in srgb, var(--blue) 9%, transparent), transparent 42%),
+    radial-gradient(circle at 86% 78%, color-mix(in srgb, var(--coral) 8%, transparent), transparent 36%),
+    radial-gradient(circle at 46% 38%, color-mix(in srgb, var(--surface-soft) 44%, transparent), transparent 48%);
+}
+
+body::before,
+body.dark::before {
+  background:
+    linear-gradient(
+      90deg,
+      color-mix(in srgb, var(--surface-solid) 76%, transparent),
+      color-mix(in srgb, var(--surface-solid) 24%, transparent) 48%,
+      color-mix(in srgb, var(--surface-soft) 42%, transparent)
+    ),
+    linear-gradient(
+      180deg,
+      color-mix(in srgb, var(--bg) 24%, transparent),
+      color-mix(in srgb, var(--bg) 86%, transparent)
+    );
+}
+
+.icon-button,
+body.dark .icon-button {
+  border-color: var(--line-strong);
+  background: color-mix(in srgb, var(--surface-solid) 68%, transparent);
+  color: var(--text);
+  box-shadow:
+    inset 0 1px 0 color-mix(in srgb, var(--text) 14%, transparent),
+    var(--shadow-soft);
+  backdrop-filter: blur(16px) saturate(155%);
+  -webkit-backdrop-filter: blur(16px) saturate(155%);
+}
+
+.icon-button:hover,
+body.dark .icon-button:hover {
+  border-color: color-mix(in srgb, var(--accent) 38%, var(--line));
+  background: color-mix(in srgb, var(--surface-solid) 82%, transparent);
+  color: var(--accent-strong);
+  box-shadow:
+    inset 0 1px 0 color-mix(in srgb, var(--text) 18%, transparent),
+    var(--shadow-soft);
+}
+
+.sidebar,
+body.dark .sidebar {
+  border-color: var(--line-strong);
+  background: color-mix(in srgb, var(--surface-solid) 76%, transparent);
+  box-shadow:
+    inset 0 1px 0 color-mix(in srgb, var(--text) 10%, transparent),
+    var(--shadow-soft);
+  backdrop-filter: blur(20px) saturate(155%);
+  -webkit-backdrop-filter: blur(20px) saturate(155%);
+}
+
+.sidebar-brand {
+  position: relative;
+  color: var(--accent-strong);
+}
+
+.sidebar-brand,
+body.dark .sidebar-brand {
+  border-bottom-color: color-mix(in srgb, var(--line) 70%, transparent);
+}
+
+.sidebar-brand-mark,
+body.dark .sidebar-brand-mark {
+  opacity: 0;
+  filter: none;
+}
+
+.sidebar-brand::after {
+  position: absolute;
+  inset: 6px 10px 12px;
+  content: "";
+  background: currentColor;
+  -webkit-mask: url("./assets/brand/linear-algebra.png") center / contain no-repeat;
+  mask: url("./assets/brand/linear-algebra.png") center / contain no-repeat;
+  pointer-events: none;
+}
+
+.nav-section,
+body.dark .nav-section {
+  color: color-mix(in srgb, var(--muted) 88%, transparent);
+}
+
+.nav-chapter.is-active,
+body.dark .nav-chapter.is-active,
+.nav-section.is-active,
+body.dark .nav-section.is-active {
+  background: var(--accent-soft);
+  color: var(--accent-strong);
+  box-shadow: inset 3px 0 0 var(--accent);
+}
+
+.nav-chapter:hover,
+.nav-section:hover,
+body.dark .nav-chapter:hover,
+body.dark .nav-section:hover {
+  background: color-mix(in srgb, var(--accent-soft) 72%, transparent);
+}
+
+.lesson-cover,
+body.dark .lesson-cover {
+  border-color: var(--line);
+  background:
+    radial-gradient(circle at 82% 0%, color-mix(in srgb, var(--accent) 14%, transparent), transparent 36%),
+    linear-gradient(180deg, var(--surface-solid), color-mix(in srgb, var(--surface-solid) 82%, var(--surface-soft)));
+  box-shadow: var(--shadow-soft);
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+}
+
+.info-panel,
+.chapter-card,
+.example-box,
+.visual-panel,
+.concept-strip,
+.note-panel,
+.script-panel,
+.video-panel,
+.lesson-card,
+body.dark .info-panel,
+body.dark .chapter-card,
+body.dark .example-box,
+body.dark .visual-panel,
+body.dark .concept-strip,
+body.dark .note-panel,
+body.dark .script-panel,
+body.dark .video-panel,
+body.dark .lesson-card {
+  border-color: var(--line);
+  background: var(--surface-solid);
+  box-shadow: var(--shadow-soft);
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+}
+
+.lesson-neighbor-card,
+body.dark .lesson-neighbor-card {
+  border-color: var(--line);
+  background: linear-gradient(
+    135deg,
+    var(--surface-solid),
+    color-mix(in srgb, var(--surface-solid) 78%, var(--surface-soft))
+  );
+  box-shadow: var(--shadow-soft);
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+}
+
+.canvas-wrap {
+  background: var(--surface-solid);
+}
+
+.canvas-wrap canvas,
+#transformCanvas,
+body.dark .canvas-wrap canvas,
+body.dark #transformCanvas,
+.s2c-canvas-shell canvas,
+body.dark .s2c-canvas-shell canvas {
+  background:
+    radial-gradient(ellipse 78% 64% at 50% 48%, var(--canvas-paper-glow), transparent 72%),
+    linear-gradient(180deg, var(--canvas-paper-top), var(--canvas-paper-bottom));
+}
+
+.control-stack,
+body.dark .control-stack {
+  background: color-mix(in srgb, var(--surface-soft) 72%, var(--surface-solid));
+}
+
+.sidebar-foot,
+body.dark .sidebar-foot {
+  border-top-color: var(--line);
+  background: color-mix(in srgb, var(--surface-soft) 64%, transparent);
+}
+
+.video-slot,
+body.dark .video-slot {
+  background:
+    linear-gradient(90deg, color-mix(in srgb, var(--accent) 10%, transparent), transparent),
+    repeating-linear-gradient(135deg, color-mix(in srgb, var(--text) 5%, transparent) 0 1px, transparent 1px 14px);
+}
+
+.button,
+body.dark .button,
+.tag,
+body.dark .tag {
+  border-color: var(--line);
+  background: color-mix(in srgb, var(--surface-solid) 78%, transparent);
+  color: var(--text);
+  box-shadow: none;
+}
+
+.tag,
+body.dark .tag {
+  color: var(--muted);
+}
+
+.button.primary,
+body.dark .button.primary {
+  border-color: color-mix(in srgb, var(--accent) 52%, transparent);
+  background: var(--accent);
+  color: color-mix(in srgb, var(--surface-solid) 94%, white);
+}
+
+.segmented button,
+body.dark .segmented button {
+  border-color: var(--line);
+  background: color-mix(in srgb, var(--surface-solid) 78%, transparent);
+  color: var(--muted);
+  box-shadow: none;
+}
+
+.segmented button.is-active,
+body.dark .segmented button.is-active {
+  border-color: color-mix(in srgb, var(--accent) 42%, transparent);
+  background: var(--accent-soft);
+  color: var(--accent-strong);
+  box-shadow: none;
+}
+
+.vector-plane,
+body.dark .vector-plane {
+  background:
+    linear-gradient(var(--bg-grid) 1px, transparent 1px),
+    linear-gradient(90deg, var(--bg-grid) 1px, transparent 1px),
+    color-mix(in srgb, var(--surface-solid) 82%, transparent);
+  background-size: 32px 32px;
+}
+
+.lesson-cover p,
+.lead {
+  color: var(--muted);
+}
+
+.section-band,
+.lesson-section {
+  border-top-color: var(--line);
+}
+
+.inline-code,
+.term-chip,
+.tex-inline {
+  border-color: color-mix(in srgb, var(--accent) 20%, var(--line));
+  background: var(--accent-soft);
+  color: var(--accent-strong);
+}
+
+.tex {
+  color: var(--accent-strong);
+}

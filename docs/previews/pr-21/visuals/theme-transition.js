@@ -28,6 +28,7 @@
   /** Live site palettes from styles.css warm override — must match for seamless commit */
   const LIGHT = {
     "--bg": [244, 241, 232, 1],
+    "--bg-grid": [40, 73, 105, 0.06],
     "--surface": [255, 255, 255, 0.7],
     "--surface-solid": [255, 255, 255, 0.86],
     "--surface-soft": [232, 245, 240, 0.72],
@@ -39,12 +40,16 @@
     "--accent": [7, 139, 126, 1],
     "--accent-strong": [0, 111, 101, 1],
     "--accent-soft": [7, 139, 126, 0.12],
+    "--canvas-paper-top": [251, 252, 251, 1],
+    "--canvas-paper-bottom": [243, 246, 244, 1],
+    "--canvas-paper-glow": [7, 139, 126, 0.05],
     "--shadow-rgb": [54, 65, 50, 0.14],
   };
 
   /** Matches styles.css Liquid Glass dark tokens (must stay in sync) */
   const DARK = {
     "--bg": [11, 15, 14, 1],
+    "--bg-grid": [200, 230, 220, 0.045],
     "--surface": [255, 255, 255, 0.08],
     "--surface-solid": [22, 28, 26, 0.78],
     "--surface-soft": [255, 255, 255, 0.06],
@@ -56,6 +61,9 @@
     "--accent": [94, 224, 208, 1],
     "--accent-strong": [142, 240, 227, 1],
     "--accent-soft": [94, 224, 208, 0.14],
+    "--canvas-paper-top": [20, 26, 24, 1],
+    "--canvas-paper-bottom": [14, 19, 17, 1],
+    "--canvas-paper-glow": [94, 224, 208, 0.07],
     "--shadow-rgb": [0, 0, 0, 0.42],
   };
 
@@ -314,6 +322,7 @@
     button.disabled = true;
     button.setAttribute("aria-busy", "true");
     document.body.classList.add("theme-transitioning");
+    window.dispatchEvent(new Event("la-themestart"));
     root.dataset.mode = mode;
     root.style.setProperty("--theme-tx-duration", `${timing.duration}ms`);
     setPageVeil(1);

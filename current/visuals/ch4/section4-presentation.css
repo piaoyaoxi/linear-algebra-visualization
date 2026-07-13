@@ -475,12 +475,6 @@ body.dark .inverse-transform-lab {
   fill: context-stroke;
 }
 
-.inverse-vector-tip {
-  fill: var(--text);
-  stroke: var(--surface-solid);
-  stroke-width: 2;
-}
-
 .inverse-vector-label {
   font-size: 13px;
 }

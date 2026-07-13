@@ -6,11 +6,11 @@
 
   const NORMAL = {
     duration: 2600,
-    commit: 1760,
+    commit: 1980,
   };
   const REDUCED = {
     duration: 420,
-    commit: 180,
+    commit: 318,
   };
 
   let active = false;

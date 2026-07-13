@@ -1,0 +1,116 @@
+name: PR static preview
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened, ready_for_review, closed]
+
+permissions:
+  contents: write
+  issues: write
+
+concurrency:
+  group: pr-preview-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+jobs:
+  publish-preview:
+    if: github.event.action != 'closed' && github.event.pull_request.head.repo.full_name == github.repository
+    runs-on: ubuntu-latest
+    environment:
+      name: preview/pr-${{ github.event.pull_request.number }}
+      url: https://${{ github.repository_owner }}.github.io/${{ github.event.repository.name }}/previews/pr-${{ github.event.pull_request.number }}/
+    env:
+      PREVIEW_URL: https://${{ github.repository_owner }}.github.io/${{ github.event.repository.name }}/previews/pr-${{ github.event.pull_request.number }}/
+    steps:
+      - name: Check out pull request source
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+          path: source
+          persist-credentials: false
+
+      - name: Check out preview branch
+        uses: actions/checkout@v4
+        with:
+          ref: gh-pages
+          path: pages
+          persist-credentials: true
+
+      - name: Publish current website under this pull request
+        id: publish
+        run: |
+          target="pages/docs/previews/pr-${{ github.event.pull_request.number }}"
+          rm -rf "$target"
+          mkdir -p "$target"
+          rsync -a --delete --exclude '.DS_Store' source/current/ "$target/"
+          touch pages/docs/.nojekyll
+
+          cd pages
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add docs
+          if ! git diff --cached --quiet; then
+            git commit -m "preview: update PR #${{ github.event.pull_request.number }}"
+            for attempt in 1 2 3 4 5; do
+              if git push origin HEAD:gh-pages; then
+                break
+              fi
+              if [ "$attempt" -eq 5 ]; then
+                exit 1
+              fi
+              git fetch origin gh-pages
+              git rebase origin/gh-pages
+            done
+          fi
+          echo "url=$PREVIEW_URL" >> "$GITHUB_OUTPUT"
+
+      - name: Post or update preview link
+        continue-on-error: true
+        uses: actions/github-script@v7
+        env:
+          PREVIEW_URL: ${{ steps.publish.outputs.url }}
+        with:
+          script: |
+            const marker = '<!-- pr-static-preview -->';
+            const body = `${marker}\n## PR preview\n\n[Open this PR\'s website preview](${process.env.PREVIEW_URL})\n\nThis link is updated whenever the PR changes. The preview is removed when the PR closes.`;
+            const { owner, repo } = context.repo;
+            const issue_number = context.payload.pull_request.number;
+            const comments = await github.paginate(github.rest.issues.listComments, { owner, repo, issue_number, per_page: 100 });
+            const existing = comments.find((comment) => comment.body && comment.body.includes(marker));
+            if (existing) {
+              await github.rest.issues.updateComment({ owner, repo, comment_id: existing.id, body });
+            } else {
+              await github.rest.issues.createComment({ owner, repo, issue_number, body });
+            }
+
+  cleanup-preview:
+    if: github.event.action == 'closed' && github.event.pull_request.head.repo.full_name == github.repository
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out preview branch
+        uses: actions/checkout@v4
+        with:
+          ref: gh-pages
+          path: pages
+          persist-credentials: true
+
+      - name: Remove this pull request preview
+        run: |
+          cd pages
+          rm -rf "docs/previews/pr-${{ github.event.pull_request.number }}"
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.com"
+          git add -A docs/previews
+          if ! git diff --cached --quiet; then
+            git commit -m "preview: remove PR #${{ github.event.pull_request.number }}"
+            for attempt in 1 2 3 4 5; do
+              if git push origin HEAD:gh-pages; then
+                break
+              fi
+              if [ "$attempt" -eq 5 ]; then
+                exit 1
+              fi
+              git fetch origin gh-pages
+              git rebase origin/gh-pages
+            done
+          fi

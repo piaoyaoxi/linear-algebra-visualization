@@ -165,7 +165,7 @@ function renderLearningRouteCard(chapter) {
   const preview = chapter.sections.slice(0, 4).map(getSectionLabel).join(" · ");
   const status = ready
     ? `<div class="route-meter" role="img" aria-label="已掌握 ${done} / ${trackable.length}"><span style="width:${percent}%"></span></div><span class="route-count">${done}/${trackable.length} 已掌握</span>`
-    : `<span class="route-soon">内容筹备中</span>`;
+    : `<span class="route-count">${chapter.sections.length} 个小节</span>`;
 
   return `
     <a class="route-card${ready ? "" : " is-soon"}" href="#${chapter.id}">

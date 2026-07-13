@@ -3,18 +3,32 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>高等代数可视化 · PR 预览</title>
-    <style>
-      body{margin:0;padding:48px 24px;background:#f5f6f3;color:#152028;font:16px/1.6 system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
-      main{max-width:720px;margin:0 auto;padding:32px;border:1px solid #d7ddd9;border-radius:18px;background:#fff}
-      h1{margin-top:0}.muted{color:#62706b}code{padding:2px 6px;border-radius:6px;background:#edf3f0}
-    </style>
+    <meta name="description" content="高等代数可视化：沿北大版教材，把抽象结构变成可观察、可操作的图像。" />
+    <title>高等代数可视化</title>
+    <link rel="icon" href="data:," />
+    <link rel="stylesheet" href="./cover.css" />
+    <script defer src="./cover.js"></script>
   </head>
   <body>
-    <main>
-      <h1>高等代数可视化 · PR 预览</h1>
-      <p class="muted">每个拉取请求的静态预览会发布到 <code>previews/pr-编号/</code>。</p>
-      <p>这个首页不放课程内容，避免把某一个草稿版本误当成正式网站。</p>
+    <main class="cover" id="cover">
+      <canvas class="cover-canvas" id="coverCanvas" aria-hidden="true"></canvas>
+      <div class="cover-shade" aria-hidden="true"></div>
+      <header class="cover-top">
+        <span class="cover-brand"><span class="cover-brand-mark">A</span>高等代数可视化</span>
+        <a class="cover-top-link" href="./learn.html#guide">进入导学</a>
+      </header>
+      <nav class="cover-orbit" id="coverOrbit" aria-label="章节入口"></nav>
+      <section class="cover-center" aria-labelledby="coverTitle">
+        <span class="cover-eyebrow">北大版《高等代数》 · 可视化伴学</span>
+        <h1 class="cover-title" id="coverTitle"><span>高等代数</span><span class="cover-title-accent">可视化</span></h1>
+        <p class="cover-latin">visual algebra</p>
+        <p class="cover-tagline">把矩阵、线性空间与线性变换，变成看得见、拖得动的图像。</p>
+        <div class="cover-actions">
+          <a class="cover-button is-primary" id="coverStart" href="./learn.html#guide">开始学习</a>
+          <a class="cover-button" href="./learn.html#guide">了解怎么学</a>
+        </div>
+      </section>
+      <p class="cover-foot">十个章节沿教材展开 · 点击任意章节直接进入</p>
     </main>
   </body>
 </html>

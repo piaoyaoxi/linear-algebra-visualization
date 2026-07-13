@@ -17,13 +17,13 @@
 }
 
 #matrix-operations-interactive .s2c-kicker,
-#matrix-operations-interactive .s2c-stage-copy span {
+#matrix-operations-interactive .s2c-stage-kicker {
   display: block;
   margin-bottom: 7px;
   color: var(--accent-strong);
   font-size: 12px;
   font-weight: 830;
-  letter-spacing: .045em;
+  letter-spacing: 0.045em;
 }
 
 #matrix-operations-interactive .s2c-header h3,
@@ -123,24 +123,92 @@
   to { opacity: 1; transform: translateY(0); }
 }
 
+/*
+ * Stage intro is a plain block stack — never a multi-column grid.
+ * Prose here uses Unicode only (no .tex-inline chips) to avoid layout fights.
+ */
 #matrix-operations-interactive .s2c-stage-copy {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(260px, .65fr);
-  gap: 28px;
-  align-items: end;
-  margin-bottom: 16px;
+  display: block;
+  width: 100%;
+  max-width: 52rem;
+  margin: 0 0 16px;
+  padding: 0;
+}
+
+#matrix-operations-interactive .s2c-stage-copy > * {
+  display: block;
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
 }
 
 #matrix-operations-interactive .s2c-stage-copy h4 {
+  margin: 0 0 8px;
   font-size: clamp(18px, 2vw, 23px);
+  line-height: 1.35;
+}
+
+#matrix-operations-interactive .s2c-stage-copy p {
+  margin: 0;
+  max-width: 48rem;
+  color: var(--muted);
+  font-size: 14px;
+  line-height: 1.75;
+  white-space: normal;
+}
+
+#matrix-operations-interactive .s2c-stage-copy .s2c-math-plain {
+  font-family: "Times New Roman", "STIX Two Math", "Cambria Math", Georgia, serif;
+  font-weight: 700;
+  color: var(--accent-strong);
+  white-space: nowrap;
+}
+
+/* Never let chip styles / old span rules affect stage prose */
+#matrix-operations-interactive .s2c-stage-copy .tex,
+#matrix-operations-interactive .s2c-stage-copy .tex-inline,
+#matrix-operations-interactive .s2c-stage-copy .katex {
+  display: inline !important;
+  min-height: 0 !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  border: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  white-space: normal !important;
+}
+
+#matrix-operations-interactive .s2c-stage-copy .katex-mathml {
+  position: absolute !important;
+  width: 1px !important;
+  height: 1px !important;
+  padding: 0 !important;
+  margin: -1px !important;
+  overflow: hidden !important;
+  clip: rect(0, 0, 0, 0) !important;
+  border: 0 !important;
+}
+
+#matrix-operations-interactive .s2c-header .katex,
+#matrix-operations-interactive .s2c-header .tex-inline {
+  display: inline-block;
+  max-width: 100%;
+  vertical-align: middle;
+  white-space: nowrap;
 }
 
 #matrix-operations-interactive .s2c-canvas-shell {
   position: relative;
   overflow: hidden;
-  border: 1px solid var(--line);
+  border: 1px solid color-mix(in srgb, var(--line) 92%, var(--accent) 8%);
   border-radius: 18px;
-  background: var(--surface-solid);
+  background:
+    radial-gradient(ellipse 72% 58% at 50% 46%, var(--canvas-paper-glow), transparent 72%),
+    linear-gradient(180deg, var(--canvas-paper-top) 0%, var(--canvas-paper-bottom) 100%);
+}
+
+#matrix-operations-interactive .s2c-task-panel {
+  margin-top: 18px;
 }
 
 #matrix-operations-interactive canvas {
@@ -258,18 +326,27 @@
 
 #matrix-operations-interactive .s2c-columns-layout {
   display: grid;
-  grid-template-columns: minmax(0, 1.45fr) minmax(220px, .55fr);
+  grid-template-columns: minmax(0, 1.45fr) minmax(240px, 0.55fr);
   gap: 16px;
+  align-items: stretch;
+}
+
+#matrix-operations-interactive .s2c-columns-layout .s2c-canvas-shell {
+  min-height: 360px;
 }
 
 #matrix-operations-interactive .s2c-column-canvas {
+  display: block;
+  width: 100%;
   min-height: 360px;
+  height: 360px;
 }
 
 #matrix-operations-interactive .s2c-column-readout {
   display: grid;
   gap: 12px;
-  align-content: center;
+  align-content: start;
+  min-width: 0;
   padding: 18px;
   border: 1px solid var(--line);
   border-radius: 18px;
@@ -278,7 +355,7 @@
 
 #matrix-operations-interactive .s2c-column-readout > div {
   display: grid;
-  grid-template-columns: auto minmax(0, 1fr);
+  grid-template-columns: 4.5rem minmax(0, 1fr);
   gap: 12px;
   align-items: center;
   padding-bottom: 12px;
@@ -287,17 +364,33 @@
 
 #matrix-operations-interactive .s2c-column-readout > div:last-of-type {
   border-bottom: 0;
+  padding-bottom: 0;
 }
 
-#matrix-operations-interactive .s2c-column-readout span {
+#matrix-operations-interactive .s2c-column-readout > span.label,
+#matrix-operations-interactive .s2c-column-readout > div > span {
   color: var(--faint);
   font-size: 12px;
   font-weight: 800;
 }
 
-#matrix-operations-interactive .s2c-column-readout strong {
-  justify-self: end;
+#matrix-operations-interactive .s2c-column-readout strong,
+#matrix-operations-interactive .s2c-plain-vec {
+  justify-self: start;
+  min-width: 0;
+  overflow-x: auto;
   color: var(--text);
+  font-family: "Times New Roman", "STIX Two Math", "Cambria Math", Georgia, serif;
+  font-size: 15px;
+  font-weight: 750;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+#matrix-operations-interactive .s2c-column-readout strong .katex,
+#matrix-operations-interactive .s2c-column-readout strong .tex-display {
+  display: inline-block;
+  max-width: 100%;
 }
 
 #matrix-operations-interactive .s2c-column-readout p {
@@ -305,6 +398,11 @@
   color: var(--muted);
   font-size: 13px;
   line-height: 1.7;
+}
+
+#matrix-operations-interactive .s2c-column-readout p .katex {
+  display: inline-block;
+  vertical-align: middle;
 }
 
 #matrix-operations-interactive .s2c-formula-stage {
@@ -484,15 +582,8 @@
   font-size: .95rem;
 }
 
-body.dark #matrix-operations-interactive .s2c-lab,
-body.dark #matrix-operations-interactive .s2c-tabs button.is-active,
-body.dark #matrix-operations-interactive .s2c-matrix button.is-active {
-  box-shadow: none;
-}
-
 @media (max-width: 980px) {
   #matrix-operations-interactive .s2c-header,
-  #matrix-operations-interactive .s2c-stage-copy,
   #matrix-operations-interactive .s2c-columns-layout {
     grid-template-columns: 1fr;
   }
@@ -501,16 +592,10 @@ body.dark #matrix-operations-interactive .s2c-matrix button.is-active {
     min-width: 0;
   }
 
-  #matrix-operations-interactive .s2c-stage-copy {
-    gap: 8px;
-  }
-
-  #matrix-operations-interactive .s2c-column-readout {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
-
-  #matrix-operations-interactive .s2c-column-readout p {
-    grid-column: 1 / -1;
+  #matrix-operations-interactive .s2c-column-canvas,
+  #matrix-operations-interactive .s2c-columns-layout .s2c-canvas-shell {
+    min-height: 300px;
+    height: 300px;
   }
 }
 

@@ -219,10 +219,10 @@
               <div class="inverse-plane-wrap">
                 <svg class="inverse-plane" viewBox="0 0 420 320" role="img" aria-label="矩阵 A 与逆矩阵作用在二维网格上的连续变化">
                   <defs>
-                    <marker id="inverse-basis-arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+                    <marker id="inverse-basis-arrow" viewBox="0 0 10 10" refX="10" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
                       <path d="M 0 0 L 10 5 L 0 10 z"></path>
                     </marker>
-                    <marker id="inverse-vector-arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+                    <marker id="inverse-vector-arrow" viewBox="0 0 10 10" refX="10" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
                       <path d="M 0 0 L 10 5 L 0 10 z"></path>
                     </marker>
                   </defs>
@@ -235,7 +235,6 @@
                   <text class="inverse-basis-label is-x" data-inverse-basis-x-label></text>
                   <text class="inverse-basis-label is-y" data-inverse-basis-y-label></text>
                   <line class="inverse-sample-vector" data-inverse-vector />
-                  <circle class="inverse-vector-tip" data-inverse-vector-tip r="5" />
                   <text class="inverse-vector-label" data-inverse-vector-label></text>
                 </svg>
                 <div class="inverse-stage-chip" data-inverse-stage-chip>${inline("I")}</div>
@@ -330,7 +329,6 @@
       basisXLabel: lab.querySelector("[data-inverse-basis-x-label]"),
       basisYLabel: lab.querySelector("[data-inverse-basis-y-label]"),
       vector: lab.querySelector("[data-inverse-vector]"),
-      vectorTip: lab.querySelector("[data-inverse-vector-tip]"),
       vectorLabel: lab.querySelector("[data-inverse-vector-label]"),
       stageLabel: lab.querySelector("[data-inverse-stage-label]"),
       stageTitle: lab.querySelector("[data-inverse-stage-title]"),
@@ -430,8 +428,6 @@
       setLabel(elements.basisXLabel, basisX, stage === 1 ? "Ae₁" : "e₁");
       setLabel(elements.basisYLabel, basisY, stage === 1 ? "Ae₂" : "e₂");
       setLine(elements.vector, origin, vectorTip);
-      elements.vectorTip.setAttribute("cx", vectorTip[0]);
-      elements.vectorTip.setAttribute("cy", vectorTip[1]);
       setLabel(elements.vectorLabel, vectorTip, stage === 1 ? "Ax" : stage === 2 ? "A⁻¹Ax = x" : "x");
 
       elements.matrix.innerHTML = inline(matrixLatex(preset.matrix));

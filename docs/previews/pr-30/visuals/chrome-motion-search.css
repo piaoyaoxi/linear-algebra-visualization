@@ -1,0 +1,334 @@
+/* --------------------------------------------------------------------------
+   Search: one pill becomes one search surface
+   -------------------------------------------------------------------------- */
+
+.topbar-search,
+body.dark .topbar-search {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  width: 100%;
+  height: var(--chrome-control-size);
+  padding: 0 17px;
+  border-radius: 999px;
+  color: var(--muted);
+  font-size: 14px;
+  font-weight: 650;
+  text-align: left;
+  cursor: pointer;
+}
+
+.topbar-search svg {
+  width: 18px;
+  height: 18px;
+  flex: 0 0 auto;
+}
+
+.topbar-search-text,
+body.dark .topbar-search-text {
+  overflow: hidden;
+  color: color-mix(in srgb, var(--muted) 82%, transparent);
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.topbar-search.is-morph-source {
+  opacity: 0;
+  pointer-events: none;
+}
+
+.search-morph-proxy {
+  position: fixed;
+  z-index: 86;
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  margin: 0;
+  padding: 0 17px;
+  overflow: hidden;
+  border-radius: 999px;
+  color: var(--muted);
+  font-size: 14px;
+  font-weight: 650;
+  line-height: 1;
+  transform-origin: center;
+  will-change: left, top, width, height, border-radius, opacity, transform;
+}
+
+.search-morph-proxy svg {
+  width: 18px;
+  height: 18px;
+  flex: 0 0 auto;
+}
+
+.search-morph-proxy path,
+.search-morph-proxy circle,
+.search-modal-icon path,
+.search-modal-icon circle {
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.7;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.liquid-panel {
+  position: relative;
+  isolation: isolate;
+  border: 1px solid var(--liquid-border);
+  background:
+    radial-gradient(180px 90px at 12% 0%, color-mix(in srgb, #fff 17%, transparent), transparent 72%),
+    linear-gradient(145deg, color-mix(in srgb, #fff 10%, transparent), transparent 47%),
+    var(--liquid-fill-strong);
+  box-shadow:
+    inset 0 1px 0 color-mix(in srgb, var(--liquid-highlight) 62%, transparent),
+    inset 1px 0 0 var(--liquid-cyan),
+    inset -1px 0 0 var(--liquid-warm),
+    var(--liquid-shadow-deep);
+  -webkit-backdrop-filter: blur(27px) saturate(155%);
+  backdrop-filter: blur(27px) saturate(155%);
+}
+
+.liquid-panel::before {
+  position: absolute;
+  inset: 0 0 auto;
+  z-index: -1;
+  height: 34%;
+  border-radius: inherit;
+  background: linear-gradient(175deg, color-mix(in srgb, #fff 20%, transparent), transparent 62%);
+  opacity: 0.62;
+  content: "";
+  pointer-events: none;
+}
+
+.search-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 80;
+  display: block;
+  padding: 0;
+  pointer-events: none;
+}
+
+.search-modal[hidden] {
+  display: none !important;
+}
+
+.search-modal-backdrop {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  background: color-mix(in srgb, var(--bg) 24%, rgba(8, 14, 12, 0.2));
+  -webkit-backdrop-filter: blur(15px) saturate(132%);
+  backdrop-filter: blur(15px) saturate(132%);
+  opacity: 0;
+  pointer-events: auto;
+  will-change: opacity;
+}
+
+body.dark .search-modal-backdrop {
+  background: rgba(2, 6, 5, 0.42);
+}
+
+.search-modal-panel,
+body.dark .search-modal-panel {
+  position: fixed;
+  top: clamp(96px, 14vh, 132px);
+  left: 50%;
+  z-index: 2;
+  display: grid;
+  grid-template-rows: 56px minmax(190px, 1fr);
+  width: min(590px, calc(100vw - 32px));
+  height: min(410px, calc(100dvh - 174px));
+  min-height: 270px;
+  padding: 0;
+  overflow: hidden;
+  border-radius: 25px;
+  transform: translate3d(-50%, 4px, 0);
+  transform-origin: 50% 0;
+  opacity: 0;
+  pointer-events: none;
+  will-change: opacity, transform, clip-path;
+}
+
+.search-modal[data-phase="open"] .search-modal-panel,
+.search-modal[data-phase="opening"] .search-modal-panel,
+.search-modal[data-phase="closing"] .search-modal-panel {
+  pointer-events: auto;
+}
+
+.search-modal-bar {
+  position: relative;
+  z-index: 3;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-height: 56px;
+  padding: 0 12px 0 17px;
+  border: 0;
+  border-bottom: 1px solid color-mix(in srgb, var(--line-strong) 52%, transparent);
+  color: var(--muted);
+  opacity: 0;
+  pointer-events: none;
+}
+
+.search-modal-bar.is-interactive {
+  pointer-events: auto;
+}
+
+.search-modal-icon {
+  width: 19px;
+  height: 19px;
+  flex: 0 0 auto;
+}
+
+.search-modal-bar input {
+  width: 100%;
+  min-width: 0;
+  height: 100%;
+  padding: 0;
+  border: 0;
+  outline: 0;
+  background: transparent;
+  color: var(--text);
+  font-size: 16px;
+  font-weight: 620;
+  letter-spacing: -0.01em;
+}
+
+.search-modal-bar input::placeholder {
+  color: color-mix(in srgb, var(--faint) 88%, transparent);
+  font-weight: 560;
+}
+
+.search-modal-bar input::-webkit-search-cancel-button,
+.search-modal-bar input::-webkit-search-decoration {
+  display: none;
+  -webkit-appearance: none;
+  appearance: none;
+}
+
+.search-close-button {
+  display: grid;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  flex: 0 0 auto;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: color-mix(in srgb, var(--surface-soft) 72%, transparent);
+  color: var(--muted);
+  cursor: pointer;
+  transition: color 150ms ease, background 150ms ease, transform 170ms var(--chrome-ease-spring);
+}
+
+.search-close-button:hover {
+  background: color-mix(in srgb, var(--accent-soft) 76%, transparent);
+  color: var(--accent-strong);
+  transform: rotate(3deg) scale(1.035);
+}
+
+.search-close-button:active {
+  transform: scale(0.93);
+}
+
+.search-close-button svg {
+  width: 17px;
+  height: 17px;
+}
+
+.search-close-button path {
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.65;
+  stroke-linecap: round;
+}
+
+.search-modal-body {
+  position: relative;
+  z-index: 2;
+  min-height: 0;
+  padding: 20px;
+  overflow: auto;
+  color: var(--muted);
+  opacity: 0;
+  transform: translateY(-10px);
+  will-change: opacity, transform, filter;
+}
+
+.search-empty-state {
+  display: grid;
+  place-items: center;
+  align-content: center;
+  min-height: 230px;
+  text-align: center;
+}
+
+.search-empty-kicker {
+  color: var(--accent-strong);
+  font-size: 12px;
+  font-weight: 760;
+  letter-spacing: 0.11em;
+}
+
+.search-empty-state p {
+  margin: 7px 0 0;
+  color: var(--faint);
+  font-size: 14px;
+  font-weight: 560;
+}
+
+.search-result-list {
+  display: grid;
+  gap: 8px;
+  width: 100%;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.search-result-link {
+  display: grid;
+  grid-template-columns: 34px minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 10px;
+  min-height: 52px;
+  padding: 7px 12px 7px 8px;
+  border: 1px solid transparent;
+  border-radius: 15px;
+  background: color-mix(in srgb, var(--surface-soft) 48%, transparent);
+  color: var(--text);
+  font-size: 14px;
+  font-weight: 640;
+  transition: background 150ms ease, border-color 150ms ease, transform 170ms var(--chrome-ease-spring);
+}
+
+.search-result-link:hover {
+  border-color: color-mix(in srgb, var(--accent) 23%, transparent);
+  background: color-mix(in srgb, var(--accent-soft) 69%, var(--surface-soft));
+  transform: translateX(3px);
+}
+
+.search-result-mark {
+  display: grid;
+  place-items: center;
+  width: 34px;
+  height: 34px;
+  border-radius: 11px;
+  background: color-mix(in srgb, var(--accent) 11%, transparent);
+  color: var(--accent-strong);
+  font-size: 13px;
+  font-weight: 790;
+}
+
+.search-result-arrow {
+  color: var(--faint);
+  font-size: 18px;
+  font-weight: 500;
+}
+
+body.search-modal-open {
+  overflow: hidden;
+}
+

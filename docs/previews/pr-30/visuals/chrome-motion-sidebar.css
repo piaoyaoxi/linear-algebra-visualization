@@ -170,7 +170,7 @@ body.sidebar-unified-active .sidebar-surface::before {
 
 body.sidebar-unified-active #sidebarToggle::before,
 body.sidebar-unified-active #sidebarToggle::after {
-  opacity: calc(1 - clamp(0, var(--sidebar-unified-progress, 0) * 6, 1));
+  opacity: var(--sidebar-control-material-opacity, 1);
 }
 
 .drawer-backdrop,

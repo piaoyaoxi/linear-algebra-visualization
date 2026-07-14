@@ -1,0 +1,122 @@
+/* --------------------------------------------------------------------------
+   Responsive
+   -------------------------------------------------------------------------- */
+
+@media (max-width: 1080px) {
+  :root {
+    --chrome-search-width: min(390px, calc(100vw - 300px));
+  }
+}
+
+@media (max-width: 920px) {
+  :root {
+    --chrome-top: 10px;
+    --chrome-side: 12px;
+    --chrome-search-width: min(430px, calc(100vw - 142px));
+    --chrome-sidebar-width: min(84vw, 318px);
+  }
+
+  .topbar-right {
+    gap: 6px;
+  }
+
+  .search-modal-panel,
+  body.dark .search-modal-panel {
+    top: clamp(78px, 11vh, 108px);
+    height: min(430px, calc(100dvh - 132px));
+  }
+
+  body.sidebar-layer-active {
+    overflow: hidden;
+  }
+}
+
+@media (max-width: 620px) {
+  :root {
+    --chrome-control-size: 42px;
+    --chrome-control-radius: 14px;
+    --chrome-search-width: calc(100vw - 128px);
+  }
+
+  .topbar-search,
+  body.dark .topbar-search {
+    gap: 8px;
+    padding: 0 13px;
+    font-size: 13px;
+  }
+
+  .topbar-search svg {
+    width: 17px;
+    height: 17px;
+  }
+
+  .search-modal-panel,
+  body.dark .search-modal-panel {
+    top: 72px;
+    width: calc(100vw - 20px);
+    height: min(440px, calc(100dvh - 92px));
+    border-radius: 23px;
+  }
+
+  .search-modal-body {
+    padding: 14px;
+  }
+
+  .language-menu,
+  body.dark .language-menu {
+    padding: 7px;
+  }
+
+  .language-option {
+    min-height: 39px;
+    padding-inline: 9px;
+  }
+}
+
+@media (max-width: 390px) {
+  :root {
+    --chrome-side: 9px;
+    --chrome-search-width: calc(100vw - 118px);
+  }
+
+  .topbar-right {
+    gap: 5px;
+  }
+
+  .topbar-search-text {
+    font-size: 0;
+  }
+
+  .topbar-search-text::after {
+    font-size: 13px;
+    content: "搜索";
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .icon-button,
+  .topbar-search,
+  .search-close-button,
+  .search-result-link,
+  .language-check {
+    transition-duration: 1ms !important;
+  }
+
+  .sidebar-liquid-bridge {
+    display: none !important;
+  }
+
+  body.sidebar-unified-active .sidebar-surface,
+  body.dark.sidebar-unified-active .sidebar-surface {
+    border: 1px solid var(--liquid-border);
+    background: var(--liquid-fill-strong);
+    box-shadow: var(--liquid-shadow-deep);
+    -webkit-backdrop-filter: blur(20px) saturate(140%);
+    backdrop-filter: blur(20px) saturate(140%);
+  }
+
+  body.sidebar-unified-active #sidebarToggle::before,
+  body.sidebar-unified-active #sidebarToggle::after {
+    opacity: 0;
+  }
+}

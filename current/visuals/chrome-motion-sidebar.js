@@ -165,6 +165,7 @@
       const neckPath = liquidBridgePath(panelRect, buttonRect, p);
       const compoundPath = `${panelPath} ${buttonPath} ${neckPath}`.trim();
       const shellIn = smootherstep(range(p, 0.025, 0.16));
+      const controlMaterialOpacity = 1 - smootherstep(range(p, 0.025, 0.18));
 
       sidebarBridge.style.clipPath = `path("${compoundPath}")`;
       sidebarBridge.style.webkitClipPath = `path("${compoundPath}")`;
@@ -172,6 +173,7 @@
       sidebarBridge.style.visibility = "visible";
       sidebarBridge.style.setProperty("--sidebar-unified-progress", p.toFixed(4));
       this.body.style.setProperty("--sidebar-unified-progress", p.toFixed(4));
+      this.body.style.setProperty("--sidebar-control-material-opacity", controlMaterialOpacity.toFixed(4));
       this.body.classList.add("sidebar-unified-active");
     },
 
@@ -199,6 +201,7 @@
       this.sidebarInteractive = false;
       this.body.classList.remove("sidebar-open", "sidebar-layer-active", "sidebar-unified-active");
       this.body.style.removeProperty("--sidebar-unified-progress");
+      this.body.style.removeProperty("--sidebar-control-material-opacity");
       if (!this.mobileQuery.matches) this.body.classList.add("sidebar-collapsed");
       drawerBackdrop.style.visibility = "hidden";
       drawerBackdrop.style.pointerEvents = "none";

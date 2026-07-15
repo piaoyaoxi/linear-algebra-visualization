@@ -1,4 +1,4 @@
-/* Chapter 4 §4: compact inverse-transformation workbench. */
+/* Chapter 4 §4: inverse-transformation workbench. */
 .section4-formal-head {
   display: flex;
   justify-content: space-between;
@@ -43,7 +43,7 @@
   min-width: 0;
   padding: 18px;
   border: 1px solid var(--line);
-  border-radius: 14px;
+  border-radius: 12px;
   background: var(--surface-solid);
 }
 
@@ -54,10 +54,8 @@
 
 .section4-formal .definition-row.is-anchor {
   padding: 22px;
-  border-color: color-mix(in srgb, var(--accent) 32%, var(--line));
-  background:
-    linear-gradient(135deg, color-mix(in srgb, var(--accent-soft) 66%, transparent), transparent 72%),
-    var(--surface-solid);
+  border-color: color-mix(in srgb, var(--accent) 26%, var(--line));
+  background: color-mix(in srgb, var(--accent-soft) 38%, var(--surface-solid));
 }
 
 .section4-formal .definition-index {
@@ -101,185 +99,195 @@
   white-space: nowrap;
 }
 
+.inverse-transform-lab .tex-inline {
+  display: inline-flex;
+  min-height: 0;
+  height: auto;
+  align-items: center;
+  padding: 0;
+  margin: 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+  color: inherit;
+  line-height: 1;
+  vertical-align: middle;
+}
+
 .inverse-transform-lab {
   --inverse-green: var(--accent-strong);
   --inverse-coral: var(--coral);
   display: grid;
-  gap: 16px;
-  margin-top: 14px;
-  padding: 18px;
+  gap: 14px;
+  margin-top: 12px;
+  padding: 16px;
   overflow: hidden;
   border: 1px solid var(--line);
-  border-radius: 17px;
-  background:
-    radial-gradient(circle at 92% -12%, color-mix(in srgb, var(--accent-soft) 76%, transparent), transparent 31%),
-    var(--surface-solid);
-  box-shadow: var(--shadow-soft);
+  border-radius: 14px;
+  background: var(--surface-solid);
+  box-shadow: none;
 }
 
 body.dark .inverse-transform-lab {
   border-color: var(--glass-border);
-  background:
-    radial-gradient(circle at 92% -12%, rgba(64, 196, 176, 0.13), transparent 31%),
-    linear-gradient(180deg, rgba(255, 255, 255, 0.065), rgba(255, 255, 255, 0.02)),
-    rgba(14, 18, 17, 0.72);
-  box-shadow:
-    inset 0 1px 0 var(--glass-rim),
-    0 16px 38px rgba(0, 0, 0, 0.32);
+  background: var(--surface-solid);
+  box-shadow: none;
 }
 
 .inverse-lab-head {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(260px, 0.42fr);
-  gap: 18px;
-  align-items: center;
+  grid-template-columns: minmax(0, 1fr) max-content;
+  gap: 28px;
+  align-items: end;
 }
 
 .inverse-lab-kicker {
   display: block;
   margin-bottom: 4px;
   color: var(--inverse-green);
-  font-size: 11px;
+  font-size: 10px;
   font-weight: 850;
   letter-spacing: 0.08em;
 }
 
 .inverse-lab-head h3 {
   max-width: 31ch;
-  margin: 0 0 5px;
-  font-size: clamp(21px, 2vw, 28px);
+  margin: 0 0 4px;
+  font-size: clamp(21px, 1.8vw, 25px);
   letter-spacing: -0.025em;
-  line-height: 1.2;
+  line-height: 1.18;
 }
 
 .inverse-lab-head > div > p {
-  max-width: 68ch;
+  max-width: 72ch;
   margin: 0;
   color: var(--muted);
-  font-size: 13px;
-  line-height: 1.58;
+  font-size: 12px;
+  line-height: 1.55;
 }
 
 .inverse-core-rule {
   display: grid;
-  grid-template-columns: auto auto;
-  gap: 5px 10px;
-  align-items: center;
-  padding: 11px 13px;
-  border: 1px solid color-mix(in srgb, var(--accent) 24%, var(--line));
-  border-radius: 13px;
-  background: color-mix(in srgb, var(--accent-soft) 56%, var(--surface-solid));
+  min-width: 245px;
+  gap: 3px;
+  align-content: center;
+  padding: 2px 0 2px 13px;
+  border-left: 2px solid color-mix(in srgb, var(--accent) 58%, var(--line));
 }
 
-.inverse-core-rule > span,
-.inverse-composition > span {
-  color: var(--inverse-green);
-  font-size: 10px;
-  font-weight: 820;
+.inverse-core-rule span {
+  color: var(--muted);
+  font-size: 9px;
+  font-weight: 800;
+  letter-spacing: 0.04em;
 }
 
-.inverse-core-rule > strong {
+.inverse-core-rule strong {
   min-width: 0;
   overflow-x: auto;
-  font-size: 15px;
-  text-align: right;
+  color: var(--inverse-green);
+  font-size: 13px;
 }
 
-.inverse-core-rule p {
-  grid-column: 1 / -1;
-  margin: 0;
-  color: var(--muted);
-  font-size: 11px;
-  line-height: 1.45;
-}
-
-.inverse-preset-section,
-.inverse-journey-section {
+.inverse-preset-section {
   display: grid;
-  gap: 9px;
+  gap: 6px;
 }
 
-.inverse-compact-heading,
-.inverse-control-heading {
+.inverse-compact-heading {
   display: flex;
   justify-content: space-between;
   gap: 12px;
   align-items: baseline;
 }
 
-.inverse-compact-heading strong,
-.inverse-control-heading strong {
-  font-size: 13px;
+.inverse-compact-heading strong {
+  font-size: 12px;
 }
 
-.inverse-compact-heading small,
-.inverse-control-heading small {
-  color: var(--muted);
-  font-size: 10px;
+.inverse-compact-heading small {
+  color: var(--faint);
+  font-size: 9px;
 }
 
 .inverse-preset-grid {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: 8px;
+  gap: 7px;
 }
 
 .inverse-preset {
   display: flex;
   min-width: 0;
-  min-height: 64px;
+  min-height: 52px;
   justify-content: space-between;
   gap: 8px;
   align-items: center;
-  padding: 9px 11px;
+  padding: 7px 10px;
   border: 1px solid var(--line);
-  border-radius: 11px;
-  background: color-mix(in srgb, var(--surface-solid) 92%, transparent);
+  border-radius: 8px;
+  background: var(--surface-solid);
   color: var(--text);
   text-align: left;
   cursor: pointer;
-  transition:
-    transform 150ms ease,
-    border-color 150ms ease,
-    background 150ms ease,
-    box-shadow 150ms ease;
+  transition: border-color 150ms ease, background 150ms ease;
 }
 
 .inverse-preset:hover {
-  transform: translateY(-1px);
-  border-color: color-mix(in srgb, var(--accent) 45%, var(--line));
+  border-color: color-mix(in srgb, var(--accent) 38%, var(--line));
+  background: var(--surface-soft);
+}
+
+.inverse-preset:focus-visible,
+.inverse-journey button:focus-visible,
+.inverse-control-row .button:focus-visible {
+  outline: 2px solid color-mix(in srgb, var(--accent) 62%, transparent);
+  outline-offset: 2px;
 }
 
 .inverse-preset.is-active {
-  border-color: color-mix(in srgb, var(--accent) 66%, var(--line));
-  background: color-mix(in srgb, var(--accent-soft) 66%, var(--surface-solid));
-  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--accent) 16%, transparent);
+  border-color: color-mix(in srgb, var(--accent) 60%, var(--line));
+  background: color-mix(in srgb, var(--accent-soft) 46%, var(--surface-solid));
 }
 
 .inverse-preset.is-singular.is-active {
-  border-color: color-mix(in srgb, var(--inverse-coral) 66%, var(--line));
-  background: color-mix(in srgb, var(--inverse-coral) 9%, var(--surface-solid));
-  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--inverse-coral) 15%, transparent);
+  border-color: color-mix(in srgb, var(--inverse-coral) 58%, var(--line));
+  background: color-mix(in srgb, var(--inverse-coral) 7%, var(--surface-solid));
 }
 
 .inverse-preset-copy {
   display: grid;
   min-width: 0;
-  gap: 2px;
+  gap: 1px;
 }
 
 .inverse-preset-copy small {
-  color: var(--inverse-green);
+  display: flex;
+  gap: 5px;
+  align-items: center;
+  color: var(--muted);
   font-size: 9px;
-  font-weight: 820;
+  font-weight: 780;
 }
 
-.inverse-preset.is-singular .inverse-preset-copy small {
-  color: var(--inverse-coral);
+.inverse-preset-copy small i {
+  width: 5px;
+  height: 5px;
+  flex: 0 0 auto;
+  border-radius: 50%;
+  background: var(--accent);
+}
+
+.inverse-preset.is-singular .inverse-preset-copy small i {
+  background: var(--inverse-coral);
 }
 
 .inverse-preset-copy strong {
+  overflow: hidden;
   font-size: 12px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .inverse-preset-matrix {
@@ -291,27 +299,29 @@ body.dark .inverse-transform-lab {
 
 .inverse-workbench {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(330px, 0.58fr);
-  gap: 12px;
-  align-items: start;
+  grid-template-columns: minmax(0, 1fr) minmax(320px, 0.56fr);
+  min-width: 0;
+  overflow: hidden;
+  border: 1px solid var(--line);
+  border-radius: 11px;
+  background: var(--surface-solid);
 }
 
 .inverse-plane-card {
+  display: grid;
   min-width: 0;
   margin: 0;
-  overflow: hidden;
-  border: 1px solid var(--line);
-  border-radius: 13px;
+  grid-template-rows: auto 280px auto;
   background: var(--surface-solid);
 }
 
 .inverse-plane-toolbar {
   display: flex;
-  min-height: 48px;
+  min-height: 45px;
   justify-content: space-between;
   gap: 12px;
   align-items: center;
-  padding: 9px 13px;
+  padding: 8px 13px;
   border-bottom: 1px solid var(--line);
 }
 
@@ -334,8 +344,8 @@ body.dark .inverse-transform-lab {
 .inverse-plane-legend {
   display: flex;
   flex-wrap: wrap;
-  gap: 8px;
-  color: var(--muted);
+  gap: 9px;
+  color: var(--faint);
   font-size: 9px;
 }
 
@@ -347,30 +357,28 @@ body.dark .inverse-transform-lab {
 
 .inverse-plane-legend i {
   width: 12px;
-  height: 2px;
+  height: 1px;
   background: var(--line-strong);
 }
 
 .inverse-plane-legend i.is-current {
-  height: 3px;
+  height: 2px;
   background: var(--accent);
 }
 
 .inverse-plane-wrap {
   position: relative;
   display: grid;
-  height: 320px;
+  min-width: 0;
   place-items: center;
   overflow: hidden;
-  background:
-    radial-gradient(circle at 50% 50%, color-mix(in srgb, var(--accent-soft) 25%, transparent), transparent 57%),
-    var(--surface-solid);
+  background: var(--surface-solid);
 }
 
 .inverse-plane {
   display: block;
-  width: min(100%, 500px);
-  height: auto;
+  width: 100%;
+  height: 100%;
   overflow: hidden;
 }
 
@@ -384,40 +392,40 @@ body.dark .inverse-transform-lab {
 }
 
 .inverse-reference-line {
-  stroke: color-mix(in srgb, var(--line) 68%, transparent);
+  stroke: color-mix(in srgb, var(--line) 66%, transparent);
   stroke-width: 1;
 }
 
 .inverse-reference-line.is-axis {
   stroke: var(--line-strong);
-  stroke-width: 1.25;
+  stroke-width: 1.2;
 }
 
 .inverse-reference-square {
   fill: transparent;
-  stroke: color-mix(in srgb, var(--text) 24%, transparent);
-  stroke-width: 1.35;
+  stroke: color-mix(in srgb, var(--text) 22%, transparent);
+  stroke-width: 1.25;
   stroke-dasharray: 5 5;
 }
 
 .inverse-current-line {
-  stroke: color-mix(in srgb, var(--accent) 48%, transparent);
-  stroke-width: 1.35;
+  stroke: color-mix(in srgb, var(--accent) 44%, transparent);
+  stroke-width: 1.2;
 }
 
 .inverse-current-line.is-axis {
   stroke: var(--accent-strong);
-  stroke-width: 1.9;
+  stroke-width: 1.8;
 }
 
 .inverse-current-square {
-  fill: color-mix(in srgb, var(--accent) 16%, transparent);
+  fill: color-mix(in srgb, var(--accent) 13%, transparent);
   stroke: var(--accent-strong);
-  stroke-width: 2.5;
+  stroke-width: 2.35;
 }
 
 .inverse-transform-lab.is-singular .inverse-current-line {
-  stroke: color-mix(in srgb, var(--inverse-coral) 40%, transparent);
+  stroke: color-mix(in srgb, var(--inverse-coral) 38%, transparent);
 }
 
 .inverse-transform-lab.is-singular .inverse-current-line.is-axis,
@@ -426,7 +434,7 @@ body.dark .inverse-transform-lab {
 }
 
 .inverse-transform-lab.is-singular .inverse-current-square {
-  fill: color-mix(in srgb, var(--inverse-coral) 9%, transparent);
+  fill: color-mix(in srgb, var(--inverse-coral) 7%, transparent);
 }
 
 .inverse-basis,
@@ -463,12 +471,12 @@ body.dark .inverse-transform-lab {
 
 .inverse-sample-vector {
   marker-end: url(#inverse-vector-arrow);
-  stroke: color-mix(in srgb, var(--text) 72%, transparent);
-  stroke-width: 2.15;
+  stroke: color-mix(in srgb, var(--text) 70%, transparent);
+  stroke-width: 2.1;
 }
 
 #inverse-vector-arrow path {
-  fill: color-mix(in srgb, var(--text) 72%, transparent);
+  fill: color-mix(in srgb, var(--text) 70%, transparent);
 }
 
 #inverse-basis-arrow path {
@@ -479,60 +487,75 @@ body.dark .inverse-transform-lab {
   font-size: 13px;
 }
 
-.inverse-stage-chip {
-  position: absolute;
-  top: 9px;
-  right: 9px;
-  max-width: calc(100% - 18px);
-  padding: 4px 8px;
-  overflow-x: auto;
-  border: 1px solid color-mix(in srgb, var(--accent) 30%, var(--line));
-  border-radius: 999px;
-  background: color-mix(in srgb, var(--surface-solid) 91%, transparent);
-  color: var(--accent-strong);
-  font-size: 10px;
-  font-weight: 800;
-  backdrop-filter: blur(8px);
-}
-
 .inverse-plane-card figcaption {
-  min-height: 43px;
-  padding: 9px 13px;
+  min-height: 41px;
+  padding: 8px 13px;
   border-top: 1px solid var(--line);
   color: var(--muted);
   font-size: 10px;
-  line-height: 1.5;
+  line-height: 1.45;
 }
 
 .inverse-control-panel {
   display: grid;
   min-width: 0;
-  gap: 8px;
-  align-content: start;
-}
-
-.inverse-stage-control,
-.inverse-state-summary,
-.inverse-verdict,
-.inverse-conclusion {
-  min-width: 0;
-  border: 1px solid var(--line);
-  border-radius: 12px;
-  background: var(--surface-soft);
+  grid-template-rows: minmax(0, 1fr) auto;
+  border-left: 1px solid var(--line);
+  background: color-mix(in srgb, var(--surface-soft) 55%, var(--surface-solid));
 }
 
 .inverse-stage-control {
   display: grid;
+  min-width: 0;
   gap: 8px;
-  padding: 11px;
+  align-content: start;
+  padding: 13px 14px 11px;
+}
+
+.inverse-control-heading {
+  display: flex;
+  min-height: 33px;
+  justify-content: space-between;
+  gap: 12px;
+  align-items: end;
+}
+
+.inverse-control-heading > div:first-child,
+.inverse-composition {
+  display: grid;
+  gap: 1px;
+}
+
+.inverse-control-heading span,
+.inverse-composition span {
+  color: var(--faint);
+  font-size: 9px;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+}
+
+.inverse-control-heading > div:first-child strong {
+  font-size: 13px;
+}
+
+.inverse-composition {
+  min-width: 0;
+  justify-items: end;
+}
+
+.inverse-composition strong {
+  max-width: 150px;
+  overflow-x: auto;
+  color: var(--inverse-green);
+  font-size: 15px;
 }
 
 .inverse-journey {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 5px;
   margin: 0;
   padding: 0;
+  border-bottom: 1px solid var(--line);
   list-style: none;
 }
 
@@ -542,41 +565,37 @@ body.dark .inverse-transform-lab {
 }
 
 .inverse-journey button {
+  position: relative;
   display: grid;
   width: 100%;
-  min-height: 61px;
+  min-height: 51px;
   grid-template-columns: 22px minmax(0, 1fr);
-  gap: 1px 5px;
+  gap: 0 5px;
   align-content: center;
   align-items: center;
-  padding: 6px;
-  border: 1px solid var(--line);
-  border-radius: 9px;
-  background: var(--surface-solid);
+  padding: 6px 5px 8px;
+  border: 0;
+  border-bottom: 2px solid transparent;
+  background: transparent;
   color: var(--text);
   text-align: left;
   cursor: pointer;
+  transition: border-color 150ms ease, background 150ms ease, color 150ms ease;
 }
 
 .inverse-journey button > span {
-  display: grid;
-  width: 21px;
-  height: 21px;
   grid-row: 1 / span 2;
-  place-items: center;
-  border: 1px solid var(--line);
-  border-radius: 50%;
   color: var(--faint);
   font-size: 9px;
-  font-weight: 820;
+  font-variant-numeric: tabular-nums;
+  font-weight: 780;
 }
 
 .inverse-journey small {
   min-width: 0;
   overflow: hidden;
   color: var(--faint);
-  font-size: 8px;
-  font-weight: 760;
+  font-size: 9px;
   line-height: 1.2;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -585,34 +604,31 @@ body.dark .inverse-transform-lab {
 .inverse-journey strong {
   min-width: 0;
   overflow-x: auto;
-  font-size: 11px;
+  font-size: 12px;
 }
 
 .inverse-journey li:last-child strong {
-  font-size: 9px;
+  font-size: 10px;
 }
 
 .inverse-journey li.is-current button {
-  border-color: color-mix(in srgb, var(--accent) 58%, var(--line));
-  background: color-mix(in srgb, var(--accent-soft) 70%, var(--surface-solid));
-  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--accent) 12%, transparent);
+  border-bottom-color: var(--accent);
+  background: color-mix(in srgb, var(--accent-soft) 34%, transparent);
 }
 
 .inverse-journey li.is-current button > span,
 .inverse-journey li.is-complete button > span {
-  border-color: var(--accent);
-  background: var(--accent);
-  color: white;
+  color: var(--inverse-green);
 }
 
 .inverse-journey li.is-unavailable button {
-  opacity: 0.42;
+  opacity: 0.36;
   cursor: not-allowed;
 }
 
 .inverse-range-shell {
   position: relative;
-  height: 27px;
+  height: 22px;
   padding: 0 16.666%;
 }
 
@@ -620,7 +636,7 @@ body.dark .inverse-transform-lab {
   position: relative;
   z-index: 2;
   width: 100%;
-  height: 27px;
+  height: 22px;
   margin: 0;
   appearance: none;
   background: transparent;
@@ -632,7 +648,7 @@ body.dark .inverse-transform-lab {
 }
 
 .inverse-range-shell input[type="range"]::-webkit-slider-runnable-track {
-  height: 4px;
+  height: 3px;
   border-radius: 999px;
   background: linear-gradient(
     to right,
@@ -644,9 +660,9 @@ body.dark .inverse-transform-lab {
 }
 
 .inverse-range-shell input[type="range"]::-webkit-slider-thumb {
-  width: 16px;
-  height: 16px;
-  margin-top: -6px;
+  width: 14px;
+  height: 14px;
+  margin-top: -5.5px;
   appearance: none;
   border: 3px solid var(--surface-solid);
   border-radius: 50%;
@@ -655,20 +671,20 @@ body.dark .inverse-transform-lab {
 }
 
 .inverse-range-shell input[type="range"]::-moz-range-track {
-  height: 4px;
+  height: 3px;
   border-radius: 999px;
   background: var(--line-strong);
 }
 
 .inverse-range-shell input[type="range"]::-moz-range-progress {
-  height: 4px;
+  height: 3px;
   border-radius: 999px;
   background: var(--accent);
 }
 
 .inverse-range-shell input[type="range"]::-moz-range-thumb {
-  width: 12px;
-  height: 12px;
+  width: 10px;
+  height: 10px;
   border: 3px solid var(--surface-solid);
   border-radius: 50%;
   background: var(--accent);
@@ -678,104 +694,183 @@ body.dark .inverse-transform-lab {
 .inverse-range-marks {
   position: absolute;
   z-index: 1;
-  top: 8px;
-  right: calc(16.666% - 7px);
-  left: calc(16.666% - 7px);
+  top: 7px;
+  right: calc(16.666% - 6px);
+  left: calc(16.666% - 6px);
   display: flex;
   justify-content: space-between;
   pointer-events: none;
 }
 
 .inverse-range-marks i {
-  width: 10px;
-  height: 10px;
+  width: 8px;
+  height: 8px;
   border: 2px solid var(--surface-solid);
   border-radius: 50%;
   background: var(--line-strong);
   box-shadow: 0 0 0 1px var(--line);
 }
 
+.inverse-equation {
+  display: grid;
+  min-width: 0;
+  min-height: 29px;
+  margin: 0;
+  padding: 5px 8px;
+  place-items: center;
+  overflow-x: auto;
+  border-radius: 6px;
+  background: color-mix(in srgb, var(--surface-soft) 78%, var(--surface-solid));
+  color: var(--inverse-green);
+  font-size: 11px;
+}
+
 .inverse-control-row {
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-template-columns: minmax(0, 1.35fr) minmax(0, 0.85fr);
   gap: 6px;
+}
+
+.inverse-control-row.is-single {
+  grid-template-columns: 1fr;
 }
 
 .inverse-control-row .button {
   min-width: 0;
-  padding: 7px 6px;
+  min-height: 34px;
+  padding: 6px 9px;
+  border-radius: 6px;
   font-size: 11px;
   white-space: nowrap;
+  box-shadow: none;
+}
+
+.inverse-control-row .button[hidden] {
+  display: none;
+}
+
+.inverse-control-row .button.primary {
+  background: var(--accent);
+  box-shadow: none;
+}
+
+.inverse-control-row .button.ghost {
+  border: 1px solid var(--line);
+  background: transparent;
+  box-shadow: none;
+  color: var(--muted);
+}
+
+.inverse-control-row .button:active {
+  transform: scale(0.985);
 }
 
 .inverse-control-row .button:disabled {
-  opacity: 0.4;
+  opacity: 0.42;
   cursor: not-allowed;
-}
-
-.inverse-result {
-  min-height: 31px;
-  margin: 0;
-  color: var(--muted);
-  font-size: 10px;
-  line-height: 1.45;
+  transform: none;
 }
 
 .inverse-state-summary {
   display: grid;
-  gap: 7px;
-  padding: 9px;
+  min-width: 0;
+  gap: 8px;
+  padding: 11px 14px 12px;
+  border-top: 1px solid var(--line);
+  background: var(--surface-solid);
 }
 
-.inverse-composition {
-  display: grid;
-  grid-template-columns: minmax(0, 0.65fr) minmax(0, 1fr);
-  gap: 3px 8px;
+.inverse-decision-heading {
+  display: flex;
+  min-width: 0;
+  justify-content: space-between;
+  gap: 12px;
   align-items: center;
-  min-width: 0;
 }
 
-.inverse-composition > strong {
+.inverse-decision-heading > div:first-child {
+  display: grid;
+  flex: 0 0 auto;
+  gap: 1px;
+}
+
+.inverse-decision-heading > div:first-child span {
+  color: var(--inverse-green);
+  font-size: 9px;
+  font-weight: 820;
+}
+
+.inverse-decision-heading > div:first-child strong {
+  color: var(--inverse-green);
+  font-size: 15px;
+}
+
+.inverse-state-summary.is-singular .inverse-decision-heading > div:first-child span,
+.inverse-state-summary.is-singular .inverse-decision-heading > div:first-child strong {
+  color: var(--inverse-coral);
+}
+
+.inverse-conclusion {
+  display: grid;
   min-width: 0;
+  gap: 1px;
+  justify-items: end;
+  transition: color 160ms ease;
+}
+
+.inverse-conclusion small {
+  color: var(--faint);
+  font-size: 9px;
+  font-weight: 780;
+}
+
+.inverse-conclusion strong {
+  display: flex;
+  min-width: 0;
+  gap: 6px;
+  align-items: center;
   overflow-x: auto;
-  font-size: 18px;
+  color: var(--muted);
+  font-size: 10px;
   text-align: right;
 }
 
-.inverse-composition p {
-  grid-column: 1 / -1;
-  min-width: 0;
-  margin: 0;
-  padding-top: 5px;
-  overflow-x: auto;
-  border-top: 1px solid var(--line);
-  color: var(--muted);
-  font-size: 10px;
-  text-align: center;
+.inverse-conclusion strong i {
+  color: var(--faint);
+  font-style: normal;
+}
+
+.inverse-conclusion.is-active strong {
+  color: var(--inverse-green);
+}
+
+.inverse-conclusion.is-unavailable strong {
+  color: var(--inverse-coral);
 }
 
 .inverse-facts {
   display: grid;
-  grid-template-columns: 1.25fr repeat(3, minmax(0, 0.7fr));
-  gap: 5px;
+  grid-template-columns: 1.3fr repeat(3, minmax(0, 0.78fr));
   margin: 0;
+  border-block: 1px solid var(--line);
 }
 
 .inverse-facts > div {
   display: grid;
   min-width: 0;
   min-height: 49px;
-  gap: 3px;
+  gap: 2px;
   align-content: center;
-  padding: 5px 6px;
-  border: 1px solid var(--line);
-  border-radius: 8px;
-  background: var(--surface-solid);
+  padding: 5px 8px;
+}
+
+.inverse-facts > div + div {
+  border-left: 1px solid var(--line);
 }
 
 .inverse-facts dt {
   color: var(--faint);
-  font-size: 8px;
+  font-size: 9px;
   font-weight: 760;
 }
 
@@ -784,101 +879,40 @@ body.dark .inverse-transform-lab {
   margin: 0;
   overflow-x: auto;
   color: var(--text);
-  font-size: 10px;
+  font-size: 11px;
 }
 
 .inverse-facts .is-matrix dd {
   text-align: center;
 }
 
-.inverse-verdict {
-  display: grid;
-  grid-template-columns: minmax(92px, 0.6fr) minmax(0, 1fr);
-  gap: 9px;
-  align-items: center;
-  padding: 9px 10px;
-  border-color: color-mix(in srgb, var(--accent) 25%, var(--line));
-  background: color-mix(in srgb, var(--accent-soft) 50%, var(--surface-solid));
-}
-
-.inverse-verdict > div {
-  display: grid;
-  gap: 1px;
-}
-
-.inverse-verdict span {
-  color: var(--inverse-green);
-  font-size: 8px;
-  font-weight: 850;
-}
-
-.inverse-verdict strong {
-  color: var(--inverse-green);
-  font-size: 15px;
-}
-
-.inverse-verdict p {
+.inverse-explanation {
+  min-height: 25px;
   margin: 0;
   color: var(--muted);
-  font-size: 9px;
+  font-size: 10px;
   line-height: 1.4;
 }
 
-.inverse-verdict.is-singular {
-  border-color: color-mix(in srgb, var(--inverse-coral) 27%, var(--line));
-  background: color-mix(in srgb, var(--inverse-coral) 7%, var(--surface-solid));
-}
-
-.inverse-verdict.is-singular span,
-.inverse-verdict.is-singular strong {
-  color: var(--inverse-coral);
-}
-
-.inverse-conclusion {
-  display: flex;
-  min-height: 39px;
-  justify-content: space-between;
-  gap: 8px;
-  align-items: center;
-  padding: 7px 10px;
-  transition: border-color 180ms ease, background 180ms ease, box-shadow 180ms ease;
-}
-
-.inverse-conclusion small {
-  color: var(--faint);
-  font-size: 8px;
-  font-weight: 800;
-}
-
-.inverse-conclusion strong {
-  min-width: 0;
-  overflow-x: auto;
-  font-size: 11px;
-  text-align: right;
-}
-
-.inverse-conclusion.is-active {
-  border-color: color-mix(in srgb, var(--accent) 46%, var(--line));
-  background: color-mix(in srgb, var(--accent-soft) 60%, var(--surface-solid));
-  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--accent) 12%, transparent);
-}
-
-@media (max-width: 1100px) {
-  .inverse-lab-head,
+@media (max-width: 980px) {
   .inverse-workbench {
     grid-template-columns: 1fr;
   }
 
+  .inverse-plane-card {
+    grid-template-rows: auto 260px auto;
+  }
+
   .inverse-control-panel {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
+    grid-template-columns: minmax(0, 1.1fr) minmax(280px, 0.9fr);
+    grid-template-rows: auto;
+    border-top: 1px solid var(--line);
+    border-left: 0;
   }
 
-  .inverse-stage-control {
-    grid-row: span 2;
-  }
-
-  .inverse-conclusion {
-    grid-column: 2;
+  .inverse-state-summary {
+    border-top: 0;
+    border-left: 1px solid var(--line);
   }
 }
 
@@ -901,16 +935,41 @@ body.dark .inverse-transform-lab {
     grid-column: auto;
   }
 
+  .inverse-lab-head {
+    grid-template-columns: 1fr;
+    gap: 10px;
+  }
+
+  .inverse-core-rule {
+    min-width: 0;
+  }
+
   .inverse-preset-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .inverse-workbench {
+    gap: 10px;
+    overflow: visible;
+    border: 0;
+    border-radius: 0;
+    background: transparent;
   }
 
   .inverse-control-panel {
     display: contents;
   }
 
+  .inverse-stage-control,
+  .inverse-plane-card,
+  .inverse-state-summary {
+    overflow: hidden;
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    background: var(--surface-solid);
+  }
+
   .inverse-stage-control {
-    grid-row: auto;
     order: 0;
   }
 
@@ -921,25 +980,16 @@ body.dark .inverse-transform-lab {
   .inverse-state-summary {
     order: 2;
   }
-
-  .inverse-verdict {
-    order: 3;
-  }
-
-  .inverse-conclusion {
-    grid-column: auto;
-    order: 4;
-  }
 }
 
 @media (max-width: 560px) {
   .inverse-transform-lab {
-    gap: 13px;
-    padding: 12px;
-  }
-
-  .inverse-lab-head {
-    gap: 10px;
+    gap: 12px;
+    padding: 0;
+    overflow: visible;
+    border: 0;
+    border-radius: 0;
+    background: transparent;
   }
 
   .inverse-lab-head h3 {
@@ -947,84 +997,83 @@ body.dark .inverse-transform-lab {
   }
 
   .inverse-lab-head > div > p {
-    font-size: 12px;
+    font-size: 11px;
   }
 
   .inverse-core-rule {
-    padding: 9px 10px;
-  }
-
-  .inverse-compact-heading {
-    display: grid;
-    gap: 2px;
+    padding-left: 10px;
   }
 
   .inverse-preset {
-    min-height: 57px;
-    padding: 7px 8px;
+    min-height: 49px;
+    padding: 6px 8px;
   }
 
   .inverse-preset-matrix {
     font-size: 9px;
   }
 
-  .inverse-plane-toolbar {
-    min-height: 44px;
-    padding: 7px 10px;
-  }
-
-  .inverse-plane-wrap {
-    height: 250px;
-  }
-
-  .inverse-plane {
-    width: 100%;
-  }
-
-  .inverse-plane-card figcaption {
-    min-height: 40px;
-    padding: 8px 10px;
+  .inverse-stage-control {
+    padding: 12px;
   }
 
   .inverse-journey button {
-    min-height: 57px;
-    grid-template-columns: 19px minmax(0, 1fr);
-    padding: 5px;
+    min-height: 49px;
+    grid-template-columns: 18px minmax(0, 1fr);
+    padding-inline: 3px;
   }
 
-  .inverse-journey button > span {
-    width: 19px;
-    height: 19px;
+  .inverse-journey li:last-child strong {
+    font-size: 9px;
   }
 
-  .inverse-journey small {
-    font-size: 7px;
+  .inverse-plane-card {
+    grid-template-rows: auto 245px auto;
   }
 
-  .inverse-journey strong {
-    font-size: 10px;
+  .inverse-plane-toolbar {
+    min-height: 43px;
+    padding: 7px 10px;
+  }
+
+  .inverse-plane-card figcaption {
+    min-height: 39px;
+    padding: 8px 10px;
+  }
+
+  .inverse-state-summary {
+    padding: 11px 12px;
+  }
+
+  .inverse-decision-heading {
+    align-items: end;
+  }
+
+  .inverse-conclusion strong {
+    max-width: 190px;
+    font-size: 9px;
   }
 
   .inverse-facts {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
+  .inverse-facts > div:nth-child(3) {
+    border-left: 0;
+  }
+
+  .inverse-facts > div:nth-child(n + 3) {
+    border-top: 1px solid var(--line);
+  }
+
   .inverse-facts > div {
-    min-height: 45px;
-  }
-
-  .inverse-verdict {
-    grid-template-columns: 1fr;
-    gap: 5px;
-  }
-
-  .inverse-conclusion {
-    flex-wrap: wrap;
+    min-height: 43px;
   }
 }
 
 @media (prefers-reduced-motion: reduce) {
   .inverse-preset,
+  .inverse-journey button,
   .inverse-conclusion {
     transition: none;
   }

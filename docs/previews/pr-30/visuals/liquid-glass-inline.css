@@ -1,0 +1,38 @@
+/*
+ * Inline-filter compatibility layer.
+ *
+ * chrome-motion.css already supplies a plain blur fallback and an external SVG
+ * URL pass. This file is loaded after it and prefers the same filter graph from
+ * the inline <defs> in learn.html, which is the most reliable path in WebKit.
+ * Unsupported declarations are ignored, leaving the earlier fallbacks intact.
+ */
+
+.icon-button::before,
+.topbar-search::before,
+.search-morph-proxy::before {
+  -webkit-backdrop-filter: url("#liquidGlassControl") blur(var(--glass-frost)) saturate(146%) contrast(104%);
+  backdrop-filter: url("#liquidGlassControl") blur(var(--glass-frost)) saturate(146%) contrast(104%);
+}
+
+.icon-button::after,
+.topbar-search::after,
+.search-morph-proxy::after {
+  padding: 7px;
+  -webkit-backdrop-filter: url("#liquidGlassDispersion") blur(0.35px) saturate(142%);
+  backdrop-filter: url("#liquidGlassDispersion") blur(0.35px) saturate(142%);
+}
+
+.liquid-panel::before {
+  -webkit-backdrop-filter: url("#liquidGlassPanel") blur(2.4px) saturate(148%) contrast(103%);
+  backdrop-filter: url("#liquidGlassPanel") blur(2.4px) saturate(148%) contrast(103%);
+}
+
+.liquid-panel::after {
+  -webkit-backdrop-filter: url("#liquidGlassDispersion") blur(0.5px) saturate(142%);
+  backdrop-filter: url("#liquidGlassDispersion") blur(0.5px) saturate(142%);
+}
+
+.sidebar-liquid-bridge {
+  -webkit-backdrop-filter: url("#liquidGlassFlow") blur(2.8px) saturate(148%) contrast(103%);
+  backdrop-filter: url("#liquidGlassFlow") blur(2.8px) saturate(148%) contrast(103%);
+}

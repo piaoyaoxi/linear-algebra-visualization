@@ -1,6 +1,7 @@
 /* Chapter 4 §4: inverse-transformation workbench. */
 .section4-formal-head {
   display: flex;
+  flex-wrap: wrap;
   justify-content: space-between;
   gap: 24px;
   align-items: end;
@@ -22,11 +23,13 @@
 }
 
 .section4-formal-head p {
-  max-width: 38ch;
+  max-width: none;
+  flex: 0 0 auto;
   color: var(--muted);
   font-size: 14px;
   line-height: 1.65;
   text-align: right;
+  white-space: nowrap;
 }
 
 .section4-formal .definition-stack {
@@ -945,7 +948,9 @@ body.dark .inverse-transform-lab {
   }
 
   .section4-formal-head p {
+    max-width: 100%;
     text-align: left;
+    white-space: normal;
   }
 
   .section4-formal .definition-stack {

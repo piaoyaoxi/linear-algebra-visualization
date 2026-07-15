@@ -10,29 +10,29 @@
 .icon-button::before,
 .topbar-search::before,
 .search-morph-proxy::before {
-  -webkit-backdrop-filter: url("#liquidGlassControl") blur(var(--glass-frost)) saturate(146%) contrast(104%);
-  backdrop-filter: url("#liquidGlassControl") blur(var(--glass-frost)) saturate(146%) contrast(104%);
+  -webkit-backdrop-filter: url("#liquidGlassControl") blur(0.65px) saturate(146%) contrast(104%);
+  backdrop-filter: url("#liquidGlassControl") blur(0.65px) saturate(146%) contrast(104%);
 }
 
 .icon-button::after,
 .topbar-search::after,
 .search-morph-proxy::after {
-  padding: 7px;
-  -webkit-backdrop-filter: url("#liquidGlassDispersion") blur(0.35px) saturate(142%);
-  backdrop-filter: url("#liquidGlassDispersion") blur(0.35px) saturate(142%);
+  padding: 6px;
+  -webkit-backdrop-filter: url("#liquidGlassDispersion") blur(0.18px) saturate(142%);
+  backdrop-filter: url("#liquidGlassDispersion") blur(0.18px) saturate(142%);
 }
 
 .liquid-panel::before {
-  -webkit-backdrop-filter: url("#liquidGlassPanel") blur(2.4px) saturate(148%) contrast(103%);
-  backdrop-filter: url("#liquidGlassPanel") blur(2.4px) saturate(148%) contrast(103%);
+  -webkit-backdrop-filter: url("#liquidGlassPanel") blur(0.9px) saturate(146%) contrast(104%);
+  backdrop-filter: url("#liquidGlassPanel") blur(0.9px) saturate(146%) contrast(104%);
 }
 
 .liquid-panel::after {
-  -webkit-backdrop-filter: url("#liquidGlassDispersion") blur(0.5px) saturate(142%);
-  backdrop-filter: url("#liquidGlassDispersion") blur(0.5px) saturate(142%);
+  -webkit-backdrop-filter: url("#liquidGlassDispersion") blur(0.24px) saturate(142%);
+  backdrop-filter: url("#liquidGlassDispersion") blur(0.24px) saturate(142%);
 }
 
 .sidebar-liquid-bridge {
-  -webkit-backdrop-filter: url("#liquidGlassFlow") blur(2.8px) saturate(148%) contrast(103%);
-  backdrop-filter: url("#liquidGlassFlow") blur(2.8px) saturate(148%) contrast(103%);
+  -webkit-backdrop-filter: url("#liquidGlassFlow") blur(1.2px) saturate(146%) contrast(104%);
+  backdrop-filter: url("#liquidGlassFlow") blur(1.2px) saturate(146%) contrast(104%);
 }

@@ -22,9 +22,10 @@
     <link rel="stylesheet" href="./visuals/ch4/block-presentation.css" />
     <link rel="stylesheet" href="./visuals/page-toc-rail.css?v=21i" />
     <link rel="stylesheet" href="./visuals/theme-transition.css?v=21i" />
-    <link rel="stylesheet" href="./visuals/chrome-motion.css?v=30c" />
+    <link rel="stylesheet" href="./visuals/chrome-motion.css?v=30d" />
+    <link rel="stylesheet" href="./visuals/liquid-glass-inline.css?v=30d" />
     <script defer src="./vendor/katex/katex.min.js"></script>
-    <script defer src="./visuals/chrome-motion.js?v=30c"></script>
+    <script defer src="./visuals/chrome-motion.js?v=30d"></script>
     <script defer src="./app.js?v=21i"></script>
     <script defer src="./visuals/theme-transition.js?v=21i"></script>
     <script defer src="./content/ch1.js"></script>
@@ -60,6 +61,68 @@
     <script defer src="./visuals/page-toc-rail.js?v=21i"></script>
   </head>
   <body>
+    <svg class="liquid-filter-defs" width="0" height="0" aria-hidden="true" focusable="false">
+      <defs>
+        <image
+          id="liquidLensXSource"
+          width="256"
+          height="128"
+          preserveAspectRatio="none"
+          href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyNTYiIGhlaWdodD0iMTI4IiB2aWV3Qm94PSIwIDAgMjU2IDEyOCIgcHJlc2VydmVBc3BlY3RSYXRpbz0ibm9uZSI+CjxkZWZzPjxsaW5lYXJHcmFkaWVudCBpZD0iZyIgeDE9IjAiIHkxPSIwIiB4Mj0iMSIgeTI9IjAiPgo8c3RvcCBvZmZzZXQ9IjAiIHN0b3AtY29sb3I9InJnYigxOCwxMjgsMTI4KSIvPgo8c3RvcCBvZmZzZXQ9Ii4xNiIgc3RvcC1jb2xvcj0icmdiKDYyLDEyOCwxMjgpIi8+CjxzdG9wIG9mZnNldD0iLjM4IiBzdG9wLWNvbG9yPSJyZ2IoMTE2LDEyOCwxMjgpIi8+CjxzdG9wIG9mZnNldD0iLjQ3IiBzdG9wLWNvbG9yPSJyZ2IoMTI2LDEyOCwxMjgpIi8+CjxzdG9wIG9mZnNldD0iLjUzIiBzdG9wLWNvbG9yPSJyZ2IoMTMwLDEyOCwxMjgpIi8+CjxzdG9wIG9mZnNldD0iLjYyIiBzdG9wLWNvbG9yPSJyZ2IoMTQwLDEyOCwxMjgpIi8+CjxzdG9wIG9mZnNldD0iLjg0IiBzdG9wLWNvbG9yPSJyZ2IoMTk0LDEyOCwxMjgpIi8+CjxzdG9wIG9mZnNldD0iMSIgc3RvcC1jb2xvcj0icmdiKDIzOCwxMjgsMTI4KSIvPgo8L2xpbmVhckdyYWRpZW50PjwvZGVmcz48cmVjdCB3aWR0aD0iMjU2IiBoZWlnaHQ9IjEyOCIgZmlsbD0idXJsKCNnKSIvPjwvc3ZnPg=="
+        />
+        <image
+          id="liquidLensYSource"
+          width="256"
+          height="128"
+          preserveAspectRatio="none"
+          href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyNTYiIGhlaWdodD0iMTI4IiB2aWV3Qm94PSIwIDAgMjU2IDEyOCIgcHJlc2VydmVBc3BlY3RSYXRpbz0ibm9uZSI+CjxkZWZzPjxsaW5lYXJHcmFkaWVudCBpZD0iZyIgeDE9IjAiIHkxPSIwIiB4Mj0iMCIgeTI9IjEiPgo8c3RvcCBvZmZzZXQ9IjAiIHN0b3AtY29sb3I9InJnYigxMjgsMjIsMTI4KSIvPgo8c3RvcCBvZmZzZXQ9Ii4xNiIgc3RvcC1jb2xvcj0icmdiKDEyOCw2OCwxMjgpIi8+CjxzdG9wIG9mZnNldD0iLjM4IiBzdG9wLWNvbG9yPSJyZ2IoMTI4LDExOCwxMjgpIi8+CjxzdG9wIG9mZnNldD0iLjQ3IiBzdG9wLWNvbG9yPSJyZ2IoMTI4LDEyNiwxMjgpIi8+CjxzdG9wIG9mZnNldD0iLjUzIiBzdG9wLWNvbG9yPSJyZ2IoMTI4LDEzMCwxMjgpIi8+CjxzdG9wIG9mZnNldD0iLjYyIiBzdG9wLWNvbG9yPSJyZ2IoMTI4LDEzOCwxMjgpIi8+CjxzdG9wIG9mZnNldD0iLjg0IiBzdG9wLWNvbG9yPSJyZ2IoMTI4LDE4OCwxMjgpIi8+CjxzdG9wIG9mZnNldD0iMSIgc3RvcC1jb2xvcj0icmdiKDEyOCwyMzQsMTI4KSIvPgo8L2xpbmVhckdyYWRpZW50PjwvZGVmcz48cmVjdCB3aWR0aD0iMjU2IiBoZWlnaHQ9IjEyOCIgZmlsbD0idXJsKCNnKSIvPjwvc3ZnPg=="
+        />
+
+        <filter id="liquidGlassControl" x="-12%" y="-24%" width="124%" height="148%" color-interpolation-filters="sRGB">
+          <feImage href="#liquidLensXSource" x="0" y="0" width="100%" height="100%" preserveAspectRatio="none" result="lensX" />
+          <feImage href="#liquidLensYSource" x="0" y="0" width="100%" height="100%" preserveAspectRatio="none" result="lensY" />
+          <feComposite in="lensX" in2="lensY" operator="arithmetic" k1="0" k2="1" k3="1" k4="-0.5" result="lensField" />
+          <feTurbulence type="fractalNoise" baseFrequency="0.011 0.058" numOctaves="2" seed="19" stitchTiles="stitch" result="microNoise" />
+          <feColorMatrix in="microNoise" values="0.12 0 0 0 0.44  0 0.12 0 0 0.44  0 0 0.04 0 0.48  0 0 0 1 0" result="microField" />
+          <feComposite in="lensField" in2="microField" operator="arithmetic" k1="0" k2="0.94" k3="0.06" k4="0" result="displacementField" />
+          <feDisplacementMap in="SourceGraphic" in2="displacementField" scale="-30" xChannelSelector="R" yChannelSelector="G" />
+        </filter>
+
+        <filter id="liquidGlassPanel" x="-10%" y="-14%" width="120%" height="128%" color-interpolation-filters="sRGB">
+          <feImage href="#liquidLensXSource" x="0" y="0" width="100%" height="100%" preserveAspectRatio="none" result="lensX" />
+          <feImage href="#liquidLensYSource" x="0" y="0" width="100%" height="100%" preserveAspectRatio="none" result="lensY" />
+          <feComposite in="lensX" in2="lensY" operator="arithmetic" k1="0" k2="1" k3="1" k4="-0.5" result="lensField" />
+          <feTurbulence type="fractalNoise" baseFrequency="0.008 0.036" numOctaves="2" seed="23" stitchTiles="stitch" result="microNoise" />
+          <feColorMatrix in="microNoise" values="0.10 0 0 0 0.45  0 0.10 0 0 0.45  0 0 0.03 0 0.485  0 0 0 1 0" result="microField" />
+          <feComposite in="lensField" in2="microField" operator="arithmetic" k1="0" k2="0.96" k3="0.04" k4="0" result="displacementField" />
+          <feDisplacementMap in="SourceGraphic" in2="displacementField" scale="-44" xChannelSelector="R" yChannelSelector="G" />
+        </filter>
+
+        <filter id="liquidGlassDispersion" x="-12%" y="-24%" width="124%" height="148%" color-interpolation-filters="sRGB">
+          <feImage href="#liquidLensXSource" x="0" y="0" width="100%" height="100%" preserveAspectRatio="none" result="lensX" />
+          <feImage href="#liquidLensYSource" x="0" y="0" width="100%" height="100%" preserveAspectRatio="none" result="lensY" />
+          <feComposite in="lensX" in2="lensY" operator="arithmetic" k1="0" k2="1" k3="1" k4="-0.5" result="lensField" />
+          <feTurbulence type="fractalNoise" baseFrequency="0.011 0.058" numOctaves="2" seed="19" stitchTiles="stitch" result="microNoise" />
+          <feColorMatrix in="microNoise" values="0.12 0 0 0 0.44  0 0.12 0 0 0.44  0 0 0.04 0 0.48  0 0 0 1 0" result="microField" />
+          <feComposite in="lensField" in2="microField" operator="arithmetic" k1="0" k2="0.94" k3="0.06" k4="0" result="displacementField" />
+          <feDisplacementMap in="SourceGraphic" in2="displacementField" scale="-30" xChannelSelector="R" yChannelSelector="G" result="warped" />
+          <feColorMatrix in="warped" values="1 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 1 0" result="red" />
+          <feColorMatrix in="warped" values="0 0 0 0 0  0 1 0 0 0  0 0 0 0 0  0 0 0 1 0" result="green" />
+          <feColorMatrix in="warped" values="0 0 0 0 0  0 0 0 0 0  0 0 1 0 0  0 0 0 1 0" result="blue" />
+          <feOffset in="red" dx="1.65" dy="0.32" result="redShift" />
+          <feOffset in="blue" dx="-1.65" dy="-0.32" result="blueShift" />
+          <feBlend in="redShift" in2="green" mode="screen" result="redGreen" />
+          <feBlend in="redGreen" in2="blueShift" mode="screen" />
+        </filter>
+
+        <filter id="liquidGlassFlow" x="-4%" y="-4%" width="108%" height="108%" color-interpolation-filters="sRGB">
+          <feTurbulence type="fractalNoise" baseFrequency="0.006 0.024" numOctaves="2" seed="31" stitchTiles="stitch" result="flowNoise" />
+          <feColorMatrix in="flowNoise" values="0.18 0 0 0 0.41  0 0.18 0 0 0.41  0 0 0.05 0 0.475  0 0 0 1 0" result="flowField" />
+          <feDisplacementMap in="SourceGraphic" in2="flowField" scale="13" xChannelSelector="R" yChannelSelector="G" />
+        </filter>
+      </defs>
+    </svg>
+
     <header class="topbar">
       <button
         class="icon-button liquid-control"

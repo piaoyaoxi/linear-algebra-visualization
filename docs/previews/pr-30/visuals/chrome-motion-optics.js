@@ -16,7 +16,7 @@
     refraction: 0.78,
     depth: 0.86,
     dispersion: 0.72,
-    frost: 1.25,
+    frost: 0.7,
     splay: 0.72,
   });
 

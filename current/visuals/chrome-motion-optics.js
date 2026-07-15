@@ -22,7 +22,7 @@
 
   const state = { ...DEFAULTS };
   const root = document.documentElement;
-  const clamp = (value, min = 0, max = 1) => Math.min(max, Math.max(min, Number(value)));
+  const clamp = (value, min = 0, max = 1) => Math.min(max, Math.max(min, value));
   const round = (value, digits = 3) => Number(value.toFixed(digits));
 
   function svgDataUri(source) {
@@ -89,8 +89,10 @@
   function apply(next = {}) {
     for (const key of Object.keys(DEFAULTS)) {
       if (!Object.prototype.hasOwnProperty.call(next, key)) continue;
+      const numeric = Number(next[key]);
+      if (!Number.isFinite(numeric)) continue;
       const maximum = key === "frost" ? 8 : 1;
-      state[key] = clamp(next[key], 0, maximum);
+      state[key] = clamp(numeric, 0, maximum);
     }
 
     const lensX = createLensMap("x", state.splay);
@@ -106,8 +108,8 @@
     const flow = document.querySelector("#liquidGlassFlow");
 
     const controlReady = patchLensImages(control, lensX, lensY);
-    patchLensImages(panel, lensX, lensY);
-    patchLensImages(dispersion, lensX, lensY);
+    const panelReady = patchLensImages(panel, lensX, lensY);
+    const dispersionReady = patchLensImages(dispersion, lensX, lensY);
     patchField(control, controlScale);
     patchField(panel, panelScale);
     patchField(dispersion, controlScale);
@@ -124,9 +126,8 @@
     root.style.setProperty("--glass-rim-width", `${round(2.2 + state.splay * 2.2, 2)}px`);
     root.style.setProperty("--glass-panel-rim-width", `${round(5 + state.splay * 4, 2)}px`);
     root.style.setProperty("--glass-rim-opacity", String(round(0.58 + state.light * 0.32, 3)));
-    root.style.setProperty("--glass-dispersion-opacity", String(round(0.45 + state.dispersion * 0.45, 3)));
     root.style.setProperty("--glass-depth-factor", String(round(depthFactor, 3)));
-    root.dataset.liquidOptics = controlReady ? "ready" : "fallback";
+    root.dataset.liquidOptics = controlReady && panelReady && dispersionReady ? "ready" : "fallback";
 
     window.dispatchEvent(new CustomEvent("la-liquidglasschange", { detail: { ...state } }));
     return { ...state };

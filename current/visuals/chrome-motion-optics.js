@@ -69,16 +69,17 @@
   function patchField(filter, scale) {
     if (!filter) return;
 
-    /* The gradient is the lens. Noise remains in the SVG graph as a possible
-       future animation source, but it is deliberately excluded from the static
-       displacement field: even a one-percent mix produces visibly ragged text
-       edges on high-contrast course material. */
-    const fieldMix = filter.querySelector('feComposite[result="displacementField"]');
+    /* A smooth deterministic normal field keeps mathematical text readable.
+       The original turbulence branch is removed rather than merely multiplied
+       by zero, avoiding needless filter work on every animated frame. */
+    const fieldMix = filter.querySelector('[result="displacementField"]');
     if (fieldMix) {
-      fieldMix.setAttribute("k1", "0");
-      fieldMix.setAttribute("k2", "1");
-      fieldMix.setAttribute("k3", "0");
-      fieldMix.setAttribute("k4", "0");
+      filter.querySelectorAll('feDisplacementMap[in2="displacementField"]').forEach((node) => {
+        node.setAttribute("in2", "lensField");
+      });
+      filter.querySelector('[result="microNoise"]')?.remove();
+      filter.querySelector('[result="microField"]')?.remove();
+      fieldMix.remove();
     }
 
     filter.querySelectorAll("feDisplacementMap").forEach((node) => {

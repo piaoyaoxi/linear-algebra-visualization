@@ -213,10 +213,10 @@
             <div class="inverse-plane-wrap">
               <svg class="inverse-plane" viewBox="0 0 420 320" role="img" aria-label="矩阵 A 与逆矩阵作用在二维网格上的连续变化">
                 <defs>
-                  <marker id="inverse-basis-arrow" viewBox="0 0 10 10" refX="10" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+                  <marker id="inverse-basis-arrow" viewBox="-1 -1 12 12" refX="10" refY="5" markerWidth="7.2" markerHeight="7.2" orient="auto-start-reverse" overflow="visible">
                     <path d="M 0 0 L 10 5 L 0 10 z"></path>
                   </marker>
-                  <marker id="inverse-vector-arrow" viewBox="0 0 10 10" refX="10" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+                  <marker id="inverse-vector-arrow" viewBox="-1 -1 12 12" refX="10" refY="5" markerWidth="7.2" markerHeight="7.2" orient="auto-start-reverse" overflow="visible">
                     <path d="M 0 0 L 10 5 L 0 10 z"></path>
                   </marker>
                 </defs>

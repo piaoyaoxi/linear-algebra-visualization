@@ -118,6 +118,8 @@
 .inverse-transform-lab {
   --inverse-green: var(--accent-strong);
   --inverse-coral: var(--coral);
+  /* Dedicated sample-vector blue — theme --blue is often cyan and collides with accent. */
+  --inverse-vector: #3b5bdb;
   display: grid;
   gap: 14px;
   margin-top: 12px;
@@ -130,6 +132,7 @@
 }
 
 body.dark .inverse-transform-lab {
+  --inverse-vector: #6b8cff;
   border-color: var(--glass-border);
   background: var(--surface-solid);
   box-shadow: none;
@@ -387,7 +390,10 @@ body.dark .inverse-transform-lab {
 .inverse-reference-square,
 .inverse-current-square,
 .inverse-basis,
-.inverse-sample-vector {
+.inverse-sample-vector,
+.inverse-arrowhead,
+.inverse-origin-dot,
+.inverse-endpoint-dot {
   vector-effect: non-scaling-stroke;
 }
 
@@ -420,8 +426,9 @@ body.dark .inverse-transform-lab {
 
 .inverse-current-square {
   fill: color-mix(in srgb, var(--accent) 13%, transparent);
-  stroke: var(--accent-strong);
-  stroke-width: 2.35;
+  /* Keep the parallelogram lighter than e₁ so the basis edge stays readable. */
+  stroke: color-mix(in srgb, var(--accent-strong) 68%, transparent);
+  stroke-width: 2.1;
 }
 
 .inverse-transform-lab.is-singular .inverse-current-line {
@@ -439,9 +446,10 @@ body.dark .inverse-transform-lab {
 
 .inverse-basis,
 .inverse-sample-vector {
-  marker-end: url(#inverse-basis-arrow);
+  fill: none;
   stroke-width: 3;
-  stroke-linecap: round;
+  stroke-linecap: butt;
+  stroke-linejoin: miter;
 }
 
 .inverse-basis.is-x {
@@ -452,6 +460,22 @@ body.dark .inverse-transform-lab {
   stroke: var(--inverse-coral);
 }
 
+.inverse-arrowhead {
+  stroke: none;
+}
+
+.inverse-arrowhead.is-x {
+  fill: var(--accent-strong);
+}
+
+.inverse-arrowhead.is-y {
+  fill: var(--inverse-coral);
+}
+
+.inverse-arrowhead.is-vector {
+  fill: var(--inverse-vector);
+}
+
 .inverse-basis-label,
 .inverse-vector-label {
   fill: var(--text);
@@ -459,6 +483,7 @@ body.dark .inverse-transform-lab {
   font-size: 15px;
   font-style: italic;
   font-weight: 700;
+  pointer-events: none;
 }
 
 .inverse-basis-label.is-x {
@@ -470,21 +495,25 @@ body.dark .inverse-transform-lab {
 }
 
 .inverse-sample-vector {
-  marker-end: url(#inverse-vector-arrow);
-  stroke: color-mix(in srgb, var(--text) 70%, transparent);
-  stroke-width: 2.1;
+  stroke: var(--inverse-vector);
+  stroke-width: 2.35;
 }
 
-#inverse-vector-arrow path {
-  fill: color-mix(in srgb, var(--text) 70%, transparent);
+.inverse-origin-dot {
+  fill: color-mix(in srgb, var(--text) 88%, #000 12%);
+  stroke: var(--surface-solid);
+  stroke-width: 1.4;
 }
 
-#inverse-basis-arrow path {
-  fill: context-stroke;
+.inverse-endpoint-dot.is-vector {
+  fill: var(--inverse-vector);
+  stroke: var(--surface-solid);
+  stroke-width: 1.15;
 }
 
 .inverse-vector-label {
-  font-size: 13px;
+  fill: var(--inverse-vector);
+  font-size: 14px;
 }
 
 .inverse-plane-card figcaption {

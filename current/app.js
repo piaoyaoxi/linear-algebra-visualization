@@ -185,6 +185,13 @@ function init() {
   bindChrome();
   renderRoute();
   window.addEventListener("hashchange", renderRoute);
+
+  // Enable expand transitions after the first open-state is applied (no boot pop).
+  window.requestAnimationFrame(() => {
+    window.requestAnimationFrame(() => {
+      document.documentElement.classList.add("expand-ready");
+    });
+  });
 }
 
 function bindChrome() {
@@ -247,7 +254,11 @@ function renderNav() {
             </span>
             <span class="chapter-arrow">›</span>
           </button>
-          <div class="section-list">${sectionLinks}</div>
+          <div class="section-list">
+            <div class="section-list-clip">
+              <div class="section-list-inner">${sectionLinks}</div>
+            </div>
+          </div>
         </div>
       `;
     })
@@ -579,7 +590,7 @@ function renderVideoSection(section, video) {
       </video>`;
 
   const transcript = video.transcript
-    ? `<details class="transcript-box"><summary>文字稿</summary><p>${video.transcript}</p></details>`
+    ? `<details class="transcript-box"><summary>文字稿</summary><div class="disclose-panel"><div class="disclose-panel-inner"><p>${video.transcript}</p></div></div></details>`
     : "";
 
   return `
@@ -641,10 +652,14 @@ function renderExampleSection(section) {
       <h2>代表例题</h2>
       <details class="example-box">
         <summary>${section.example.title}</summary>
-        <div class="example-question">${section.example.question}</div>
-        <div class="example-answer">
-          <h4>答案与分析</h4>
-          ${renderExampleSteps(section.example)}
+        <div class="disclose-panel">
+          <div class="disclose-panel-inner">
+            <div class="example-question">${section.example.question}</div>
+            <div class="example-answer">
+              <h4>答案与分析</h4>
+              ${renderExampleSteps(section.example)}
+            </div>
+          </div>
         </div>
       </details>
     </section>
@@ -663,8 +678,12 @@ function renderSelfTestSection(section) {
             item.answer || item.feedback
               ? `<details class="self-test-item">
                   <summary>${index + 1}. ${item.question}</summary>
-                  ${item.answer ? `<p>${item.answer}</p>` : ""}
-                  ${item.feedback ? `<p class="muted-note">${item.feedback}</p>` : ""}
+                  <div class="disclose-panel">
+                    <div class="disclose-panel-inner">
+                      ${item.answer ? `<p>${item.answer}</p>` : ""}
+                      ${item.feedback ? `<p class="muted-note">${item.feedback}</p>` : ""}
+                    </div>
+                  </div>
                 </details>`
               : `<div class="self-test-item"><strong>${index + 1}.</strong><span>${item.question}</span></div>`,
           )
@@ -915,10 +934,81 @@ function renderHeroVisual() {
 function setupInteractiveBlocks() {
   updateProgressUI();
   bindCompleteButtons();
+  bindAnimatedDetails(els.main);
   setupMultiplyDemo();
   setupRankDemo();
   setupMatrixControls();
   setupTocObserver();
+}
+
+/**
+ * Animate details open/close via grid-template-rows.
+ * Native details removes [open] immediately on close, which skips CSS height
+ * transitions — intercept summary clicks when motion is allowed.
+ */
+function bindAnimatedDetails(root) {
+  if (!root) return;
+
+  root.querySelectorAll("details.self-test-item, details.example-box, details.transcript-box").forEach((details) => {
+    if (details.dataset.expandBound === "1") return;
+    const panel = details.querySelector(":scope > .disclose-panel");
+    const summary = details.querySelector(":scope > summary");
+    if (!panel || !summary) return;
+
+    details.dataset.expandBound = "1";
+
+    summary.addEventListener("click", (event) => {
+      if (prefersReducedMotion()) return;
+      if (details.dataset.expandBusy === "1") {
+        event.preventDefault();
+        return;
+      }
+
+      event.preventDefault();
+      details.dataset.expandBusy = "1";
+
+      const finish = () => {
+        details.dataset.expandBusy = "0";
+        panel.style.gridTemplateRows = "";
+      };
+
+      const waitForRows = (done) => {
+        let settled = false;
+        const settle = () => {
+          if (settled) return;
+          settled = true;
+          panel.removeEventListener("transitionend", onEnd);
+          window.clearTimeout(timer);
+          done();
+        };
+        const onEnd = (transitionEvent) => {
+          if (transitionEvent.target !== panel) return;
+          if (transitionEvent.propertyName !== "grid-template-rows") return;
+          settle();
+        };
+        panel.addEventListener("transitionend", onEnd);
+        const timer = window.setTimeout(settle, 520);
+      };
+
+      if (details.open) {
+        panel.style.gridTemplateRows = "1fr";
+        // Force style flush so the close transition starts from 1fr.
+        void panel.offsetHeight;
+        panel.style.gridTemplateRows = "0fr";
+        waitForRows(() => {
+          details.open = false;
+          finish();
+        });
+        return;
+      }
+
+      details.open = true;
+      panel.style.gridTemplateRows = "0fr";
+      void panel.offsetHeight;
+      panel.style.gridTemplateRows = "1fr";
+      waitForRows(finish);
+    });
+  });
 }
 
 function bindCompleteButtons() {

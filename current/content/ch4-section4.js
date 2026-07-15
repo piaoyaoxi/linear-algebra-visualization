@@ -25,28 +25,20 @@ defineChapter4Section("matrix-inverse", {
   },
   concepts: [
     {
-      label: "定义与唯一性",
-      text: `若 n 阶方阵 ${texInline("A")} 存在方阵 ${texInline("B")}，使 ${texInline("AB=BA=I")}，则 ${texInline("B=A^{-1}")}。这里讨论双侧逆，因此 A 必须是方阵；非方阵的左逆、右逆不在本节展开。逆矩阵一旦存在便唯一；若 B、C 都是 A 的逆，则 ${texInline("B=B(AC)=(BA)C=C")}。`,
+      label: "逆矩阵的定义",
+      text: `${texInline("A^{-1}A=AA^{-1}=I")}。先做 A，再做 ${texInline("A^{-1}")}，会回到原来的输入。`,
     },
     {
-      label: "撤销方程中的矩阵作用",
-      text: `${texInline("Ax=b")} 给出 ${texInline("x=A^{-1}b")}；${texInline("AX=C")} 给出 ${texInline("X=A^{-1}C")}；${texInline("XA=C")} 给出 ${texInline("X=CA^{-1}")}。矩阵位于未知量哪一侧，就在同一侧乘逆矩阵。`,
+      label: "方阵限制",
+      text: "只有方阵才可能有双侧逆矩阵，因为输入与输出的维数必须一致。",
     },
     {
-      label: "复合过程必须逆序撤销",
-      text: `${texInline("(AB)^{-1}=B^{-1}A^{-1}")}。因为 ${texInline("ABx=A(Bx)")} 先做 B、后做 A，撤销时先做 ${texInline("A^{-1}")}、再做 ${texInline("B^{-1}")}。`,
+      label: "二维判定",
+      text: `对 2 阶矩阵，${texInline("\\det(A)\\ne0")} 时可逆；${texInline("\\det(A)=0")} 时发生坍缩。`,
     },
     {
-      label: "二阶矩阵的求逆公式",
-      text: `若 ${texInline("A=\\begin{bmatrix}a&b\\\\c&d\\end{bmatrix}")} 且 ${texInline("ad-bc\\ne0")}，则 ${texInline("A^{-1}=\\frac{1}{ad-bc}\\begin{bmatrix}d&-b\\\\-c&a\\end{bmatrix}")}。先检查分母，再交换主对角元素、改变副对角元素符号。`,
-    },
-    {
-      label: "伴随矩阵路线",
-      text: `一般 n 阶方阵满足 ${texInline("A^{-1}=\\frac{1}{\\det(A)}A^{*}")}。构造 ${texInline("A^{*}")} 的顺序是：删去对应行列得到余子式，加入 ${texInline("(-1)^{i+j}")} 的符号形成代数余子式矩阵，最后转置。`,
-    },
-    {
-      label: "常用反向规则",
-      text: `${texInline("\\det(A^{-1})=1/\\det(A)")}，${texInline("(A^T)^{-1}=(A^{-1})^T")}，${texInline("(A^m)^{-1}=(A^{-1})^m")}；对角矩阵逐项取倒数，旋转矩阵的逆是反向旋转，镜像矩阵常满足 ${texInline("M^{-1}=M")}。`,
+      label: "核心等价",
+      text: "对 n 阶矩阵：可逆、行列式非零、秩为 n、列向量线性无关、方程 Ax=b 对每个 b 有唯一解，是同一件结构事实的不同说法。",
     },
   ],
   textbook: {

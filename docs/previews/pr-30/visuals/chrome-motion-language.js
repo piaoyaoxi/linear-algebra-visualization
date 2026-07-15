@@ -19,11 +19,15 @@
       this.languageShouldFocus = focusMenu;
       this.languageRestoreFocus = false;
       this.pendingLanguage = null;
+      this.body.classList.add("language-layer-active");
       this.elements.languageControl.dataset.phase = "opening";
       this.elements.languageToggle.setAttribute("aria-expanded", "true");
       this.elements.languageMenu.setAttribute("aria-hidden", "false");
       this.elements.languageMenu.style.visibility = "visible";
       setInert(this.elements.languageMenu, true);
+      this.languageClosedSize = Number.parseFloat(
+        getComputedStyle(document.documentElement).getPropertyValue("--chrome-control-size"),
+      ) || 44;
       this.languageMotion.setTarget(1);
       this.emitState();
     },
@@ -32,6 +36,7 @@
       if (this.languageMotion.value <= 0.001 && this.languageMotion.target === 0) return;
       this.languageRestoreFocus = restoreFocus;
       this.languageShouldFocus = false;
+      this.body.classList.remove("language-layer-active");
       this.elements.languageControl.dataset.phase = "closing";
       this.elements.languageToggle.setAttribute("aria-expanded", "false");
       setInert(this.elements.languageMenu, true);
@@ -42,33 +47,32 @@
     renderLanguage(progress, raw, target) {
       const { languageControl, languageToggle, languageMenu, languageOptions } = this.elements;
       const p = clamp(progress);
-      const geometry = smootherstep(range(p, 0.01, 0.76));
-      const startSize = 44;
-      const menuWidth = Math.min(206, window.innerWidth - 24);
-      const menuHeight = 145;
+      const geometry = smootherstep(range(p, 0.01, 0.74));
+      const startSize = this.languageClosedSize || 44;
+      const menuWidth = 178;
+      const menuHeight = 68;
       const overshoot = clamp(raw - 1, -0.05, 0.05);
+      const scaleX = Math.max(0.1, lerp(startSize / menuWidth, 1, geometry) + overshoot * 0.025);
+      const scaleY = Math.max(0.1, lerp(startSize / menuHeight, 1, geometry) + overshoot * 0.035);
+      const visualRadius = lerp(15, 20, geometry);
 
       languageControl.style.setProperty("--language-progress", p.toFixed(4));
       languageControl.style.setProperty("--language-overshoot", overshoot.toFixed(4));
-      languageMenu.style.width = `${px(lerp(startSize, menuWidth, geometry) + overshoot * 18)}px`;
-      languageMenu.style.height = `${px(lerp(startSize, menuHeight, geometry) + overshoot * 10)}px`;
-      languageMenu.style.borderRadius = `${px(lerp(15, 23, geometry) - overshoot * 10)}px`;
+      languageMenu.style.transform = `scale(${scaleX.toFixed(4)}, ${scaleY.toFixed(4)})`;
+      languageMenu.style.borderRadius = `${px(visualRadius / scaleX)}px / ${px(visualRadius / scaleY)}px`;
       languageMenu.style.opacity = "1";
 
-      const iconProgress = smootherstep(range(p, 0.12, 0.54));
+      const iconProgress = smootherstep(range(p, 0.12, 0.5));
       const globe = languageToggle.querySelector(".language-globe");
       if (globe) {
-        globe.style.transform = `translate(${px(lerp(0, -15, iconProgress))}px, ${px(lerp(0, 14, iconProgress))}px) rotate(${px(lerp(0, -12, iconProgress))}deg) scale(${lerp(1, 0.58, iconProgress).toFixed(4)})`;
-        globe.style.opacity = (1 - iconProgress).toFixed(4);
-        globe.style.filter = `blur(${px(lerp(0, 4.5, iconProgress))}px)`;
+        globe.style.transform = `rotate(${px(lerp(0, -12, iconProgress))}deg) scale(${lerp(1, 0.86, iconProgress).toFixed(4)})`;
+        globe.style.opacity = lerp(1, 0.62, iconProgress).toFixed(4);
       }
 
       languageOptions.forEach((option, index) => {
-        const itemProgress = smootherstep(range(p, 0.24 + index * 0.045, 0.66 + index * 0.045));
-        const gatherY = -(index * 40 + 47);
+        const itemProgress = smootherstep(range(p, 0.36 + index * 0.04, 0.74 + index * 0.04));
         option.style.opacity = itemProgress.toFixed(4);
-        option.style.transform = `translate(${px(lerp(38, 0, itemProgress))}px, ${px(lerp(gatherY, 0, itemProgress))}px) scale(${lerp(0.84, 1, itemProgress).toFixed(4)})`;
-        option.style.filter = `blur(${px(lerp(6.5, 0, itemProgress))}px)`;
+        option.style.transform = `translateX(${px(lerp(14, 0, itemProgress))}px) scale(${lerp(0.94, 1, itemProgress).toFixed(4)})`;
       });
 
       if (target === 0 && this.pendingLanguage && p < 0.31) {
@@ -105,6 +109,7 @@
         this.pendingLanguage = null;
       }
       languageControl.dataset.phase = "closed";
+      this.body.classList.remove("language-layer-active");
       languageMenu.setAttribute("aria-hidden", "true");
       languageMenu.style.pointerEvents = "none";
       setInert(languageMenu, true);
@@ -128,13 +133,8 @@
     },
 
     commitLanguage(language) {
-      if (!["zh-CN", "zh-TW", "en"].includes(language)) return;
+      if (language !== "zh-CN") return;
       this.selectedLanguage = language;
-      try {
-        localStorage.setItem("la-visual-language", language);
-      } catch (_error) {
-        // The selection still remains valid for the current page.
-      }
       this.syncLanguageSelection();
       this.emitState();
     },

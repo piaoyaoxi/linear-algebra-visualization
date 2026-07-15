@@ -52,8 +52,8 @@ body.dark .topbar-search-text {
   font-size: 14px;
   font-weight: 650;
   line-height: 1;
-  transform-origin: center;
-  will-change: left, top, width, height, border-radius, opacity, transform;
+  transform-origin: 0 0;
+  will-change: opacity, transform;
 }
 
 .search-morph-proxy svg {
@@ -73,8 +73,8 @@ body.dark .topbar-search-text {
   stroke-linejoin: round;
 }
 
-/* Shared panel material. Content remains a separate sharp layer above two
-   backdrop passes: nonlinear refraction below and rim-only dispersion above. */
+/* Shared panel material. Content stays sharp above one continuous backdrop
+   sample; the second pseudo-element only paints a hairline highlight. */
 .liquid-panel {
   position: relative;
   isolation: isolate;
@@ -91,44 +91,29 @@ body.dark .topbar-search-text {
   z-index: 0;
   border-radius: inherit;
   background:
-    radial-gradient(240px 126px at var(--liquid-pointer-x, 12%) var(--liquid-pointer-y, 0%), color-mix(in srgb, var(--liquid-highlight) 22%, transparent), transparent 70%),
-    linear-gradient(148deg, color-mix(in srgb, #fff 10%, transparent), transparent 44%),
-    linear-gradient(180deg, color-mix(in srgb, #fff 4%, transparent), color-mix(in srgb, var(--surface-solid) 8%, transparent)),
+    radial-gradient(250px 130px at var(--liquid-pointer-x, 10%) var(--liquid-pointer-y, 0%), color-mix(in srgb, var(--liquid-highlight) 14%, transparent), transparent 72%),
+    linear-gradient(150deg, color-mix(in srgb, #fff 7%, transparent), transparent 46%),
     var(--liquid-fill-strong);
   -webkit-backdrop-filter: var(--liquid-panel-fallback);
   backdrop-filter: var(--liquid-panel-fallback);
-  -webkit-backdrop-filter: url("./liquid-glass-filters.svg#liquidGlassPanel") blur(2.4px) saturate(148%) contrast(103%);
-  backdrop-filter: url("./liquid-glass-filters.svg#liquidGlassPanel") blur(2.4px) saturate(148%) contrast(103%);
+  -webkit-backdrop-filter: url("./liquid-glass-filters.svg#liquidGlassPanel") blur(var(--glass-panel-frost)) saturate(130%) contrast(102%);
+  backdrop-filter: url("./liquid-glass-filters.svg#liquidGlassPanel") blur(var(--glass-panel-frost)) saturate(130%) contrast(102%);
   content: "";
-  transform: translateZ(0) scale(1.006);
-  transform-origin: center;
-  will-change: backdrop-filter, transform;
+  transform: translateZ(0);
 }
 
 .liquid-panel::after {
   position: absolute;
   inset: 0;
   z-index: 1;
-  padding: 11px;
+  padding: var(--glass-edge-width);
   border-radius: inherit;
   background:
-    radial-gradient(190px 78px at var(--liquid-pointer-x, 13%) var(--liquid-pointer-y, 0%), color-mix(in srgb, var(--liquid-highlight) 82%, transparent), transparent 72%) border-box,
-    conic-gradient(
-      from 216deg at 50% 50%,
-      var(--liquid-cyan),
-      color-mix(in srgb, var(--liquid-highlight) 72%, transparent) 15%,
-      transparent 29% 58%,
-      var(--liquid-warm) 73%,
-      var(--liquid-red) 84%,
-      color-mix(in srgb, var(--liquid-highlight-soft) 66%, transparent) 100%
-    ) border-box;
+    radial-gradient(220px 82px at var(--liquid-pointer-x, 11%) var(--liquid-pointer-y, 0%), var(--liquid-highlight), transparent 74%) border-box,
+    linear-gradient(145deg, var(--liquid-cyan), var(--liquid-border) 24%, transparent 54%, var(--liquid-warm) 84%, var(--liquid-border-low)) border-box;
   box-shadow:
     inset 0 1.25px 0 color-mix(in srgb, var(--liquid-highlight) 72%, transparent),
     inset 0 -1px 0 color-mix(in srgb, var(--liquid-border-low) 76%, transparent);
-  -webkit-backdrop-filter: blur(0.6px) saturate(136%);
-  backdrop-filter: blur(0.6px) saturate(136%);
-  -webkit-backdrop-filter: url("./liquid-glass-filters.svg#liquidGlassDispersion") blur(0.5px) saturate(142%);
-  backdrop-filter: url("./liquid-glass-filters.svg#liquidGlassDispersion") blur(0.5px) saturate(142%);
   content: "";
   pointer-events: none;
   -webkit-mask:
@@ -243,6 +228,10 @@ body.dark .search-modal-panel {
   letter-spacing: -0.01em;
 }
 
+.search-modal-bar:focus-within {
+  box-shadow: inset 0 -2px 0 color-mix(in srgb, var(--accent) 42%, transparent);
+}
+
 .search-modal-bar input::placeholder {
   color: color-mix(in srgb, var(--faint) 88%, transparent);
   font-weight: 560;
@@ -303,7 +292,7 @@ body.dark .search-modal-panel {
   color: var(--muted);
   opacity: 0;
   transform: translateY(-10px);
-  will-change: opacity, transform, filter;
+  will-change: opacity, transform;
 }
 
 .search-empty-state {
@@ -346,13 +335,15 @@ body.dark .search-modal-panel {
   padding: 7px 12px 7px 8px;
   border: 1px solid color-mix(in srgb, var(--liquid-border-low) 42%, transparent);
   border-radius: 15px;
-  background: color-mix(in srgb, var(--surface-soft) 31%, transparent);
+  background: color-mix(in srgb, var(--surface-solid) 58%, transparent);
   color: var(--text);
   font-size: 14px;
   font-weight: 640;
-  -webkit-backdrop-filter: blur(4px) saturate(124%);
-  backdrop-filter: blur(4px) saturate(124%);
   transition: background 150ms ease, border-color 150ms ease, transform 170ms var(--chrome-ease-spring);
+}
+
+body.dark .search-result-link {
+  background: color-mix(in srgb, var(--surface-solid) 46%, transparent);
 }
 
 .search-result-link:hover {

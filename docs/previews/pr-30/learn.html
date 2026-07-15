@@ -8,7 +8,7 @@
     <link rel="preload" as="image" href="./assets/theme/luna-alpha.webp?v=21h" />
     <link rel="preload" as="image" href="./assets/theme/sol-alpha.webp?v=21h" />
     <link rel="stylesheet" href="./vendor/katex/katex.min.css" />
-    <link rel="stylesheet" href="./styles.css?v=21i" />
+    <link rel="stylesheet" href="./styles.css?v=21k" />
     <link rel="stylesheet" href="./learn-layout.css?v=21i" />
     <link rel="stylesheet" href="./search-modal-a11y.css" />
     <link rel="stylesheet" href="./guide.css?v=21i" />
@@ -19,14 +19,27 @@
     <link rel="stylesheet" href="./visuals/ch4/section2-continuous.css?v=21i" />
     <link rel="stylesheet" href="./visuals/ch4/core-presentation.css" />
     <link rel="stylesheet" href="./visuals/ch4/section3-presentation.css?v=22a" />
+    <link rel="stylesheet" href="./visuals/ch4/section4-presentation.css?v=32a" />
     <link rel="stylesheet" href="./visuals/ch4/block-presentation.css" />
     <link rel="stylesheet" href="./visuals/page-toc-rail.css?v=21i" />
     <link rel="stylesheet" href="./visuals/theme-transition.css?v=21i" />
-    <link rel="stylesheet" href="./visuals/chrome-motion.css?v=30d" />
-    <link rel="stylesheet" href="./visuals/liquid-glass-inline.css?v=30d" />
+    <link rel="stylesheet" href="./visuals/chrome-motion.css?v=30i" />
+    <link rel="stylesheet" href="./visuals/chrome-motion-search.css?v=30i" />
+    <link rel="stylesheet" href="./visuals/chrome-motion-language.css?v=30i" />
+    <link rel="stylesheet" href="./visuals/chrome-motion-sidebar.css?v=30i" />
+    <link rel="stylesheet" href="./visuals/liquid-glass-inline.css?v=30i" />
+    <link rel="stylesheet" href="./visuals/chrome-motion-responsive.css?v=30i" />
     <script defer src="./vendor/katex/katex.min.js"></script>
-    <script defer src="./visuals/chrome-motion.js?v=30d"></script>
-    <script defer src="./app.js?v=21i"></script>
+    <script defer src="./visuals/chrome-motion-optics.js?v=30i"></script>
+    <script defer src="./visuals/chrome-motion-runtime.js?v=30i"></script>
+    <script defer src="./visuals/chrome-motion-controller.js?v=30i"></script>
+    <script defer src="./visuals/chrome-motion-events.js?v=30i"></script>
+    <script defer src="./visuals/chrome-motion-lifecycle.js?v=30i"></script>
+    <script defer src="./visuals/chrome-motion-search.js?v=30i"></script>
+    <script defer src="./visuals/chrome-motion-language.js?v=30i"></script>
+    <script defer src="./visuals/chrome-motion-sidebar.js?v=30i"></script>
+    <script defer src="./visuals/chrome-motion.js?v=30i"></script>
+    <script defer src="./app.js?v=30j"></script>
     <script defer src="./visuals/theme-transition.js?v=21i"></script>
     <script defer src="./content/ch1.js"></script>
     <script defer src="./content/ch2.js"></script>
@@ -36,6 +49,7 @@
     <script defer src="./content/ch4-section2.js"></script>
     <script defer src="./content/ch4-core.js"></script>
     <script defer src="./content/ch4-section3.js?v=22a"></script>
+    <script defer src="./content/ch4-section4.js?v=32a"></script>
     <script defer src="./content/ch4-block.js"></script>
     <script defer src="./content/ch4.js"></script>
     <script defer src="./content/ch4-assemble.js"></script>
@@ -47,6 +61,7 @@
     <script defer src="./visuals/ch4/section2-continuous.js?v=21i"></script>
     <script defer src="./visuals/ch4/core-presentation.js"></script>
     <script defer src="./visuals/ch4/section3-presentation.js?v=22a"></script>
+    <script defer src="./visuals/ch4/section4-presentation.js?v=29q"></script>
     <script defer src="./visuals/ch4/block-presentation.js"></script>
     <script defer src="./visuals/ch4/mount.js"></script>
     <script defer src="./content/ch5.js"></script>
@@ -98,28 +113,6 @@
           <feDisplacementMap in="SourceGraphic" in2="displacementField" scale="-44" xChannelSelector="R" yChannelSelector="G" />
         </filter>
 
-        <filter id="liquidGlassDispersion" x="-12%" y="-24%" width="124%" height="148%" color-interpolation-filters="sRGB">
-          <feImage href="#liquidLensXSource" x="0" y="0" width="100%" height="100%" preserveAspectRatio="none" result="lensX" />
-          <feImage href="#liquidLensYSource" x="0" y="0" width="100%" height="100%" preserveAspectRatio="none" result="lensY" />
-          <feComposite in="lensX" in2="lensY" operator="arithmetic" k1="0" k2="1" k3="1" k4="-0.5" result="lensField" />
-          <feTurbulence type="fractalNoise" baseFrequency="0.011 0.058" numOctaves="2" seed="19" stitchTiles="stitch" result="microNoise" />
-          <feColorMatrix in="microNoise" values="0.12 0 0 0 0.44  0 0.12 0 0 0.44  0 0 0.04 0 0.48  0 0 0 1 0" result="microField" />
-          <feComposite in="lensField" in2="microField" operator="arithmetic" k1="0" k2="0.94" k3="0.06" k4="0" result="displacementField" />
-          <feDisplacementMap in="SourceGraphic" in2="displacementField" scale="-30" xChannelSelector="R" yChannelSelector="G" result="warped" />
-          <feColorMatrix in="warped" values="1 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 1 0" result="red" />
-          <feColorMatrix in="warped" values="0 0 0 0 0  0 1 0 0 0  0 0 0 0 0  0 0 0 1 0" result="green" />
-          <feColorMatrix in="warped" values="0 0 0 0 0  0 0 0 0 0  0 0 1 0 0  0 0 0 1 0" result="blue" />
-          <feOffset in="red" dx="1.65" dy="0.32" result="redShift" />
-          <feOffset in="blue" dx="-1.65" dy="-0.32" result="blueShift" />
-          <feBlend in="redShift" in2="green" mode="screen" result="redGreen" />
-          <feBlend in="redGreen" in2="blueShift" mode="screen" />
-        </filter>
-
-        <filter id="liquidGlassFlow" x="-4%" y="-4%" width="108%" height="108%" color-interpolation-filters="sRGB">
-          <feTurbulence type="fractalNoise" baseFrequency="0.006 0.024" numOctaves="2" seed="31" stitchTiles="stitch" result="flowNoise" />
-          <feColorMatrix in="flowNoise" values="0.18 0 0 0 0.41  0 0.18 0 0 0.41  0 0 0.05 0 0.475  0 0 0 1 0" result="flowField" />
-          <feDisplacementMap in="SourceGraphic" in2="flowField" scale="13" xChannelSelector="R" yChannelSelector="G" />
-        </filter>
       </defs>
     </svg>
 
@@ -147,6 +140,7 @@
           aria-haspopup="dialog"
           aria-controls="searchModal"
           aria-expanded="false"
+          aria-label="搜索课程内容"
         >
           <svg viewBox="0 0 24 24" aria-hidden="true">
             <circle cx="11" cy="11" r="6.5" />
@@ -157,36 +151,24 @@
       </div>
       <div class="topbar-right">
         <div class="language-control" id="languageControl" data-phase="closed">
-          <div class="language-menu liquid-panel" id="languageMenu" role="menu" aria-label="显示语言" aria-hidden="true" inert>
-            <div class="language-menu-heading" aria-hidden="true">显示语言</div>
+          <div class="language-menu liquid-panel" id="languageMenu" role="menu" aria-label="界面语言" aria-hidden="true" inert>
+            <div class="language-menu-heading" aria-hidden="true">界面语言</div>
             <button class="language-option" type="button" role="menuitemradio" data-lang="zh-CN" aria-checked="true" tabindex="-1">
               <span class="language-check" aria-hidden="true">
                 <svg viewBox="0 0 16 16"><path d="m3.2 8.2 2.8 2.7 6.7-6.5" /></svg>
               </span>
               <span>简体中文</span>
             </button>
-            <button class="language-option" type="button" role="menuitemradio" data-lang="zh-TW" aria-checked="false" tabindex="-1">
-              <span class="language-check" aria-hidden="true">
-                <svg viewBox="0 0 16 16"><path d="m3.2 8.2 2.8 2.7 6.7-6.5" /></svg>
-              </span>
-              <span>繁體中文</span>
-            </button>
-            <button class="language-option" type="button" role="menuitemradio" data-lang="en" aria-checked="false" tabindex="-1">
-              <span class="language-check" aria-hidden="true">
-                <svg viewBox="0 0 16 16"><path d="m3.2 8.2 2.8 2.7 6.7-6.5" /></svg>
-              </span>
-              <span>English</span>
-            </button>
           </div>
           <button
             class="icon-button liquid-control language-trigger"
             id="langToggle"
             type="button"
-            aria-label="选择显示语言"
+            aria-label="查看界面语言：简体中文"
             aria-controls="languageMenu"
             aria-haspopup="menu"
             aria-expanded="false"
-            title="显示语言"
+            title="界面语言"
           >
             <svg class="language-globe" viewBox="0 0 24 24" aria-hidden="true">
               <circle cx="12" cy="12" r="8.15" />
@@ -228,13 +210,6 @@
       <main class="content" id="mainContent" tabindex="-1"></main>
     </div>
 
-    <div class="sidebar-liquid-bridge" id="sidebarLiquidBridge" aria-hidden="true">
-      <span class="sidebar-goo sidebar-goo-toggle"></span>
-      <span class="sidebar-goo sidebar-goo-drop sidebar-goo-drop-a"></span>
-      <span class="sidebar-goo sidebar-goo-drop sidebar-goo-drop-b"></span>
-      <span class="sidebar-goo sidebar-goo-drop sidebar-goo-drop-c"></span>
-    </div>
-
     <aside class="page-toc" id="pageToc" aria-label="当前页目录"></aside>
     <div class="drawer-backdrop" id="drawerBackdrop" aria-hidden="true"></div>
 
@@ -265,7 +240,7 @@
             <svg viewBox="0 0 20 20" aria-hidden="true"><path d="m5.25 5.25 9.5 9.5M14.75 5.25l-9.5 9.5" /></svg>
           </button>
         </div>
-        <div class="search-modal-body" id="searchModalDescription">
+        <div class="search-modal-body" id="searchModalDescription" aria-live="polite">
           <div class="search-empty-state">
             <span class="search-empty-kicker">课程搜索</span>
             <p>输入章节名称、概念或关键词。</p>

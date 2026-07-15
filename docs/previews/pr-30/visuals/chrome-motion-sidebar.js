@@ -21,6 +21,7 @@
       this.elements.sidebarToggle.setAttribute("aria-expanded", "true");
       this.elements.sidebarToggle.setAttribute("aria-label", "关闭章节目录");
       this.body.classList.remove("sidebar-collapsed");
+      this.body.classList.add("sidebar-panel-active");
       if (this.mobileQuery.matches) this.body.classList.add("sidebar-open", "sidebar-layer-active");
       setInert(this.elements.sidebar, true);
       this.sidebarMotion.setTarget(1);
@@ -34,6 +35,7 @@
       this.elements.sidebar.dataset.phase = "closing";
       this.elements.sidebarToggle.setAttribute("aria-expanded", "false");
       this.elements.sidebarToggle.setAttribute("aria-label", "打开章节目录");
+      this.body.classList.remove("sidebar-panel-active");
       setInert(this.elements.sidebar, true);
       this.sidebarMotion.setTarget(0);
       if (persist && !this.mobileQuery.matches) this.persistSidebar(true);
@@ -58,7 +60,7 @@
 (() => {
   "use strict";
 
-  const { clamp, lerp, range, smoothstep, smootherstep, px, setInert, roundedRectPath, liquidBridgePath } = window.__ChromeMotion;
+  const { clamp, lerp, range, smoothstep, smootherstep, px, setInert } = window.__ChromeMotion;
   const { ChromeMotionController } = window.__ChromeMotion;
 
   Object.assign(ChromeMotionController.prototype, {
@@ -74,22 +76,18 @@
       } = this.elements;
       const p = clamp(progress);
       const geometry = smootherstep(p);
-      const width = sidebar.offsetWidth || 304;
-      const left = Number.parseFloat(getComputedStyle(sidebar).left) || 0;
-      const travel = width + left + 42;
       const overshoot = clamp(raw - 1, -0.05, 0.05);
-      const translateX = -travel * (1 - geometry) + overshoot * 12;
+      const translateX = -112 * (1 - geometry) + overshoot * 3;
       const opacity = smootherstep(range(p, 0.01, 0.18));
       const brandProgress = smootherstep(range(p, 0.48, 0.82));
       const contentProgress = smootherstep(range(p, 0.58, 0.9));
 
-      sidebar.style.transform = `translate3d(${px(translateX)}px, 0, 0)`;
+      sidebar.style.transform = `translate3d(${px(translateX)}%, 0, 0)`;
       sidebar.style.opacity = opacity.toFixed(4);
       sidebarBrand.style.opacity = brandProgress.toFixed(4);
       sidebarBrand.style.transform = `translateX(${px(lerp(-12, 0, brandProgress))}px)`;
       sidebarScroll.style.opacity = contentProgress.toFixed(4);
       sidebarScroll.style.transform = `translateX(${px(lerp(-14, 0, contentProgress))}px)`;
-      sidebarScroll.style.filter = `blur(${px(lerp(4.5, 0, contentProgress))}px)`;
 
       const iconProgress = smoothstep(range(p, 0.28, 0.78));
       const lineTransforms = [
@@ -128,58 +126,12 @@
         sidebar.style.pointerEvents = interactive ? "auto" : "none";
       }
 
-      this.renderSidebarUnifiedShell(p, translateX);
-    },
-
-    renderSidebarUnifiedShell(progress, translateX) {
-      const { sidebarToggle, sidebarBridge, sidebar } = this.elements;
-      if (!sidebarBridge) return;
-      if (this.reducedQuery.matches || !this.sidebarClipSupported) {
-        sidebarBridge.style.opacity = "0";
-        sidebarBridge.style.visibility = "hidden";
-        this.body.classList.remove("sidebar-unified-active");
-        return;
-      }
-
-      const p = clamp(progress);
-      if (p < 0.003) {
-        sidebarBridge.style.opacity = "0";
-        sidebarBridge.style.visibility = "hidden";
-        this.body.classList.remove("sidebar-unified-active");
-        return;
-      }
-
-      const buttonRect = sidebarToggle.getBoundingClientRect();
-      const sidebarBase = sidebar.getBoundingClientRect();
-      const panelRect = {
-        left: sidebarBase.left,
-        top: sidebarBase.top,
-        width: sidebarBase.width,
-        height: sidebarBase.height,
-        right: sidebarBase.right,
-        bottom: sidebarBase.bottom,
-      };
-
-      const panelPath = roundedRectPath(panelRect, lerp(31, 26, smootherstep(p)));
-      const buttonPath = roundedRectPath(buttonRect, 15);
-      const neckPath = liquidBridgePath(panelRect, buttonRect, p);
-      const compoundPath = `${panelPath} ${buttonPath} ${neckPath}`.trim();
-      const shellIn = smootherstep(range(p, 0.025, 0.16));
-      const controlMaterialOpacity = 1 - smootherstep(range(p, 0.025, 0.18));
-
-      sidebarBridge.style.clipPath = `path("${compoundPath}")`;
-      sidebarBridge.style.webkitClipPath = `path("${compoundPath}")`;
-      sidebarBridge.style.opacity = shellIn.toFixed(4);
-      sidebarBridge.style.visibility = "visible";
-      sidebarBridge.style.setProperty("--sidebar-unified-progress", p.toFixed(4));
-      this.body.style.setProperty("--sidebar-unified-progress", p.toFixed(4));
-      this.body.style.setProperty("--sidebar-control-material-opacity", controlMaterialOpacity.toFixed(4));
-      this.body.classList.add("sidebar-unified-active");
     },
 
     settleSidebar(value) {
-      const { sidebar, sidebarToggle, drawerBackdrop, sidebarBridge } = this.elements;
+      const { sidebar, sidebarToggle, drawerBackdrop, topbarCenter, topbarRight } = this.elements;
       if (value === 1) {
+        this.body.classList.add("sidebar-panel-active");
         sidebar.dataset.phase = "open";
         sidebar.setAttribute("aria-hidden", "false");
         sidebarToggle.setAttribute("aria-expanded", "true");
@@ -199,14 +151,17 @@
       setInert(sidebar, true);
       sidebar.style.pointerEvents = "none";
       this.sidebarInteractive = false;
-      this.body.classList.remove("sidebar-open", "sidebar-layer-active", "sidebar-unified-active");
-      this.body.style.removeProperty("--sidebar-unified-progress");
-      this.body.style.removeProperty("--sidebar-control-material-opacity");
+      this.body.classList.remove("sidebar-open", "sidebar-layer-active");
+      this.body.classList.remove("sidebar-panel-active");
       if (!this.mobileQuery.matches) this.body.classList.add("sidebar-collapsed");
       drawerBackdrop.style.visibility = "hidden";
       drawerBackdrop.style.pointerEvents = "none";
-      sidebarBridge.style.visibility = "hidden";
-      sidebarBridge.style.opacity = "0";
+      [topbarCenter, topbarRight].forEach((element) => {
+        if (!element) return;
+        element.style.removeProperty("opacity");
+        element.style.removeProperty("transform");
+        element.style.removeProperty("pointer-events");
+      });
       if (this.sidebarRestoreFocus) requestAnimationFrame(() => sidebarToggle.focus({ preventScroll: true }));
       this.sidebarRestoreFocus = false;
       this.emitState();

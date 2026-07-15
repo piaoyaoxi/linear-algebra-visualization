@@ -17,7 +17,6 @@
         sidebarSurface: document.querySelector("#sidebar .sidebar-surface"),
         sidebarBrand: document.querySelector("#sidebar .sidebar-brand"),
         sidebarScroll: document.querySelector("#sidebar .sidebar-scroll"),
-        sidebarBridge: document.querySelector("#sidebarLiquidBridge"),
         drawerBackdrop: document.querySelector("#drawerBackdrop"),
         searchOpen: document.querySelector("#searchOpen"),
         searchModal: document.querySelector("#searchModal"),
@@ -48,7 +47,6 @@
       this.lastViewportMobile = this.mobileQuery.matches;
       this.selectedLanguage = this.readLanguagePreference();
       this.pendingLanguage = null;
-      this.sidebarClipSupported = CSS.supports?.("clip-path", 'path("M 0 0 H 10 V 10 H 0 Z")') ?? false;
 
       const reduced = this.reducedQuery.matches;
       this.searchMotion = new ReversibleSpring({
@@ -76,7 +74,6 @@
         onSettle: (value) => this.settleSidebar(value),
       });
 
-      this.prepareSidebarBridge();
       this.syncLanguageSelection();
       this.bindEvents();
       this.bindLiquidPointerLight();

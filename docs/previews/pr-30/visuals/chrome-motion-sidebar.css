@@ -1,5 +1,5 @@
 /* --------------------------------------------------------------------------
-   Sidebar: a moving panel and the fixed button share one real contour
+   Sidebar: a composited transform over the same continuous panel material
    -------------------------------------------------------------------------- */
 
 body.chrome-motion-ready .sidebar,
@@ -50,6 +50,11 @@ body.dark .sidebar-surface {
   overflow: hidden;
   border-radius: var(--chrome-sidebar-radius);
   transform: translateZ(0);
+}
+
+.sidebar-surface::before,
+body.dark .sidebar-surface::before {
+  background-color: var(--liquid-sidebar-fill);
 }
 
 .sidebar-header {
@@ -103,7 +108,7 @@ body.dark .sidebar-header .sidebar-brand {
   overscroll-behavior: contain;
   scrollbar-width: thin;
   scrollbar-color: color-mix(in srgb, var(--accent) 20%, transparent) transparent;
-  will-change: opacity, transform, filter;
+  will-change: opacity, transform;
 }
 
 .sidebar .chapter-nav {
@@ -114,73 +119,29 @@ body.dark .sidebar-header .sidebar-brand {
   z-index: 58;
 }
 
+#sidebarToggle::before,
+#sidebarToggle::after {
+  transition: opacity 170ms ease;
+}
+
+body.sidebar-panel-active #sidebarToggle {
+  box-shadow: none;
+}
+
+body.sidebar-panel-active #sidebarToggle::before,
+body.sidebar-panel-active #sidebarToggle::after {
+  opacity: 0;
+}
+
 #sidebarToggle .menu-line {
   transform-box: fill-box;
   transform-origin: center;
   will-change: transform;
 }
 
-/* One dynamically clipped viewport layer supplies the actual material for the
-   panel, the fixed button and their neck. The flow filter distorts the sampled
-   backdrop before frost is applied, so the contour remains visibly liquid even
-   while its path changes every frame. */
-.sidebar-liquid-bridge {
-  position: fixed;
-  inset: 0;
-  z-index: 47;
-  overflow: hidden;
-  background:
-    radial-gradient(250px 145px at 4% 0%, color-mix(in srgb, var(--liquid-highlight) 22%, transparent), transparent 72%),
-    linear-gradient(146deg, color-mix(in srgb, #fff 9%, transparent), transparent 42%),
-    linear-gradient(180deg, color-mix(in srgb, #fff 3%, transparent), color-mix(in srgb, var(--surface-solid) 7%, transparent)),
-    var(--liquid-fill-strong);
-  -webkit-backdrop-filter: var(--liquid-panel-fallback);
-  backdrop-filter: var(--liquid-panel-fallback);
-  -webkit-backdrop-filter: url("./liquid-glass-filters.svg#liquidGlassFlow") blur(2.8px) saturate(148%) contrast(103%);
-  backdrop-filter: url("./liquid-glass-filters.svg#liquidGlassFlow") blur(2.8px) saturate(148%) contrast(103%);
-  filter:
-    drop-shadow(0 0 0.8px color-mix(in srgb, var(--liquid-highlight) 72%, var(--liquid-border)))
-    drop-shadow(0 2px 1px color-mix(in srgb, var(--liquid-cyan) 45%, transparent))
-    drop-shadow(0 23px 48px color-mix(in srgb, var(--text) 18%, transparent));
-  opacity: 0;
-  visibility: hidden;
-  pointer-events: none;
-  will-change: opacity, clip-path, backdrop-filter;
-}
-
-body.dark .sidebar-liquid-bridge {
-  filter:
-    drop-shadow(0 0 0.75px rgba(255, 255, 255, 0.24))
-    drop-shadow(0 2px 1px rgba(82, 230, 221, 0.11))
-    drop-shadow(0 26px 58px rgba(0, 0, 0, 0.48));
-}
-
-.sidebar-goo {
-  display: none !important;
-}
-
-/* Once the unified material is active, the real sidebar and button keep only
-   their sharp content. Both optical pseudo-elements fade out, preventing a
-   second rectangle from being composited beneath the shared contour. */
-body.sidebar-unified-active .sidebar-surface,
-body.dark.sidebar-unified-active .sidebar-surface {
-  border-color: transparent;
-  background: transparent;
-  box-shadow: none;
-  -webkit-backdrop-filter: none;
-  backdrop-filter: none;
-}
-
-body.sidebar-unified-active .sidebar-surface::before,
-body.sidebar-unified-active .sidebar-surface::after {
-  opacity: 0;
-}
-
-body.sidebar-unified-active #sidebarToggle::before,
-body.sidebar-unified-active #sidebarToggle::after {
-  opacity: var(--sidebar-control-material-opacity, 1);
-}
-
+/* The previous implementation animated a full-viewport filtered clip-path on
+   every frame. Apart from producing a second glass surface, that forced large
+   repaints. The drawer now moves as one composited panel. */
 .drawer-backdrop,
 body.sidebar-open .drawer-backdrop {
   position: fixed;

@@ -12,10 +12,8 @@
    */
 
   const DEFAULTS = Object.freeze({
-    light: 0.86,
-    refraction: 0.78,
+    refraction: 0.64,
     depth: 0.86,
-    dispersion: 0.72,
     frost: 0.7,
     splay: 0.72,
   });
@@ -101,34 +99,16 @@
     const depthFactor = 0.74 + state.depth * 0.3;
     const controlScale = -state.refraction * 14.7 * depthFactor;
     const panelScale = -state.refraction * 31 * depthFactor;
-    const flowScale = state.refraction * 12 * depthFactor;
-
     const control = document.querySelector("#liquidGlassControl");
     const panel = document.querySelector("#liquidGlassPanel");
-    const dispersion = document.querySelector("#liquidGlassDispersion");
-    const flow = document.querySelector("#liquidGlassFlow");
-
     const controlReady = patchLensImages(control, lensX, lensY);
     const panelReady = patchLensImages(panel, lensX, lensY);
-    const dispersionReady = patchLensImages(dispersion, lensX, lensY);
     patchField(control, controlScale);
     patchField(panel, panelScale);
-    patchField(dispersion, controlScale);
-    patchField(flow, flowScale);
 
-    const spread = state.dispersion * 1.68;
-    const rise = state.dispersion * 0.44;
-    dispersion?.querySelector('feOffset[result="redShift"]')?.setAttribute("dx", String(round(spread, 2)));
-    dispersion?.querySelector('feOffset[result="redShift"]')?.setAttribute("dy", String(round(rise, 2)));
-    dispersion?.querySelector('feOffset[result="blueShift"]')?.setAttribute("dx", String(round(-spread, 2)));
-    dispersion?.querySelector('feOffset[result="blueShift"]')?.setAttribute("dy", String(round(-rise, 2)));
-
-    root.style.setProperty("--glass-frost", `${round(state.frost, 2)}px`);
-    root.style.setProperty("--glass-rim-width", `${round(2.2 + state.splay * 2.2, 2)}px`);
-    root.style.setProperty("--glass-panel-rim-width", `${round(5 + state.splay * 4, 2)}px`);
-    root.style.setProperty("--glass-rim-opacity", String(round(0.58 + state.light * 0.32, 3)));
-    root.style.setProperty("--glass-depth-factor", String(round(depthFactor, 3)));
-    root.dataset.liquidOptics = controlReady && panelReady && dispersionReady ? "ready" : "fallback";
+    root.style.setProperty("--glass-control-frost", `${round(5 + state.frost * 3, 2)}px`);
+    root.style.setProperty("--glass-panel-frost", `${round(14 + state.frost * 5, 2)}px`);
+    root.dataset.liquidOptics = controlReady && panelReady ? "ready" : "fallback";
 
     window.dispatchEvent(new CustomEvent("la-liquidglasschange", { detail: { ...state } }));
     return { ...state };

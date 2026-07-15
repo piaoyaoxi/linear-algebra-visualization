@@ -109,7 +109,11 @@ renderNav = function renderLearningNav() {
             <span class="chapter-label"><strong>${chapter.title}</strong><small>${getChapterSubtitle(chapter.id)}</small></span>
             <span class="chapter-arrow">›</span>
           </button>
-          <div class="section-list">${sectionLinks}</div>
+          <div class="section-list">
+            <div class="section-list-clip">
+              <div class="section-list-inner">${sectionLinks}</div>
+            </div>
+          </div>
         </div>`;
     })
     .join("");

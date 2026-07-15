@@ -14,7 +14,6 @@
     --chrome-side: 12px;
     --chrome-search-width: min(430px, calc(100vw - 142px));
     --chrome-sidebar-width: min(84vw, 318px);
-    --glass-frost: 1.1px;
   }
 
   .topbar-right {
@@ -36,7 +35,21 @@
   :root {
     --chrome-control-size: 42px;
     --chrome-control-radius: 14px;
-    --chrome-search-width: calc(100vw - 128px);
+    --chrome-search-width: auto;
+  }
+
+  .topbar-center {
+    right: calc(var(--chrome-control-size) + var(--chrome-control-size) + 13px);
+    left: calc(var(--chrome-control-size) + 8px);
+    width: auto;
+    transform: none;
+    transition: opacity 180ms ease, transform 220ms var(--chrome-ease-morph);
+  }
+
+  body.language-layer-active .topbar-center {
+    opacity: 0;
+    transform: translateY(-5px) scale(0.985);
+    pointer-events: none;
   }
 
   .topbar-search,
@@ -59,10 +72,6 @@
     border-radius: 23px;
   }
 
-  .liquid-panel::after {
-    padding: 9px;
-  }
-
   .search-modal-body {
     padding: 14px;
   }
@@ -81,20 +90,20 @@
 @media (max-width: 390px) {
   :root {
     --chrome-side: 9px;
-    --chrome-search-width: calc(100vw - 118px);
+    --chrome-search-width: auto;
   }
 
   .topbar-right {
     gap: 5px;
   }
 
-  .topbar-search-text {
-    font-size: 0;
+  .topbar-search,
+  body.dark .topbar-search {
+    justify-content: center;
   }
 
-  .topbar-search-text::after {
-    font-size: 13px;
-    content: "搜索";
+  .topbar-search-text {
+    display: none;
   }
 }
 
@@ -123,24 +132,4 @@
     transition-duration: 1ms !important;
   }
 
-  .sidebar-liquid-bridge {
-    display: none !important;
-  }
-
-  /* Reduced motion removes the animated shared contour, not the optical
-     material. The stationary sidebar keeps the same refractive panel pass. */
-  body.sidebar-unified-active .sidebar-surface,
-  body.dark.sidebar-unified-active .sidebar-surface {
-    background: transparent;
-    box-shadow: var(--liquid-shadow-deep);
-    -webkit-backdrop-filter: none;
-    backdrop-filter: none;
-  }
-
-  body.sidebar-unified-active .sidebar-surface::before,
-  body.sidebar-unified-active .sidebar-surface::after,
-  body.sidebar-unified-active #sidebarToggle::before,
-  body.sidebar-unified-active #sidebarToggle::after {
-    opacity: 1;
-  }
 }

@@ -25,54 +25,6 @@
     else element.removeAttribute("inert");
   }
 
-  function roundedRectPath(rect, radius) {
-    const x = px(rect.left);
-    const y = px(rect.top);
-    const w = px(Math.max(0, rect.width));
-    const h = px(Math.max(0, rect.height));
-    const r = px(Math.min(radius, w / 2, h / 2));
-    const right = px(x + w);
-    const bottom = px(y + h);
-    return [
-      `M ${x + r} ${y}`,
-      `H ${right - r}`,
-      `Q ${right} ${y} ${right} ${y + r}`,
-      `V ${bottom - r}`,
-      `Q ${right} ${bottom} ${right - r} ${bottom}`,
-      `H ${x + r}`,
-      `Q ${x} ${bottom} ${x} ${bottom - r}`,
-      `V ${y + r}`,
-      `Q ${x} ${y} ${x + r} ${y}`,
-      "Z",
-    ].join(" ");
-  }
-
-  function liquidBridgePath(panelRect, buttonRect, openness) {
-    const panelRight = panelRect.right;
-    const buttonLeft = buttonRect.left;
-    const gap = buttonLeft - panelRight;
-    if (gap <= -1 || gap > 104) return "";
-
-    const contact = smootherstep(1 - clamp(gap / 104));
-    const strength = contact * smootherstep(range(openness, 0.08, 0.82));
-    if (strength < 0.002) return "";
-
-    const centerY = buttonRect.top + buttonRect.height / 2;
-    const panelHalf = lerp(5, buttonRect.height * 0.47, Math.pow(strength, 0.72));
-    const buttonHalf = lerp(3, buttonRect.height * 0.43, Math.pow(strength, 0.78));
-    const span = Math.max(0, gap);
-    const leftControl = panelRight + Math.max(7, span * 0.38);
-    const rightControl = buttonLeft - Math.max(5, span * 0.27);
-
-    return [
-      `M ${px(panelRight - 1)} ${px(centerY - panelHalf)}`,
-      `C ${px(leftControl)} ${px(centerY - panelHalf)}, ${px(rightControl)} ${px(centerY - buttonHalf)}, ${px(buttonLeft + 1)} ${px(centerY - buttonHalf)}`,
-      `L ${px(buttonLeft + 1)} ${px(centerY + buttonHalf)}`,
-      `C ${px(rightControl)} ${px(centerY + buttonHalf)}, ${px(leftControl)} ${px(centerY + panelHalf)}, ${px(panelRight - 1)} ${px(centerY + panelHalf)}`,
-      "Z",
-    ].join(" ");
-  }
-
   class ReversibleSpring {
     constructor({
       value = 0,
@@ -161,8 +113,6 @@
     px,
     normalizeSearchText,
     setInert,
-    roundedRectPath,
-    liquidBridgePath,
     ReversibleSpring,
   };
 })();

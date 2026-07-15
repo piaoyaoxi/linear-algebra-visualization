@@ -59,6 +59,7 @@
         document.body.append(proxy);
         this.bindPointerLightTo?.(proxy);
         this.searchProxy = proxy;
+        this.positionSearchProxy();
       }
     },
 
@@ -69,6 +70,16 @@
         end: searchBar.getBoundingClientRect(),
         panelHeight: searchPanel.getBoundingClientRect().height || 410,
       };
+      this.positionSearchProxy();
+    },
+
+    positionSearchProxy() {
+      if (!this.searchProxy || !this.searchGeometry) return;
+      const { start } = this.searchGeometry;
+      this.searchProxy.style.left = `${px(start.left)}px`;
+      this.searchProxy.style.top = `${px(start.top)}px`;
+      this.searchProxy.style.width = `${px(start.width)}px`;
+      this.searchProxy.style.height = `${px(start.height)}px`;
     },
 
     renderSearch(progress, raw, target) {
@@ -95,7 +106,6 @@
       searchBar.style.opacity = targetProgress.toFixed(4);
       searchBody.style.opacity = bodyContent.toFixed(4);
       searchBody.style.transform = `translateY(${px(lerp(-10, 0, bodyContent))}px)`;
-      searchBody.style.filter = `blur(${px(lerp(7, 0, bodyContent))}px)`;
 
       const interactive = p > 0.88 && target === 1;
       searchBar.classList.toggle("is-interactive", interactive);
@@ -103,14 +113,18 @@
       if (this.searchProxy && this.searchGeometry) {
         const { start, end } = this.searchGeometry;
         const proxy = this.searchProxy;
-        proxy.style.left = `${px(lerp(start.left, end.left, travelProgress))}px`;
-        proxy.style.top = `${px(lerp(start.top, end.top, travelProgress))}px`;
-        proxy.style.width = `${px(lerp(start.width, end.width, travelProgress))}px`;
-        proxy.style.height = `${px(lerp(start.height, end.height, travelProgress))}px`;
-        proxy.style.borderRadius = `${px(lerp(start.height / 2, 28, travelProgress))}px`;
+        const dx = lerp(0, end.left - start.left, travelProgress);
+        const dy = lerp(0, end.top - start.top, travelProgress);
+        const scaleX = lerp(1, end.width / Math.max(1, start.width), travelProgress);
+        const scaleY = lerp(1, end.height / Math.max(1, start.height), travelProgress);
         proxy.style.opacity = proxyProgress.toFixed(4);
         const press = Math.sin(range(p, 0, 0.16) * Math.PI) * 0.014;
-        proxy.style.transform = `scale(${(1 - press + overshoot * 0.08).toFixed(4)})`;
+        const pulse = 1 - press + overshoot * 0.08;
+        const renderedScaleX = Math.max(0.01, scaleX * pulse);
+        const renderedScaleY = Math.max(0.01, scaleY * pulse);
+        const visualRadius = lerp(start.height / 2, 28, travelProgress);
+        proxy.style.borderRadius = `${px(visualRadius / renderedScaleX)}px / ${px(visualRadius / renderedScaleY)}px`;
+        proxy.style.transform = `translate3d(${px(dx)}px, ${px(dy)}px, 0) scale(${renderedScaleX.toFixed(4)}, ${renderedScaleY.toFixed(4)})`;
         proxy.style.pointerEvents = proxyProgress > 0.16 ? "auto" : "none";
       }
     },

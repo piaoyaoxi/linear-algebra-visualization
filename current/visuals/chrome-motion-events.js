@@ -24,19 +24,7 @@
     },
 
     readLanguagePreference() {
-      try {
-        const stored = localStorage.getItem("la-visual-language");
-        return ["zh-CN", "zh-TW", "en"].includes(stored) ? stored : "zh-CN";
-      } catch (_error) {
-        return "zh-CN";
-      }
-    },
-
-    prepareSidebarBridge() {
-      const bridge = this.elements.sidebarBridge;
-      if (!bridge) return;
-      bridge.replaceChildren();
-      bridge.classList.toggle("uses-unified-clip", this.sidebarClipSupported);
+      return "zh-CN";
     },
 
     bindEvents() {

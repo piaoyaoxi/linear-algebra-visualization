@@ -51,7 +51,9 @@
           else {
             let collapsed = this.body.classList.contains("sidebar-collapsed");
             try {
-              collapsed = localStorage.getItem("la-visual-sidebar") === "collapsed";
+              const stored = localStorage.getItem("la-visual-sidebar");
+              if (stored === "collapsed") collapsed = true;
+              else if (stored === "open") collapsed = false;
             } catch (_error) {
               // Keep the in-memory class state in privacy-restricted contexts.
             }

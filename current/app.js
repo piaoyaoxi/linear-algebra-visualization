@@ -177,8 +177,8 @@ function init() {
   const savedTheme = localStorage.getItem("la-visual-theme");
   if (savedTheme === "dark") document.body.classList.add("dark");
 
-  const collapsed = localStorage.getItem("la-visual-sidebar") === "collapsed";
-  if (collapsed) document.body.classList.add("sidebar-collapsed");
+  const sidebarPreference = localStorage.getItem("la-visual-sidebar");
+  if (sidebarPreference !== "open") document.body.classList.add("sidebar-collapsed");
 
   updateThemeIcon();
   renderNav();

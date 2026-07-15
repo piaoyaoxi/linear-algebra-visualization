@@ -3,7 +3,6 @@
 
   const source = document.currentScript?.src || window.location.href;
   const files = [
-    "liquid-material.js",
     "chrome-motion-runtime.js",
     "chrome-motion-controller.js",
     "chrome-motion-events.js",
@@ -43,7 +42,7 @@
   function loadScript(filename) {
     return new Promise((resolve, reject) => {
       const script = document.createElement("script");
-      script.src = new URL(`${filename}?v=30c`, source).href;
+      script.src = new URL(`${filename}?v=30e`, source).href;
       script.async = false;
       script.onload = resolve;
       script.onerror = () => reject(new Error(`Failed to load ${filename}`));

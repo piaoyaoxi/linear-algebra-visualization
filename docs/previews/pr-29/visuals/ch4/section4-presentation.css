@@ -392,8 +392,7 @@ body.dark .inverse-transform-lab {
 .inverse-basis,
 .inverse-sample-vector,
 .inverse-arrowhead,
-.inverse-origin-dot,
-.inverse-endpoint-dot {
+.inverse-origin-dot {
   vector-effect: non-scaling-stroke;
 }
 
@@ -500,15 +499,9 @@ body.dark .inverse-transform-lab {
 }
 
 .inverse-origin-dot {
-  fill: color-mix(in srgb, var(--text) 88%, #000 12%);
+  fill: color-mix(in srgb, var(--text) 90%, #000 10%);
   stroke: var(--surface-solid);
-  stroke-width: 1.4;
-}
-
-.inverse-endpoint-dot.is-vector {
-  fill: var(--inverse-vector);
-  stroke: var(--surface-solid);
-  stroke-width: 1.15;
+  stroke-width: 1.5;
 }
 
 .inverse-vector-label {

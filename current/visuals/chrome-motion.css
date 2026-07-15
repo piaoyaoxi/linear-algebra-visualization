@@ -1,15 +1,16 @@
-@import url("./chrome-motion-search.css?v=30b");
-@import url("./chrome-motion-language.css?v=30b");
-@import url("./chrome-motion-sidebar.css?v=30b");
-@import url("./chrome-motion-responsive.css?v=30b");
+@import url("./chrome-motion-search.css?v=30c");
+@import url("./chrome-motion-language.css?v=30c");
+@import url("./chrome-motion-sidebar.css?v=30c");
+@import url("./chrome-motion-responsive.css?v=30c");
 
 /*
- * Liquid Glass chrome — PR #30 refinement
+ * Liquid Glass chrome — PR #30 optical material pass
  *
- * The three controls use three different interaction grammars:
- * search is a shared element, language is one expanding shell, and the
- * sidebar is a continuously unified contour. Text and icons never enter the
- * liquid filter/mask, so they stay crisp throughout the motion.
+ * The controls keep their existing interaction grammar, but the material is
+ * now a real backdrop treatment: a nonlinear SVG displacement field bends and
+ * magnifies the page beneath the glass, a second rim-only pass separates RGB
+ * channels, and the remaining blur is deliberately light so it never replaces
+ * the refraction effect.
  */
 
 :root {
@@ -22,31 +23,54 @@
   --chrome-sidebar-radius: 26px;
   --chrome-ease-morph: cubic-bezier(0.22, 1, 0.36, 1);
   --chrome-ease-spring: cubic-bezier(0.34, 1.2, 0.64, 1);
-  --liquid-fill: color-mix(in srgb, var(--surface-solid) 64%, transparent);
-  --liquid-fill-strong: color-mix(in srgb, var(--surface-solid) 78%, transparent);
-  --liquid-border: color-mix(in srgb, #fff 66%, var(--line-strong));
-  --liquid-border-low: color-mix(in srgb, var(--line-strong) 72%, transparent);
-  --liquid-highlight: rgba(255, 255, 255, 0.86);
-  --liquid-highlight-soft: rgba(255, 255, 255, 0.34);
-  --liquid-shadow: 0 14px 32px color-mix(in srgb, var(--text) 11%, transparent);
-  --liquid-shadow-deep: 0 26px 68px color-mix(in srgb, var(--text) 17%, transparent);
-  --liquid-cyan: rgba(50, 214, 220, 0.11);
-  --liquid-warm: rgba(255, 194, 96, 0.09);
+
+  /* Optical controls. These names mirror the material model rather than
+     arbitrary paint values: light, refraction, depth, dispersion, frost and
+     splay can be tuned independently without changing interaction code. */
+  --glass-light: 0.86;
+  --glass-refraction: 30;
+  --glass-depth: 1;
+  --glass-dispersion: 1.65px;
+  --glass-frost: 1.25px;
+  --glass-splay: 29%;
+
+  --liquid-fill: color-mix(in srgb, var(--surface-solid) 12%, transparent);
+  --liquid-fill-strong: color-mix(in srgb, var(--surface-solid) 18%, transparent);
+  --liquid-border: color-mix(in srgb, #fff 74%, var(--line-strong));
+  --liquid-border-low: color-mix(in srgb, var(--line-strong) 64%, transparent);
+  --liquid-highlight: rgba(255, 255, 255, 0.94);
+  --liquid-highlight-soft: rgba(255, 255, 255, 0.42);
+  --liquid-shadow: 0 12px 28px color-mix(in srgb, var(--text) 12%, transparent), 0 2px 8px rgba(18, 28, 25, 0.08);
+  --liquid-shadow-deep: 0 28px 72px color-mix(in srgb, var(--text) 18%, transparent), 0 4px 14px rgba(18, 28, 25, 0.1);
+  --liquid-cyan: rgba(66, 232, 232, 0.34);
+  --liquid-blue: rgba(89, 146, 255, 0.2);
+  --liquid-warm: rgba(255, 185, 88, 0.28);
+  --liquid-red: rgba(255, 93, 126, 0.22);
+  --liquid-control-fallback: blur(10px) saturate(148%) contrast(104%);
+  --liquid-panel-fallback: blur(18px) saturate(152%) contrast(103%);
 }
 
 body.dark {
-  --liquid-fill: color-mix(in srgb, var(--surface-solid) 55%, transparent);
-  --liquid-fill-strong: color-mix(in srgb, var(--surface-solid) 70%, transparent);
-  --liquid-border: rgba(255, 255, 255, 0.2);
-  --liquid-border-low: rgba(255, 255, 255, 0.09);
-  --liquid-highlight: rgba(255, 255, 255, 0.48);
-  --liquid-highlight-soft: rgba(255, 255, 255, 0.14);
-  --liquid-shadow: 0 16px 38px rgba(0, 0, 0, 0.3);
-  --liquid-shadow-deep: 0 30px 78px rgba(0, 0, 0, 0.48);
-  --liquid-cyan: rgba(92, 238, 225, 0.12);
-  --liquid-warm: rgba(255, 206, 112, 0.07);
+  --glass-light: 0.62;
+  --liquid-fill: color-mix(in srgb, var(--surface-solid) 9%, transparent);
+  --liquid-fill-strong: color-mix(in srgb, var(--surface-solid) 14%, transparent);
+  --liquid-border: rgba(255, 255, 255, 0.28);
+  --liquid-border-low: rgba(255, 255, 255, 0.12);
+  --liquid-highlight: rgba(255, 255, 255, 0.64);
+  --liquid-highlight-soft: rgba(255, 255, 255, 0.19);
+  --liquid-shadow: 0 16px 36px rgba(0, 0, 0, 0.34), 0 2px 8px rgba(0, 0, 0, 0.24);
+  --liquid-shadow-deep: 0 32px 82px rgba(0, 0, 0, 0.52), 0 5px 18px rgba(0, 0, 0, 0.3);
+  --liquid-cyan: rgba(92, 244, 232, 0.3);
+  --liquid-blue: rgba(105, 158, 255, 0.18);
+  --liquid-warm: rgba(255, 204, 112, 0.2);
+  --liquid-red: rgba(255, 104, 140, 0.18);
+  --liquid-control-fallback: blur(11px) saturate(142%) contrast(106%);
+  --liquid-panel-fallback: blur(19px) saturate(145%) contrast(105%);
 }
 
+/* Kept for the legacy inline definitions already present in learn.html. The
+   new production filters live in liquid-glass-filters.svg so they can be
+   shared by every surface without duplicating a large filter graph. */
 .liquid-filter-defs {
   position: fixed;
   inset: 0 auto auto 0;
@@ -109,15 +133,18 @@ body.dark .topbar-search,
   overflow: hidden;
   border: 0;
   background: transparent;
-  box-shadow: none;
+  box-shadow: var(--liquid-shadow);
   -webkit-backdrop-filter: none;
   backdrop-filter: none;
   color: var(--text);
   transform: translateZ(0);
-  transition: color 170ms ease, transform 230ms var(--chrome-ease-spring);
+  transition: color 170ms ease, transform 230ms var(--chrome-ease-spring), box-shadow 230ms ease;
   -webkit-tap-highlight-color: transparent;
 }
 
+/* Base optical pass. The first backdrop declaration is the honest fallback;
+   browsers that accept SVG URL filters replace it with the refraction graph.
+   Frost remains intentionally small in the advanced path. */
 .icon-button::before,
 .topbar-search::before,
 .search-morph-proxy::before {
@@ -127,42 +154,69 @@ body.dark .topbar-search,
   border-radius: inherit;
   background:
     radial-gradient(
-      104px 70px at var(--liquid-pointer-x, 20%) var(--liquid-pointer-y, 3%),
-      color-mix(in srgb, var(--liquid-highlight) 20%, transparent),
-      transparent 64%
+      112px 76px at var(--liquid-pointer-x, 20%) var(--liquid-pointer-y, 2%),
+      color-mix(in srgb, var(--liquid-highlight) 24%, transparent),
+      transparent 62%
     ),
-    linear-gradient(155deg, color-mix(in srgb, #fff 18%, transparent), transparent 44%),
+    linear-gradient(156deg, color-mix(in srgb, #fff 13%, transparent), transparent 43%),
+    linear-gradient(180deg, color-mix(in srgb, #fff 5%, transparent), color-mix(in srgb, var(--surface-solid) 6%, transparent)),
     var(--liquid-fill);
-  -webkit-backdrop-filter: blur(18px) saturate(145%);
-  backdrop-filter: blur(18px) saturate(145%);
+  -webkit-backdrop-filter: var(--liquid-control-fallback);
+  backdrop-filter: var(--liquid-control-fallback);
+  -webkit-backdrop-filter: url("./liquid-glass-filters.svg#liquidGlassControl") blur(var(--glass-frost)) saturate(146%) contrast(104%);
+  backdrop-filter: url("./liquid-glass-filters.svg#liquidGlassControl") blur(var(--glass-frost)) saturate(146%) contrast(104%);
   content: "";
+  transform: translateZ(0) scale(1.012);
+  transform-origin: center;
+  will-change: backdrop-filter, transform;
 }
 
+/* Rim optical pass. This is not a coloured border: it samples the backdrop a
+   second time, runs the RGB split filter, and reveals that result only in the
+   outer splay band. The gradient above it supplies the glass specular. */
 .icon-button::after,
 .topbar-search::after,
 .search-morph-proxy::after {
   position: absolute;
   inset: 0;
   z-index: 1;
-  border: 1px solid var(--liquid-border);
+  padding: 1px;
   border-radius: inherit;
   background:
-    linear-gradient(122deg, var(--liquid-highlight) 0 1px, transparent 1.8px 68%, var(--liquid-highlight-soft) 100%),
-    linear-gradient(90deg, var(--liquid-cyan), transparent 18% 82%, var(--liquid-warm));
+    radial-gradient(90px 52px at var(--liquid-pointer-x, 18%) var(--liquid-pointer-y, 0%), color-mix(in srgb, var(--liquid-highlight) 88%, transparent), transparent 69%) border-box,
+    conic-gradient(
+      from 218deg at 50% 50%,
+      var(--liquid-cyan),
+      color-mix(in srgb, var(--liquid-highlight) 76%, transparent) 16%,
+      transparent 31% 56%,
+      var(--liquid-warm) 72%,
+      var(--liquid-red) 82%,
+      color-mix(in srgb, var(--liquid-highlight-soft) 72%, transparent) 100%
+    ) border-box;
   box-shadow:
-    inset 0 1px 0 color-mix(in srgb, var(--liquid-highlight) 64%, transparent),
-    inset 1px 0 0 var(--liquid-cyan),
-    inset -1px 0 0 var(--liquid-warm),
-    var(--liquid-shadow);
+    inset 0 1px 0 color-mix(in srgb, var(--liquid-highlight) 74%, transparent),
+    inset 0 -1px 0 color-mix(in srgb, var(--liquid-border-low) 66%, transparent);
+  -webkit-backdrop-filter: blur(0.45px) saturate(138%);
+  backdrop-filter: blur(0.45px) saturate(138%);
+  -webkit-backdrop-filter: url("./liquid-glass-filters.svg#liquidGlassDispersion") blur(0.35px) saturate(142%);
+  backdrop-filter: url("./liquid-glass-filters.svg#liquidGlassDispersion") blur(0.35px) saturate(142%);
   content: "";
   pointer-events: none;
+  -webkit-mask:
+    linear-gradient(#000 0 0) content-box,
+    linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+  mask:
+    linear-gradient(#000 0 0) content-box,
+    linear-gradient(#000 0 0);
+  mask-composite: exclude;
 }
 
 .icon-button > *,
 .topbar-search > *,
 .search-morph-proxy > * {
   position: relative;
-  z-index: 2;
+  z-index: 3;
 }
 
 .icon-button,
@@ -198,7 +252,13 @@ body.dark .icon-button:hover,
 .topbar-search:hover,
 body.dark .topbar-search:hover {
   color: var(--accent-strong);
+  box-shadow: 0 15px 34px color-mix(in srgb, var(--text) 15%, transparent), 0 3px 9px rgba(18, 28, 25, 0.09);
   transform: translateY(-1px) scale(1.014);
+}
+
+body.dark .icon-button:hover,
+body.dark .topbar-search:hover {
+  box-shadow: 0 19px 42px rgba(0, 0, 0, 0.42), 0 3px 10px rgba(0, 0, 0, 0.26);
 }
 
 .topbar-search:hover,
@@ -220,4 +280,3 @@ body.dark .topbar-search:hover {
   outline: 3px solid color-mix(in srgb, var(--accent) 34%, transparent);
   outline-offset: 3px;
 }
-

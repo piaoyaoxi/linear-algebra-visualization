@@ -2759,15 +2759,16 @@ body.dark .control-stack {
   color: var(--text);
 }
 
+/* Keep summary in normal flow: grid would turn each KaTeX node into a cell. */
 .self-test-item summary {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) 18px;
-  align-items: start;
-  gap: 12px;
+  position: relative;
+  display: block;
+  padding-right: 28px;
   cursor: pointer;
   list-style: none;
   color: var(--text);
   font-weight: 760;
+  line-height: 1.55;
 }
 
 .self-test-item summary::-webkit-details-marker {
@@ -2775,8 +2776,9 @@ body.dark .control-stack {
 }
 
 .self-test-item summary::after {
-  justify-self: end;
-  margin-top: 0.35em;
+  position: absolute;
+  top: 0.45em;
+  right: 2px;
   width: 8px;
   height: 8px;
   border-right: 2px solid currentColor;
@@ -2785,10 +2787,11 @@ body.dark .control-stack {
   transform: rotate(45deg);
   transition: transform var(--expand-duration-chevron-disclose) var(--expand-ease-chevron);
   opacity: 0.55;
+  pointer-events: none;
 }
 
 .self-test-item[open] summary::after {
-  margin-top: 0.45em;
+  top: 0.55em;
   transform: rotate(225deg);
   opacity: 0.85;
 }

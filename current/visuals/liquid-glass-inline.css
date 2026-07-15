@@ -1,38 +1,63 @@
 /*
- * Inline-filter compatibility layer.
+ * Inline SVG optical pass.
  *
- * chrome-motion.css already supplies a plain blur fallback and an external SVG
- * URL pass. This file is loaded after it and prefers the same filter graph from
- * the inline <defs> in learn.html, which is the most reliable path in WebKit.
- * Unsupported declarations are ignored, leaving the earlier fallbacks intact.
+ * The base styles keep a plain blur fallback and an external SVG reference.
+ * This later sheet prefers the inline filters in learn.html; the optics module
+ * replaces their feImage references with self-contained lens maps before the
+ * motion controller mounts, avoiding Chromium's silent blur-only failure while
+ * retaining the reliable inline path used by WebKit.
  */
+
+:root {
+  --glass-rim-width: 3.78px;
+  --glass-panel-rim-width: 7.88px;
+  --glass-rim-opacity: 0.855;
+}
 
 .icon-button::before,
 .topbar-search::before,
 .search-morph-proxy::before {
-  -webkit-backdrop-filter: url("#liquidGlassControl") blur(0.65px) saturate(146%) contrast(104%);
-  backdrop-filter: url("#liquidGlassControl") blur(0.65px) saturate(146%) contrast(104%);
+  -webkit-backdrop-filter: url("#liquidGlassControl") blur(var(--glass-frost)) saturate(146%) contrast(104%);
+  backdrop-filter: url("#liquidGlassControl") blur(var(--glass-frost)) saturate(146%) contrast(104%);
 }
 
 .icon-button::after,
 .topbar-search::after,
 .search-morph-proxy::after {
-  padding: 6px;
+  padding: var(--glass-rim-width);
   -webkit-backdrop-filter: url("#liquidGlassDispersion") blur(0.18px) saturate(142%);
   backdrop-filter: url("#liquidGlassDispersion") blur(0.18px) saturate(142%);
+  opacity: var(--glass-rim-opacity);
 }
 
 .liquid-panel::before {
-  -webkit-backdrop-filter: url("#liquidGlassPanel") blur(0.9px) saturate(146%) contrast(104%);
-  backdrop-filter: url("#liquidGlassPanel") blur(0.9px) saturate(146%) contrast(104%);
+  -webkit-backdrop-filter: url("#liquidGlassPanel") blur(calc(var(--glass-frost) + 0.3px)) saturate(146%) contrast(104%);
+  backdrop-filter: url("#liquidGlassPanel") blur(calc(var(--glass-frost) + 0.3px)) saturate(146%) contrast(104%);
 }
 
 .liquid-panel::after {
+  padding: var(--glass-panel-rim-width);
   -webkit-backdrop-filter: url("#liquidGlassDispersion") blur(0.24px) saturate(142%);
   backdrop-filter: url("#liquidGlassDispersion") blur(0.24px) saturate(142%);
+  opacity: var(--glass-rim-opacity);
 }
 
 .sidebar-liquid-bridge {
-  -webkit-backdrop-filter: url("#liquidGlassFlow") blur(1.2px) saturate(146%) contrast(104%);
-  backdrop-filter: url("#liquidGlassFlow") blur(1.2px) saturate(146%) contrast(104%);
+  -webkit-backdrop-filter: url("#liquidGlassFlow") blur(calc(var(--glass-frost) + 0.5px)) saturate(146%) contrast(104%);
+  backdrop-filter: url("#liquidGlassFlow") blur(calc(var(--glass-frost) + 0.5px)) saturate(146%) contrast(104%);
+}
+
+/* Preserve a readable material when a browser accepts backdrop-filter but not
+   SVG URL filters. Unsupported URL declarations are ignored and these explicit
+   fallbacks take over without creating an empty or opaque surface. */
+:root[data-liquid-optics="fallback"] .icon-button::before,
+:root[data-liquid-optics="fallback"] .topbar-search::before,
+:root[data-liquid-optics="fallback"] .search-morph-proxy::before {
+  -webkit-backdrop-filter: var(--liquid-control-fallback);
+  backdrop-filter: var(--liquid-control-fallback);
+}
+
+:root[data-liquid-optics="fallback"] .liquid-panel::before {
+  -webkit-backdrop-filter: var(--liquid-panel-fallback);
+  backdrop-filter: var(--liquid-panel-fallback);
 }

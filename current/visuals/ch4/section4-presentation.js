@@ -221,11 +221,10 @@
                 <line class="inverse-basis is-x" data-inverse-basis-x />
                 <line class="inverse-basis is-y" data-inverse-basis-y />
                 <line class="inverse-sample-vector" data-inverse-vector />
+                <circle class="inverse-origin-dot" data-inverse-origin r="4"></circle>
                 <polygon class="inverse-arrowhead is-x" data-inverse-basis-x-head></polygon>
                 <polygon class="inverse-arrowhead is-y" data-inverse-basis-y-head></polygon>
                 <polygon class="inverse-arrowhead is-vector" data-inverse-vector-head></polygon>
-                <circle class="inverse-origin-dot" data-inverse-origin r="4.2"></circle>
-                <circle class="inverse-endpoint-dot is-vector" data-inverse-vector-dot r="2.8"></circle>
                 <text class="inverse-basis-label is-x" data-inverse-basis-x-label></text>
                 <text class="inverse-basis-label is-y" data-inverse-basis-y-label></text>
                 <text class="inverse-vector-label" data-inverse-vector-label></text>
@@ -327,7 +326,6 @@
       basisYHead: lab.querySelector("[data-inverse-basis-y-head]"),
       vectorHead: lab.querySelector("[data-inverse-vector-head]"),
       originDot: lab.querySelector("[data-inverse-origin]"),
-      vectorDot: lab.querySelector("[data-inverse-vector-dot]"),
       stageLabel: lab.querySelector("[data-inverse-stage-label]"),
       stageTitle: lab.querySelector("[data-inverse-stage-title]"),
       caption: lab.querySelector("[data-inverse-caption]"),
@@ -398,10 +396,10 @@
     }
 
     /**
-     * Draw a filled arrowhead whose sharp apex sits exactly on `to`.
-     * The shaft is shortened so it meets the base of the triangle.
+     * Draw a slender filled arrowhead whose apex is exactly `to`.
+     * Shaft stops inside the triangle so the sharp tip is the true endpoint.
      */
-    function setArrow(line, head, from, to, length = 12, halfWidth = 5) {
+    function setArrow(line, head, from, to, length = 14, halfWidth = 4) {
       const dx = to[0] - from[0];
       const dy = to[1] - from[1];
       const dist = Math.hypot(dx, dy) || 1;
@@ -409,25 +407,29 @@
       const uy = dy / dist;
       const px = -uy;
       const py = ux;
-      const base = [to[0] - ux * length, to[1] - uy * length];
-      const left = [base[0] + px * halfWidth, base[1] + py * halfWidth];
-      const right = [base[0] - px * halfWidth, base[1] - py * halfWidth];
-      // Shaft ends at the triangle base so the apex is the true endpoint.
-      const shaftEnd = [to[0] - ux * (length * 0.72), to[1] - uy * (length * 0.72)];
+      // Keep a usable head even for very short collapsed vectors.
+      const headLen = Math.min(length, Math.max(8, dist * 0.28));
+      const headHalf = Math.min(halfWidth, headLen * 0.32);
+      const base = [to[0] - ux * headLen, to[1] - uy * headLen];
+      const left = [base[0] + px * headHalf, base[1] + py * headHalf];
+      const right = [base[0] - px * headHalf, base[1] - py * headHalf];
+      // Shaft ends inside the triangle body (not past the apex).
+      const shaftEnd = [to[0] - ux * (headLen * 0.62), to[1] - uy * (headLen * 0.62)];
       setLine(line, from, shaftEnd);
+      // Apex first — this pixel IS the mathematical endpoint.
       head.setAttribute("points", `${to[0]},${to[1]} ${left[0]},${left[1]} ${right[0]},${right[1]}`);
     }
 
     function setLabel(label, point, text) {
-      label.setAttribute("x", point[0] + 9);
-      label.setAttribute("y", point[1] - 9);
+      label.setAttribute("x", point[0] + 10);
+      label.setAttribute("y", point[1] - 10);
       label.textContent = text;
     }
 
     function setVectorLabel(label, point, text) {
-      // Sit just past the sharp tip so the label never covers the endpoint.
-      label.setAttribute("x", point[0] + 10);
-      label.setAttribute("y", point[1] - 2);
+      // Offset past the sharp tip so the label never covers the apex.
+      label.setAttribute("x", point[0] + 11);
+      label.setAttribute("y", point[1] - 3);
       label.setAttribute("dominant-baseline", "middle");
       label.setAttribute("text-anchor", "start");
       label.textContent = text;
@@ -456,11 +458,10 @@
 
       elements.grid.innerHTML = gridMarkup(currentMatrix, "inverse-current-line");
       elements.square.setAttribute("points", polygonPoints(currentMatrix, SQUARE));
-      setArrow(elements.basisX, elements.basisXHead, origin, basisX, 13, 5.5);
-      setArrow(elements.basisY, elements.basisYHead, origin, basisY, 13, 5.5);
-      setArrow(elements.vector, elements.vectorHead, origin, vectorTip, 12, 5);
+      setArrow(elements.basisX, elements.basisXHead, origin, basisX, 15, 4.2);
+      setArrow(elements.basisY, elements.basisYHead, origin, basisY, 15, 4.2);
+      setArrow(elements.vector, elements.vectorHead, origin, vectorTip, 14, 3.8);
       setDot(elements.originDot, origin);
-      setDot(elements.vectorDot, vectorTip);
       setLabel(elements.basisXLabel, basisX, stage === 1 ? "Ae₁" : "e₁");
       setLabel(elements.basisYLabel, basisY, stage === 1 ? "Ae₂" : "e₂");
       setVectorLabel(elements.vectorLabel, vectorTip, stage === 1 ? "Ax" : stage === 2 ? "A⁻¹Ax = x" : "x");

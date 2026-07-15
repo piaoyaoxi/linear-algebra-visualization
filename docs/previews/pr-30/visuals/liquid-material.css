@@ -1,0 +1,328 @@
+/*
+ * Optical Liquid Glass material.
+ *
+ * The moving controls keep their existing interaction state machines. This
+ * layer only owns the material: a backdrop capture, an SVG normal-field
+ * refraction, wavelength-separated displacement, depth tint and a restrained
+ * specular rim. Icons and text remain outside the filtered stack.
+ */
+
+:root {
+  --glass-light: 0.82;
+  --glass-depth: 0.88;
+  --glass-dispersion: 0.76;
+  --glass-frost: 2.4px;
+  --glass-splay: 0.78;
+  --glass-surface: rgba(248, 252, 251, 0.105);
+  --glass-surface-panel: rgba(248, 252, 251, 0.135);
+  --glass-rim: rgba(255, 255, 255, 0.72);
+  --glass-rim-soft: rgba(255, 255, 255, 0.24);
+  --glass-depth-shadow: rgba(26, 47, 42, 0.11);
+  --glass-cyan: rgba(76, 228, 238, 0.12);
+  --glass-warm: rgba(255, 183, 87, 0.105);
+  --glass-cast-shadow: 0 14px 34px rgba(29, 45, 40, 0.12), 0 2px 8px rgba(29, 45, 40, 0.08);
+  --glass-panel-shadow: 0 30px 82px rgba(22, 38, 33, 0.18), 0 5px 18px rgba(22, 38, 33, 0.1);
+}
+
+body.dark {
+  --glass-surface: rgba(15, 24, 22, 0.16);
+  --glass-surface-panel: rgba(14, 23, 21, 0.2);
+  --glass-rim: rgba(255, 255, 255, 0.36);
+  --glass-rim-soft: rgba(255, 255, 255, 0.12);
+  --glass-depth-shadow: rgba(0, 0, 0, 0.3);
+  --glass-cyan: rgba(87, 233, 241, 0.13);
+  --glass-warm: rgba(255, 198, 104, 0.09);
+  --glass-cast-shadow: 0 16px 38px rgba(0, 0, 0, 0.34), 0 3px 11px rgba(0, 0, 0, 0.22);
+  --glass-panel-shadow: 0 34px 92px rgba(0, 0, 0, 0.52), 0 7px 24px rgba(0, 0, 0, 0.34);
+}
+
+.liquid-optics-defs {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 0;
+  height: 0;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+[data-liquid-optics] {
+  isolation: isolate;
+}
+
+.icon-button[data-liquid-optics],
+body.dark .icon-button[data-liquid-optics],
+.topbar-search[data-liquid-optics],
+body.dark .topbar-search[data-liquid-optics],
+.search-morph-proxy[data-liquid-optics],
+.liquid-panel[data-liquid-optics],
+body.dark .liquid-panel[data-liquid-optics] {
+  background: transparent !important;
+  -webkit-backdrop-filter: none !important;
+  backdrop-filter: none !important;
+}
+
+.icon-button[data-liquid-optics],
+body.dark .icon-button[data-liquid-optics],
+.topbar-search[data-liquid-optics],
+body.dark .topbar-search[data-liquid-optics],
+.search-morph-proxy[data-liquid-optics] {
+  box-shadow: var(--glass-cast-shadow) !important;
+}
+
+.liquid-panel[data-liquid-optics],
+body.dark .liquid-panel[data-liquid-optics] {
+  border-color: transparent !important;
+  box-shadow: var(--glass-panel-shadow) !important;
+}
+
+.icon-button[data-liquid-optics]::before,
+.icon-button[data-liquid-optics]::after,
+.topbar-search[data-liquid-optics]::before,
+.topbar-search[data-liquid-optics]::after,
+.search-morph-proxy[data-liquid-optics]::before,
+.search-morph-proxy[data-liquid-optics]::after,
+.liquid-panel[data-liquid-optics]::before {
+  display: none !important;
+  content: none !important;
+}
+
+[data-liquid-optics] > .liquid-material-stack {
+  position: absolute !important;
+  inset: 0;
+  z-index: 0 !important;
+  display: block !important;
+  overflow: hidden;
+  border-radius: inherit;
+  pointer-events: none;
+  transform: translateZ(0);
+  transform-origin: center;
+}
+
+[data-liquid-optics]:not(.sidebar-liquid-bridge) > :not(.liquid-material-stack) {
+  position: relative;
+  z-index: 2;
+}
+
+.liquid-material-stack > span {
+  position: absolute;
+  inset: 0;
+  display: block;
+  border-radius: inherit;
+  pointer-events: none;
+}
+
+.liquid-material-refraction {
+  z-index: 0;
+  background: var(--glass-surface);
+  -webkit-backdrop-filter: blur(var(--glass-frost)) saturate(172%) contrast(1.045) brightness(1.025);
+  backdrop-filter: blur(var(--glass-frost)) saturate(172%) contrast(1.045) brightness(1.025);
+  transform: translateZ(0);
+  will-change: filter, backdrop-filter;
+}
+
+[data-liquid-optics="compact"] .liquid-material-refraction {
+  filter: url(#liquidGlassCompact);
+}
+
+[data-liquid-optics="pill"] .liquid-material-refraction {
+  filter: url(#liquidGlassPill);
+}
+
+[data-liquid-optics="menu"] .liquid-material-refraction {
+  filter: url(#liquidGlassMenu);
+}
+
+[data-liquid-optics="panel"] .liquid-material-refraction {
+  background: var(--glass-surface-panel);
+  -webkit-backdrop-filter: blur(calc(var(--glass-frost) + 1.2px)) saturate(168%) contrast(1.035) brightness(1.018);
+  backdrop-filter: blur(calc(var(--glass-frost) + 1.2px)) saturate(168%) contrast(1.035) brightness(1.018);
+  filter: url(#liquidGlassPanel);
+}
+
+.liquid-material-tint {
+  z-index: 1;
+  background:
+    radial-gradient(
+      145% 105% at var(--liquid-pointer-x, 18%) var(--liquid-pointer-y, 0%),
+      rgba(255, 255, 255, 0.25) 0,
+      rgba(255, 255, 255, 0.075) 29%,
+      transparent 59%
+    ),
+    linear-gradient(148deg, rgba(255, 255, 255, 0.16), transparent 42%),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.055), transparent 48%, rgba(20, 40, 35, 0.055));
+  opacity: var(--glass-light);
+  mix-blend-mode: screen;
+}
+
+body.dark .liquid-material-tint {
+  background:
+    radial-gradient(
+      145% 105% at var(--liquid-pointer-x, 18%) var(--liquid-pointer-y, 0%),
+      rgba(255, 255, 255, 0.19) 0,
+      rgba(255, 255, 255, 0.045) 31%,
+      transparent 60%
+    ),
+    linear-gradient(148deg, rgba(255, 255, 255, 0.095), transparent 43%),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.025), transparent 45%, rgba(0, 0, 0, 0.12));
+}
+
+.liquid-material-caustic {
+  z-index: 2;
+  background:
+    radial-gradient(
+      92px 74px at var(--liquid-pointer-x, 16%) var(--liquid-pointer-y, 4%),
+      rgba(255, 255, 255, 0.3),
+      rgba(255, 255, 255, 0.07) 34%,
+      transparent 68%
+    ),
+    linear-gradient(90deg, var(--glass-cyan), transparent 16% 84%, var(--glass-warm));
+  opacity: 0.62;
+  mix-blend-mode: screen;
+  transition: opacity 180ms ease;
+}
+
+[data-liquid-optics="panel"] .liquid-material-caustic,
+[data-liquid-optics="menu"] .liquid-material-caustic {
+  background:
+    radial-gradient(
+      210px 145px at var(--liquid-pointer-x, 12%) var(--liquid-pointer-y, 0%),
+      rgba(255, 255, 255, 0.23),
+      rgba(255, 255, 255, 0.055) 40%,
+      transparent 72%
+    ),
+    linear-gradient(90deg, var(--glass-cyan), transparent 10% 90%, var(--glass-warm));
+  opacity: 0.52;
+}
+
+.icon-button[data-liquid-optics]:hover .liquid-material-caustic,
+.topbar-search[data-liquid-optics]:hover .liquid-material-caustic,
+.search-morph-proxy[data-liquid-optics]:hover .liquid-material-caustic {
+  opacity: 0.9;
+}
+
+.liquid-material-rim {
+  z-index: 3;
+  border: 1px solid var(--glass-rim);
+  background:
+    linear-gradient(122deg, rgba(255, 255, 255, 0.84) 0 1px, transparent 1.8px 69%, var(--glass-rim-soft) 100%);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.52),
+    inset 0 -1px 0 rgba(255, 255, 255, 0.08),
+    inset 7px 0 16px var(--glass-cyan),
+    inset -7px 0 16px var(--glass-warm),
+    inset 0 -13px 28px var(--glass-depth-shadow);
+  opacity: var(--glass-depth);
+}
+
+body.dark .liquid-material-rim {
+  background:
+    linear-gradient(122deg, rgba(255, 255, 255, 0.48) 0 1px, transparent 1.8px 70%, rgba(255, 255, 255, 0.11) 100%);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.28),
+    inset 0 -1px 0 rgba(255, 255, 255, 0.035),
+    inset 7px 0 17px var(--glass-cyan),
+    inset -7px 0 17px var(--glass-warm),
+    inset 0 -15px 32px var(--glass-depth-shadow);
+}
+
+[data-liquid-optics="panel"] .liquid-material-rim,
+[data-liquid-optics="menu"] .liquid-material-rim {
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.5),
+    inset 0 -1px 0 rgba(255, 255, 255, 0.07),
+    inset 12px 0 30px var(--glass-cyan),
+    inset -12px 0 30px var(--glass-warm),
+    inset 0 -24px 54px var(--glass-depth-shadow);
+}
+
+/* The trigger is only the language icon. The expanding menu remains the one
+   optical shell in both its compact and expanded states. */
+.language-trigger > .liquid-material-stack {
+  display: none !important;
+}
+
+/* The sidebar's moving panel and fixed button are clipped into one contour by
+   the existing motion controller. In that state the bridge owns the material;
+   the rectangular panel material fades out so no pasted-on double border can
+   appear. */
+.sidebar-liquid-bridge[data-liquid-optics] {
+  background: transparent !important;
+  -webkit-backdrop-filter: none !important;
+  backdrop-filter: none !important;
+}
+
+.sidebar-liquid-bridge > .liquid-material-stack {
+  opacity: 0;
+  transition: opacity 100ms linear;
+}
+
+.sidebar-liquid-bridge .liquid-material-refraction {
+  background: var(--glass-surface-panel);
+  -webkit-backdrop-filter: blur(calc(var(--glass-frost) + 12px)) saturate(164%) contrast(1.025);
+  backdrop-filter: blur(calc(var(--glass-frost) + 12px)) saturate(164%) contrast(1.025);
+  filter: none;
+}
+
+.sidebar-liquid-bridge .liquid-material-caustic {
+  background:
+    radial-gradient(360px 210px at 4% 0%, rgba(255, 255, 255, 0.2), transparent 73%),
+    linear-gradient(90deg, var(--glass-cyan), transparent 9% 91%, var(--glass-warm));
+}
+
+.sidebar-liquid-bridge .liquid-material-rim {
+  border: 0;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.24), inset 0 -22px 52px var(--glass-depth-shadow);
+}
+
+body.sidebar-unified-active .sidebar-liquid-bridge > .liquid-material-stack {
+  opacity: 1;
+}
+
+body.sidebar-unified-active .sidebar-surface > .liquid-material-stack {
+  opacity: 0;
+}
+
+/* Keep the optical stack stable during the reversible morphs. The parent owns
+   all geometric transforms; the material only inherits the changing radius. */
+.search-morph-proxy > .liquid-material-stack,
+.search-modal-panel > .liquid-material-stack,
+.language-menu > .liquid-material-stack,
+.sidebar-surface > .liquid-material-stack {
+  will-change: border-radius, opacity;
+}
+
+@supports not ((-webkit-backdrop-filter: blur(1px)) or (backdrop-filter: blur(1px))) {
+  .liquid-material-refraction {
+    background: color-mix(in srgb, var(--surface-solid) 88%, transparent) !important;
+    filter: none !important;
+  }
+}
+
+@media (prefers-reduced-transparency: reduce) {
+  .liquid-material-refraction {
+    background: color-mix(in srgb, var(--surface-solid) 92%, transparent) !important;
+    -webkit-backdrop-filter: blur(8px) saturate(120%) !important;
+    backdrop-filter: blur(8px) saturate(120%) !important;
+    filter: none !important;
+  }
+
+  .liquid-material-caustic {
+    opacity: 0.24 !important;
+  }
+}
+
+@media (forced-colors: active) {
+  [data-liquid-optics] > .liquid-material-stack {
+    display: none !important;
+  }
+
+  .icon-button[data-liquid-optics],
+  .topbar-search[data-liquid-optics],
+  .liquid-panel[data-liquid-optics] {
+    border: 1px solid ButtonText !important;
+    background: Canvas !important;
+    color: CanvasText !important;
+    box-shadow: none !important;
+  }
+}

@@ -31,6 +31,13 @@
   --canvas-paper-top: #fbfcfb;
   --canvas-paper-bottom: #f3f6f4;
   --canvas-paper-glow: rgba(7, 139, 126, 0.05);
+  /* Expand / disclose motion — nav snappier than content reveal */
+  --expand-ease: cubic-bezier(0.16, 1, 0.3, 1);
+  --expand-ease-chevron: cubic-bezier(0.34, 1.2, 0.64, 1);
+  --expand-duration-nav: 280ms;
+  --expand-duration-disclose: 400ms;
+  --expand-duration-chevron-nav: 200ms;
+  --expand-duration-chevron-disclose: 320ms;
 }
 
 body.dark {
@@ -406,21 +413,51 @@ body.dark .sidebar-brand-mark {
 .chapter-arrow {
   color: var(--faint);
   transform: rotate(0deg);
-  transition: transform 160ms ease;
+  transition: transform var(--expand-duration-chevron-nav) var(--expand-ease-chevron);
 }
 
 .chapter-group.is-open .chapter-arrow {
   transform: rotate(90deg);
 }
 
+/* Sidebar chapter sections: height expand via 0fr → 1fr (no fixed max-height).
+   Clip layer is the direct 0fr child; padding lives one level deeper so closed height is 0. */
 .section-list {
-  display: none;
-  gap: 2px;
-  padding: 2px 0 8px 44px;
+  display: grid;
+  grid-template-rows: 0fr;
+  transition: grid-template-rows var(--expand-duration-nav) var(--expand-ease);
 }
 
 .chapter-group.is-open .section-list {
+  grid-template-rows: 1fr;
+}
+
+.section-list-clip {
+  min-height: 0;
+  overflow: hidden;
+}
+
+.section-list-inner {
+  position: relative;
   display: grid;
+  gap: 2px;
+  padding: 3px 0 12px 48px;
+}
+
+.section-list-inner::before {
+  position: absolute;
+  left: 30px;
+  top: 0;
+  bottom: 10px;
+  width: 1px;
+  background: rgba(7, 139, 126, 0.17);
+  content: "";
+}
+
+/* Skip expand animation on first paint / route shell mount. */
+html:not(.expand-ready) .section-list,
+html:not(.expand-ready) .chapter-arrow {
+  transition: none !important;
 }
 
 .nav-section {
@@ -1222,11 +1259,27 @@ body.dark .vector-plane {
   border-bottom: 2px solid currentColor;
   content: "";
   transform: rotate(45deg);
-  transition: transform 160ms ease;
+  transition: transform var(--expand-duration-chevron-disclose) var(--expand-ease-chevron);
 }
 
 .example-box[open] summary::after {
   transform: rotate(225deg);
+}
+
+/* Shared disclose panel for details open/close height animation. */
+.disclose-panel {
+  display: grid;
+  grid-template-rows: 0fr;
+  transition: grid-template-rows var(--expand-duration-disclose) var(--expand-ease);
+}
+
+details[open] > .disclose-panel {
+  grid-template-rows: 1fr;
+}
+
+.disclose-panel-inner {
+  min-height: 0;
+  overflow: hidden;
 }
 
 .example-question {
@@ -1714,21 +1767,6 @@ body.dark .nav-section.is-active {
   font-size: 11px;
   font-weight: 640;
   line-height: 1.15;
-}
-
-.section-list {
-  position: relative;
-  padding: 3px 0 12px 48px;
-}
-
-.section-list::before {
-  position: absolute;
-  left: 30px;
-  top: -2px;
-  bottom: 10px;
-  width: 1px;
-  background: rgba(7, 139, 126, 0.17);
-  content: "";
 }
 
 .nav-section {
@@ -2721,10 +2759,41 @@ body.dark .control-stack {
   color: var(--text);
 }
 
+/* Keep summary in normal flow: grid would turn each KaTeX node into a cell. */
 .self-test-item summary {
+  position: relative;
+  display: block;
+  padding-right: 28px;
   cursor: pointer;
+  list-style: none;
   color: var(--text);
   font-weight: 760;
+  line-height: 1.55;
+}
+
+.self-test-item summary::-webkit-details-marker {
+  display: none;
+}
+
+.self-test-item summary::after {
+  position: absolute;
+  top: 0.45em;
+  right: 2px;
+  width: 8px;
+  height: 8px;
+  border-right: 2px solid currentColor;
+  border-bottom: 2px solid currentColor;
+  content: "";
+  transform: rotate(45deg);
+  transition: transform var(--expand-duration-chevron-disclose) var(--expand-ease-chevron);
+  opacity: 0.55;
+  pointer-events: none;
+}
+
+.self-test-item[open] summary::after {
+  top: 0.55em;
+  transform: rotate(225deg);
+  opacity: 0.85;
 }
 
 .self-test-item p,
@@ -2737,6 +2806,16 @@ body.dark .control-stack {
   display: flex;
   gap: 10px;
   align-items: flex-start;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .section-list,
+  .chapter-arrow,
+  .disclose-panel,
+  .example-box summary::after,
+  .self-test-item summary::after {
+    transition: none !important;
+  }
 }
 
 .example-box summary {

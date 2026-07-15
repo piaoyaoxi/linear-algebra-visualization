@@ -99,9 +99,9 @@
     const lensX = createLensMap("x", state.splay);
     const lensY = createLensMap("y", state.splay);
     const depthFactor = 0.74 + state.depth * 0.3;
-    const controlScale = -(6 + state.refraction * 7) * depthFactor;
-    const panelScale = -(14 + state.refraction * 13) * depthFactor;
-    const flowScale = (5 + state.refraction * 5) * depthFactor;
+    const controlScale = -state.refraction * 14.7 * depthFactor;
+    const panelScale = -state.refraction * 31 * depthFactor;
+    const flowScale = state.refraction * 12 * depthFactor;
 
     const control = document.querySelector("#liquidGlassControl");
     const panel = document.querySelector("#liquidGlassPanel");
@@ -116,8 +116,8 @@
     patchField(dispersion, controlScale);
     patchField(flow, flowScale);
 
-    const spread = 0.45 + state.dispersion * 1.05;
-    const rise = 0.1 + state.dispersion * 0.22;
+    const spread = state.dispersion * 1.68;
+    const rise = state.dispersion * 0.44;
     dispersion?.querySelector('feOffset[result="redShift"]')?.setAttribute("dx", String(round(spread, 2)));
     dispersion?.querySelector('feOffset[result="redShift"]')?.setAttribute("dy", String(round(rise, 2)));
     dispersion?.querySelector('feOffset[result="blueShift"]')?.setAttribute("dx", String(round(-spread, 2)));

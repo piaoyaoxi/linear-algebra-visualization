@@ -14,6 +14,7 @@
     --chrome-side: 12px;
     --chrome-search-width: min(430px, calc(100vw - 142px));
     --chrome-sidebar-width: min(84vw, 318px);
+    --glass-frost: 1.1px;
   }
 
   .topbar-right {
@@ -58,6 +59,10 @@
     border-radius: 23px;
   }
 
+  .liquid-panel::after {
+    padding: 9px;
+  }
+
   .search-modal-body {
     padding: 14px;
   }
@@ -93,6 +98,22 @@
   }
 }
 
+@media (prefers-contrast: more) {
+  :root {
+    --liquid-border: color-mix(in srgb, #fff 82%, var(--line-strong));
+    --liquid-border-low: color-mix(in srgb, var(--line-strong) 82%, transparent);
+  }
+
+  .icon-button::after,
+  .topbar-search::after,
+  .search-morph-proxy::after,
+  .liquid-panel::after {
+    box-shadow:
+      inset 0 1.4px 0 color-mix(in srgb, var(--liquid-highlight) 88%, transparent),
+      inset 0 -1px 0 var(--liquid-border-low);
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   .icon-button,
   .topbar-search,
@@ -106,17 +127,20 @@
     display: none !important;
   }
 
+  /* Reduced motion removes the animated shared contour, not the optical
+     material. The stationary sidebar keeps the same refractive panel pass. */
   body.sidebar-unified-active .sidebar-surface,
   body.dark.sidebar-unified-active .sidebar-surface {
-    border: 1px solid var(--liquid-border);
-    background: var(--liquid-fill-strong);
+    background: transparent;
     box-shadow: var(--liquid-shadow-deep);
-    -webkit-backdrop-filter: blur(20px) saturate(140%);
-    backdrop-filter: blur(20px) saturate(140%);
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
   }
 
+  body.sidebar-unified-active .sidebar-surface::before,
+  body.sidebar-unified-active .sidebar-surface::after,
   body.sidebar-unified-active #sidebarToggle::before,
   body.sidebar-unified-active #sidebarToggle::after {
-    opacity: 0;
+    opacity: 1;
   }
 }

@@ -54,13 +54,13 @@ body.dark .sidebar-surface {
 
 .sidebar-header {
   position: relative;
-  z-index: 2;
+  z-index: 3;
   display: grid;
   grid-template-columns: 57px minmax(0, 1fr);
   align-items: center;
   min-height: 58px;
   padding: 0 10px 0 0;
-  border-bottom: 1px solid color-mix(in srgb, var(--line-strong) 48%, transparent);
+  border-bottom: 1px solid color-mix(in srgb, var(--line-strong) 40%, transparent);
 }
 
 .sidebar-toggle-slot {
@@ -94,6 +94,8 @@ body.dark .sidebar-header .sidebar-brand {
 }
 
 .sidebar .sidebar-scroll {
+  position: relative;
+  z-index: 3;
   flex: 1 1 auto;
   min-height: 0;
   padding: 12px 13px 16px;
@@ -118,43 +120,48 @@ body.dark .sidebar-header .sidebar-brand {
   will-change: transform;
 }
 
-/* One clipped, backdrop-filtered viewport layer supplies the material for the
-   moving panel, the fixed button and their neck. Because all three silhouettes
-   live in one clip path, the connection remains present in the final state and
-   no threshold class suddenly removes a border. */
+/* One dynamically clipped viewport layer supplies the actual material for the
+   panel, the fixed button and their neck. The flow filter distorts the sampled
+   backdrop before frost is applied, so the contour remains visibly liquid even
+   while its path changes every frame. */
 .sidebar-liquid-bridge {
   position: fixed;
   inset: 0;
   z-index: 47;
   overflow: hidden;
   background:
-    radial-gradient(210px 120px at 5% 1%, color-mix(in srgb, #fff 20%, transparent), transparent 72%),
-    linear-gradient(145deg, color-mix(in srgb, #fff 11%, transparent), transparent 46%),
+    radial-gradient(250px 145px at 4% 0%, color-mix(in srgb, var(--liquid-highlight) 22%, transparent), transparent 72%),
+    linear-gradient(146deg, color-mix(in srgb, #fff 9%, transparent), transparent 42%),
+    linear-gradient(180deg, color-mix(in srgb, #fff 3%, transparent), color-mix(in srgb, var(--surface-solid) 7%, transparent)),
     var(--liquid-fill-strong);
-  -webkit-backdrop-filter: blur(27px) saturate(155%);
-  backdrop-filter: blur(27px) saturate(155%);
+  -webkit-backdrop-filter: var(--liquid-panel-fallback);
+  backdrop-filter: var(--liquid-panel-fallback);
+  -webkit-backdrop-filter: url("./liquid-glass-filters.svg#liquidGlassFlow") blur(2.8px) saturate(148%) contrast(103%);
+  backdrop-filter: url("./liquid-glass-filters.svg#liquidGlassFlow") blur(2.8px) saturate(148%) contrast(103%);
   filter:
-    drop-shadow(0 0 0.75px var(--liquid-border))
-    drop-shadow(0 20px 44px color-mix(in srgb, var(--text) 17%, transparent));
+    drop-shadow(0 0 0.8px color-mix(in srgb, var(--liquid-highlight) 72%, var(--liquid-border)))
+    drop-shadow(0 2px 1px color-mix(in srgb, var(--liquid-cyan) 45%, transparent))
+    drop-shadow(0 23px 48px color-mix(in srgb, var(--text) 18%, transparent));
   opacity: 0;
   visibility: hidden;
   pointer-events: none;
-  will-change: opacity, clip-path;
+  will-change: opacity, clip-path, backdrop-filter;
 }
 
 body.dark .sidebar-liquid-bridge {
   filter:
-    drop-shadow(0 0 0.7px rgba(255, 255, 255, 0.18))
-    drop-shadow(0 24px 54px rgba(0, 0, 0, 0.45));
+    drop-shadow(0 0 0.75px rgba(255, 255, 255, 0.24))
+    drop-shadow(0 2px 1px rgba(82, 230, 221, 0.11))
+    drop-shadow(0 26px 58px rgba(0, 0, 0, 0.48));
 }
 
 .sidebar-goo {
   display: none !important;
 }
 
-/* Once the unified material is active, the real sidebar and real button keep
-   only their sharp content. This removes the double-glass rectangle that made
-   the old result look like a button pasted on top of a panel. */
+/* Once the unified material is active, the real sidebar and button keep only
+   their sharp content. Both optical pseudo-elements fade out, preventing a
+   second rectangle from being composited beneath the shared contour. */
 body.sidebar-unified-active .sidebar-surface,
 body.dark.sidebar-unified-active .sidebar-surface {
   border-color: transparent;
@@ -164,7 +171,8 @@ body.dark.sidebar-unified-active .sidebar-surface {
   backdrop-filter: none;
 }
 
-body.sidebar-unified-active .sidebar-surface::before {
+body.sidebar-unified-active .sidebar-surface::before,
+body.sidebar-unified-active .sidebar-surface::after {
   opacity: 0;
 }
 
@@ -178,11 +186,10 @@ body.sidebar-open .drawer-backdrop {
   position: fixed;
   inset: 0;
   z-index: 43;
-  background: color-mix(in srgb, var(--bg) 24%, rgba(4, 8, 7, 0.36));
-  -webkit-backdrop-filter: blur(8px) saturate(118%);
-  backdrop-filter: blur(8px) saturate(118%);
+  background: color-mix(in srgb, var(--bg) 12%, rgba(4, 8, 7, 0.26));
+  -webkit-backdrop-filter: blur(2px) saturate(112%);
+  backdrop-filter: blur(2px) saturate(112%);
   opacity: 0;
   visibility: hidden;
   pointer-events: none;
 }
-

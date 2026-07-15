@@ -14,28 +14,24 @@
     {
       key: "shear",
       label: "剪切",
-      kind: "不降秩",
       matrix: [1, 0.8, 0, 1],
       description: "网格被剪斜，但两个基方向仍然独立，完整的二维信息被保留下来。",
     },
     {
       key: "rotation",
       label: "旋转 90°",
-      kind: "不降秩",
       matrix: [0, -1, 1, 0],
       description: "平面只改变方向，没有被压扁；逆变换是反向旋转 90°。",
     },
     {
       key: "scale",
       label: "非零伸缩",
-      kind: "不降秩",
       matrix: [1.5, 0, 0, 0.65],
       description: "横向拉长、纵向压缩，但两个方向都没有消失，变换仍然可逆。",
     },
     {
       key: "collapse",
       label: "压到直线",
-      kind: "降秩对照",
       matrix: [1, 1, 0, 0],
       description: "二维平面被压到一条直线，不同输入可能得到同一个输出，信息无法恢复。",
     },
@@ -165,7 +161,7 @@
         aria-pressed="${first ? "true" : "false"}"
       >
         <span class="inverse-preset-copy">
-          <small>${preset.kind}</small>
+          <small><i aria-hidden="true"></i>${isInvertible ? "可逆" : "降秩"}</small>
           <strong>${preset.label}</strong>
         </span>
         <span class="inverse-preset-matrix">${inline(matrixLatex(preset.matrix))}</span>
@@ -183,138 +179,136 @@
         <header class="inverse-lab-head">
           <div>
             <span class="inverse-lab-kicker">线性变换工作台</span>
-            <h3>先用 A 改变平面，再用 A<sup>−1</sup> 原路返回</h3>
-            <p>${section?.interactive?.task || "选择一个矩阵 A，先观察它怎样移动基向量和网格；若没有降秩，再应用逆矩阵，把整个变换恢复为单位变换。"}</p>
+            <h3>A 改变平面，A<sup>−1</sup> 把它还原</h3>
+            <p>${section?.interactive?.task || "选择一个矩阵 A，观察基向量与网格如何变化；若两个方向都被保留，再应用逆矩阵回到单位变换。"}</p>
           </div>
-          <div class="inverse-core-rule">
-            <span>可逆的核心信号</span>
-            <strong>${inline("\\mathbb R^2\\xrightarrow{A}\\mathbb R^2")}</strong>
-            <p>${inline("\\operatorname{rank}(A)=2")}，两个独立方向都被保留。</p>
+          <div class="inverse-core-rule" aria-label="二维矩阵可逆判据">
+            <span>二维可逆判据</span>
+            <strong>${inline("\\operatorname{rank}(A)=2\\iff A^{-1}\\text{ 存在}")}</strong>
           </div>
         </header>
 
         <section class="inverse-preset-section" aria-label="选择线性变换">
           <div class="inverse-compact-heading">
-            <strong>选择线性变换 A</strong>
-            <small>前三个保持二维；最后一个展示降秩。</small>
+            <strong>矩阵 A</strong>
+            <small>选择一个变换</small>
           </div>
           <div class="inverse-preset-grid">
             ${PRESETS.map((preset, index) => presetButtonMarkup(preset, index === 0)).join("")}
           </div>
         </section>
 
-        <section class="inverse-journey-section">
-          <div class="inverse-workbench">
-            <figure class="inverse-plane-card">
-              <div class="inverse-plane-toolbar">
-                <div>
-                  <span data-inverse-stage-label>单位变换</span>
-                  <strong data-inverse-stage-title>平面保持原样</strong>
-                </div>
-                <div class="inverse-plane-legend" aria-label="图例">
-                  <span><i class="is-reference"></i>原网格</span>
-                  <span><i class="is-current"></i>当前网格</span>
-                </div>
+        <div class="inverse-workbench">
+          <figure class="inverse-plane-card">
+            <div class="inverse-plane-toolbar">
+              <div>
+                <span data-inverse-stage-label>单位变换</span>
+                <strong data-inverse-stage-title>平面保持原样</strong>
               </div>
-              <div class="inverse-plane-wrap">
-                <svg class="inverse-plane" viewBox="0 0 420 320" role="img" aria-label="矩阵 A 与逆矩阵作用在二维网格上的连续变化">
-                  <defs>
-                    <marker id="inverse-basis-arrow" viewBox="0 0 10 10" refX="10" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
-                      <path d="M 0 0 L 10 5 L 0 10 z"></path>
-                    </marker>
-                    <marker id="inverse-vector-arrow" viewBox="0 0 10 10" refX="10" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
-                      <path d="M 0 0 L 10 5 L 0 10 z"></path>
-                    </marker>
-                  </defs>
-                  <g class="inverse-reference-grid">${gridMarkup(IDENTITY, "inverse-reference-line")}</g>
-                  <polygon class="inverse-reference-square" points="${polygonPoints(IDENTITY, SQUARE)}"></polygon>
-                  <g data-inverse-grid></g>
-                  <polygon class="inverse-current-square" data-inverse-square></polygon>
-                  <line class="inverse-basis is-x" data-inverse-basis-x />
-                  <line class="inverse-basis is-y" data-inverse-basis-y />
-                  <text class="inverse-basis-label is-x" data-inverse-basis-x-label></text>
-                  <text class="inverse-basis-label is-y" data-inverse-basis-y-label></text>
-                  <line class="inverse-sample-vector" data-inverse-vector />
-                  <text class="inverse-vector-label" data-inverse-vector-label></text>
-                </svg>
-                <div class="inverse-stage-chip" data-inverse-stage-chip>${inline("I")}</div>
+              <div class="inverse-plane-legend" aria-label="图例">
+                <span><i class="is-reference"></i>原网格</span>
+                <span><i class="is-current"></i>当前网格</span>
               </div>
-              <figcaption data-inverse-caption>起点：单位正方形的两条邻边正是 e₁ 与 e₂。</figcaption>
-            </figure>
+            </div>
+            <div class="inverse-plane-wrap">
+              <svg class="inverse-plane" viewBox="0 0 420 320" role="img" aria-label="矩阵 A 与逆矩阵作用在二维网格上的连续变化">
+                <defs>
+                  <marker id="inverse-basis-arrow" viewBox="0 0 10 10" refX="10" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+                    <path d="M 0 0 L 10 5 L 0 10 z"></path>
+                  </marker>
+                  <marker id="inverse-vector-arrow" viewBox="0 0 10 10" refX="10" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+                    <path d="M 0 0 L 10 5 L 0 10 z"></path>
+                  </marker>
+                </defs>
+                <g class="inverse-reference-grid">${gridMarkup(IDENTITY, "inverse-reference-line")}</g>
+                <polygon class="inverse-reference-square" points="${polygonPoints(IDENTITY, SQUARE)}"></polygon>
+                <g data-inverse-grid></g>
+                <polygon class="inverse-current-square" data-inverse-square></polygon>
+                <line class="inverse-basis is-x" data-inverse-basis-x />
+                <line class="inverse-basis is-y" data-inverse-basis-y />
+                <text class="inverse-basis-label is-x" data-inverse-basis-x-label></text>
+                <text class="inverse-basis-label is-y" data-inverse-basis-y-label></text>
+                <line class="inverse-sample-vector" data-inverse-vector />
+                <text class="inverse-vector-label" data-inverse-vector-label></text>
+              </svg>
+            </div>
+            <figcaption data-inverse-caption>起点：单位正方形的两条邻边正是 e₁ 与 e₂。</figcaption>
+          </figure>
 
-            <aside class="inverse-control-panel" aria-live="polite">
-              <section class="inverse-stage-control" data-inverse-stage-control>
-                <div class="inverse-control-heading">
+          <aside class="inverse-control-panel" aria-live="polite">
+            <section class="inverse-stage-control" data-inverse-stage-control>
+              <div class="inverse-control-heading">
+                <div>
+                  <span>变换路径</span>
                   <strong>三个阶段</strong>
-                  <small>拖动后会自动停在最近阶段</small>
                 </div>
-                <ol class="inverse-journey" aria-label="逆变换的三个阶段">
-                  <li class="is-current" data-inverse-step="0">
-                    <button type="button" data-inverse-jump="0">
-                      <span>1</span><small>左端 · 起点</small><strong>${inline("I")}</strong>
-                    </button>
-                  </li>
-                  <li data-inverse-step="1">
-                    <button type="button" data-inverse-jump="1">
-                      <span>2</span><small>中点 · A 已作用</small><strong>${inline("A")}</strong>
-                    </button>
-                  </li>
-                  <li data-inverse-step="2">
-                    <button type="button" data-inverse-jump="2">
-                      <span>3</span><small>右端 · 已恢复</small><strong>${inline("A^{-1}A=I")}</strong>
-                    </button>
-                  </li>
-                </ol>
-                <div class="inverse-range-shell">
-                  <input
-                    id="inverse-journey-progress"
-                    data-inverse-progress
-                    type="range"
-                    min="0"
-                    max="2"
-                    step="0.01"
-                    value="0"
-                    aria-label="在单位变换、应用 A、应用 A 逆三个阶段之间拖动"
-                  />
-                  <div class="inverse-range-marks" aria-hidden="true"><i></i><i></i><i></i></div>
-                </div>
-                <div class="inverse-control-row">
-                  <button class="button primary" type="button" data-inverse-apply>应用 A</button>
-                  <button class="button" type="button" data-inverse-undo disabled>应用 A<sup>−1</sup></button>
-                  <button class="button ghost" type="button" data-inverse-reset>重置</button>
-                </div>
-                <p class="inverse-result" data-inverse-result>先点击“应用 A”，观察整个平面怎样变化。</p>
-              </section>
-
-              <section class="inverse-state-summary">
                 <div class="inverse-composition">
-                  <span>当前复合变换</span>
+                  <span>当前复合</span>
                   <strong data-inverse-composition>${inline("I")}</strong>
-                  <p data-inverse-equation>${inline("Ix=x")}</p>
                 </div>
-                <dl class="inverse-facts">
-                  <div class="is-matrix"><dt>矩阵 A</dt><dd data-inverse-matrix>${inline(matrixLatex(defaultPreset.matrix))}</dd></div>
-                  <div><dt>${inline("\\operatorname{rank}(A)")}</dt><dd data-inverse-rank>2</dd></div>
-                  <div><dt>${inline("\\det(A)")}</dt><dd data-inverse-det>1</dd></div>
-                  <div><dt>维数</dt><dd data-inverse-dimension>${inline("2\\to2")}</dd></div>
-                </dl>
-              </section>
-
-              <div class="inverse-verdict" data-inverse-verdict>
-                <div>
-                  <span data-inverse-verdict-kicker>没有降秩</span>
-                  <strong data-inverse-verdict-title>因此 A 可逆</strong>
-                </div>
-                <p data-inverse-explanation>${defaultPreset.description}</p>
               </div>
 
-              <section class="inverse-conclusion" data-inverse-conclusion>
-                <small>两侧逆</small>
-                <strong>${inline("A^{-1}A=I")} · ${inline("AA^{-1}=I")}</strong>
-              </section>
-            </aside>
-          </div>
-        </section>
+              <ol class="inverse-journey" aria-label="逆变换的三个阶段">
+                <li class="is-current" data-inverse-step="0">
+                  <button type="button" data-inverse-jump="0">
+                    <span>01</span><small>起点</small><strong>${inline("I")}</strong>
+                  </button>
+                </li>
+                <li data-inverse-step="1">
+                  <button type="button" data-inverse-jump="1">
+                    <span>02</span><small>应用 A</small><strong>${inline("A")}</strong>
+                  </button>
+                </li>
+                <li data-inverse-step="2">
+                  <button type="button" data-inverse-jump="2">
+                    <span>03</span><small>应用 A<sup>−1</sup></small><strong>${inline("A^{-1}A=I")}</strong>
+                  </button>
+                </li>
+              </ol>
+
+              <div class="inverse-range-shell">
+                <input
+                  id="inverse-journey-progress"
+                  data-inverse-progress
+                  type="range"
+                  min="0"
+                  max="2"
+                  step="0.01"
+                  value="0"
+                  aria-label="在单位变换、应用 A、应用 A 逆三个阶段之间拖动"
+                />
+                <div class="inverse-range-marks" aria-hidden="true"><i></i><i></i><i></i></div>
+              </div>
+
+              <p class="inverse-equation" data-inverse-equation>${inline("Ix=x")}</p>
+              <div class="inverse-control-row">
+                <button class="button primary" type="button" data-inverse-next>应用 A</button>
+                <button class="button ghost" type="button" data-inverse-reset>回到起点</button>
+              </div>
+            </section>
+
+            <section class="inverse-state-summary" data-inverse-verdict>
+              <div class="inverse-decision-heading">
+                <div>
+                  <span data-inverse-verdict-kicker>二维保留</span>
+                  <strong data-inverse-verdict-title>A 可逆</strong>
+                </div>
+                <div class="inverse-conclusion" data-inverse-conclusion>
+                  <small data-inverse-conclusion-label>两侧逆</small>
+                  <strong data-inverse-conclusion-formula>${inline("A^{-1}A=I")} · ${inline("AA^{-1}=I")}</strong>
+                </div>
+              </div>
+
+              <dl class="inverse-facts">
+                <div class="is-matrix"><dt>矩阵 A</dt><dd data-inverse-matrix>${inline(matrixLatex(defaultPreset.matrix))}</dd></div>
+                <div><dt>${inline("\\operatorname{rank}(A)")}</dt><dd data-inverse-rank>2</dd></div>
+                <div><dt>${inline("\\det(A)")}</dt><dd data-inverse-det>1</dd></div>
+                <div><dt>空间</dt><dd data-inverse-dimension>${inline("2\\to2")}</dd></div>
+              </dl>
+              <p class="inverse-explanation" data-inverse-explanation>${defaultPreset.description}</p>
+            </section>
+          </aside>
+        </div>
       </div>
     `;
 
@@ -332,7 +326,6 @@
       vectorLabel: lab.querySelector("[data-inverse-vector-label]"),
       stageLabel: lab.querySelector("[data-inverse-stage-label]"),
       stageTitle: lab.querySelector("[data-inverse-stage-title]"),
-      stageChip: lab.querySelector("[data-inverse-stage-chip]"),
       caption: lab.querySelector("[data-inverse-caption]"),
       composition: lab.querySelector("[data-inverse-composition]"),
       equation: lab.querySelector("[data-inverse-equation]"),
@@ -345,11 +338,12 @@
       verdictTitle: lab.querySelector("[data-inverse-verdict-title]"),
       explanation: lab.querySelector("[data-inverse-explanation]"),
       progress: lab.querySelector("[data-inverse-progress]"),
-      apply: lab.querySelector("[data-inverse-apply]"),
-      undo: lab.querySelector("[data-inverse-undo]"),
+      next: lab.querySelector("[data-inverse-next]"),
       reset: lab.querySelector("[data-inverse-reset]"),
-      result: lab.querySelector("[data-inverse-result]"),
+      controlRow: lab.querySelector(".inverse-control-row"),
       conclusion: lab.querySelector("[data-inverse-conclusion]"),
+      conclusionLabel: lab.querySelector("[data-inverse-conclusion-label]"),
+      conclusionFormula: lab.querySelector("[data-inverse-conclusion-formula]"),
       stageControl: lab.querySelector("[data-inverse-stage-control]"),
       steps: [...lab.querySelectorAll("[data-inverse-step]")],
       jumpButtons: [...lab.querySelectorAll("[data-inverse-jump]")],
@@ -399,11 +393,18 @@
       label.textContent = text;
     }
 
+    function setVectorLabel(label, point, text) {
+      label.setAttribute("x", point[0] + 5);
+      label.setAttribute("y", point[1]);
+      label.setAttribute("dominant-baseline", "middle");
+      label.setAttribute("text-anchor", "start");
+      label.textContent = text;
+    }
+
     function render() {
       const preset = PRESET_MAP[presetKey];
       const rank = matrixRank(preset.matrix);
       const det = determinant(preset.matrix);
-      const matrixInverse = inverse(preset.matrix);
       const isSingular = rank < 2;
       const maxJourney = isSingular ? 1 : 2;
       let journey = Math.min(Number(elements.progress.value), maxJourney);
@@ -428,7 +429,7 @@
       setLabel(elements.basisXLabel, basisX, stage === 1 ? "Ae₁" : "e₁");
       setLabel(elements.basisYLabel, basisY, stage === 1 ? "Ae₂" : "e₂");
       setLine(elements.vector, origin, vectorTip);
-      setLabel(elements.vectorLabel, vectorTip, stage === 1 ? "Ax" : stage === 2 ? "A⁻¹Ax = x" : "x");
+      setVectorLabel(elements.vectorLabel, vectorTip, stage === 1 ? "Ax" : stage === 2 ? "A⁻¹Ax = x" : "x");
 
       elements.matrix.innerHTML = inline(matrixLatex(preset.matrix));
       elements.rank.innerHTML = inline(String(rank));
@@ -439,8 +440,13 @@
       lab.classList.toggle("is-singular", isSingular);
       lab.classList.toggle("is-restored", restored);
       elements.verdict.classList.toggle("is-singular", isSingular);
-      elements.verdictKicker.textContent = isSingular ? "发生降秩" : "没有降秩";
-      elements.verdictTitle.textContent = isSingular ? "因此 A 不可逆" : "因此 A 可逆";
+      elements.verdictKicker.textContent = isSingular ? "降为一维" : "二维保留";
+      elements.verdictTitle.textContent = isSingular ? "A 不可逆" : "A 可逆";
+      elements.conclusion.classList.toggle("is-unavailable", isSingular);
+      elements.conclusionLabel.textContent = isSingular ? "逆矩阵" : "两侧逆";
+      elements.conclusionFormula.innerHTML = isSingular
+        ? inline("A^{-1}\\text{ 不存在}")
+        : `${inline("A^{-1}A=I")}<i aria-hidden="true">·</i>${inline("AA^{-1}=I")}`;
 
       elements.steps.forEach((stepElement, index) => {
         stepElement.classList.toggle("is-current", index === stage);
@@ -457,39 +463,30 @@
       if (atIdentity) {
         elements.stageLabel.textContent = "单位变换";
         elements.stageTitle.textContent = "平面保持原样";
-        elements.stageChip.innerHTML = inline("I");
         elements.caption.textContent = "起点：e₁、e₂ 的端点与单位正方形的两个相邻顶点完全重合。";
         elements.composition.innerHTML = inline("I");
         elements.equation.innerHTML = inline("Ix=x");
-        elements.result.textContent = "先点击“应用 A”，观察线性变换怎样改变整个平面。";
       } else if (restored) {
         elements.stageLabel.textContent = "逆变换完成";
         elements.stageTitle.textContent = "网格回到原位";
-        elements.stageChip.innerHTML = inline("A^{-1}A=I");
         elements.caption.textContent = "恢复：A⁻¹Ae₁=e₁、A⁻¹Ae₂=e₂，单位正方形与向量 x 一起回到原位。";
         elements.composition.innerHTML = inline("A^{-1}A=I");
         elements.equation.innerHTML = inline("A^{-1}(Ax)=(A^{-1}A)x=Ix=x");
-        elements.result.textContent = "恢复完成：连续执行 A 与 A⁻¹，最终效果就是单位变换 I。";
       } else if (isSingular && atA) {
         elements.stageLabel.textContent = "应用 A 完成";
         elements.stageTitle.textContent = "二维被压成一维";
-        elements.stageChip.innerHTML = inline("A");
         elements.caption.textContent = "网格坍缩到一条线：rank(A)=1，二维信息已经丢失。";
         elements.composition.innerHTML = inline("A");
         elements.equation.innerHTML = inline("x_1\\ne x_2\\;\\text{却可能有}\\;Ax_1=Ax_2");
-        elements.result.textContent = "A 已经降秩，没有 A⁻¹ 可以把丢失的方向恢复出来。";
       } else if (atA) {
         elements.stageLabel.textContent = "应用 A 完成";
         elements.stageTitle.textContent = "平面仍然是二维";
-        elements.stageChip.innerHTML = inline("A");
         elements.caption.textContent = "A 已作用：Ae₁、Ae₂ 正好构成变换后平行四边形的两条相邻边。";
         elements.composition.innerHTML = inline("A");
         elements.equation.innerHTML = inline("x\\mapsto Ax");
-        elements.result.textContent = "A 没有降秩：现在点击“应用 A⁻¹”，把这次变换完整撤销。";
       } else {
         elements.stageLabel.textContent = movingBack ? "正在应用 A⁻¹" : "正在应用 A";
         elements.stageTitle.textContent = movingBack ? "变换正在被撤销" : isSingular ? "平面正在坍缩" : "平面仍保持二维";
-        elements.stageChip.innerHTML = movingBack ? inline("A^{-1}A") : inline("A");
         elements.caption.textContent = movingBack
           ? "A⁻¹ 正在把 A 的变化逐步撤回；彩色网格与浅色原网格重新重合。"
           : isSingular
@@ -497,18 +494,31 @@
             : "A 同时移动两个基向量，并带动整张网格连续变形。";
         elements.composition.innerHTML = movingBack ? inline("A^{-1}A") : inline("A");
         elements.equation.innerHTML = movingBack ? inline("A^{-1}(Ax)\\longrightarrow x") : inline("x\\longrightarrow Ax");
-        elements.result.textContent = movingBack
-          ? "正在应用 A⁻¹：观察当前网格怎样返回原网格。"
-          : "正在应用 A：观察 e₁、e₂ 是否仍然提供两个独立方向。";
       }
 
-      elements.apply.disabled = journey > 0.98;
-      elements.undo.disabled = isSingular || !atA;
-      elements.undo.title = isSingular
-        ? "A 发生降秩，逆矩阵不存在"
-        : atA
-          ? `应用 ${matrixLatex(matrixInverse)} 撤销 A`
-          : "先完整应用 A";
+      let nextTarget = 1;
+      let nextLabel = journey > 0.02 ? "完成应用 A" : "应用 A";
+      let nextDisabled = false;
+      if (restored) {
+        nextTarget = 0;
+        nextLabel = "重新演示";
+      } else if (isSingular && atA) {
+        nextTarget = 1;
+        nextLabel = "A⁻¹ 不存在";
+        nextDisabled = true;
+      } else if (journey > 1.02) {
+        nextTarget = 2;
+        nextLabel = "完成还原";
+      } else if (atA) {
+        nextTarget = 2;
+        nextLabel = "应用 A⁻¹";
+      }
+      elements.next.dataset.inverseTarget = String(nextTarget);
+      elements.next.textContent = nextLabel;
+      elements.next.disabled = nextDisabled;
+      const showReset = !atIdentity && !restored;
+      elements.reset.hidden = !showReset;
+      elements.controlRow.classList.toggle("is-single", !showReset);
       elements.conclusion.classList.toggle("is-active", restored);
     }
 
@@ -542,9 +552,9 @@
         animateTo(target, target === 2 ? 900 : 620);
       });
     });
-    elements.apply.addEventListener("click", () => animateTo(1));
-    elements.undo.addEventListener("click", () => {
-      if (inverse(PRESET_MAP[presetKey].matrix)) animateTo(2, 1050);
+    elements.next.addEventListener("click", () => {
+      const target = Number(elements.next.dataset.inverseTarget);
+      animateTo(target, target === 2 ? 900 : 620);
     });
     elements.reset.addEventListener("click", () => animateTo(0, 700));
 

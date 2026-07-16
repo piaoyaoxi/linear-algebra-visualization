@@ -57,6 +57,27 @@
   }
 }
 
+/*
+ * At common laptop widths the fixed chapter drawer can otherwise cover the
+ * centered 900px lesson column. Keep the column intact and translate it only
+ * by the amount needed to clear the drawer; wider screens naturally return to
+ * the centered position.
+ */
+@media (min-width: 1280px) {
+  body:not(.sidebar-collapsed):not([data-route="home"]) .content {
+    transform: translateX(
+      clamp(
+        0px,
+        calc(
+          var(--sidebar-width) + 48px -
+            ((100vw - var(--content-max)) / 2)
+        ),
+        166px
+      )
+    );
+  }
+}
+
 /* Transparent top chrome: only free-floating chips + center search. */
 .topbar {
   inset: 14px 18px auto 18px;

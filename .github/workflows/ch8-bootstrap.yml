@@ -4,15 +4,17 @@ on:
   push:
     branches:
       - context/ch8-lambda-matrices
-    paths:
-      - ".github/ch8-payload.tar.gz"
-      - ".github/workflows/ch8-bootstrap.yml"
+  pull_request:
+    branches:
+      - main
+  workflow_dispatch:
 
 permissions:
   contents: write
 
 jobs:
   unpack:
+    if: github.ref == 'refs/heads/context/ch8-lambda-matrices' || github.head_ref == 'context/ch8-lambda-matrices'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4

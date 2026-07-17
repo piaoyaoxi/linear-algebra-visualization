@@ -1,0 +1,24 @@
+name: Export context workspace
+
+on:
+  push:
+    branches:
+      - context/ch7-linear-transformations
+
+permissions:
+  contents: read
+
+jobs:
+  export:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out branch
+        uses: actions/checkout@v4
+      - name: Upload repository workspace
+        uses: actions/upload-artifact@v4
+        with:
+          name: context-workspace
+          path: .
+          include-hidden-files: true
+          if-no-files-found: error
+          retention-days: 1

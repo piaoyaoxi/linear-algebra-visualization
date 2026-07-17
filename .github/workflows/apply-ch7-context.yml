@@ -18,11 +18,9 @@ jobs:
         uses: actions/checkout@v4
         with:
           ref: context/ch7-linear-transformations
-      - name: Verify payload archive
+      - name: Verify payload checksum
         run: |
-          wc -c .github/ch7-payload/part-*
-          sha256sum .github/ch7-payload/part-*
-          cat .github/ch7-payload/part-* | base64 -d > /tmp/ch7-payload.tar.gz
-          echo "6b1812a2a79b1779f34fc11bac295bc6aa41dad468ffa30ac6662e9901e3869d  /tmp/ch7-payload.tar.gz" | sha256sum -c -
-          gzip -t /tmp/ch7-payload.tar.gz
-          tar -tzf /tmp/ch7-payload.tar.gz
+          cat .github/ch7-payload/part-* | base64 -d > /tmp/ch7-payload.tar.gz || true
+          actual="$(sha256sum /tmp/ch7-payload.tar.gz | cut -d' ' -f1)"
+          echo "PAYLOAD_SHA256=$actual"
+          test "$actual" = "6b1812a2a79b1779f34fc11bac295bc6aa41dad468ffa30ac6662e9901e3869d"

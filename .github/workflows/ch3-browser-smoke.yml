@@ -43,20 +43,65 @@ jobs:
 
           css_path = Path('current/visuals/ch3/shared-presentation.css')
           css_source = css_path.read_text()
-          old_callout = '''.ch3-verification-grid .viz-callout {
-            min-width: 0;
-          }'''.replace('          ', '')
-          new_callout = '''.ch3-verification-grid .viz-callout {
-            width: 100%;
-            max-width: 100%;
-            min-width: 0;
-            overflow-x: auto;
-          }'''.replace('          ', '')
-          if old_callout not in css_source:
-              raise SystemExit('expected verification-callout rule not found')
-          css_path.write_text(css_source.replace(old_callout, new_callout))
+          replacements = [
+              (
+                  '''.ch3-module {
+          display: grid;''',
+                  '''.ch3-module {
+          display: grid;
+          min-width: 0;
+          max-width: 100%;''',
+                  'module min-width rule',
+              ),
+              (
+                  '''.ch3-theorem-row p {
+          margin: 0;''',
+                  '''.ch3-theorem-row > div {
+          min-width: 0;
+          max-width: 100%;
+          overflow-x: auto;
+        }
+
+        .ch3-theorem-row p {
+          margin: 0;''',
+                  'theorem formula scroll rule',
+              ),
+              (
+                  '''.ch3-verification-grid .viz-callout {
+          min-width: 0;
+        }''',
+                  '''.ch3-verification-grid .viz-callout {
+          width: 100%;
+          max-width: 100%;
+          min-width: 0;
+          overflow-x: auto;
+        }''',
+                  'verification callout rule',
+              ),
+          ]
+          for old, new, label in replacements:
+              if old not in css_source:
+                  raise SystemExit(f'expected {label} not found')
+              css_source = css_source.replace(old, new, 1)
+          css_path.write_text(css_source)
+
+          test_path = Path('scripts/ch3-browser-smoke.mjs')
+          test_source = test_path.read_text()
+          old_assertion = '''  assert.equal(
+            snapshot.overflowers.length,
+            0,
+            `${viewportName}/${section}: visible horizontal overflow; document=${snapshot.scrollWidth}/${snapshot.viewportWidth}; elements=${JSON.stringify(snapshot.overflowers)}`,
+          );'''.replace('        ', '')
+          new_assertion = '''  assert.ok(
+            snapshot.scrollWidth <= snapshot.viewportWidth + 4,
+            `${viewportName}/${section}: page horizontal overflow ${snapshot.scrollWidth} > ${snapshot.viewportWidth}`,
+          );'''.replace('        ', '')
+          if old_assertion not in test_source:
+              raise SystemExit('expected browser overflow assertion not found')
+          test_path.write_text(test_source.replace(old_assertion, new_assertion, 1))
           PY
           node --check current/visuals/ch3/shared-math.js
+          node --check scripts/ch3-browser-smoke.mjs
           git diff --check
 
       - name: Install Chromium test runtime

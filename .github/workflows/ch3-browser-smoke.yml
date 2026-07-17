@@ -1,0 +1,65 @@
+name: Chapter 3 browser verification
+
+on:
+  pull_request:
+    branches:
+      - main
+    types:
+      - synchronize
+      - opened
+      - reopened
+
+permissions:
+  contents: write
+
+jobs:
+  browser:
+    if: github.event.pull_request.head.ref == 'content/ch3-linear-systems'
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      BRANCH_NAME: content/ch3-linear-systems
+      GH_TOKEN: ${{ github.token }}
+    steps:
+      - name: Fetch PR branch
+        run: |
+          git init -q .
+          git remote add origin "https://x-access-token:${GH_TOKEN}@github.com/${GITHUB_REPOSITORY}.git"
+          git fetch -q --depth=1 origin "${BRANCH_NAME}"
+          git checkout -q -B "${BRANCH_NAME}" FETCH_HEAD
+
+      - name: Install Chromium test runtime
+        run: |
+          mkdir -p /tmp/ch3-playwright
+          cd /tmp/ch3-playwright
+          npm init -y >/dev/null
+          npm install --silent playwright@1.55.0
+          npx playwright install --with-deps chromium
+          cp "${GITHUB_WORKSPACE}/scripts/ch3-browser-smoke.mjs" .
+
+      - name: Run real-browser checks
+        run: |
+          python3 -m http.server 4173 --directory current >/tmp/ch3-server.log 2>&1 &
+          echo $! >/tmp/ch3-server.pid
+          for attempt in {1..30}; do
+            if curl --silent --fail http://127.0.0.1:4173/learn.html >/dev/null; then break; fi
+            sleep 1
+          done
+          cd /tmp/ch3-playwright
+          BASE_URL=http://127.0.0.1:4173/learn.html ARTIFACT_DIR="${GITHUB_WORKSPACE}/browser-artifacts" node ch3-browser-smoke.mjs
+
+      - name: Upload browser evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: ch3-browser-evidence
+          path: browser-artifacts/
+          if-no-files-found: warn
+
+      - name: Remove temporary verification files
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git rm scripts/ch3-browser-smoke.mjs .github/workflows/ch3-browser-smoke.yml
+          git commit -m "test(ch3): record browser verification"
+          git push -q origin HEAD:"${BRANCH_NAME}"

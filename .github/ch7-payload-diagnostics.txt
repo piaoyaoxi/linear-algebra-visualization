@@ -1,6 +1,7 @@
 PART SIZES
 12000 .github/ch7-payload/part-00
  6000 .github/ch7-payload/part-01-0
+ 6000 .github/ch7-payload/part-01-1
 12000 .github/ch7-payload/part-02
 12000 .github/ch7-payload/part-03
 12000 .github/ch7-payload/part-05
@@ -8,11 +9,12 @@ PART SIZES
 12000 .github/ch7-payload/part-07
 12000 .github/ch7-payload/part-08
  3224 .github/ch7-payload/part-09
-93225 total
+99225 total
 
 PART HASHES
 617ad7ae35d2528f1b2c89e15924af89bdf97167c287de9be21964f6cf7eee86  .github/ch7-payload/part-00
 2d6bfbc67902035badc57fb52f136fee8a837309f095aae297e3a1a8344325b0  .github/ch7-payload/part-01-0
+3ee9eaeb15f3e7820528a16c92d5f97bdc46444d18ee6e94c0779cebac076e93  .github/ch7-payload/part-01-1
 5fa5509bd11670e5b7de95236751809df27e147e22290c888167b588eee97392  .github/ch7-payload/part-02
 6957c1a61a5a6619535b244e42b739100aefbbc1de5a6fa1b1d418895b053489  .github/ch7-payload/part-03
 ff69964eac7078e531cc58a554daa880e7ac99c32e79a58a132d2e4c3fbce72e  .github/ch7-payload/part-05
@@ -22,11 +24,11 @@ ff69964eac7078e531cc58a554daa880e7ac99c32e79a58a132d2e4c3fbce72e  .github/ch7-pa
 d0934ef8bc3212ffe5e04d6cbdcbfdaaffbb707712fcabea8edaf330a70a3129  .github/ch7-payload/part-09
 
 CONCATENATED BASE64 HASH
-6663b75b2845c2de3def30e666be24716379f62e3518b0333cb6b9a62a317090  -
+c3cbe8cd79142ee87b8c70dc6ecdf7acc63196a39ae2d6a843a0f971449a09ff  -
 
 DECODED HASH
 base64: invalid input
-2352afc8ac2d27cf2506ce0f5f3beb486fdd4af1220c9499473c8a3113c89ee7  /tmp/ch7-payload.tar.gz
+4941ec3a8fa713b1aeadfa62d21e488c20c17d6774088a181d5631ae7c2d23be  /tmp/ch7-payload.tar.gz
 
 
 gzip: /tmp/ch7-payload.tar.gz: invalid compressed data--format violated

@@ -1,6 +1,6 @@
 (() => {
-  const { M, tex, display, aEntry, productTermHtml, formalShell, module, proofSteps, misconception, taskBox } = window.Ch2PresentationUtils;
-  // ---------- §6 ----------
+  const { M, tex, display, aEntry, formalShell, module, proofSteps, misconception } = window.Ch2PresentationUtils;
+
   function mountCofactor(root) {
     const controller = new AbortController();
     const { signal } = controller;
@@ -16,7 +16,7 @@
     }
 
     function expansion(type, index) {
-      const items = [];
+      const allItems = [];
       let total = 0;
       for (let cursor = 0; cursor < 3; cursor += 1) {
         const row = type === "row" ? index : cursor;
@@ -24,10 +24,14 @@
         const element = matrix[row][col];
         const cof = cofactor(row, col);
         const contribution = element * cof.value;
-        if (Math.abs(element) > M().EPS) items.push({ row, col, element, ...cof, contribution });
+        allItems.push({ row, col, element, ...cof, contribution });
         total += contribution;
       }
-      return { items, total };
+      return {
+        allItems,
+        items: allItems.filter((item) => Math.abs(item.element) > M().EPS),
+        total,
+      };
     }
 
     function renderMatrix() {
@@ -63,6 +67,13 @@
       });
     }
 
+    function renderExpansionTerms(result) {
+      if (!result.items.length) return "<span>所有元素均为 0，因此展开和为 0。</span>";
+      return result.items
+        .map((item) => `<span>${aEntry(item.row + 1, item.col + 1)}${tex(`C_{${item.row + 1}${item.col + 1}}`)} = ${tex(M().formatNum(item.contribution, 3))}</span>`)
+        .join("<br />");
+    }
+
     function render() {
       renderMatrix();
       renderRoutes();
@@ -71,17 +82,19 @@
       root.querySelector("[data-mij]").textContent = M().formatNum(selected.minorValue, 3);
       root.querySelector("[data-sign]").textContent = selected.sign > 0 ? "+1" : "−1";
       root.querySelector("[data-cij]").textContent = M().formatNum(selected.value, 3);
-      root.querySelector("[data-minor-matrix]").innerHTML = tex(`\\begin{bmatrix}${selected.minor[0][0]}&${selected.minor[0][1]}\\\\${selected.minor[1][0]}&${selected.minor[1][1]}\\end{bmatrix}`);
+      root.querySelector("[data-minor-matrix]").innerHTML = tex(`\begin{bmatrix}${selected.minor[0][0]}&${selected.minor[0][1]}\\${selected.minor[1][0]}&${selected.minor[1][1]}\end{bmatrix}`);
       root.querySelectorAll("[data-board] span").forEach((span, index) => {
         const row = Math.floor(index / 3);
         const col = index % 3;
         span.classList.toggle("is-active", row === active.row && col === active.col);
       });
       const result = expansion(route.type, route.index);
+      const omitted = result.allItems.length - result.items.length;
       root.querySelector("[data-route-title]").textContent = route.type === "row" ? `沿第 ${route.index + 1} 行展开` : `沿第 ${route.index + 1} 列展开`;
-      root.querySelector("[data-expand]").innerHTML = result.items.map((item) => `${tex(String(item.element))}${tex(`C_{${item.row + 1}${item.col + 1}}`)}=${tex(M().formatNum(item.contribution, 3))}`).join(" + ") || "全部为零";
+      root.querySelector("[data-expand]").innerHTML = renderExpansionTerms(result);
       root.querySelector("[data-true]").textContent = M().formatNum(result.total, 3);
       root.querySelector("[data-cost]").textContent = `${result.items.length} 个非零余子式`;
+      root.querySelector("[data-omitted]").textContent = omitted ? `已省略 ${omitted} 个零元素对应项。` : "本路线没有可省略的零项。";
       M().pulseClass(root.querySelector("[data-cij-card]"));
     }
 
@@ -102,21 +115,27 @@
       formal.innerHTML = formalShell(
         "从删行删列到按行列展开",
         "三个对象要严格区分：余子矩阵是矩阵，余子式是它的行列式，代数余子式再加入位置符号。",
-        module("01", "代数余子式", "位置符号把每条路径接回原排列符号。", `
+        module("01", "代数余子式", "位置符号把每条低阶路径接回原排列符号。", `
           <div class="ch2-def-stack">
             <article class="ch2-def"><span class="kicker">余子矩阵</span><strong>删去第 i 行与第 j 列</strong><p>得到一个 (n−1) 阶矩阵。</p></article>
-            <article class="ch2-def"><span class="kicker">余子式</span><strong>${tex("M_{ij}")}</strong><p>对余子矩阵取行列式。</p></article>
+            <article class="ch2-def"><span class="kicker">余子式</span><strong>${tex("M_{ij}")}</strong><p>对余子矩阵取行列式，结果是标量。</p></article>
             <article class="ch2-def"><span class="kicker">代数余子式</span><strong>${tex("C_{ij}=(-1)^{i+j}M_{ij}")}</strong><p>棋盘符号由 i+j 的奇偶决定。</p></article>
           </div>
         `) + module("02", "展开公式与路线选择", "结果固定，计算量由所选方向决定。", `
           <div class="ch2-def-stack">
-            <article class="ch2-def"><span class="kicker">按第 i 行</span><strong>${display("\\det(A)=\\sum_{j=1}^{n}a_{ij}C_{ij}")}</strong><p>第 i 行中的每个元素与对应代数余子式配对。</p></article>
-            <article class="ch2-def"><span class="kicker">按第 j 列</span><strong>${display("\\det(A)=\\sum_{i=1}^{n}a_{ij}C_{ij}")}</strong><p>优先选择零多的方向，减少需要计算的低阶行列式。</p></article>
+            <article class="ch2-def"><span class="kicker">按第 i 行</span><strong>${display("\det(A)=\sum_{j=1}^{n}a_{ij}C_{ij}")}</strong><p>第 i 行中的每个元素与对应代数余子式配对。</p></article>
+            <article class="ch2-def"><span class="kicker">按第 j 列</span><strong>${display("\det(A)=\sum_{i=1}^{n}a_{ij}C_{ij}")}</strong><p>优先选择零多的方向，减少需要计算的低阶行列式。</p></article>
           </div>
-        `) + misconception([
+        `) + module("03", "交叉恒等式为什么等于零", "把一行复制到另一行，再沿被替换行展开。", proofSteps([
+          `固定两行 r≠s，考虑和 ${tex("\sum_j a_{rj}C_{sj}")}。`,
+          "构造一个新行列式：把原矩阵第 s 行替换成第 r 行，其余行保持不变。",
+          `沿新矩阵第 s 行展开，得到的正是 ${tex("\sum_j a_{rj}C_{sj}")}。`,
+          "新矩阵的第 r、s 行相同，所以其行列式为 0，交叉和也等于 0。",
+        ]) + misconception([
           "棋盘符号帮助记忆，定义仍是 (−1)^(i+j)。",
           "一行中出现零只会消去相应项，不会自动使整个行列式为零。",
-        ]),
+          "展开式中的负贡献应作为独立带符号项读取，不能把‘+ −’当作新的运算规则。",
+        ])),
       );
     },
     interactive(root) {
@@ -124,7 +143,7 @@
       root.innerHTML = `
         <h2>交互实验</h2>
         <div class="ch2-lab">
-          <div class="ch2-lab-head"><h3>余子式展开板 · 路线竞速</h3><p>点击元素查看删行删列；下方六条路线标出非零余子式数量，帮助选择最低成本。</p></div>
+          <div class="ch2-lab-head"><h3>余子式展开板 · 路线竞速</h3><p>点击元素查看删行删列；六条路线标出非零余子式数量，并把每个带符号贡献分行显示。</p></div>
           <div class="ch2-task"><strong>观察任务</strong><span>比较第 2 行与第 3 列的成本，再任选另一条路线核对相同结果。</span></div>
           <div class="ch2-lab-grid">
             <div class="ch2-matrix-box">
@@ -140,12 +159,11 @@
                 <div class="ch2-meter-card" data-cij-card><strong>Cij</strong><span data-cij></span></div>
               </div>
               <div class="ch2-presets ch2-route-list" data-route-list></div>
-              <div class="ch2-note"><strong data-route-title></strong> · <span data-cost></span><br /><span data-expand></span> = <strong data-true></strong></div>
+              <div class="ch2-note"><strong data-route-title></strong> · <span data-cost></span><br /><span data-expand></span><br />展开和 = <strong data-true></strong><br /><span data-omitted></span></div>
             </div>
           </div>
         </div>`;
       return mountCofactor(root);
     },
   });
-
 })();

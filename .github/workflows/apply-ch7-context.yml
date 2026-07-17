@@ -18,7 +18,7 @@ jobs:
         uses: actions/checkout@v4
         with:
           ref: context/ch7-linear-transformations
-      - name: Record payload diagnostics
+      - name: Record repaired payload diagnostics
         run: |
           {
             echo "PART SIZES"

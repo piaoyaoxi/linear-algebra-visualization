@@ -105,6 +105,62 @@
   grid-template-columns: repeat(3, minmax(0, 1fr));
 }
 
+.ch3-meter.is-4 {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+
+.ch3-math {
+  overflow-x: auto;
+  line-height: 1.7;
+}
+
+.ch3-math .tex,
+.ch3-eq .tex,
+.ch3-eqs .tex {
+  font-size: 1.02em;
+}
+
+.ch3-eqs {
+  display: grid;
+  gap: 8px;
+}
+
+.ch3-eq {
+  padding: 8px 10px;
+  border-radius: 10px;
+  border: 1px solid transparent;
+  background: color-mix(in srgb, var(--surface-soft) 70%, transparent);
+  transition: border-color 0.2s ease, background 0.2s ease;
+}
+
+.ch3-eq.is-changed {
+  border-color: color-mix(in srgb, var(--accent) 45%, var(--line));
+  background: color-mix(in srgb, var(--accent) 10%, var(--surface-solid));
+}
+
+.ch3-small {
+  font-size: 12px !important;
+  line-height: 1.45 !important;
+  font-weight: 650 !important;
+  word-break: break-word;
+}
+
+.ch3-vec-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  align-items: center;
+}
+
+.ch3-sep {
+  display: inline-block;
+  width: 8px;
+}
+
+.ch3-panel .tex-display {
+  margin: 0;
+}
+
 .ch3-meter-card {
   display: grid;
   gap: 4px;

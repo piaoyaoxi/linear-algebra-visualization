@@ -1,10 +1,10 @@
-/* Chapter 3 shared rational linear algebra + canvas helpers. */
+/* Chapter 3 shared rational linear algebra + rendering helpers. */
 (() => {
   const EPS = 1e-10;
 
   function gcd(a, b) {
-    let x = Math.abs(a);
-    let y = Math.abs(b);
+    let x = Math.abs(Math.trunc(a));
+    let y = Math.abs(Math.trunc(b));
     while (y) {
       const t = y;
       y = x % y;
@@ -22,10 +22,9 @@
       d = -d;
     }
     if (!Number.isInteger(n) || !Number.isInteger(d)) {
-      // best-effort from float for display-only paths
-      const scale = 10000;
+      const scale = 1000;
       n = Math.round(n * scale);
-      d = Math.round(d * scale);
+      d = Math.round(d * scale) || scale;
     }
     const g = gcd(n, d);
     return { n: n / g, d: d / g };
@@ -36,21 +35,23 @@
   const mul = (a, b) => F(a.n * b.n, a.d * b.d);
   const div = (a, b) => F(a.n * b.d, a.d * b.n);
   const neg = (a) => F(-a.n, a.d);
-  const isZero = (a) => a.n === 0;
+  const isZero = (a) => !a || a.n === 0;
   const eq = (a, b) => a.n === b.n && a.d === b.d;
   const cmpAbs = (a, b) => Math.abs(a.n * b.d) - Math.abs(b.n * a.d);
   const toNumber = (a) => a.n / a.d;
 
   function formatF(a) {
+    if (!a) return "0";
     if (a.d === 1) return String(a.n);
     if (a.n < 0) return `-(${-a.n}/${a.d})`;
     return `${a.n}/${a.d}`;
   }
 
   function latexF(a) {
+    if (!a) return "0";
     if (a.d === 1) return String(a.n);
-    if (a.n < 0) return `-\\frac{${-a.n}}{${a.d}}`;
-    return `\\frac{${a.n}}{${a.d}}`;
+    if (a.n < 0) return `-\\dfrac{${-a.n}}{${a.d}}`;
+    return `\\dfrac{${a.n}}{${a.d}}`;
   }
 
   function fromNumber(value) {
@@ -58,7 +59,6 @@
     const n = Number(value);
     if (!Number.isFinite(n)) return F(0);
     if (Number.isInteger(n)) return F(n);
-    // limit denominators for slider-driven values
     const den = 20;
     return F(Math.round(n * den), den);
   }
@@ -95,17 +95,22 @@
     return out;
   }
 
-  function formatMat(m, barAt = null) {
-    return m
-      .map((row) => {
-        const cells = row.map((v, j) => {
-          const text = formatF(v);
-          if (barAt != null && j === barAt) return `| ${text}`;
-          return text;
-        });
-        return `[ ${cells.join("  ")} ]`;
-      })
-      .join("\n");
+  function matsEqual(a, b) {
+    if (!a || !b || a.length !== b.length) return false;
+    for (let i = 0; i < a.length; i += 1) {
+      if (a[i].length !== b[i].length) return false;
+      for (let j = 0; j < a[i].length; j += 1) if (!eq(a[i][j], b[i][j])) return false;
+    }
+    return true;
+  }
+
+  function changedRows(before, after) {
+    if (!before || !after) return [];
+    const rows = [];
+    for (let i = 0; i < after.length; i += 1) {
+      if (!before[i] || before[i].some((v, j) => !eq(v, after[i][j]))) rows.push(i);
+    }
+    return rows;
   }
 
   function latexMat(m, barAt = null) {
@@ -114,7 +119,7 @@
         row
           .map((v, j) => {
             const t = latexF(v);
-            if (barAt != null && j === barAt) return `\\,|\\, ${t}`;
+            if (barAt != null && j === barAt) return `\\,|\\,${t}`;
             return t;
           })
           .join(" & "),
@@ -123,8 +128,83 @@
     return `\\begin{bmatrix}${body}\\end{bmatrix}`;
   }
 
+  function latexVec(vec, transpose = true) {
+    const body = vec.map(latexF).join(transpose ? " \\\\ " : " & ");
+    const core = `\\begin{bmatrix}${body}\\end{bmatrix}`;
+    return transpose ? core : core; // column by default
+  }
+
+  function latexEqFromRow(row, nVars) {
+    // row length nVars+1
+    const parts = [];
+    for (let j = 0; j < nVars; j += 1) {
+      const c = row[j];
+      if (isZero(c)) continue;
+      const name = nVars <= 3 ? ["x", "y", "z"][j] || `x_{${j + 1}}` : `x_{${j + 1}}`;
+      const abs = F(Math.abs(c.n), c.d);
+      const coeff =
+        abs.n === 1 && abs.d === 1 ? "" : latexF(abs);
+      const term = coeff ? `${coeff}${name}` : name;
+      if (!parts.length) {
+        parts.push(c.n < 0 ? `-${term}` : term);
+      } else {
+        parts.push(c.n < 0 ? `- ${term}` : `+ ${term}`);
+      }
+    }
+    if (!parts.length) parts.push("0");
+    return `${parts.join(" ")} = ${latexF(row[nVars])}`;
+  }
+
+  function latexEqs(aug) {
+    const nVars = aug[0].length - 1;
+    return aug.map((row, i) => `R_{${i + 1}}:\\; ${latexEqFromRow(row, nVars)}`);
+  }
+
+  function tex(source) {
+    return window.texInline ? window.texInline(source) : source;
+  }
+
+  function texD(source) {
+    return window.texDisplay ? window.texDisplay(source) : source;
+  }
+
+  function htmlMat(m, barAt = null) {
+    return `<div class="ch3-math">${texD(latexMat(m, barAt))}</div>`;
+  }
+
+  function htmlEqs(aug, highlightRows = []) {
+    const lines = latexEqs(aug);
+    return `<div class="ch3-eqs">${lines
+      .map((line, i) => `<div class="ch3-eq${highlightRows.includes(i) ? " is-changed" : ""}">${tex(line)}</div>`)
+      .join("")}</div>`;
+  }
+
+  function htmlVec(vec) {
+    return tex(latexVec(vec));
+  }
+
+  function formatSigned(value, digits = 2) {
+    const n = Number(value);
+    if (!Number.isFinite(n)) return "0";
+    const rounded = Math.round(n * 10 ** digits) / 10 ** digits;
+    if (Object.is(rounded, -0) || Math.abs(rounded) < 5 * 10 ** -(digits + 1)) return "0";
+    return String(rounded);
+  }
+
+  function formatCombo(coords) {
+    const terms = [];
+    coords.forEach((v, i) => {
+      const n = Number(v);
+      if (!Number.isFinite(n) || Math.abs(n) < 1e-9) return;
+      const mag = formatSigned(Math.abs(n));
+      const body = mag === "1" ? `e_{${i + 1}}` : `${mag}e_{${i + 1}}`;
+      if (!terms.length) terms.push(n < 0 ? `-${body}` : body);
+      else terms.push(n < 0 ? `- ${body}` : `+ ${body}`);
+    });
+    return terms.length ? terms.join(" ") : "0";
+  }
+
   function analyzeAugmented(aug) {
-    // aug is m x (n+1)
     const m = aug.length;
     const n = aug[0].length - 1;
     let A = cloneMat(aug);
@@ -153,9 +233,9 @@
     }
     const rankA = pivots.length;
     let rankAug = rankA;
-    if (inconsistent) rankAug = rankA + 1;
-    else {
-      // count nonzero rows of RREF
+    if (inconsistent) {
+      rankAug = rankA + 1;
+    } else {
       rankAug = A.filter((r) => !r.every(isZero)).length;
     }
     const free = [];
@@ -164,14 +244,11 @@
   }
 
   function rankOf(matrix) {
-    const m = matrix.length;
-    const n = matrix[0].length;
     const aug = matrix.map((row) => [...row.map((v) => F(v.n, v.d)), F(0)]);
     return analyzeAugmented(aug).rankA;
   }
 
   function nullspaceBasis(A) {
-    const m = A.length;
     const n = A[0].length;
     const aug = A.map((row) => [...row.map((v) => F(v.n, v.d)), F(0)]);
     const info = analyzeAugmented(aug);
@@ -183,7 +260,6 @@
       vec[f] = F(1);
       pivots.forEach((p) => {
         const r = pivotRow.get(p);
-        // x_p + sum free coeffs = 0 in RREF
         vec[p] = neg(rref[r][f]);
       });
       return vec;
@@ -206,14 +282,30 @@
   }
 
   function relationCertificate(vectors) {
-    // vectors as columns
-    if (!vectors.length) return { dependent: false, coeffs: [] };
+    if (!vectors.length) return { dependent: false, coeffs: [], rank: 0 };
     const n = vectors[0].length;
-    const p = vectors.length;
     const A = Array.from({ length: n }, (_, i) => vectors.map((v) => fromNumber(v[i])));
     const { basis, info } = nullspaceBasis(A);
     if (!basis.length) return { dependent: false, coeffs: [], rank: info.rankA };
-    return { dependent: true, coeffs: basis[0], rank: info.rankA };
+    // prefer smallest-integer looking certificate: flip sign so first nonzero > 0
+    let coeffs = basis[0].map((c) => F(c.n, c.d));
+    const first = coeffs.find((c) => !isZero(c));
+    if (first && first.n < 0) coeffs = coeffs.map(neg);
+    return { dependent: true, coeffs, rank: info.rankA };
+  }
+
+  function latexRelation(coeffs) {
+    const parts = [];
+    coeffs.forEach((c, i) => {
+      if (isZero(c)) return;
+      const name = `v_{${i + 1}}`;
+      const abs = F(Math.abs(c.n), c.d);
+      const coeff = abs.n === 1 && abs.d === 1 ? "" : latexF(abs);
+      const term = `${coeff}${name}`;
+      if (!parts.length) parts.push(c.n < 0 ? `-${term}` : term);
+      else parts.push(c.n < 0 ? `- ${term}` : `+ ${term}`);
+    });
+    return parts.length ? `${parts.join(" ")} = 0` : "仅零系数";
   }
 
   const PRESETS = {
@@ -275,26 +367,12 @@
         [1, 1],
       ],
     },
-    lineCol: {
-      label: "直线列空间",
+    dep33: {
+      label: "相关 3×3",
       A: [
-        [1, 2],
-        [2, 4],
-      ],
-      b: [1, 2],
-    },
-    affineLine: {
-      label: "仿射直线",
-      aug: [
-        [1, 1, 2],
-        [2, 2, 4],
-      ],
-    },
-    planeSol: {
-      label: "平面解集",
-      aug: [
-        [1, 1, 1, 2],
-        [2, 2, 2, 4],
+        [1, 2, 3],
+        [2, 4, 6],
+        [0, 1, 1],
       ],
     },
   };
@@ -322,15 +400,17 @@
     if (!canvas) return null;
     const rect = canvas.getBoundingClientRect();
     const dpr = Math.min(window.devicePixelRatio || 1, 2);
-    const w = Math.max(1, Math.round(rect.width * dpr));
-    const h = Math.max(1, Math.round(rect.height * dpr));
+    const cssW = Math.max(1, rect.width || canvas.clientWidth || 320);
+    const cssH = Math.max(1, rect.height || canvas.clientHeight || 300);
+    const w = Math.max(1, Math.round(cssW * dpr));
+    const h = Math.max(1, Math.round(cssH * dpr));
     if (canvas.width !== w || canvas.height !== h) {
       canvas.width = w;
       canvas.height = h;
     }
     const ctx = canvas.getContext("2d");
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-    return { ctx, width: rect.width, height: rect.height, dpr };
+    return { ctx, width: cssW, height: cssH, dpr };
   }
 
   function drawAxes(ctx, width, height, scale = 40) {
@@ -338,10 +418,16 @@
     const cx = width / 2;
     const cy = height / 2;
     ctx.clearRect(0, 0, width, height);
-    ctx.fillStyle = p.soft;
+    // soft panel
+    const grd = ctx.createLinearGradient(0, 0, width, height);
+    grd.addColorStop(0, p.soft);
+    grd.addColorStop(1, p.surface);
+    ctx.fillStyle = grd;
     ctx.fillRect(0, 0, width, height);
+
     ctx.strokeStyle = p.line;
     ctx.lineWidth = 1;
+    ctx.globalAlpha = 0.55;
     ctx.beginPath();
     for (let x = cx % scale; x < width; x += scale) {
       ctx.moveTo(x, 0);
@@ -352,66 +438,86 @@
       ctx.lineTo(width, y);
     }
     ctx.stroke();
+    ctx.globalAlpha = 1;
+
     ctx.strokeStyle = p.muted;
-    ctx.lineWidth = 1.5;
+    ctx.lineWidth = 1.6;
     ctx.beginPath();
     ctx.moveTo(0, cy);
     ctx.lineTo(width, cy);
     ctx.moveTo(cx, 0);
     ctx.lineTo(cx, height);
     ctx.stroke();
-    return { cx, cy, scale, p };
+    return { cx, cy, scale, p, width, height };
   }
 
   function toCanvas(pt, frame) {
     return [frame.cx + pt[0] * frame.scale, frame.cy - pt[1] * frame.scale];
   }
 
-  function drawLineFromEq(ctx, frame, a, b, c, color, width = 2.5) {
-    // ax+by=c
-    const { width: W, height: H } = { width: ctx.canvas.clientWidth, height: ctx.canvas.clientHeight };
+  function drawLineFromEq(ctx, frame, a, b, c, color, lineWidth = 2.6) {
+    // ax + by = c  →  y = (c - a x)/b
+    const { width: W, height: H } = frame;
     const pts = [];
-    const tryPush = (x, y) => {
+    const pushIf = (x, y) => {
       const [X, Y] = toCanvas([x, y], frame);
-      if (X >= -2 && X <= W + 2 && Y >= -2 && Y <= H + 2) pts.push([X, Y]);
+      pts.push([X, Y]);
     };
+    // sample far points in world coords
+    const span = Math.max(W, H) / frame.scale + 2;
     if (Math.abs(b) > 1e-9) {
-      tryPush(-10, (c - a * -10) / b);
-      tryPush(10, (c - a * 10) / b);
+      pushIf(-span, (c - a * -span) / b);
+      pushIf(span, (c - a * span) / b);
     } else if (Math.abs(a) > 1e-9) {
       const x = c / a;
-      tryPush(x, -10);
-      tryPush(x, 10);
+      pushIf(x, -span);
+      pushIf(x, span);
+    } else {
+      return;
     }
-    if (pts.length < 2) return;
+    ctx.save();
     ctx.strokeStyle = color;
-    ctx.lineWidth = width;
+    ctx.lineWidth = lineWidth;
+    ctx.lineCap = "round";
     ctx.beginPath();
     ctx.moveTo(pts[0][0], pts[0][1]);
     ctx.lineTo(pts[1][0], pts[1][1]);
     ctx.stroke();
+    ctx.restore();
   }
 
   function drawArrow(ctx, frame, vec, color, label) {
     const [x0, y0] = toCanvas([0, 0], frame);
     const [x1, y1] = toCanvas(vec, frame);
+    const dx = x1 - x0;
+    const dy = y1 - y0;
+    const len = Math.hypot(dx, dy);
+    if (len < 2) {
+      ctx.fillStyle = color;
+      ctx.beginPath();
+      ctx.arc(x0, y0, 4, 0, Math.PI * 2);
+      ctx.fill();
+      return;
+    }
     ctx.strokeStyle = color;
     ctx.fillStyle = color;
-    ctx.lineWidth = 2.5;
+    ctx.lineWidth = 2.6;
+    ctx.lineCap = "round";
     ctx.beginPath();
     ctx.moveTo(x0, y0);
     ctx.lineTo(x1, y1);
     ctx.stroke();
-    const ang = Math.atan2(y0 - y1, x1 - x0);
+    const ang = Math.atan2(dy, dx);
+    const head = Math.min(12, Math.max(8, len * 0.12));
     ctx.beginPath();
     ctx.moveTo(x1, y1);
-    ctx.lineTo(x1 - 10 * Math.cos(ang - 0.4), y1 + 10 * Math.sin(ang - 0.4));
-    ctx.lineTo(x1 - 10 * Math.cos(ang + 0.4), y1 + 10 * Math.sin(ang + 0.4));
+    ctx.lineTo(x1 - head * Math.cos(ang - 0.4), y1 - head * Math.sin(ang - 0.4));
+    ctx.lineTo(x1 - head * Math.cos(ang + 0.4), y1 - head * Math.sin(ang + 0.4));
     ctx.closePath();
     ctx.fill();
     if (label) {
-      ctx.font = "12px ui-sans-serif, system-ui, sans-serif";
-      ctx.fillText(label, x1 + 6, y1 - 6);
+      ctx.font = "600 12px ui-sans-serif, system-ui, sans-serif";
+      ctx.fillText(label, x1 + 8, y1 - 8);
     }
   }
 
@@ -419,34 +525,38 @@
     const [x, y] = toCanvas(pt, frame);
     ctx.fillStyle = color;
     ctx.beginPath();
-    ctx.arc(x, y, 5, 0, Math.PI * 2);
+    ctx.arc(x, y, 5.5, 0, Math.PI * 2);
     ctx.fill();
+    ctx.strokeStyle = frame.p.surface;
+    ctx.lineWidth = 1.5;
+    ctx.stroke();
     if (label) {
       ctx.fillStyle = frame.p.text;
-      ctx.font = "12px ui-sans-serif, system-ui, sans-serif";
-      ctx.fillText(label, x + 8, y - 8);
+      ctx.font = "600 12px ui-sans-serif, system-ui, sans-serif";
+      ctx.fillText(label, x + 9, y - 9);
     }
   }
 
-  function det2num(A) {
-    return A[0][0] * A[1][1] - A[0][1] * A[1][0];
-  }
-
-  // Resultant of f=x^2 + p x + q and g=x + r (monic linear) via Sylvester 3x3
-  // For demo: circle x^2 + y^2 - 1 and x - y => f=x^2 + (y^2-1), g=x-y
-  function resultantQuadraticLinear(p, q, r) {
-    // f = x^2 + p x + q, g = x + r  (g = x - y => r = -y)
-    // Sylvester 3x3:
-    // [1 p q]
-    // [1 r 0]
-    // [0 1 r]
-    const a = 1;
-    const b = p;
-    const c = q;
-    const d = 1;
-    const e = r;
-    // det
-    return a * (e * e - 0) - b * (d * e - 0) + c * (d * 1 - 0);
+  function drawSpanDisk(ctx, frame, vectors, color) {
+    // rough 2D parallelogram for first two vectors
+    if (vectors.length < 2) return;
+    const a = vectors[0];
+    const b = vectors[1];
+    const pts = [
+      [0, 0],
+      a,
+      [a[0] + b[0], a[1] + b[1]],
+      b,
+    ].map((p) => toCanvas(p, frame));
+    ctx.save();
+    ctx.fillStyle = color;
+    ctx.globalAlpha = 0.12;
+    ctx.beginPath();
+    ctx.moveTo(pts[0][0], pts[0][1]);
+    pts.slice(1).forEach((p) => ctx.lineTo(p[0], p[1]));
+    ctx.closePath();
+    ctx.fill();
+    ctx.restore();
   }
 
   function pulseClass(el, cls = "is-pulse") {
@@ -454,6 +564,13 @@
     el.classList.remove(cls);
     void el.offsetWidth;
     el.classList.add(cls);
+  }
+
+  function classifySystem(aug) {
+    const info = analyzeAugmented(aug);
+    if (info.inconsistent) return { key: "none", label: "无解", cls: "is-bad", info };
+    if (info.free.length) return { key: "inf", label: "无穷多解", cls: "is-inf", info };
+    return { key: "unique", label: "唯一解", cls: "is-ok", info };
   }
 
   window.Ch3Math = {
@@ -475,13 +592,25 @@
     rowSwap,
     rowScale,
     rowAdd,
-    formatMat,
+    matsEqual,
+    changedRows,
     latexMat,
+    latexVec,
+    latexEqs,
+    latexRelation,
+    tex,
+    texD,
+    htmlMat,
+    htmlEqs,
+    htmlVec,
+    formatSigned,
+    formatCombo,
     analyzeAugmented,
     rankOf,
     nullspaceBasis,
     particularSolution,
     relationCertificate,
+    classifySystem,
     PRESETS,
     reducedMotion,
     getPalette,
@@ -490,8 +619,7 @@
     drawLineFromEq,
     drawArrow,
     drawPoint,
-    det2num,
-    resultantQuadraticLinear,
+    drawSpanDisk,
     pulseClass,
     EPS,
   };

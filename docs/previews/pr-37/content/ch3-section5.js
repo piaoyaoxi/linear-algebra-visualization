@@ -3,8 +3,8 @@ defineChapter3Section("solvability", {
   textbookSection: "线性方程组有解判别定理",
   title: "线性方程组有解判别定理",
   navTitle: "有解判别",
-  question: "给定 Ax=b，怎样在真正求出所有未知量之前，就判断 b 是否能由 A 的列组合出来？",
-  goal: "把 Ax=b 理解为列的线性组合；掌握 rank(A)=rank([A|b]) 与 b∈Col(A)；能从矛盾行识别无解，并理解齐次系统总有零解。",
+  question: `给定 ${texInline("Ax=b")}，怎样在真正求出所有未知量之前，就判断 ${texInline("b")} 是否能由 ${texInline("A")} 的列组合出来？`,
+  goal: `把 ${texInline("Ax=b")} 理解为列的线性组合；掌握 ${texInline("\\operatorname{rank}(A)=\\operatorname{rank}([A|b])")} 与 ${texInline("b\\in\\operatorname{Col}(A)")}；能从矛盾行识别无解，并理解齐次系统总有零解。`,
   tags: ["列空间", "增广秩", "矛盾行", "齐次系统"],
   intro:
     "有解与否，先问目标向量 b 是否落在列空间中。比较 A 与 [A|b] 的秩，就是在检查加入 b 以后是否出现了新的独立方向。",

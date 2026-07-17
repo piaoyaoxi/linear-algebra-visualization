@@ -1,626 +1,731 @@
-/* Chapter 3 shared rational linear algebra + rendering helpers. */
+/* Chapter 3 exact linear-algebra engine and drawing helpers. */
 (() => {
-  const EPS = 1e-10;
+  const EPS = 1e-9;
 
   function gcd(a, b) {
     let x = Math.abs(Math.trunc(a));
     let y = Math.abs(Math.trunc(b));
-    while (y) {
-      const t = y;
-      y = x % y;
-      x = t;
-    }
+    while (y) [x, y] = [y, x % y];
     return x || 1;
   }
 
   function F(n = 0, d = 1) {
+    if (typeof n === "object" && n && Number.isFinite(n.n) && Number.isFinite(n.d)) {
+      d = n.d;
+      n = n.n;
+    }
     n = Number(n);
     d = Number(d);
-    if (!Number.isFinite(n) || !Number.isFinite(d) || d === 0) return { n: 0, d: 1 };
+    if (!Number.isFinite(n) || !Number.isFinite(d) || d === 0) {
+      throw new RangeError("Invalid rational number");
+    }
+    if (!Number.isInteger(n) || !Number.isInteger(d)) {
+      return fromNumber(n / d);
+    }
     if (d < 0) {
       n = -n;
       d = -d;
     }
-    if (!Number.isInteger(n) || !Number.isInteger(d)) {
-      const scale = 1000;
-      n = Math.round(n * scale);
-      d = Math.round(d * scale) || scale;
-    }
     const g = gcd(n, d);
-    return { n: n / g, d: d / g };
+    return Object.freeze({ n: n / g, d: d / g });
+  }
+
+  function fromNumber(value, maxDenominator = 1000) {
+    if (typeof value === "object" && value && "n" in value && "d" in value) return F(value.n, value.d);
+    const x = Number(value);
+    if (!Number.isFinite(x)) throw new RangeError("Non-finite number");
+    if (Number.isInteger(x)) return F(x, 1);
+    const sign = x < 0 ? -1 : 1;
+    let target = Math.abs(x);
+    let h1 = 1;
+    let h0 = 0;
+    let k1 = 0;
+    let k0 = 1;
+    let b = target;
+    for (let i = 0; i < 24; i += 1) {
+      const a = Math.floor(b);
+      const h2 = a * h1 + h0;
+      const k2 = a * k1 + k0;
+      if (k2 > maxDenominator) break;
+      [h0, h1] = [h1, h2];
+      [k0, k1] = [k1, k2];
+      const frac = b - a;
+      if (frac < Number.EPSILON) break;
+      b = 1 / frac;
+    }
+    return F(sign * h1, k1 || 1);
+  }
+
+  function parseF(value) {
+    if (typeof value === "object" && value && "n" in value) return F(value);
+    if (typeof value === "number") return fromNumber(value);
+    const text = String(value ?? "").trim().replace(/−/g, "-");
+    if (!text) return F(0);
+    const fraction = text.match(/^([+-]?\d+)\s*\/\s*([+-]?\d+)$/);
+    if (fraction) return F(Number(fraction[1]), Number(fraction[2]));
+    const n = Number(text);
+    if (!Number.isFinite(n)) throw new TypeError(`Cannot parse rational: ${text}`);
+    return fromNumber(n);
   }
 
   const add = (a, b) => F(a.n * b.d + b.n * a.d, a.d * b.d);
   const sub = (a, b) => F(a.n * b.d - b.n * a.d, a.d * b.d);
   const mul = (a, b) => F(a.n * b.n, a.d * b.d);
-  const div = (a, b) => F(a.n * b.d, a.d * b.n);
+  function div(a, b) {
+    if (!b || b.n === 0) throw new RangeError("Division by zero");
+    return F(a.n * b.d, a.d * b.n);
+  }
   const neg = (a) => F(-a.n, a.d);
   const isZero = (a) => !a || a.n === 0;
-  const eq = (a, b) => a.n === b.n && a.d === b.d;
-  const cmpAbs = (a, b) => Math.abs(a.n * b.d) - Math.abs(b.n * a.d);
-  const toNumber = (a) => a.n / a.d;
+  const eq = (a, b) => Boolean(a && b && a.n === b.n && a.d === b.d);
+  const toNumber = (a) => (a ? a.n / a.d : 0);
+  const absF = (a) => F(Math.abs(a.n), a.d);
 
   function formatF(a) {
-    if (!a) return "0";
-    if (a.d === 1) return String(a.n);
-    if (a.n < 0) return `-(${-a.n}/${a.d})`;
-    return `${a.n}/${a.d}`;
+    if (!a || a.n === 0) return "0";
+    return a.d === 1 ? String(a.n) : `${a.n}/${a.d}`;
   }
 
   function latexF(a) {
-    if (!a) return "0";
+    if (!a || a.n === 0) return "0";
     if (a.d === 1) return String(a.n);
-    if (a.n < 0) return `-\\dfrac{${-a.n}}{${a.d}}`;
-    return `\\dfrac{${a.n}}{${a.d}}`;
+    return a.n < 0 ? `-\\frac{${-a.n}}{${a.d}}` : `\\frac{${a.n}}{${a.d}}`;
   }
 
-  function fromNumber(value) {
-    if (typeof value === "object" && value && "n" in value) return F(value.n, value.d);
+  function formatNumber(value, digits = 2) {
     const n = Number(value);
-    if (!Number.isFinite(n)) return F(0);
-    if (Number.isInteger(n)) return F(n);
-    const den = 20;
-    return F(Math.round(n * den), den);
+    if (!Number.isFinite(n)) return "0";
+    const rounded = Math.round(n * 10 ** digits) / 10 ** digits;
+    return Math.abs(rounded) < 10 ** (-(digits + 1)) ? "0" : String(rounded);
   }
 
-  function cloneMat(m) {
-    return m.map((row) => row.map((v) => F(v.n, v.d)));
+  function cloneMat(matrix) {
+    return matrix.map((row) => row.map((value) => F(value)));
   }
 
   function matFromNumbers(rows) {
-    return rows.map((row) => row.map((v) => fromNumber(v)));
+    return rows.map((row) => row.map(parseF));
   }
 
-  function matToNumbers(m) {
-    return m.map((row) => row.map(toNumber));
+  function matToNumbers(matrix) {
+    return matrix.map((row) => row.map(toNumber));
   }
 
-  function rowSwap(m, i, j) {
-    const out = cloneMat(m);
+  function rowSwap(matrix, i, j) {
+    const out = cloneMat(matrix);
     [out[i], out[j]] = [out[j], out[i]];
     return out;
   }
 
-  function rowScale(m, i, k) {
-    const out = cloneMat(m);
-    const factor = fromNumber(k);
-    out[i] = out[i].map((v) => mul(v, factor));
+  function rowScale(matrix, row, factor) {
+    const k = parseF(factor);
+    if (isZero(k)) throw new RangeError("A row may only be scaled by a nonzero number");
+    const out = cloneMat(matrix);
+    out[row] = out[row].map((value) => mul(value, k));
     return out;
   }
 
-  function rowAdd(m, target, source, k) {
-    const out = cloneMat(m);
-    const factor = fromNumber(k);
-    out[target] = out[target].map((v, j) => add(v, mul(out[source][j], factor)));
+  function rowAdd(matrix, target, source, factor) {
+    const k = parseF(factor);
+    const out = cloneMat(matrix);
+    out[target] = out[target].map((value, column) => add(value, mul(out[source][column], k)));
     return out;
-  }
-
-  function matsEqual(a, b) {
-    if (!a || !b || a.length !== b.length) return false;
-    for (let i = 0; i < a.length; i += 1) {
-      if (a[i].length !== b[i].length) return false;
-      for (let j = 0; j < a[i].length; j += 1) if (!eq(a[i][j], b[i][j])) return false;
-    }
-    return true;
   }
 
   function changedRows(before, after) {
-    if (!before || !after) return [];
-    const rows = [];
-    for (let i = 0; i < after.length; i += 1) {
-      if (!before[i] || before[i].some((v, j) => !eq(v, after[i][j]))) rows.push(i);
-    }
-    return rows;
-  }
-
-  function latexMat(m, barAt = null) {
-    const body = m
-      .map((row) =>
-        row
-          .map((v, j) => {
-            const t = latexF(v);
-            if (barAt != null && j === barAt) return `\\,|\\,${t}`;
-            return t;
-          })
-          .join(" & "),
-      )
-      .join(" \\\\ ");
-    return `\\begin{bmatrix}${body}\\end{bmatrix}`;
-  }
-
-  function latexVec(vec, transpose = true) {
-    const body = vec.map(latexF).join(transpose ? " \\\\ " : " & ");
-    const core = `\\begin{bmatrix}${body}\\end{bmatrix}`;
-    return transpose ? core : core; // column by default
-  }
-
-  function latexEqFromRow(row, nVars) {
-    // row length nVars+1
-    const parts = [];
-    for (let j = 0; j < nVars; j += 1) {
-      const c = row[j];
-      if (isZero(c)) continue;
-      const name = nVars <= 3 ? ["x", "y", "z"][j] || `x_{${j + 1}}` : `x_{${j + 1}}`;
-      const abs = F(Math.abs(c.n), c.d);
-      const coeff =
-        abs.n === 1 && abs.d === 1 ? "" : latexF(abs);
-      const term = coeff ? `${coeff}${name}` : name;
-      if (!parts.length) {
-        parts.push(c.n < 0 ? `-${term}` : term);
-      } else {
-        parts.push(c.n < 0 ? `- ${term}` : `+ ${term}`);
-      }
-    }
-    if (!parts.length) parts.push("0");
-    return `${parts.join(" ")} = ${latexF(row[nVars])}`;
-  }
-
-  function latexEqs(aug) {
-    const nVars = aug[0].length - 1;
-    return aug.map((row, i) => `R_{${i + 1}}:\\; ${latexEqFromRow(row, nVars)}`);
-  }
-
-  function tex(source) {
-    return window.texInline ? window.texInline(source) : source;
-  }
-
-  function texD(source) {
-    return window.texDisplay ? window.texDisplay(source) : source;
-  }
-
-  function htmlMat(m, barAt = null) {
-    return `<div class="ch3-math">${texD(latexMat(m, barAt))}</div>`;
-  }
-
-  function htmlEqs(aug, highlightRows = []) {
-    const lines = latexEqs(aug);
-    return `<div class="ch3-eqs">${lines
-      .map((line, i) => `<div class="ch3-eq${highlightRows.includes(i) ? " is-changed" : ""}">${tex(line)}</div>`)
-      .join("")}</div>`;
-  }
-
-  function htmlVec(vec) {
-    return tex(latexVec(vec));
-  }
-
-  function formatSigned(value, digits = 2) {
-    const n = Number(value);
-    if (!Number.isFinite(n)) return "0";
-    const rounded = Math.round(n * 10 ** digits) / 10 ** digits;
-    if (Object.is(rounded, -0) || Math.abs(rounded) < 5 * 10 ** -(digits + 1)) return "0";
-    return String(rounded);
-  }
-
-  function formatCombo(coords) {
-    const terms = [];
-    coords.forEach((v, i) => {
-      const n = Number(v);
-      if (!Number.isFinite(n) || Math.abs(n) < 1e-9) return;
-      const mag = formatSigned(Math.abs(n));
-      const body = mag === "1" ? `e_{${i + 1}}` : `${mag}e_{${i + 1}}`;
-      if (!terms.length) terms.push(n < 0 ? `-${body}` : body);
-      else terms.push(n < 0 ? `- ${body}` : `+ ${body}`);
+    const result = [];
+    after.forEach((row, i) => {
+      if (!before[i] || row.some((value, j) => !eq(value, before[i][j]))) result.push(i);
     });
-    return terms.length ? terms.join(" ") : "0";
+    return result;
   }
 
-  function analyzeAugmented(aug) {
-    const m = aug.length;
-    const n = aug[0].length - 1;
-    let A = cloneMat(aug);
+  function rref(matrix, pivotColumnCount = matrix[0]?.length ?? 0) {
+    let out = cloneMat(matrix);
+    const rows = out.length;
+    const columns = out[0]?.length ?? 0;
+    const pivotLimit = Math.min(pivotColumnCount, columns);
     const pivots = [];
-    let row = 0;
-    for (let col = 0; col < n && row < m; col += 1) {
-      let pivot = row;
-      for (let i = row + 1; i < m; i += 1) {
-        if (cmpAbs(A[i][col], A[pivot][col]) > 0) pivot = i;
+    let pivotRow = 0;
+
+    for (let column = 0; column < pivotLimit && pivotRow < rows; column += 1) {
+      let candidate = -1;
+      for (let row = pivotRow; row < rows; row += 1) {
+        if (!isZero(out[row][column])) {
+          if (candidate < 0 || Math.abs(toNumber(out[row][column])) > Math.abs(toNumber(out[candidate][column]))) {
+            candidate = row;
+          }
+        }
       }
-      if (isZero(A[pivot][col])) continue;
-      if (pivot !== row) A = rowSwap(A, pivot, row);
-      const piv = A[row][col];
-      A = rowScale(A, row, div(F(1), piv));
-      for (let i = 0; i < m; i += 1) {
-        if (i === row || isZero(A[i][col])) continue;
-        A = rowAdd(A, i, row, neg(A[i][col]));
+      if (candidate < 0) continue;
+      if (candidate !== pivotRow) out = rowSwap(out, candidate, pivotRow);
+      out = rowScale(out, pivotRow, div(F(1), out[pivotRow][column]));
+      for (let row = 0; row < rows; row += 1) {
+        if (row === pivotRow || isZero(out[row][column])) continue;
+        out = rowAdd(out, row, pivotRow, neg(out[row][column]));
       }
-      pivots.push(col);
-      row += 1;
+      pivots.push(column);
+      pivotRow += 1;
     }
-    let inconsistent = false;
-    for (let i = 0; i < m; i += 1) {
-      const allZero = A[i].slice(0, n).every(isZero);
-      if (allZero && !isZero(A[i][n])) inconsistent = true;
+    return { matrix: out, pivots };
+  }
+
+  function echelon(matrix, pivotColumnCount = matrix[0]?.length ?? 0) {
+    let out = cloneMat(matrix);
+    const rows = out.length;
+    const columns = out[0]?.length ?? 0;
+    const pivotLimit = Math.min(pivotColumnCount, columns);
+    const pivots = [];
+    const steps = [];
+    let pivotRow = 0;
+
+    for (let column = 0; column < pivotLimit && pivotRow < rows; column += 1) {
+      let candidate = -1;
+      for (let row = pivotRow; row < rows; row += 1) {
+        if (!isZero(out[row][column])) {
+          candidate = row;
+          break;
+        }
+      }
+      if (candidate < 0) continue;
+      if (candidate !== pivotRow) {
+        out = rowSwap(out, candidate, pivotRow);
+        steps.push({ label: `R_${pivotRow + 1}\\leftrightarrow R_${candidate + 1}`, matrix: cloneMat(out) });
+      }
+      const pivot = out[pivotRow][column];
+      if (!eq(pivot, F(1))) {
+        out = rowScale(out, pivotRow, div(F(1), pivot));
+        steps.push({ label: `R_${pivotRow + 1}\\leftarrow ${latexF(div(F(1), pivot))}R_${pivotRow + 1}`, matrix: cloneMat(out) });
+      }
+      for (let row = pivotRow + 1; row < rows; row += 1) {
+        if (isZero(out[row][column])) continue;
+        const factor = neg(out[row][column]);
+        out = rowAdd(out, row, pivotRow, factor);
+        steps.push({ label: `R_${row + 1}\\leftarrow R_${row + 1}+(${latexF(factor)})R_${pivotRow + 1}`, matrix: cloneMat(out) });
+      }
+      pivots.push(column);
+      pivotRow += 1;
     }
-    const rankA = pivots.length;
-    let rankAug = rankA;
-    if (inconsistent) {
-      rankAug = rankA + 1;
-    } else {
-      rankAug = A.filter((r) => !r.every(isZero)).length;
-    }
+    return { matrix: out, pivots, steps };
+  }
+
+  function analyzeAugmented(augmented) {
+    const rowCount = augmented.length;
+    const variableCount = (augmented[0]?.length ?? 1) - 1;
+    const reduced = rref(augmented, variableCount);
     const free = [];
-    for (let j = 0; j < n; j += 1) if (!pivots.includes(j)) free.push(j);
-    return { rref: A, pivots, free, inconsistent, rankA, rankAug, m, n };
+    for (let column = 0; column < variableCount; column += 1) {
+      if (!reduced.pivots.includes(column)) free.push(column);
+    }
+    const inconsistentRows = [];
+    reduced.matrix.forEach((row, index) => {
+      if (row.slice(0, variableCount).every(isZero) && !isZero(row[variableCount])) inconsistentRows.push(index);
+    });
+    const rankA = reduced.pivots.length;
+    const rankAug = rankA + (inconsistentRows.length ? 1 : 0);
+    return {
+      rref: reduced.matrix,
+      pivots: reduced.pivots,
+      free,
+      inconsistent: inconsistentRows.length > 0,
+      inconsistentRows,
+      rankA,
+      rankAug,
+      m: rowCount,
+      n: variableCount,
+    };
   }
 
   function rankOf(matrix) {
-    const aug = matrix.map((row) => [...row.map((v) => F(v.n, v.d)), F(0)]);
-    return analyzeAugmented(aug).rankA;
+    if (!matrix.length || !matrix[0].length) return 0;
+    return rref(matrix, matrix[0].length).pivots.length;
   }
 
-  function nullspaceBasis(A) {
-    const n = A[0].length;
-    const aug = A.map((row) => [...row.map((v) => F(v.n, v.d)), F(0)]);
-    const info = analyzeAugmented(aug);
-    if (info.inconsistent) return { basis: [], info };
-    const { rref, pivots, free } = info;
-    const pivotRow = new Map(pivots.map((c, i) => [c, i]));
-    const basis = free.map((f) => {
-      const vec = Array.from({ length: n }, () => F(0));
-      vec[f] = F(1);
-      pivots.forEach((p) => {
-        const r = pivotRow.get(p);
-        vec[p] = neg(rref[r][f]);
+  function nullspaceBasis(matrix) {
+    const A = cloneMat(matrix);
+    const n = A[0]?.length ?? 0;
+    const augmented = A.map((row) => [...row, F(0)]);
+    const info = analyzeAugmented(augmented);
+    const pivotRow = new Map(info.pivots.map((column, row) => [column, row]));
+    const basis = info.free.map((freeColumn) => {
+      const vector = Array.from({ length: n }, () => F(0));
+      vector[freeColumn] = F(1);
+      info.pivots.forEach((pivotColumn) => {
+        vector[pivotColumn] = neg(info.rref[pivotRow.get(pivotColumn)][freeColumn]);
       });
-      return vec;
+      return vector;
     });
     return { basis, info };
   }
 
-  function particularSolution(aug) {
-    const info = analyzeAugmented(aug);
-    if (info.inconsistent) return { ok: false, info };
-    const { rref, pivots, free, n } = info;
-    const x = Array.from({ length: n }, () => F(0));
-    free.forEach((f) => {
-      x[f] = F(0);
-    });
-    pivots.forEach((p, i) => {
-      x[p] = rref[i][n];
+  function particularSolution(augmented) {
+    const info = analyzeAugmented(augmented);
+    if (info.inconsistent) return { ok: false, x: [], info };
+    const x = Array.from({ length: info.n }, () => F(0));
+    info.pivots.forEach((pivotColumn, row) => {
+      x[pivotColumn] = info.rref[row][info.n];
     });
     return { ok: true, x, info };
   }
 
+  function classifySystem(augmented) {
+    const info = analyzeAugmented(augmented);
+    if (info.inconsistent) return { key: "none", label: "无解", cls: "is-bad", info };
+    if (info.free.length) return { key: "infinite", label: "无穷多解", cls: "is-inf", info };
+    return { key: "unique", label: "唯一解", cls: "is-ok", info };
+  }
+
+  function matVec(matrix, vector) {
+    return matrix.map((row) => row.reduce((sum, value, column) => add(sum, mul(value, vector[column])), F(0)));
+  }
+
   function relationCertificate(vectors) {
     if (!vectors.length) return { dependent: false, coeffs: [], rank: 0 };
-    const n = vectors[0].length;
-    const A = Array.from({ length: n }, (_, i) => vectors.map((v) => fromNumber(v[i])));
-    const { basis, info } = nullspaceBasis(A);
+    const ambient = vectors[0].length;
+    const matrix = Array.from({ length: ambient }, (_, row) => vectors.map((vector) => parseF(vector[row])));
+    const { basis, info } = nullspaceBasis(matrix);
     if (!basis.length) return { dependent: false, coeffs: [], rank: info.rankA };
-    // prefer smallest-integer looking certificate: flip sign so first nonzero > 0
-    let coeffs = basis[0].map((c) => F(c.n, c.d));
+    let coeffs = basis[0].map(F);
+    const denominators = coeffs.map((c) => c.d);
+    const lcm = denominators.reduce((acc, value) => (acc * value) / gcd(acc, value), 1);
+    coeffs = coeffs.map((c) => F(c.n * (lcm / c.d)));
+    const common = coeffs.reduce((acc, c) => gcd(acc, c.n), 0) || 1;
+    coeffs = coeffs.map((c) => F(c.n / common));
     const first = coeffs.find((c) => !isZero(c));
-    if (first && first.n < 0) coeffs = coeffs.map(neg);
+    if (first?.n < 0) coeffs = coeffs.map(neg);
     return { dependent: true, coeffs, rank: info.rankA };
   }
 
-  function latexRelation(coeffs) {
-    const parts = [];
-    coeffs.forEach((c, i) => {
-      if (isZero(c)) return;
-      const name = `v_{${i + 1}}`;
-      const abs = F(Math.abs(c.n), c.d);
-      const coeff = abs.n === 1 && abs.d === 1 ? "" : latexF(abs);
-      const term = `${coeff}${name}`;
-      if (!parts.length) parts.push(c.n < 0 ? `-${term}` : term);
-      else parts.push(c.n < 0 ? `- ${term}` : `+ ${term}`);
+  function determinant(matrix) {
+    const n = matrix.length;
+    if (!n || matrix.some((row) => row.length !== n)) throw new TypeError("Determinant requires a square matrix");
+    if (n === 1) return F(matrix[0][0]);
+    if (n === 2) return sub(mul(matrix[0][0], matrix[1][1]), mul(matrix[0][1], matrix[1][0]));
+    let sum = F(0);
+    matrix[0].forEach((value, column) => {
+      const minor = matrix.slice(1).map((row) => row.filter((_, j) => j !== column));
+      const term = mul(value, determinant(minor));
+      sum = column % 2 === 0 ? add(sum, term) : sub(sum, term);
     });
-    return parts.length ? `${parts.join(" ")} = 0` : "仅零系数";
+    return sum;
   }
 
-  const PRESETS = {
-    unique2: {
-      label: "唯一解",
-      aug: [
-        [1, 1, 3],
-        [1, 2, 4],
-      ],
-    },
-    parallel2: {
-      label: "平行无解",
-      aug: [
-        [1, 1, 2],
-        [2, 2, 5],
-      ],
-    },
-    sameLine2: {
-      label: "重合无穷",
-      aug: [
-        [1, 1, 2],
-        [2, 2, 4],
-      ],
-    },
-    swapPivot: {
-      label: "需换行",
-      aug: [
-        [0, 1, 2],
-        [1, 1, 3],
-      ],
-    },
-    upper3: {
-      label: "三元上三角",
-      aug: [
-        [1, 1, 1, 6],
-        [0, 1, 1, 3],
-        [0, 0, 1, 1],
-      ],
-    },
-    rankOne: {
-      label: "秩一",
-      A: [
-        [1, 2],
-        [2, 4],
-      ],
-    },
-    full2: {
-      label: "满秩 2×2",
-      A: [
-        [1, 0],
-        [0, 1],
-      ],
-    },
-    fullCol32: {
-      label: "3×2 满列秩",
-      A: [
-        [1, 0],
-        [0, 1],
-        [1, 1],
-      ],
-    },
-    dep33: {
-      label: "相关 3×3",
-      A: [
-        [1, 2, 3],
-        [2, 4, 6],
-        [0, 1, 1],
-      ],
-    },
-  };
-
-  function reducedMotion() {
-    return Boolean(window.matchMedia?.("(prefers-reduced-motion: reduce)")?.matches);
+  function combinations(items, choose) {
+    const out = [];
+    function walk(start, picked) {
+      if (picked.length === choose) {
+        out.push(picked.slice());
+        return;
+      }
+      for (let i = start; i <= items.length - (choose - picked.length); i += 1) {
+        picked.push(items[i]);
+        walk(i + 1, picked);
+        picked.pop();
+      }
+    }
+    walk(0, []);
+    return out;
   }
 
-  function getPalette() {
-    const style = getComputedStyle(document.body);
+  function findRankCertificate(matrix) {
+    const rank = rankOf(matrix);
+    if (rank === 0) return { rank, rows: [], columns: [], det: F(0) };
+    const rowSets = combinations(Array.from({ length: matrix.length }, (_, i) => i), rank);
+    const columnSets = combinations(Array.from({ length: matrix[0].length }, (_, i) => i), rank);
+    for (const rows of rowSets) {
+      for (const columns of columnSets) {
+        const minor = rows.map((row) => columns.map((column) => matrix[row][column]));
+        const det = determinant(minor);
+        if (!isZero(det)) return { rank, rows, columns, det };
+      }
+    }
+    return { rank, rows: [], columns: [], det: F(0) };
+  }
+
+  function independentColumnIndices(matrix) {
+    return rref(matrix, matrix[0]?.length ?? 0).pivots;
+  }
+
+  function latexMatrix(matrix, barAt = null) {
+    const alignment = barAt == null ? "" : `{@{}${"c".repeat(barAt)}|${"c".repeat(matrix[0].length - barAt)}@{}}`;
+    const env = barAt == null ? "bmatrix" : "array";
+    const body = matrix.map((row) => row.map(latexF).join(" & ")).join(" \\\\ ");
+    return barAt == null
+      ? `\\begin{${env}}${body}\\end{${env}}`
+      : `\\left[\\begin{array}${alignment}${body}\\end{array}\\right]`;
+  }
+
+  function latexVector(vector) {
+    return `\\begin{bmatrix}${vector.map(latexF).join(" \\\\ ")}\\end{bmatrix}`;
+  }
+
+  function latexRelation(coeffs, names = coeffs.map((_, i) => `v_{${i + 1}}`)) {
+    const terms = [];
+    coeffs.forEach((coefficient, index) => {
+      if (isZero(coefficient)) return;
+      const magnitude = absF(coefficient);
+      const coeff = eq(magnitude, F(1)) ? "" : latexF(magnitude);
+      const body = `${coeff}${names[index]}`;
+      if (!terms.length) terms.push(coefficient.n < 0 ? `-${body}` : body);
+      else terms.push(coefficient.n < 0 ? `- ${body}` : `+ ${body}`);
+    });
+    return `${terms.join(" ") || "0"}=0`;
+  }
+
+  function latexEquation(row, variableCount) {
+    const names = variableCount <= 3 ? ["x", "y", "z"] : [];
+    const terms = [];
+    for (let column = 0; column < variableCount; column += 1) {
+      const coefficient = row[column];
+      if (isZero(coefficient)) continue;
+      const variable = names[column] || `x_{${column + 1}}`;
+      const magnitude = absF(coefficient);
+      const coeff = eq(magnitude, F(1)) ? "" : latexF(magnitude);
+      const body = `${coeff}${variable}`;
+      if (!terms.length) terms.push(coefficient.n < 0 ? `-${body}` : body);
+      else terms.push(coefficient.n < 0 ? `- ${body}` : `+ ${body}`);
+    }
+    return `${terms.join(" ") || "0"}=${latexF(row[variableCount])}`;
+  }
+
+  const tex = (source) => (window.texInline ? window.texInline(source) : escapeHtml(source));
+  const texD = (source) => (window.texDisplay ? window.texDisplay(source) : escapeHtml(source));
+  const htmlMatrix = (matrix, barAt = null) => `<div class="ch3-math">${texD(latexMatrix(matrix, barAt))}</div>`;
+  const htmlVector = (vector) => `<span class="ch3-vector">${tex(latexVector(vector))}</span>`;
+
+  function htmlEquations(augmented, highlighted = []) {
+    const variableCount = augmented[0].length - 1;
+    return `<div class="ch3-equations">${augmented
+      .map(
+        (row, index) =>
+          `<div class="ch3-equation${highlighted.includes(index) ? " is-changed" : ""}"><span class="ch3-row-label">R${index + 1}</span>${tex(latexEquation(row, variableCount))}</div>`,
+      )
+      .join("")}</div>`;
+  }
+
+  function escapeHtml(value) {
+    return String(value)
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;")
+      .replace(/"/g, "&quot;")
+      .replace(/'/g, "&#39;");
+  }
+
+  function palette() {
+    const styles = getComputedStyle(document.body);
+    const read = (name, fallback) => styles.getPropertyValue(name).trim() || fallback;
     return {
-      surface: style.getPropertyValue("--surface-solid").trim() || "#ffffff",
-      soft: style.getPropertyValue("--surface-soft").trim() || "#eef4f6",
-      text: style.getPropertyValue("--text").trim() || "#071512",
-      muted: style.getPropertyValue("--muted").trim() || "#66717f",
-      line: style.getPropertyValue("--line-strong").trim() || "rgba(28,43,61,.2)",
-      accent: style.getPropertyValue("--accent").trim() || "#0f8f88",
-      accentStrong: style.getPropertyValue("--accent-strong").trim() || "#08736e",
-      coral: style.getPropertyValue("--coral").trim() || "#d9835f",
-      blue: style.getPropertyValue("--blue").trim() || "#547ec8",
+      text: read("--text", "#18201d"),
+      muted: read("--muted", "#6b756f"),
+      line: read("--line", "#d9dfdc"),
+      surface: read("--surface-solid", "#ffffff"),
+      accent: read("--accent", "#2f8f72"),
+      accentStrong: read("--accent-strong", "#176f57"),
+      blue: read("--blue", "#547ec8"),
+      coral: read("--coral", "#d9835f"),
     };
   }
 
   function sizeCanvas(canvas) {
     if (!canvas) return null;
     const rect = canvas.getBoundingClientRect();
-    const dpr = Math.min(window.devicePixelRatio || 1, 2);
-    const cssW = Math.max(1, rect.width || canvas.clientWidth || 320);
-    const cssH = Math.max(1, rect.height || canvas.clientHeight || 300);
-    const w = Math.max(1, Math.round(cssW * dpr));
-    const h = Math.max(1, Math.round(cssH * dpr));
-    if (canvas.width !== w || canvas.height !== h) {
-      canvas.width = w;
-      canvas.height = h;
+    const width = Math.max(1, Math.round(rect.width));
+    const height = Math.max(1, Math.round(rect.height));
+    const dpr = Math.min(2, window.devicePixelRatio || 1);
+    if (canvas.width !== Math.round(width * dpr) || canvas.height !== Math.round(height * dpr)) {
+      canvas.width = Math.round(width * dpr);
+      canvas.height = Math.round(height * dpr);
     }
     const ctx = canvas.getContext("2d");
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-    return { ctx, width: cssW, height: cssH, dpr };
+    ctx.clearRect(0, 0, width, height);
+    return { ctx, width, height, dpr };
   }
 
-  function drawAxes(ctx, width, height, scale = 40) {
-    const p = getPalette();
+  function drawAxes(ctx, width, height, scale = 44) {
+    const p = palette();
     const cx = width / 2;
     const cy = height / 2;
-    ctx.clearRect(0, 0, width, height);
-    // soft panel
-    const grd = ctx.createLinearGradient(0, 0, width, height);
-    grd.addColorStop(0, p.soft);
-    grd.addColorStop(1, p.surface);
-    ctx.fillStyle = grd;
-    ctx.fillRect(0, 0, width, height);
-
+    ctx.save();
     ctx.strokeStyle = p.line;
     ctx.lineWidth = 1;
-    ctx.globalAlpha = 0.55;
-    ctx.beginPath();
     for (let x = cx % scale; x < width; x += scale) {
+      ctx.beginPath();
       ctx.moveTo(x, 0);
       ctx.lineTo(x, height);
+      ctx.stroke();
     }
     for (let y = cy % scale; y < height; y += scale) {
+      ctx.beginPath();
       ctx.moveTo(0, y);
       ctx.lineTo(width, y);
+      ctx.stroke();
     }
-    ctx.stroke();
-    ctx.globalAlpha = 1;
-
     ctx.strokeStyle = p.muted;
-    ctx.lineWidth = 1.6;
+    ctx.lineWidth = 1.35;
     ctx.beginPath();
     ctx.moveTo(0, cy);
     ctx.lineTo(width, cy);
     ctx.moveTo(cx, 0);
     ctx.lineTo(cx, height);
     ctx.stroke();
-    return { cx, cy, scale, p, width, height };
+    ctx.restore();
+    return { ctx, width, height, scale, cx, cy, p };
   }
 
-  function toCanvas(pt, frame) {
-    return [frame.cx + pt[0] * frame.scale, frame.cy - pt[1] * frame.scale];
-  }
+  const toCanvas = (frame, point) => [frame.cx + point[0] * frame.scale, frame.cy - point[1] * frame.scale];
+  const toWorld = (frame, point) => [(point[0] - frame.cx) / frame.scale, (frame.cy - point[1]) / frame.scale];
 
-  function drawLineFromEq(ctx, frame, a, b, c, color, lineWidth = 2.6) {
-    // ax + by = c  →  y = (c - a x)/b
-    const { width: W, height: H } = frame;
-    const pts = [];
-    const pushIf = (x, y) => {
-      const [X, Y] = toCanvas([x, y], frame);
-      pts.push([X, Y]);
-    };
-    // sample far points in world coords
-    const span = Math.max(W, H) / frame.scale + 2;
-    if (Math.abs(b) > 1e-9) {
-      pushIf(-span, (c - a * -span) / b);
-      pushIf(span, (c - a * span) / b);
-    } else if (Math.abs(a) > 1e-9) {
-      const x = c / a;
-      pushIf(x, -span);
-      pushIf(x, span);
-    } else {
-      return;
-    }
+  function drawArrow(ctx, frame, point, color, label = "", width = 2.6) {
+    const [x, y] = toCanvas(frame, point);
+    const [ox, oy] = [frame.cx, frame.cy];
+    const angle = Math.atan2(y - oy, x - ox);
     ctx.save();
     ctx.strokeStyle = color;
-    ctx.lineWidth = lineWidth;
-    ctx.lineCap = "round";
-    ctx.beginPath();
-    ctx.moveTo(pts[0][0], pts[0][1]);
-    ctx.lineTo(pts[1][0], pts[1][1]);
-    ctx.stroke();
-    ctx.restore();
-  }
-
-  function drawArrow(ctx, frame, vec, color, label) {
-    const [x0, y0] = toCanvas([0, 0], frame);
-    const [x1, y1] = toCanvas(vec, frame);
-    const dx = x1 - x0;
-    const dy = y1 - y0;
-    const len = Math.hypot(dx, dy);
-    if (len < 2) {
-      ctx.fillStyle = color;
-      ctx.beginPath();
-      ctx.arc(x0, y0, 4, 0, Math.PI * 2);
-      ctx.fill();
-      return;
-    }
-    ctx.strokeStyle = color;
     ctx.fillStyle = color;
-    ctx.lineWidth = 2.6;
+    ctx.lineWidth = width;
     ctx.lineCap = "round";
     ctx.beginPath();
-    ctx.moveTo(x0, y0);
-    ctx.lineTo(x1, y1);
+    ctx.moveTo(ox, oy);
+    ctx.lineTo(x, y);
     ctx.stroke();
-    const ang = Math.atan2(dy, dx);
-    const head = Math.min(12, Math.max(8, len * 0.12));
     ctx.beginPath();
-    ctx.moveTo(x1, y1);
-    ctx.lineTo(x1 - head * Math.cos(ang - 0.4), y1 - head * Math.sin(ang - 0.4));
-    ctx.lineTo(x1 - head * Math.cos(ang + 0.4), y1 - head * Math.sin(ang + 0.4));
+    ctx.moveTo(x, y);
+    ctx.lineTo(x - 10 * Math.cos(angle - Math.PI / 6), y - 10 * Math.sin(angle - Math.PI / 6));
+    ctx.lineTo(x - 10 * Math.cos(angle + Math.PI / 6), y - 10 * Math.sin(angle + Math.PI / 6));
     ctx.closePath();
     ctx.fill();
-    if (label) {
-      ctx.font = "600 12px ui-sans-serif, system-ui, sans-serif";
-      ctx.fillText(label, x1 + 8, y1 - 8);
-    }
-  }
-
-  function drawPoint(ctx, frame, pt, color, label) {
-    const [x, y] = toCanvas(pt, frame);
-    ctx.fillStyle = color;
     ctx.beginPath();
     ctx.arc(x, y, 5.5, 0, Math.PI * 2);
+    ctx.fillStyle = frame.p.surface;
     ctx.fill();
-    ctx.strokeStyle = frame.p.surface;
-    ctx.lineWidth = 1.5;
+    ctx.strokeStyle = color;
+    ctx.lineWidth = 2.5;
     ctx.stroke();
     if (label) {
-      ctx.fillStyle = frame.p.text;
-      ctx.font = "600 12px ui-sans-serif, system-ui, sans-serif";
-      ctx.fillText(label, x + 9, y - 9);
+      ctx.fillStyle = color;
+      ctx.font = "700 12px ui-sans-serif, system-ui";
+      ctx.fillText(label, x + 8, y - 8);
     }
-  }
-
-  function drawSpanDisk(ctx, frame, vectors, color) {
-    // rough 2D parallelogram for first two vectors
-    if (vectors.length < 2) return;
-    const a = vectors[0];
-    const b = vectors[1];
-    const pts = [
-      [0, 0],
-      a,
-      [a[0] + b[0], a[1] + b[1]],
-      b,
-    ].map((p) => toCanvas(p, frame));
-    ctx.save();
-    ctx.fillStyle = color;
-    ctx.globalAlpha = 0.12;
-    ctx.beginPath();
-    ctx.moveTo(pts[0][0], pts[0][1]);
-    pts.slice(1).forEach((p) => ctx.lineTo(p[0], p[1]));
-    ctx.closePath();
-    ctx.fill();
     ctx.restore();
   }
 
-  function pulseClass(el, cls = "is-pulse") {
-    if (!el) return;
-    el.classList.remove(cls);
-    void el.offsetWidth;
-    el.classList.add(cls);
+  function drawPoint(ctx, frame, point, color, label = "", radius = 5) {
+    const [x, y] = toCanvas(frame, point);
+    ctx.save();
+    ctx.fillStyle = color;
+    ctx.beginPath();
+    ctx.arc(x, y, radius, 0, Math.PI * 2);
+    ctx.fill();
+    if (label) {
+      ctx.font = "700 12px ui-sans-serif, system-ui";
+      ctx.fillText(label, x + 8, y - 8);
+    }
+    ctx.restore();
   }
 
-  function classifySystem(aug) {
-    const info = analyzeAugmented(aug);
-    if (info.inconsistent) return { key: "none", label: "无解", cls: "is-bad", info };
-    if (info.free.length) return { key: "inf", label: "无穷多解", cls: "is-inf", info };
-    return { key: "unique", label: "唯一解", cls: "is-ok", info };
+  function drawLineEquation(ctx, frame, a, b, c, color, width = 2.3) {
+    ctx.save();
+    ctx.strokeStyle = color;
+    ctx.lineWidth = width;
+    const limit = Math.max(frame.width, frame.height) / frame.scale + 3;
+    let p1;
+    let p2;
+    if (Math.abs(b) > EPS) {
+      p1 = [-limit, (c + a * limit) / b];
+      p2 = [limit, (c - a * limit) / b];
+    } else if (Math.abs(a) > EPS) {
+      p1 = [c / a, -limit];
+      p2 = [c / a, limit];
+    } else {
+      ctx.restore();
+      return;
+    }
+    const A = toCanvas(frame, p1);
+    const B = toCanvas(frame, p2);
+    ctx.beginPath();
+    ctx.moveTo(A[0], A[1]);
+    ctx.lineTo(B[0], B[1]);
+    ctx.stroke();
+    ctx.restore();
   }
 
-  window.Ch3Math = {
+  function drawSpan(ctx, frame, vectors, color) {
+    const cert = relationCertificate(vectors);
+    ctx.save();
+    if (cert.rank >= 2) {
+      ctx.fillStyle = color;
+      ctx.globalAlpha = 0.08;
+      ctx.fillRect(0, 0, frame.width, frame.height);
+    } else if (cert.rank === 1) {
+      const vector = vectors.find((v) => Math.hypot(v[0], v[1]) > EPS) || [1, 0];
+      const A = toCanvas(frame, [-12 * vector[0], -12 * vector[1]]);
+      const B = toCanvas(frame, [12 * vector[0], 12 * vector[1]]);
+      ctx.strokeStyle = color;
+      ctx.globalAlpha = 0.45;
+      ctx.lineWidth = 8;
+      ctx.beginPath();
+      ctx.moveTo(A[0], A[1]);
+      ctx.lineTo(B[0], B[1]);
+      ctx.stroke();
+    }
+    ctx.restore();
+  }
+
+  function createScope(root) {
+    const cleanups = [];
+    const listen = (target, type, handler, options) => {
+      target?.addEventListener(type, handler, options);
+      cleanups.push(() => target?.removeEventListener(type, handler, options));
+      return handler;
+    };
+    const resize = (handler) => listen(window, "resize", () => {
+      if (document.body.contains(root)) handler();
+    }, { passive: true });
+    const cleanup = () => {
+      while (cleanups.length) {
+        try {
+          cleanups.pop()();
+        } catch (_) {
+          // Ignore teardown failures; a stale lesson must never break navigation.
+        }
+      }
+    };
+    return { listen, resize, cleanup };
+  }
+
+  function bindDraggablePoints(scope, canvas, getPoints, setPoint, redraw, radius = 16) {
+    let active = -1;
+    function frameForEvent() {
+      const rect = canvas.getBoundingClientRect();
+      if (!rect.width || !rect.height) return null;
+      return {
+        width: rect.width,
+        height: rect.height,
+        scale: 44,
+        cx: rect.width / 2,
+        cy: rect.height / 2,
+        p: palette(),
+      };
+    }
+    scope.listen(canvas, "pointerdown", (event) => {
+      const frame = frameForEvent();
+      if (!frame) return;
+      const rect = canvas.getBoundingClientRect();
+      const pointer = [event.clientX - rect.left, event.clientY - rect.top];
+      const points = getPoints();
+      let best = Infinity;
+      points.forEach((point, index) => {
+        const [x, y] = toCanvas(frame, point);
+        const distance = Math.hypot(x - pointer[0], y - pointer[1]);
+        if (distance < radius && distance < best) {
+          active = index;
+          best = distance;
+        }
+      });
+      if (active >= 0) {
+        canvas.setPointerCapture(event.pointerId);
+        event.preventDefault();
+      }
+    });
+    scope.listen(canvas, "pointermove", (event) => {
+      if (active < 0) return;
+      const frame = frameForEvent();
+      const rect = canvas.getBoundingClientRect();
+      const world = toWorld(frame, [event.clientX - rect.left, event.clientY - rect.top]);
+      setPoint(active, world.map((value) => Math.round(value * 20) / 20));
+      redraw();
+    });
+    const release = (event) => {
+      if (active >= 0 && canvas.hasPointerCapture?.(event.pointerId)) canvas.releasePointerCapture(event.pointerId);
+      active = -1;
+    };
+    scope.listen(canvas, "pointerup", release);
+    scope.listen(canvas, "pointercancel", release);
+  }
+
+  function pulse(element) {
+    if (!element || matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+    element.classList.remove("is-pulse");
+    void element.offsetWidth;
+    element.classList.add("is-pulse");
+  }
+
+  const PRESETS = Object.freeze({
+    systems: {
+      unique2: { label: "唯一解", aug: [[1, 1, 3], [1, 2, 4]] },
+      parallel2: { label: "平行无解", aug: [[1, 1, 2], [2, 2, 5]] },
+      sameLine2: { label: "重合无穷多解", aug: [[1, 1, 2], [2, 2, 4]] },
+      swapPivot: { label: "需要换行", aug: [[0, 1, 2], [1, 1, 3]] },
+      upper3: { label: "三元上三角", aug: [[1, 1, 1, 6], [0, 1, 1, 3], [0, 0, 1, 1]] },
+    },
+    rank: {
+      full2: { label: "满秩 2×2", A: [[1, 0], [0, 1]] },
+      rankOne: { label: "秩一外积", A: [[1, 2], [2, 4]] },
+      fullCol32: { label: "3×2 满列秩", A: [[1, 0], [0, 1], [1, 1]] },
+      dependent33: { label: "3×3 秩二", A: [[1, 2, 3], [2, 4, 6], [0, 1, 1]] },
+    },
+  });
+
+  window.Ch3Math = Object.freeze({
+    EPS,
     F,
+    fromNumber,
+    parseF,
     add,
     sub,
     mul,
     div,
     neg,
+    absF,
     isZero,
     eq,
     toNumber,
     formatF,
     latexF,
-    fromNumber,
+    formatNumber,
     cloneMat,
     matFromNumbers,
     matToNumbers,
     rowSwap,
     rowScale,
     rowAdd,
-    matsEqual,
     changedRows,
-    latexMat,
-    latexVec,
-    latexEqs,
-    latexRelation,
-    tex,
-    texD,
-    htmlMat,
-    htmlEqs,
-    htmlVec,
-    formatSigned,
-    formatCombo,
+    rref,
+    echelon,
     analyzeAugmented,
     rankOf,
     nullspaceBasis,
     particularSolution,
-    relationCertificate,
     classifySystem,
-    PRESETS,
-    reducedMotion,
-    getPalette,
+    matVec,
+    relationCertificate,
+    determinant,
+    findRankCertificate,
+    independentColumnIndices,
+    latexMatrix,
+    latexVector,
+    latexRelation,
+    latexEquation,
+    tex,
+    texD,
+    htmlMatrix,
+    htmlVector,
+    htmlEquations,
+    escapeHtml,
+    palette,
     sizeCanvas,
     drawAxes,
-    drawLineFromEq,
+    toCanvas,
+    toWorld,
     drawArrow,
     drawPoint,
-    drawSpanDisk,
-    pulseClass,
-    EPS,
-  };
+    drawLineEquation,
+    drawSpan,
+    createScope,
+    bindDraggablePoints,
+    pulse,
+    PRESETS,
+  });
 })();

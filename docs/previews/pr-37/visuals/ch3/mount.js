@@ -4,6 +4,7 @@
   if (typeof baseRenderLessonPage !== "function") return;
 
   window.renderLessonPage = function renderLessonPageWithChapter3Extensions(section, chapter) {
+    window.teardownChapter3Lesson?.();
     baseRenderLessonPage(section, chapter);
     window.mountChapter3Lesson?.(section, document.querySelector("#mainContent"));
   };

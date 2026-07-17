@@ -1,5 +1,6 @@
 /*
  * Chapter 6 presentation registry.
+ * Later refinement modules may replace one hook while preserving the other.
  */
 (() => {
   const renderers = new Map();
@@ -9,7 +10,7 @@
     if (!sectionId || !renderer || typeof renderer !== "object") {
       throw new TypeError("Chapter 6 renderers require a section id and an object.");
     }
-    renderers.set(sectionId, renderer);
+    renderers.set(sectionId, { ...(renderers.get(sectionId) || {}), ...renderer });
   };
 
   window.defineChapter6LessonEnhancer = function defineChapter6LessonEnhancer(enhancer) {

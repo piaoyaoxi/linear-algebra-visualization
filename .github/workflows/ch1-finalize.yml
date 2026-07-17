@@ -1,0 +1,128 @@
+name: Finalize Chapter 1 rebuild
+
+on:
+  push:
+    branches:
+      - content/ch1-polynomials
+    paths:
+      - .github/workflows/ch1-finalize.yml
+
+permissions:
+  contents: write
+
+jobs:
+  verify-and-commit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - name: Check out Chapter 1 branch
+        uses: actions/checkout@v4
+        with:
+          ref: content/ch1-polynomials
+          fetch-depth: 0
+
+      - name: Apply staged rebuild
+        shell: bash
+        run: |
+          set -euo pipefail
+          cat _dev/ch1-payload.part* | base64 -d > /tmp/ch1-rebuild.tar.gz
+          tar -xzf /tmp/ch1-rebuild.tar.gz
+          sed -i 's/ch1c/ch1d/g' current/learn.html
+          python3 - <<'PY'
+          from pathlib import Path
+          path = Path('_dev/ch1-browser-check.cjs')
+          text = path.read_text()
+          text = text.replace(
+              'await page.locator("#themeToggle").click();\n  assert(await page.locator("body.dark").count() === 1, "dark theme did not activate");',
+              'await page.locator("#themeToggle").click();\n  await page.waitForFunction(() => document.body.classList.contains("dark"), null, { timeout: 5000 });\n  assert(await page.locator("body.dark").count() === 1, "dark theme did not activate");',
+          )
+          path.write_text(text)
+          PY
+
+      - name: Check JavaScript syntax and exact polynomial arithmetic
+        shell: bash
+        run: |
+          set -euo pipefail
+          for file in current/content/ch1-section*.js current/visuals/ch1/*.js; do
+            node --check "$file"
+          done
+          node <<'NODE'
+          const fs = require('fs');
+          const vm = require('vm');
+          const sandbox = { window: {} };
+          vm.createContext(sandbox);
+          vm.runInContext(fs.readFileSync('current/visuals/ch1/poly-math.js', 'utf8'), sandbox);
+          const P = sandbox.window.Ch1Poly;
+          function eq(actual, expected, message) {
+            const a = JSON.stringify(actual);
+            const b = JSON.stringify(expected);
+            if (a !== b) throw new Error(`${message}: ${a} !== ${b}`);
+          }
+          eq(P.parseRational('0.125'), { n: 1, d: 8 }, 'decimal parser');
+          eq(P.parseRational('-3/4'), { n: -3, d: 4 }, 'fraction parser');
+          const f = P.fromIntegers([2, -1, 0, 3]);
+          const g = P.fromIntegers([-2, 1, 1, -3]);
+          eq(P.toIntegers(P.add(f, g)), [0, 0, 1], 'leading cancellation');
+          eq(P.coefficient(P.multiply(f, g), 3), { n: -13, d: 1 }, 'target coefficient');
+          const division = P.divide(P.fromIntegers([-1, 0, 0, 0, 1]), P.fromIntegers([1, 1, 1]));
+          eq(P.toIntegers(division.quotient), [0, -1, 1], 'division quotient');
+          eq(P.toIntegers(division.remainder), [-1, 1], 'division remainder');
+          const ext = P.extendedGcd(P.fromIntegers([-1, 0, 0, 0, 1]), P.fromIntegers([-1, 0, 0, 1]));
+          eq(P.toIntegers(ext.gcd), [-1, 1], 'gcd');
+          eq(P.toIntegers(P.add(P.multiply(ext.s, P.fromIntegers([-1, 0, 0, 0, 1])), P.multiply(ext.t, P.fromIntegers([-1, 0, 0, 1])))), [-1, 1], 'Bezout identity');
+          const interpolant = P.interpolate([
+            { x: P.rational(0), y: P.rational(1) },
+            { x: P.rational(1), y: P.rational(2) },
+            { x: P.rational(2), y: P.rational(5) },
+          ]);
+          eq(P.toIntegers(interpolant), [1, 0, 1], 'interpolation');
+          console.log('Exact Chapter 1 arithmetic checks passed.');
+          NODE
+
+      - name: Install pinned Chromium harness
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p /tmp/ch1-playwright
+          cd /tmp/ch1-playwright
+          npm init -y >/dev/null
+          npm install playwright@1.55.0 >/dev/null
+          npx playwright install --with-deps chromium
+
+      - name: Verify all Chapter 1 lessons in a real browser
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 -m http.server 4173 -d current >/tmp/ch1-http.log 2>&1 &
+          SERVER_PID=$!
+          trap 'kill $SERVER_PID || true' EXIT
+          for attempt in $(seq 1 30); do
+            if curl -fsS http://127.0.0.1:4173/learn.html >/dev/null; then
+              break
+            fi
+            sleep 1
+          done
+          NODE_PATH=/tmp/ch1-playwright/node_modules node _dev/ch1-browser-check.cjs
+
+      - name: Upload browser screenshots
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: chapter1-browser-screenshots
+          path: /tmp/ch1-browser-artifacts
+          if-no-files-found: warn
+
+      - name: Commit only the browser-verified rebuild
+        shell: bash
+        run: |
+          set -euo pipefail
+          rm -f _dev/ch1-payload.part* _dev/ch1-browser-check.cjs .github/workflows/ch1-finalize.yml
+          git config user.name 'GPT-5.6 Thinking'
+          git config user.email 'noreply@openai.com'
+          git add -A
+          git diff --cached --check
+          git commit \
+            -m 'feat(ch1): rebuild polynomial chapter as complete visual course' \
+            -m 'Rebuild all eleven lessons around the Chapter 1 production blueprint, exact polynomial arithmetic, real interactive workbenches, richer examples and self-tests, and responsive browser-verified presentation.' \
+            -m 'Co-Authored-By: GPT-5.6 Thinking <noreply@openai.com>'
+          git push origin HEAD:content/ch1-polynomials

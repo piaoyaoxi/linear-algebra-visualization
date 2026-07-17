@@ -49,6 +49,24 @@ async function baseAssertions(page, section, lab, viewportName) {
       labText: labNode?.textContent?.trim().slice(0, 120) || '',
       formalExists: Boolean(document.querySelector(`#${sectionId}-formal`)),
       interactiveExists: Boolean(document.querySelector(`#${sectionId}-interactive`)),
+      overflowers: Array.from(document.querySelectorAll('*'))
+        .map((element) => {
+          const box = element.getBoundingClientRect();
+          return {
+            tag: element.tagName.toLowerCase(),
+            id: element.id || '',
+            className: typeof element.className === 'string' ? element.className : '',
+            data: Array.from(element.attributes || []).filter((item) => item.name.startsWith('data-')).map((item) => `${item.name}=${item.value}`).join(' '),
+            left: Math.round(box.left),
+            right: Math.round(box.right),
+            width: Math.round(box.width),
+            scrollWidth: element.scrollWidth,
+            clientWidth: element.clientWidth,
+            text: (element.textContent || '').trim().replace(/\s+/g, ' ').slice(0, 80),
+          };
+        })
+        .filter((item) => item.right > window.innerWidth + 2 || item.left < -2)
+        .slice(0, 20),
     };
   }, { sectionId: section, labId: lab });
 
@@ -60,7 +78,7 @@ async function baseAssertions(page, section, lab, viewportName) {
   assert.ok(snapshot.labText.length > 20, `${viewportName}/${section}: interaction is empty`);
   assert.ok(
     snapshot.scrollWidth <= snapshot.viewportWidth + 4,
-    `${viewportName}/${section}: horizontal overflow ${snapshot.scrollWidth} > ${snapshot.viewportWidth}`,
+    `${viewportName}/${section}: horizontal overflow ${snapshot.scrollWidth} > ${snapshot.viewportWidth}; elements=${JSON.stringify(snapshot.overflowers)}`,
   );
 }
 
@@ -146,6 +164,9 @@ async function runViewport(name, viewport, interact) {
       }
       console.log(`PASS ${name} #ch3/${section}`);
     } catch (error) {
+      if (name === 'mobile' && section === 'solution-structure') {
+        await page.screenshot({ path: `${outputDir}/ch3-solution-structure-mobile-failure.png`, fullPage: true }).catch(() => {});
+      }
       failures.push(`${name} #ch3/${section}: ${error.stack || error.message}`);
       console.error(`FAIL ${name} #ch3/${section}`);
     } finally {

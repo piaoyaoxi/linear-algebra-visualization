@@ -30,13 +30,14 @@ jobs:
 
       - name: Extract reviewed Chapter 3 files
         run: |
+          cat .ch3-rebuild.part1 .ch3-rebuild.part2 .ch3-rebuild.part3 .ch3-rebuild.part4 > .ch3-rebuild.complete.b64
           python3 - <<'PY'
           from pathlib import Path
           import base64, hashlib
-          source = Path('.ch3-rebuild.tar.xz.b64').read_text().strip()
-          print('base64 chars:', len(source), 'prefix:', source[:8], 'suffix:', source[-8:])
+          source = Path('.ch3-rebuild.complete.b64').read_text().strip()
           payload = base64.b64decode(source, validate=True)
           digest = hashlib.sha256(payload).hexdigest()
+          print('base64 chars:', len(source))
           print('archive bytes:', len(payload), 'sha256:', digest)
           if digest != '69d33a5059299dcc29c93ff1333e6605ab126fc14d2250a2bf183e306826cf0f':
               raise SystemExit('archive checksum mismatch')
@@ -54,8 +55,8 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          rm -f .ch3-rebuild.tar.xz
-          git rm .ch3-rebuild.tar.xz.b64 .github/workflows/apply-ch3-rebuild.yml
+          rm -f .ch3-rebuild.complete.b64 .ch3-rebuild.tar.xz
+          git rm .ch3-rebuild.tar.xz.b64 .ch3-rebuild.part1 .ch3-rebuild.part2 .ch3-rebuild.part3 .ch3-rebuild.part4 .github/workflows/apply-ch3-rebuild.yml
           git add current/content/ch3.js current/content/ch3-section*.js current/visuals/ch3 docs/ch3-production-matrix.md current/learn.html
           git commit -m "feat(ch3): rebuild lessons and exact interactions"
           git push -q origin HEAD:"${BRANCH_NAME}"

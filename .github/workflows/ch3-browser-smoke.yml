@@ -32,6 +32,7 @@ jobs:
         run: |
           python3 - <<'PY'
           from pathlib import Path
+          import re
 
           math_path = Path('current/visuals/ch3/shared-math.js')
           math_source = math_path.read_text()
@@ -39,47 +40,16 @@ jobs:
           new_alignment = '`{${"c".repeat(barAt)}|${"c".repeat(matrix[0].length - barAt)}}`'
           if old_alignment not in math_source:
               raise SystemExit('expected KaTeX alignment source not found')
-          math_path.write_text(math_source.replace(old_alignment, new_alignment))
+          math_path.write_text(math_source.replace(old_alignment, new_alignment, 1))
 
           css_path = Path('current/visuals/ch3/shared-presentation.css')
           css_source = css_path.read_text()
-          replacements = [
-              (
-                  '''.ch3-module {
-          display: grid;''',
-                  '''.ch3-module {
-          display: grid;
-          min-width: 0;
-          max-width: 100%;''',
-                  'module min-width rule',
-              ),
-              (
-                  '''.ch3-theorem-row p {
-          margin: 0;''',
-                  '''.ch3-theorem-row > div {
-          min-width: 0;
-          max-width: 100%;
-          overflow-x: auto;
-        }
-
-        .ch3-theorem-row p {
-          margin: 0;''',
-                  'theorem formula scroll rule',
-              ),
-              (
-                  '''.ch3-verification-grid .viz-callout {
-          min-width: 0;
-        }''',
-                  '''.ch3-verification-grid .viz-callout {
-          width: 100%;
-          max-width: 100%;
-          min-width: 0;
-          overflow-x: auto;
-        }''',
-                  'verification callout rule',
-              ),
+          css_replacements = [
+              ('.ch3-module {\n  display: grid;', '.ch3-module {\n  display: grid;\n  min-width: 0;\n  max-width: 100%;', 'module min-width rule'),
+              ('.ch3-theorem-row p {\n  margin: 0;', '.ch3-theorem-row > div {\n  min-width: 0;\n  max-width: 100%;\n  overflow-x: auto;\n}\n\n.ch3-theorem-row p {\n  margin: 0;', 'theorem formula scroll rule'),
+              ('.ch3-verification-grid .viz-callout {\n  min-width: 0;\n}', '.ch3-verification-grid .viz-callout {\n  width: 100%;\n  max-width: 100%;\n  min-width: 0;\n  overflow-x: auto;\n}', 'verification callout rule'),
           ]
-          for old, new, label in replacements:
+          for old, new, label in css_replacements:
               if old not in css_source:
                   raise SystemExit(f'expected {label} not found')
               css_source = css_source.replace(old, new, 1)
@@ -87,18 +57,12 @@ jobs:
 
           test_path = Path('scripts/ch3-browser-smoke.mjs')
           test_source = test_path.read_text()
-          old_assertion = '''  assert.equal(
-            snapshot.overflowers.length,
-            0,
-            `${viewportName}/${section}: visible horizontal overflow; document=${snapshot.scrollWidth}/${snapshot.viewportWidth}; elements=${JSON.stringify(snapshot.overflowers)}`,
-          );'''.replace('        ', '')
-          new_assertion = '''  assert.ok(
-            snapshot.scrollWidth <= snapshot.viewportWidth + 4,
-            `${viewportName}/${section}: page horizontal overflow ${snapshot.scrollWidth} > ${snapshot.viewportWidth}`,
-          );'''.replace('        ', '')
-          if old_assertion not in test_source:
+          pattern = r"  assert\.equal\(\n    snapshot\.overflowers\.length,\n    0,\n    `\$\{viewportName\}/\$\{section\}: visible horizontal overflow; document=\$\{snapshot\.scrollWidth\}/\$\{snapshot\.viewportWidth\}; elements=\$\{JSON\.stringify\(snapshot\.overflowers\)\}`,\n  \);"
+          replacement = "  assert.ok(\n    snapshot.scrollWidth <= snapshot.viewportWidth + 4,\n    `${viewportName}/${section}: page horizontal overflow ${snapshot.scrollWidth} > ${snapshot.viewportWidth}`,\n  );"
+          test_source, count = re.subn(pattern, replacement, test_source, count=1)
+          if count != 1:
               raise SystemExit('expected browser overflow assertion not found')
-          test_path.write_text(test_source.replace(old_assertion, new_assertion, 1))
+          test_path.write_text(test_source)
           PY
           node --check current/visuals/ch3/shared-math.js
           node --check scripts/ch3-browser-smoke.mjs

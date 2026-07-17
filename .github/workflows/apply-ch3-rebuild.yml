@@ -1,0 +1,40 @@
+name: Apply Chapter 3 rebuild
+
+on:
+  push:
+    branches:
+      - content/ch3-linear-systems
+
+permissions:
+  contents: write
+
+jobs:
+  apply:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Check out branch
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Extract reviewed Chapter 3 files
+        run: |
+          base64 --decode .ch3-rebuild.tar.xz.b64 > .ch3-rebuild.tar.xz
+          tar -xJf .ch3-rebuild.tar.xz
+          sed -i 's/ch3c/ch3d/g' current/learn.html
+
+      - name: Run static checks
+        run: |
+          find current/content current/visuals/ch3 -name '*.js' -print0 | xargs -0 -n1 node --check
+          git diff --check
+
+      - name: Commit rebuilt chapter and remove transfer files
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          rm -f .ch3-rebuild.tar.xz
+          git rm .ch3-rebuild.tar.xz.b64 .github/workflows/apply-ch3-rebuild.yml
+          git add current/content/ch3.js current/content/ch3-section*.js current/visuals/ch3 docs/ch3-production-matrix.md current/learn.html
+          git commit -m "feat(ch3): rebuild lessons and exact interactions"
+          git push origin HEAD:content/ch3-linear-systems

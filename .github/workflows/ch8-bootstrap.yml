@@ -22,10 +22,16 @@ jobs:
           ref: context/ch8-lambda-matrices
           fetch-depth: 0
 
+      - name: Rebuild and verify Chapter 8 payload
+        run: |
+          cat .github/ch8-payload.part-* | base64 -d > /tmp/ch8-payload.tar.gz
+          echo "14b6b44302d2a28885b839c23e2aff40ad1bbb35eaabe4bb62cdea02254dece2  /tmp/ch8-payload.tar.gz" | sha256sum --check
+          tar -tzf /tmp/ch8-payload.tar.gz
+
       - name: Unpack Chapter 8 implementation
         run: |
-          tar -xzf .github/ch8-payload.tar.gz -C .
-          rm .github/ch8-payload.tar.gz .github/workflows/ch8-bootstrap.yml
+          tar -xzf /tmp/ch8-payload.tar.gz -C .
+          rm .github/ch8-payload.part-* .github/workflows/ch8-bootstrap.yml
           node --check current/content/ch8.js
           node --check current/ch8-entry.js
           node --check current/visuals/ch8/ch8.js

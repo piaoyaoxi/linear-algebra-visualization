@@ -128,7 +128,8 @@ body.dark .topbar-search,
 /* One optical pass supplies the complete body of each control. */
 .icon-button::before,
 .topbar-search::before,
-.search-morph-proxy::before {
+.search-morph-proxy::before,
+.search-modal-bar::before {
   position: absolute;
   inset: 0;
   z-index: 0;
@@ -149,7 +150,8 @@ body.dark .topbar-search,
    layer has no backdrop-filter and therefore cannot form a second glass rim. */
 .icon-button::after,
 .topbar-search::after,
-.search-morph-proxy::after {
+.search-morph-proxy::after,
+.search-modal-bar::after {
   position: absolute;
   inset: 0;
   z-index: 1;
@@ -175,7 +177,8 @@ body.dark .topbar-search,
 
 .icon-button > *,
 .topbar-search > *,
-.search-morph-proxy > * {
+.search-morph-proxy > *,
+.search-modal-bar > * {
   position: relative;
   z-index: 3;
 }

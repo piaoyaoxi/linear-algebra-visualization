@@ -23,6 +23,7 @@
         searchBackdrop: document.querySelector("#searchModal .search-modal-backdrop"),
         searchPanel: document.querySelector("#searchModal .search-modal-panel"),
         searchBar: document.querySelector("#searchModal .search-modal-bar"),
+        searchResultsPanel: document.querySelector("#searchModal .search-results-panel"),
         searchBody: document.querySelector("#searchModal .search-modal-body"),
         searchInput: document.querySelector("#searchModalInput"),
         languageControl: document.querySelector("#languageControl"),
@@ -38,6 +39,7 @@
       this.searchProxy = null;
       this.resizeFrame = 0;
       this.searchRestoreFocus = false;
+      this.searchRestoreFocusVisible = false;
       this.languageRestoreFocus = false;
       this.sidebarRestoreFocus = false;
       this.searchShouldFocus = false;

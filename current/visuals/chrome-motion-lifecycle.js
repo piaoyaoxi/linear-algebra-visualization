@@ -74,7 +74,7 @@
       if (event.key === "Escape") {
         if (this.searchMotion.value > 0.001 || this.searchMotion.target) {
           event.preventDefault();
-          this.closeSearch({ restoreFocus: true });
+          this.closeSearch({ restoreFocus: true, focusVisible: true });
           return;
         }
         if (this.languageMotion.value > 0.001 || this.languageMotion.target) {

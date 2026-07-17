@@ -105,7 +105,7 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git rm scripts/ch3-browser-smoke.mjs .github/workflows/ch3-browser-smoke.yml
+          git rm -f scripts/ch3-browser-smoke.mjs .github/workflows/ch3-browser-smoke.yml
           git add current/visuals/ch3/shared-math.js current/visuals/ch3/shared-presentation.css
           git commit -m "fix(ch3): resolve browser verification issues"
           git push -q origin HEAD:"${BRANCH_NAME}"

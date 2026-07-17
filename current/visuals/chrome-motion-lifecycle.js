@@ -97,9 +97,10 @@
     },
 
     trapSearchFocus(event) {
-      const focusable = Array.from(
-        this.elements.searchPanel.querySelectorAll("input:not([disabled]), button:not([disabled]), a[href]"),
-      ).filter((element) => !element.hasAttribute("inert"));
+      const focusable = [
+        ...this.elements.searchCapsuleOpen.querySelectorAll("input:not([disabled]), button:not([disabled])"),
+        ...this.elements.searchPanel.querySelectorAll("a[href]"),
+      ].filter((element) => !element.hasAttribute("inert") && element.tabIndex >= 0);
       this.cycleFocus(event, focusable);
     },
 

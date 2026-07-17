@@ -11,13 +11,17 @@
         "sidebar",
         "sidebarSurface",
         "drawerBackdrop",
+        "searchCapsule",
         "searchOpen",
+        "searchCapsuleOpen",
         "searchModal",
         "searchBackdrop",
         "searchPanel",
         "searchBar",
         "searchResultsPanel",
         "searchBody",
+        "searchInput",
+        "searchClose",
         "languageControl",
         "languageToggle",
         "languageMenu",
@@ -51,7 +55,7 @@
         });
       });
       searchOpen.addEventListener("blur", () => searchOpen.classList.remove("is-pointer-focus-return"));
-      searchModal.querySelectorAll("[data-search-close]").forEach((element) => {
+      document.querySelectorAll("[data-search-close]").forEach((element) => {
         element.addEventListener("click", (event) => {
           this.closeSearch({ restoreFocus: true, focusVisible: event.detail === 0 });
         });

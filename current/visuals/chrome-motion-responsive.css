@@ -118,7 +118,6 @@
 
   .icon-button::after,
   .topbar-search::after,
-  .search-morph-proxy::after,
   .liquid-panel::after {
     box-shadow:
       inset 0 1.4px 0 color-mix(in srgb, var(--liquid-highlight) 88%, transparent),

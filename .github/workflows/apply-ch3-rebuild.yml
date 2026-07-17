@@ -1,21 +1,28 @@
 name: Apply Chapter 3 rebuild
 
 on:
-  push:
+  pull_request:
     branches:
-      - content/ch3-linear-systems
+      - main
+    types:
+      - synchronize
+      - opened
+      - reopened
 
 permissions:
   contents: write
 
 jobs:
   apply:
+    if: github.event.pull_request.head.ref == 'content/ch3-linear-systems'
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
       - name: Check out branch
         uses: actions/checkout@v4
         with:
+          ref: ${{ github.event.pull_request.head.ref }}
+          repository: ${{ github.event.pull_request.head.repo.full_name }}
           fetch-depth: 0
 
       - name: Extract reviewed Chapter 3 files

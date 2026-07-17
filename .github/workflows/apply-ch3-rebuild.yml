@@ -17,13 +17,16 @@ jobs:
     if: github.event.pull_request.head.ref == 'content/ch3-linear-systems'
     runs-on: ubuntu-latest
     timeout-minutes: 10
+    env:
+      BRANCH_NAME: content/ch3-linear-systems
+      GH_TOKEN: ${{ github.token }}
     steps:
-      - name: Check out branch
-        uses: actions/checkout@v4
-        with:
-          ref: ${{ github.event.pull_request.head.ref }}
-          repository: ${{ github.event.pull_request.head.repo.full_name }}
-          fetch-depth: 0
+      - name: Fetch branch
+        run: |
+          git init -q .
+          git remote add origin "https://x-access-token:${GH_TOKEN}@github.com/${GITHUB_REPOSITORY}.git"
+          git fetch -q --depth=1 origin "${BRANCH_NAME}"
+          git checkout -q -B "${BRANCH_NAME}" FETCH_HEAD
 
       - name: Extract reviewed Chapter 3 files
         run: |
@@ -33,8 +36,9 @@ jobs:
           source = Path('.ch3-rebuild.tar.xz.b64').read_text().strip()
           print('base64 chars:', len(source), 'prefix:', source[:8], 'suffix:', source[-8:])
           payload = base64.b64decode(source, validate=True)
-          print('archive bytes:', len(payload), 'sha256:', hashlib.sha256(payload).hexdigest())
-          if hashlib.sha256(payload).hexdigest() != '69d33a5059299dcc29c93ff1333e6605ab126fc14d2250a2bf183e306826cf0f':
+          digest = hashlib.sha256(payload).hexdigest()
+          print('archive bytes:', len(payload), 'sha256:', digest)
+          if digest != '69d33a5059299dcc29c93ff1333e6605ab126fc14d2250a2bf183e306826cf0f':
               raise SystemExit('archive checksum mismatch')
           Path('.ch3-rebuild.tar.xz').write_bytes(payload)
           PY
@@ -54,4 +58,4 @@ jobs:
           git rm .ch3-rebuild.tar.xz.b64 .github/workflows/apply-ch3-rebuild.yml
           git add current/content/ch3.js current/content/ch3-section*.js current/visuals/ch3 docs/ch3-production-matrix.md current/learn.html
           git commit -m "feat(ch3): rebuild lessons and exact interactions"
-          git push origin HEAD:content/ch3-linear-systems
+          git push -q origin HEAD:"${BRANCH_NAME}"

@@ -118,9 +118,35 @@ function getChapterById(id) {
   return getChapters().find((chapter) => chapter.id === id) || HOME_CHAPTER;
 }
 
-function getChapter4Sections() {
-  return getChapterById("ch4").sections.filter((section) => typeof section === "object");
+function getStructuredSections(chapter) {
+  if (!chapter) return [];
+  return (chapter.sections || []).filter((section) => typeof section === "object" && section.id);
 }
+
+function getChapter4Sections() {
+  return getStructuredSections(getChapterById("ch4"));
+}
+
+function chapterHasStructuredLessons(chapter) {
+  return getStructuredSections(chapter).length > 0;
+}
+
+function findStructuredSection(sectionId) {
+  if (!sectionId) return null;
+  for (const chapter of algebraContent.chapters) {
+    const section = getStructuredSections(chapter).find((item) => item.id === sectionId);
+    if (section) return { chapter, section };
+  }
+  return null;
+}
+
+function getAllTrackableSections() {
+  return algebraContent.chapters.flatMap((chapter) => getStructuredSections(chapter));
+}
+
+window.getStructuredSections = getStructuredSections;
+window.chapterHasStructuredLessons = chapterHasStructuredLessons;
+window.findStructuredSection = findStructuredSection;
 
 function getSectionLabel(section) {
   return typeof section === "string" ? section : section.navTitle || section.title;
@@ -170,9 +196,11 @@ function getSelfTestItems(section) {
 }
 
 function getProgress() {
-  const total = getChapter4Sections().length;
-  const done = getChapter4Sections().filter((section) => state.completed.has(section.id)).length;
-  return { done, total };
+  const trackable = getAllTrackableSections();
+  return {
+    done: trackable.filter((section) => state.completed.has(section.id)).length,
+    total: trackable.length,
+  };
 }
 
 function init() {
@@ -263,31 +291,31 @@ function renderNav() {
   els.nav.innerHTML = getChapters()
     .map((chapter) => {
       const chapterHref = chapter.id === "home" ? "#home" : `#${chapter.id}`;
-      const sectionLinks =
-        chapter.id === "ch4"
-          ? getChapter4Sections()
-              .map(
-                (section) => `
-                  <a class="nav-section" href="#ch4/${section.id}" data-section-link="${section.id}" data-search-text="${normalizeSearchText(
-                    getSectionSearchText(section),
-                  )}">
-                    <span class="status-dot"></span>
-                    <span>${section.number} ${section.navTitle}</span>
-                    <span class="section-status">未掌握</span>
-                  </a>
-                `,
-              )
-              .join("")
-          : chapter.sections
-              .map(
-                (section) => `
-                  <a class="nav-section" href="${chapterHref}" data-search-text="${normalizeSearchText(getSectionSearchText(section))}">
-                    <span class="status-dot"></span>
-                    <span>${getSectionLabel(section)}</span>
-                  </a>
-                `,
-              )
-              .join("");
+      const structured = getStructuredSections(chapter);
+      const sectionLinks = structured.length
+        ? structured
+            .map(
+              (section) => `
+                <a class="nav-section" href="#${chapter.id}/${section.id}" data-section-link="${section.id}" data-search-text="${normalizeSearchText(
+                  getSectionSearchText(section),
+                )}">
+                  <span class="status-dot"></span>
+                  <span>${section.number} ${section.navTitle}</span>
+                  <span class="section-status">未掌握</span>
+                </a>
+              `,
+            )
+            .join("")
+        : chapter.sections
+            .map(
+              (section) => `
+                <a class="nav-section" href="${chapterHref}" data-search-text="${normalizeSearchText(getSectionSearchText(section))}">
+                  <span class="status-dot"></span>
+                  <span>${getSectionLabel(section)}</span>
+                </a>
+              `,
+            )
+            .join("");
 
       return `
         <div class="chapter-group" data-chapter="${chapter.id}" data-search-text="${normalizeSearchText(
@@ -344,6 +372,7 @@ function getChapterSubtitle(id) {
 function renderRoute() {
   cancelTransformAnimation();
   window.teardownSection2ContinuousLab?.();
+  window.teardownChapter7Lesson?.();
 
   const raw = decodeURIComponent(window.location.hash.replace(/^#/, "")) || "home";
   const [route, section] = raw.split("/");
@@ -358,8 +387,12 @@ function renderRoute() {
 
   if (chapter.id === "home") {
     renderHome();
-  } else if (chapter.id === "ch4") {
-    renderChapter4();
+  } else if (chapterHasStructuredLessons(chapter)) {
+    if (state.section && !getStructuredSections(chapter).some((item) => item.id === state.section)) {
+      state.section = "";
+      document.body.dataset.view = "overview";
+    }
+    renderStructuredChapter(chapter);
   } else {
     renderPlaceholder(chapter);
   }
@@ -380,7 +413,9 @@ function renderRoute() {
 }
 
 function updateDocumentTitle(chapter) {
-  const section = state.section ? getChapter4Sections().find((item) => item.id === state.section) : null;
+  const section = state.section
+    ? getStructuredSections(chapter).find((item) => item.id === state.section)
+    : null;
   document.title = section
     ? `${section.number} ${section.navTitle} | 高等代数可视化`
     : `${chapter.title} | 高等代数可视化`;
@@ -464,60 +499,100 @@ function renderHome() {
   `;
 }
 
-function renderChapter4() {
-  const chapter = getChapterById("ch4");
-  const chapter4Sections = getChapter4Sections();
-  const activeLesson = chapter4Sections.find((section) => section.id === state.section);
-  const interactiveCount = chapter4Sections.filter(getInteractive).length;
-  const videoCount = chapter4Sections.filter(getVideo).length;
-  const exampleCount = chapter4Sections.filter((section) => section.example).length;
+function getChapterOverviewConfig(chapter) {
+  if (chapter.id === "ch4") {
+    return {
+      coverId: "chapter4",
+      eyebrow: "第四章 · 矩阵",
+      title: "从数字表格走向线性结构",
+      structureTitle: "一条主线串起七个小节",
+      panels: [
+        { title: "变换视角", text: "先把矩阵看成基向量去向的记录，避免一上来陷入计算规则。" },
+        { title: "运算视角", text: "加法、数乘、乘法都解释成记录之间的组合，矩阵乘法重点做复合动画。" },
+        { title: "结构视角", text: "通过初等矩阵、可逆、秩和分块，把矩阵从工具推进到结构对象。" },
+      ],
+    };
+  }
+
+  if (chapter.id === "ch7") {
+    return {
+      coverId: "chapter7",
+      eyebrow: "第七章 · 线性变换",
+      title: "从映射进入算子的内部结构",
+      structureTitle: "九个小节沿一条结构主线递进",
+      panels: [
+        { title: "映射与坐标", text: "先判断一个变换是否线性，再看选定基以后怎样用矩阵记录同一个算子。" },
+        { title: "方向与子空间", text: "从特征方向、核、值域和不变子空间读出变换保留或压缩的结构。" },
+        { title: "标准形与多项式", text: "当特征向量不足时，用 Jordan 链和最小多项式描述剩余的代数信息。" },
+      ],
+    };
+  }
+
+  return {
+    coverId: chapter.id,
+    eyebrow: chapter.title,
+    title: chapter.subtitle || chapter.title,
+    structureTitle: "本章目录",
+    panels: [
+      { title: "概念", text: chapter.summary || "沿教材顺序建立本章对象与规则。" },
+      { title: "结构", text: "从定义出发，连接性质、计算与应用。" },
+      { title: "实验", text: "用交互把抽象规则变成可观察的对象。" },
+    ],
+  };
+}
+
+function renderStructuredChapter(chapter) {
+  const sections = getStructuredSections(chapter);
+  const activeLesson = sections.find((section) => section.id === state.section);
+  const interactiveCount = sections.filter(getInteractive).length;
+  const videoCount = sections.filter(getVideo).length;
+  const exampleCount = sections.filter((section) => section.example).length;
   const metaTags = [
-    `${chapter4Sections.length} 个小节`,
+    `${sections.length} 个小节`,
     interactiveCount ? `${interactiveCount} 个交互实验` : "",
     videoCount ? `${videoCount} 个概念短讲` : "",
     exampleCount ? `${exampleCount} 个代表例题` : "",
   ].filter(Boolean);
+
   if (activeLesson) {
-    renderLessonPage(activeLesson);
+    renderLessonPage(activeLesson, chapter);
     return;
   }
 
+  const overview = getChapterOverviewConfig(chapter);
   els.main.innerHTML = `
-    <section class="lesson-cover" id="chapter4">
+    <section class="lesson-cover" id="${overview.coverId}">
       <div class="lesson-cover-copy">
-        <span class="eyebrow">第四章 · 矩阵</span>
-        <h1>从数字表格走向线性结构</h1>
-        <p>${chapter.summary}</p>
+        <span class="eyebrow">${overview.eyebrow}</span>
+        <h1>${overview.title}</h1>
+        <p>${chapter.summary || ""}</p>
         <div class="meta-row">
           ${metaTags.map((tag, index) => `<span class="tag${index === 0 ? " accent" : ""}">${tag}</span>`).join("")}
         </div>
       </div>
     </section>
 
-    <section class="section-band compact-band" id="chapter4-structure">
+    <section class="section-band compact-band" id="${chapter.id}-structure">
       <div class="section-head">
         <div>
           <div class="section-kicker">本章结构</div>
-          <h2>一条主线串起七个小节</h2>
+          <h2>${overview.structureTitle}</h2>
         </div>
       </div>
       <div class="overview-grid">
-        <div class="info-panel">
-          <strong>变换视角</strong>
-          <p>先把矩阵看成基向量去向的记录，避免一上来陷入计算规则。</p>
-        </div>
-        <div class="info-panel">
-          <strong>运算视角</strong>
-          <p>加法、数乘、乘法都解释成记录之间的组合，矩阵乘法重点做复合动画。</p>
-        </div>
-        <div class="info-panel">
-          <strong>结构视角</strong>
-          <p>通过初等矩阵、可逆、秩和分块，把矩阵从工具推进到结构对象。</p>
-        </div>
+        ${overview.panels
+          .map(
+            (panel) => `
+          <div class="info-panel">
+            <strong>${panel.title}</strong>
+            <p>${panel.text}</p>
+          </div>`,
+          )
+          .join("")}
       </div>
     </section>
 
-    <section class="section-band compact-band" id="chapter4-lessons">
+    <section class="section-band compact-band" id="${chapter.id}-lessons">
       <div class="section-head">
         <div>
           <div class="section-kicker">本章目录</div>
@@ -525,20 +600,29 @@ function renderChapter4() {
         </div>
       </div>
       <div class="lesson-card-grid">
-        ${chapter4Sections.map(renderLessonCard).join("")}
+        ${sections.map((section) => renderLessonCard(section, chapter)).join("")}
       </div>
     </section>
   `;
 }
 
-function renderLessonPage(section) {
+function renderChapter4() {
+  renderStructuredChapter(getChapterById("ch4"));
+}
+
+window.renderStructuredChapter = renderStructuredChapter;
+window.renderChapter4 = renderChapter4;
+
+function renderLessonPage(section, chapter = null) {
   const concepts = getConcepts(section);
   const video = getVideo(section);
   const interactive = getInteractive(section);
+  const owner = chapter || findStructuredSection(section.id)?.chapter || getChapterById(state.route);
+  const breadcrumb = owner?.title || "课程";
   els.main.innerHTML = `
     <section class="lesson-cover" id="${section.id}">
       <div class="lesson-cover-copy">
-        <div class="breadcrumb">第四章 矩阵 <span>/</span> ${section.title}</div>
+        <div class="breadcrumb">${breadcrumb} <span>/</span> ${section.title}</div>
         <h1>${section.title}</h1>
         <p>${section.goal}</p>
       </div>
@@ -566,16 +650,19 @@ function renderLessonPage(section) {
       <button class="button mark-button" type="button" data-complete="${section.id}">标记掌握</button>
     </section>
 
-    ${renderLessonNavigation(section)}
+    ${renderLessonNavigation(section, owner)}
   `;
 }
+
+window.renderLessonPage = renderLessonPage;
 
 function getCourseNavigationNodes() {
   return getChapters()
     .filter((chapter) => chapter.id !== "home")
     .flatMap((chapter) => {
-      if (chapter.id === "ch4") {
-        return getChapter4Sections().map((section) => ({
+      const structured = getStructuredSections(chapter);
+      if (structured.length) {
+        return structured.map((section) => ({
           id: `${chapter.id}/${section.id}`,
           href: `#${chapter.id}/${section.id}`,
           title: `${section.number} ${section.navTitle}`,
@@ -596,9 +683,10 @@ function getCourseNavigationNodes() {
     });
 }
 
-function renderLessonNavigation(section) {
+function renderLessonNavigation(section, chapter = null) {
+  const owner = chapter || findStructuredSection(section.id)?.chapter;
   const nodes = getCourseNavigationNodes();
-  const currentIndex = nodes.findIndex((node) => node.id === `ch4/${section.id}`);
+  const currentIndex = nodes.findIndex((node) => node.id === `${owner?.id || state.route}/${section.id}`);
   if (currentIndex < 0) return "";
 
   const previous = nodes[currentIndex - 1] || null;
@@ -684,7 +772,7 @@ function renderFormalSection(section, concepts) {
       ${concepts.length ? `<p>${concepts.map((concept) => `<span class="term-chip">${concept.label}</span> ${concept.text}`).join(" ")}</p>` : ""}
       ${concepts.length ? renderConceptStrip(concepts) : ""}
       <div class="script-panel textbook-panel">
-        <h3>${section.textbookSection} · ${section.textbook?.reference || "北大版《高等代数》第四章"}</h3>
+        <h3>${section.textbookSection || section.title} · ${section.textbook?.reference || "北大版《高等代数》"}</h3>
         ${section.textbook?.page ? `<p>页码：${section.textbook.page}</p>` : ""}
         <ul>${(section.textbook?.items || []).map((item) => `<li>${item}</li>`).join("")}</ul>
       </div>
@@ -772,10 +860,12 @@ function renderSummary(section) {
   return summary;
 }
 
-function renderLessonCard(section) {
+function renderLessonCard(section, chapter = null) {
+  const owner = chapter || findStructuredSection(section.id)?.chapter || getChapterById(state.route);
+  const href = owner ? `#${owner.id}/${section.id}` : `#${section.id}`;
   return `
-    <a class="lesson-card" href="#ch4/${section.id}">
-      <div class="section-kicker">${section.number} · ${section.textbookSection}</div>
+    <a class="lesson-card" href="${href}">
+      <div class="section-kicker">${section.number} · ${section.textbookSection || section.title}</div>
       <h3>${section.navTitle}</h3>
       <p>${section.question}</p>
       <div class="meta-row">

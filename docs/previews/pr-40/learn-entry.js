@@ -35,6 +35,15 @@ function learnOrderedChapters() {
   return [...algebraContent.chapters].sort((a, b) => learnChapterNumber(a) - learnChapterNumber(b));
 }
 
+
+function learnFirstStructuredTarget() {
+  for (const chapter of learnOrderedChapters()) {
+    const first = learnTrackableSections(chapter)[0];
+    if (first) return `#${chapter.id}/${first.id}`;
+  }
+  return "#ch4/matrix-language";
+}
+
 function learnLastTarget() {
   const last = localStorage.getItem("la-visual-last");
   if (!last || !last.startsWith("#")) return null;
@@ -44,8 +53,7 @@ function learnLastTarget() {
   if (!chapter) return null;
 
   if (section) {
-    if (chapter.id !== "ch4") return null;
-    if (!getChapter4Sections().some((item) => item.id === section)) return null;
+    if (!learnTrackableSections(chapter).some((item) => item.id === section)) return null;
   }
 
   return last;
@@ -65,7 +73,7 @@ getProgress = function getLearningProgress() {
 };
 
 getStartTarget = function getLearningStartTarget() {
-  return learnLastTarget() || "#ch4/matrix-language";
+  return learnLastTarget() || learnFirstStructuredTarget();
 };
 
 hasVisitedLesson = function hasLearningHistory() {
@@ -76,14 +84,15 @@ renderNav = function renderLearningNav() {
   els.nav.innerHTML = getChapters()
     .map((chapter) => {
       const chapterHref = `#${chapter.id}`;
+      const structured = learnTrackableSections(chapter);
       const sectionLinks =
         chapter.id === "guide"
           ? ""
-          : chapter.id === "ch4"
-            ? getChapter4Sections()
+          : structured.length
+            ? structured
                 .map(
                   (section) => `
-                    <a class="nav-section" href="#ch4/${section.id}" data-section-link="${section.id}" data-search-text="${normalizeSearchText(
+                    <a class="nav-section" href="#${chapter.id}/${section.id}" data-section-link="${section.id}" data-search-text="${normalizeSearchText(
                       getSectionSearchText(section),
                     )}">
                       <span class="status-dot"></span>
@@ -171,8 +180,10 @@ function renderLearningRouteCard(chapter) {
     ? `<div class="route-meter" role="img" aria-label="已掌握 ${done} / ${trackable.length}"><span style="width:${percent}%"></span></div><span class="route-count">${done}/${trackable.length} 已掌握</span>`
     : `<span class="route-count">${chapter.sections.length} 个小节</span>`;
 
+  const href = ready ? `#${chapter.id}/${trackable[0].id}` : `#${chapter.id}`;
+
   return `
-    <a class="route-card${ready ? "" : " is-soon"}" href="#${chapter.id}">
+    <a class="route-card${ready ? "" : " is-soon"}" href="${href}">
       <span class="route-num">${String(learnChapterNumber(chapter)).padStart(2, "0")}</span>
       <div class="route-body"><strong>${escapeHtml(learnChapterShortTitle(chapter))}</strong><p>${preview}${chapter.sections.length > 4 ? " …" : ""}</p></div>
       <div class="route-status">${status}</div>
@@ -180,6 +191,7 @@ function renderLearningRouteCard(chapter) {
 }
 
 renderRoute = function renderLearningRoute() {
+  window.teardownChapter7Lesson?.();
   const raw = decodeURIComponent(window.location.hash.replace(/^#/, "")) || "guide";
   const [requestedRoute, requestedSection] = raw.split("/");
 
@@ -188,12 +200,13 @@ renderRoute = function renderLearningRoute() {
     return;
   }
 
-  const chapter = requestedRoute === "guide"
-    ? LEARN_GUIDE_CHAPTER
-    : algebraContent.chapters.find((item) => item.id === requestedRoute) || LEARN_GUIDE_CHAPTER;
-  const validSection = chapter.id === "ch4" && requestedSection && getChapter4Sections().some((item) => item.id === requestedSection)
-    ? requestedSection
-    : "";
+  const chapter =
+    requestedRoute === "guide"
+      ? LEARN_GUIDE_CHAPTER
+      : algebraContent.chapters.find((item) => item.id === requestedRoute) || LEARN_GUIDE_CHAPTER;
+  const structured = learnTrackableSections(chapter);
+  const validSection =
+    requestedSection && structured.some((item) => item.id === requestedSection) ? requestedSection : "";
 
   state.route = chapter.id;
   state.section = validSection;
@@ -202,7 +215,7 @@ renderRoute = function renderLearningRoute() {
   document.body.dataset.view = state.section ? "lesson" : "overview";
 
   if (chapter.id === "guide") renderGuide();
-  else if (chapter.id === "ch4") renderChapter4();
+  else if (structured.length) renderStructuredChapter(chapter);
   else renderPlaceholder(chapter);
 
   if (chapter.id !== "guide") {

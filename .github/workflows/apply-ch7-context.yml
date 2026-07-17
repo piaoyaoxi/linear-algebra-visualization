@@ -18,5 +18,5 @@ jobs:
         uses: actions/checkout@v4
         with:
           ref: context/ch7-linear-transformations
-      - name: Report payload checksum
-        run: 'echo "PAYLOAD_SHA256=$(cat .github/ch7-payload/part-* | base64 -d 2>/dev/null | sha256sum | cut -d" " -f1)"; exit 1'
+      - name: Report payload part hashes
+        run: 'for file in .github/ch7-payload/part-*; do printf "%s:%s:%s;" "$(basename "$file")" "$(wc -c < "$file")" "$(sha256sum "$file" | cut -d" " -f1)"; done; echo; exit 1'

@@ -8,38 +8,21 @@ on:
       - ".github/workflows/apply-ch7-context.yml"
 
 permissions:
-  contents: write
+  contents: read
 
 jobs:
-  diagnose:
+  verify:
     runs-on: ubuntu-latest
     steps:
       - name: Check out context branch
         uses: actions/checkout@v4
         with:
           ref: context/ch7-linear-transformations
-      - name: Record repaired payload diagnostics
+      - name: Verify payload archive
         run: |
-          {
-            echo "PART SIZES"
-            wc -c .github/ch7-payload/part-*
-            echo
-            echo "PART HASHES"
-            sha256sum .github/ch7-payload/part-*
-            echo
-            echo "CONCATENATED BASE64 HASH"
-            cat .github/ch7-payload/part-* | sha256sum
-            echo
-            echo "DECODED HASH"
-            cat .github/ch7-payload/part-* | base64 -d > /tmp/ch7-payload.tar.gz || true
-            sha256sum /tmp/ch7-payload.tar.gz || true
-            echo
-            if gzip -t /tmp/ch7-payload.tar.gz; then echo "GZIP_OK"; else echo "GZIP_FAIL"; fi
-          } > .github/ch7-payload-diagnostics.txt 2>&1
-      - name: Commit diagnostics
-        run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add .github/ch7-payload-diagnostics.txt
-          git commit -m "chore(ch7): record payload diagnostics"
-          git push origin HEAD:context/ch7-linear-transformations
+          wc -c .github/ch7-payload/part-*
+          sha256sum .github/ch7-payload/part-*
+          cat .github/ch7-payload/part-* | base64 -d > /tmp/ch7-payload.tar.gz
+          echo "6b1812a2a79b1779f34fc11bac295bc6aa41dad468ffa30ac6662e9901e3869d  /tmp/ch7-payload.tar.gz" | sha256sum -c -
+          gzip -t /tmp/ch7-payload.tar.gz
+          tar -tzf /tmp/ch7-payload.tar.gz

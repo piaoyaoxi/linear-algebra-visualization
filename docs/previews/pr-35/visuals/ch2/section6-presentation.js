@@ -82,7 +82,7 @@
       root.querySelector("[data-mij]").textContent = M().formatNum(selected.minorValue, 3);
       root.querySelector("[data-sign]").textContent = selected.sign > 0 ? "+1" : "−1";
       root.querySelector("[data-cij]").textContent = M().formatNum(selected.value, 3);
-      root.querySelector("[data-minor-matrix]").innerHTML = tex(`\begin{bmatrix}${selected.minor[0][0]}&${selected.minor[0][1]}\\${selected.minor[1][0]}&${selected.minor[1][1]}\end{bmatrix}`);
+      root.querySelector("[data-minor-matrix]").innerHTML = tex(`\\begin{bmatrix}${selected.minor[0][0]}&${selected.minor[0][1]}\\\\${selected.minor[1][0]}&${selected.minor[1][1]}\\end{bmatrix}`);
       root.querySelectorAll("[data-board] span").forEach((span, index) => {
         const row = Math.floor(index / 3);
         const col = index % 3;
@@ -123,13 +123,13 @@
           </div>
         `) + module("02", "展开公式与路线选择", "结果固定，计算量由所选方向决定。", `
           <div class="ch2-def-stack">
-            <article class="ch2-def"><span class="kicker">按第 i 行</span><strong>${display("\det(A)=\sum_{j=1}^{n}a_{ij}C_{ij}")}</strong><p>第 i 行中的每个元素与对应代数余子式配对。</p></article>
-            <article class="ch2-def"><span class="kicker">按第 j 列</span><strong>${display("\det(A)=\sum_{i=1}^{n}a_{ij}C_{ij}")}</strong><p>优先选择零多的方向，减少需要计算的低阶行列式。</p></article>
+            <article class="ch2-def"><span class="kicker">按第 i 行</span><strong>${display("\\det(A)=\\sum_{j=1}^{n}a_{ij}C_{ij}")}</strong><p>第 i 行中的每个元素与对应代数余子式配对。</p></article>
+            <article class="ch2-def"><span class="kicker">按第 j 列</span><strong>${display("\\det(A)=\\sum_{i=1}^{n}a_{ij}C_{ij}")}</strong><p>优先选择零多的方向，减少需要计算的低阶行列式。</p></article>
           </div>
         `) + module("03", "交叉恒等式为什么等于零", "把一行复制到另一行，再沿被替换行展开。", proofSteps([
-          `固定两行 r≠s，考虑和 ${tex("\sum_j a_{rj}C_{sj}")}。`,
+          `固定两行 r≠s，考虑和 ${tex("\\sum_j a_{rj}C_{sj}")}。`,
           "构造一个新行列式：把原矩阵第 s 行替换成第 r 行，其余行保持不变。",
-          `沿新矩阵第 s 行展开，得到的正是 ${tex("\sum_j a_{rj}C_{sj}")}。`,
+          `沿新矩阵第 s 行展开，得到的正是 ${tex("\\sum_j a_{rj}C_{sj}")}。`,
           "新矩阵的第 r、s 行相同，所以其行列式为 0，交叉和也等于 0。",
         ]) + misconception([
           "棋盘符号帮助记忆，定义仍是 (−1)^(i+j)。",

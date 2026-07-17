@@ -4,7 +4,7 @@ defineChapter2Section("cramer-rule", {
   title: "克拉默（Cramer）法则",
   navTitle: "克拉默法则",
   question: "为什么把系数矩阵的第 i 列换成常数列后，两个行列式的比值恰好给出第 i 个未知量？",
-  goal: `在 ${texInline("\det(A)\ne0")} 的前提下构造替换矩阵 ${texInline("A_i")}，理解 ${texInline("x_i=\det(A_i)/\det(A)")} 的列线性推导与二维有向面积比，并正确区分 ${texInline("\det(A)=0")} 时的无解与无穷多解。`,
+  goal: `在 ${texInline("\\det(A)\\ne0")} 的前提下构造替换矩阵 ${texInline("A_i")}，理解 ${texInline("x_i=\\det(A_i)/\\det(A)")} 的列线性推导与二维有向面积比，并正确区分 ${texInline("\\det(A)=0")} 时的无解与无穷多解。`,
   tags: ["克拉默法则", "替换列", "唯一解"],
   prerequisites: [
     "会把 Ax=b 写成 b=x₁a₁+⋯+xₙaₙ，其中 aᵢ 是 A 的列。",
@@ -23,7 +23,7 @@ defineChapter2Section("cramer-rule", {
     { label: "最后检查分母", text: "只有 det(A)≠0 才能相除；D=0 时必须回到列空间或消元判断相容性。" },
   ],
   intro:
-    `方程 ${texInline("Ax=b")} 表示常数向量 b 是 A 的列向量的线性组合。当 ${texInline("\det(A)\ne0")} 时，这组列向量构成一组基，坐标唯一。把第 i 列替换成 b 后，行列式的分别线性会自动留下系数 ${texInline("x_i")}。公式中的分母不是技术细节，而是唯一解存在的结构条件。`,
+    `方程 ${texInline("Ax=b")} 表示常数向量 b 是 A 的列向量的线性组合。当 ${texInline("\\det(A)\\ne0")} 时，这组列向量构成一组基，坐标唯一。把第 i 列替换成 b 后，行列式的分别线性会自动留下系数 ${texInline("x_i")}。公式中的分母不是技术细节，而是唯一解存在的结构条件。`,
   videoPlan: {
     title: "克拉默法则为什么是有向体积比",
     duration: "约 2 分钟",
@@ -36,13 +36,13 @@ defineChapter2Section("cramer-rule", {
     ],
   },
   concepts: [
-    { label: "前提", text: `${texInline("A")} 为 n 阶方阵且 ${texInline("\det(A)\ne0")}。` },
-    { label: "列组合", text: `${texInline("b=x_1a_1+\cdots+x_na_n")}，其中 ${texInline("a_i")} 是 A 的第 i 列。` },
+    { label: "前提", text: `${texInline("A")} 为 n 阶方阵且 ${texInline("\\det(A)\\ne0")}。` },
+    { label: "列组合", text: `${texInline("b=x_1a_1+\\cdots+x_na_n")}，其中 ${texInline("a_i")} 是 A 的第 i 列。` },
     { label: "替换矩阵", text: `${texInline("A_i")} 由把 ${texInline("A")} 的第 i 列替换成 ${texInline("b")} 得到。` },
-    { label: "核心等式", text: `${texInline("\det(A_i)=x_i\det(A)")}。` },
-    { label: "公式", text: `${texInline("x_i=\dfrac{\det(A_i)}{\det(A)}")}。` },
+    { label: "核心等式", text: `${texInline("\\det(A_i)=x_i\\det(A)")}。` },
+    { label: "公式", text: `${texInline("x_i=\\dfrac{\\det(A_i)}{\\det(A)}")}。` },
     { label: "二维解释", text: "替换列后的有向面积与原基底面积之比给出对应坐标。" },
-    { label: "奇异边界", text: `${texInline("\det(A)=0")} 时公式不可用；方程组可能无解，也可能有无穷多解。` },
+    { label: "奇异边界", text: `${texInline("\\det(A)=0")} 时公式不可用；方程组可能无解，也可能有无穷多解。` },
   ],
   textbook: {
     reference: "北大版《高等代数》第二章 §7",
@@ -72,10 +72,10 @@ defineChapter2Section("cramer-rule", {
       { text: "出现行列式就说明方程组无解。" },
     ],
     steps: [
-      `系数矩阵 ${texInline("A=\begin{bmatrix}2&1\\1&3\end{bmatrix}")}，${texInline("D=6-1=5\ne0")}，因此有唯一解。`,
-      `替换第 1 列：${texInline("D_1=\det\begin{bmatrix}5&1\\5&3\end{bmatrix}=10")}，所以 ${texInline("x=2")}。`,
-      `替换第 2 列：${texInline("D_2=\det\begin{bmatrix}2&5\\1&5\end{bmatrix}=5")}，所以 ${texInline("y=1")}。`,
-      `回代：${texInline("2\cdot2+1=5")}，${texInline("2+3\cdot1=5")}，两个方程均成立。`,
+      `系数矩阵 ${texInline("A=\\begin{bmatrix}2&1\\\\1&3\\end{bmatrix}")}，${texInline("D=6-1=5\\ne0")}，因此有唯一解。`,
+      `替换第 1 列：${texInline("D_1=\\det\\begin{bmatrix}5&1\\\\5&3\\end{bmatrix}=10")}，所以 ${texInline("x=2")}。`,
+      `替换第 2 列：${texInline("D_2=\\det\\begin{bmatrix}2&5\\\\1&5\\end{bmatrix}=5")}，所以 ${texInline("y=1")}。`,
+      `回代：${texInline("2\\cdot2+1=5")}，${texInline("2+3\\cdot1=5")}，两个方程均成立。`,
       "几何上，b=2a₁+a₂；两个行列式之比分别读出这两个坐标。",
     ],
   },

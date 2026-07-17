@@ -29,9 +29,9 @@ defineChapter2Section("determinant-properties", {
     { label: "相同行", text: "两行相同，则交换后矩阵不变但行列式应变号，因此行列式为 0。" },
     { label: "比例行", text: "两行成比例时，可先提出比例因子，再化为相同行，因此行列式为 0。" },
     { label: "倍加不变", text: "一行加上另一行的倍数，新增项含两行相同而为 0。" },
-    { label: "转置", text: `${texInline("\det(A^T)=\det(A)")}，所以行性质与列性质完全平行。` },
+    { label: "转置", text: `${texInline("\\det(A^T)=\\det(A)")}，所以行性质与列性质完全平行。` },
     { label: "三角矩阵", text: "上三角或下三角行列式等于主对角线元素乘积。" },
-    { label: "整体数乘", text: `${texInline("\det(\lambda A)=\lambda^n\det(A)")}，因为 n 行各自提出一个 λ。` },
+    { label: "整体数乘", text: `${texInline("\\det(\\lambda A)=\\lambda^n\\det(A)")}，因为 n 行各自提出一个 λ。` },
   ],
   textbook: {
     reference: "北大版《高等代数》第二章 §4",
@@ -52,7 +52,7 @@ defineChapter2Section("determinant-properties", {
   },
   example: {
     title: "例题：连续操作必须逐步记账",
-    question: `已知 ${texInline("\det(A)=-2")}。先交换第 1、2 行，再把新的第 1 行乘 5，最后把第 3 行加上第 1 行的 4 倍。所得行列式是多少？`,
+    question: `已知 ${texInline("\\det(A)=-2")}。先交换第 1、2 行，再把新的第 1 行乘 5，最后把第 3 行加上第 1 行的 4 倍。所得行列式是多少？`,
     choices: [
       { correct: true, text: "先乘 −1 得 2，再乘 5 得 10；最后的倍加不改变行列式，所以结果为 10。" },
       { text: "只需乘 5，结果为 −10。" },
@@ -69,10 +69,10 @@ defineChapter2Section("determinant-properties", {
   quiz: [
     { question: "一行乘 λ 对行列式有什么影响？", answer: "行列式乘 λ。" },
     { question: "一行加上另一行的 k 倍呢？", answer: "行列式保持不变。" },
-    { question: `${texInline("\det(A+B)=\det(A)+\det(B)")} 一般成立吗？`, answer: "不成立。分别线性针对单独一行或一列，而不是整个矩阵。" },
+    { question: `${texInline("\\det(A+B)=\\det(A)+\\det(B)")} 一般成立吗？`, answer: "不成立。分别线性针对单独一行或一列，而不是整个矩阵。" },
     { question: "两行相同时为什么行列式为零？", answer: "交换这两行后矩阵不变，但交替性要求行列式变号，因此 D=−D，只能有 D=0。" },
     { question: "两行成比例时为什么为零？", answer: "提出比例因子后得到两行相同，再使用相同行为零。" },
-    { question: `${texInline("\det(\lambda A)")} 在 n 阶时等于什么？`, answer: `${texInline("\lambda^n\det(A)")}。` },
+    { question: `${texInline("\\det(\\lambda A)")} 在 n 阶时等于什么？`, answer: `${texInline("\\lambda^n\\det(A)")}。` },
     { question: "列倍加规则能否直接用于行？", answer: "可以。由 det(Aᵀ)=det(A)，行与列的规则完全对应。" },
   ],
   summary: [

@@ -52,18 +52,18 @@ defineChapter2Section("determinant-computation", {
   },
   example: {
     title: "例题：用倍加化为上三角",
-    question: `计算 ${texInline("\det\begin{bmatrix}2&1&0\\1&3&1\\0&2&1\end{bmatrix}")}。要求用行倍加化为上三角，并说明每一步对行列式的影响。`,
+    question: `计算 ${texInline("\\det\\begin{bmatrix}2&1&0\\\\1&3&1\\\\0&2&1\\end{bmatrix}")}。要求用行倍加化为上三角，并说明每一步对行列式的影响。`,
     choices: [
-      { correct: true, text: `结果为 ${texInline("1")}；两次倍加均不改变行列式，三角矩阵对角线乘积为 ${texInline("2\cdot\frac52\cdot\frac15=1")}。` },
+      { correct: true, text: `结果为 ${texInline("1")}；两次倍加均不改变行列式，三角矩阵对角线乘积为 ${texInline("2\\cdot\\frac52\\cdot\\frac15=1")}。` },
       { text: "结果为 6，直接把原矩阵主对角线相乘。" },
       { text: "结果为 0，因为矩阵中已经出现两个零。" },
       { text: "结果为 −1，因为消元必然包含一次交换。" },
     ],
     steps: [
-      `做 ${texInline("R_2\leftarrow R_2-\frac12R_1")}，行列式不变，第二行变为 ${texInline("(0,\frac52,1)")}。`,
-      `再做 ${texInline("R_3\leftarrow R_3-\frac45R_2")}，行列式仍不变，第三行变为 ${texInline("(0,0,\frac15)")}。`,
+      `做 ${texInline("R_2\\leftarrow R_2-\\frac12R_1")}，行列式不变，第二行变为 ${texInline("(0,\\frac52,1)")}。`,
+      `再做 ${texInline("R_3\\leftarrow R_3-\\frac45R_2")}，行列式仍不变，第三行变为 ${texInline("(0,0,\\frac15)")}。`,
       "所得矩阵为上三角，行列式等于对角线乘积。",
-      `因此原行列式为 ${texInline("2\cdot\frac52\cdot\frac15=1")}。`,
+      `因此原行列式为 ${texInline("2\\cdot\\frac52\\cdot\\frac15=1")}。`,
       "两步的累计倍率为 1，所以无需额外恢复。",
     ],
   },

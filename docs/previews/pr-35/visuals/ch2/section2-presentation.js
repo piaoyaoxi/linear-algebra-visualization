@@ -158,9 +158,9 @@
         "行列式的乘积项都采用每行每列各一次的取法。列指标形成排列，而排列中的交叉数量决定正负号。",
         module("01", "逆序数与排列符号", "先逐对比较，再压缩为一个符号。", `
           <div class="ch2-def-stack">
-            <article class="ch2-def"><span class="kicker">逆序</span><strong>${tex("i<j,\;\sigma(i)>\sigma(j)")}</strong><p>位置靠前的数反而更大时，这一对形成逆序。</p></article>
-            <article class="ch2-def"><span class="kicker">逆序数</span><strong>${tex("\tau(\sigma)")}</strong><p>全部逆序对的数量；连线图中的每个交叉对应一个逆序。</p></article>
-            <article class="ch2-def"><span class="kicker">符号</span><strong>${tex("\operatorname{sgn}(\sigma)=(-1)^{\tau(\sigma)}")}</strong><p>偶排列取 +1，奇排列取 −1。</p></article>
+            <article class="ch2-def"><span class="kicker">逆序</span><strong>${tex("i<j,\\;\\sigma(i)>\\sigma(j)")}</strong><p>位置靠前的数反而更大时，这一对形成逆序。</p></article>
+            <article class="ch2-def"><span class="kicker">逆序数</span><strong>${tex("\\tau(\\sigma)")}</strong><p>全部逆序对的数量；连线图中的每个交叉对应一个逆序。</p></article>
+            <article class="ch2-def"><span class="kicker">符号</span><strong>${tex("\\operatorname{sgn}(\\sigma)=(-1)^{\\tau(\\sigma)}")}</strong><p>偶排列取 +1，奇排列取 −1。</p></article>
           </div>
         `) + module("02", "相邻交换为什么翻转奇偶性", "只改变一对相邻元素的相对顺序。", proofSteps([
           "相邻元素之外的每个数，与这两个元素形成的逆序总数保持不变。",

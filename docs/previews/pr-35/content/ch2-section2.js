@@ -22,13 +22,13 @@ defineChapter2Section("permutations", {
     { label: "最后研究交换", text: "相邻交换改变一个逆序；一般对换等价于奇数次相邻交换，因此也翻转符号。" },
   ],
   intro:
-    `从第 1 行到第 n 行依次选取元素时，被选中的列指标组成一个排列。排列中的“交叉程度”由逆序数计量，奇偶性决定乘积项前面的符号 ${texInline("\operatorname{sgn}(\sigma)")}。`,
+    `从第 1 行到第 n 行依次选取元素时，被选中的列指标组成一个排列。排列中的“交叉程度”由逆序数计量，奇偶性决定乘积项前面的符号 ${texInline("\\operatorname{sgn}(\\sigma)")}。`,
   concepts: [
-    { label: "排列", text: `${texInline("1,2,\ldots,n")} 的一个全排列可写成 ${texInline("\sigma=(\sigma(1),\ldots,\sigma(n))")}。` },
-    { label: "逆序对", text: `当 ${texInline("i<j")} 但 ${texInline("\sigma(i)>\sigma(j)")} 时，位置 ${texInline("(i,j)")} 构成逆序。` },
-    { label: "逆序数", text: `${texInline("\tau(\sigma)")} 是全部逆序对的个数。` },
+    { label: "排列", text: `${texInline("1,2,\\ldots,n")} 的一个全排列可写成 ${texInline("\\sigma=(\\sigma(1),\\ldots,\\sigma(n))")}。` },
+    { label: "逆序对", text: `当 ${texInline("i<j")} 但 ${texInline("\\sigma(i)>\\sigma(j)")} 时，位置 ${texInline("(i,j)")} 构成逆序。` },
+    { label: "逆序数", text: `${texInline("\\tau(\\sigma)")} 是全部逆序对的个数。` },
     { label: "奇偶性", text: "逆序数为偶数时称偶排列，为奇数时称奇排列。" },
-    { label: "排列符号", text: `${texInline("\operatorname{sgn}(\sigma)=(-1)^{\tau(\sigma)}")}。` },
+    { label: "排列符号", text: `${texInline("\\operatorname{sgn}(\\sigma)=(-1)^{\\tau(\\sigma)}")}。` },
     { label: "相邻交换", text: "交换相邻两项会使逆序数恰好改变 1。" },
     { label: "一般对换", text: "交换任意两个位置会使逆序数改变一个奇数，因此排列符号翻转。" },
   ],
@@ -52,7 +52,7 @@ defineChapter2Section("permutations", {
   },
   example: {
     title: "例题：逆序数、符号与一次对换",
-    question: `设 ${texInline("\sigma=(3,1,4,2)")}。列出逆序对，求 ${texInline("\tau(\sigma)")} 与 ${texInline("\operatorname{sgn}(\sigma)")}；再交换最后两个位置，判断新排列的奇偶性。`,
+    question: `设 ${texInline("\\sigma=(3,1,4,2)")}。列出逆序对，求 ${texInline("\\tau(\\sigma)")} 与 ${texInline("\\operatorname{sgn}(\\sigma)")}；再交换最后两个位置，判断新排列的奇偶性。`,
     choices: [
       { correct: true, text: "逆序对为 (3,1)、(3,2)、(4,2)，τ=3，符号为 −1；交换最后两个位置后变为偶排列。" },
       { text: "只有 (3,1) 一个逆序，τ=1。" },
@@ -62,14 +62,14 @@ defineChapter2Section("permutations", {
     steps: [
       "从左向右扫描：3 的右侧有 1、2 比它小；4 的右侧有 2 比它小。",
       "全部逆序对为 (3,1)、(3,2)、(4,2)，所以 τ=3。",
-      `因此 ${texInline("\operatorname{sgn}(\sigma)=(-1)^3=-1")}。`,
+      `因此 ${texInline("\\operatorname{sgn}(\\sigma)=(-1)^3=-1")}。`,
       "交换最后两个位置得到 3124，逆序数变为 2；一次对换使奇偶性翻转。",
     ],
   },
   quiz: [
     { question: "n 个元素一共有多少个排列？", answer: `${texInline("n!")} 个。` },
     { question: "排列 231 的逆序数是多少？", answer: "2，逆序对为 (2,1)、(3,1)。" },
-    { question: "完全逆序 n…21 的逆序数是多少？", answer: `${texInline("\binom{n}{2}=n(n-1)/2")}。` },
+    { question: "完全逆序 n…21 的逆序数是多少？", answer: `${texInline("\\binom{n}{2}=n(n-1)/2")}。` },
     { question: "一次相邻交换对逆序数和符号分别有什么影响？", answer: "逆序数恰好改变 1，符号乘以 −1。" },
     { question: "交换任意两个不相邻位置，逆序数一定只改变 1 吗？", answer: "不一定；它会改变一个奇数，但符号一定翻转。" },
     { question: `乘积 ${texInline("a_{12}a_{23}a_{31}")} 对应哪个列指标排列？`, answer: "231。" },

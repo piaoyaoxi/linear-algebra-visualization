@@ -2,7 +2,7 @@
   const { M, tex, display, formalShell, module, proofSteps, misconception } = window.Ch2PresentationUtils;
 
   function matrixTex(matrix) {
-    return tex(`\begin{bmatrix}${matrix.map((row) => row.map((value) => M().formatNum(value, 3)).join("&")).join("\\")}\end{bmatrix}`);
+    return tex(`\\begin{bmatrix}${matrix.map((row) => row.map((value) => M().formatNum(value, 3)).join("&")).join("\\\\")}\\end{bmatrix}`);
   }
 
   function mountLaplacePairing(root) {
@@ -180,11 +180,11 @@
         module("01", "广义 Laplace 定理", "固定 k 行，遍历全部 k 列组合。", `
           <div class="ch2-def-stack">
             <article class="ch2-def"><span class="kicker">子式</span><strong>所选 k 行与 k 列交叉得到 k 阶行列式</strong><p>未被选择的行列形成互补子式。</p></article>
-            <article class="ch2-def"><span class="kicker">位置符号</span><strong>${tex("(-1)^{\sum I+\sum J}")}</strong><p>I、J 分别是所选行指标集与列指标集。</p></article>
+            <article class="ch2-def"><span class="kicker">位置符号</span><strong>${tex("(-1)^{\\sum I+\\sum J}")}</strong><p>I、J 分别是所选行指标集与列指标集。</p></article>
           </div>
-          <article class="ch2-def ch2-formula-block"><span class="kicker">固定行指标集 I 的展开</span><strong>${display("\det(A)=\sum_{\substack{J\subset\{1,\ldots,n\}\\|J|=k}}(-1)^{\sum I+\sum J}\det A[I,J]\,\det A[I^c,J^c]")}</strong><p>当 k=1 时，子式就是一个元素，互补子式就是余子式，公式退化为 §6。</p></article>
+          <article class="ch2-def ch2-formula-block"><span class="kicker">固定行指标集 I 的展开</span><strong>${display("\\det(A)=\\sum_{\\substack{J\\subset\\{1,\\ldots,n\\}\\\\|J|=k}}(-1)^{\\sum I+\\sum J}\\det A[I,J]\\,\\det A[I^c,J^c]")}</strong><p>当 k=1 时，子式就是一个元素，互补子式就是余子式，公式退化为 §6。</p></article>
         `) + module("02", "乘法规则", "第二阶段必须从 B 后的图形继续，而非重新从单位形开始。", `
-          <article class="ch2-def ch2-formula-block"><span class="kicker">定理</span><strong>${display("\det(AB)=\det(A)\det(B)")}</strong><p>向量先经过 B，再经过 A；有向体积先乘 det(B)，随后乘 det(A)。</p></article>
+          <article class="ch2-def ch2-formula-block"><span class="kicker">定理</span><strong>${display("\\det(AB)=\\det(A)\\det(B)")}</strong><p>向量先经过 B，再经过 A；有向体积先乘 det(B)，随后乘 det(A)。</p></article>
           ${proofSteps([
             "几何入口：单位体积经过 B 后乘 det(B)，再经过 A 后乘 det(A)。",
             "代数入口：把 AB 的每一列写成 A 的列向量的线性组合。",
@@ -194,15 +194,15 @@
           ])}
         `) + module("03", "重要推论", "乘法规则把多个结论压缩成一行计算。", `
           <div class="ch2-card-grid">
-            <article class="ch2-card"><span class="kicker">逆矩阵</span><h4>${tex("\det(A^{-1})=1/\det(A)")}</h4><p>由 det(I)=det(A)det(A⁻¹)。</p></article>
-            <article class="ch2-card"><span class="kicker">矩阵幂</span><h4>${tex("\det(A^m)=\det(A)^m")}</h4><p>重复复合，倍率重复相乘。</p></article>
-            <article class="ch2-card"><span class="kicker">相似</span><h4>${tex("\det(P^{-1}AP)=\det(A)")}</h4><p>换基前后的两个 P 因子相互抵消。</p></article>
+            <article class="ch2-card"><span class="kicker">逆矩阵</span><h4>${tex("\\det(A^{-1})=1/\\det(A)")}</h4><p>由 det(I)=det(A)det(A⁻¹)。</p></article>
+            <article class="ch2-card"><span class="kicker">矩阵幂</span><h4>${tex("\\det(A^m)=\\det(A)^m")}</h4><p>重复复合，倍率重复相乘。</p></article>
+            <article class="ch2-card"><span class="kicker">相似</span><h4>${tex("\\det(P^{-1}AP)=\\det(A)")}</h4><p>换基前后的两个 P 因子相互抵消。</p></article>
           </div>
         `) + misconception([
           "AB 与 BA 通常不同，但二者行列式都等于 det(A)det(B)。",
           "几何动画解释公式为何自然；一般 n 阶的严格证明仍要回到多重线性与排列。",
           "广义 Laplace 定理与乘法规则是本节两条独立而相互呼应的结论。",
-        ])),
+        ]),
       );
     },
     interactive(root) {

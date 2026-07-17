@@ -35,8 +35,8 @@ defineChapter2Section("n-order-determinant", {
     ],
   },
   concepts: [
-    { label: "Leibniz 定义", text: `${texInline("\det(A)=\sum_{\sigma\in S_n}\operatorname{sgn}(\sigma)\prod_{i=1}^{n}a_{i,\sigma(i)}")}。` },
-    { label: "求和范围", text: `${texInline("S_n")} 是 ${texInline("1,\ldots,n")} 的全部排列组成的集合。` },
+    { label: "Leibniz 定义", text: `${texInline("\\det(A)=\\sum_{\\sigma\\in S_n}\\operatorname{sgn}(\\sigma)\\prod_{i=1}^{n}a_{i,\\sigma(i)}")}。` },
+    { label: "求和范围", text: `${texInline("S_n")} 是 ${texInline("1,\\ldots,n")} 的全部排列组成的集合。` },
     { label: "合法取项", text: "每项从每一行、每一列各取一个元素；只满足其中一条仍然不合法。" },
     { label: "项数", text: `列指标共有 ${texInline("n!")} 个排列，所以形式上有 ${texInline("n!")} 个带符号乘积项。` },
     { label: "零贡献", text: "合法项可以含零元素而贡献 0；‘合法’描述下标结构，不保证数值非零。" },

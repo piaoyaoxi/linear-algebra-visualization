@@ -27,9 +27,9 @@ defineChapter2Section("cofactor-expansion", {
     { label: "余子矩阵", text: "删去第 i 行、第 j 列后得到的 (n−1) 阶矩阵。" },
     { label: "余子式", text: `${texInline("M_{ij}")} 是余子矩阵的行列式，是标量。` },
     { label: "代数余子式", text: `${texInline("C_{ij}=(-1)^{i+j}M_{ij}")}。` },
-    { label: "按行展开", text: `${texInline("\det(A)=\sum_{j=1}^{n}a_{ij}C_{ij}")}。` },
-    { label: "按列展开", text: `${texInline("\det(A)=\sum_{i=1}^{n}a_{ij}C_{ij}")}。` },
-    { label: "交叉恒等式", text: `当 ${texInline("r\ne s")} 时，第 r 行元素与第 s 行对应代数余子式的乘积之和为 0。` },
+    { label: "按行展开", text: `${texInline("\\det(A)=\\sum_{j=1}^{n}a_{ij}C_{ij}")}。` },
+    { label: "按列展开", text: `${texInline("\\det(A)=\\sum_{i=1}^{n}a_{ij}C_{ij}")}。` },
+    { label: "交叉恒等式", text: `当 ${texInline("r\\ne s")} 时，第 r 行元素与第 s 行对应代数余子式的乘积之和为 0。` },
     { label: "递归结构", text: "n 阶行列式被拆成若干 (n−1) 阶行列式，因此展开可以递归进行。" },
   ],
   textbook: {
@@ -52,7 +52,7 @@ defineChapter2Section("cofactor-expansion", {
   },
   example: {
     title: "例题：选择零最多的方向展开",
-    question: `计算 ${texInline("\det\begin{bmatrix}1&2&0\\0&3&0\\4&5&6\end{bmatrix}")}，并说明为什么所选展开方向最省步骤。`,
+    question: `计算 ${texInline("\\det\\begin{bmatrix}1&2&0\\\\0&3&0\\\\4&5&6\\end{bmatrix}")}，并说明为什么所选展开方向最省步骤。`,
     choices: [
       { correct: true, text: `沿第 2 行或第 3 列都只需一个非零项，结果为 ${texInline("18")}。` },
       { text: "必须沿第 1 行展开，结果为 0。" },
@@ -62,8 +62,8 @@ defineChapter2Section("cofactor-expansion", {
     steps: [
       "第 2 行只有 a₂₂=3 非零，第 3 列也只有 a₃₃=6 非零，两条路线成本相同。",
       `沿第 2 行：位置符号 ${texInline("(-1)^{2+2}=1")}。`,
-      `余子式 ${texInline("M_{22}=\det\begin{bmatrix}1&0\\4&6\end{bmatrix}=6")}。`,
-      `所以 ${texInline("\det(A)=3\cdot6=18")}。`,
+      `余子式 ${texInline("M_{22}=\\det\\begin{bmatrix}1&0\\\\4&6\\end{bmatrix}=6")}。`,
+      `所以 ${texInline("\\det(A)=3\\cdot6=18")}。`,
       "其余两个元素为零，对应项可以省略，但并不意味着整行贡献为零。",
     ],
   },

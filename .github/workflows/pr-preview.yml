@@ -6,11 +6,6 @@ on:
 
 permissions:
   contents: write
-  issues: write
-
-concurrency:
-  group: pr-preview-${{ github.event.pull_request.number }}
-  cancel-in-progress: true
 
 jobs:
   publish-preview:
@@ -25,10 +20,15 @@ jobs:
           fetch-depth: 0
           persist-credentials: true
 
-      - name: Diagnose staged Chapter 1 rebuild
+      - name: Persist staged payload diagnostic
         working-directory: source
         shell: bash
         run: |
+          set -euo pipefail
+          if [ -f _dev/ch1-diag.txt ]; then
+            cat _dev/ch1-diag.txt
+            exit 0
+          fi
           python3 - <<'PY'
           from pathlib import Path
           import base64, hashlib, tarfile, traceback
@@ -50,31 +50,21 @@ jobs:
               with tarfile.open('/tmp/ch1-rebuild.tar.gz', 'r:gz') as tar:
                   names = tar.getnames()
                   lines.append(f'archive entries: {len(names)}')
-                  lines.extend(names[:25])
+                  lines.extend(names)
           except Exception:
               lines.append('ERROR:')
               lines.append(traceback.format_exc())
-          Path('/tmp/ch1-diag.txt').write_text('\n'.join(lines))
+          Path('_dev/ch1-diag.txt').write_text('\n'.join(lines) + '\n')
           print('\n'.join(lines))
           PY
-
-      - name: Post diagnostic report
-        uses: actions/github-script@v7
-        with:
-          script: |
-            const fs = require('fs');
-            const marker = '<!-- ch1-payload-diagnostic -->';
-            const report = fs.readFileSync('/tmp/ch1-diag.txt', 'utf8');
-            const body = `${marker}\n## Chapter 1 payload diagnostic\n\n\`\`\`text\n${report}\n\`\`\``;
-            const { owner, repo } = context.repo;
-            const issue_number = context.payload.pull_request.number;
-            const comments = await github.paginate(github.rest.issues.listComments, { owner, repo, issue_number, per_page: 100 });
-            const existing = comments.find((comment) => comment.body && comment.body.includes(marker));
-            if (existing) await github.rest.issues.updateComment({ owner, repo, comment_id: existing.id, body });
-            else await github.rest.issues.createComment({ owner, repo, issue_number, body });
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add _dev/ch1-diag.txt
+          git commit -m 'chore(ch1): record payload diagnostics'
+          git push origin HEAD:${{ github.event.pull_request.head.ref }}
 
   cleanup-preview:
-    if: github.event.action == 'closed' && github.event.pull_request.head.repo.full_name == github.repository
+    if: github.event.action == 'closed'
     runs-on: ubuntu-latest
     steps:
       - run: echo cleanup

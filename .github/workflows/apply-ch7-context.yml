@@ -1,11 +1,6 @@
 name: Apply Chapter 7 context payload
 
 on:
-  push:
-    branches:
-      - context/ch7-linear-transformations
-    paths:
-      - ".github/workflows/apply-ch7-context.yml"
   pull_request:
     branches:
       - main
@@ -16,25 +11,35 @@ permissions:
   contents: write
 
 jobs:
-  apply:
+  diagnose:
     runs-on: ubuntu-latest
     steps:
       - name: Check out context branch
         uses: actions/checkout@v4
         with:
           ref: context/ch7-linear-transformations
-      - name: Decode and apply payload
+      - name: Record payload diagnostics
         run: |
-          cat .github/ch7-payload/part-* | base64 -d > /tmp/ch7-payload.tar.gz
-          gzip -t /tmp/ch7-payload.tar.gz
-          tar -xzf /tmp/ch7-payload.tar.gz
-          rm -rf .github/ch7-payload
-          rm -f .github/workflows/export-context.yml
-          rm -f .github/workflows/apply-ch7-context.yml
-      - name: Commit Chapter 7
+          {
+            echo "PART SIZES"
+            wc -c .github/ch7-payload/part-*
+            echo
+            echo "PART HASHES"
+            sha256sum .github/ch7-payload/part-*
+            echo
+            echo "CONCATENATED BASE64 HASH"
+            cat .github/ch7-payload/part-* | sha256sum
+            echo
+            echo "DECODED HASH"
+            cat .github/ch7-payload/part-* | base64 -d > /tmp/ch7-payload.tar.gz || true
+            sha256sum /tmp/ch7-payload.tar.gz || true
+            echo
+            if gzip -t /tmp/ch7-payload.tar.gz; then echo "GZIP_OK"; else echo "GZIP_FAIL"; fi
+          } > .github/ch7-payload-diagnostics.txt 2>&1
+      - name: Commit diagnostics
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add -A
-          git commit -m "feat(ch7): build linear transformation chapter"
+          git add .github/ch7-payload-diagnostics.txt
+          git commit -m "chore(ch7): record payload diagnostics"
           git push origin HEAD:context/ch7-linear-transformations

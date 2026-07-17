@@ -29,32 +29,49 @@ jobs:
         working-directory: source
         shell: bash
         run: |
-          set -euo pipefail
           python3 - <<'PY'
           from pathlib import Path
-          import base64, hashlib, tarfile
+          import base64, hashlib, tarfile, traceback
 
-          parts = sorted(Path('_dev').glob('ch1-payload.part*'))
-          print('parts:', [p.name for p in parts])
-          for part in parts:
-              data = part.read_bytes()
-              print(part.name, len(data), hashlib.sha256(data).hexdigest())
-          payload = b''.join(part.read_bytes() for part in parts)
-          print('combined length:', len(payload))
-          print('combined sha256:', hashlib.sha256(payload).hexdigest())
-          if len(payload) != 72216:
-              raise SystemExit('unexpected base64 length')
-          if hashlib.sha256(payload).hexdigest() != '88790b4f83603b6281ff456b42d086a1d117b1da4fe85a9fb9024b8c8c2b91b6':
-              raise SystemExit('unexpected base64 sha256')
-          archive = base64.b64decode(payload, validate=True)
-          print('archive length:', len(archive))
-          print('archive sha256:', hashlib.sha256(archive).hexdigest())
-          Path('/tmp/ch1-rebuild.tar.gz').write_bytes(archive)
-          with tarfile.open('/tmp/ch1-rebuild.tar.gz', 'r:gz') as tar:
-              names = tar.getnames()
-              print('archive entries:', len(names))
-              print('\n'.join(names[:25]))
+          lines = []
+          try:
+              parts = sorted(Path('_dev').glob('ch1-payload.part*'))
+              lines.append('parts: ' + ', '.join(p.name for p in parts))
+              for part in parts:
+                  data = part.read_bytes()
+                  lines.append(f'{part.name}: length={len(data)} sha256={hashlib.sha256(data).hexdigest()}')
+              payload = b''.join(part.read_bytes() for part in parts)
+              lines.append(f'combined length: {len(payload)}')
+              lines.append(f'combined sha256: {hashlib.sha256(payload).hexdigest()}')
+              archive = base64.b64decode(payload, validate=True)
+              lines.append(f'archive length: {len(archive)}')
+              lines.append(f'archive sha256: {hashlib.sha256(archive).hexdigest()}')
+              Path('/tmp/ch1-rebuild.tar.gz').write_bytes(archive)
+              with tarfile.open('/tmp/ch1-rebuild.tar.gz', 'r:gz') as tar:
+                  names = tar.getnames()
+                  lines.append(f'archive entries: {len(names)}')
+                  lines.extend(names[:25])
+          except Exception:
+              lines.append('ERROR:')
+              lines.append(traceback.format_exc())
+          Path('/tmp/ch1-diag.txt').write_text('\n'.join(lines))
+          print('\n'.join(lines))
           PY
+
+      - name: Post diagnostic report
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            const marker = '<!-- ch1-payload-diagnostic -->';
+            const report = fs.readFileSync('/tmp/ch1-diag.txt', 'utf8');
+            const body = `${marker}\n## Chapter 1 payload diagnostic\n\n\`\`\`text\n${report}\n\`\`\``;
+            const { owner, repo } = context.repo;
+            const issue_number = context.payload.pull_request.number;
+            const comments = await github.paginate(github.rest.issues.listComments, { owner, repo, issue_number, per_page: 100 });
+            const existing = comments.find((comment) => comment.body && comment.body.includes(marker));
+            if (existing) await github.rest.issues.updateComment({ owner, repo, comment_id: existing.id, body });
+            else await github.rest.issues.createComment({ owner, repo, issue_number, body });
 
   cleanup-preview:
     if: github.event.action == 'closed' && github.event.pull_request.head.repo.full_name == github.repository

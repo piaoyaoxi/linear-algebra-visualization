@@ -107,7 +107,9 @@
 
   function polyMul(a, b) {
     if (isZeroPoly(a) || isZeroPoly(b)) return [R(0)];
-    const out = Array(a.length + b.length - 1).fill(null).map(() => R(0));
+    const out = Array(a.length + b.length - 1)
+      .fill(null)
+      .map(() => R(0));
     for (let i = 0; i < a.length; i++) {
       for (let j = 0; j < b.length; j++) {
         out[i + j] = rAdd(out[i + j], rMul(a[i], b[j]));
@@ -129,7 +131,9 @@
       const coeff = rDiv(leading(rem), leadG);
       while (q.length <= d) q.push(R(0));
       q[d] = rAdd(q[d] || R(0), coeff);
-      const term = Array(d + 1).fill(null).map((_, i) => (i === d ? coeff : R(0)));
+      const term = Array(d + 1)
+        .fill(null)
+        .map((_, i) => (i === d ? coeff : R(0)));
       rem = polySub(rem, polyMul(term, G));
     }
     return { q: normalizePoly(q.length ? q : [R(0)]), r: normalizePoly(rem) };
@@ -196,7 +200,9 @@
   }
 
   function formatCoeffsList(p) {
-    return `[${normalizePoly(p).map((c) => formatR(c)).join(", ")}]`;
+    return `[${normalizePoly(p)
+      .map((c) => formatR(c))
+      .join(", ")}]`;
   }
 
   function stripHtml(p, { editable = false, dataKey = "coeff" } = {}) {
@@ -485,7 +491,9 @@
       const coeff = rDiv(leading(rem), leadG);
       while (q.length <= d) q.push(R(0));
       q[d] = rAdd(q[d] || R(0), coeff);
-      const term = Array(d + 1).fill(null).map((_, i) => (i === d ? coeff : R(0)));
+      const term = Array(d + 1)
+        .fill(null)
+        .map((_, i) => (i === d ? coeff : R(0)));
       const product = polyMul(term, G);
       const nextRem = polySub(rem, product);
       steps.push({

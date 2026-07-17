@@ -1,4 +1,4 @@
-/* Chapter 1 presentation — fixed stages, solid math surfaces */
+/* Chapter 1 presentation — fixed stages, solid math surfaces, factor tree */
 
 .ch1-lab {
   display: grid;
@@ -35,6 +35,7 @@
   grid-template-columns: 1fr;
 }
 
+/* Fixed stage heights — never auto-zoom */
 .ch1-stage {
   position: relative;
   height: 340px;
@@ -89,6 +90,12 @@
 }
 
 .ch1-readout .ch1-muted {
+  color: var(--muted);
+  font-size: 13.5px;
+  line-height: 1.55;
+}
+
+.ch1-muted {
   color: var(--muted);
   font-size: 13.5px;
   line-height: 1.55;
@@ -290,55 +297,90 @@
   margin-bottom: 6px;
 }
 
-.ch1-formal {
+/* Factor tree (section 5) */
+.ch1-factor-tree {
   display: grid;
-  gap: 16px;
-}
-
-.ch1-formal-lead {
-  margin: 0;
-  color: var(--muted);
-  line-height: 1.7;
-  max-width: 75ch;
-}
-
-.ch1-module {
-  padding: 14px 16px;
-  border: 1px solid var(--line);
-  border-radius: calc(var(--radius) + 6px);
-  background: var(--surface-solid);
-}
-
-.ch1-module-heading {
-  display: flex;
   gap: 12px;
-  align-items: flex-start;
-  margin-bottom: 10px;
+  padding: 18px 16px;
+  border: 1px solid var(--line);
+  border-radius: calc(var(--radius) + 8px);
+  background:
+    radial-gradient(circle at 20% 0%, color-mix(in srgb, var(--accent) 10%, transparent), transparent 50%),
+    var(--surface-soft);
 }
 
-.ch1-module-heading > span {
-  flex: 0 0 auto;
-  width: 28px;
-  height: 28px;
+.ch1-factor-root {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  align-items: center;
+  justify-content: center;
+}
+
+.ch1-factor-domain {
+  padding: 4px 10px;
   border-radius: 999px;
-  display: grid;
-  place-items: center;
-  font-size: 12px;
-  font-weight: 700;
-  color: var(--accent-strong, #08736e);
-  background: color-mix(in srgb, var(--accent) 14%, var(--surface-solid));
   border: 1px solid color-mix(in srgb, var(--accent) 30%, var(--line));
+  background: var(--surface-solid);
+  color: var(--accent-strong, #08736e);
+  font-size: 12.5px;
+  font-weight: 650;
 }
 
-.ch1-module-heading h3 {
-  margin: 0 0 2px;
-  font-size: 16px;
+.ch1-factor-branch {
+  height: 18px;
+  margin: 0 auto;
+  width: min(70%, 320px);
+  border-left: 1px solid color-mix(in srgb, var(--accent) 35%, var(--line));
+  border-right: 1px solid color-mix(in srgb, var(--accent) 35%, var(--line));
+  border-top: 1px solid color-mix(in srgb, var(--accent) 35%, var(--line));
+  border-radius: 12px 12px 0 0;
+  opacity: 0.85;
 }
 
-.ch1-module-heading p {
-  margin: 0;
+.ch1-factor-leaves {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  justify-content: center;
+  align-items: stretch;
+}
+
+.ch1-factor-node {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 44px;
+  padding: 10px 14px;
+  border-radius: 12px;
+  border: 1px solid var(--line);
+  background: var(--surface-solid);
+  font-size: 15px;
+  box-shadow: var(--shadow-soft, 0 1px 2px rgba(0, 0, 0, 0.04));
+}
+
+.ch1-factor-node.is-root {
+  border-color: color-mix(in srgb, var(--accent) 45%, var(--line));
+  background: color-mix(in srgb, var(--accent) 12%, var(--surface-solid));
+  font-weight: 650;
+}
+
+.ch1-factor-node.is-leaf.is-linear {
+  border-color: color-mix(in srgb, var(--accent) 40%, var(--line));
+  background: color-mix(in srgb, var(--accent) 10%, var(--surface-solid));
+}
+
+.ch1-factor-node.is-leaf.is-irred {
+  border-color: color-mix(in srgb, var(--coral, #d9835f) 40%, var(--line));
+  background: color-mix(in srgb, var(--coral, #d9835f) 10%, var(--surface-solid));
+}
+
+.ch1-factor-note {
+  margin: 4px 0 0;
+  text-align: center;
   color: var(--muted);
   font-size: 13.5px;
+  line-height: 1.6;
 }
 
 .ch1-gate-grid {
@@ -387,11 +429,19 @@
     grid-template-columns: 1fr;
   }
 
+  /* Keep fixed stage intent on mobile — still capped, not free zoom */
   .ch1-stage,
   .ch1-stage canvas {
     height: 300px;
     min-height: 300px;
     max-height: 300px;
+  }
+
+  .ch1-stage.is-short,
+  .ch1-stage.is-short canvas {
+    height: 240px;
+    min-height: 240px;
+    max-height: 240px;
   }
 }
 

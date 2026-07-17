@@ -347,7 +347,7 @@
   }
 
   function latexMatrix(matrix, barAt = null) {
-    const alignment = barAt == null ? "" : `{@{}${"c".repeat(barAt)}|${"c".repeat(matrix[0].length - barAt)}@{}}`;
+    const alignment = barAt == null ? "" : `{${"c".repeat(barAt)}|${"c".repeat(matrix[0].length - barAt)}}`;
     const env = barAt == null ? "bmatrix" : "array";
     const body = matrix.map((row) => row.map(latexF).join(" & ")).join(" \\\\ ");
     return barAt == null

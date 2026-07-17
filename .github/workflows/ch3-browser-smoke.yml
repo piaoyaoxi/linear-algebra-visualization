@@ -39,6 +39,7 @@ jobs:
 
       - name: Run real-browser checks
         run: |
+          mkdir -p browser-artifacts
           python3 -m http.server 4173 --directory current >/tmp/ch3-server.log 2>&1 &
           echo $! >/tmp/ch3-server.pid
           for attempt in {1..30}; do
@@ -46,7 +47,11 @@ jobs:
             sleep 1
           done
           cd /tmp/ch3-playwright
-          BASE_URL=http://127.0.0.1:4173/learn.html ARTIFACT_DIR="${GITHUB_WORKSPACE}/browser-artifacts" node ch3-browser-smoke.mjs
+          set +e
+          BASE_URL=http://127.0.0.1:4173/learn.html ARTIFACT_DIR="${GITHUB_WORKSPACE}/browser-artifacts" node ch3-browser-smoke.mjs 2>&1 | tee "${GITHUB_WORKSPACE}/browser-artifacts/browser.log"
+          status=${PIPESTATUS[0]}
+          set -e
+          exit ${status}
 
       - name: Upload browser evidence
         if: always()

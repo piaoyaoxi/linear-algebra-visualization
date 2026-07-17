@@ -12,15 +12,13 @@
 }
 
 .icon-button::before,
-.topbar-search::before,
-.search-morph-proxy::before {
+.topbar-search::before {
   -webkit-backdrop-filter: url("#liquidGlassControl") blur(var(--glass-control-frost)) saturate(134%) contrast(102%);
   backdrop-filter: url("#liquidGlassControl") blur(var(--glass-control-frost)) saturate(134%) contrast(102%);
 }
 
 .icon-button::after,
-.topbar-search::after,
-.search-morph-proxy::after {
+.topbar-search::after {
   padding: var(--glass-edge-width);
   -webkit-backdrop-filter: none;
   backdrop-filter: none;
@@ -41,8 +39,7 @@
    SVG URL filters. Unsupported URL declarations are ignored and these explicit
    fallbacks take over without creating an empty or opaque surface. */
 :root[data-liquid-optics="fallback"] .icon-button::before,
-:root[data-liquid-optics="fallback"] .topbar-search::before,
-:root[data-liquid-optics="fallback"] .search-morph-proxy::before {
+:root[data-liquid-optics="fallback"] .topbar-search::before {
   -webkit-backdrop-filter: var(--liquid-control-fallback);
   backdrop-filter: var(--liquid-control-fallback);
 }

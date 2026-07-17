@@ -18,14 +18,17 @@
         sidebarBrand: document.querySelector("#sidebar .sidebar-brand"),
         sidebarScroll: document.querySelector("#sidebar .sidebar-scroll"),
         drawerBackdrop: document.querySelector("#drawerBackdrop"),
+        searchCapsule: document.querySelector("#searchCapsule"),
         searchOpen: document.querySelector("#searchOpen"),
+        searchCapsuleOpen: document.querySelector("#searchCapsule .search-capsule-open"),
         searchModal: document.querySelector("#searchModal"),
         searchBackdrop: document.querySelector("#searchModal .search-modal-backdrop"),
         searchPanel: document.querySelector("#searchModal .search-modal-panel"),
-        searchBar: document.querySelector("#searchModal .search-modal-bar"),
+        searchBar: document.querySelector("#searchModal .search-modal-bar-anchor"),
         searchResultsPanel: document.querySelector("#searchModal .search-results-panel"),
         searchBody: document.querySelector("#searchModal .search-modal-body"),
         searchInput: document.querySelector("#searchModalInput"),
+        searchClose: document.querySelector("#searchCloseButton"),
         languageControl: document.querySelector("#languageControl"),
         languageToggle: document.querySelector("#langToggle"),
         languageMenu: document.querySelector("#languageMenu"),
@@ -36,7 +39,6 @@
       if (!this.hasRequiredElements()) return;
 
       this.searchGeometry = null;
-      this.searchProxy = null;
       this.resizeFrame = 0;
       this.searchRestoreFocus = false;
       this.searchRestoreFocusVisible = false;

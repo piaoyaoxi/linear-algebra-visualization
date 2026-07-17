@@ -69,7 +69,7 @@ body.dark {
 body.dark .topbar {
   position: fixed;
   inset: var(--chrome-top) var(--chrome-side) auto;
-  z-index: 55;
+  z-index: 86;
   display: flex;
   align-items: flex-start;
   justify-content: space-between;
@@ -127,9 +127,7 @@ body.dark .topbar-search,
 
 /* One optical pass supplies the complete body of each control. */
 .icon-button::before,
-.topbar-search::before,
-.search-morph-proxy::before,
-.search-modal-bar::before {
+.topbar-search::before {
   position: absolute;
   inset: 0;
   z-index: 0;
@@ -149,9 +147,7 @@ body.dark .topbar-search,
 /* A one-pixel specular hairline belongs to the same material. Crucially, this
    layer has no backdrop-filter and therefore cannot form a second glass rim. */
 .icon-button::after,
-.topbar-search::after,
-.search-morph-proxy::after,
-.search-modal-bar::after {
+.topbar-search::after {
   position: absolute;
   inset: 0;
   z-index: 1;
@@ -176,9 +172,7 @@ body.dark .topbar-search,
 }
 
 .icon-button > *,
-.topbar-search > *,
-.search-morph-proxy > *,
-.search-modal-bar > * {
+.topbar-search > * {
   position: relative;
   z-index: 3;
 }

@@ -1,147 +1,154 @@
 (() => {
   const M = () => window.Ch2Math;
   const tex = (s) => (window.texInline ? window.texInline(s) : s);
+  const display = (s) => (window.texDisplay ? window.texDisplay(s) : s);
 
-  function shell(title, body, formalTitle, formalBody) {
-    return {
-      formal(formal) {
-        if (!formal) return;
-        formal.innerHTML = `<h2>${formalTitle}</h2><div class="ch2-formal-layout">${formalBody}</div>`;
-      },
-      interactive(root) {
-        if (!root) return;
-        root.innerHTML = `<h2>交互实验</h2><div class="ch2-lab">${body}</div>`;
-      },
-    };
+  function formalShell(title, lead, modulesHtml) {
+    return `<h2>${title}</h2><div class="ch2-formal"><p class="ch2-formal-lead">${lead}</p>${modulesHtml}</div>`;
   }
 
-  // ---------- §1 Determinant Meter ----------
-  function mountDetMeter(host) {
-    const canvas = host.querySelector("[data-ch2-canvas]");
-    const ctx = canvas.getContext("2d");
-    const state = { a: 1, b: 0.4, c: 0.2, d: 1 };
+  function module(num, title, sub, body) {
+    return `<section class="ch2-module"><div class="ch2-module-heading"><span>${num}</span><div><h3>${title}</h3><p>${sub}</p></div></div>${body}</section>`;
+  }
+
+  // ========== §1 ==========
+  function mountDetMeter(root) {
+    const canvas = root.querySelector("[data-ch2-canvas]");
+    const state = { matrix: [[1, 0.35], [0.15, 1]] };
+    let animating = false;
 
     const presets = {
-      identity: { a: 1, b: 0, c: 0, d: 1 },
-      scale2: { a: 2, b: 0, c: 0, d: 1 },
-      shear: { a: 1, b: 1, c: 0, d: 1 },
-      mirror: { a: -1, b: 0, c: 0, d: 1 },
-      collinear: { a: 1, b: 2, c: 0.5, d: 1 },
-      zero: { a: 0, b: 0, c: 0, d: 0 },
+      identity: [[1, 0], [0, 1]],
+      scale2: [[2, 0], [0, 1]],
+      shear: [[1, 1], [0, 1]],
+      mirror: [[-1, 0], [0, 1]],
+      collinear: [[1, 2], [0.5, 1]],
+      zero: [[0, 0], [0, 0]],
     };
 
-    function det() {
-      return M().det2(state.a, state.b, state.c, state.d);
+    function readSliders() {
+      return [
+        [Number(root.querySelector('[data-key="a"]').value), Number(root.querySelector('[data-key="b"]').value)],
+        [Number(root.querySelector('[data-key="c"]').value), Number(root.querySelector('[data-key="d"]').value)],
+      ];
     }
 
-    function statusOf(value) {
-      if (Math.abs(value) < 1e-8) return { key: "zero", label: "维度塌缩", cls: "ch2-status-zero" };
-      if (value > 0) return { key: "pos", label: "方向保持", cls: "ch2-status-pos" };
-      return { key: "neg", label: "方向翻转", cls: "ch2-status-neg" };
-    }
-
-    function draw() {
-      const dpr = window.devicePixelRatio || 1;
-      const width = canvas.clientWidth || 520;
-      const height = 320;
-      canvas.width = width * dpr;
-      canvas.height = height * dpr;
-      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-      ctx.clearRect(0, 0, width, height);
-      const origin = { x: width * 0.38, y: height * 0.62 };
-      const scale = 70;
-      M().drawAxes(ctx, width, height, origin, scale);
-      // unit square ghost
-      M().drawParallelogram(ctx, origin, scale, [1, 0], [0, 1], "rgba(120,140,160,0.08)", "rgba(120,140,160,0.35)");
-      const c1 = [state.a, state.c];
-      const c2 = [state.b, state.d];
-      const value = det();
-      const fill =
-        Math.abs(value) < 1e-8
-          ? "rgba(176,122,18,0.18)"
-          : value > 0
-            ? "rgba(67,198,186,0.22)"
-            : "rgba(212,107,79,0.22)";
-      const stroke = value >= 0 ? "#2a9d8f" : "#c44b3c";
-      const pts = M().drawParallelogram(ctx, origin, scale, c1, c2, fill, stroke);
-      M().drawArrow(ctx, origin, pts.p1, "#6b8df2", 3);
-      M().drawArrow(ctx, origin, pts.p3, "#d46b4f", 3);
-      // orientation cue
-      ctx.fillStyle = "rgba(30,40,55,0.75)";
-      ctx.font = "12px ui-sans-serif, system-ui";
-      ctx.fillText("e₁ → 第1列", pts.p1.x + 6, pts.p1.y);
-      ctx.fillText("e₂ → 第2列", pts.p3.x + 6, pts.p3.y);
-    }
-
-    function sync() {
-      const value = det();
-      const st = statusOf(value);
-      host.querySelector("[data-det]").textContent = M().formatNum(value, 3);
-      host.querySelector("[data-abs]").textContent = M().formatNum(Math.abs(value), 3);
-      const status = host.querySelector("[data-status]");
-      status.textContent = st.label;
-      status.className = st.cls;
-      host.querySelector("[data-formula]").textContent = `${M().formatNum(state.a)}·${M().formatNum(state.d)} − ${M().formatNum(state.b)}·${M().formatNum(state.c)}`;
-      ["a", "b", "c", "d"].forEach((key) => {
-        const input = host.querySelector(`[data-key="${key}"]`);
-        const label = host.querySelector(`[data-val="${key}"]`);
-        if (input) input.value = String(state[key]);
-        if (label) label.textContent = M().formatNum(state[key], 2);
+    function writeSliders(m) {
+      const flat = { a: m[0][0], b: m[0][1], c: m[1][0], d: m[1][1] };
+      Object.entries(flat).forEach(([k, v]) => {
+        const input = root.querySelector(`[data-key="${k}"]`);
+        const lab = root.querySelector(`[data-val="${k}"]`);
+        if (input) input.value = String(v);
+        if (lab) lab.textContent = M().formatNum(v, 2);
       });
-      draw();
     }
 
-    host.querySelectorAll("[data-key]").forEach((input) => {
+    function syncReadout(m) {
+      const det = M().det2(m);
+      const st = M().detStatus(det);
+      const detEl = root.querySelector("[data-det]");
+      const absEl = root.querySelector("[data-abs]");
+      const statusEl = root.querySelector("[data-status]");
+      const formulaEl = root.querySelector("[data-formula]");
+      detEl.textContent = M().formatNum(det, 3);
+      absEl.textContent = M().formatNum(Math.abs(det), 3);
+      statusEl.textContent = st.label;
+      statusEl.className = `ch2-status ${st.cls}`;
+      detEl.className = st.cls;
+      formulaEl.textContent = `${M().formatNum(m[0][0])}·${M().formatNum(m[1][1])} − ${M().formatNum(m[0][1])}·${M().formatNum(m[1][0])}`;
+      M().pulseClass(root.querySelector("[data-det-card]"));
+    }
+
+    function draw(m) {
+      M().drawTransformScene(canvas, m, {
+        firstLabel: "第1列",
+        secondLabel: "第2列",
+        caption: `det = ${M().formatNum(M().det2(m), 3)}`,
+      });
+      writeSliders(m);
+      syncReadout(m);
+    }
+
+    async function goTo(target, { animate = true } = {}) {
+      if (animating) return;
+      animating = true;
+      try {
+        if (!animate || M().reducedMotion()) {
+          state.matrix = M().cloneMat(target);
+          draw(state.matrix);
+          return;
+        }
+        await M().animateMatrix(canvas, target, {
+          duration: 640,
+          drawOptions: {
+            firstLabel: "第1列",
+            secondLabel: "第2列",
+          },
+          onUpdate: (current) => {
+            state.matrix = M().cloneMat(current);
+            writeSliders(current);
+            syncReadout(current);
+          },
+        });
+        state.matrix = M().cloneMat(target);
+        draw(state.matrix);
+      } finally {
+        animating = false;
+      }
+    }
+
+    root.querySelectorAll("[data-key]").forEach((input) => {
       input.addEventListener("input", () => {
-        state[input.dataset.key] = Number(input.value);
-        sync();
+        if (animating) return;
+        state.matrix = readSliders();
+        draw(state.matrix);
       });
     });
 
-    host.querySelectorAll("[data-preset]").forEach((btn) => {
+    root.querySelectorAll("[data-preset]").forEach((btn) => {
       btn.addEventListener("click", () => {
-        Object.assign(state, presets[btn.dataset.preset]);
-        host.querySelectorAll("[data-preset]").forEach((b) => b.classList.toggle("is-active", b === btn));
-        sync();
+        root.querySelectorAll("[data-preset]").forEach((b) => b.classList.toggle("is-active", b === btn));
+        goTo(presets[btn.dataset.preset], { animate: true });
       });
     });
 
-    window.addEventListener(
-      "resize",
-      () => {
-        if (document.body.contains(canvas)) draw();
-      },
-      { passive: true },
-    );
-    sync();
+    const onResize = () => {
+      if (document.body.contains(canvas)) draw(state.matrix);
+    };
+    window.addEventListener("resize", onResize, { passive: true });
+    draw(state.matrix);
   }
 
-  // ---------- §2 Permutation lab ----------
-  function mountPermLab(host) {
+  // ========== §2 ==========
+  function mountPermLab(root) {
     let perm = [1, 2, 3, 4];
-    const list = host.querySelector("[data-perm-list]");
-    const invBox = host.querySelector("[data-inv-list]");
+    const list = root.querySelector("[data-perm-list]");
 
-    function render() {
+    function render({ pulse = false } = {}) {
       list.innerHTML = perm
-        .map((value, index) => `<div class="ch2-perm-item" draggable="true" data-index="${index}">${value}</div>`)
+        .map((value, index) => `<div class="ch2-perm-item${pulse ? " is-swap" : ""}" draggable="true" data-index="${index}">${value}</div>`)
         .join("");
       const pairs = M().inversionPairs(perm);
       const sign = M().signFromPerm(perm);
-      host.querySelector("[data-tau]").textContent = String(pairs.length);
-      host.querySelector("[data-parity]").textContent = pairs.length % 2 === 0 ? "偶排列" : "奇排列";
-      host.querySelector("[data-sgn]").textContent = sign > 0 ? "+1" : "−1";
-      host.querySelector("[data-perm-text]").textContent = perm.join("");
-      invBox.innerHTML = pairs.length
+      root.querySelector("[data-tau]").textContent = String(pairs.length);
+      root.querySelector("[data-parity]").textContent = pairs.length % 2 === 0 ? "偶排列" : "奇排列";
+      root.querySelector("[data-sgn]").textContent = sign > 0 ? "+1" : "−1";
+      root.querySelector("[data-perm-text]").textContent = perm.join(" ");
+      root.querySelector("[data-inv-list]").innerHTML = pairs.length
         ? pairs.map(([a, b]) => `<span>(${a},${b})</span>`).join("")
         : "<span>无逆序对</span>";
+      M().pulseClass(root.querySelector("[data-tau-card]"));
 
       let dragIndex = null;
       list.querySelectorAll(".ch2-perm-item").forEach((item) => {
         item.addEventListener("dragstart", () => {
           dragIndex = Number(item.dataset.index);
+          item.style.opacity = "0.55";
         });
-        item.addEventListener("dragover", (event) => event.preventDefault());
+        item.addEventListener("dragend", () => {
+          item.style.opacity = "1";
+        });
+        item.addEventListener("dragover", (e) => e.preventDefault());
         item.addEventListener("drop", () => {
           const target = Number(item.dataset.index);
           if (dragIndex == null || dragIndex === target) return;
@@ -149,13 +156,13 @@
           const [moved] = next.splice(dragIndex, 1);
           next.splice(target, 0, moved);
           perm = next;
-          render();
+          render({ pulse: true });
         });
       });
     }
 
-    host.querySelectorAll("[data-perm-preset]").forEach((btn) => {
-      btn.addEventListener("click", () => {
+    root.querySelectorAll("[data-perm-preset]").forEach((btn) => {
+      btn.addEventListener("click", async () => {
         const map = {
           id: [1, 2, 3, 4],
           adj: [1, 3, 2, 4],
@@ -163,19 +170,32 @@
           cycle: [2, 3, 4, 1],
           ex: [3, 1, 4, 2],
         };
-        perm = map[btn.dataset.permPreset].slice();
-        render();
+        const target = map[btn.dataset.permPreset];
+        // animate via stepwise adjacent swaps toward target if short
+        if (!M().reducedMotion() && target.join() !== perm.join()) {
+          // soft visual: fade then set
+          list.style.transition = "opacity 0.2s ease, transform 0.2s ease";
+          list.style.opacity = "0.35";
+          list.style.transform = "translateY(4px)";
+          await new Promise((r) => setTimeout(r, 180));
+          perm = target.slice();
+          render({ pulse: true });
+          list.style.opacity = "1";
+          list.style.transform = "none";
+        } else {
+          perm = target.slice();
+          render({ pulse: true });
+        }
       });
     });
 
-    host.querySelector("[data-adj-step]").addEventListener("click", () => {
-      // one bubble-sort adjacent swap toward identity
+    root.querySelector("[data-adj-step]").addEventListener("click", () => {
       for (let i = 0; i < perm.length - 1; i += 1) {
         if (perm[i] > perm[i + 1]) {
           const next = perm.slice();
           [next[i], next[i + 1]] = [next[i + 1], next[i]];
           perm = next;
-          render();
+          render({ pulse: true });
           return;
         }
       }
@@ -184,12 +204,9 @@
     render();
   }
 
-  // ---------- §3 selection grid ----------
-  function mountSelectionGrid(host) {
+  // ========== §3 ==========
+  function mountSelectionGrid(root) {
     const n = 3;
-    const labels = Array.from({ length: n }, (_, i) =>
-      Array.from({ length: n }, (_, j) => `a${i + 1}${j + 1}`),
-    );
     let chosenCols = Array(n).fill(null);
 
     function currentPerm() {
@@ -197,7 +214,8 @@
     }
 
     function render() {
-      const table = host.querySelector("[data-select-table]");
+      const table = root.querySelector("[data-select-table]");
+      const labels = Array.from({ length: n }, (_, i) => Array.from({ length: n }, (_, j) => `a${i + 1}${j + 1}`));
       table.innerHTML = labels
         .map(
           (row, i) =>
@@ -206,11 +224,7 @@
                 const selected = chosenCols[i] === j;
                 const colUsed = chosenCols.some((c, r) => r !== i && c === j);
                 const rowUsed = chosenCols[i] != null && chosenCols[i] !== j;
-                const cls = [
-                  selected ? "is-selected" : "",
-                  colUsed ? "is-locked-col" : "",
-                  rowUsed ? "is-locked-row" : "",
-                ]
+                const cls = [selected ? "is-selected" : "", colUsed ? "is-locked-col" : "", rowUsed ? "is-locked-row" : ""]
                   .filter(Boolean)
                   .join(" ");
                 return `<td class="${cls}" data-r="${i}" data-c="${j}">${label}</td>`;
@@ -224,151 +238,175 @@
           const r = Number(td.dataset.r);
           const c = Number(td.dataset.c);
           if (chosenCols.some((col, row) => row !== r && col === c)) {
-            host.querySelector("[data-select-msg]").textContent = `第 ${c + 1} 列已被使用。`;
+            root.querySelector("[data-select-msg]").textContent = `第 ${c + 1} 列已被占用，换一列。`;
+            M().pulseClass(root.querySelector("[data-select-msg]").parentElement);
             return;
           }
           chosenCols[r] = chosenCols[r] === c ? null : c;
-          host.querySelector("[data-select-msg]").textContent = "继续选择：每行每列各一个。";
+          root.querySelector("[data-select-msg]").textContent = "继续：每行每列恰好一个。";
           render();
         });
       });
 
       const perm = currentPerm();
       if (!perm) {
-        host.querySelector("[data-perm-out]").textContent = "尚未完成合法取项";
-        host.querySelector("[data-term-out]").textContent = "—";
-        host.querySelector("[data-sign-out]").textContent = "—";
+        root.querySelector("[data-perm-out]").textContent = "未完成";
+        root.querySelector("[data-term-out]").textContent = "—";
+        root.querySelector("[data-sign-out]").textContent = "—";
         return;
       }
       const sign = M().signFromPerm(perm);
-      const term = perm.map((col, row) => `a${row + 1}${col}`).join(" ");
-      host.querySelector("[data-perm-out]").textContent = perm.join("");
-      host.querySelector("[data-term-out]").textContent = term;
-      host.querySelector("[data-sign-out]").textContent = sign > 0 ? "+1" : "−1";
-      host.querySelector("[data-select-msg]").textContent = "合法取项完成：已生成排列、乘积与符号。";
+      root.querySelector("[data-perm-out]").textContent = perm.join("");
+      root.querySelector("[data-term-out]").textContent = perm.map((col, row) => `a${row + 1}${col}`).join("·");
+      root.querySelector("[data-sign-out]").textContent = sign > 0 ? "+1" : "−1";
+      root.querySelector("[data-select-msg]").textContent = "合法取项完成：排列、乘积与符号已同步。";
+      M().pulseClass(root.querySelector("[data-sign-card]"));
     }
 
-    host.querySelector("[data-select-reset]").addEventListener("click", () => {
+    root.querySelector("[data-select-reset]").addEventListener("click", () => {
       chosenCols = Array(n).fill(null);
       render();
     });
-
-    host.querySelector("[data-select-231]").addEventListener("click", () => {
-      chosenCols = [1, 2, 0]; // columns for perm 2,3,1
+    root.querySelector("[data-select-231]").addEventListener("click", async () => {
+      // stepwise fill with short delays for path feeling
+      chosenCols = Array(n).fill(null);
+      render();
+      const path = [1, 2, 0];
+      for (let i = 0; i < path.length; i += 1) {
+        if (M().reducedMotion()) {
+          chosenCols = path.slice();
+          break;
+        }
+        chosenCols[i] = path[i];
+        render();
+        await new Promise((r) => setTimeout(r, 220));
+      }
+      chosenCols = path.slice();
       render();
     });
 
-    // six terms list
-    const six = host.querySelector("[data-six-terms]");
-    if (six) {
-      six.innerHTML = M()
-        .permutations(3)
-        .map((perm) => {
-          const sign = M().signFromPerm(perm);
-          const term = perm.map((col, row) => `a${row + 1}${col}`).join("");
-          return `<button type="button" class="ch2-chip" data-six="${perm.join("")}">${sign > 0 ? "+" : "−"}${term}</button>`;
-        })
-        .join("");
-      six.querySelectorAll("[data-six]").forEach((btn) => {
-        btn.addEventListener("click", () => {
-          chosenCols = btn.dataset.six.split("").map((ch) => Number(ch) - 1);
+    const six = root.querySelector("[data-six-terms]");
+    six.innerHTML = M()
+      .permutations(3)
+      .map((perm) => {
+        const sign = M().signFromPerm(perm);
+        const term = perm.map((col, row) => `a${row + 1}${col}`).join("");
+        return `<button type="button" data-six="${perm.join("")}">${sign > 0 ? "+" : "−"}${term}</button>`;
+      })
+      .join("");
+    six.querySelectorAll("[data-six]").forEach((btn) => {
+      btn.addEventListener("click", async () => {
+        six.querySelectorAll("button").forEach((b) => b.classList.toggle("is-active", b === btn));
+        const cols = btn.dataset.six.split("").map((ch) => Number(ch) - 1);
+        chosenCols = Array(n).fill(null);
+        for (let i = 0; i < cols.length; i += 1) {
+          chosenCols[i] = cols[i];
           render();
-        });
+          if (!M().reducedMotion()) await new Promise((r) => setTimeout(r, 160));
+        }
       });
-    }
+    });
 
     render();
   }
 
-  // ---------- §4 row ops ----------
-  function mountRowOps(host) {
+  // ========== §4 ==========
+  function mountRowOps(root) {
     let matrix = [
       [2, 1],
       [0.5, 1.5],
     ];
-    let ledger = [];
-    let baseDet = M().det2(2, 1, 0.5, 1.5);
+    let base = M().det2(matrix);
+    const ledger = [];
+    const canvas = root.querySelector("[data-row-canvas]");
+    let animating = false;
 
-    const canvas = host.querySelector("[data-row-canvas]");
-    const ctx = canvas.getContext("2d");
-
-    function currentDet() {
-      return M().det2(matrix[0][0], matrix[0][1], matrix[1][0], matrix[1][1]);
-    }
-
-    function draw() {
-      const dpr = window.devicePixelRatio || 1;
-      const width = canvas.clientWidth || 480;
-      const height = 280;
-      canvas.width = width * dpr;
-      canvas.height = height * dpr;
-      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-      ctx.clearRect(0, 0, width, height);
-      const origin = { x: width * 0.35, y: height * 0.65 };
-      const scale = 55;
-      M().drawAxes(ctx, width, height, origin, scale);
-      const c1 = [matrix[0][0], matrix[1][0]];
-      const c2 = [matrix[0][1], matrix[1][1]];
-      const value = currentDet();
-      const fill = value >= 0 ? "rgba(107,141,242,0.2)" : "rgba(212,107,79,0.2)";
-      const pts = M().drawParallelogram(ctx, origin, scale, c1, c2, fill, "#6b8df2");
-      M().drawArrow(ctx, origin, pts.p1, "#6b8df2");
-      M().drawArrow(ctx, origin, pts.p3, "#d46b4f");
+    function draw(m) {
+      M().drawTransformScene(canvas, m, {
+        firstLabel: "列1",
+        secondLabel: "列2",
+        caption: `det = ${M().formatNum(M().det2(m), 3)}`,
+      });
     }
 
     function sync() {
-      host.querySelector("[data-mat]").textContent = `[[${M().formatNum(matrix[0][0])}, ${M().formatNum(matrix[0][1])}], [${M().formatNum(matrix[1][0])}, ${M().formatNum(matrix[1][1])}]]`;
-      host.querySelector("[data-cur-det]").textContent = M().formatNum(currentDet(), 3);
-      host.querySelector("[data-base-det]").textContent = M().formatNum(baseDet, 3);
-      const ol = host.querySelector("[data-ledger]");
-      ol.innerHTML = ledger.length
+      const det = M().det2(matrix);
+      root.querySelector("[data-mat]").textContent = `[${matrix.map((r) => `[${r.map((v) => M().formatNum(v, 2)).join(", ")}]`).join(", ")}]`;
+      root.querySelector("[data-cur-det]").textContent = M().formatNum(det, 3);
+      root.querySelector("[data-base-det]").textContent = M().formatNum(base, 3);
+      const st = M().detStatus(det);
+      root.querySelector("[data-cur-det]").className = st.cls;
+      root.querySelector("[data-ledger]").innerHTML = ledger.length
         ? ledger.map((line) => `<li>${line}</li>`).join("")
-        : "<li>尚：无操作</li>";
-      draw();
+        : "<li>start · 无操作</li>";
+      draw(matrix);
+      M().pulseClass(root.querySelector("[data-cur-card]"));
     }
 
-    host.querySelector("[data-op-swap]").addEventListener("click", () => {
-      matrix = [matrix[1].slice(), matrix[0].slice()];
-      ledger.push("R1 ↔ R2    × (−1)");
+    async function apply(next, line) {
+      if (animating) return;
+      animating = true;
+      try {
+        await M().animateMatrix(canvas, next, {
+          duration: 580,
+          drawOptions: { firstLabel: "列1", secondLabel: "列2" },
+          onUpdate: (current) => {
+            root.querySelector("[data-cur-det]").textContent = M().formatNum(M().det2(current), 3);
+          },
+        });
+        matrix = M().cloneMat(next);
+        ledger.push(line);
+        sync();
+      } finally {
+        animating = false;
+      }
+    }
+
+    root.querySelector("[data-op-swap]").addEventListener("click", () => {
+      apply([matrix[1].slice(), matrix[0].slice()], "R1 ↔ R2    × (−1)");
+    });
+    root.querySelector("[data-op-scale]").addEventListener("click", () => {
+      apply([matrix[0].map((v) => v * 2), matrix[1].slice()], "R1 ← 2·R1    × 2");
+    });
+    root.querySelector("[data-op-add]").addEventListener("click", () => {
+      apply([matrix[0].slice(), [matrix[1][0] + matrix[0][0], matrix[1][1] + matrix[0][1]]], "R2 ← R2+R1    × 1");
+    });
+    root.querySelector("[data-op-reset]").addEventListener("click", async () => {
+      ledger.length = 0;
+      base = M().det2([[2, 1], [0.5, 1.5]]);
+      await apply(
+        [
+          [2, 1],
+          [0.5, 1.5],
+        ],
+        "reset",
+      );
+      ledger.length = 0;
       sync();
     });
-    host.querySelector("[data-op-scale]").addEventListener("click", () => {
-      matrix[0] = matrix[0].map((v) => v * 2);
-      ledger.push("R1 ← 2 R1    × 2");
-      sync();
-    });
-    host.querySelector("[data-op-add]").addEventListener("click", () => {
-      matrix[1] = [matrix[1][0] + matrix[0][0], matrix[1][1] + matrix[0][1]];
-      ledger.push("R2 ← R2 + R1    × 1");
-      sync();
-    });
-    host.querySelector("[data-op-reset]").addEventListener("click", () => {
-      matrix = [
-        [2, 1],
-        [0.5, 1.5],
-      ];
-      ledger = [];
-      baseDet = currentDet();
-      sync();
-    });
+
     sync();
   }
 
-  // Register sections
+  // ---- Register ----
   defineChapter2Renderer("determinant-intro", {
     formal(formal) {
       if (!formal) return;
-      formal.innerHTML = `
-        <h2>先抓住三个信息</h2>
-        <div class="ch2-formal-layout">
-          <p>行列式把方阵压成一个标量。在二维中，这个数同时告诉你：面积被放大多少、定向是否翻转、维度是否塌缩。</p>
-          <div class="definition-stack">
-            <article class="definition-row"><strong>二阶公式</strong><p>${tex("\\det\\begin{bmatrix}a&b\\\\c&d\\end{bmatrix}=ad-bc")}</p></article>
-            <article class="definition-row"><strong>绝对值</strong><p>${tex("|\\det(A)|")} 是单位正方形变成平行四边形后的面积倍率。</p></article>
-            <article class="definition-row"><strong>符号</strong><p>正号表示定向保持，负号表示定向翻转；不要把“有向面积为负”说成普通几何面积为负。</p></article>
-            <article class="definition-row"><strong>零值</strong><p>两列共线时平行四边形高度为 0，${tex("\\det(A)=0")}，输入无法唯一恢复。</p></article>
+      formal.innerHTML = formalShell(
+        "一个数，同时记录倍率、方向与塌缩",
+        "行列式把方阵压成标量。二维里，|det| 是面积倍率，符号记录定向，零值对应维度塌缩。下面用同一张网格把三件事连起来。",
+        module(
+          "01",
+          "二阶公式落在平行四边形上",
+          "不是死记 ad−bc，而是看见两列怎样张成面积。",
+          `<div class="ch2-def-stack">
+            <article class="ch2-def"><span class="kicker">公式</span><strong>${tex("\\det\\begin{bmatrix}a&b\\\\c&d\\end{bmatrix}=ad-bc")}</strong><p>两列向量张成平行四边形；绝对值是面积，符号是定向。</p></article>
+            <article class="ch2-def"><span class="kicker">符号</span><strong>有向面积，不是“负的几何面积”</strong><p>det&lt;0 时普通面积仍取绝对值，定向发生了翻转。</p></article>
+            <article class="ch2-def"><span class="kicker">零值</span><strong>共线则塌缩</strong><p>高度连续降到 0 时 det→0，信息无法唯一恢复。</p></article>
           </div>
-        </div>`;
+          <div class="ch2-reading-note"><strong>操作任务</strong><p>先找一个明显变形却 det=1 的例子，再拖到镜像与共线，确认三个仪表不同步变化的含义。</p></div>`,
+        ),
+      );
     },
     interactive(root) {
       if (!root) return;
@@ -376,29 +414,29 @@
         <h2>交互实验</h2>
         <div class="ch2-lab">
           <div class="ch2-lab-head">
-            <h3>Determinant Meter：行列式仪表</h3>
-            <p>拖动矩阵元素，观察有向面积、${tex("ad-bc")} 与状态标签如何同步变化。</p>
+            <h3>行列式仪表 · 连续变形</h3>
+            <p>拖动参数或点预设：网格与 det 读数同步插值过渡，而不是闪切。</p>
           </div>
           <div class="ch2-lab-grid">
-            <div class="ch2-canvas-wrap"><canvas data-ch2-canvas width="640" height="320" aria-label="有向面积画布"></canvas></div>
+            <div class="ch2-stage"><canvas data-ch2-canvas aria-label="有向面积画布"></canvas></div>
             <div class="ch2-side">
               <div class="ch2-meter">
-                <div class="ch2-meter-card"><strong>det</strong><span data-det>1</span></div>
+                <div class="ch2-meter-card" data-det-card><strong>det</strong><span data-det>1</span></div>
                 <div class="ch2-meter-card"><strong>|det|</strong><span data-abs>1</span></div>
-                <div class="ch2-meter-card"><strong>状态</strong><span data-status class="ch2-status-pos">方向保持</span></div>
+                <div class="ch2-meter-card"><strong>状态</strong><span data-status class="ch2-status is-positive">方向保持</span></div>
               </div>
-              <div class="ch2-note">公式：<span data-formula></span></div>
+              <div class="ch2-note">展开式：<strong data-formula></strong></div>
               <div class="ch2-sliders">
                 ${["a", "b", "c", "d"]
                   .map(
-                    (key) => `
-                  <label><span>${key}</span><input data-key="${key}" type="range" min="-2" max="2" step="0.05" /><span data-val="${key}">0</span></label>`,
+                    (k) =>
+                      `<label><span>${k}</span><input data-key="${k}" type="range" min="-2" max="2" step="0.05" /><span data-val="${k}">0</span></label>`,
                   )
                   .join("")}
               </div>
               <div class="ch2-presets">
                 <button type="button" data-preset="identity" class="is-active">单位</button>
-                <button type="button" data-preset="scale2">放大2</button>
+                <button type="button" data-preset="scale2">放大 2</button>
                 <button type="button" data-preset="shear">剪切</button>
                 <button type="button" data-preset="mirror">镜像</button>
                 <button type="button" data-preset="collinear">共线</button>
@@ -414,16 +452,20 @@
   defineChapter2Renderer("permutations", {
     formal(formal) {
       if (!formal) return;
-      formal.innerHTML = `
-        <h2>符号来自排列的奇偶性</h2>
-        <div class="ch2-formal-layout">
-          <p>每行每列各取一个元素时，列指标构成一个排列。逆序数的奇偶性决定该项前面的正负号。</p>
-          <div class="definition-stack">
-            <article class="definition-row"><strong>逆序数</strong><p>${tex("\\tau(\\sigma)")} 统计所有 i&lt;j 但 σ(i)&gt;σ(j) 的数对个数。</p></article>
-            <article class="definition-row"><strong>排列符号</strong><p>${tex("\\operatorname{sgn}(\\sigma)=(-1)^{\\tau(\\sigma)}")}</p></article>
-            <article class="definition-row"><strong>相邻交换</strong><p>任意一次相邻交换翻转奇偶性；因此对换也翻转奇偶性。</p></article>
-          </div>
-        </div>`;
+      formal.innerHTML = formalShell(
+        "符号来自排列的奇偶性",
+        "每行每列各取一个元素时，列指标形成一个排列。逆序数的奇偶决定该项前面的正负号。",
+        module(
+          "01",
+          "逆序数与符号",
+          "先数对，再写符号。",
+          `<div class="ch2-def-stack">
+            <article class="ch2-def"><span class="kicker">逆序</span><strong>${tex("\\tau(\\sigma)")}</strong><p>i&lt;j 但 σ(i)&gt;σ(j) 的数对个数。</p></article>
+            <article class="ch2-def"><span class="kicker">符号</span><strong>${tex("\\operatorname{sgn}(\\sigma)=(-1)^{\\tau(\\sigma)}")}</strong><p>偶排列为 +1，奇排列为 −1。</p></article>
+            <article class="ch2-def"><span class="kicker">相邻交换</span><strong>一次交换翻转奇偶</strong><p>这是对换改变符号的最直观理由。</p></article>
+          </div>`,
+        ),
+      );
     },
     interactive(root) {
       if (!root) return;
@@ -432,17 +474,17 @@
         <div class="ch2-lab">
           <div class="ch2-lab-head">
             <h3>排列奇偶实验室</h3>
-            <p>拖动下排数字改变排列；逆序对、逆序数与符号同步更新。也可用相邻交换一步步还原。</p>
+            <p>拖动卡片重排；预设切换带过渡。逆序对列表与 τ、sgn 同步更新。</p>
           </div>
           <div class="ch2-side">
-            <div class="ch2-note">当前排列：<strong data-perm-text>1234</strong></div>
-            <div class="ch2-perm-row" data-perm-list></div>
+            <div class="ch2-note">当前排列：<strong data-perm-text>1 2 3 4</strong></div>
+            <div class="ch2-perm-track"><div class="ch2-perm-row" data-perm-list></div></div>
             <div class="ch2-meter">
-              <div class="ch2-meter-card"><strong>τ(σ)</strong><span data-tau>0</span></div>
+              <div class="ch2-meter-card" data-tau-card><strong>τ(σ)</strong><span data-tau>0</span></div>
               <div class="ch2-meter-card"><strong>奇偶</strong><span data-parity>偶排列</span></div>
               <div class="ch2-meter-card"><strong>sgn</strong><span data-sgn>+1</span></div>
             </div>
-            <div class="ch2-note"><strong>逆序对</strong><div class="ch2-inversion-list" data-inv-list></div></div>
+            <div class="ch2-note"><strong>逆序对</strong><div class="ch2-inversion-list" data-inv-list style="margin-top:8px"></div></div>
             <div class="ch2-presets">
               <button type="button" data-perm-preset="id">恒等</button>
               <button type="button" data-perm-preset="adj">相邻交换</button>
@@ -460,15 +502,19 @@
   defineChapter2Renderer("n-order-determinant", {
     formal(formal) {
       if (!formal) return;
-      formal.innerHTML = `
-        <h2>n 阶定义：带符号的合法取项求和</h2>
-        <div class="ch2-formal-layout">
-          <div class="definition-stack">
-            <article class="definition-row"><strong>定义</strong><p>${tex("\\det(A)=\\sum_{\\sigma}\\operatorname{sgn}(\\sigma)\\prod_{i=1}^n a_{i\\sigma(i)}")}</p></article>
-            <article class="definition-row"><strong>项数</strong><p>共有 ${tex("n!")} 个排列，因而有 ${tex("n!")} 个乘积项。</p></article>
-            <article class="definition-row"><strong>特例</strong><p>n=2 还原为 ad−bc；n=3 得到六项。Sarrus 法不能推广到四阶。</p></article>
-          </div>
-        </div>`;
+      formal.innerHTML = formalShell(
+        "n 阶定义：带符号的合法取项求和",
+        "每一项每行每列各取一次；符号由列指标排列的奇偶决定。二阶、三阶都是特例。",
+        module(
+          "01",
+          "Leibniz 公式",
+          "先合法，再计数，再定号。",
+          `<div class="ch2-def-stack">
+            <article class="ch2-def"><span class="kicker">定义</span><strong>${display("\\det(A)=\\sum_{\\sigma}\\operatorname{sgn}(\\sigma)\\prod_i a_{i\\sigma(i)}")}</strong><p>共 ${tex("n!")} 项；非法取项不进入求和。</p></article>
+            <article class="ch2-def"><span class="kicker">注意</span><strong>Sarrus 法只用于三阶</strong><p>四阶及以上不要套对角线画法。</p></article>
+          </div>`,
+        ),
+      );
     },
     interactive(root) {
       if (!root) return;
@@ -477,22 +523,24 @@
         <div class="ch2-lab">
           <div class="ch2-lab-head">
             <h3>取项网格 · 排列项生成器</h3>
-            <p>点击矩阵元素构造合法路径：每行每列各一。完成后显示排列、乘积与符号。</p>
+            <p>点选路径逐步点亮；六项卡片会按顺序铺开放入排列。</p>
           </div>
           <div class="ch2-lab-grid">
             <div class="ch2-matrix-box">
               <table class="ch2-matrix-table" data-select-table></table>
-              <div class="ch2-presets" style="margin-top:0.6rem">
+              <div class="ch2-presets" style="margin-top:12px">
                 <button type="button" data-select-reset>清空</button>
-                <button type="button" data-select-231>排列 231</button>
+                <button type="button" data-select-231>播放排列 231</button>
               </div>
-              <p class="ch2-note" data-select-msg>继续选择：每行每列各一个。</p>
+              <p class="ch2-note" style="margin-top:12px" data-select-msg>继续选择：每行每列各一个。</p>
             </div>
             <div class="ch2-side">
-              <div class="ch2-stat"><strong>列指标排列</strong><span data-perm-out>—</span></div>
-              <div class="ch2-stat"><strong>乘积项</strong><span data-term-out>—</span></div>
-              <div class="ch2-stat"><strong>符号</strong><span data-sign-out>—</span></div>
-              <div class="ch2-note"><strong>三阶六项</strong><div class="ch2-presets" data-six-terms style="margin-top:0.4rem"></div></div>
+              <div class="ch2-meter is-2">
+                <div class="ch2-meter-card"><strong>排列</strong><span data-perm-out>—</span></div>
+                <div class="ch2-meter-card" data-sign-card><strong>符号</strong><span data-sign-out>—</span></div>
+              </div>
+              <div class="ch2-note">乘积项：<strong data-term-out>—</strong></div>
+              <div class="ch2-note"><strong>三阶六项</strong><div class="ch2-presets" data-six-terms style="margin-top:8px"></div></div>
             </div>
           </div>
         </div>`;
@@ -503,16 +551,20 @@
   defineChapter2Renderer("determinant-properties", {
     formal(formal) {
       if (!formal) return;
-      formal.innerHTML = `
-        <h2>三类行操作，三种倍率</h2>
-        <div class="ch2-formal-layout">
-          <div class="definition-stack">
-            <article class="definition-row"><strong>交换</strong><p>两行互换，行列式变号（× −1）。</p></article>
-            <article class="definition-row"><strong>倍乘</strong><p>一行乘 λ，行列式乘 λ。</p></article>
-            <article class="definition-row"><strong>倍加</strong><p>一行加另一行倍数，行列式不变（× 1），几何上像剪切。</p></article>
-            <article class="definition-row"><strong>统一来源</strong><p>分别线性 + 交替性 + det(I)=1，可推出相同行为零、三角求值与 ${tex("\\det(\\lambda A)=\\lambda^n\\det(A)")}。</p></article>
-          </div>
-        </div>`;
+      formal.innerHTML = formalShell(
+        "三类行操作，三种倍率",
+        "交换变号、倍乘乘 λ、倍加不变。几何上分别是翻转定向、缩放高度、剪切保持面积。",
+        module(
+          "01",
+          "操作账本",
+          "每一步都要留下可回溯的倍率。",
+          `<div class="ch2-card-grid">
+            <article class="ch2-card"><span class="kicker">交换</span><h4>× (−1)</h4><p>两行互换，定向翻转。</p></article>
+            <article class="ch2-card"><span class="kicker">倍乘</span><h4>× λ</h4><p>一行整体缩放，面积同比缩放。</p></article>
+            <article class="ch2-card"><span class="kicker">倍加</span><h4>× 1</h4><p>剪切：形状变，面积不变。</p></article>
+          </div>`,
+        ),
+      );
     },
     interactive(root) {
       if (!root) return;
@@ -521,21 +573,21 @@
         <div class="ch2-lab">
           <div class="ch2-lab-head">
             <h3>行操作观测台</h3>
-            <p>对同一矩阵执行交换、倍乘与行倍加，观察平行四边形与操作账本。</p>
+            <p>每次操作让网格插值过渡到新矩阵，账本同步追加一行。</p>
           </div>
           <div class="ch2-lab-grid">
-            <div class="ch2-canvas-wrap"><canvas data-row-canvas width="560" height="280" aria-label="行操作几何"></canvas></div>
+            <div class="ch2-stage"><canvas data-row-canvas aria-label="行操作几何"></canvas></div>
             <div class="ch2-side">
-              <div class="ch2-stat"><strong>当前矩阵</strong><span data-mat></span></div>
-              <div class="ch2-meter">
-                <div class="ch2-meter-card"><strong>当前 det</strong><span data-cur-det></span></div>
+              <div class="ch2-note">当前矩阵<br><strong data-mat></strong></div>
+              <div class="ch2-meter is-2">
+                <div class="ch2-meter-card" data-cur-card><strong>当前 det</strong><span data-cur-det></span></div>
                 <div class="ch2-meter-card"><strong>初始 det</strong><span data-base-det></span></div>
               </div>
               <div class="ch2-ledger"><strong>操作账本</strong><ol data-ledger></ol></div>
               <div class="ch2-toolbar">
                 <button type="button" data-op-swap>交换两行</button>
-                <button type="button" data-op-scale>R1×2</button>
-                <button type="button" data-op-add>R2+=R1</button>
+                <button type="button" data-op-scale>R1 × 2</button>
+                <button type="button" data-op-add>R2 += R1</button>
                 <button type="button" data-op-reset>重置</button>
               </div>
             </div>

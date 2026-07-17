@@ -117,6 +117,63 @@
     ctx.restore();
   }
 
+  /** Fit world coords so unit square + transformed columns stay in view. */
+  function fitView(matrix, width, height, options = {}) {
+    const a = matrix[0][0];
+    const b = matrix[0][1];
+    const c = matrix[1][0];
+    const d = matrix[1][1];
+    // corners of unit square and image of unit square (parallelogram)
+    const points = [
+      [0, 0],
+      [1, 0],
+      [0, 1],
+      [1, 1],
+      [a, c],
+      [b, d],
+      [a + b, c + d],
+      [-0.2, -0.2],
+      [1.2, 1.2],
+    ];
+    let minX = Infinity;
+    let maxX = -Infinity;
+    let minY = Infinity;
+    let maxY = -Infinity;
+    points.forEach(([x, y]) => {
+      minX = Math.min(minX, x);
+      maxX = Math.max(maxX, x);
+      minY = Math.min(minY, y);
+      maxY = Math.max(maxY, y);
+    });
+    // keep origin in frame with some air
+    minX = Math.min(minX, -0.35);
+    maxX = Math.max(maxX, 0.35);
+    minY = Math.min(minY, -0.35);
+    maxY = Math.max(maxY, 0.35);
+
+    const pad = options.pad ?? 28;
+    const worldW = Math.max(1e-6, maxX - minX);
+    const worldH = Math.max(1e-6, maxY - minY);
+    const scale = Math.min((width - pad * 2) / worldW, (height - pad * 2) / worldH);
+    // never explode or shrink to nothing
+    const clamped = clamp(scale, 18, Math.min(width, height) * 0.42);
+    const origin = {
+      x: pad + (width - pad * 2) * ((0 - minX) / worldW),
+      y: pad + (height - pad * 2) * (1 - (0 - minY) / worldH),
+    };
+    // re-center if origin would pin to edge oddly
+    const cx = width * 0.5;
+    const cy = height * 0.55;
+    // blend toward geometric center of content for stability
+    const contentCx = (minX + maxX) / 2;
+    const contentCy = (minY + maxY) / 2;
+    const origin2 = {
+      x: cx - contentCx * clamped,
+      y: cy + contentCy * clamped,
+    };
+    return { origin: origin2, scale: clamped, bounds: { minX, maxX, minY, maxY } };
+  }
+
   /** Draw unit square transformed by 2x2 matrix [[a,b],[c,d]] (columns). */
   function drawTransformScene(canvas, matrix, options = {}) {
     const { ctx, width, height } = setupCanvas(canvas);
@@ -125,8 +182,9 @@
     const b = matrix[0][1];
     const c = matrix[1][0];
     const d = matrix[1][1];
-    const origin = options.origin || { x: width * 0.42, y: height * 0.62 };
-    const scale = options.scale || Math.min(width, height) * 0.22;
+    const fitted = fitView(matrix, width, height, options);
+    const origin = options.origin || fitted.origin;
+    const scale = options.scale != null ? options.scale : fitted.scale;
     const det = a * d - b * c;
     const col1 = palette.blue;
     const col2 = palette.coral;
@@ -137,21 +195,29 @@
     ctx.fillRect(0, 0, width, height);
     ctx.globalAlpha = 1;
 
-    // grid
+    // grid in world units that cover the view
+    const halfCellsX = Math.ceil(width / scale) + 2;
+    const halfCellsY = Math.ceil(height / scale) + 2;
+    const originCellX = Math.round(origin.x / scale);
+    const originCellY = Math.round(origin.y / scale);
     ctx.save();
     ctx.strokeStyle = palette.line;
     ctx.lineWidth = 1;
-    ctx.globalAlpha = 0.55;
-    for (let i = -6; i <= 6; i += 1) {
+    ctx.globalAlpha = 0.5;
+    for (let i = -halfCellsX; i <= halfCellsX; i += 1) {
       const x = origin.x + i * scale;
-      const y = origin.y - i * scale;
+      if (x < 0 || x > width) continue;
       ctx.beginPath();
-      ctx.moveTo(x, 12);
-      ctx.lineTo(x, height - 12);
+      ctx.moveTo(x, 0);
+      ctx.lineTo(x, height);
       ctx.stroke();
+    }
+    for (let j = -halfCellsY; j <= halfCellsY; j += 1) {
+      const y = origin.y - j * scale;
+      if (y < 0 || y > height) continue;
       ctx.beginPath();
-      ctx.moveTo(12, y);
-      ctx.lineTo(width - 12, y);
+      ctx.moveTo(0, y);
+      ctx.lineTo(width, y);
       ctx.stroke();
     }
     ctx.restore();
@@ -160,12 +226,12 @@
     ctx.save();
     ctx.strokeStyle = palette.muted;
     ctx.lineWidth = 1.25;
-    ctx.globalAlpha = 0.7;
+    ctx.globalAlpha = 0.75;
     ctx.beginPath();
-    ctx.moveTo(16, origin.y);
-    ctx.lineTo(width - 16, origin.y);
-    ctx.moveTo(origin.x, 16);
-    ctx.lineTo(origin.x, height - 16);
+    ctx.moveTo(0, origin.y);
+    ctx.lineTo(width, origin.y);
+    ctx.moveTo(origin.x, 0);
+    ctx.lineTo(origin.x, height);
     ctx.stroke();
     ctx.restore();
 
@@ -187,7 +253,7 @@
       ctx.strokeStyle = palette.muted;
       ctx.setLineDash([4, 4]);
       ctx.lineWidth = 1.2;
-      ctx.globalAlpha = 0.45;
+      ctx.globalAlpha = 0.55;
       ctx.stroke();
       ctx.restore();
     }
@@ -242,11 +308,42 @@
     const from = cloneMat(matrixState.get(canvas) || [[1, 0], [0, 1]]);
     const to = cloneMat(target);
     const key = canvas;
-    return animateTo(key, from, to, options.duration ?? 620, (current, t) => {
-      drawTransformScene(canvas, current, options.drawOptions || {});
-      options.onUpdate?.(current, t);
+    // Lock camera for the whole tween so the view does not zoom every frame.
+    const rect = canvas.getBoundingClientRect();
+    const width = Math.max(1, rect.width || canvas.clientWidth || 520);
+    const height = Math.max(1, rect.height || canvas.clientHeight || 300);
+    const aPts = [];
+    [from, to].forEach((m) => {
+      aPts.push([0, 0], [1, 0], [0, 1], [1, 1], [m[0][0], m[1][0]], [m[0][1], m[1][1]], [m[0][0] + m[0][1], m[1][0] + m[1][1]]);
+    });
+    let minX = Infinity, maxX = -Infinity, minY = Infinity, maxY = -Infinity;
+    aPts.forEach(([x, y]) => {
+      minX = Math.min(minX, x); maxX = Math.max(maxX, x);
+      minY = Math.min(minY, y); maxY = Math.max(maxY, y);
+    });
+    minX = Math.min(minX, -0.35); maxX = Math.max(maxX, 0.35);
+    minY = Math.min(minY, -0.35); maxY = Math.max(maxY, 0.35);
+    const pad = 28;
+    const worldW = Math.max(1e-6, maxX - minX);
+    const worldH = Math.max(1e-6, maxY - minY);
+    const lockedScale = clamp(Math.min((width - pad * 2) / worldW, (height - pad * 2) / worldH), 18, Math.min(width, height) * 0.42);
+    const contentCx = (minX + maxX) / 2;
+    const contentCy = (minY + maxY) / 2;
+    const lockedOrigin = {
+      x: width * 0.5 - contentCx * lockedScale,
+      y: height * 0.55 + contentCy * lockedScale,
+    };
+    const drawOpts = {
+      ...(options.drawOptions || {}),
+      scale: lockedScale,
+      origin: lockedOrigin,
+    };
+    return animateTo(key, from, to, options.duration ?? 620, (current) => {
+      drawTransformScene(canvas, current, drawOpts);
+      options.onUpdate?.(current);
     }).then(() => {
       matrixState.set(canvas, to);
+      drawTransformScene(canvas, to, options.drawOptions || {});
       return to;
     });
   }
@@ -333,6 +430,7 @@
     animateTo,
     setupCanvas,
     drawArrow,
+    fitView,
     drawTransformScene,
     animateMatrix,
     matrixState,

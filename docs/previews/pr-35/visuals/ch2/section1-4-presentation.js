@@ -317,26 +317,35 @@
 
   // ========== §4 ==========
   function mountRowOps(root) {
-    let matrix = [
-      [2, 1],
-      [0.5, 1.5],
+    const INITIAL = [
+      [1.2, 0.35],
+      [0.2, 1.1],
     ];
+    let matrix = M().cloneMat(INITIAL);
     let base = M().det2(matrix);
     const ledger = [];
     const canvas = root.querySelector("[data-row-canvas]");
     let animating = false;
 
+    function matrixHtml(m) {
+      return tex(
+        `\begin{bmatrix}${M().formatNum(m[0][0], 2)}&${M().formatNum(m[0][1], 2)}\\${M().formatNum(m[1][0], 2)}&${M().formatNum(m[1][1], 2)}\end{bmatrix}`,
+      );
+    }
+
     function draw(m) {
+      // auto-fit view so operations never "zoom out of frame"
       M().drawTransformScene(canvas, m, {
         firstLabel: "列1",
         secondLabel: "列2",
-        caption: `det = ${M().formatNum(M().det2(m), 3)}`,
+        caption: `det = ${M().formatNum(M().det2(m), 3)} · 虚线=单位正方形`,
+        showUnit: true,
       });
     }
 
     function sync() {
       const det = M().det2(matrix);
-      root.querySelector("[data-mat]").textContent = `[${matrix.map((r) => `[${r.map((v) => M().formatNum(v, 2)).join(", ")}]`).join(", ")}]`;
+      root.querySelector("[data-mat]").innerHTML = matrixHtml(matrix);
       root.querySelector("[data-cur-det]").textContent = M().formatNum(det, 3);
       root.querySelector("[data-base-det]").textContent = M().formatNum(base, 3);
       const st = M().detStatus(det);
@@ -354,13 +363,19 @@
       try {
         await M().animateMatrix(canvas, next, {
           duration: 580,
-          drawOptions: { firstLabel: "列1", secondLabel: "列2" },
+          drawOptions: {
+            firstLabel: "列1",
+            secondLabel: "列2",
+            caption: "行操作中…",
+            showUnit: true,
+          },
           onUpdate: (current) => {
             root.querySelector("[data-cur-det]").textContent = M().formatNum(M().det2(current), 3);
+            root.querySelector("[data-mat]").innerHTML = matrixHtml(current);
           },
         });
         matrix = M().cloneMat(next);
-        ledger.push(line);
+        if (line !== "reset") ledger.push(line);
         sync();
       } finally {
         animating = false;
@@ -371,24 +386,23 @@
       apply([matrix[1].slice(), matrix[0].slice()], "R1 ↔ R2    × (−1)");
     });
     root.querySelector("[data-op-scale]").addEventListener("click", () => {
-      apply([matrix[0].map((v) => v * 2), matrix[1].slice()], "R1 ← 2·R1    × 2");
+      // scale by 1.5 instead of 2 so classroom demo stays readable longer; autofit still protects
+      apply([matrix[0].map((v) => v * 1.5), matrix[1].slice()], "R1 ← 1.5·R1    × 1.5");
     });
     root.querySelector("[data-op-add]").addEventListener("click", () => {
       apply([matrix[0].slice(), [matrix[1][0] + matrix[0][0], matrix[1][1] + matrix[0][1]]], "R2 ← R2+R1    × 1");
     });
     root.querySelector("[data-op-reset]").addEventListener("click", async () => {
       ledger.length = 0;
-      base = M().det2([[2, 1], [0.5, 1.5]]);
-      await apply(
-        [
-          [2, 1],
-          [0.5, 1.5],
-        ],
-        "reset",
-      );
+      base = M().det2(INITIAL);
+      await apply(M().cloneMat(INITIAL), "reset");
       ledger.length = 0;
       sync();
     });
+
+    // button label if present
+    const scaleBtn = root.querySelector("[data-op-scale]");
+    if (scaleBtn) scaleBtn.textContent = "R1 × 1.5";
 
     sync();
   }

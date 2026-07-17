@@ -1,9 +1,8 @@
-/*
- * Chapter 2 presentation registry.
- */
+/* Chapter 2 presentation registry with lifecycle cleanup. */
 (() => {
   const renderers = new Map();
   const enhancers = [];
+  let activeCleanup = null;
 
   window.defineChapter2Renderer = function defineChapter2Renderer(sectionId, renderer) {
     if (!sectionId || !renderer || typeof renderer !== "object") {
@@ -16,15 +15,31 @@
     if (typeof enhancer === "function") enhancers.push(enhancer);
   };
 
+  window.teardownChapter2Lesson = function teardownChapter2Lesson() {
+    try {
+      activeCleanup?.();
+    } finally {
+      activeCleanup = null;
+    }
+  };
+
   window.mountChapter2Lesson = function mountChapter2Lesson(section, root) {
+    window.teardownChapter2Lesson();
     if (!section?.id || !root) return;
     const renderer = renderers.get(section.id);
-    if (renderer) {
-      const formal = root.querySelector(`#${CSS.escape(section.id)}-formal`);
-      const interactive = root.querySelector(`#${CSS.escape(section.id)}-interactive`);
-      renderer.formal?.(formal, section, root);
-      renderer.interactive?.(interactive, section, root);
-    }
-    enhancers.forEach((enhancer) => enhancer(section, root));
+    if (!renderer) return;
+
+    const cleanups = [];
+    const formal = root.querySelector(`#${CSS.escape(section.id)}-formal`);
+    const interactive = root.querySelector(`#${CSS.escape(section.id)}-interactive`);
+    const formalCleanup = renderer.formal?.(formal, section, root);
+    const interactiveCleanup = renderer.interactive?.(interactive, section, root);
+    if (typeof formalCleanup === "function") cleanups.push(formalCleanup);
+    if (typeof interactiveCleanup === "function") cleanups.push(interactiveCleanup);
+    enhancers.forEach((enhancer) => {
+      const cleanup = enhancer(section, root);
+      if (typeof cleanup === "function") cleanups.push(cleanup);
+    });
+    activeCleanup = () => cleanups.reverse().forEach((cleanup) => cleanup());
   };
 })();

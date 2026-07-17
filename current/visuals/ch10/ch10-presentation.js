@@ -159,7 +159,7 @@
     q(mount, "[data-radical]").addEventListener("click", () => {
       const A = inputs.slice(4).map((item) => Number(item.value));
       if (Math.abs(det(A)) > 1e-7) return;
-      const direction = Math.abs(A[0]) + Math.abs(A[1]) > 1e-7 ? [-A[1], A[0]] : [-A[3], A[2]];
+      const direction = Math.abs(A[0]) + Math.abs(A[2]) > 1e-7 ? [-A[2], A[0]] : [-A[3], A[1]];
       inputs[0].value = direction[0]; inputs[1].value = direction[1]; update();
     });
     update();

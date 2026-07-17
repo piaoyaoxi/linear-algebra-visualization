@@ -1,6 +1,6 @@
 (() => {
-  const { M, tex, display, aEntry, productTermHtml, formalShell, module, proofSteps, misconception, taskBox } = window.Ch2PresentationUtils;
-  // ---------- §7 ----------
+  const { M, tex, display, formalShell, module, proofSteps, misconception } = window.Ch2PresentationUtils;
+
   function mountCramer(root) {
     const controller = new AbortController();
     const { signal } = controller;
@@ -12,13 +12,17 @@
     function values(current) {
       const A = [[current.a11, current.a12], [current.a21, current.a22]];
       const b = [current.b1, current.b2];
-      return {
-        A,
-        b,
-        D: M().det2(A),
-        D1: M().det2([[current.b1, current.a12], [current.b2, current.a22]]),
-        D2: M().det2([[current.a11, current.b1], [current.a21, current.b2]]),
-      };
+      const A1 = [[current.b1, current.a12], [current.b2, current.a22]];
+      const A2 = [[current.a11, current.b1], [current.a21, current.b2]];
+      return { A, A1, A2, b, D: M().det2(A), D1: M().det2(A1), D2: M().det2(A2) };
+    }
+
+    function matrixHtml(matrix) {
+      return tex(`\begin{bmatrix}${M().formatNum(matrix[0][0], 2)}&${M().formatNum(matrix[0][1], 2)}\\${M().formatNum(matrix[1][0], 2)}&${M().formatNum(matrix[1][1], 2)}\end{bmatrix}`);
+    }
+
+    function scaleOf(A) {
+      return Math.max(1, ...A.flat().map((value) => Math.abs(value)));
     }
 
     function cameraFor(A, b) {
@@ -26,10 +30,10 @@
       const width = Math.max(1, rect.width || 520);
       const height = Math.max(1, rect.height || 340);
       const points = [[0, 0], [1, 0], [0, 1], [1, 1], [A[0][0], A[1][0]], [A[0][1], A[1][1]], [A[0][0] + A[0][1], A[1][0] + A[1][1]], b];
-      let minX = Math.min(...points.map((point) => point[0]), -0.5);
-      let maxX = Math.max(...points.map((point) => point[0]), 0.5);
-      let minY = Math.min(...points.map((point) => point[1]), -0.5);
-      let maxY = Math.max(...points.map((point) => point[1]), 0.5);
+      const minX = Math.min(...points.map((point) => point[0]), -0.5);
+      const maxX = Math.max(...points.map((point) => point[0]), 0.5);
+      const minY = Math.min(...points.map((point) => point[1]), -0.5);
+      const maxY = Math.max(...points.map((point) => point[1]), 0.5);
       const pad = 34;
       const scale = M().clamp(Math.min((width - pad * 2) / Math.max(1, maxX - minX), (height - pad * 2) / Math.max(1, maxY - minY)), 16, Math.min(width, height) * 0.3);
       return { scale, origin: { x: width * 0.5 - ((minX + maxX) / 2) * scale, y: height * 0.53 + ((minY + maxY) / 2) * scale } };
@@ -56,21 +60,44 @@
     }
 
     function sync(current) {
-      const { A, b, D, D1, D2 } = values(current);
+      const { A, A1, A2, b, D, D1, D2 } = values(current);
       root.querySelector("[data-d]").textContent = M().formatNum(D, 3);
       root.querySelector("[data-d1]").textContent = M().formatNum(D1, 3);
       root.querySelector("[data-d2]").textContent = M().formatNum(D2, 3);
+      root.querySelector("[data-a-matrix]").innerHTML = matrixHtml(A);
+      root.querySelector("[data-a1-matrix]").innerHTML = matrixHtml(A1);
+      root.querySelector("[data-a2-matrix]").innerHTML = matrixHtml(A2);
+
       const solution = root.querySelector("[data-sol]");
-      if (Math.abs(D) >= 1e-7) {
-        solution.innerHTML = `<strong>唯一解</strong>　x₁=${M().formatNum(D1 / D, 3)}，x₂=${M().formatNum(D2 / D, 3)}。分子面积分别是原面积的 x₁、x₂ 倍。`;
-        solution.className = "ch2-note is-positive";
+      const residual = root.querySelector("[data-residual]");
+      const scale = scaleOf(A);
+      const exactTolerance = 1e-8 * scale * scale;
+      const relativeArea = Math.abs(D) / (scale * scale);
+
+      if (Math.abs(D) > exactTolerance) {
+        const x1 = D1 / D;
+        const x2 = D2 / D;
+        const reconstructed = [A[0][0] * x1 + A[0][1] * x2, A[1][0] * x1 + A[1][1] * x2];
+        const error = Math.hypot(reconstructed[0] - b[0], reconstructed[1] - b[1]);
+        const nearSingular = relativeArea < 0.035;
+        solution.innerHTML = nearSingular
+          ? `<strong>理论上仍有唯一解，但基底接近共线</strong>　x₁=${M().formatNum(x1, 3)}，x₂=${M().formatNum(x2, 3)}。D 很小，输入的微小变化会被比值放大。`
+          : `<strong>唯一解</strong>　x₁=${M().formatNum(x1, 3)}，x₂=${M().formatNum(x2, 3)}。分子有向面积分别是原有向面积的 x₁、x₂ 倍。`;
+        solution.className = nearSingular ? "ch2-note is-zero" : "ch2-note is-positive";
+        residual.innerHTML = `重构：${tex(`x_1a_1+x_2a_2=(${M().formatNum(reconstructed[0], 3)},${M().formatNum(reconstructed[1], 3)})^T`)}；与 b 的误差 ${M().formatNum(error, 6)}。`;
+        residual.className = "ch2-note is-positive";
       } else {
         const classification = M().classifySystem2(A, b);
         solution.innerHTML = classification.kind === "infinite"
           ? "<strong>D=0 · 无穷多解</strong>　b 仍落在塌缩后的列空间中；克拉默公式没有非零分母，改用消元描述自由变量。"
           : "<strong>D=0 · 无解</strong>　b 不在列空间中；塌缩后的列向量无法合成 b。";
         solution.className = classification.kind === "infinite" ? "ch2-note is-zero" : "ch2-note is-negative";
+        residual.textContent = classification.kind === "infinite"
+          ? "列组合能够到达 b，但表示不唯一。"
+          : "任何列向量组合都无法到达 b。";
+        residual.className = classification.kind === "infinite" ? "ch2-note is-zero" : "ch2-note is-negative";
       }
+
       ["a11", "a12", "a21", "a22", "b1", "b2"].forEach((key) => {
         const input = root.querySelector(`[data-k="${key}"]`);
         const label = root.querySelector(`[data-v="${key}"]`);
@@ -110,6 +137,7 @@
       }, { signal });
     });
     root.querySelector("[data-cramer-ex]").addEventListener("click", () => goTo({ a11: 2, a12: 1, a21: 1, a22: 3, b1: 5, b2: 5 }), { signal });
+    root.querySelector("[data-cramer-near]").addEventListener("click", () => goTo({ a11: 1, a12: 2, a21: 1.02, a22: 2.02, b1: 3, b2: 3.04 }), { signal });
     root.querySelector("[data-cramer-sing]").addEventListener("click", () => goTo({ a11: 1, a12: 2, a21: 2, a22: 4, b1: 3, b2: 6 }), { signal });
     root.querySelector("[data-cramer-none]").addEventListener("click", () => goTo({ a11: 1, a12: 2, a21: 2, a22: 4, b1: 1, b2: 0 }), { signal });
     window.addEventListener("resize", () => document.body.contains(canvas) && sync(displayState), { signal, passive: true });
@@ -126,23 +154,25 @@
       if (!formal) return;
       formal.innerHTML = formalShell(
         "克拉默法则来自列线性",
-        "把 b 放进第 i 列后，沿这一列的线性展开会自动消去所有含重复列的项，只留下 xi det(A)。二维面积比给出同一结论的几何版本。",
+        "把 b 放进第 i 列后，沿这一列的线性展开会自动消去所有含重复列的项，只留下 xᵢdet(A)。二维面积比给出同一结论的几何版本。",
         module("01", "替换列推导", "先写 b 的列组合，再利用重复列为零。", proofSteps([
-          `${tex("b=x_1a_1+\\cdots+x_na_n")}。`,
+          `${tex("b=x_1a_1+\cdots+x_na_n")}。`,
           `在 ${tex("A_i")} 中把第 i 列替换为 b，并对该列使用分别线性。`,
-          "当 b 的展开项使用 aj（j≠i）时，矩阵中出现两列 aj，行列式为 0。",
-          `只剩 ${tex("\\det(A_i)=x_i\\det(A)")}；当 det(A)≠0 时可除得公式。`,
+          "当 b 的展开项使用 aⱼ（j≠i）时，矩阵中出现两列 aⱼ，行列式为 0。",
+          `只剩 ${tex("\det(A_i)=x_i\det(A)")}；当 det(A)≠0 时可除得公式。`,
         ]) + `
-          <article class="ch2-def ch2-formula-block"><span class="kicker">公式</span><strong>${display("x_i=\\frac{\\det(A_i)}{\\det(A)}")}</strong><p>分母非零是公式成立与唯一解存在的共同条件。</p></article>
-        `) + module("02", "D=0 的两条分支", "公式失效后，继续判断 b 是否位于列空间。", `
-          <div class="ch2-card-grid is-2">
-            <article class="ch2-card"><span class="kicker">相容</span><h4>无穷多解</h4><p>b 落在塌缩后的列空间中，至少一个自由变量保留。</p></article>
-            <article class="ch2-card"><span class="kicker">不相容</span><h4>无解</h4><p>b 离开列空间，任何列组合都无法到达它。</p></article>
+          <article class="ch2-def ch2-formula-block"><span class="kicker">公式</span><strong>${display("x_i=\frac{\det(A_i)}{\det(A)}")}</strong><p>分母非零是公式成立与唯一解存在的共同条件。</p></article>
+        `) + module("02", "D=0 与接近 D=0 是两种边界", "一个决定解的类型，另一个提醒坐标对扰动敏感。", `
+          <div class="ch2-card-grid">
+            <article class="ch2-card"><span class="kicker">D=0 且相容</span><h4>无穷多解</h4><p>b 落在塌缩后的列空间中，表示不唯一。</p></article>
+            <article class="ch2-card"><span class="kicker">D=0 且不相容</span><h4>无解</h4><p>b 离开列空间，任何列组合都无法到达它。</p></article>
+            <article class="ch2-card"><span class="kicker">D 很小但非零</span><h4>唯一但敏感</h4><p>两列接近共线，Dᵢ/D 会放大输入中的微小变化。</p></article>
           </div>
         `) + misconception([
           "替换的是第 i 列，因为 Ax 是列向量的线性组合。",
           "D=0 只说明克拉默公式不可用；无解与无穷多解需要继续判定。",
-        ]),
+          "D 很小不等于 D=0；理论上仍可能有唯一解，但数值会变得敏感。",
+        ])),
       );
     },
     interactive(root) {
@@ -150,8 +180,8 @@
       root.innerHTML = `
         <h2>交互实验</h2>
         <div class="ch2-lab">
-          <div class="ch2-lab-head"><h3>替换列实验室 · 面积比与奇异边界</h3><p>系数列、b、D、D₁、D₂ 同步变化。D=0 时系统继续判断相容性。</p></div>
-          <div class="ch2-task"><strong>观察任务</strong><span>先读取唯一解，再分别进入 D=0 的相容与不相容预设。</span></div>
+          <div class="ch2-lab-head"><h3>替换列实验室 · 面积比与奇异边界</h3><p>系数列、b、D、D₁、D₂、替换矩阵与坐标重构同步变化。D=0 时继续判断相容性。</p></div>
+          <div class="ch2-task"><strong>观察任务</strong><span>先读取唯一解，再比较接近奇异、D=0 相容和 D=0 不相容三种边界。</span></div>
           <div class="ch2-lab-grid">
             <div class="ch2-stage"><canvas data-cramer-canvas aria-label="克拉默法则列向量与常数向量画布"></canvas></div>
             <div class="ch2-side">
@@ -160,12 +190,15 @@
                 <div class="ch2-meter-card"><strong>D₁</strong><span data-d1></span></div>
                 <div class="ch2-meter-card"><strong>D₂</strong><span data-d2></span></div>
               </div>
+              <div class="ch2-note"><strong>A</strong> <span data-a-matrix></span><br /><strong>A₁</strong> <span data-a1-matrix></span><br /><strong>A₂</strong> <span data-a2-matrix></span></div>
               <div data-sol class="ch2-note" aria-live="polite"></div>
+              <div data-residual class="ch2-note" aria-live="polite"></div>
               <div class="ch2-sliders">
                 ${["a11", "a12", "a21", "a22", "b1", "b2"].map((key) => `<label><span>${key}</span><input data-k="${key}" type="range" min="-6" max="6" step="0.1" aria-label="${key}" /><span data-v="${key}"></span></label>`).join("")}
               </div>
               <div class="ch2-presets">
                 <button type="button" data-cramer-ex>唯一解示例</button>
+                <button type="button" data-cramer-near>接近奇异</button>
                 <button type="button" data-cramer-sing>D=0 · 无穷多解</button>
                 <button type="button" data-cramer-none>D=0 · 无解</button>
               </div>
@@ -175,5 +208,4 @@
       return mountCramer(root);
     },
   });
-
 })();

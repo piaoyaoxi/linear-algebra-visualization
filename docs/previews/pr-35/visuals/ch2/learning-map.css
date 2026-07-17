@@ -1,0 +1,124 @@
+/* Chapter 2 lesson roadmap: clarifies prerequisites, outcomes, and the reading path. */
+.ch2-learning-map {
+  display: grid;
+  gap: 18px;
+}
+
+.ch2-learning-map-head {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 18px;
+}
+
+.ch2-learning-map-head h2 {
+  margin-bottom: 0;
+}
+
+.ch2-learning-map-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.ch2-learning-map-card {
+  min-width: 0;
+  padding: 16px 17px;
+  border: 1px solid var(--line);
+  border-radius: calc(var(--radius) + 3px);
+  background: color-mix(in srgb, var(--surface-solid) 88%, var(--surface-soft));
+}
+
+.ch2-learning-map-card > strong {
+  display: block;
+  margin-bottom: 8px;
+  color: var(--accent-strong);
+  font-size: 13px;
+  letter-spacing: .035em;
+}
+
+.ch2-learning-map-card ul {
+  display: grid;
+  gap: 7px;
+  margin: 0;
+  padding-left: 1.15rem;
+  color: var(--muted);
+  line-height: 1.66;
+}
+
+.ch2-learning-steps {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.ch2-learning-step {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: 11px;
+  min-width: 0;
+  padding: 14px;
+  border-top: 1px solid var(--line);
+}
+
+.ch2-learning-step > span {
+  color: var(--accent-strong);
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.ch2-learning-step strong {
+  display: block;
+  margin-bottom: 4px;
+  font-size: 14px;
+}
+
+.ch2-learning-step p {
+  margin: 0;
+  color: var(--muted);
+  font-size: 13.5px;
+  line-height: 1.62;
+}
+
+.ch2-lesson-bridge {
+  margin: 18px 0;
+  padding: 15px 17px;
+  border-left: 3px solid var(--accent);
+  border-radius: 0 var(--radius) var(--radius) 0;
+  background: var(--accent-soft);
+}
+
+.ch2-lesson-bridge strong {
+  color: var(--accent-strong);
+  font-size: 13px;
+  letter-spacing: .035em;
+}
+
+.ch2-lesson-bridge p {
+  margin: 5px 0 0;
+  line-height: 1.7;
+}
+
+@media (max-width: 760px) {
+  .ch2-learning-map-head {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .ch2-learning-map-grid,
+  .ch2-learning-steps {
+    grid-template-columns: 1fr;
+  }
+
+  .ch2-learning-step {
+    padding-inline: 4px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ch2-learning-map *,
+  .ch2-lesson-bridge * {
+    scroll-behavior: auto !important;
+  }
+}

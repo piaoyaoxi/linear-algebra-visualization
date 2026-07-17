@@ -4,6 +4,9 @@ on:
   push:
     branches:
       - context/ch7-linear-transformations
+  pull_request:
+    branches:
+      - main
 
 permissions:
   contents: read

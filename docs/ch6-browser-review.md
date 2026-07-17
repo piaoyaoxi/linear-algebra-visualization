@@ -38,3 +38,4 @@
 - PR 预览部署重新通过。
 - 最终代码状态保持八节独立 renderer，不再加载任何旧通用第六章 renderer。
 - 旧通用 renderer、旧 refinement workbench 及其样式文件均已从分支删除。
+- 最终 PR head 再次执行预览部署，确认部署内容与提交一致。

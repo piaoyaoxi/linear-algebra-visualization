@@ -5,7 +5,8 @@ on:
     types: [opened, synchronize, reopened, ready_for_review, closed]
 
 permissions:
-  contents: write
+  contents: read
+  issues: write
 
 jobs:
   publish-preview:
@@ -17,23 +18,20 @@ jobs:
         with:
           ref: ${{ github.event.pull_request.head.sha }}
           path: source
-          fetch-depth: 0
-          persist-credentials: true
+          show-progress: false
 
-      - name: Persist staged payload diagnostic
+      - name: Diagnose and post staged payload
         working-directory: source
+        env:
+          GH_TOKEN: ${{ github.token }}
         shell: bash
         run: |
           set -euo pipefail
-          if [ -f _dev/ch1-diag.txt ]; then
-            cat _dev/ch1-diag.txt
-            exit 0
-          fi
           python3 - <<'PY'
           from pathlib import Path
           import base64, hashlib, tarfile, traceback
 
-          lines = []
+          lines = ['<!-- ch1-payload-diagnostic -->', '## Chapter 1 payload diagnostic', '```text']
           try:
               parts = sorted(Path('_dev').glob('ch1-payload.part*'))
               lines.append('parts: ' + ', '.join(p.name for p in parts))
@@ -54,14 +52,17 @@ jobs:
           except Exception:
               lines.append('ERROR:')
               lines.append(traceback.format_exc())
-          Path('_dev/ch1-diag.txt').write_text('\n'.join(lines) + '\n')
-          print('\n'.join(lines))
+          lines.append('```')
+          Path('/tmp/ch1-comment.txt').write_text('\n'.join(lines) + '\n')
           PY
-          git config user.name 'github-actions[bot]'
-          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-          git add _dev/ch1-diag.txt
-          git commit -m 'chore(ch1): record payload diagnostics'
-          git push origin HEAD:${{ github.event.pull_request.head.ref }}
+          jq -Rs '{body: .}' /tmp/ch1-comment.txt > /tmp/ch1-comment.json
+          curl --fail-with-body \
+            -X POST \
+            -H "Authorization: Bearer $GH_TOKEN" \
+            -H "Accept: application/vnd.github+json" \
+            -H "X-GitHub-Api-Version: 2022-11-28" \
+            "https://api.github.com/repos/${{ github.repository }}/issues/${{ github.event.pull_request.number }}/comments" \
+            --data-binary @/tmp/ch1-comment.json
 
   cleanup-preview:
     if: github.event.action == 'closed'

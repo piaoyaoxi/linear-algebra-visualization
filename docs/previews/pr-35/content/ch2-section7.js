@@ -4,7 +4,7 @@ defineChapter2Section("cramer-rule", {
   title: "克拉默（Cramer）法则",
   navTitle: "克拉默法则",
   question: "为什么第 i 个未知量可以写成“把第 i 列换成常数列后两个行列式的比值”？",
-  goal: "在 det(A)≠0 时会构造 A_i 并计算 x_i=det(A_i)/det(A)；理解二维面积比与 det=0 边界。",
+  goal: `在 ${texInline("\det(A)\ne 0")} 时会构造 ${texInline("A_i")} 并计算 ${texInline("x_i=\det(A_i)/\det(A)")}；理解二维面积比与 ${texInline("\det(A)=0")} 边界。`,
   tags: ["克拉默法则", "替换列", "唯一解"],
   intro:
     "当系数矩阵可逆时，Ax=b 有唯一解。克拉默法则把每个未知量写成行列式之比：分子是把对应列替换为 b 后的行列式。它揭示解的结构，但不是大规模数值计算的首选算法。",
@@ -33,7 +33,7 @@ defineChapter2Section("cramer-rule", {
   interactive: {
     type: "slot",
     title: "实验：替换列与克拉默步进",
-    description: "构造 A_i，比较面积比，并在 det=0 时观察分支。",
+    description: `构造 ${texInline("A_i")}，比较面积比，并在 ${texInline("\det(A)=0")} 时观察分支。`,
     task: "对给定 2×2 方程组求出 x1,x2，并用面积比解释 x1。",
     prompts: [
       "确认 det(A)≠0。",
@@ -71,7 +71,7 @@ defineChapter2Section("cramer-rule", {
     "下一节推广展开，并证明 det(AB)=det(A)det(B)。",
   ],
   exercises: [
-    "对一个 3×3 方程组写出全部 A_i。",
+    `对一个 3×3 方程组写出全部 ${texInline("A_i")}。`,
     "举一个 det=0 且有无穷多解的例子。",
   ],
 });

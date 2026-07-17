@@ -2,6 +2,7 @@
   const M = () => window.Ch2Math;
   const tex = (s) => (window.texInline ? window.texInline(s) : s);
   const display = (s) => (window.texDisplay ? window.texDisplay(s) : s);
+  const aEntry = (row, col) => tex(`a_{${row}${col}}`);
 
   function formalShell(title, lead, body) {
     return `<h2>${title}</h2><div class="ch2-formal"><p class="ch2-formal-lead">${lead}</p>${body}</div>`;
@@ -135,9 +136,9 @@
       const Mij = M().det2(minor);
       const sign = (active.r + active.c) % 2 === 0 ? 1 : -1;
       const Cij = sign * Mij;
-      root.querySelector("[data-pos]").textContent = `a${active.r + 1}${active.c + 1}`;
+      root.querySelector("[data-pos]").innerHTML = aEntry(active.r + 1, active.c + 1);
       root.querySelector("[data-mij]").textContent = M().formatNum(Mij, 2);
-      root.querySelector("[data-sign]").textContent = sign > 0 ? "+1" : "−1";
+      root.querySelector("[data-sign]").innerHTML = sign > 0 ? tex("+1") : tex("-1");
       root.querySelector("[data-cij]").textContent = M().formatNum(Cij, 2);
       M().pulseClass(root.querySelector("[data-cij-card]"));
 
@@ -157,10 +158,22 @@
         const mij = M().det2(m);
         const s = (1 + j) % 2 === 0 ? 1 : -1;
         expand += a * s * mij;
-        terms.push(`${a}·(${s > 0 ? "+" : "−"}${M().formatNum(mij, 2)})`);
+        terms.push(
+          `${tex(String(a))}\,${tex(s > 0 ? "+" : "-")}\,${tex(`M_{2${j + 1}}`)}=${tex(M().formatNum(a * s * mij, 2))}`,
+        );
       }
-      root.querySelector("[data-expand]").textContent = `${terms.join(" + ")} = ${M().formatNum(expand, 2)}`;
-      root.querySelector("[data-true]").textContent = M().formatNum(M().det3(matrix), 2);
+      // simpler readable expansion with KaTeX pieces
+      const pieces = [];
+      for (let j = 0; j < 3; j += 1) {
+        const a = matrix[1][j];
+        if (Math.abs(a) < 1e-12) continue;
+        const m = M().minorMatrix(matrix, 1, j);
+        const mij = M().det2(m);
+        const s = (1 + j) % 2 === 0 ? 1 : -1;
+        pieces.push(`${aEntry(2, j + 1)}${tex(`\,C_{2${j + 1}}`)}=${tex(M().formatNum(a * s * mij, 2))}`);
+      }
+      root.querySelector("[data-expand]").innerHTML = `${pieces.join(" + ")} = ${tex(M().formatNum(expand, 2))}`;
+      root.querySelector("[data-true]").innerHTML = tex(M().formatNum(M().det3(matrix), 2));
     }
 
     const board = root.querySelector("[data-board]");
@@ -170,6 +183,13 @@
       const plus = (i + j) % 2 === 0;
       return `<span class="${plus ? "plus" : "minus"}">${plus ? "+" : "−"}</span>`;
     }).join("");
+
+    const mijLabel = root.querySelector("[data-label-mij]");
+    const signLabel = root.querySelector("[data-label-sign]");
+    const cijLabel = root.querySelector("[data-label-cij]");
+    if (mijLabel) mijLabel.innerHTML = tex("M_{ij}");
+    if (signLabel) signLabel.innerHTML = tex("(-1)^{i+j}");
+    if (cijLabel) cijLabel.innerHTML = tex("C_{ij}");
 
     render();
   }
@@ -514,9 +534,9 @@
             <div class="ch2-side">
               <div class="ch2-meter is-2">
                 <div class="ch2-meter-card"><strong>选中</strong><span data-pos></span></div>
-                <div class="ch2-meter-card"><strong>Mᵢⱼ</strong><span data-mij></span></div>
-                <div class="ch2-meter-card"><strong>(−1)^{i+j}</strong><span data-sign></span></div>
-                <div class="ch2-meter-card" data-cij-card><strong>Cᵢⱼ</strong><span data-cij></span></div>
+                <div class="ch2-meter-card"><strong class="ch2-meter-math" data-label-mij></strong><span data-mij></span></div>
+                <div class="ch2-meter-card"><strong class="ch2-meter-math" data-label-sign></strong><span data-sign></span></div>
+                <div class="ch2-meter-card" data-cij-card><strong class="ch2-meter-math" data-label-cij></strong><span data-cij></span></div>
               </div>
               <div class="ch2-note">沿第 2 行展开：<strong data-expand></strong></div>
               <div class="ch2-note">真实 det：<strong data-true></strong></div>

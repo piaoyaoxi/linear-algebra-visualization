@@ -6,8 +6,9 @@ defineChapter2Section("cofactor-expansion", {
   question: "一个 n 阶行列式为什么能沿任意一行或一列拆成若干个低一阶行列式？",
   goal: "区分余子矩阵、余子式与代数余子式；会用棋盘符号按行/列展开，并选择零多的方向。",
   tags: ["余子式", "代数余子式", "展开"],
-  intro:
-    "删去第 i 行第 j 列得到余子矩阵，其行列式是余子式 M_ij；再乘 (-1)^{i+j} 得到代数余子式 C_ij。沿一行（列）把元素与对应代数余子式配对求和，就回到原行列式。",
+  intro: `删去第 i 行第 j 列得到余子矩阵，其行列式是余子式 ${texInline("M_{ij}")}；再乘 ${texInline(
+    "(-1)^{i+j}",
+  )} 得到代数余子式 ${texInline("C_{ij}")}。沿一行（列）把元素与对应代数余子式配对求和，就回到原行列式。`,
   concepts: [
     { label: "余子矩阵", text: "删去第 i 行第 j 列后剩下的 (n−1) 阶矩阵。" },
     { label: "余子式", text: `${texInline("M_{ij}")} 是余子矩阵的行列式，是一个标量。` },
@@ -27,37 +28,50 @@ defineChapter2Section("cofactor-expansion", {
     description: "点击元素删行删列，拼装代数余子式，并比较不同展开路线。",
     task: "对示例矩阵沿零最多的一行展开，写出每个非零项的代数余子式。",
     prompts: [
-      "点击 a_ij，观察删行删列与余子矩阵。",
-      "对照棋盘符号与 (-1)^{i+j}。",
+      `点击 ${texInline("a_{ij}")}，观察删行删列与余子矩阵。`,
+      `对照棋盘符号与 ${texInline("(-1)^{i+j}")}。`,
       "完成一行展开并求和。",
       "换一列展开，确认结果相同、项数可能不同。",
     ],
   },
   example: {
     title: "例题：沿一行展开",
-    question: `计算 ${texInline("\\det\\begin{bmatrix}1&2&0\\\\0&3&0\\\\4&5&6\\end{bmatrix}")}：选择最合适的行或列展开。`,
+    question: `计算 ${texInline(
+      "\\det\\begin{bmatrix}1&2&0\\\\0&3&0\\\\4&5&6\\end{bmatrix}",
+    )}：选择最合适的行或列展开。`,
     choices: [
-      { correct: true, text: "沿第二行：仅中间元 3 非零，det=3·(-1)^{2+2}·det[[1,0],[4,6]]=3·6=18。" },
+      {
+        correct: true,
+        text: `沿第二行：仅中间元 3 非零，${texInline(
+          "\\det=3\\cdot(-1)^{2+2}\\det\\begin{bmatrix}1&0\\\\4&6\\end{bmatrix}=18",
+        )}。`,
+      },
       { text: "必须从第一行展开，结果为 0。" },
       { text: "代数余子式永远等于余子式，不必看位置符号。" },
-      { text: "第二行有零所以整行贡献为 0，det=0。" },
+      { text: `第二行有零所以整行贡献为 0，${texInline("\\det=0")}。` },
     ],
     steps: [
       "第二行有两个零，最适合展开。",
-      "只剩 a22=3，符号 (-1)^{2+2}=+1。",
-      "余子矩阵为 [[1,0],[4,6]]，M22=6。",
-      "det=3·6=18。",
+      `只剩 ${texInline("a_{22}=3")}，符号 ${texInline("(-1)^{2+2}=+1")}。`,
+      `余子矩阵为 ${texInline("\\begin{bmatrix}1&0\\\\4&6\\end{bmatrix}")}，${texInline("M_{22}=6")}。`,
+      `${texInline("\\det=3\\cdot 6=18")}。`,
     ],
   },
   quiz: [
     { question: "余子矩阵与余子式有何区别？", answer: "前者是矩阵，后者是它的行列式（标量）。" },
-    { question: "C_23 的符号是什么？", answer: "(-1)^{2+3}=−1。" },
+    {
+      question: `${texInline("C_{23}")} 的符号是什么？`,
+      answer: `${texInline("(-1)^{2+3}=-1")}。`,
+    },
     { question: "为何优先选含零多的行？", answer: "非零项少，子问题更少。" },
-    { question: "本节与 §8 Laplace 定理如何区分？", answer: "本节是 k=1 的单行/列展开；§8 推广到多行多列。" },
+    {
+      question: "本节与 §8 Laplace 定理如何区分？",
+      answer: `本节是 ${texInline("k=1")} 的单行/列展开；§8 推广到多行多列。`,
+    },
   ],
   summary: [
     "展开把 n 阶问题拆成若干 n−1 阶问题。",
-    "位置符号由 i+j 的奇偶决定。",
+    `位置符号由 ${texInline("i+j")} 的奇偶决定。`,
     "路线不同，答案相同，计算量可差很多。",
     "下一节用行列式表达线性方程组的唯一解。",
   ],

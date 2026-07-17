@@ -556,3 +556,31 @@ body.dark .ch2-matrix-box {
     animation: none !important;
   }
 }
+
+
+.ch2-term-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  font-family: inherit;
+  line-height: 1.2;
+}
+
+.ch2-term-btn .tex,
+.ch2-meter-math .tex,
+.ch2-note .tex,
+.ch2-matrix-table .tex {
+  font-size: 0.95em;
+}
+
+.ch2-meter-card strong.ch2-meter-math {
+  text-transform: none;
+  letter-spacing: 0;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--muted);
+}
+
+.ch2-matrix-table td .tex {
+  font-size: 0.88em;
+}

@@ -2,6 +2,12 @@
   const M = () => window.Ch2Math;
   const tex = (s) => (window.texInline ? window.texInline(s) : s);
   const display = (s) => (window.texDisplay ? window.texDisplay(s) : s);
+  const aEntry = (row, col) => tex(`a_{${row}${col}}`);
+  const productTermHtml = (perm) => perm.map((col, row) => aEntry(row + 1, col)).join("");
+  const signedTermHtml = (perm) => {
+    const sign = M().signFromPerm(perm);
+    return `${sign > 0 ? "+" : "−"}${productTermHtml(perm)}`;
+  };
 
   function formalShell(title, lead, modulesHtml) {
     return `<h2>${title}</h2><div class="ch2-formal"><p class="ch2-formal-lead">${lead}</p>${modulesHtml}</div>`;
@@ -215,7 +221,7 @@
 
     function render() {
       const table = root.querySelector("[data-select-table]");
-      const labels = Array.from({ length: n }, (_, i) => Array.from({ length: n }, (_, j) => `a${i + 1}${j + 1}`));
+      const labels = Array.from({ length: n }, (_, i) => Array.from({ length: n }, (_, j) => aEntry(i + 1, j + 1)));
       table.innerHTML = labels
         .map(
           (row, i) =>
@@ -257,8 +263,8 @@
       }
       const sign = M().signFromPerm(perm);
       root.querySelector("[data-perm-out]").textContent = perm.join("");
-      root.querySelector("[data-term-out]").textContent = perm.map((col, row) => `a${row + 1}${col}`).join("·");
-      root.querySelector("[data-sign-out]").textContent = sign > 0 ? "+1" : "−1";
+      root.querySelector("[data-term-out]").innerHTML = productTermHtml(perm);
+      root.querySelector("[data-sign-out]").innerHTML = sign > 0 ? tex("+1") : tex("-1");
       root.querySelector("[data-select-msg]").textContent = "合法取项完成：排列、乘积与符号已同步。";
       M().pulseClass(root.querySelector("[data-sign-card]"));
     }
@@ -290,8 +296,7 @@
       .permutations(3)
       .map((perm) => {
         const sign = M().signFromPerm(perm);
-        const term = perm.map((col, row) => `a${row + 1}${col}`).join("");
-        return `<button type="button" data-six="${perm.join("")}">${sign > 0 ? "+" : "−"}${term}</button>`;
+        return `<button type="button" data-six="${perm.join("")}" class="ch2-term-btn">${sign > 0 ? "+" : "−"}${productTermHtml(perm)}</button>`;
       })
       .join("");
     six.querySelectorAll("[data-six]").forEach((btn) => {

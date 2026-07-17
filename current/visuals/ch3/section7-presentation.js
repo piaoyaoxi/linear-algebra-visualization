@@ -1,9 +1,9 @@
 (() => {
   const M = () => window.Ch3Math;
-  const tex = (s) => (window.texInline ? window.texInline(s) : s);
+  const tex = (s) => M().tex(s);
 
-  function formalShell(title, lead, modulesHtml) {
-    return `<h2>${title}</h2><div class="ch3-formal"><p class="ch3-formal-lead">${lead}</p>${modulesHtml}</div>`;
+  function formalShell(title, lead, body) {
+    return `<h2>${title}</h2><div class="ch3-formal"><p class="ch3-formal-lead">${lead}</p>${body}</div>`;
   }
 
   function module(num, title, sub, body) {
@@ -11,39 +11,18 @@
   }
 
   function mountResultant(root) {
+    // Circle x^2+y^2=1 with line ax+by=c
     const presets = {
-      circleLine: {
-        label: "圆与直线 x−y=0",
-        // unit circle + y=x
-        type: "circle-line",
-        line: [1, -1, 0], // x - y = 0
-      },
-      circleHoriz: {
-        label: "圆与水平线 y=0.5",
-        type: "circle-line",
-        line: [0, 1, 0.5],
-      },
-      tangent: {
-        label: "相切 y=1",
-        type: "circle-line",
-        line: [0, 1, 1],
-      },
-      miss: {
-        label: "无实交 y=2",
-        type: "circle-line",
-        line: [0, 1, 2],
-      },
+      circleLine: { label: "圆与 y=x", line: [1, -1, 0], note: "消去 x 后得到 2y²−1=0" },
+      circleHoriz: { label: "圆与 y=1/2", line: [0, 1, 0.5], note: "水平线与单位圆两交点" },
+      tangent: { label: "相切 y=1", line: [0, 1, 1], note: "重根/相切：候选重合" },
+      miss: { label: "无实交 y=2", line: [0, 1, 2], note: "无实候选，不必硬凑实交点" },
     };
-    const state = { key: "circleLine" };
+    const state = { key: "circleLine", verified: false };
 
     function solveCircleLine(a, b, c) {
-      // a x + b y = c, x^2 + y^2 = 1
-      // If b≠0: y = (c - a x)/b
-      // If a≠0 and b=0: x = c/a
       const pts = [];
       if (Math.abs(b) > 1e-9) {
-        // x^2 + ((c-ax)/b)^2 = 1
-        // (b^2 + a^2) x^2 - 2 a c x + c^2 - b^2 = 0
         const A = a * a + b * b;
         const B = -2 * a * c;
         const C = c * c - b * b;
@@ -64,7 +43,6 @@
           pts.push([x, y], [x, -y]);
         }
       }
-      // unique near-duplicates for tangent
       const uniq = [];
       pts.forEach((p) => {
         if (!uniq.some((q) => Math.hypot(q[0] - p[0], q[1] - p[1]) < 1e-8)) uniq.push(p);
@@ -72,14 +50,35 @@
       return uniq;
     }
 
-    function sylvesterForCircleLineY(line) {
-      // Eliminate x for f=x^2 + (y^2-1), g = a x + (b y - c) as poly in x:
-      // For line a x + b y = c => a x + (b y - c) = 0
-      // If a≠0: g = x + (by-c)/a , monic
-      // Demo focuses on a=1,b=-1,c=0 => g=x-y, r=-y, p=0, q=y^2-1
-      // Res = resultant = y^2 + (y^2-1) wait - use structure display
+    function sylvesterForYX(line) {
+      // For circle: f = x^2 + 0·x + (y^2-1)
+      // For line ax+by=c with a≠0: g = x + (by-c)/a  monic → r = (by-c)/a
+      // Sylvester 3×3:
+      // 1  0  q
+      // 1  r  0
+      // 0  1  r
       const [a, b, c] = line;
-      return { a, b, c };
+      if (Math.abs(a) < 1e-9) {
+        return {
+          mode: "y-fixed",
+          rows: null,
+          resText: "此预设固定 y，直接代回圆方程求 x",
+        };
+      }
+      // Keep symbolic r(y)
+      return {
+        mode: "x-elim",
+        rows: [
+          ["1", "0", "y^2-1"],
+          ["1", "r(y)", "0"],
+          ["0", "1", "r(y)"],
+        ],
+        rExpr: `(${b}y-(${c}))/(${a})`,
+        resText:
+          state.key === "circleLine"
+            ? "Res_x(f,g) = r(y)^2 + (y^2-1) ，且 r(y)=-y ⇒ 2y^2-1=0"
+            : `r(y)=${b === 0 ? `${-c}/${a}` : `(${b}y-${c})/${a}`}，结式给出关于 y 的条件`,
+      };
     }
 
     function render() {
@@ -87,33 +86,44 @@
       const [a, b, c] = preset.line;
       const candidates = solveCircleLine(a, b, c);
       const verified = candidates.filter(([x, y]) => {
-        const onCircle = Math.abs(x * x + y * y - 1) < 1e-6;
-        const onLine = Math.abs(a * x + b * y - c) < 1e-6;
-        return onCircle && onLine;
+        return Math.abs(x * x + y * y - 1) < 1e-6 && Math.abs(a * x + b * y - c) < 1e-6;
       });
+      const syl = sylvesterForYX(preset.line);
 
-      // Sylvester display for monic case when a=1: f=x^2+0x+(y^2-1), g=x + (by-c)
-      // For general educational display:
-      root.querySelector("[data-f]").textContent = "f(x) = x² + (y² − 1)";
-      root.querySelector("[data-g]").textContent =
-        Math.abs(a) > 1e-9
-          ? `g(x) = x + (${b}·y − ${c})/${a}`
-          : `g 不以 x 为首（此预设改用几何求交并强调验解）`;
-      root.querySelector("[data-syl]").innerHTML = `
-        <div class="ch3-sylvester-row"><span>1</span><span>0</span><span>y²−1</span></div>
-        <div class="ch3-sylvester-row"><span>1</span><span>r(y)</span><span>0</span></div>
-        <div class="ch3-sylvester-row"><span>0</span><span>1</span><span>r(y)</span></div>`;
-      root.querySelector("[data-res]").textContent =
-        state.key === "circleLine"
-          ? "Res_x(f,g) ∝ 2y² − 1  →  y = ±√2/2"
-          : "由圆与直线联立得到关于参数的二次方程（候选）";
-      root.querySelector("[data-cand]").textContent = candidates.length
-        ? candidates.map((p) => `(${p[0].toFixed(3)}, ${p[1].toFixed(3)})`).join("  ")
-        : "无实候选";
-      root.querySelector("[data-ver]").textContent = verified.length
-        ? verified.map((p) => `(${p[0].toFixed(3)}, ${p[1].toFixed(3)})`).join("  ")
-        : "无已验证实交点";
-      root.querySelector("[data-count]").textContent = `${verified.length} 个已验证`;
+      root.querySelector("[data-f]").innerHTML = tex("f(x)=x^2+(y^2-1)");
+      if (Math.abs(a) > 1e-9) {
+        const r = b === 0 && c === 0 ? "0" : `\\dfrac{${b}y-(${c})}{${a}}`;
+        root.querySelector("[data-g]").innerHTML = tex(`g(x)=x+\\left(${r}\\right)`);
+      } else {
+        root.querySelector("[data-g]").innerHTML = tex(`\\text{直线 } ${b}y=${c} \\text{（固定 } y\\text{）}`);
+      }
+
+      const sylBox = root.querySelector("[data-syl]");
+      if (syl.rows) {
+        sylBox.innerHTML = syl.rows
+          .map(
+            (row) =>
+              `<div class="ch3-sylvester-row">${row.map((cell) => `<span>${cell}</span>`).join("")}</div>`,
+          )
+          .join("");
+      } else {
+        sylBox.innerHTML = `<p class="ch3-note">此预设不走 x-首项消元的 monic 形式，改用几何求交并强调验解。</p>`;
+      }
+      root.querySelector("[data-res]").textContent = syl.resText;
+      root.querySelector("[data-note]").textContent = preset.note;
+
+      const fmt = (p) => `(${M().formatSigned(p[0], 3)},\\, ${M().formatSigned(p[1], 3)})`;
+      root.querySelector("[data-cand]").innerHTML = candidates.length
+        ? tex(candidates.map(fmt).join("\\;\\;"))
+        : tex("\\text{无实候选}");
+      root.querySelector("[data-ver]").innerHTML = state.verified
+        ? verified.length
+          ? tex(verified.map(fmt).join("\\;\\;"))
+          : tex("\\text{无已验证实交点}")
+        : tex("\\text{尚未验解}");
+      root.querySelector("[data-count]").textContent = state.verified
+        ? `${verified.length} 个已验证`
+        : `${candidates.length} 个候选`;
       M().pulseClass(root.querySelector("[data-ver-card]"));
 
       const canvas = root.querySelector("[data-ch3-canvas]");
@@ -121,28 +131,32 @@
       if (!sized) return;
       const { ctx, width, height } = sized;
       const frame = M().drawAxes(ctx, width, height, 70);
-      // unit circle
       ctx.strokeStyle = frame.p.accent;
-      ctx.lineWidth = 2.4;
+      ctx.lineWidth = 2.5;
       ctx.beginPath();
       ctx.arc(frame.cx, frame.cy, frame.scale, 0, Math.PI * 2);
       ctx.stroke();
-      M().drawLineFromEq(ctx, frame, a, b, c, frame.p.coral, 2.4);
+      M().drawLineFromEq(ctx, frame, a, b, c, frame.p.coral, 2.5);
       candidates.forEach((p) => M().drawPoint(ctx, frame, p, frame.p.muted, "候选"));
-      verified.forEach((p) => M().drawPoint(ctx, frame, p, frame.p.blue, "解"));
+      if (state.verified) {
+        verified.forEach((p) => M().drawPoint(ctx, frame, p, frame.p.blue, "解"));
+      }
     }
 
     root.querySelectorAll("[data-preset]").forEach((btn) => {
       btn.addEventListener("click", () => {
         root.querySelectorAll("[data-preset]").forEach((b) => b.classList.toggle("is-active", b === btn));
         state.key = btn.dataset.preset;
+        state.verified = false;
+        root.querySelector("[data-verify-note]").textContent = "";
         render();
       });
     });
     root.querySelector("[data-verify]").addEventListener("click", () => {
-      render();
+      state.verified = true;
       root.querySelector("[data-verify-note]").textContent =
-        "已把候选代回 x²+y²=1 与直线方程；仅同时满足两者的点保留为解。";
+        "已把候选代回 x²+y²=1 与直线方程；仅同时满足两者的点保留为解。结式给出候选，不等于自动跳过验解。";
+      render();
     });
     window.addEventListener(
       "resize",
@@ -164,7 +178,7 @@
           "01",
           "Sylvester 与结式",
           "低次数可读的矩阵证书。",
-          `<p class="ch3-note">把 f、g 看成关于 x 的多项式，系数依赖 y。Sylvester 矩阵的行列式是 ${tex("\\operatorname{Res}_x(f,g)")}；在正常次数条件下，它为零对应公共 x 根。</p>`,
+          `<p class="ch3-note">把 ${tex("f,g")} 看成关于 ${tex("x")} 的多项式，系数依赖 ${tex("y")}。Sylvester 矩阵的行列式是 ${tex("\operatorname{Res}_x(f,g)")}；在正常次数条件下，它为零对应公共 ${tex("x")} 根。</p>`,
         ) +
           module(
             "02",
@@ -185,11 +199,11 @@
         <div class="ch3-lab">
           <div class="ch3-lab-head">
             <h3>结式消元台（圆与直线）</h3>
-            <p>在低次预设上观察曲线、Sylvester 结构、候选根与验解。不把结式说成无条件万能工具。</p>
+            <p>观察任务：走完“消元 → 候选 → 回代 → 验解”。不要把结式说成无条件万能工具。</p>
           </div>
           <div class="ch3-presets">
             <button type="button" class="is-active" data-preset="circleLine">圆与 y=x</button>
-            <button type="button" data-preset="circleHoriz">圆与 y=0.5</button>
+            <button type="button" data-preset="circleHoriz">圆与 y=1/2</button>
             <button type="button" data-preset="tangent">相切 y=1</button>
             <button type="button" data-preset="miss">无实交 y=2</button>
           </div>
@@ -197,14 +211,14 @@
             <div class="ch3-stage"><canvas data-ch3-canvas aria-label="曲线交点"></canvas></div>
             <div class="ch3-side">
               <div class="ch3-meter">
-                <div class="ch3-meter-card" data-ver-card><strong>已验证</strong><span data-count>—</span></div>
-                <div class="ch3-meter-card"><strong>流程</strong><span style="font-size:12px">消元→回代→验解</span></div>
+                <div class="ch3-meter-card" data-ver-card><strong>状态</strong><span data-count>—</span></div>
+                <div class="ch3-meter-card"><strong>流程</strong><span class="ch3-small">消元→回代→验解</span></div>
               </div>
-              <div class="ch3-panel"><h4>关于 x 的多项式</h4><p class="ch3-note" data-f></p><p class="ch3-note" data-g></p></div>
+              <div class="ch3-panel"><h4>关于 x 的多项式</h4><div data-f class="ch3-math"></div><div data-g class="ch3-math"></div></div>
               <div class="ch3-panel"><h4>Sylvester 结构</h4><div class="ch3-sylvester" data-syl></div></div>
-              <div class="ch3-panel"><h4>结式条件</h4><p class="ch3-note" data-res></p></div>
-              <div class="ch3-panel"><h4>候选点</h4><p class="ch3-note" data-cand></p></div>
-              <div class="ch3-panel"><h4>验解后</h4><p class="ch3-note" data-ver></p><p class="ch3-note" data-verify-note></p></div>
+              <div class="ch3-panel"><h4>结式条件</h4><p class="ch3-note" data-res></p><p class="ch3-note" data-note></p></div>
+              <div class="ch3-panel"><h4>候选点</h4><div class="ch3-math" data-cand></div></div>
+              <div class="ch3-panel"><h4>验解后</h4><div class="ch3-math" data-ver></div><p class="ch3-note" data-verify-note></p></div>
               <div class="ch3-toolbar"><button type="button" data-verify>执行验解</button></div>
             </div>
           </div>

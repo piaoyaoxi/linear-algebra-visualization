@@ -1,0 +1,407 @@
+/* Chapter 1 presentation — fixed stages, solid math surfaces */
+
+.ch1-lab {
+  display: grid;
+  gap: 18px;
+  padding: 18px 18px 16px;
+  border: 1px solid var(--line);
+  border-radius: calc(var(--radius) + 10px);
+  background: var(--surface-solid);
+  box-shadow: var(--shadow-soft);
+}
+
+.ch1-lab-head h3 {
+  margin: 0 0 6px;
+  font-size: clamp(17px, 1.8vw, 20px);
+  letter-spacing: -0.01em;
+}
+
+.ch1-lab-head p {
+  margin: 0;
+  max-width: 72ch;
+  color: var(--muted);
+  line-height: 1.7;
+  font-size: 14.5px;
+}
+
+.ch1-lab-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.15fr) minmax(250px, 0.85fr);
+  gap: 16px;
+  align-items: start;
+}
+
+.ch1-lab-grid.is-stack {
+  grid-template-columns: 1fr;
+}
+
+.ch1-stage {
+  position: relative;
+  height: 340px;
+  min-height: 340px;
+  max-height: 340px;
+  border: 1px solid var(--line);
+  border-radius: calc(var(--radius) + 6px);
+  overflow: hidden;
+  background:
+    radial-gradient(circle at 18% 20%, color-mix(in srgb, var(--accent) 10%, transparent), transparent 42%),
+    radial-gradient(circle at 86% 78%, color-mix(in srgb, var(--coral, #d9835f) 10%, transparent), transparent 40%),
+    var(--surface-soft);
+}
+
+.ch1-stage canvas {
+  display: block;
+  width: 100%;
+  height: 340px;
+  min-height: 340px;
+  max-height: 340px;
+}
+
+.ch1-stage.is-short {
+  height: 260px;
+  min-height: 260px;
+  max-height: 260px;
+}
+
+.ch1-stage.is-short canvas {
+  height: 260px;
+  min-height: 260px;
+  max-height: 260px;
+}
+
+.ch1-panel {
+  display: grid;
+  gap: 12px;
+  align-content: start;
+}
+
+.ch1-readout {
+  display: grid;
+  gap: 8px;
+  padding: 12px 14px;
+  border: 1px solid var(--line);
+  border-radius: calc(var(--radius) + 4px);
+  background: var(--surface-soft);
+}
+
+.ch1-readout strong {
+  font-size: 15px;
+}
+
+.ch1-readout .ch1-muted {
+  color: var(--muted);
+  font-size: 13.5px;
+  line-height: 1.55;
+}
+
+.ch1-status {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 10px;
+  border-radius: 999px;
+  font-size: 12.5px;
+  font-weight: 600;
+  border: 1px solid var(--line);
+  background: var(--surface-solid);
+}
+
+.ch1-status.is-ok {
+  color: var(--accent-strong, #08736e);
+  border-color: color-mix(in srgb, var(--accent) 35%, var(--line));
+  background: color-mix(in srgb, var(--accent) 12%, var(--surface-solid));
+}
+
+.ch1-status.is-bad {
+  color: var(--coral, #d9835f);
+  border-color: color-mix(in srgb, var(--coral, #d9835f) 35%, var(--line));
+  background: color-mix(in srgb, var(--coral, #d9835f) 12%, var(--surface-solid));
+}
+
+.ch1-status.is-warn {
+  color: #a06a1a;
+  border-color: color-mix(in srgb, #e0a84a 40%, var(--line));
+  background: color-mix(in srgb, #e0a84a 14%, var(--surface-solid));
+}
+
+.ch1-controls {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.ch1-controls button,
+.ch1-btn {
+  appearance: none;
+  border: 1px solid var(--line);
+  background: var(--surface-solid);
+  color: var(--text);
+  border-radius: 999px;
+  padding: 7px 12px;
+  font: inherit;
+  font-size: 13px;
+  cursor: pointer;
+  transition: background 0.15s ease, border-color 0.15s ease, transform 0.15s ease;
+}
+
+.ch1-controls button:hover,
+.ch1-btn:hover {
+  border-color: color-mix(in srgb, var(--accent) 40%, var(--line));
+}
+
+.ch1-controls button.is-active,
+.ch1-btn.is-active {
+  background: color-mix(in srgb, var(--accent) 16%, var(--surface-solid));
+  border-color: color-mix(in srgb, var(--accent) 45%, var(--line));
+  color: var(--accent-strong, #08736e);
+  font-weight: 600;
+}
+
+.ch1-controls button:focus-visible,
+.ch1-btn:focus-visible,
+.ch1-strip-input:focus-visible {
+  outline: 2px solid color-mix(in srgb, var(--accent) 55%, transparent);
+  outline-offset: 2px;
+}
+
+.ch1-slider-row {
+  display: grid;
+  grid-template-columns: 72px 1fr 44px;
+  gap: 8px;
+  align-items: center;
+  font-size: 13px;
+}
+
+.ch1-slider-row input[type="range"] {
+  width: 100%;
+}
+
+.ch1-strip {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.ch1-strip-cell {
+  min-width: 64px;
+  padding: 8px 10px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: var(--surface-soft);
+  text-align: center;
+}
+
+.ch1-strip-cell.is-highlight {
+  border-color: color-mix(in srgb, var(--accent) 50%, var(--line));
+  background: color-mix(in srgb, var(--accent) 12%, var(--surface-solid));
+}
+
+.ch1-strip-deg {
+  display: block;
+  font-size: 11px;
+  color: var(--muted);
+  margin-bottom: 4px;
+}
+
+.ch1-strip-val {
+  font-variant-numeric: tabular-nums;
+  font-size: 15px;
+}
+
+.ch1-strip-input {
+  width: 100%;
+  max-width: 72px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 4px 6px;
+  text-align: center;
+  font: inherit;
+  background: var(--surface-solid);
+  color: var(--text);
+}
+
+.ch1-ledger {
+  max-height: 220px;
+  overflow: auto;
+  display: grid;
+  gap: 6px;
+  padding: 10px 12px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: var(--surface-soft);
+  font-size: 13px;
+  line-height: 1.55;
+}
+
+.ch1-ledger .is-current {
+  font-weight: 600;
+  color: var(--accent-strong, #08736e);
+}
+
+.ch1-nest {
+  display: grid;
+  gap: 8px;
+}
+
+.ch1-nest-layer {
+  padding: 10px 12px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: color-mix(in srgb, var(--accent) 6%, var(--surface-solid));
+}
+
+.ch1-nest-layer[data-level="1"] {
+  margin-left: 0;
+  background: color-mix(in srgb, var(--accent) 14%, var(--surface-solid));
+}
+
+.ch1-nest-layer[data-level="2"] {
+  margin-left: 12px;
+  background: color-mix(in srgb, var(--blue, #547ec8) 12%, var(--surface-solid));
+}
+
+.ch1-nest-layer[data-level="3"] {
+  margin-left: 24px;
+  background: color-mix(in srgb, var(--coral, #d9835f) 12%, var(--surface-solid));
+}
+
+.ch1-nest-layer[data-level="4"] {
+  margin-left: 36px;
+  background: color-mix(in srgb, var(--accent) 8%, var(--surface-solid));
+}
+
+.ch1-compare {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.ch1-compare-card {
+  padding: 12px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: var(--surface-soft);
+  font-size: 13.5px;
+  line-height: 1.55;
+}
+
+.ch1-compare-card strong {
+  display: block;
+  margin-bottom: 6px;
+}
+
+.ch1-formal {
+  display: grid;
+  gap: 16px;
+}
+
+.ch1-formal-lead {
+  margin: 0;
+  color: var(--muted);
+  line-height: 1.7;
+  max-width: 75ch;
+}
+
+.ch1-module {
+  padding: 14px 16px;
+  border: 1px solid var(--line);
+  border-radius: calc(var(--radius) + 6px);
+  background: var(--surface-solid);
+}
+
+.ch1-module-heading {
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+  margin-bottom: 10px;
+}
+
+.ch1-module-heading > span {
+  flex: 0 0 auto;
+  width: 28px;
+  height: 28px;
+  border-radius: 999px;
+  display: grid;
+  place-items: center;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--accent-strong, #08736e);
+  background: color-mix(in srgb, var(--accent) 14%, var(--surface-solid));
+  border: 1px solid color-mix(in srgb, var(--accent) 30%, var(--line));
+}
+
+.ch1-module-heading h3 {
+  margin: 0 0 2px;
+  font-size: 16px;
+}
+
+.ch1-module-heading p {
+  margin: 0;
+  color: var(--muted);
+  font-size: 13.5px;
+}
+
+.ch1-gate-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.ch1-gate {
+  padding: 10px 12px;
+  border-radius: 12px;
+  border: 1px solid var(--line);
+  background: var(--surface-soft);
+  font-size: 13px;
+}
+
+.ch1-gate.is-ok {
+  border-color: color-mix(in srgb, var(--accent) 40%, var(--line));
+  background: color-mix(in srgb, var(--accent) 10%, var(--surface-solid));
+}
+
+.ch1-gate.is-bad {
+  border-color: color-mix(in srgb, var(--coral, #d9835f) 40%, var(--line));
+  background: color-mix(in srgb, var(--coral, #d9835f) 10%, var(--surface-solid));
+}
+
+.is-pulse {
+  animation: ch1-pulse 0.45s ease;
+}
+
+@keyframes ch1-pulse {
+  0% {
+    transform: scale(1);
+  }
+  40% {
+    transform: scale(1.02);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+@media (max-width: 860px) {
+  .ch1-lab-grid,
+  .ch1-compare {
+    grid-template-columns: 1fr;
+  }
+
+  .ch1-stage,
+  .ch1-stage canvas {
+    height: 300px;
+    min-height: 300px;
+    max-height: 300px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .is-pulse {
+    animation: none;
+  }
+
+  .ch1-controls button,
+  .ch1-btn {
+    transition: none;
+  }
+}

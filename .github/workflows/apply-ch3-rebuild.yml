@@ -27,7 +27,17 @@ jobs:
 
       - name: Extract reviewed Chapter 3 files
         run: |
-          base64 --decode .ch3-rebuild.tar.xz.b64 > .ch3-rebuild.tar.xz
+          python3 - <<'PY'
+          from pathlib import Path
+          import base64, hashlib
+          source = Path('.ch3-rebuild.tar.xz.b64').read_text().strip()
+          print('base64 chars:', len(source), 'prefix:', source[:8], 'suffix:', source[-8:])
+          payload = base64.b64decode(source, validate=True)
+          print('archive bytes:', len(payload), 'sha256:', hashlib.sha256(payload).hexdigest())
+          if hashlib.sha256(payload).hexdigest() != '69d33a5059299dcc29c93ff1333e6605ab126fc14d2250a2bf183e306826cf0f':
+              raise SystemExit('archive checksum mismatch')
+          Path('.ch3-rebuild.tar.xz').write_bytes(payload)
+          PY
           tar -xJf .ch3-rebuild.tar.xz
           sed -i 's/ch3c/ch3d/g' current/learn.html
 

@@ -98,6 +98,93 @@
   line-height: 1.55;
 }
 
+.ch5-matrix-wrap {
+  margin-top: 8px;
+}
+
+.ch5-rule-list {
+  margin: 0;
+  padding-left: 1.15em;
+  display: grid;
+  gap: 6px;
+  color: var(--muted);
+  font-size: 13.5px;
+  line-height: 1.55;
+}
+
+.ch5-rule-list strong {
+  color: var(--text);
+}
+
+.ch5-checks {
+  display: grid;
+  gap: 6px;
+}
+
+.ch5-check-row {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  font-size: 13px;
+  padding: 6px 8px;
+  border-radius: 8px;
+  background: var(--surface-solid);
+  border: 1px solid var(--line);
+}
+
+.ch5-check-row .is-ok-text {
+  color: var(--accent-strong, #08736e);
+}
+
+.ch5-step-poly {
+  font-weight: 600;
+  color: var(--text) !important;
+  margin-bottom: 4px !important;
+}
+
+.ch5-step.is-done {
+  opacity: 0.72;
+}
+
+.ch5-meters.is-disabled {
+  opacity: 0.55;
+}
+
+.ch5-sylvester {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: 10px;
+  margin: 8px 0 10px;
+}
+
+.ch5-sylv-card {
+  padding: 10px 12px;
+  border-radius: 12px;
+  border: 1px solid var(--line);
+  background: var(--surface-soft);
+  display: grid;
+  gap: 8px;
+  font-size: 13px;
+}
+
+.ch5-sylv-card.is-ok {
+  border-color: color-mix(in srgb, var(--accent) 40%, var(--line));
+  background: color-mix(in srgb, var(--accent) 10%, var(--surface-solid));
+}
+
+.ch5-sylv-card.is-bad {
+  border-color: color-mix(in srgb, var(--coral, #d9835f) 40%, var(--line));
+  background: color-mix(in srgb, var(--coral, #d9835f) 10%, var(--surface-solid));
+}
+
+.ch5-sylv-kicker {
+  font-size: 11.5px;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  color: var(--muted);
+  text-transform: uppercase;
+}
+
 .ch5-status {
   display: inline-flex;
   align-items: center;

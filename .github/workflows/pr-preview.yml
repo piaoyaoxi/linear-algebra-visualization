@@ -49,7 +49,8 @@ jobs:
           rm -f _dev/ch1-payload.part* _dev/ch1-browser-check.cjs _dev/ch1-diag.txt
           git config user.name 'GPT-5.6 Thinking'
           git config user.email 'noreply@openai.com'
-          git add current docs _dev
+          git add current docs
+          git add -u _dev
           echo "Files prepared for the verified commit:"
           git diff --cached --stat
           git diff --cached --check

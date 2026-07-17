@@ -28,17 +28,33 @@ jobs:
           git fetch -q --depth=1 origin "${BRANCH_NAME}"
           git checkout -q -B "${BRANCH_NAME}" FETCH_HEAD
 
-      - name: Fix augmented-matrix KaTeX alignment
+      - name: Apply browser-found fixes
         run: |
           python3 - <<'PY'
           from pathlib import Path
-          path = Path('current/visuals/ch3/shared-math.js')
-          source = path.read_text()
-          old = '`{@{}${"c".repeat(barAt)}|${"c".repeat(matrix[0].length - barAt)}@{}}`'
-          new = '`{${"c".repeat(barAt)}|${"c".repeat(matrix[0].length - barAt)}}`'
-          if old not in source:
+
+          math_path = Path('current/visuals/ch3/shared-math.js')
+          math_source = math_path.read_text()
+          old_alignment = '`{@{}${"c".repeat(barAt)}|${"c".repeat(matrix[0].length - barAt)}@{}}`'
+          new_alignment = '`{${"c".repeat(barAt)}|${"c".repeat(matrix[0].length - barAt)}}`'
+          if old_alignment not in math_source:
               raise SystemExit('expected KaTeX alignment source not found')
-          path.write_text(source.replace(old, new))
+          math_path.write_text(math_source.replace(old_alignment, new_alignment))
+
+          css_path = Path('current/visuals/ch3/shared-presentation.css')
+          css_source = css_path.read_text()
+          old_callout = '''.ch3-verification-grid .viz-callout {
+            min-width: 0;
+          }'''.replace('          ', '')
+          new_callout = '''.ch3-verification-grid .viz-callout {
+            width: 100%;
+            max-width: 100%;
+            min-width: 0;
+            overflow-x: auto;
+          }'''.replace('          ', '')
+          if old_callout not in css_source:
+              raise SystemExit('expected verification-callout rule not found')
+          css_path.write_text(css_source.replace(old_callout, new_callout))
           PY
           node --check current/visuals/ch3/shared-math.js
           git diff --check
@@ -76,11 +92,11 @@ jobs:
           path: browser-artifacts/
           if-no-files-found: warn
 
-      - name: Commit fix and remove temporary verification files
+      - name: Commit fixes and remove temporary verification files
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git rm scripts/ch3-browser-smoke.mjs .github/workflows/ch3-browser-smoke.yml
-          git add current/visuals/ch3/shared-math.js
-          git commit -m "fix(ch3): render augmented matrices without KaTeX errors"
+          git add current/visuals/ch3/shared-math.js current/visuals/ch3/shared-presentation.css
+          git commit -m "fix(ch3): resolve browser verification issues"
           git push -q origin HEAD:"${BRANCH_NAME}"

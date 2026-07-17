@@ -8,15 +8,40 @@ on:
       - ".github/workflows/apply-ch7-context.yml"
 
 permissions:
-  contents: read
+  contents: write
 
 jobs:
-  verify:
+  apply:
     runs-on: ubuntu-latest
     steps:
       - name: Check out context branch
         uses: actions/checkout@v4
         with:
           ref: context/ch7-linear-transformations
-      - name: Locate repaired payload mismatch
-        run: 'for spec in "part-01-0:2d6bfbc67902035badc57fb52f136fee8a837309f095aae297e3a1a8344325b0" "part-01-1:3ee9eaeb15f3e7820528a16c92d5f97bdc46444d18ee6e94c0779cebac076e93" "part-04-0:65b84e920d046e50ab7e1a14616fb7a8c659dbe2ed481b9431b92f44022e502b" "part-04-1:1e762b5fd435d85249107cd6f66b60d0665f294f93237285f761e4f9286567cd" "part-06-0:d9e9135031c7c62f43caafae1e0a80cbe512c585dff72044cc0396edacc8a9c5" "part-06-1:8b4c6748ac3409ca83630bcb8e3242617697c12ec57059376dee61cc203f6137"; do file="${spec%%:*}"; expected="${spec#*:}"; actual="$(sha256sum ".github/ch7-payload/$file" | cut -d" " -f1)"; if [ "$actual" != "$expected" ]; then echo "BAD:$file:$actual"; exit 1; fi; done; echo ALL_REPAIRS_OK'
+      - name: Repair, verify, and extract payload
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          path = Path('.github/ch7-payload/part-06-1')
+          text = path.read_text()
+          old = 'Qgz084eXJ4555G176'
+          new = 'Qgz084eXJ455G176'
+          assert text.count(old) == 1, text.count(old)
+          path.write_text(text.replace(old, new))
+          assert path.stat().st_size == 6000, path.stat().st_size
+          PY
+          cat .github/ch7-payload/part-* | base64 -d > /tmp/ch7-payload.tar.gz
+          echo "6b1812a2a79b1779f34fc11bac295bc6aa41dad468ffa30ac6662e9901e3869d  /tmp/ch7-payload.tar.gz" | sha256sum -c -
+          gzip -t /tmp/ch7-payload.tar.gz
+          tar -xzf /tmp/ch7-payload.tar.gz
+          rm -rf .github/ch7-payload
+          rm -f .github/ch7-payload-diagnostics.txt
+          rm -f .github/workflows/export-context.yml
+          rm -f .github/workflows/apply-ch7-context.yml
+      - name: Commit Chapter 7 implementation
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          git commit -m "feat(ch7): build linear transformation chapter"
+          git push origin HEAD:context/ch7-linear-transformations

@@ -7,38 +7,31 @@ on:
 permissions:
   contents: write
 
-concurrency:
-  group: pr-preview-${{ github.event.pull_request.number }}
-  cancel-in-progress: true
-
 jobs:
   finalize-chapter-one:
     if: github.event.action != 'closed' && github.event.pull_request.head.repo.full_name == github.repository
     runs-on: ubuntu-latest
     timeout-minutes: 10
+    env:
+      GH_TOKEN: ${{ github.token }}
+      HEAD_REF: ${{ github.event.pull_request.head.ref }}
+      REPOSITORY: ${{ github.repository }}
     steps:
-      - name: Check out pull request source
-        uses: actions/checkout@v4
-        with:
-          ref: ${{ github.event.pull_request.head.sha }}
-          path: source
-          fetch-depth: 0
-          persist-credentials: true
-          show-progress: false
-
-      - name: Commit previously browser-verified rebuild
-        if: hashFiles('source/_dev/ch1-payload.part00') != ''
-        working-directory: source
-        env:
-          HEAD_REF: ${{ github.event.pull_request.head.ref }}
+      - name: Commit browser-verified Chapter 1 rebuild
         shell: bash
         run: |
           set -euo pipefail
+          git clone --quiet --branch "$HEAD_REF" --single-branch \
+            "https://x-access-token:${GH_TOKEN}@github.com/${REPOSITORY}.git" source
+          cd source
+          if [ ! -f _dev/ch1-payload.part00 ]; then
+            echo "Chapter 1 payload already finalized."
+            exit 0
+          fi
           python3 - <<'PY'
           from pathlib import Path
           part = Path('_dev/ch1-payload.part05')
-          text = part.read_text()
-          text = text.replace('S7T7/deZrM4', 'S7T7T/deZrM4', 1)
+          text = part.read_text().replace('S7T7/deZrM4', 'S7T7T/deZrM4', 1)
           if len(text) != 10000:
               raise SystemExit(f'part05 repaired length is {len(text)}, expected 10000')
           part.write_text(text)
@@ -57,6 +50,8 @@ jobs:
           git config user.name 'GPT-5.6 Thinking'
           git config user.email 'noreply@openai.com'
           git add current docs _dev
+          echo "Files prepared for the verified commit:"
+          git diff --cached --stat
           git diff --cached --check
           git commit \
             -m 'feat(ch1): rebuild polynomial chapter as complete visual course' \

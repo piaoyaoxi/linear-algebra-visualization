@@ -528,6 +528,8 @@
   .ch9-data-stage,
   .ch9-data-stage canvas,
   .ch9-dual-panel canvas { min-height: 360px; height: 360px; }
+  .ch9-stage.ch9-dual-stage,
+  .ch9-stage.ch9-complex-stage { min-height: 0; height: auto; }
   .ch9-dual-panel + .ch9-dual-panel { border-left: 0; border-top: 1px solid var(--line); }
   .ch9-complex-plane canvas { height: 280px; }
   .ch9-readout-grid { grid-template-columns: 1fr; }

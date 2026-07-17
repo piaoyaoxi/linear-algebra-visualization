@@ -1,0 +1,290 @@
+/* Chapter 2 shared lab styles */
+.ch2-lab {
+  display: grid;
+  gap: 1rem;
+  padding: 1rem 1.1rem 1.15rem;
+  border-radius: 18px;
+  border: 1px solid color-mix(in srgb, var(--line, #d5dde8) 85%, transparent);
+  background: color-mix(in srgb, var(--panel, #fff) 92%, transparent);
+  box-shadow: 0 10px 30px rgba(20, 30, 50, 0.05);
+}
+
+.ch2-lab-head h3 {
+  margin: 0 0 0.25rem;
+  font-size: 1.05rem;
+}
+
+.ch2-lab-head p {
+  margin: 0;
+  color: var(--muted, #5c6b7a);
+  line-height: 1.55;
+}
+
+.ch2-lab-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.15fr) minmax(240px, 0.85fr);
+  gap: 1rem;
+  align-items: start;
+}
+
+.ch2-lab-grid.stack,
+.ch2-lab-stack {
+  grid-template-columns: 1fr;
+}
+
+.ch2-canvas-wrap {
+  position: relative;
+  border-radius: 14px;
+  overflow: hidden;
+  border: 1px solid color-mix(in srgb, var(--line, #d5dde8) 80%, transparent);
+  background:
+    radial-gradient(circle at 20% 20%, color-mix(in srgb, #6b8df2 12%, transparent), transparent 45%),
+    radial-gradient(circle at 80% 80%, color-mix(in srgb, #43c6ba 10%, transparent), transparent 40%),
+    color-mix(in srgb, var(--panel, #fff) 96%, #eef3f8);
+}
+
+.ch2-canvas-wrap canvas {
+  display: block;
+  width: 100%;
+  height: auto;
+  max-height: 360px;
+}
+
+.ch2-side {
+  display: grid;
+  gap: 0.75rem;
+}
+
+.ch2-meter {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.5rem;
+}
+
+.ch2-meter-card,
+.ch2-stat,
+.ch2-note,
+.ch2-ledger,
+.ch2-matrix-box {
+  border-radius: 12px;
+  border: 1px solid color-mix(in srgb, var(--line, #d5dde8) 80%, transparent);
+  background: color-mix(in srgb, var(--panel, #fff) 94%, #f3f6fa);
+  padding: 0.7rem 0.8rem;
+}
+
+.ch2-meter-card strong,
+.ch2-stat strong {
+  display: block;
+  font-size: 0.78rem;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--muted, #5c6b7a);
+  margin-bottom: 0.2rem;
+}
+
+.ch2-meter-card span,
+.ch2-stat span {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: 1.05rem;
+}
+
+.ch2-status-pos { color: #1f8a5b; }
+.ch2-status-neg { color: #c44b3c; }
+.ch2-status-zero { color: #b07a12; }
+
+.ch2-presets,
+.ch2-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+}
+
+.ch2-presets button,
+.ch2-toolbar button,
+.ch2-chip {
+  border: 1px solid color-mix(in srgb, var(--line, #d5dde8) 90%, transparent);
+  background: color-mix(in srgb, var(--panel, #fff) 90%, #eef2f7);
+  color: inherit;
+  border-radius: 999px;
+  padding: 0.35rem 0.7rem;
+  font-size: 0.85rem;
+  cursor: pointer;
+}
+
+.ch2-presets button.is-active,
+.ch2-toolbar button.is-active {
+  background: color-mix(in srgb, #6b8df2 22%, var(--panel, #fff));
+  border-color: color-mix(in srgb, #6b8df2 45%, transparent);
+}
+
+.ch2-sliders {
+  display: grid;
+  gap: 0.45rem;
+}
+
+.ch2-sliders label {
+  display: grid;
+  grid-template-columns: 2.2rem 1fr 2.6rem;
+  gap: 0.45rem;
+  align-items: center;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: 0.86rem;
+}
+
+.ch2-sliders input[type="range"] {
+  width: 100%;
+}
+
+.ch2-matrix-table {
+  border-collapse: collapse;
+  width: max-content;
+  margin: 0.25rem auto;
+}
+
+.ch2-matrix-table td {
+  width: 2.4rem;
+  height: 2.4rem;
+  text-align: center;
+  border: 1px solid color-mix(in srgb, var(--line, #d5dde8) 80%, transparent);
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: 0.9rem;
+  cursor: pointer;
+  user-select: none;
+}
+
+.ch2-matrix-table td.is-selected {
+  background: color-mix(in srgb, #6b8df2 28%, transparent);
+  font-weight: 700;
+}
+
+.ch2-matrix-table td.is-locked-row,
+.ch2-matrix-table td.is-locked-col {
+  opacity: 0.45;
+}
+
+.ch2-matrix-table td.is-deleted {
+  background: color-mix(in srgb, #c44b3c 18%, transparent);
+  opacity: 0.35;
+}
+
+.ch2-perm-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.45rem;
+  justify-content: center;
+  min-height: 3rem;
+  align-items: center;
+}
+
+.ch2-perm-item {
+  width: 2.4rem;
+  height: 2.4rem;
+  border-radius: 10px;
+  border: 1px solid color-mix(in srgb, #6b8df2 40%, var(--line, #d5dde8));
+  display: grid;
+  place-items: center;
+  font-weight: 700;
+  cursor: grab;
+  background: color-mix(in srgb, #6b8df2 12%, var(--panel, #fff));
+}
+
+.ch2-perm-item:active { cursor: grabbing; }
+
+.ch2-inversion-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+}
+
+.ch2-inversion-list span {
+  border-radius: 999px;
+  padding: 0.2rem 0.55rem;
+  background: color-mix(in srgb, #d46b4f 16%, transparent);
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: 0.82rem;
+}
+
+.ch2-ledger ol {
+  margin: 0.35rem 0 0;
+  padding-left: 1.15rem;
+}
+
+.ch2-ledger li {
+  margin: 0.2rem 0;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: 0.86rem;
+}
+
+.ch2-checkerboard {
+  display: grid;
+  grid-template-columns: repeat(3, 2.2rem);
+  gap: 0.25rem;
+  width: max-content;
+}
+
+.ch2-checkerboard span {
+  display: grid;
+  place-items: center;
+  width: 2.2rem;
+  height: 2.2rem;
+  border-radius: 8px;
+  font-weight: 700;
+}
+
+.ch2-checkerboard .plus {
+  background: color-mix(in srgb, #1f8a5b 18%, transparent);
+  color: #1f8a5b;
+}
+
+.ch2-checkerboard .minus {
+  background: color-mix(in srgb, #c44b3c 18%, transparent);
+  color: #c44b3c;
+}
+
+.ch2-formal-layout {
+  display: grid;
+  gap: 0.9rem;
+}
+
+.ch2-formal-layout .definition-stack {
+  display: grid;
+  gap: 0.55rem;
+}
+
+.ch2-formal-layout .definition-row {
+  border-radius: 12px;
+  border: 1px solid color-mix(in srgb, var(--line, #d5dde8) 80%, transparent);
+  padding: 0.7rem 0.85rem;
+  background: color-mix(in srgb, var(--panel, #fff) 94%, #f4f7fb);
+}
+
+.ch2-formal-layout .definition-row strong {
+  display: block;
+  margin-bottom: 0.2rem;
+}
+
+body.dark .ch2-lab,
+body.dark .ch2-meter-card,
+body.dark .ch2-stat,
+body.dark .ch2-note,
+body.dark .ch2-ledger,
+body.dark .ch2-matrix-box,
+body.dark .ch2-formal-layout .definition-row {
+  background: color-mix(in srgb, var(--panel, #151a22) 92%, #0d1117);
+}
+
+@media (max-width: 860px) {
+  .ch2-lab-grid {
+    grid-template-columns: 1fr;
+  }
+  .ch2-meter {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ch2-lab * {
+    transition: none !important;
+    animation: none !important;
+  }
+}

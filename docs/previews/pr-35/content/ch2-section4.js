@@ -1,0 +1,70 @@
+defineChapter2Section("determinant-properties", {
+  number: "§4",
+  textbookSection: "n阶行列式的性质",
+  title: "n阶行列式的性质",
+  navTitle: "行列式性质",
+  question: "为什么交换、倍乘和行叠加会以三种完全不同的方式改变行列式？",
+  goal: "掌握分别线性、交替性、行倍加不变、转置不变、三角求值与 det(λA)=λ^n det(A)。",
+  tags: ["行操作", "分别线性", "交替性"],
+  intro:
+    "行列式对每一行（列）分别线性，并对调两行变号。由此推出相同行为零、行倍加不变、以及三角行列式等于对角线乘积。计算时要把操作记入倍率账本。",
+  concepts: [
+    { label: "分别线性", text: "对某一行写成 u+v 时，行列式等于两项之和；对该行乘 λ，行列式乘 λ。" },
+    { label: "交换变号", text: "交换两行或两列，行列式变号。" },
+    { label: "相同行为零", text: "两行相同则 det=0；成比例行同样给出零。" },
+    { label: "行倍加", text: "一行加上另一行的倍数，行列式不变。" },
+    { label: "转置", text: `${texInline("\\det(A^T)=\\det(A)")}。` },
+    { label: "三角", text: "上/下三角行列式等于主对角线元素乘积。" },
+    { label: "整体数乘", text: `${texInline("\\det(\\lambda A)=\\lambda^n\\det(A)")}。` },
+  ],
+  textbook: {
+    reference: "北大版《高等代数》第二章",
+    page: "",
+    items: ["行列式的基本性质", "初等行变换对行列式的影响", "转置", "三角行列式"],
+  },
+  interactive: {
+    type: "slot",
+    title: "实验：行操作观测台",
+    description: "对矩阵执行三类行操作，同步观察图形、符号与倍率账本。",
+    task: "依次做一次交换、一次倍乘、一次行倍加，核对账本中的总倍率。",
+    prompts: [
+      "预测交换两行后 det 的符号，再执行操作。",
+      "把某一行乘 3，观察 det 乘 3。",
+      "做行倍加，确认 det 不变，图形呈剪切。",
+      "对照“分别线性”与错误说法 det(A+B)=det(A)+det(B)。",
+    ],
+  },
+  example: {
+    title: "例题：用性质化简并记账",
+    question: `已知 ${texInline("\\det\\begin{bmatrix}1&2\\\\3&4\\end{bmatrix}=-2")}。若先交换两行，再把第一行乘 5，新行列式是多少？`,
+    choices: [
+      { correct: true, text: "先变号得 2，再乘 5 得 10。" },
+      { text: "只乘 5 得 -10，交换不影响。" },
+      { text: "结果仍为 -2，因为相似变换。" },
+      { text: "结果为 0，因为做了行变换。" },
+    ],
+    steps: [
+      "原 det=-2。",
+      "交换两行：乘以 -1，当前 det=2。",
+      "第一行乘 5：再乘 5，当前 det=10。",
+      "账本：(-1)×5=−5 作用在原值上：(-2)×(-1)×5=10。",
+    ],
+  },
+  quiz: [
+    { question: "一行乘 λ 对行列式的影响？", answer: "行列式乘 λ。" },
+    { question: "一行加另一行倍数呢？", answer: "行列式不变。" },
+    { question: "det(A+B) 是否等于 det(A)+det(B)？", answer: "一般不等。线性是对某一行而言，不是对整个矩阵加法。" },
+    { question: "det(λA) 在 n 阶时是什么？", answer: "λ^n det(A)。" },
+    { question: "两行成比例时 det 为何？", answer: "为零。" },
+  ],
+  summary: [
+    "三类行操作对应三种倍率：-1、λ、1。",
+    "性质由分别线性与交替性统一推出。",
+    "转置与三角公式服务计算。",
+    "下一节把性质组织成系统的计算策略。",
+  ],
+  exercises: [
+    "证明：两行相同则 det=0。",
+    "验证 det(λI)=λ^n。",
+  ],
+});

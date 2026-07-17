@@ -1,0 +1,411 @@
+/* Chapter 3 presentation — aligned with site tokens / ch2 workbench quality */
+
+.ch3-lab {
+  display: grid;
+  gap: 18px;
+  padding: 18px 18px 16px;
+  border: 1px solid var(--line);
+  border-radius: calc(var(--radius) + 10px);
+  background: var(--surface-solid);
+  box-shadow: var(--shadow-soft);
+}
+
+.ch3-lab-head h3 {
+  margin: 0 0 6px;
+  font-size: clamp(17px, 1.8vw, 20px);
+  letter-spacing: -0.01em;
+}
+
+.ch3-lab-head p {
+  margin: 0;
+  max-width: 72ch;
+  color: var(--muted);
+  line-height: 1.7;
+  font-size: 14.5px;
+}
+
+.ch3-lab-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.15fr) minmax(240px, 0.85fr);
+  gap: 16px;
+  align-items: start;
+}
+
+.ch3-lab-grid.is-3 {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.ch3-lab-grid.is-stack,
+.ch3-lab-grid.is-3.is-stack {
+  grid-template-columns: 1fr;
+}
+
+.ch3-stage {
+  position: relative;
+  height: 300px;
+  min-height: 300px;
+  max-height: 300px;
+  border: 1px solid var(--line);
+  border-radius: calc(var(--radius) + 6px);
+  overflow: hidden;
+  background:
+    radial-gradient(circle at 18% 20%, color-mix(in srgb, var(--accent) 10%, transparent), transparent 42%),
+    radial-gradient(circle at 86% 78%, color-mix(in srgb, var(--coral, #d9835f) 10%, transparent), transparent 40%),
+    var(--surface-soft);
+}
+
+.ch3-stage canvas {
+  display: block;
+  width: 100%;
+  height: 300px;
+  min-height: 300px;
+  max-height: 300px;
+}
+
+.ch3-side {
+  display: grid;
+  gap: 12px;
+  align-content: start;
+}
+
+.ch3-panel {
+  display: grid;
+  gap: 8px;
+  padding: 12px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: color-mix(in srgb, var(--surface-solid) 88%, var(--surface-soft));
+}
+
+.ch3-panel h4 {
+  margin: 0;
+  font-size: 12px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.ch3-panel pre,
+.ch3-matrix-pre {
+  margin: 0;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: 13px;
+  line-height: 1.55;
+  white-space: pre-wrap;
+  color: var(--text);
+}
+
+.ch3-meter {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.ch3-meter.is-3 {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.ch3-meter-card {
+  display: grid;
+  gap: 4px;
+  padding: 12px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: color-mix(in srgb, var(--surface-solid) 88%, var(--surface-soft));
+  transition: border-color 0.25s ease, transform 0.25s ease;
+}
+
+.ch3-meter-card.is-pulse {
+  animation: ch3-card-pulse 0.55s ease;
+}
+
+@keyframes ch3-card-pulse {
+  0% {
+    transform: scale(1);
+  }
+  40% {
+    transform: scale(1.02);
+    border-color: color-mix(in srgb, var(--accent) 45%, var(--line));
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+.ch3-meter-card strong {
+  color: var(--muted);
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.ch3-meter-card span {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: 1.05rem;
+  font-weight: 700;
+}
+
+.ch3-status.is-ok,
+.ch3-meter-card span.is-ok {
+  color: var(--accent-strong);
+}
+.ch3-status.is-bad,
+.ch3-meter-card span.is-bad {
+  color: var(--coral, #d9835f);
+}
+.ch3-status.is-inf,
+.ch3-meter-card span.is-inf {
+  color: var(--blue, #547ec8);
+}
+
+.ch3-presets,
+.ch3-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.ch3-presets button,
+.ch3-toolbar button {
+  appearance: none;
+  border: 1px solid var(--line);
+  background: var(--surface-solid);
+  color: var(--text);
+  border-radius: 999px;
+  padding: 7px 12px;
+  font-size: 12.5px;
+  font-weight: 650;
+  cursor: pointer;
+  transition: border-color 0.2s ease, background 0.2s ease, transform 0.15s ease;
+}
+
+.ch3-presets button:hover,
+.ch3-toolbar button:hover {
+  border-color: color-mix(in srgb, var(--accent) 40%, var(--line));
+}
+
+.ch3-presets button.is-active {
+  border-color: color-mix(in srgb, var(--accent) 55%, var(--line));
+  background: color-mix(in srgb, var(--accent) 12%, var(--surface-solid));
+  color: var(--accent-strong);
+}
+
+.ch3-presets button:focus-visible,
+.ch3-toolbar button:focus-visible,
+.ch3-slider input:focus-visible {
+  outline: 2px solid color-mix(in srgb, var(--accent) 70%, transparent);
+  outline-offset: 2px;
+}
+
+.ch3-note {
+  margin: 0;
+  color: var(--muted);
+  font-size: 13.5px;
+  line-height: 1.65;
+}
+
+.ch3-eq-list {
+  display: grid;
+  gap: 6px;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: 13.5px;
+}
+
+.ch3-eq-list .is-changed {
+  color: var(--accent-strong);
+  font-weight: 700;
+}
+
+.ch3-history {
+  max-height: 120px;
+  overflow: auto;
+  margin: 0;
+  padding-left: 1.1rem;
+  color: var(--muted);
+  font-size: 12.5px;
+}
+
+.ch3-sliders {
+  display: grid;
+  gap: 10px;
+}
+
+.ch3-slider {
+  display: grid;
+  grid-template-columns: 56px 1fr 48px;
+  gap: 8px;
+  align-items: center;
+  font-size: 12.5px;
+}
+
+.ch3-slider input[type="range"] {
+  width: 100%;
+}
+
+.ch3-coord-bars {
+  display: grid;
+  gap: 8px;
+}
+
+.ch3-bar-row {
+  display: grid;
+  grid-template-columns: 36px 1fr 40px;
+  gap: 8px;
+  align-items: center;
+  font-size: 12px;
+}
+
+.ch3-bar-track {
+  height: 10px;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--line) 65%, transparent);
+  overflow: hidden;
+}
+
+.ch3-bar-fill {
+  height: 100%;
+  border-radius: 999px;
+  background: linear-gradient(90deg, var(--accent), var(--blue, #547ec8));
+  width: 0%;
+  transition: width 0.2s ease;
+}
+
+.ch3-formal {
+  display: grid;
+  gap: 16px;
+}
+
+.ch3-formal-lead {
+  margin: 0;
+  max-width: 72ch;
+  line-height: 1.75;
+  color: var(--text);
+}
+
+.ch3-module {
+  display: grid;
+  gap: 12px;
+  padding: 16px;
+  border: 1px solid var(--line);
+  border-radius: calc(var(--radius) + 6px);
+  background: color-mix(in srgb, var(--surface-solid) 92%, var(--surface-soft));
+}
+
+.ch3-module-heading {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 12px;
+  align-items: start;
+}
+
+.ch3-module-heading > span {
+  display: inline-grid;
+  place-items: center;
+  width: 34px;
+  height: 34px;
+  border-radius: 10px;
+  font-size: 12px;
+  font-weight: 800;
+  color: var(--accent-strong);
+  background: color-mix(in srgb, var(--accent) 14%, var(--surface-solid));
+}
+
+.ch3-module-heading h3 {
+  margin: 0 0 4px;
+  font-size: 16px;
+}
+
+.ch3-module-heading p {
+  margin: 0;
+  color: var(--muted);
+  font-size: 13.5px;
+}
+
+.ch3-card-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: 10px;
+}
+
+.ch3-card {
+  padding: 12px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: var(--surface-solid);
+}
+
+.ch3-card .kicker {
+  display: inline-block;
+  margin-bottom: 6px;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--accent-strong);
+}
+
+.ch3-card h4 {
+  margin: 0 0 6px;
+  font-size: 14.5px;
+}
+
+.ch3-card p {
+  margin: 0;
+  color: var(--muted);
+  font-size: 13px;
+  line-height: 1.6;
+}
+
+.ch3-sylvester {
+  display: grid;
+  gap: 6px;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: 13px;
+}
+
+.ch3-sylvester-row {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.ch3-sylvester-row span {
+  min-width: 42px;
+  padding: 6px 8px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  text-align: center;
+  background: var(--surface-solid);
+}
+
+@media (max-width: 860px) {
+  .ch3-lab-grid,
+  .ch3-lab-grid.is-3 {
+    grid-template-columns: 1fr;
+  }
+
+  .ch3-stage,
+  .ch3-stage canvas {
+    height: 260px;
+    min-height: 260px;
+    max-height: 260px;
+  }
+
+  .ch3-meter.is-3 {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ch3-meter-card,
+  .ch3-bar-fill,
+  .ch3-presets button,
+  .ch3-toolbar button {
+    transition: none;
+  }
+
+  .ch3-meter-card.is-pulse {
+    animation: none;
+  }
+}

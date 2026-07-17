@@ -1,102 +1,125 @@
 (() => {
   const M = () => window.Ch1Math;
-  const tex = (s) => (window.texInline ? window.texInline(s) : s);
-  const display = (s) => (window.texDisplay ? window.texDisplay(s) : s);
+  const tex = (source) => (window.texInline ? window.texInline(source) : source);
+  const listen = (...args) => window.ch1Listen?.(...args);
+  const observe = (...args) => window.ch1ObserveResize?.(...args);
 
-  function divisors(n) {
-    n = Math.abs(n | 0) || 1;
-    const out = [];
-    for (let i = 1; i <= n; i++) if (n % i === 0) out.push(i);
-    return out;
+  function formal(section, el, config) {
+    window.renderChapter1Formal?.(el, section, config);
   }
 
-  function gcdInt(a, b) {
-    a = Math.abs(a);
-    b = Math.abs(b);
-    while (b) {
-      const t = b;
-      b = a % b;
-      a = t;
-    }
-    return a || 1;
+  function integerDivisors(value) {
+    const n = Math.abs(Math.trunc(value));
+    if (n === 0) return [0];
+    const result = [];
+    for (let i = 1; i <= n; i++) if (n % i === 0) result.push(i);
+    return result;
+  }
+
+  function rationalCandidates(poly) {
+    const p = M().normalizePoly(poly);
+    const constant = Math.abs(p[0].n);
+    const leading = Math.abs(p[p.length - 1].n);
+    const values = new Map();
+    integerDivisors(constant).forEach((numerator) => {
+      integerDivisors(leading).forEach((denominator) => {
+        if (!denominator) return;
+        [1, -1].forEach((sign) => {
+          const candidate = M().R(sign * numerator, denominator);
+          values.set(M().formatR(candidate), candidate);
+        });
+      });
+    });
+    return [...values.values()].sort(M().rCmp);
   }
 
   function mountRationalLab(root) {
-    const poly = [5, 10, 0, 0, 0, 1]; // x^5 + 10x + 5
+    const examples = {
+      root: {
+        label: "2x³+x²−x−1",
+        poly: M().polyFrom(["-1", "-1", "1", "2"]),
+        note: "有理根定理给候选；每个候选仍需精确代入。",
+      },
+      eisenstein: {
+        label: "x⁵+10x+5",
+        poly: M().polyFrom(["5", "10", "0", "0", "0", "1"]),
+        note: "用 p=5 满足 Eisenstein 三条件。",
+      },
+      quartic: {
+        label: "x⁴+4",
+        poly: M().polyFrom(["4", "0", "0", "0", "1"]),
+        note: "没有有理根，但它仍可分成两个二次式；用来阻止错误推理。",
+      },
+    };
+    let current = "root";
     let prime = 5;
-    const rootPoly = M().polyFromNums([-1, -1, 1, 2]); // 2x^3 + x^2 - x - 1
 
-    function checkEisenstein(coeffs, p) {
-      const n = coeffs.length - 1;
-      const lead = coeffs[n];
-      const constant = coeffs[0];
-      const c1 = lead % p !== 0;
-      const c2 = coeffs.slice(0, n).every((c) => c % p === 0);
-      const c3 = constant % (p * p) !== 0;
-      return { c1, c2, c3, ok: c1 && c2 && c3 };
+    function eisenstein(poly, p) {
+      const coefficients = poly.map((c) => c.d === 1 ? c.n : NaN);
+      if (coefficients.some((c) => !Number.isInteger(c))) {
+        return { applicable: false, checks: [false, false, false], message: "先清分母并本原化为整系数多项式。" };
+      }
+      const top = coefficients.length - 1;
+      const c1 = coefficients[top] % p !== 0;
+      const c2 = coefficients.slice(0, top).every((c) => c % p === 0);
+      const c3 = coefficients[0] % (p * p) !== 0;
+      return {
+        applicable: c1 && c2 && c3,
+        checks: [c1, c2, c3],
+        message: c1 && c2 && c3
+          ? `p=${p} 满足全部条件：在 ℚ[x] 中不可约。`
+          : `p=${p} 未通过全部条件：这条判据没有给出结论，并不表示可约。`,
+      };
     }
 
-    function candidates(a0, an) {
-      const num = divisors(a0);
-      const den = divisors(an);
-      const set = new Set();
-      num.forEach((p) => {
-        den.forEach((q) => {
-          const g = gcdInt(p, q);
-          const pp = p / g;
-          const qq = q / g;
-          set.add(`${pp}/${qq}`);
-          set.add(`${-pp}/${qq}`);
-        });
-      });
-      return [...set];
+    function render() {
+      const item = examples[current];
+      const poly = item.poly;
+      root.querySelector("[data-rational-poly]").innerHTML = tex(M().formatPolyTex(poly));
+      root.querySelector("[data-rational-note]").textContent = item.note;
+      const candidates = rationalCandidates(poly);
+      root.querySelector("[data-candidate-count]").textContent = `候选 ${candidates.length} 个（约分、去重、含正负）`;
+      root.querySelector("[data-candidates]").innerHTML = candidates.map((candidate) => {
+        const value = M().evalPoly(poly, candidate);
+        const isRoot = M().rIsZero(value);
+        return `<article class="ch1-candidate ${isRoot ? "is-root" : ""}">
+          <strong>${tex(M().formatRTex(candidate))}</strong>
+          <span>${tex(`f(${M().formatRTex(candidate)})=${M().formatRTex(value)}`)}</span>
+          <em>${isRoot ? "是根" : "不是根"}</em>
+        </article>`;
+      }).join("") || "<p>常数项为 0 时先提出 x，再对剩余多项式使用定理。</p>";
+
+      const result = eisenstein(poly, prime);
+      const labels = [
+        `${prime} 不整除首项系数`,
+        `${prime} 整除其余所有系数（缺项 0 也计入）`,
+        `${prime ** 2} 不整除常数项`,
+      ];
+      root.querySelector("[data-eisenstein-checks]").innerHTML = labels.map((label, index) => `
+        <div class="ch1-check-row ${result.checks[index] ? "is-ok" : "is-bad"}">
+          <span>${result.checks[index] ? "✓" : "×"}</span><p>${label}</p>
+        </div>`).join("");
+      const status = root.querySelector("[data-eisenstein-status]");
+      status.textContent = result.message;
+      status.className = `ch1-status ${result.applicable ? "is-ok" : "is-warn"}`;
+      root.querySelector("[data-prime-value]").textContent = String(prime);
+      root.querySelectorAll("[data-rational-example]").forEach((button) => button.classList.toggle("is-active", button.dataset.rationalExample === current));
+      root.querySelectorAll("[data-prime]").forEach((button) => button.classList.toggle("is-active", Number(button.dataset.prime) === prime));
     }
 
-    function paint() {
-      const es = checkEisenstein(poly, prime);
-      root.querySelector("[data-prime]").textContent = String(prime);
-      root.querySelector("[data-c1]").innerHTML = es.c1
-        ? `<span class="ch1-status is-ok">条件 1 通过</span>：${tex("p\\nmid")} 首项系数`
-        : `<span class="ch1-status is-bad">条件 1 失败</span>：${tex("p\\mid")} 首项`;
-      root.querySelector("[data-c2]").innerHTML = es.c2
-        ? `<span class="ch1-status is-ok">条件 2 通过</span>：${tex("p")} 整除其余所有系数`
-        : `<span class="ch1-status is-bad">条件 2 失败</span>：存在不被 p 整除的中间/常数系数`;
-      root.querySelector("[data-c3]").innerHTML = es.c3
-        ? `<span class="ch1-status is-ok">条件 3 通过</span>：${tex("p^2\\nmid")} 常数项`
-        : `<span class="ch1-status is-bad">条件 3 失败</span>：${tex("p^2\\mid")} 常数项`;
-      const st = root.querySelector("[data-eis-status]");
-      st.textContent = es.ok ? "三条件全满足 ⇒ 在 ℚ[x] 中不可约（Eisenstein）" : "条件未全满足（充分条件不成立）";
-      st.className = `ch1-status ${es.ok ? "is-ok" : "is-bad"}`;
-      root.querySelector("[data-eis-poly]").innerHTML = tex("x^5+10x+5");
-
-      const cand = candidates(1, 2); // |a0|=1, an=2 for -1 + ... + 2x^3
-      root.querySelector("[data-cand]").innerHTML = cand
-        .map((c) => {
-          const [ps, qs] = c.split("/");
-          const p = Number(ps);
-          const q = Number(qs);
-          const val = M().evalPoly(rootPoly, M().R(p, q));
-          const ok = M().rIsZero(val);
-          const label = q === 1 ? String(p) : `${p}/${q}`;
-          return `<span class="ch1-status ${ok ? "is-ok" : "is-warn"}">${tex(q === 1 ? String(p) : `\\dfrac{${p}}{${q}}`)}${ok ? " 是根" : ""}</span>`;
-        })
-        .join(" ");
-      root.querySelector("[data-root-poly]").innerHTML = tex(M().formatPolyTex(rootPoly));
-      root.querySelector("[data-cand-count]").textContent = `候选 ${cand.length} 个（约分去重，含正负）`;
-    }
-
-    root.querySelectorAll("[data-prime-btn]").forEach((btn) => {
-      btn.addEventListener("click", () => {
-        prime = Number(btn.dataset.primeBtn);
-        root.querySelectorAll("[data-prime-btn]").forEach((b) => b.classList.toggle("is-active", b === btn));
-        paint();
-      });
-    });
-    paint();
+    root.querySelectorAll("[data-rational-example]").forEach((button) => listen(button, "click", () => {
+      current = button.dataset.rationalExample;
+      render();
+    }));
+    root.querySelectorAll("[data-prime]").forEach((button) => listen(button, "click", () => {
+      prime = Number(button.dataset.prime);
+      render();
+    }));
+    render();
   }
 
-  function mountLattice(root) {
-    const terms = [
+  function mountExponentLattice(root) {
+    const baseTerms = [
       { i: 3, j: 0, c: 1, label: "x³" },
       { i: 2, j: 1, c: 2, label: "2x²y" },
       { i: 1, j: 2, c: -1, label: "−xy²" },
@@ -104,300 +127,402 @@
       { i: 1, j: 0, c: 1, label: "x" },
       { i: 0, j: 0, c: -1, label: "−1" },
     ];
-    let layer = "all";
-    let active = null;
-    let mulMode = false;
+    const state = { layer: "all", selected: { i: 2, j: 1 }, first: { i: 2, j: 1 }, second: { i: 1, j: 0 }, mode: "support" };
+    const canvas = root.querySelector("canvas");
+    let lattice = null;
 
-    function paint() {
-      if (mulMode) return;
-      const filtered = terms
-        .filter((t) => (layer === "all" ? true : t.i + t.j === Number(layer)))
-        .map((t) => ({ ...t, active: active && active.i === t.i && active.j === t.j }));
-      M().drawLattice(root.querySelector("[data-ch1-canvas]"), filtered, { maxI: 4, maxJ: 4 });
-      const layers = [0, 1, 2, 3].map((d) => {
-        const items = terms.filter((t) => t.i + t.j === d);
-        return `<div class="ch1-compare-card"><strong>总次数 ${d}</strong><div>${items.length ? items.map((t) => t.label).join(" + ") : "（空）"}</div></div>`;
-      });
-      root.querySelector("[data-layers]").innerHTML = layers.join("");
-      root.querySelector("[data-total]").textContent = "总次数 = 3";
-      root.querySelector("[data-active]").textContent = active
-        ? `选中格点 (${active.i},${active.j}) → ${active.label}`
-        : "点击预设高亮格点";
+    function termAt(i, j) {
+      return baseTerms.find((term) => term.i === i && term.j === j) || null;
     }
 
-    root.querySelectorAll("[data-layer]").forEach((btn) => {
-      btn.addEventListener("click", () => {
-        mulMode = false;
-        layer = btn.dataset.layer;
-        root.querySelectorAll("[data-layer]").forEach((b) => b.classList.toggle("is-active", b === btn));
-        paint();
+    function render() {
+      root.querySelectorAll("[data-lattice-mode]").forEach((button) => button.classList.toggle("is-active", button.dataset.latticeMode === state.mode));
+      root.querySelectorAll("[data-layer]").forEach((button) => button.classList.toggle("is-active", button.dataset.layer === state.layer));
+      if (state.mode === "support") {
+        const terms = baseTerms
+          .filter((term) => state.layer === "all" || term.i + term.j === Number(state.layer))
+          .map((term) => ({ ...term, active: term.i === state.selected.i && term.j === state.selected.j }));
+        lattice = M().drawLattice(canvas, terms, { maxI: 4, maxJ: 4 });
+        const selected = termAt(state.selected.i, state.selected.j);
+        root.querySelector("[data-lattice-readout]").innerHTML = selected
+          ? `格点 ${tex(`(${selected.i},${selected.j})`)} 表示 ${tex(selected.label.replace("−", "-"))}；该项总次数 ${selected.i + selected.j}。`
+          : `格点 ${tex(`(${state.selected.i},${state.selected.j})`)} 的系数为 0，是支撑之外的位置。`;
+      } else {
+        const sum = { i: state.first.i + state.second.i, j: state.first.j + state.second.j };
+        lattice = M().drawLattice(canvas, [
+          { ...state.first, label: `α=(${state.first.i},${state.first.j})` },
+          { ...state.second, label: `β=(${state.second.i},${state.second.j})` },
+          { ...sum, label: `α+β=(${sum.i},${sum.j})`, active: true },
+        ], { maxI: 5, maxJ: 5 });
+        root.querySelector("[data-lattice-readout]").innerHTML =
+          `${tex(`(${state.first.i},${state.first.j})+(${state.second.i},${state.second.j})=(${sum.i},${sum.j})`)}，对应单项式指数逐坐标相加。`;
+      }
+      root.querySelector("[data-layers]").innerHTML = [0, 1, 2, 3].map((degree) => {
+        const terms = baseTerms.filter((term) => term.i + term.j === degree);
+        return `<article class="ch1-compare-card"><strong>f${degree}</strong><p>${terms.length ? terms.map((term) => term.label).join(" + ") : "0"}</p></article>`;
+      }).join("");
+      root.querySelector("[data-degree-summary]").textContent = "deg f=3，degₓ f=3，degᵧ f=3；这些三个数字碰巧相同，但定义不同。";
+      root.querySelector("[data-product-coefficient]").innerHTML =
+        `${tex("[x^3y]f(x-y)")}：${tex("2x^2y\\cdot x")} 贡献 2，${tex("x^3\\cdot(-y)")} 贡献 −1，合计 1。`;
+    }
+
+    listen(canvas, "click", (event) => {
+      const rect = canvas.getBoundingClientRect();
+      const point = lattice?.hitTest(event.clientX - rect.left, event.clientY - rect.top);
+      if (!point) return;
+      state.selected = { i: point.i, j: point.j };
+      state.mode = "support";
+      render();
+    });
+    root.querySelectorAll("[data-lattice-mode]").forEach((button) => listen(button, "click", () => {
+      state.mode = button.dataset.latticeMode;
+      render();
+    }));
+    root.querySelectorAll("[data-layer]").forEach((button) => listen(button, "click", () => {
+      state.layer = button.dataset.layer;
+      state.mode = "support";
+      render();
+    }));
+    root.querySelectorAll("[data-first]").forEach((button) => listen(button, "click", () => {
+      state.first = JSON.parse(button.dataset.first);
+      state.mode = "multiply";
+      render();
+    }));
+    root.querySelectorAll("[data-second]").forEach((button) => listen(button, "click", () => {
+      state.second = JSON.parse(button.dataset.second);
+      state.mode = "multiply";
+      render();
+    }));
+    observe(root.querySelector(".ch1-stage"), render);
+    render();
+  }
+
+  function monomialKey(exp) {
+    return exp.join(",");
+  }
+
+  function canonical(expression) {
+    const map = new Map();
+    expression.forEach(({ c, e }) => {
+      const key = monomialKey(e);
+      map.set(key, (map.get(key) || 0) + c);
+    });
+    return [...map.entries()]
+      .filter(([, coefficient]) => coefficient !== 0)
+      .map(([key, c]) => ({ c, e: key.split(",").map(Number) }))
+      .sort((a, b) => {
+        const da = a.e.reduce((sum, value) => sum + value, 0);
+        const db = b.e.reduce((sum, value) => sum + value, 0);
+        if (da !== db) return db - da;
+        for (let i = 0; i < a.e.length; i++) if (a.e[i] !== b.e[i]) return b.e[i] - a.e[i];
+        return 0;
       });
-    });
-    root.querySelectorAll("[data-term]").forEach((btn) => {
-      btn.addEventListener("click", () => {
-        mulMode = false;
-        const [i, j] = btn.dataset.term.split(",").map(Number);
-        active = terms.find((t) => t.i === i && t.j === j) || null;
-        paint();
-      });
-    });
-    root.querySelector("[data-mul-demo]").addEventListener("click", () => {
-      mulMode = true;
-      root.querySelector("[data-mul-note]").innerHTML = `演示：${tex("(1,0)+(0,1)=(1,1)")}，对应 ${tex("x\\cdot y=xy")}。`;
-      active = { i: 1, j: 1, label: "xy（乘积）", c: 1 };
-      M().drawLattice(
-        root.querySelector("[data-ch1-canvas]"),
-        [
-          { i: 1, j: 0, label: "x", active: false },
-          { i: 0, j: 1, label: "y", active: false },
-          { i: 1, j: 1, label: "xy", active: true },
-        ],
-        { maxI: 4, maxJ: 4 },
-      );
-      root.querySelector("[data-active]").textContent = "乘法演示：x 与 y 的指数向量相加 → xy";
-    });
-    window.addEventListener(
-      "resize",
-      () => {
-        if (document.body.contains(root)) {
-          if (mulMode) {
-            root.querySelector("[data-mul-demo]").click();
-          } else paint();
-        }
+  }
+
+  function permute(expression, permutation) {
+    return canonical(expression.map(({ c, e }) => ({ c, e: permutation.map((source) => e[source]) })));
+  }
+
+  function expressionEquals(a, b) {
+    const A = canonical(a);
+    const B = canonical(b);
+    return A.length === B.length && A.every((term, index) => term.c === B[index].c && monomialKey(term.e) === monomialKey(B[index].e));
+  }
+
+  function expressionTex(expression) {
+    const vars = ["x", "y", "z"];
+    const terms = canonical(expression);
+    if (!terms.length) return "0";
+    return terms.map((term, index) => {
+      const absolute = Math.abs(term.c);
+      const factors = term.e.map((power, i) => {
+        if (!power) return "";
+        return power === 1 ? vars[i] : `${vars[i]}^{${power}}`;
+      }).join("");
+      const body = factors ? `${absolute === 1 ? "" : absolute}${factors}` : String(absolute);
+      const sign = term.c < 0 ? "-" : index ? "+" : "";
+      return `${sign}${body}`;
+    }).join("");
+  }
+
+  function mountSymmetry(root) {
+    const expressions = {
+      squares: {
+        label: "x²+y²+z²",
+        terms: [{ c: 1, e: [2, 0, 0] }, { c: 1, e: [0, 2, 0] }, { c: 1, e: [0, 0, 2] }],
       },
-      { passive: true },
-    );
-    paint();
-  }
-
-  function mountSymmetric(root) {
-    const exprs = {
-      "x+y": { text: "x+y", tex: "x+y", sym: true },
-      "x2+y2": { text: "x²+y²", tex: "x^2+y^2", sym: true },
-      "x2+y": { text: "x²+y", tex: "x^2+y", sym: false },
-      "x2y+xy2": { text: "x²y+xy²", tex: "x^2y+xy^2", sym: true },
+      orbit: {
+        label: "Σsym x²y",
+        terms: [
+          [2,1,0],[2,0,1],[1,2,0],[0,2,1],[1,0,2],[0,1,2],
+        ].map((e) => ({ c: 1, e })),
+      },
+      nonsym: {
+        label: "x²+y",
+        terms: [{ c: 1, e: [2,0,0] }, { c: 1, e: [0,1,0] }],
+      },
+      cyclic: {
+        label: "x²y+y²z+z²x",
+        terms: [{ c: 1, e: [2,1,0] }, { c: 1, e: [0,2,1] }, { c: 1, e: [1,0,2] }],
+      },
     };
-    let current = "x+y";
-    let swapped = false;
+    const state = { current: "squares", permutation: [0,1,2], rewrite: "squares", step: 0 };
+    const rewriteSteps = {
+      squares: [
+        { title: "目标", formula: "x^2+y^2+z^2" },
+        { title: "展开 σ₁²", formula: "\\sigma_1^2=x^2+y^2+z^2+2\\sigma_2" },
+        { title: "移项", formula: "x^2+y^2+z^2=\\sigma_1^2-2\\sigma_2" },
+      ],
+      orbit: [
+        { title: "目标轨道和", formula: "\\sum_{sym}x^2y" },
+        { title: "展开 σ₁σ₂", formula: "\\sigma_1\\sigma_2=\\sum_{sym}x^2y+3xyz" },
+        { title: "识别 σ₃", formula: "\\sigma_1\\sigma_2=\\sum_{sym}x^2y+3\\sigma_3" },
+        { title: "移项", formula: "\\sum_{sym}x^2y=\\sigma_1\\sigma_2-3\\sigma_3" },
+      ],
+    };
 
-    function swapVars(s) {
-      return s.replaceAll("x", "§").replaceAll("y", "x").replaceAll("§", "y");
+    function composePermutation(next) {
+      state.permutation = next.map((source) => state.permutation[source]);
     }
 
-    function paint() {
-      const e = exprs[current];
-      const afterTex = swapped ? swapVars(e.tex) : e.tex;
-      const afterText = swapped ? swapVars(e.text) : e.text;
-      root.querySelector("[data-before]").innerHTML = tex(e.tex);
-      root.querySelector("[data-after]").innerHTML = tex(afterTex);
-      const st = root.querySelector("[data-sym-status]");
-      st.textContent = e.sym ? "对称：任意交换后本质不变" : "非对称：交换后改变";
-      st.className = `ch1-status ${e.sym ? "is-ok" : "is-bad"}`;
-      root.querySelector("[data-orbit]").innerHTML = `
-        <div class="ch1-compare-card"><strong>x²y 的轨道（三变量示意）</strong>
-        <div>${tex("x^2y")}, ${tex("x^2z")}, ${tex("y^2x")}, ${tex("y^2z")}, ${tex("z^2x")}, ${tex("z^2y")}</div></div>
-        <div class="ch1-compare-card"><strong>基本对称多项式</strong>
-        <div>${tex("\\sigma_1=x+y+z")}<br/>${tex("\\sigma_2=xy+xz+yz")}<br/>${tex("\\sigma_3=xyz")}</div></div>
-        <div class="ch1-compare-card"><strong>σ 改写卡片</strong>
-        <div>${tex("x^2+y^2+z^2=\\sigma_1^2-2\\sigma_2")}<br/>${tex("xy(x+y)+\\cdots")} 可进一步用 σ 表达</div></div>`;
-      root.querySelector("[data-swap-state]").textContent = swapped
-        ? `已交换 x↔y · 显示为 ${afterText}`
-        : "原始变量顺序";
+    function render() {
+      const item = expressions[state.current];
+      const transformed = permute(item.terms, state.permutation);
+      const unchanged = expressionEquals(item.terms, transformed);
+      root.querySelector("[data-sym-before]").innerHTML = tex(expressionTex(item.terms));
+      root.querySelector("[data-sym-after]").innerHTML = tex(expressionTex(transformed));
+      root.querySelector("[data-permutation]").textContent = `当前变量顺序：${state.permutation.map((index) => ["x","y","z"][index]).join("，")}`;
+      const status = root.querySelector("[data-sym-status]");
+      status.textContent = unchanged ? "这次置换后保持不变" : "这次置换后改变";
+      status.className = `ch1-status ${unchanged ? "is-ok" : "is-bad"}`;
+      const allSymmetric = [[1,0,2],[0,2,1]].every((permutation) => expressionEquals(item.terms, permute(item.terms, permutation)));
+      root.querySelector("[data-global-status]").textContent =
+        state.current === "cyclic"
+          ? "三循环保持不变，但换位 x↔y 会改变：循环对称不等于全对称。"
+          : allSymmetric
+            ? "通过生成换位检查：全对称。"
+            : "存在换位使表达式改变：不是全对称。";
+      root.querySelectorAll("[data-sym-expression]").forEach((button) => button.classList.toggle("is-active", button.dataset.symExpression === state.current));
+
+      const steps = rewriteSteps[state.rewrite];
+      state.step = Math.min(state.step, steps.length - 1);
+      root.querySelector("[data-rewrite-step]").textContent = `${state.step + 1} / ${steps.length}`;
+      root.querySelector("[data-rewrite-title]").textContent = steps[state.step].title;
+      root.querySelector("[data-rewrite-formula]").innerHTML = tex(steps[state.step].formula);
+      root.querySelector("[data-rewrite-prev]").disabled = state.step === 0;
+      root.querySelector("[data-rewrite-next]").disabled = state.step === steps.length - 1;
+      root.querySelectorAll("[data-rewrite-kind]").forEach((button) => button.classList.toggle("is-active", button.dataset.rewriteKind === state.rewrite));
+      root.querySelector("[data-orbit]").innerHTML = expressions.orbit.terms.map((term) => `<span>${tex(expressionTex([term]))}</span>`).join("");
     }
 
-    root.querySelectorAll("[data-expr]").forEach((btn) => {
-      btn.addEventListener("click", () => {
-        current = btn.dataset.expr;
-        swapped = false;
-        root.querySelectorAll("[data-expr]").forEach((b) => b.classList.toggle("is-active", b === btn));
-        paint();
-      });
+    root.querySelectorAll("[data-sym-expression]").forEach((button) => listen(button, "click", () => {
+      state.current = button.dataset.symExpression;
+      state.permutation = [0,1,2];
+      render();
+    }));
+    listen(root.querySelector("[data-swap-xy]"), "click", () => {
+      composePermutation([1,0,2]);
+      render();
     });
-    root.querySelector("[data-swap]").addEventListener("click", () => {
-      swapped = !swapped;
-      paint();
+    listen(root.querySelector("[data-cycle]"), "click", () => {
+      composePermutation([1,2,0]);
+      render();
     });
-    paint();
+    listen(root.querySelector("[data-permutation-reset]"), "click", () => {
+      state.permutation = [0,1,2];
+      render();
+    });
+    root.querySelectorAll("[data-rewrite-kind]").forEach((button) => listen(button, "click", () => {
+      state.rewrite = button.dataset.rewriteKind;
+      state.step = 0;
+      render();
+    }));
+    listen(root.querySelector("[data-rewrite-prev]"), "click", () => {
+      state.step -= 1;
+      render();
+    });
+    listen(root.querySelector("[data-rewrite-next]"), "click", () => {
+      state.step += 1;
+      render();
+    });
+    listen(root.querySelector("[data-rewrite-reset]"), "click", () => {
+      state.step = 0;
+      render();
+    });
+    render();
   }
 
-  function formal9(el) {
-    if (!el) return;
-    el.innerHTML = `
-      <h2>有理系数：内容、有理根、Eisenstein</h2>
-      <div class="lesson-formal-layout">
-        <p class="lesson-formal-intro">有理系数多项式可以先清分母，再提取内容，转到本原整系数多项式。Gauss 引理保证本原多项式的乘积仍本原，从而把 ${tex("\\mathbb{Q}[x]")} 上的分解问题与 ${tex("\\mathbb{Z}[x]")} 对齐。有理根定理给出有限个候选 ${tex("p/q")}；Eisenstein 判别给出在 ℚ 上不可约的充分条件。注意：“无有理根”不能直接推出任意次数不可约——二次、三次才可结合次数使用这一捷径。</p>
-        <div class="operation-map">
-          <div class="operation-map-main">${display("f=\\mathrm{cont}(f)\\,f^*,\\quad f^*\\ \\text{本原}")}</div>
-          <dl class="lesson-meta-list">
-            <div><dt>内容</dt><dd>整系数的最大公因数；本原部分内容为 ±1。</dd></div>
-            <div><dt>Gauss</dt><dd>两本原多项式之积仍本原。</dd></div>
-            <div><dt>有理根</dt><dd>${tex("p/q")} 既约 ⇒ ${tex("p\\mid a_0")}，${tex("q\\mid a_n")}。</dd></div>
-            <div><dt>Eisenstein</dt><dd>素数 p：不整除首项，整除其余，p² 不整除常数项。</dd></div>
-          </dl>
-        </div>
-        <div class="definition-stack">
-          <article class="definition-row"><strong>内容与本原</strong><p>整系数多项式 f 的内容 cont(f) 是系数的最大公因数（可取正）。${tex("f=\\mathrm{cont}(f)\\,f^*")}，其中 ${tex("f^*")} 本原。有理系数先乘公分母变成整系数，再提内容。</p></article>
-          <article class="definition-row"><strong>有理根定理</strong><p>若既约分数 ${tex("p/q")} 是整系数多项式的根，则 p 整除常数项，q 整除首项系数。候选有限：枚举后约分去重，再用 Horner 精确验证。例：${tex("2x^3+x^2-x-1")} 的候选来自 ±1 与 ±1,±2 的商。</p></article>
-          <article class="definition-row"><strong>Eisenstein 三条件</strong><p>存在素数 p 使得：(1) p 不整除首项；(2) p 整除其余每个系数；(3) p² 不整除常数项。则 f 在 ${tex("\\mathbb{Q}[x]")} 中不可约。这是充分条件，不满足时仍可能不可约。</p></article>
-          <article class="definition-row"><strong>常见误用</strong><p>四次及以上无有理根，仍可能因式分解为两个二次。不要把“筛完有理根”写成“任意次数不可约”。二次、三次因次数限制，无有理根即不可约。</p></article>
-        </div>
-        <div class="lesson-card-grid">
-          <article class="lesson-card"><span class="lesson-card-kicker">筛选</span><h3>候选先约分</h3><p>同一有理数多种写法只保留既约代表，再 Horner 判定是否为根。</p></article>
-          <article class="lesson-card"><span class="lesson-card-kicker">透镜</span><h3>切换素数 p</h3><p>对 ${tex("x^5+10x+5")} 试 p=5：三条件全过 ⇒ 不可约。</p></article>
-          <article class="lesson-card"><span class="lesson-card-kicker">精确</span><h3>整数算术</h3><p>条件判定用整数取模，不用浮点近似，避免误判整除。</p></article>
-        </div>
-        <div class="lesson-reading-note"><strong>这一节的核心</strong><p>本原 + Gauss 连接 ℚ 与 ℤ；有理根有限候选；Eisenstein 三条件是充分不可约判据。下一节进入多元：用指数格点组织项与齐次层。</p></div>
-      </div>`;
+  function formal9(el, section) {
+    formal(section, el, {
+      title: "从有理系数到精确整数判据",
+      formula: "f=\\operatorname{cont}(f)f^*,\\qquad \\gcd(\\text{coefficients of }f^*)=1",
+      details: [
+        { title: "清分母与本原化", html: "先乘最小公倍数得到整系数，再提出系数最大公因数；剩余本原部分承载真正的分解问题。" },
+        { title: "有理根候选", html: `既约根 ${tex("p/q")} 必满足 ${tex("p\\mid a_0,q\\mid a_n")}；这是候选条件，不是自动判根。` },
+        { title: "Eisenstein 三门", html: "素数 p 不整除首项，整除其余所有系数，且 p² 不整除常数项。" },
+        { title: "逻辑方向", html: "有理根和 Eisenstein 都是工具。判据失败应写“未得到结论”，不能反写成“可约”。" },
+      ],
+      cards: [
+        { kicker: "候选", title: "约分、去重、含正负", html: "筛选器显示每个候选的精确代值。" },
+        { kicker: "素数", title: "失败定位到具体条件", html: "切换 p 后逐行说明哪一门通过或失败。" },
+        { kicker: "反例", title: "无有理根未必不可约", html: "x⁴+4 没有有理根，却能分成两个二次因式。" },
+      ],
+    });
   }
 
-  function formal10(el) {
-    if (!el) return;
-    el.innerHTML = `
-      <h2>指数格点与齐次层</h2>
-      <div class="lesson-formal-layout">
-        <p class="lesson-formal-intro">多个变量出现以后，单项式 ${tex("x^i y^j")} 对应平面格点 ${tex("(i,j)")}。总次数是 ${tex("i+j")}；斜线 ${tex("i+j=d")} 上的项组成齐次层。任意多项式可按总次数分层 ${tex("f=f_0+f_1+\\cdots+f_d")}。乘法对应指数向量相加，同格点上的系数再聚合。格点比一长串公式更能看清“哪些项存在、次数如何相加”。</p>
-        <div class="operation-map">
-          <div class="operation-map-main">${display("x^i y^j\\ \\longleftrightarrow\\ (i,j),\\quad (i,j)+(k,l)=(i+k,j+l)")}</div>
-          <dl class="lesson-meta-list">
-            <div><dt>格点</dt><dd>横轴 x 指数，纵轴 y 指数；位置即幂次。</dd></div>
-            <div><dt>总次数</dt><dd>${tex("\\deg(x^i y^j)=i+j")}；多项式取最高项。</dd></div>
-            <div><dt>齐次</dt><dd>同层项总次数相同；可按层过滤显示。</dd></div>
-            <div><dt>乘法</dt><dd>指数向量相加，同点系数相加。</dd></div>
-          </dl>
-        </div>
-        <div class="definition-stack">
-          <article class="definition-row"><strong>单项式与格点</strong><p>二元情形把每个非零项画在整数格点上。例如 ${tex("2x^2y")} 在 (2,1)。零系数的点不画，或显示为空。读图时先报坐标，再报系数。</p></article>
-          <article class="definition-row"><strong>齐次分层</strong><p>总次数为 d 的齐次元是 ${tex("i+j=d")} 的线性组合。一般多项式是各层之和。过滤某一层时，只点亮该斜线上的项，便于数次数与做齐次运算。</p></article>
-          <article class="definition-row"><strong>乘法几何</strong><p>${tex("x\\cdot y")} 对应 ${tex("(1,0)+(0,1)=(1,1)")}。更一般地，两多项式相乘是支撑集的 Minkowski 和，再在重合格点上加系数。演示按钮单独高亮这一几何。</p></article>
-          <article class="definition-row"><strong>舞台固定</strong><p>格点画布高度锁定 340px，网格范围固定（如 0…4）。交互只改哪些点亮起，不改坐标系尺度，避免“点一下视野跑掉”。</p></article>
-        </div>
-        <div class="lesson-card-grid">
-          <article class="lesson-card"><span class="lesson-card-kicker">读写</span><h3>坐标 = 指数</h3><p>点 (3,0) 就是 ${tex("x^3")}；点 (0,0) 是常数项。</p></article>
-          <article class="lesson-card"><span class="lesson-card-kicker">分层</span><h3>斜线是齐次</h3><p>层 3：${tex("x^3,\\,x^2y,\\,xy^2,\\,y^3")} 所在的对角线。</p></article>
-          <article class="lesson-card"><span class="lesson-card-kicker">相乘</span><h3>向量加法</h3><p>先各自定位，再平移相加，最后合并同类项。</p></article>
-        </div>
-        <div class="lesson-reading-note"><strong>这一节的核心</strong><p>格点组织多元项；总次数 = 指数和；乘法 = 向量加。下一节讨论在变量置换下不变的对称多项式，以及基本对称多项式生成一切对称式。</p></div>
-      </div>`;
+  function formal10(el, section) {
+    formal(section, el, {
+      title: "指数格点与齐次分层",
+      formula: "x^\\alpha x^\\beta=x^{\\alpha+\\beta},\\qquad |\\alpha|=\\sum_i\\alpha_i",
+      details: [
+        { title: "支撑", html: "非零系数对应的指数格点集合就是多项式的支撑；缺项不会改变格点坐标系。" },
+        { title: "三种次数", html: "degₓ、degᵧ 分别取单个坐标最大值；总次数逐项求指数和再取最大。" },
+        { title: "齐次层", html: `二元情形 ${tex("i+j=d")} 是一条斜线；同一斜线上的项组成 ${tex("f_d")}。` },
+        { title: "乘法聚合", html: "指数向量相加给出落点，所有落到同一格点的系数再相加。" },
+      ],
+      cards: [
+        { kicker: "点击", title: "格点直接读取单项式", html: "点击空格点也会明确显示系数为 0。" },
+        { kicker: "过滤", title: "按总次数看齐次层", html: "0、1、2、3 层保持同一坐标系，不重新排列。" },
+        { kicker: "配对", title: "指定系数追踪来源", html: "x³y 的系数同时接收 x·2x²y 与 −y·x³。" },
+      ],
+    });
   }
 
-  function formal11(el) {
-    if (!el) return;
-    el.innerHTML = `
-      <h2>对称、轨道与基本对称多项式</h2>
-      <div class="lesson-formal-layout">
-        <p class="lesson-formal-intro">若多项式在任意变量置换下保持不变（标准化后相同），则称为对称多项式。单项式在置换群作用下生成轨道，轨道上所有像的和给出对称构件。基本对称多项式 ${tex("\\sigma_1,\\ldots,\\sigma_n")} 可以生成全部对称多项式——这就是对称多项式基本定理。根与系数的 Vieta 公式，正是把首一多项式的系数写成根的基本对称多项式。</p>
-        <div class="operation-map">
-          <div class="operation-map-main">${display("x^2+y^2+z^2=\\sigma_1^2-2\\sigma_2")}</div>
-          <dl class="lesson-meta-list">
-            <div><dt>对称</dt><dd>任意置换变量后，标准化结果相同。</dd></div>
-            <div><dt>轨道</dt><dd>单项式在置换下的全部像；不重不漏。</dd></div>
-            <div><dt>基本对称</dt><dd>三变量：${tex("\\sigma_1=x+y+z")}，${tex("\\sigma_2=xy+xz+yz")}，${tex("\\sigma_3=xyz")}。</dd></div>
-            <div><dt>Vieta</dt><dd>首一多项式系数与根的 σ 相连。</dd></div>
-          </dl>
-        </div>
-        <div class="definition-stack">
-          <article class="definition-row"><strong>对称性检验</strong><p>交换 x 与 y 后，比较标准化结果是否相同。${tex("x+y")}、${tex("x^2+y^2")} 对称；${tex("x^2+y")} 不对称。不要只比字符串：项顺序可变，应先整理再比。</p></article>
-          <article class="definition-row"><strong>轨道和</strong><p>从 ${tex("x^2y")} 出发，列出所有变量置换得到的像，相加得到对称多项式。轨道要完整：既不重复也不遗漏，否则改写会缺项或多项。</p></article>
-          <article class="definition-row"><strong>σ 改写</strong><p>基本定理说任何对称多项式都是 σ 的多项式。算法思想：按最高项逐步减去 σ 的合适组合，直至余式为零。例：${tex("x^2+y^2+z^2=\\sigma_1^2-2\\sigma_2")}。</p></article>
-          <article class="definition-row"><strong>Vieta 桥梁</strong><p>若 ${tex("(t-x)(t-y)(t-z)=t^3-\\sigma_1 t^2+\\sigma_2 t-\\sigma_3")}，则根与系数通过基本对称多项式相连。这把“对称改写”与解方程、因式分解串起来。</p></article>
-        </div>
-        <div class="lesson-card-grid">
-          <article class="lesson-card"><span class="lesson-card-kicker">交换</span><h3>x↔y 试金石</h3><p>对称式交换后不变；非对称式立刻露馅。交互提供一键交换。</p></article>
-          <article class="lesson-card"><span class="lesson-card-kicker">轨道</span><h3>像集要完整</h3><p>三变量下 ${tex("x^2y")} 有 6 个像；漏一个就会破坏对称性。</p></article>
-          <article class="lesson-card"><span class="lesson-card-kicker">改写</span><h3>落到 σ</h3><p>最终目标是用 σ₁,σ₂,σ₃ 的多项式表达，便于计算与比较。</p></article>
-        </div>
-        <div class="lesson-reading-note"><strong>这一节的核心</strong><p>对称 = 置换不变；轨道和生成构件；一切对称式可用 σ 改写；Vieta 是系数与根的对称桥梁。第一章多项式部分到此收束：从数域、形式运算到分解、函数与对称结构。</p></div>
-      </div>`;
+  function formal11(el, section) {
+    formal(section, el, {
+      title: "置换不变性与基本对称构件",
+      formula: "\\sigma_1=x+y+z,\\quad\\sigma_2=xy+xz+yz,\\quad\\sigma_3=xyz",
+      details: [
+        { title: "规范比较", html: "置换后先按统一单项式次序合并同类项，再比较；不能依赖字符串顺序。" },
+        { title: "轨道和", html: "一个单项式的全部置换像构成轨道；任何置换只重排轨道，因此等系数轨道和对称。" },
+        { title: "基本定理的算法", html: "用 σ 的乘积匹配当前最高单项式并相减；规定次序下最高项严格下降，最终终止。" },
+        { title: "Vieta", html: "把变量换成一元多项式的根，σ₁、σ₂、… 正好给出带交替符号的系数。" },
+      ],
+      cards: [
+        { kicker: "区分", title: "循环对称不等于全对称", html: "三循环保持不变仍可能在一个换位下改变。" },
+        { kicker: "轨道", title: "x²y 产生六个不同项", html: "页面列出并检查不重不漏。" },
+        { kicker: "改写", title: "一步一步消去最高项", html: "平方和与六项轨道和各有完整推导。" },
+      ],
+    });
   }
 
-  window.defineChapter1Renderer("rational-polynomials", {
-    formal: formal9,
-    interactive: (el) => {
-      if (!el) return;
-      el.innerHTML = `<h2>交互实验</h2><div class="ch1-lab">
-        <div class="ch1-lab-head"><h3>有理根筛选 · Eisenstein 透镜</h3><p>精确整数判定三条件；有理根候选约分去重后用 Horner 验证。</p></div>
+  function interactive9(el) {
+    el.innerHTML = `<h2>交互实验</h2><div class="ch1-lab">
+      <div class="ch1-lab-head"><h3>有理根筛选器与素数透镜</h3><p>候选根显示精确代值；Eisenstein 失败只写“未判定”，绝不误报“可约”。</p></div>
+      <div class="ch1-control-groups">
         <div class="ch1-controls">
-          <button type="button" data-prime-btn="2">p=2</button>
-          <button type="button" data-prime-btn="3">p=3</button>
-          <button type="button" class="is-active" data-prime-btn="5">p=5</button>
-          <button type="button" data-prime-btn="7">p=7</button>
+          <button type="button" class="is-active" data-rational-example="root">2x³+x²−x−1</button>
+          <button type="button" data-rational-example="eisenstein">x⁵+10x+5</button>
+          <button type="button" data-rational-example="quartic">x⁴+4 反例</button>
         </div>
-        <div class="ch1-lab-grid is-stack">
+        <div class="ch1-controls">
+          <span>素数 p：</span>
+          <button type="button" data-prime="2">2</button>
+          <button type="button" data-prime="3">3</button>
+          <button type="button" class="is-active" data-prime="5">5</button>
+        </div>
+      </div>
+      <div class="ch1-readout">
+        <div>f = <strong data-rational-poly></strong></div>
+        <p class="ch1-muted" data-rational-note></p>
+      </div>
+      <div class="ch1-lab-grid">
+        <section class="ch1-panel">
+          <h4>有理根候选</h4>
+          <p class="ch1-muted" data-candidate-count></p>
+          <div class="ch1-candidate-grid" data-candidates></div>
+        </section>
+        <section class="ch1-panel">
+          <h4>Eisenstein：p=<span data-prime-value></span></h4>
+          <div class="ch1-check-list" data-eisenstein-checks></div>
+          <div><span data-eisenstein-status></span></div>
+        </section>
+      </div>
+    </div>`;
+    mountRationalLab(el);
+  }
+
+  function interactive10(el) {
+    el.innerHTML = `<h2>交互实验</h2><div class="ch1-lab">
+      <div class="ch1-lab-head"><h3>指数格点与乘法合成</h3><p>点击格点读取项；过滤齐次层；切到乘法模式看指数向量的和点。</p></div>
+      <div class="ch1-controls">
+        <button type="button" class="is-active" data-lattice-mode="support">支撑与齐次层</button>
+        <button type="button" data-lattice-mode="multiply">乘法合成</button>
+        <button type="button" class="is-active" data-layer="all">全部层</button>
+        <button type="button" data-layer="0">d=0</button>
+        <button type="button" data-layer="1">d=1</button>
+        <button type="button" data-layer="2">d=2</button>
+        <button type="button" data-layer="3">d=3</button>
+      </div>
+      <div class="ch1-lab-grid">
+        <div class="ch1-stage"><canvas aria-label="二元多项式指数格点"></canvas></div>
+        <div class="ch1-panel">
+          <div class="ch1-readout" data-lattice-readout></div>
+          <p class="ch1-muted" data-degree-summary></p>
+          <div class="ch1-compare" data-layers></div>
+          <div class="ch1-controls">
+            <span>第一指数：</span>
+            <button type="button" data-first='{"i":2,"j":1}'>(2,1)</button>
+            <button type="button" data-first='{"i":1,"j":2}'>(1,2)</button>
+            <span>第二指数：</span>
+            <button type="button" data-second='{"i":1,"j":0}'>(1,0)</button>
+            <button type="button" data-second='{"i":0,"j":1}'>(0,1)</button>
+          </div>
+          <div class="ch1-readout" data-product-coefficient></div>
+        </div>
+      </div>
+    </div>`;
+    mountExponentLattice(el);
+  }
+
+  function interactive11(el) {
+    el.innerHTML = `<h2>交互实验</h2><div class="ch1-lab">
+      <div class="ch1-lab-head"><h3>置换轨道与 σ 改写</h3><p>表达式先按指数向量规范化再比较。三循环与换位分开测试，避免把循环对称误当全对称。</p></div>
+      <div class="ch1-controls">
+        <button type="button" class="is-active" data-sym-expression="squares">x²+y²+z²</button>
+        <button type="button" data-sym-expression="orbit">Σsym x²y</button>
+        <button type="button" data-sym-expression="cyclic">循环对称反例</button>
+        <button type="button" data-sym-expression="nonsym">x²+y</button>
+      </div>
+      <div class="ch1-controls">
+        <button type="button" data-swap-xy>换位 x↔y</button>
+        <button type="button" data-cycle>三循环 x→y→z→x</button>
+        <button type="button" data-permutation-reset>恢复变量顺序</button>
+      </div>
+      <div class="ch1-lab-grid">
+        <section class="ch1-panel">
           <div class="ch1-readout">
-            <div>目标多项式 <span data-eis-poly></span></div>
-            <div>素数 p = <strong data-prime></strong></div>
-            <div data-c1></div>
-            <div data-c2></div>
-            <div data-c3></div>
-            <div class="ch1-status" data-eis-status></div>
+            <div>原式：<strong data-sym-before></strong></div>
+            <div>置换后：<strong data-sym-after></strong></div>
+            <div class="ch1-muted" data-permutation></div>
+            <div><span data-sym-status></span></div>
+            <p data-global-status></p>
           </div>
-          <div class="ch1-readout">
-            <div>有理根演示：<span data-root-poly></span></div>
-            <div class="ch1-muted" data-cand-count></div>
-            <div class="ch1-muted">候选（约分去重）与精确验证：</div>
-            <div data-cand style="display:flex;flex-wrap:wrap;gap:6px"></div>
+          <h4>x²y 的完整轨道</h4>
+          <div class="ch1-orbit" data-orbit></div>
+        </section>
+        <section class="ch1-panel">
+          <div class="ch1-controls">
+            <button type="button" class="is-active" data-rewrite-kind="squares">平方和改写</button>
+            <button type="button" data-rewrite-kind="orbit">六项轨道和改写</button>
           </div>
-        </div>
-      </div>`;
-      mountRationalLab(el);
-    },
-  });
+          <div class="ch1-rewrite-stage">
+            <span>步骤 <strong data-rewrite-step></strong></span>
+            <h4 data-rewrite-title></h4>
+            <div data-rewrite-formula></div>
+          </div>
+          <div class="ch1-controls">
+            <button type="button" data-rewrite-prev>上一步</button>
+            <button type="button" data-rewrite-next>下一步</button>
+            <button type="button" data-rewrite-reset>重置</button>
+          </div>
+        </section>
+      </div>
+    </div>`;
+    mountSymmetry(el);
+  }
 
-  window.defineChapter1Renderer("multivariate-polynomials", {
-    formal: formal10,
-    interactive: (el) => {
-      if (!el) return;
-      el.innerHTML = `<h2>交互实验</h2><div class="ch1-lab">
-        <div class="ch1-lab-head"><h3>指数格点</h3><p>格点坐标与单项式指数严格一致；舞台高度固定 340px。可按齐次层过滤，或演示乘法向量加法。</p></div>
-        <div class="ch1-controls">
-          <button type="button" class="is-active" data-layer="all">全部</button>
-          <button type="button" data-layer="0">层 0</button>
-          <button type="button" data-layer="1">层 1</button>
-          <button type="button" data-layer="2">层 2</button>
-          <button type="button" data-layer="3">层 3</button>
-          <button type="button" data-term="3,0">x³</button>
-          <button type="button" data-term="2,1">2x²y</button>
-          <button type="button" data-term="0,0">−1</button>
-          <button type="button" data-mul-demo>乘法演示</button>
-        </div>
-        <div class="ch1-lab-grid">
-          <div class="ch1-stage"><canvas data-ch1-canvas aria-label="指数格点"></canvas></div>
-          <div class="ch1-panel">
-            <div class="ch1-readout">
-              <div><strong data-total></strong></div>
-              <div class="ch1-muted" data-active></div>
-              <div class="ch1-muted" data-mul-note>乘法：指数向量相加后在同格点聚合。</div>
-            </div>
-            <div class="ch1-compare" data-layers></div>
-          </div>
-        </div>
-      </div>`;
-      mountLattice(el);
-    },
-  });
-
-  window.defineChapter1Renderer("symmetric-polynomials", {
-    formal: formal11,
-    interactive: (el) => {
-      if (!el) return;
-      el.innerHTML = `<h2>交互实验</h2><div class="ch1-lab">
-        <div class="ch1-lab-head"><h3>变量交换与轨道</h3><p>比较交换前后（KaTeX）；查看轨道、基本对称与 σ 改写卡片。</p></div>
-        <div class="ch1-controls">
-          <button type="button" class="is-active" data-expr="x+y">x+y</button>
-          <button type="button" data-expr="x2+y2">x²+y²</button>
-          <button type="button" data-expr="x2+y">x²+y</button>
-          <button type="button" data-expr="x2y+xy2">x²y+xy²</button>
-          <button type="button" data-swap>交换 x↔y</button>
-        </div>
-        <div class="ch1-readout">
-          <div>交换前：<strong data-before></strong></div>
-          <div>交换后：<strong data-after></strong></div>
-          <div class="ch1-status" data-sym-status></div>
-          <div class="ch1-muted" data-swap-state></div>
-        </div>
-        <div class="ch1-compare" data-orbit></div>
-      </div>`;
-      mountSymmetric(el);
-    },
-  });
+  window.defineChapter1Renderer("rational-polynomials", { formal: formal9, interactive: interactive9 });
+  window.defineChapter1Renderer("multivariate-polynomials", { formal: formal10, interactive: interactive10 });
+  window.defineChapter1Renderer("symmetric-polynomials", { formal: formal11, interactive: interactive11 });
 })();

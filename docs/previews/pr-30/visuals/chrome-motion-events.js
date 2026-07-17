@@ -16,6 +16,7 @@
         "searchBackdrop",
         "searchPanel",
         "searchBar",
+        "searchResultsPanel",
         "searchBody",
         "languageControl",
         "languageToggle",
@@ -49,8 +50,11 @@
           restoreFocus: true,
         });
       });
+      searchOpen.addEventListener("blur", () => searchOpen.classList.remove("is-pointer-focus-return"));
       searchModal.querySelectorAll("[data-search-close]").forEach((element) => {
-        element.addEventListener("click", () => this.closeSearch({ restoreFocus: true }));
+        element.addEventListener("click", (event) => {
+          this.closeSearch({ restoreFocus: true, focusVisible: event.detail === 0 });
+        });
       });
       searchInput?.addEventListener("input", () => this.renderSearchResults(searchInput.value));
 

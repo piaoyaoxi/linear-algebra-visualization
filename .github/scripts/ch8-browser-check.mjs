@@ -126,6 +126,9 @@ try {
     console.log(`PASS ${config.name}`);
     await context.close();
   }
+} catch (error) {
+  fs.writeFileSync(path.join(shots, "error.txt"), `${error.stack || error}\n`);
+  throw error;
 } finally {
   await browser.close();
 }

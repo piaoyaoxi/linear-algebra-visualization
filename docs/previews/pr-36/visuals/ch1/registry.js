@@ -44,12 +44,12 @@
     if (!sectionId || !renderer || typeof renderer !== "object") {
       throw new TypeError("Chapter 1 renderers require a section id and an object.");
     }
-    renderers.set(sectionId, renderer);
+    const current = renderers.get(sectionId) || {};
+    renderers.set(sectionId, { ...current, ...renderer });
   };
 
   window.renderChapter1Formal = function renderChapter1Formal(el, section, config = {}) {
     if (!el || !section) return;
-    const inline = (source) => (window.texInline ? window.texInline(source) : source);
     const display = (source) => (window.texDisplay ? window.texDisplay(source) : source);
     const concepts = Array.isArray(section.concepts) ? section.concepts : [];
     const details = Array.isArray(config.details) ? config.details : [];

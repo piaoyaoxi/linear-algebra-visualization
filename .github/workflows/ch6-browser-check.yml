@@ -1,0 +1,43 @@
+name: Chapter 6 browser check
+
+on:
+  pull_request:
+    paths:
+      - "current/**"
+      - ".github/scripts/ch6-browser-check.mjs"
+      - ".github/workflows/ch6-browser-check.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  browser-check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Install Playwright
+        run: |
+          npm install --no-save playwright@1.52.0
+          npx playwright install --with-deps chromium
+
+      - name: Start static site
+        run: |
+          python3 -m http.server 4173 --directory current > /tmp/ch6-static.log 2>&1 &
+          echo $! > /tmp/ch6-static.pid
+          for attempt in {1..20}; do
+            if curl --fail --silent http://127.0.0.1:4173/learn.html > /dev/null; then
+              exit 0
+            fi
+            sleep 1
+          done
+          cat /tmp/ch6-static.log
+          exit 1
+
+      - name: Exercise Chapter 6 in Chromium
+        run: node .github/scripts/ch6-browser-check.mjs

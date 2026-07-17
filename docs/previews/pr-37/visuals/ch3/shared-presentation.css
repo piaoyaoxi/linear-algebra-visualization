@@ -401,6 +401,8 @@
 
 .ch3-module {
   display: grid;
+  min-width: 0;
+  max-width: 100%;
   gap: 14px;
   padding: 16px;
   border-radius: calc(var(--radius) + 6px);
@@ -476,6 +478,12 @@
   align-items: center;
 }
 
+.ch3-theorem-row > div {
+  min-width: 0;
+  max-width: 100%;
+  overflow-x: auto;
+}
+
 .ch3-theorem-row p {
   margin: 0;
   color: var(--muted);
@@ -517,7 +525,10 @@
 }
 
 .ch3-verification-grid .viz-callout {
+  width: 100%;
+  max-width: 100%;
   min-width: 0;
+  overflow-x: auto;
 }
 
 .ch3-resultant-steps {

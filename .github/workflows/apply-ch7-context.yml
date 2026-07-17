@@ -18,5 +18,5 @@ jobs:
         uses: actions/checkout@v4
         with:
           ref: context/ch7-linear-transformations
-      - name: Report payload part hashes
-        run: 'for file in .github/ch7-payload/part-*; do printf "%s:%s:%s;" "$(basename "$file")" "$(wc -c < "$file")" "$(sha256sum "$file" | cut -d" " -f1)"; done; echo; exit 1'
+      - name: Locate repaired payload mismatch
+        run: 'for spec in "part-01-0:2d6bfbc67902035badc57fb52f136fee8a837309f095aae297e3a1a8344325b0" "part-01-1:3ee9eaeb15f3e7820528a16c92d5f97bdc46444d18ee6e94c0779cebac076e93" "part-04-0:65b84e920d046e50ab7e1a14616fb7a8c659dbe2ed481b9431b92f44022e502b" "part-04-1:1e762b5fd435d85249107cd6f66b60d0665f294f93237285f761e4f9286567cd" "part-06-0:d9e9135031c7c62f43caafae1e0a80cbe512c585dff72044cc0396edacc8a9c5" "part-06-1:8b4c6748ac3409ca83630bcb8e3242617697c12ec57059376dee61cc203f6137"; do file="${spec%%:*}"; expected="${spec#*:}"; actual="$(sha256sum ".github/ch7-payload/$file" | cut -d" " -f1)"; if [ "$actual" != "$expected" ]; then echo "BAD:$file:$actual"; exit 1; fi; done; echo ALL_REPAIRS_OK'

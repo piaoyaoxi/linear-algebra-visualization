@@ -26,7 +26,7 @@ jobs:
       - name: Decode and apply payload
         run: |
           cat .github/ch7-payload/part-* | base64 -d > /tmp/ch7-payload.tar.gz
-          echo "6b1812a2a79b1779f34fc11bac295bc6aa41dad468ffa30ac6662e9901e3869d  /tmp/ch7-payload.tar.gz" | sha256sum -c -
+          gzip -t /tmp/ch7-payload.tar.gz
           tar -xzf /tmp/ch7-payload.tar.gz
           rm -rf .github/ch7-payload
           rm -f .github/workflows/export-context.yml

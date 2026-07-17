@@ -28,6 +28,21 @@ jobs:
           git fetch -q --depth=1 origin "${BRANCH_NAME}"
           git checkout -q -B "${BRANCH_NAME}" FETCH_HEAD
 
+      - name: Fix augmented-matrix KaTeX alignment
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          path = Path('current/visuals/ch3/shared-math.js')
+          source = path.read_text()
+          old = '`{@{}${"c".repeat(barAt)}|${"c".repeat(matrix[0].length - barAt)}@{}}`'
+          new = '`{${"c".repeat(barAt)}|${"c".repeat(matrix[0].length - barAt)}}`'
+          if old not in source:
+              raise SystemExit('expected KaTeX alignment source not found')
+          path.write_text(source.replace(old, new))
+          PY
+          node --check current/visuals/ch3/shared-math.js
+          git diff --check
+
       - name: Install Chromium test runtime
         run: |
           mkdir -p /tmp/ch3-playwright
@@ -61,10 +76,11 @@ jobs:
           path: browser-artifacts/
           if-no-files-found: warn
 
-      - name: Remove temporary verification files
+      - name: Commit fix and remove temporary verification files
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git rm scripts/ch3-browser-smoke.mjs .github/workflows/ch3-browser-smoke.yml
-          git commit -m "test(ch3): record browser verification"
+          git add current/visuals/ch3/shared-math.js
+          git commit -m "fix(ch3): render augmented matrices without KaTeX errors"
           git push -q origin HEAD:"${BRANCH_NAME}"

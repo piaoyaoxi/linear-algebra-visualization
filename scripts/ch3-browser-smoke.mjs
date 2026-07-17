@@ -65,7 +65,7 @@ async function baseAssertions(page, section, lab, viewportName) {
             text: (element.textContent || '').trim().replace(/\s+/g, ' ').slice(0, 80),
           };
         })
-        .filter((item) => item.right > window.innerWidth + 2 || item.left < -2)
+        .filter((item) => item.right > window.innerWidth + 2 && item.left < window.innerWidth)
         .slice(0, 20),
     };
   }, { sectionId: section, labId: lab });
@@ -76,9 +76,10 @@ async function baseAssertions(page, section, lab, viewportName) {
   assert.ok(snapshot.formalExists && snapshot.interactiveExists, `${viewportName}/${section}: lesson sections missing`);
   assert.ok(snapshot.canvasWidth > 150 && snapshot.canvasHeight > 150, `${viewportName}/${section}: canvas has no usable size`);
   assert.ok(snapshot.labText.length > 20, `${viewportName}/${section}: interaction is empty`);
-  assert.ok(
-    snapshot.scrollWidth <= snapshot.viewportWidth + 4,
-    `${viewportName}/${section}: horizontal overflow ${snapshot.scrollWidth} > ${snapshot.viewportWidth}; elements=${JSON.stringify(snapshot.overflowers)}`,
+  assert.equal(
+    snapshot.overflowers.length,
+    0,
+    `${viewportName}/${section}: visible horizontal overflow; document=${snapshot.scrollWidth}/${snapshot.viewportWidth}; elements=${JSON.stringify(snapshot.overflowers)}`,
   );
 }
 

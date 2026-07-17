@@ -4,19 +4,10 @@ defineChapter1Section("number-fields", {
   title: "数域",
   navTitle: "数域",
   question: "为什么多项式的系数必须先指定来自哪个数域？同一个表达式换一个数域后，哪些结论会改变？",
-  goal: "掌握数域对加、减、乘、除非零元素封闭；识别 Q、R、C 与 Q(√2)；理解系数域会改变根与不可约性。",
+  goal: `掌握数域对加、减、乘、除非零元素封闭；识别 ${texInline("\\mathbb{Q}")}、${texInline("\\mathbb{R}")}、${texInline("\\mathbb{C}")} 与 ${texInline("\\mathbb{Q}(\\sqrt{2})")}；理解系数域会改变根与不可约性。`,
   tags: ["数域", "封闭性", "系数域"],
   intro:
     "多项式的系数不是任意数字的集合。教材把数域定义为复数域的子域，并对四则运算（除法只对非零元）封闭。本节先用对照看清“集合包含”与“运算封闭”的差别，再为后面的分解埋下线索。",
-  videoPlan: {
-    title: "三个多项式，三种命运",
-    duration: "约 1—2 分钟",
-    scenes: [
-      "同一批表达式在 Q、R、C 下系数是否合法。",
-      "Z 在除法下不封闭的反例。",
-      "x²−2 在 Q 不可约、在 R 可分解的预告。",
-    ],
-  },
   concepts: [
     { label: "数域", text: `复数域 ${texInline("\\mathbb{C}")} 的子域：含 0、1，对加、减、乘、非零除法封闭。` },
     { label: "常见例子", text: `${texInline("\\mathbb{Q}")}、${texInline("\\mathbb{R}")}、${texInline("\\mathbb{C}")} 以及 ${texInline("\\mathbb{Q}(\\sqrt{2})")}=\\{a+b\\sqrt{2}\\mid a,b\\in\\mathbb{Q}\\}。` },
@@ -38,7 +29,7 @@ defineChapter1Section("number-fields", {
       "选择整数集，观察除法门亮红并给出反例。",
       "选择有理数、实数、复数，确认四门全绿。",
       "切换到 Q(√2)，看元素形式与求逆。",
-      "检查系数带 [1,0,−√2] 在 Q 与 R 上的合法性。",
+      "检查系数带在 Q 与 R 上的合法性。",
     ],
   },
   example: {

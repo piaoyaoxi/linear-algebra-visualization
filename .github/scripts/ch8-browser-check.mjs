@@ -69,7 +69,7 @@ async function exerciseChapter(page, name) {
   await openLesson(page, "smith-form");
   for (let index = 0; index < 4; index += 1) await page.locator("[data-smith-next]").click();
   if (!(await textIncludes(page.locator("[data-smith-status]"), "标准形"))) throw new Error("Smith reduction did not reach the standard form");
-  if (!(await textIncludes(page.locator("[data-smith-note]"), "验证"))) throw new Error("Smith reduction lacks the UAV verification");
+  if (!(await page.locator("[data-smith-u] .katex").count()) || !(await page.locator("[data-smith-v] .katex").count())) throw new Error("Smith reduction lacks the cumulative U/V verification");
 
   await openLesson(page, "invariant-factors");
   await page.locator("[data-invariant-preset]").selectOption("jordan");

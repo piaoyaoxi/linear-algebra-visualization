@@ -1,15 +1,16 @@
 PART SIZES
-12000 .github/ch7-payload/part-00
- 6000 .github/ch7-payload/part-01-0
- 6000 .github/ch7-payload/part-01-1
-12000 .github/ch7-payload/part-02
-12000 .github/ch7-payload/part-03
-12000 .github/ch7-payload/part-05
-12001 .github/ch7-payload/part-06
-12000 .github/ch7-payload/part-07
-12000 .github/ch7-payload/part-08
- 3224 .github/ch7-payload/part-09
-99225 total
+ 12000 .github/ch7-payload/part-00
+  6000 .github/ch7-payload/part-01-0
+  6000 .github/ch7-payload/part-01-1
+ 12000 .github/ch7-payload/part-02
+ 12000 .github/ch7-payload/part-03
+  6000 .github/ch7-payload/part-04-0
+ 12000 .github/ch7-payload/part-05
+ 12001 .github/ch7-payload/part-06
+ 12000 .github/ch7-payload/part-07
+ 12000 .github/ch7-payload/part-08
+  3224 .github/ch7-payload/part-09
+105225 total
 
 PART HASHES
 617ad7ae35d2528f1b2c89e15924af89bdf97167c287de9be21964f6cf7eee86  .github/ch7-payload/part-00
@@ -17,6 +18,7 @@ PART HASHES
 3ee9eaeb15f3e7820528a16c92d5f97bdc46444d18ee6e94c0779cebac076e93  .github/ch7-payload/part-01-1
 5fa5509bd11670e5b7de95236751809df27e147e22290c888167b588eee97392  .github/ch7-payload/part-02
 6957c1a61a5a6619535b244e42b739100aefbbc1de5a6fa1b1d418895b053489  .github/ch7-payload/part-03
+65b84e920d046e50ab7e1a14616fb7a8c659dbe2ed481b9431b92f44022e502b  .github/ch7-payload/part-04-0
 ff69964eac7078e531cc58a554daa880e7ac99c32e79a58a132d2e4c3fbce72e  .github/ch7-payload/part-05
 706da9876f2dc4a9d3de63f658e6b2a0529cdce1a229340e86c8323e3bf08789  .github/ch7-payload/part-06
 4a66e0bae17115650701d4b2477c4ae84506fc1be0b73257c126a3a0b410b397  .github/ch7-payload/part-07
@@ -24,11 +26,11 @@ ff69964eac7078e531cc58a554daa880e7ac99c32e79a58a132d2e4c3fbce72e  .github/ch7-pa
 d0934ef8bc3212ffe5e04d6cbdcbfdaaffbb707712fcabea8edaf330a70a3129  .github/ch7-payload/part-09
 
 CONCATENATED BASE64 HASH
-c3cbe8cd79142ee87b8c70dc6ecdf7acc63196a39ae2d6a843a0f971449a09ff  -
+587cdc6af29b0387a9aa0c0bfed093ba56b4f995fb04a9fefbd7fe20fefbc33b  -
 
 DECODED HASH
 base64: invalid input
-4941ec3a8fa713b1aeadfa62d21e488c20c17d6774088a181d5631ae7c2d23be  /tmp/ch7-payload.tar.gz
+f4344e49a88f23d9b0f5b8e81472a926798e5a10aa4eb9e93a7dd3821a350492  /tmp/ch7-payload.tar.gz
 
 
 gzip: /tmp/ch7-payload.tar.gz: invalid compressed data--format violated

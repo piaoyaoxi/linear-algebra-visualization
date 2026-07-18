@@ -11,6 +11,14 @@
     renderers.set(sectionId, renderer);
   };
 
+  window.extendChapter2Renderer = function extendChapter2Renderer(sectionId, extension) {
+    if (!sectionId || !extension || typeof extension !== "object") {
+      throw new TypeError("Chapter 2 renderer extensions require a section id and an object.");
+    }
+    const current = renderers.get(sectionId) || {};
+    renderers.set(sectionId, { ...current, ...extension });
+  };
+
   window.defineChapter2LessonEnhancer = function defineChapter2LessonEnhancer(enhancer) {
     if (typeof enhancer === "function") enhancers.push(enhancer);
   };

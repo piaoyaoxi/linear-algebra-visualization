@@ -1,4 +1,4 @@
-/* Dedicated §3 visual system. */
+/* Dedicated §3 visual system and shared scene refinements. */
 .ch6-span-cinema {
   display: grid;
   gap: 18px;
@@ -85,8 +85,50 @@
 }
 
 /* Geometry changes every animation frame; do not restart the stage entrance animation. */
-.ch6-basis-lab .ch6-lab-stage > * {
+.ch6-basis-lab .ch6-lab-stage > *,
+.ch6-change-lab .ch6-lab-stage > * {
   animation: none;
+}
+
+.ch6-stage-legend {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 8px 16px;
+  padding: 8px 8px 2px;
+  color: var(--ch6-slate);
+  font-size: 12px;
+  font-weight: 750;
+}
+
+.ch6-stage-legend span {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+}
+
+.ch6-stage-legend span::before {
+  width: 18px;
+  height: 5px;
+  border-radius: 99px;
+  background: currentColor;
+  content: "";
+}
+
+.ch6-stage-legend .is-u {
+  color: var(--ch6-cyan);
+}
+
+.ch6-stage-legend .is-w {
+  color: var(--ch6-orange);
+}
+
+.ch6-stage-legend .is-target {
+  color: var(--ch6-white);
+}
+
+.ch6-stage-legend .is-muted {
+  color: rgba(243, 247, 251, 0.48);
 }
 
 .ch6-drag-handle {
@@ -170,5 +212,9 @@
 
   .ch6-basis-verdict {
     grid-template-columns: 1fr;
+  }
+
+  .ch6-stage-legend {
+    justify-content: flex-start;
   }
 }

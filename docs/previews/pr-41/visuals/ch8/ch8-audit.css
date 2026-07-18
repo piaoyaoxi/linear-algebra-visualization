@@ -1,0 +1,250 @@
+/* Chapter 8 interaction audit: stable controls, visible task order, and compact teaching layout. */
+
+body[data-route="ch8"] .ch8-interactive-section {
+  display: flex;
+  flex-direction: column;
+}
+
+body[data-route="ch8"] .ch8-interaction-heading {
+  order: 1;
+}
+
+body[data-route="ch8"] .ch8-mission-card {
+  order: 2;
+  max-width: none;
+  margin-bottom: 14px;
+}
+
+body[data-route="ch8"] .ch8-experiment-roadmap {
+  order: 3;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+  gap: 10px;
+  margin: 0 0 18px;
+}
+
+body[data-route="ch8"] .ch8-experiment-roadmap article {
+  min-height: 0;
+  padding: 13px 15px;
+  border: 1px solid var(--ch8-line);
+  border-radius: 15px;
+  background: color-mix(in srgb, var(--ch8-surface) 92%, transparent);
+}
+
+body[data-route="ch8"] .ch8-experiment-roadmap article.is-active {
+  border-color: var(--ch8-accent);
+  background: var(--ch8-accent-soft);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--ch8-accent) 10%, transparent);
+}
+
+body[data-route="ch8"] .ch8-experiment-roadmap article.is-complete {
+  opacity: 0.72;
+}
+
+body[data-route="ch8"] .ch8-lab-host {
+  order: 4;
+  min-height: 0;
+}
+
+body[data-route="ch8"] .ch8-lab > * {
+  position: relative;
+  z-index: 1;
+}
+
+body[data-route="ch8"] .ch8-lab button,
+body[data-route="ch8"] .ch8-lab select,
+body[data-route="ch8"] .ch8-lab input {
+  position: relative;
+  z-index: 3;
+}
+
+body[data-route="ch8"] .lesson-page-section {
+  padding-block: clamp(30px, 4vw, 54px);
+}
+
+body[data-route="ch8"] .ch8-observe {
+  padding-block: clamp(24px, 3vw, 42px);
+}
+
+body[data-route="ch8"] .ch8-observe-cues {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+  margin-top: 18px;
+}
+
+body[data-route="ch8"] .ch8-observe-cues article {
+  min-height: 0;
+  padding: 14px 15px;
+}
+
+body[data-route="ch8"] .ch8-foundation-stack {
+  gap: 10px;
+}
+
+body[data-route="ch8"] .ch8-foundation-module {
+  padding-block: 16px;
+}
+
+.ch8-range-panel {
+  display: grid;
+  gap: 8px;
+  margin: 14px 0 18px;
+  padding: 16px 18px 14px;
+  border: 1px solid var(--ch8-accent-line);
+  border-radius: 18px;
+  background: var(--ch8-surface-soft);
+}
+
+.ch8-range-panel > div {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.ch8-range-panel > div > span {
+  color: var(--text);
+  font-size: 0.98rem;
+  font-weight: 750;
+}
+
+.ch8-range-panel output {
+  color: var(--ch8-accent);
+  font: 800 clamp(1.35rem, 2.5vw, 2rem) / 1 ui-monospace, SFMono-Regular, Menlo, monospace;
+}
+
+.ch8-range-panel small {
+  color: var(--ch8-muted);
+  line-height: 1.45;
+}
+
+.ch8-range-panel input[type="range"] {
+  position: relative;
+  z-index: 10;
+  width: 100%;
+  min-height: 46px;
+  margin: 0;
+  padding: 0;
+  cursor: grab;
+  accent-color: var(--ch8-accent);
+  touch-action: pan-y;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.ch8-range-panel input[type="range"].is-dragging {
+  cursor: grabbing;
+}
+
+.ch8-range-panel input[type="range"]:focus-visible {
+  outline: 3px solid color-mix(in srgb, var(--ch8-accent) 30%, transparent);
+  outline-offset: 5px;
+  border-radius: 999px;
+}
+
+.ch8-range-panel input[type="range"]::-webkit-slider-runnable-track {
+  height: 10px;
+  border: 1px solid var(--ch8-accent-line);
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--ch8-accent) 18%, var(--ch8-surface));
+}
+
+.ch8-range-panel input[type="range"]::-webkit-slider-thumb {
+  width: 28px;
+  height: 28px;
+  margin-top: -10px;
+  border: 3px solid var(--ch8-surface);
+  border-radius: 50%;
+  background: var(--ch8-accent);
+  box-shadow: 0 2px 10px color-mix(in srgb, var(--ch8-accent) 32%, transparent);
+  -webkit-appearance: none;
+  appearance: none;
+}
+
+.ch8-range-panel input[type="range"]::-moz-range-track {
+  height: 10px;
+  border: 1px solid var(--ch8-accent-line);
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--ch8-accent) 18%, var(--ch8-surface));
+}
+
+.ch8-range-panel input[type="range"]::-moz-range-thumb {
+  width: 24px;
+  height: 24px;
+  border: 3px solid var(--ch8-surface);
+  border-radius: 50%;
+  background: var(--ch8-accent);
+  box-shadow: 0 2px 10px color-mix(in srgb, var(--ch8-accent) 32%, transparent);
+}
+
+.ch8-scan-plot,
+.ch8-kernel-stage {
+  min-width: 0;
+}
+
+.ch8-scan-plot .ch8-object-label,
+.ch8-kernel-stage > .ch8-object-label {
+  display: block;
+  margin-bottom: 10px;
+  color: var(--ch8-accent);
+  font-size: 0.82rem;
+  font-weight: 800;
+}
+
+.ch8-scan-plot canvas {
+  pointer-events: none;
+}
+
+.ch8-signal-row > div:first-child {
+  min-width: min(360px, 100%);
+}
+
+.ch8-signal-row [data-scan-matrix] {
+  overflow-x: auto;
+}
+
+@media (max-width: 760px) {
+  body[data-route="ch8"] .lesson-page-section {
+    padding-block: 24px;
+  }
+
+  body[data-route="ch8"] .ch8-observe-head {
+    grid-template-columns: 1fr;
+  }
+
+  body[data-route="ch8"] .ch8-observe-mark {
+    display: none;
+  }
+
+  body[data-route="ch8"] .ch8-observe-cues,
+  body[data-route="ch8"] .ch8-experiment-roadmap {
+    grid-template-columns: 1fr;
+  }
+
+  body[data-route="ch8"] .ch8-observe-cues article,
+  body[data-route="ch8"] .ch8-experiment-roadmap article {
+    padding: 12px 13px;
+  }
+
+  .ch8-range-panel {
+    padding: 14px 14px 12px;
+  }
+
+  .ch8-range-panel input[type="range"] {
+    min-height: 52px;
+  }
+
+  .ch8-signal-row {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .ch8-signal-row > div:first-child {
+    grid-column: 1 / -1;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ch8-range-panel input[type="range"],
+  body[data-route="ch8"] .ch8-experiment-roadmap article {
+    transition: none !important;
+  }
+}

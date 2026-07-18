@@ -74,3 +74,5 @@ jobs:
           git add -A
           git commit -m "fix(ch7): separate vector arrows from image sample markers"
           git push origin HEAD:context/ch7-linear-transformations
+
+# Reviewed semantic marker patch; run after full browser audit exposed the endpoint-dot case.

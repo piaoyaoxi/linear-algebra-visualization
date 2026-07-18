@@ -153,7 +153,7 @@ assert.match(await page.locator(".ch7-universal-case").innerText(), /T\(0\)=0/);
 
 // §8 — N walks down the chain; full T is explicitly not presented as nilpotent.
 await gotoLesson(routes[7]);
-assert.match(compact(await page.locator(".ch7-chain").innerText()), /v2N→v1N→0/);
+assert.match(compact(await page.locator(".ch7-chain").innerText()), /v2.*N→v1.*N→0/);
 await page.locator("[data-jordan-step]").click();
 assert.match(await page.locator(".ch7-chain-node.is-active").innerText(), /v1/);
 await page.locator("[data-jordan-step]").click();

@@ -1,0 +1,66 @@
+name: Chapter 8 rework bootstrap
+
+on:
+  push:
+    branches:
+      - context/ch8-lambda-matrices
+    paths:
+      - ".github/ch8-rework.part-*"
+      - ".github/workflows/ch8-rework-bootstrap.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  unpack:
+    if: github.ref == 'refs/heads/context/ch8-lambda-matrices'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: context/ch8-lambda-matrices
+          fetch-depth: 0
+
+      - name: Rebuild Chapter 8 rework payload
+        run: |
+          cat .github/ch8-rework.part-* | base64 -d > /tmp/ch8-rework.tar.gz
+          echo "ec74f5f7d562f5ce80496eaa980d75074a2d69915327d15266d106e2bff9d74a  /tmp/ch8-rework.tar.gz" | sha256sum --check
+          tar -tzf /tmp/ch8-rework.tar.gz
+
+      - name: Unpack and verify source
+        run: |
+          tar -xzf /tmp/ch8-rework.tar.gz -C .
+          rm .github/ch8-rework.part-* .github/workflows/ch8-rework-bootstrap.yml
+          node --check current/content/ch8.js
+          node --check current/ch8-entry.js
+          node --check current/visuals/ch8/ch8.js
+          node --check current/visuals/ch8/section1.js
+          node --check current/visuals/ch8/section2.js
+          node --check current/visuals/ch8/section3.js
+          node --check current/visuals/ch8/section4.js
+          node --check current/visuals/ch8/section5.js
+          node --check current/visuals/ch8/section6.js
+          node --check current/visuals/ch8/section7.js
+          node --check .github/scripts/ch8-browser-check.mjs
+          python3 - <<'PY'
+          from pathlib import Path
+          from html.parser import HTMLParser
+          css = Path('current/visuals/ch8/ch8.css').read_text(encoding='utf-8')
+          assert css.count('{') == css.count('}'), 'unbalanced CSS braces'
+          class Parser(HTMLParser):
+              pass
+          Parser().feed(Path('current/learn.html').read_text(encoding='utf-8'))
+          for name in range(1, 8):
+              assert Path(f'current/visuals/ch8/section{name}.js').is_file()
+          print('static source verification passed')
+          PY
+
+      - name: Commit rebuilt Chapter 8
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          git commit -m "feat(ch8): rebuild lessons around visible causal experiments"
+          git push origin HEAD:context/ch8-lambda-matrices

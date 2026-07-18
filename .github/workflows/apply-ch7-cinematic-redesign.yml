@@ -1,0 +1,81 @@
+name: Apply Chapter 7 cinematic redesign
+
+on:
+  push:
+    branches:
+      - context/ch7-linear-transformations
+    paths:
+      - ".github/workflows/apply-ch7-cinematic-redesign.yml"
+  pull_request:
+    branches:
+      - main
+    paths:
+      - ".github/workflows/apply-ch7-cinematic-redesign.yml"
+
+permissions:
+  contents: write
+
+jobs:
+  apply:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Check out working branch
+        uses: actions/checkout@v4
+        with:
+          ref: context/ch7-linear-transformations
+          fetch-depth: 0
+
+      - name: Verify and unpack reviewed payload
+        shell: bash
+        run: |
+          set -euo pipefail
+          cat > /tmp/ch7-payload.sha256 <<'HASHES'
+          f1189209c8c769045ac076d3b0c45a2439973c029dd619ce8d0069f0e7e24326  .github/ch7-cinematic-payload/part-00
+          64671f56db9c768d968b4f2b31d4131d509437e7e271b567fe846feb538b3aae  .github/ch7-cinematic-payload/part-01
+          a30d0b194bb27373ba7ef55166ba90aa032bfa7afa9a5e0c9427b0a49ab3f406  .github/ch7-cinematic-payload/part-020
+          a0dfe9f687f84ce116dacf3480fccb1dd55bd7f06df3a7eb6c0a4c0aed7a5aaf  .github/ch7-cinematic-payload/part-021
+          e350ecef2e94793cd0c0130a4b80df8e63643ccca3658ddc57dc6ced8a5d21a6  .github/ch7-cinematic-payload/part-03
+          90ab05b5ae767b335e9b787f31ceb4b53ba64aba97bb959235607e51da44816e  .github/ch7-cinematic-payload/part-04
+          ea535a90934d9f8c9c4d960f6e3981cfd0417befb56c2b563673c49a62580226  .github/ch7-cinematic-payload/part-041
+          8cff24c352f60469fa4c5d57ebb8d6a5e0a3e1531f6afa58ce62c3979e5812d0  .github/ch7-cinematic-payload/part-050
+          54227cbaad599d67252ffe5346f8711f1e88ef13efcde9f904f801f17079812e  .github/ch7-cinematic-payload/part-051
+          HASHES
+          sha256sum --check /tmp/ch7-payload.sha256
+          cat \
+            .github/ch7-cinematic-payload/part-00 \
+            .github/ch7-cinematic-payload/part-01 \
+            .github/ch7-cinematic-payload/part-020 \
+            .github/ch7-cinematic-payload/part-021 \
+            .github/ch7-cinematic-payload/part-03 \
+            .github/ch7-cinematic-payload/part-04 \
+            .github/ch7-cinematic-payload/part-041 \
+            .github/ch7-cinematic-payload/part-050 \
+            .github/ch7-cinematic-payload/part-051 \
+            > /tmp/ch7-payload.b64
+          test "$(wc -c < /tmp/ch7-payload.b64)" -eq 47512
+          echo "565709ecfc4a1f9677dc6632fdfaf61a4e993e42bd872db9b441b7d2b7ceced6  /tmp/ch7-payload.b64" | sha256sum --check
+          base64 --decode /tmp/ch7-payload.b64 > /tmp/ch7-payload.tar.gz
+          echo "c333d014151708d3532c49f63bc3cd8514c51cd574e26dded45fea011694a6f7  /tmp/ch7-payload.tar.gz" | sha256sum --check
+          tar -xzf /tmp/ch7-payload.tar.gz
+          rm -rf .github/ch7-cinematic-payload
+          rm -f .github/workflows/apply-ch7-cinematic-redesign.yml
+          rm -f .github/workflows/export-ch7-redesign-workspace.yml
+
+      - name: Validate source before commit
+        run: |
+          node --check current/visuals/ch7/cinematic.js
+          node --check .github/scripts/ch7-browser-check.mjs
+          git diff --check
+          grep -q 'cinematic.css?v=40b' current/learn.html
+          grep -q 'cinematic.js?v=40b' current/learn.html
+
+      - name: Commit redesign
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          git commit -m "refactor(ch7): rebuild geometry-first cinematic interactions"
+          git push origin HEAD:context/ch7-linear-transformations
+
+# Payload set verified locally before this retry.

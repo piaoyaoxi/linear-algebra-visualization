@@ -7,7 +7,7 @@
     const { signal } = controller;
     const svg = root.querySelector("[data-c6-svg]");
     const A = [[1, 2, 0], [0, 3, 0], [4, 5, 6]];
-    let active = { r: 1, c: 1 };
+    let active = { r: 2, c: 2 };
     let locked = true;
     const x0 = 150;
     const y0 = 155;
@@ -112,7 +112,7 @@
       root.innerHTML = `<h2>交互实验</h2>${cinemaShell(
         "让“删第 i 行、第 j 列”真正发生在眼前",
         "选中一个元素后，细横线划掉它所在的行，细竖线划掉它所在的列；剩余四格立即突出并移动成右侧余子矩阵。",
-        "先观察 a22，再点击“重新选择元素”换一个位置。不要先算，先确认哪四个格子应该留下。",
+        "先观察 a33，再点击“重新选择元素”换一个位置。不要先算，先确认哪四个格子应该留下。",
         controls,
         stage,
         after,

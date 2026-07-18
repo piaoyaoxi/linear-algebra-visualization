@@ -18,6 +18,7 @@
         "searchBackdrop",
         "searchPanel",
         "searchBar",
+        "searchMergeField",
         "searchResultsPanel",
         "searchBody",
         "searchInput",
@@ -93,11 +94,11 @@
       document.addEventListener("keydown", (event) => this.onDocumentKeydown(event));
       document.addEventListener("click", (event) => {
         const resultLink = event.target.closest?.(".search-result-link");
-        if (resultLink) this.closeSearch({ restoreFocus: false });
+        if (resultLink) this.closeSearch({ restoreFocus: false, skipMerge: true });
       });
       window.addEventListener("resize", () => this.scheduleResize(), { passive: true });
       window.addEventListener("la-themestart", () => {
-        this.closeSearch({ restoreFocus: false });
+        this.closeSearch({ restoreFocus: false, skipMerge: true });
         this.pendingLanguage = null;
         this.closeLanguage({ restoreFocus: false });
       });

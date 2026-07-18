@@ -66,6 +66,11 @@
         if (this.searchMotion.value > 0.001) {
           this.measureSearch();
           this.renderSearch(this.searchMotion.value, this.searchMotion.value, this.searchMotion.target);
+          this.renderSearchResultsMotion(
+            this.searchResultsMotion.value,
+            this.searchResultsMotion.value,
+            this.searchResultsMotion.target,
+          );
         }
       });
     },
@@ -100,7 +105,7 @@
       const focusable = [
         ...this.elements.searchCapsuleOpen.querySelectorAll("input:not([disabled]), button:not([disabled])"),
         ...this.elements.searchPanel.querySelectorAll("a[href]"),
-      ].filter((element) => !element.hasAttribute("inert") && element.tabIndex >= 0);
+      ].filter((element) => !element.closest("[inert]") && element.tabIndex >= 0);
       this.cycleFocus(event, focusable);
     },
 
@@ -134,6 +139,8 @@
         search: {
           phase: this.elements.searchModal.dataset.phase || "closed",
           progress: Number(this.searchMotion?.value?.toFixed(4) || 0),
+          resultsPhase: this.elements.searchModal.dataset.resultsPhase || "closed",
+          resultsProgress: Number(this.searchResultsMotion?.value?.toFixed(4) || 0),
         },
         language: {
           phase: this.elements.languageControl.dataset.phase || "closed",

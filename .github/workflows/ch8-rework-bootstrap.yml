@@ -1,12 +1,6 @@
 name: Chapter 8 rework bootstrap
 
 on:
-  push:
-    branches:
-      - context/ch8-lambda-matrices
-    paths:
-      - ".github/ch8-rework.part-*"
-      - ".github/workflows/ch8-rework-bootstrap.yml"
   pull_request:
     branches:
       - main
@@ -20,9 +14,12 @@ permissions:
 
 jobs:
   unpack:
-    if: github.ref == 'refs/heads/context/ch8-lambda-matrices' || github.head_ref == 'context/ch8-lambda-matrices'
+    if: github.head_ref == 'context/ch8-lambda-matrices'
     runs-on: ubuntu-latest
     timeout-minutes: 10
+    concurrency:
+      group: ch8-rework-bootstrap
+      cancel-in-progress: true
     steps:
       - uses: actions/checkout@v4
         with:
@@ -84,4 +81,6 @@ jobs:
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add -A
           git commit -m "feat(ch8): rebuild lessons around visible causal experiments"
+          git fetch origin context/ch8-lambda-matrices
+          git rebase origin/context/ch8-lambda-matrices
           git push origin HEAD:context/ch8-lambda-matrices

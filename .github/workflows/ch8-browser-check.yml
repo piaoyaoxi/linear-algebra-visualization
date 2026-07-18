@@ -46,10 +46,16 @@ jobs:
           from pathlib import Path
           path = Path('.github/scripts/ch8-browser-check.mjs')
           text = path.read_text()
-          text = text.replace('textIncludes(signals, "det")', 'textIncludes(signals, "DET")')
-          text = text.replace('textIncludes(signals, "rank")', 'textIncludes(signals, "RANK")')
-          text = text.replace('textIncludes(signals, "dim ker")', 'textIncludes(signals, "DIM KER")')
-          path.write_text(text)
+          old = '''async function textIncludes(locator, value) {
+            return (await locator.innerText()).includes(value);
+          }'''
+          new = '''async function textIncludes(locator, value) {
+            const normalize = (text) => String(text).replace(/\\s+/g, "").toLowerCase();
+            return normalize(await locator.innerText()).includes(normalize(value));
+          }'''
+          if old not in text:
+            raise SystemExit('textIncludes helper not found')
+          path.write_text(text.replace(old, new))
           PY
           set -o pipefail
           node .github/scripts/ch8-browser-check.mjs 2>&1 | tee /tmp/ch8-screenshots/browser-check.log

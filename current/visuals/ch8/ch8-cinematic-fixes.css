@@ -127,12 +127,16 @@
 
 @media (max-width: 760px) {
   .ch8-smith-film {
-    min-height: 760px;
+    min-height: 980px;
   }
 
   .ch8-smith-film .ch8-smith-matrix-focus {
     top: 170px;
     width: 94%;
+  }
+
+  .ch8-smith-film .ch8-smith-caption {
+    max-width: 300px;
   }
 
   .ch8-smith-film .ch8-smith-meaning {

@@ -55,6 +55,14 @@ jobs:
               'await clickIf(page, \'[data-second="{\\"i\\":0,\\"j\\":1}"]\');',
               'const secondChoices = page.locator("[data-second]"); if (await secondChoices.count() > 1) await secondChoices.nth(1).click();'
           )
+          text = text.replace(
+              '    if (detail) await page.locator("#multivariate-polynomials-interactive .ch1-lab").screenshot({ path: path.join(outputDir, `${viewport.name}-${theme}-multivariate-support.png`) });',
+              '    const layerFormula = page.locator("[data-layers] .ch1-multivariate-layer-card").nth(3).locator("strong");\n    const layerOverflow = await layerFormula.evaluate((node) => node.scrollWidth - node.clientWidth);\n    ensure(layerOverflow <= 2, `§10: highest homogeneous layer is clipped (${layerOverflow}px)`);\n    if (detail) await page.locator("#multivariate-polynomials-interactive .ch1-lab").screenshot({ path: path.join(outputDir, `${viewport.name}-${theme}-multivariate-support.png`) });'
+          )
+          text = text.replace(
+              '    ensure(!(await page.locator("[data-multiply-module]").getAttribute("hidden")), "§10: multiply module did not open");',
+              '    ensure(!(await page.locator("[data-multiply-module]").getAttribute("hidden")), "§10: multiply module did not open");\n    const productText = (await page.locator("[data-product-result]").textContent()) || "";\n    ensure(!/\\\\cdot|cdot/.test(productText), `§10: multiplication formula leaked raw TeX: ${productText}`);'
+          )
           path.write_text(text)
           PY
       - name: Run Chapter 1 browser audit

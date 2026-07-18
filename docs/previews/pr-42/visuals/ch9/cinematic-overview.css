@@ -29,6 +29,7 @@
 .ch9-cover .ch9-cover-visual {
   position: relative;
   z-index: 1;
+  min-width: 0;
 }
 
 .ch9-cover .eyebrow {
@@ -187,6 +188,7 @@
 
 @media (max-width: 1060px) {
   .lesson-cover.ch9-cover {
+    grid-template-columns: minmax(0, 1fr);
     min-height: 0;
   }
 
@@ -205,6 +207,11 @@
   .ch9-cover h1 {
     max-width: none;
     font-size: clamp(2.25rem, 12vw, 3.4rem);
+    line-height: 1.02;
+  }
+
+  .ch9-cover .lesson-cover-copy > p {
+    max-width: none;
   }
 
   .ch9-cover-visual {

@@ -1,4 +1,8 @@
 /* Dedicated §3 visual system and shared scene refinements. */
+.ch6-lab-stage > * {
+  animation: none;
+}
+
 .ch6-span-cinema {
   display: grid;
   gap: 18px;
@@ -82,12 +86,6 @@
 
 .ch6-plane-field {
   fill: rgba(92, 224, 235, 0.035);
-}
-
-/* Geometry changes every animation frame; do not restart the stage entrance animation. */
-.ch6-basis-lab .ch6-lab-stage > *,
-.ch6-change-lab .ch6-lab-stage > * {
-  animation: none;
 }
 
 .ch6-stage-legend {

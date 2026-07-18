@@ -2,6 +2,13 @@
 (() => {
   "use strict";
 
+  if (!document.querySelector('link[href*="repair-pass-final.css"]')) {
+    const link = document.createElement("link");
+    link.rel = "stylesheet";
+    link.href = "./visuals/ch1/repair-pass-final.css?v=ch1-repair-final1";
+    document.head.append(link);
+  }
+
   const math = window.Ch1Math;
   if (math?.observeCanvas && !math.observeCanvas.__ch1MotionDeferred) {
     const baseObserveCanvas = math.observeCanvas;

@@ -98,7 +98,7 @@
         "在指数空间中，单项式乘法就是向量加法；系数相乘，指数逐坐标相加。";
       root.querySelector("[data-product-result]").innerHTML = `
         <span>当前乘积</span>
-        <strong>${tex(`${monomial(state.first)}\cdot${monomial(state.second)}=${monomial(sum)}`)}</strong>
+        <strong>${tex(`${monomial(state.first)}\\cdot{}${monomial(state.second)}=${monomial(sum)}`)}</strong>
         <p>${tex(`(${state.first.i},${state.first.j})+(${state.second.i},${state.second.j})=(${sum.i},${sum.j})`)}，结果落在高亮格点。</p>`;
     }
 

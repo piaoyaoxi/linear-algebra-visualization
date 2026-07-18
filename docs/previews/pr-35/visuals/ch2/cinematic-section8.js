@@ -1,6 +1,6 @@
-/* Chapter 2 cinematic interaction — section 8. */
+/* Chapter 2 geometry-first interaction — section 8. */
 (() => {
-  const { M, fmt, setActive, cinemaShell, defs } = window.Ch2Cinema;
+  const { M, fmt, setActive, softArrowPath, cinemaShell, defs } = window.Ch2Cinema;
 
   function mountLaplaceCinema(root) {
     const controller = new AbortController();
@@ -17,7 +17,8 @@
       const complement = M().submatrix(A, complementRows, complementCols);
       const minorDet = M().det2(minor);
       const complementDet = M().det2(complement);
-      const exponent = rows.reduce((sum, value) => sum + value + 1, 0) + cols.reduce((sum, value) => sum + value + 1, 0);
+      const exponent = rows.reduce((sum, value) => sum + value + 1, 0)
+        + cols.reduce((sum, value) => sum + value + 1, 0);
       const sign = exponent % 2 === 0 ? 1 : -1;
       return { cols, complementCols, minorDet, complementDet, sign, term: sign * minorDet * complementDet };
     }
@@ -29,13 +30,17 @@
     function render() {
       const item = all[selected];
       const x0 = 90;
-      const y0 = 160;
+      const y0 = 150;
       const gap = 92;
       const size = 68;
       svg.querySelector("[data-c8-cells]").innerHTML = A.map((row, r) => row.map((value, c) => {
         const primary = rows.includes(r) && item.cols.includes(c);
         const complement = !rows.includes(r) && item.complementCols.includes(c);
-        return `<g class="cinema-lap-cell${primary ? " is-primary" : ""}${complement ? " is-complement" : ""}"><rect x="${x0 + c * gap}" y="${y0 + r * gap}" width="${size}" height="${size}" rx="16"/><text x="${x0 + c * gap + size / 2}" y="${y0 + r * gap + 43}" text-anchor="middle">${value}</text></g>`;
+        return `
+          <g class="cinema-lap-cell${primary ? " is-primary" : ""}${complement ? " is-complement" : ""}">
+            <rect x="${x0 + c * gap}" y="${y0 + r * gap}" width="${size}" height="${size}" rx="14" />
+            <text x="${x0 + c * gap + size / 2}" y="${y0 + r * gap + 43}" text-anchor="middle">${value}</text>
+          </g>`;
       }).join("")).join("");
       root.querySelector("[data-pair-cols]").textContent = item.cols.map((col) => col + 1).join("、");
       root.querySelector("[data-pair-comp]").textContent = item.complementCols.map((col) => col + 1).join("、");
@@ -72,26 +77,50 @@
     };
     const panels = [{ x: 35 }, { x: 350 }, { x: 665 }];
 
-    function polygon(A, panel) {
-      const ox = panel.x + 82;
-      const oy = 420;
+    function geometry(matrix, panel) {
+      const origin = [panel.x + 82, 420];
       const scale = 55;
-      const map = ([x, y]) => [ox + x * scale, oy - y * scale];
-      return [[0, 0], [A[0][0], A[1][0]], [A[0][0] + A[0][1], A[1][0] + A[1][1]], [A[0][1], A[1][1]]].map(map).map((point) => point.join(",")).join(" ");
+      const map = ([x, y]) => [origin[0] + x * scale, origin[1] - y * scale];
+      const a1 = [matrix[0][0], matrix[1][0]];
+      const a2 = [matrix[0][1], matrix[1][1]];
+      const p1 = map(a1);
+      const p2 = map(a2);
+      const p12 = map([a1[0] + a2[0], a1[1] + a2[1]]);
+      return {
+        origin,
+        p1,
+        p2,
+        polygon: [origin, p1, p12, p2].map((point) => point.join(",")).join(" "),
+      };
     }
 
     function setBusy(value) {
       busy = value;
-      root.querySelectorAll("[data-prod-preset], [data-prod-replay]").forEach((button) => { button.disabled = value; });
+      root.querySelectorAll("[data-prod-preset], [data-prod-replay]").forEach((button) => {
+        button.disabled = value;
+      });
     }
 
     function paint(stageB, stageAB) {
       const matrices = [I, stageB, stageAB];
       svg.querySelector("[data-c8-product-scenes]").innerHTML = panels.map((panel, index) => {
         const determinant = M().det2(matrices[index]);
-        const caption = index === 0 ? "单位形 I" : index === 1 ? "第一步：I → B" : "第二步：B → AB";
-        return `<g><rect x="${panel.x}" y="118" width="300" height="390" rx="26" class="cinema-panel-bg"/><text x="${panel.x + 22}" y="154" class="cinema-small">${caption}</text><polygon points="${polygon(matrices[index], panel)}" class="cinema-parallelogram${determinant < 0 ? " is-negative" : ""}${Math.abs(determinant) < 1e-8 ? " is-zero" : ""}"/><text x="${panel.x + 22}" y="486" class="cinema-title-small">det = ${fmt(determinant, 3)}</text></g>`;
+        const caption = index === 0 ? "单位基 e₁,e₂" : index === 1 ? "先经过 B" : "再经过 A，得到 AB";
+        const g = geometry(matrices[index], panel);
+        return `
+          <g class="cinema-product-panel" data-product-panel="${index}">
+            <rect x="${panel.x}" y="108" width="300" height="400" rx="24" class="cinema-panel-bg" />
+            <text x="${panel.x + 22}" y="144" class="cinema-small">${caption}</text>
+            <polygon points="${g.polygon}" class="cinema-parallelogram${determinant < 0 ? " is-negative" : ""}${Math.abs(determinant) < 1e-8 ? " is-zero" : ""}" />
+            <path d="${softArrowPath(g.origin[0], g.origin[1], g.p1[0], g.p1[1], { halfWidth: 2.8, headHalf: 7.5 })}" class="cinema-vector cyan" />
+            <path d="${softArrowPath(g.origin[0], g.origin[1], g.p2[0], g.p2[1], { halfWidth: 2.8, headHalf: 7.5 })}" class="cinema-vector orange" />
+            <circle cx="${g.origin[0]}" cy="${g.origin[1]}" r="3.8" class="cinema-origin" />
+            <text x="${g.p1[0] + 8}" y="${g.p1[1] - 8}" class="cinema-label cyan">v₁</text>
+            <text x="${g.p2[0] + 8}" y="${g.p2[1] - 8}" class="cinema-label orange">v₂</text>
+            <text x="${panel.x + 22}" y="486" class="cinema-title-small">det = ${fmt(determinant, 3)}</text>
+          </g>`;
       }).join("");
+
       const dA = M().det2(current.A);
       const dB = M().det2(stageB);
       const dAB = M().det2(stageAB);
@@ -99,6 +128,9 @@
       root.querySelector("[data-db]").textContent = fmt(dB, 3);
       root.querySelector("[data-prod]").textContent = fmt(dA * dB, 3);
       root.querySelector("[data-dab]").textContent = fmt(dAB, 3);
+      root.querySelector("[data-product-note]").textContent = Math.abs(dB) < 1e-8
+        ? "B 已把两支向量压到同一直线上；二维面积一旦丢失，后面的 A 无法恢复。"
+        : "同一对基向量先经过 B，再经过 A；第二步作用在第一步的结果上，所以面积倍率连续相乘。";
     }
 
     function renderFinal() {
@@ -117,13 +149,11 @@
       try {
         paint(I, B);
         await M().animateTo(svg, 0, 1, 700, (t) => {
-          const eased = M().easeInOutCubic(t);
-          paint(M().lerpMat2(I, B, eased), B);
+          paint(M().lerpMat2(I, B, M().easeInOutCubic(t)), B);
         });
         paint(B, B);
         await M().animateTo(svg, 0, 1, 760, (t) => {
-          const eased = M().easeInOutCubic(t);
-          paint(B, M().lerpMat2(B, AB, eased));
+          paint(B, M().lerpMat2(B, AB, M().easeInOutCubic(t)));
         });
         renderFinal();
       } finally {
@@ -138,7 +168,10 @@
       setActive(root, "[data-prod-preset]", button);
       void play();
     }, { signal }));
-    root.querySelector("[data-prod-replay]").addEventListener("click", () => { void play(); }, { signal });
+
+    root.querySelector("[data-prod-replay]").addEventListener("click", () => {
+      void play();
+    }, { signal });
 
     void play();
     return () => {
@@ -150,23 +183,48 @@
   window.extendChapter2Renderer("laplace-and-product", {
     interactive(root) {
       if (!root) return;
-      const pairButtons = [[0, 1], [0, 2], [0, 3], [1, 2], [1, 3], [2, 3]].map((pair, index) => `<button type="button" data-pair="${index}" class="${index === 0 ? "is-active" : ""}">列 ${pair.map((value) => value + 1).join("、")}</button>`).join("");
+      const pairButtons = [[0, 1], [0, 2], [0, 3], [1, 2], [1, 3], [2, 3]]
+        .map((pair, index) => `<button type="button" data-pair="${index}" class="${index === 0 ? "is-active" : ""}">列 ${pair.map((value) => value + 1).join("、")}</button>`)
+        .join("");
       root.innerHTML = `<h2>交互实验</h2>
         ${cinemaShell(
-          "先看一组子式怎样找到它的互补子式",
-          "固定前两行，再选择两列。青色块是子式，橙色块是互补子式；它们的位置关系决定符号，二者乘积形成一项贡献。",
-          "逐个切换六种列组合，观察青色块与橙色块怎样互补覆盖整个 4×4 矩阵。",
+          "先看一个子式怎样唯一确定它的互补子式",
+          "固定前两行并选择两列。青色区域占用这些行列后，橙色区域只能落在剩余行列；二者不是两块随意上色的卡片，而是一组互补坐标选择。",
+          "切换六种列组合，只观察青色与橙色区域怎样共同覆盖全部行列。",
           pairButtons,
-          `<div class="ch2-cinema-stage"><svg data-c8-laplace-svg viewBox="0 0 1000 580" role="img" aria-label="四阶矩阵中的子式和互补子式配对">${defs("c8l")}<text x="40" y="52" class="cinema-kicker">广义 Laplace 展开</text><text x="40" y="86" class="cinema-title">选中的子式与互补子式共同覆盖全部行列</text><g data-c8-cells></g><g transform="translate(570 164)"><text class="cinema-small">所选列</text><text y="52" class="cinema-title-small" data-pair-cols></text><text y="126" class="cinema-small">互补列</text><text y="178" class="cinema-title-small" data-pair-comp></text><text y="264" class="cinema-small">一项贡献</text><text y="316" class="cinema-title-small"><tspan data-pair-minor></tspan> × <tspan data-pair-sign></tspan> × <tspan data-pair-complement></tspan> = <tspan data-pair-term></tspan></text></g></svg></div>`,
-          `<div class="ch2-cinema-equation-grid is-compact"><div><span>六项和</span><strong data-pair-sum></strong></div><i>=</i><div><span>原 det</span><strong data-pair-det></strong></div></div>`,
+          `<div class="ch2-cinema-stage">
+            <svg data-c8-laplace-svg viewBox="0 0 1000 560" role="img" aria-label="四阶矩阵中的子式和互补子式共同覆盖全部行列">
+              ${defs("c8l")}
+              <text x="40" y="44" class="cinema-kicker">选中一组行列，剩余位置自动成为互补子式</text>
+              <text x="40" y="76" class="cinema-title">局部选择怎样拼回整个行列式</text>
+              <g data-c8-cells></g>
+              <g transform="translate(570 150)">
+                <rect x="-22" y="-24" width="350" height="344" rx="22" class="cinema-panel-bg" />
+                <text class="cinema-small">所选列</text>
+                <text y="48" class="cinema-title-small" data-pair-cols></text>
+                <text y="112" class="cinema-small">互补列</text>
+                <text y="160" class="cinema-title-small" data-pair-comp></text>
+                <text y="224" class="cinema-small">这一项贡献</text>
+                <text y="272" class="cinema-title-small"><tspan data-pair-minor></tspan> × <tspan data-pair-sign></tspan> × <tspan data-pair-complement></tspan> = <tspan data-pair-term></tspan></text>
+              </g>
+            </svg>
+          </div>`,
+          `<div class="ch2-cinema-equation-grid is-compact"><div><span>六项贡献之和</span><strong data-pair-sum></strong></div><i>=</i><div><span>原行列式 det(A)</span><strong data-pair-det></strong></div></div>`,
         )}
         ${cinemaShell(
-          "再看两次变换怎样把面积倍率相乘",
-          "右侧第三个画面不是重新从单位形开始，而是从 B 已经得到的形状继续施加 A。",
-          "比较两次缩放、镜像与投影。尤其观察投影把中间面积压成 0 后，第二次变换再也无法恢复二维面积。",
-          `<button type="button" class="is-active" data-prod-preset="scale">两次缩放</button><button type="button" data-prod-preset="shear">剪切后缩放</button><button type="button" data-prod-preset="mirror">镜像后旋转</button><button type="button" data-prod-preset="project">含投影</button><button type="button" data-prod-replay>重播</button>`,
-          `<div class="ch2-cinema-stage"><svg data-c8-product-svg viewBox="0 0 1000 580" role="img" aria-label="单位形先经过 B 再经过 A 得到 AB">${defs("c8p")}<text x="40" y="52" class="cinema-kicker">行列式的乘法规则</text><text x="40" y="86" class="cinema-title">面积先乘 det(B)，再乘 det(A)</text><g data-c8-product-scenes></g></svg></div>`,
-          `<div class="ch2-cinema-equation-grid is-compact"><div><span>det(A)</span><strong data-da></strong></div><i>×</i><div><span>det(B)</span><strong data-db></strong></div><i>=</i><div><span>乘积</span><strong data-prod></strong></div><i>=</i><div><span>det(AB)</span><strong data-dab></strong></div></div>`,
+          "再看两次线性变换怎样连续改变同一块面积",
+          "三幅图中的箭头始终表示两支基向量。第二幅不是结果标签，第三幅也不是重新开始；它们是同一对向量依次经过 B、再经过 A 的连续过程。",
+          "先沿 I → B → AB 阅读箭头，再比较三个面积。含投影时，注意两支箭头何时落到同一直线上。",
+          `<button type="button" class="is-active" data-prod-preset="scale">两次缩放</button><button type="button" data-prod-preset="shear">剪切后缩放</button><button type="button" data-prod-preset="mirror">镜像后旋转</button><button type="button" data-prod-preset="project">含投影</button><button type="button" data-prod-replay>重播 I→B→AB</button>`,
+          `<div class="ch2-cinema-stage">
+            <svg data-c8-product-svg viewBox="0 0 1000 560" role="img" aria-label="同一对基向量先经过 B 再经过 A，面积倍率连续相乘">
+              ${defs("c8p")}
+              <text x="40" y="44" class="cinema-kicker">同一对向量 · 两次变换 · 三个连续状态</text>
+              <text x="40" y="76" class="cinema-title">面积先乘 det(B)，再乘 det(A)</text>
+              <g data-c8-product-scenes></g>
+            </svg>
+          </div>`,
+          `<div class="ch2-cinema-equation-grid is-compact"><div><span>det(A)</span><strong data-da></strong></div><i>×</i><div><span>det(B)</span><strong data-db></strong></div><i>=</i><div><span>乘积</span><strong data-prod></strong></div><i>=</i><div><span>det(AB)</span><strong data-dab></strong></div></div><div class="ch2-cinema-conclusion"><strong>连续变换</strong><span data-product-note></span></div>`,
         )}`;
       const cleanupLaplace = mountLaplaceCinema(root);
       const cleanupProduct = mountProductCinema(root);

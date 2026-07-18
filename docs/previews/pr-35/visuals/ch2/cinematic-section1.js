@@ -1,7 +1,7 @@
 /* Chapter 2 cinematic interaction — section 1. */
 (() => {
-  const { M, tex, fmt, pause, setActive, svgPoint, matrixTex2, cinemaShell, defs } = window.Ch2Cinema;
-  // §1 — determinant as oriented area.
+  const { M, fmt, setActive, svgPoint, matrixTex2, cinemaShell, defs } = window.Ch2Cinema;
+
   function mountAreaCinema(root) {
     const controller = new AbortController();
     const { signal } = controller;
@@ -34,17 +34,23 @@
       const p1 = map(u);
       const p2 = map([u[0] + v[0], u[1] + v[1]]);
       const p3 = map(v);
-      polygon.setAttribute("points", [p0, p1, p2, p3].map((p) => p.join(",")).join(" "));
+      polygon.setAttribute("points", [p0, p1, p2, p3].map((point) => point.join(",")).join(" "));
       polygon.classList.toggle("is-negative", det < -1e-7);
       polygon.classList.toggle("is-zero", Math.abs(det) <= 1e-7);
       const up = map(u);
       const vp = map(v);
-      uLine.setAttribute("x2", up[0]); uLine.setAttribute("y2", up[1]);
-      vLine.setAttribute("x2", vp[0]); vLine.setAttribute("y2", vp[1]);
-      uHandle.setAttribute("cx", up[0]); uHandle.setAttribute("cy", up[1]);
-      vHandle.setAttribute("cx", vp[0]); vHandle.setAttribute("cy", vp[1]);
-      uLabel.setAttribute("x", up[0] + 16); uLabel.setAttribute("y", up[1] - 12);
-      vLabel.setAttribute("x", vp[0] + 16); vLabel.setAttribute("y", vp[1] - 12);
+      uLine.setAttribute("x2", up[0]);
+      uLine.setAttribute("y2", up[1]);
+      vLine.setAttribute("x2", vp[0]);
+      vLine.setAttribute("y2", vp[1]);
+      uHandle.setAttribute("cx", up[0]);
+      uHandle.setAttribute("cy", up[1]);
+      vHandle.setAttribute("cx", vp[0]);
+      vHandle.setAttribute("cy", vp[1]);
+      uLabel.setAttribute("x", up[0] + 16);
+      uLabel.setAttribute("y", up[1] - 12);
+      vLabel.setAttribute("x", vp[0] + 16);
+      vLabel.setAttribute("y", vp[1] - 12);
       root.querySelector("[data-c1-matrix]").innerHTML = matrixTex2([[u[0], v[0]], [u[1], v[1]]]);
       root.querySelector("[data-c1-formula]").textContent = `${fmt(u[0], 2)}×${fmt(v[1], 2)} − ${fmt(v[0], 2)}×${fmt(u[1], 2)}`;
       root.querySelector("[data-det]").textContent = fmt(det, 3);
@@ -67,24 +73,35 @@
           : `单位正方形被送成面积为 ${fmt(Math.abs(det), 3)} 的平行四边形。`;
     }
 
+    function setTarget(target) {
+      state.u = target.u.slice();
+      state.v = target.v.slice();
+      render();
+    }
+
     async function goTo(target) {
       if (state.animating) return;
+      if (M().reducedMotion()) {
+        setTarget(target);
+        return;
+      }
       state.animating = true;
       const from = { u: state.u.slice(), v: state.v.slice() };
-      const key = svg;
-      await M().animateTo(key, 0, 1, 720, (t) => {
-        state.u = [M().lerp(from.u[0], target.u[0], t), M().lerp(from.u[1], target.u[1], t)];
-        state.v = [M().lerp(from.v[0], target.v[0], t), M().lerp(from.v[1], target.v[1], t)];
-        render();
-      });
-      state.u = target.u.slice(); state.v = target.v.slice();
-      render();
-      state.animating = false;
+      try {
+        await M().animateTo(svg, 0, 1, 720, (t) => {
+          state.u = [M().lerp(from.u[0], target.u[0], t), M().lerp(from.u[1], target.u[1], t)];
+          state.v = [M().lerp(from.v[0], target.v[0], t), M().lerp(from.v[1], target.v[1], t)];
+          render();
+        });
+        setTarget(target);
+      } finally {
+        state.animating = false;
+      }
     }
 
     root.querySelectorAll("[data-preset]").forEach((button) => button.addEventListener("click", () => {
       setActive(root, "[data-preset]", button);
-      goTo(presets[button.dataset.preset]);
+      void goTo(presets[button.dataset.preset]);
     }, { signal }));
 
     [uHandle, vHandle].forEach((handle) => {
@@ -95,9 +112,12 @@
       }, { signal });
       handle.addEventListener("pointermove", (event) => {
         if (state.dragging !== handle.dataset.handle || state.animating) return;
-        const p = svgPoint(svg, event);
-        const vec = [M().clamp((p.x - origin.x) / scale, -2.2, 2.2), M().clamp((origin.y - p.y) / scale, -1.4, 2.2)];
-        state[state.dragging] = vec;
+        const point = svgPoint(svg, event);
+        const vector = [
+          M().clamp((point.x - origin.x) / scale, -2.2, 2.2),
+          M().clamp((origin.y - point.y) / scale, -1.4, 2.2),
+        ];
+        state[state.dragging] = vector;
         root.querySelectorAll("[data-preset]").forEach((button) => button.classList.remove("is-active"));
         render();
       }, { signal });
@@ -106,9 +126,12 @@
       handle.addEventListener("pointercancel", stop, { signal });
     });
 
-    unit.setAttribute("points", [[0,0],[1,0],[1,1],[0,1]].map(map).map((p) => p.join(",")).join(" "));
+    unit.setAttribute("points", [[0, 0], [1, 0], [1, 1], [0, 1]].map(map).map((point) => point.join(",")).join(" "));
     render();
-    return () => { controller.abort(); M().cancelAnim(svg); };
+    return () => {
+      controller.abort();
+      M().cancelAnim(svg);
+    };
   }
 
   window.extendChapter2Renderer("determinant-intro", {
@@ -162,5 +185,4 @@
       return mountAreaCinema(root);
     },
   });
-
 })();

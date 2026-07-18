@@ -1,0 +1,144 @@
+/* Chapter 2 cinematic visual language. Dark geometric stages, restrained controls. */
+.ch2-cinema {
+  display: grid;
+  gap: 18px;
+  padding: clamp(18px, 2.6vw, 30px);
+  border: 1px solid color-mix(in srgb, var(--line) 82%, var(--accent) 18%);
+  border-radius: 28px;
+  background: var(--surface-solid);
+  box-shadow: var(--shadow-soft);
+}
+.ch2-cinema + .ch2-cinema { margin-top: 28px; }
+.ch2-cinema-head { display: grid; gap: 6px; }
+.ch2-cinema-head h3 { margin: 0; font-size: clamp(22px, 2.3vw, 30px); letter-spacing: -.03em; }
+.ch2-cinema-head p { margin: 0; max-width: 78ch; color: var(--muted); font-size: 15px; line-height: 1.75; }
+.ch2-cinema-task { display: flex; gap: 10px; align-items: flex-start; padding: 12px 14px; border-left: 3px solid var(--accent); background: var(--accent-soft); line-height: 1.65; }
+.ch2-cinema-task strong { flex: 0 0 auto; color: var(--accent-strong); }
+.ch2-cinema-controls { display: flex; flex-wrap: wrap; gap: 8px; }
+.ch2-cinema-controls button {
+  min-height: 40px; padding: 0 15px; border: 1px solid var(--line); border-radius: 999px;
+  background: var(--surface-solid); color: var(--text); font: inherit; font-size: 13px; font-weight: 700; cursor: pointer;
+  transition: transform .18s ease, border-color .18s ease, background .18s ease, color .18s ease;
+}
+.ch2-cinema-controls button:hover { border-color: color-mix(in srgb, var(--accent) 50%, var(--line)); background: var(--accent-soft); }
+.ch2-cinema-controls button.is-active { border-color: var(--accent); background: var(--accent); color: #fff; }
+.ch2-cinema-controls button:focus-visible { outline: 3px solid color-mix(in srgb, var(--accent) 36%, transparent); outline-offset: 2px; }
+.ch2-cinema-controls button:disabled { opacity: .42; cursor: not-allowed; }
+
+.ch2-cinema-stage {
+  overflow: hidden; border-radius: 24px; border: 1px solid rgba(149, 183, 210, .24);
+  background: #09121f; box-shadow: inset 0 0 70px rgba(17, 43, 69, .52);
+}
+.ch2-cinema-stage svg { display: block; width: 100%; height: auto; aspect-ratio: 1000 / 580; touch-action: none; }
+.ch2-cinema-stage text { font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif; }
+.cinema-grid-line { fill: none; stroke: rgba(148, 180, 209, .11); stroke-width: 1; }
+.cinema-axis { stroke: rgba(213, 229, 242, .28); stroke-width: 1.4; }
+.cinema-unit { fill: rgba(238, 244, 250, .02); stroke: rgba(224, 235, 244, .52); stroke-dasharray: 8 8; stroke-width: 2; }
+.cinema-parallelogram { fill: rgba(91, 222, 226, .24); stroke: #61dce3; stroke-width: 3; transition: fill .25s ease, stroke .25s ease, opacity .25s ease; }
+.cinema-parallelogram.alt { fill: rgba(255, 177, 101, .22); stroke: #ffb16b; }
+.cinema-parallelogram.is-negative { fill: rgba(255, 122, 108, .25); stroke: #ff7a6c; }
+.cinema-parallelogram.is-zero { fill: rgba(246, 213, 100, .12); stroke: #f6d564; }
+.cinema-vector { stroke-width: 5; stroke-linecap: round; }
+.cinema-vector.cyan { stroke: #5fdde5; }
+.cinema-vector.orange { stroke: #ffb36b; }
+.cinema-handle { cursor: grab; stroke: #09121f; stroke-width: 5; }
+.cinema-handle:active { cursor: grabbing; }
+.cinema-handle.cyan { fill: #5fdde5; }
+.cinema-handle.orange { fill: #ffb36b; }
+.cinema-label { font-size: 18px; font-weight: 800; }
+.cinema-label.cyan { fill: #7ee8ed; }
+.cinema-label.orange { fill: #ffc388; }
+.cinema-kicker { fill: #7de7e9; font-size: 16px; font-weight: 800; letter-spacing: .05em; }
+.cinema-title { fill: #f5f8fb; font-size: 28px; font-weight: 760; letter-spacing: -.02em; }
+.cinema-title-small { fill: #f5f8fb; font-size: 24px; font-weight: 760; }
+.cinema-small { fill: rgba(224, 235, 244, .72); font-size: 16px; font-weight: 650; }
+.cinema-operation-arrow { fill: none; stroke: rgba(244, 248, 251, .8); stroke-width: 3; stroke-linecap: round; }
+.cinema-fill-cyan { fill: #5fdde5; }
+.cinema-fill-orange { fill: #ffb36b; }
+.cinema-fill-white { fill: #f5f8fb; }
+.cinema-panel rect, .cinema-panel-bg { fill: rgba(255,255,255,.025); stroke: rgba(180, 205, 226, .18); stroke-width: 1.5; }
+.cinema-panel > text { fill: rgba(228,238,246,.75); font-size: 17px; font-weight: 700; }
+
+.ch2-cinema-equation-grid {
+  display: grid; grid-template-columns: repeat(4, minmax(0,1fr)); gap: 10px; align-items: stretch;
+}
+.ch2-cinema-equation-grid > div { display: grid; gap: 7px; align-content: center; min-height: 86px; padding: 13px 14px; border: 1px solid var(--line); border-radius: 16px; background: var(--surface-soft); }
+.ch2-cinema-equation-grid > div span { color: var(--muted); font-size: 12px; font-weight: 800; letter-spacing: .04em; }
+.ch2-cinema-equation-grid > div strong { color: var(--text); font-size: 16px; line-height: 1.5; overflow-wrap: anywhere; }
+.ch2-cinema-equation-grid > i { display: none; }
+.ch2-cinema-equation-grid.is-compact { grid-template-columns: repeat(4, minmax(0,1fr)); }
+.ch2-cinema-conclusion { display: flex; gap: 12px; align-items: center; padding: 14px 16px; border: 1px solid color-mix(in srgb, var(--accent) 30%, var(--line)); border-radius: 16px; background: var(--accent-soft); color: var(--text); line-height: 1.65; }
+.ch2-cinema-conclusion > strong { flex: 0 0 auto; color: var(--accent-strong); font-size: 18px; }
+.ch2-cinema-conclusion.is-column { display: grid; }
+.ch2-cinema-conclusion.is-column strong { color: var(--text); }
+.ch2-cinema-two { display: grid; grid-template-columns: .8fr 1.2fr; gap: 12px; }
+.ch2-cinema-two > div:first-child { padding: 14px 16px; border: 1px solid var(--line); border-radius: 16px; background: var(--surface-soft); }
+.ch2-cinema-two > div:first-child > span { display: block; margin-bottom: 8px; color: var(--muted); font-size: 12px; font-weight: 800; }
+.cinema-chip-row { display: flex; flex-wrap: wrap; gap: 6px; }
+.cinema-chip-row span { padding: 4px 9px; border-radius: 999px; background: color-mix(in srgb, var(--accent) 13%, var(--surface-solid)); font-size: 13px; }
+
+.cinema-wire { fill: none; stroke: #62dce3; stroke-width: 5; stroke-linecap: round; opacity: .86; }
+.cinema-perm-card { cursor: pointer; }
+.cinema-perm-card rect { fill: rgba(255,255,255,.06); stroke: rgba(170,205,226,.32); stroke-width: 2; }
+.cinema-perm-card text { fill: #f5f8fb; font-size: 32px; font-weight: 820; }
+.cinema-perm-card.is-selected rect { fill: rgba(255,179,107,.2); stroke: #ffb36b; stroke-width: 4; }
+.cinema-target { fill: rgba(255,255,255,.04); stroke: rgba(214,231,243,.3); stroke-width: 2; }
+.cinema-target-label { fill: rgba(235,242,248,.8); font-size: 18px; font-weight: 800; }
+
+.cinema-selection-path { fill: none; stroke: #f6d564; stroke-width: 5; stroke-linecap: round; stroke-linejoin: round; }
+.cinema-matrix-cell { cursor: pointer; }
+.cinema-matrix-cell rect { fill: rgba(255,255,255,.055); stroke: rgba(174,204,225,.24); stroke-width: 2; }
+.cinema-matrix-cell text { fill: #f3f7fa; font-size: 19px; font-weight: 760; }
+.cinema-matrix-cell.is-selected rect { fill: rgba(95,221,229,.24); stroke: #5fdde5; stroke-width: 4; }
+.cinema-matrix-cell.is-locked { opacity: .22; cursor: not-allowed; }
+.cinema-matrix-cell.is-zero text { fill: rgba(235,242,248,.35); }
+
+.cinema-elim-cell rect { fill: rgba(255,255,255,.055); stroke: rgba(174,204,225,.24); stroke-width: 2; }
+.cinema-elim-cell text { fill: #f3f7fa; font-size: 24px; font-weight: 780; }
+.cinema-elim-cell.is-target rect { fill: rgba(255,179,107,.2); stroke: #ffb36b; stroke-width: 4; }
+.cinema-elim-cell.is-created-zero rect { fill: rgba(95,221,229,.2); stroke: #5fdde5; stroke-width: 4; }
+.cinema-elim-cell.is-created-zero text { fill: #7ee8ed; }
+.ch2-cinema-progress { display: grid; grid-template-columns: repeat(3,1fr); gap: 8px; }
+.ch2-cinema-progress span { position: relative; padding: 10px 12px 10px 34px; border-radius: 999px; border: 1px solid var(--line); color: var(--muted); font-size: 13px; font-weight: 700; }
+.ch2-cinema-progress span::before { content: ""; position: absolute; left: 12px; top: 50%; width: 10px; height: 10px; margin-top: -5px; border-radius: 50%; background: var(--line-strong); }
+.ch2-cinema-progress span.is-active { border-color: color-mix(in srgb,var(--accent) 45%,var(--line)); color: var(--accent-strong); background: var(--accent-soft); }
+.ch2-cinema-progress span.is-active::before { background: var(--accent); }
+
+.cinema-cofactor-cell { cursor: pointer; }
+.cinema-cofactor-cell rect { fill: rgba(255,255,255,.055); stroke: rgba(174,204,225,.24); stroke-width: 2; }
+.cinema-cofactor-cell text { fill: #f5f8fb; font-size: 24px; font-weight: 800; }
+.cinema-cofactor-cell.is-deleted { opacity: .18; pointer-events: none; }
+.cinema-cofactor-cell.is-current { opacity: 1; pointer-events: auto; }
+.cinema-cofactor-cell.is-current rect { fill: rgba(246,213,100,.18); stroke: #f6d564; stroke-width: 4; }
+.cinema-cofactor-cell.is-remain rect { fill: rgba(95,221,229,.16); stroke: rgba(95,221,229,.62); }
+.cinema-delete-line { stroke: #ff866f; stroke-width: 3; stroke-linecap: round; opacity: .9; }
+.cinema-minor-cell rect { fill: rgba(95,221,229,.18); stroke: #5fdde5; stroke-width: 3; }
+.cinema-minor-cell text { fill: #f5f8fb; font-size: 24px; font-weight: 800; }
+
+.cinema-lap-cell rect { fill: rgba(255,255,255,.05); stroke: rgba(174,204,225,.22); stroke-width: 2; }
+.cinema-lap-cell text { fill: #f5f8fb; font-size: 22px; font-weight: 780; }
+.cinema-lap-cell.is-primary rect { fill: rgba(95,221,229,.24); stroke: #5fdde5; stroke-width: 4; }
+.cinema-lap-cell.is-complement rect { fill: rgba(255,179,107,.22); stroke: #ffb36b; stroke-width: 4; }
+
+body.dark .ch2-cinema { background: color-mix(in srgb, var(--surface-solid) 96%, #000); }
+
+@media (max-width: 900px) {
+  .ch2-cinema-equation-grid,
+  .ch2-cinema-equation-grid.is-compact { grid-template-columns: repeat(2,minmax(0,1fr)); }
+  .ch2-cinema-two { grid-template-columns: 1fr; }
+}
+@media (max-width: 620px) {
+  .ch2-cinema { padding: 14px; border-radius: 20px; }
+  .ch2-cinema-task { display: grid; gap: 4px; }
+  .ch2-cinema-controls { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); }
+  .ch2-cinema-controls button { padding: 8px 10px; min-height: 44px; }
+  .ch2-cinema-stage { border-radius: 18px; }
+  .ch2-cinema-stage svg { aspect-ratio: 1000 / 680; }
+  .ch2-cinema-equation-grid,
+  .ch2-cinema-equation-grid.is-compact { grid-template-columns: 1fr; }
+  .ch2-cinema-progress { grid-template-columns: 1fr; }
+  .ch2-cinema-conclusion { display: grid; gap: 5px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .ch2-cinema *, .ch2-cinema *::before, .ch2-cinema *::after { animation: none !important; transition: none !important; }
+}

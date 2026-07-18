@@ -11,6 +11,8 @@ on:
 
 permissions:
   contents: write
+  issues: write
+  pull-requests: write
 
 jobs:
   unpack:
@@ -74,7 +76,7 @@ jobs:
           print('static source verification passed')
           PY
 
-      - name: Create remote Git objects
+      - name: Create remote Git objects and report commit
         env:
           GH_TOKEN: ${{ github.token }}
           GH_REPOSITORY: ${{ github.repository }}
@@ -152,14 +154,9 @@ jobs:
               'tree': tree['sha'],
               'parents': [parent],
           })
-          output = Path('/tmp/ch8-rework-remote-commit.txt')
-          output.write_text(commit['sha'] + '\n')
-          print('REMOTE_COMMIT=' + commit['sha'])
+          sha = commit['sha']
+          api('POST', '/issues/41/comments', {
+              'body': f'<!-- ch8-rework-commit -->\nRebuilt Chapter 8 commit: `{sha}`',
+          })
+          print('REMOTE_COMMIT=' + sha)
           PY
-
-      - name: Upload remote commit pointer
-        uses: actions/upload-artifact@v4
-        with:
-          name: ch8-rework-remote-commit
-          path: /tmp/ch8-rework-remote-commit.txt
-          if-no-files-found: error

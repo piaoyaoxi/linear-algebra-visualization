@@ -1,0 +1,25 @@
+/* Load-order-safe final sizing for the §10 main observation row. */
+@media (min-width: 1041px) {
+  .ch1-section-multivariate-polynomials .ch1-multivariate-primary > .ch1-multivariate-stage {
+    height: auto !important;
+    min-height: 410px !important;
+    max-height: none !important;
+    align-self: stretch;
+  }
+}
+
+@media (max-width: 1040px) {
+  .ch1-section-multivariate-polynomials .ch1-multivariate-primary > .ch1-multivariate-stage {
+    height: 360px !important;
+    min-height: 360px !important;
+    max-height: 360px !important;
+  }
+}
+
+@media (max-width: 720px) {
+  .ch1-section-multivariate-polynomials .ch1-multivariate-primary > .ch1-multivariate-stage {
+    height: 300px !important;
+    min-height: 300px !important;
+    max-height: 300px !important;
+  }
+}

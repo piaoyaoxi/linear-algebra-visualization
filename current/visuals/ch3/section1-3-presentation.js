@@ -61,10 +61,7 @@
     root.innerHTML = `
       <h2>交互实验</h2>
       <div class="ch3-lab" data-ch3-lab="elimination">
-        <div class="ch3-lab-head">
-          <h3>消元控制台</h3>
-          <p>每一步都使用精确有理数。你可以自己选择行操作，也可以让系统只给出“下一步建议”，但不会跳过等价变换的路径。</p>
-        </div>
+        <div class="ch3-lab-head"><span class="ch3-lab-kicker">目标 · 用可逆操作逐步暴露主元</span><h3>消元控制台</h3><p>不要只盯着最后答案。每次操作后同时观察方程、增广矩阵和几何解集：外观在变，解集不变。</p></div><div class="ch3-mission"><strong>操作任务</strong><span>先选“需要换行”，用一次换行建立第一个主元，再清除主元下方元素。</span><span class="ch3-mission-result">看结论：主元结构决定解的类型</span></div>
         <div class="ch3-presets" aria-label="方程组预设">
           <button type="button" class="is-active" data-preset="unique2">唯一解</button>
           <button type="button" data-preset="parallel2">平行无解</button>
@@ -295,31 +292,60 @@
     if (!root) return;
     root.innerHTML = `
       <h2>交互实验</h2>
-      <div class="ch3-lab" data-ch3-lab="vector-space">
-        <div class="ch3-lab-head"><h3>高维坐标混合器</h3><p>调节 u、v、α、β，实时计算 w=αu+βv。n&gt;2 时画布明确标为前两坐标投影。</p></div>
-        <div class="ch3-control-row">
-          <label>维数 n <input type="range" min="1" max="8" step="1" value="3" data-n /></label>
-          <span class="viz-badge" data-n-value>3</span>
-          <button type="button" data-negate>u 取负</button>
-          <button type="button" data-swap>交换 u、v</button>
-          <button type="button" data-zero>全部归零</button>
+      <div class="ch3-lab ch3-lab--vector" data-ch3-lab="vector-space">
+        <div class="ch3-lab-head">
+<span class="ch3-lab-kicker">向量不是端点，而是从起点到终点的有向位移</span>
+<h3>把线性组合走一遍</h3>
+<p>先沿着 αu 走，再从它的终点沿 βv 走；最终从原点指向终点的箭头，就是 w=αu+βv。</p>
         </div>
-        <div class="ch3-lab-grid">
-          <div class="ch3-stage"><canvas data-canvas aria-label="向量前两坐标投影"></canvas></div>
-          <div class="ch3-side">
-            <div class="ch3-panel"><h4>组合系数</h4>
-              <label class="ch3-slider"><span>α</span><input type="range" min="-2" max="2" step="0.05" value="1" data-alpha /><span data-alpha-value>1</span></label>
-              <label class="ch3-slider"><span>β</span><input type="range" min="-2" max="2" step="0.05" value="1" data-beta /><span data-beta-value>1</span></label>
-            </div>
-            <div class="ch3-panel"><h4>完整坐标</h4><div class="ch3-vec-row"><div><strong>u</strong><div data-u-vector></div></div><div><strong>v</strong><div data-v-vector></div></div><div><strong>w</strong><div data-w-vector></div></div></div></div>
-            <div class="ch3-panel" data-formula-card><h4>标准基分解</h4><div data-formula></div></div>
-          </div>
+        <div class="ch3-mission" aria-label="实验任务">
+<strong>操作任务</strong>
+<span>改变 α、β 或任意坐标，观察“首尾相接”的两段位移怎样合成为 w。</span>
+<span class="ch3-mission-result">看结论：每一个坐标都独立相加</span>
         </div>
-        <div class="ch3-vector-editor">
-          <section><h4>u 的坐标</h4><div class="ch3-sliders" data-u-sliders></div></section>
-          <section><h4>v 的坐标</h4><div class="ch3-sliders" data-v-sliders></div></section>
+        <div class="ch3-control-row ch3-scenario-row">
+<label>空间维数 n <input type="range" min="1" max="8" step="1" value="3" data-n /></label>
+<span class="viz-badge" data-n-value>3</span>
+<button type="button" data-negate>反向 u</button>
+<button type="button" data-swap>交换 u、v</button>
+<button type="button" data-zero>清零</button>
         </div>
-        <div class="ch3-panel"><h4>w 的分量条</h4><div class="ch3-coord-bars" data-bars></div></div>
+        <div class="ch3-scene-grid">
+<section class="ch3-stage-shell" aria-label="线性组合几何过程">
+  <div class="ch3-stage-caption"><strong>几何视图</strong><span data-projection-note>前两坐标投影</span></div>
+  <div class="ch3-stage"><canvas data-canvas aria-label="向量首尾相接与合向量"></canvas></div>
+  <div class="ch3-stage-legend" aria-label="图例">
+    <span><i class="is-accent"></i>第一段 αu</span>
+    <span><i class="is-coral"></i>第二段 βv</span>
+    <span><i class="is-blue"></i>合向量 w</span>
+  </div>
+</section>
+<aside class="ch3-readout ch3-vector-readout">
+  <section class="ch3-equation-hero" data-formula-card>
+    <span>当前线性组合</span>
+    <div data-formula></div>
+    <p>虚线平行四边形只帮助观察；右侧坐标列才是完整的 n 维向量。</p>
+  </section>
+  <section class="ch3-coefficient-panel">
+    <h4>缩放两条位移</h4>
+    <label class="ch3-slider"><span>α</span><input type="range" min="-2" max="2" step="0.05" value="1" data-alpha /><strong data-alpha-value>1</strong></label>
+    <label class="ch3-slider"><span>β</span><input type="range" min="-2" max="2" step="0.05" value="1" data-beta /><strong data-beta-value>1</strong></label>
+  </section>
+  <section class="ch3-vector-table" aria-label="完整坐标">
+    <div><span>u</span><div data-u-vector></div></div>
+    <div><span>v</span><div data-v-vector></div></div>
+    <div class="is-result"><span>w</span><div data-w-vector></div></div>
+  </section>
+</aside>
+        </div>
+        <details class="ch3-details" open>
+<summary>编辑完整坐标</summary>
+<div class="ch3-vector-editor">
+  <section><h4>u 的坐标</h4><div class="ch3-sliders" data-u-sliders></div></section>
+  <section><h4>v 的坐标</h4><div class="ch3-sliders" data-v-sliders></div></section>
+</div>
+        </details>
+        <section class="ch3-coordinate-summary"><div><h4>w 的每个坐标</h4><p>条形只表示大小，右端数字保留正负号。</p></div><div class="ch3-coord-bars" data-bars></div></section>
         <p class="ch3-feedback" data-note aria-live="polite"></p>
       </div>`;
     const scope = M().createScope(root);
@@ -351,8 +377,8 @@
     function buildSliders(key, container) {
       container.innerHTML = Array.from({ length: state.n }, (_, index) => `
         <label class="ch3-slider"><span>${key}<sub>${index + 1}</sub></span>
-          <input type="range" min="-2" max="2" step="0.05" value="${state[key][index]}" data-coordinate="${index}" />
-          <span data-value>${M().formatNumber(state[key][index])}</span>
+<input type="range" min="-2" max="2" step="0.05" value="${state[key][index]}" data-coordinate="${index}" />
+<strong data-value>${M().formatNumber(state[key][index])}</strong>
         </label>`).join("");
       container.querySelectorAll("[data-coordinate]").forEach((input) => scope.listen(input, "input", () => {
         const index = Number(input.dataset.coordinate);
@@ -370,19 +396,37 @@
     function draw() {
       const sized = M().sizeCanvas(canvas);
       if (!sized) return;
-      const frame = M().drawAxes(sized.ctx, sized.width, sized.height, 48);
+      const frame = M().drawAxes(sized.ctx, sized.width, sized.height, 54);
       const w = wVector();
-      const u2 = [state.u[0] || 0, state.u[1] || 0];
-      const v2 = [state.v[0] || 0, state.v[1] || 0];
-      const w2 = [w[0] || 0, w[1] || 0];
-      M().drawArrow(sized.ctx, frame, u2, frame.p.accent, "u");
-      M().drawArrow(sized.ctx, frame, v2, frame.p.coral, "v");
-      M().drawArrow(sized.ctx, frame, w2, frame.p.blue, "w");
-      if (state.n > 2) {
-        sized.ctx.fillStyle = frame.p.muted;
-        sized.ctx.font = "600 12px ui-sans-serif, system-ui";
-        sized.ctx.fillText(`仅显示前两坐标投影；完整维数 n=${state.n}`, 14, 22);
-      }
+      const alphaU = [state.alpha * (state.u[0] || 0), state.alpha * (state.u[1] || 0)];
+      const betaV = [state.beta * (state.v[0] || 0), state.beta * (state.v[1] || 0)];
+      const total = [alphaU[0] + betaV[0], alphaU[1] + betaV[1]];
+      const O = [0, 0];
+
+      const points = [O, alphaU, total, betaV].map((point) => M().toCanvas(frame, point));
+      sized.ctx.save();
+      sized.ctx.strokeStyle = frame.p.muted;
+      sized.ctx.globalAlpha = 0.42;
+      sized.ctx.lineWidth = 1.4;
+      sized.ctx.setLineDash([6, 6]);
+      sized.ctx.beginPath();
+      sized.ctx.moveTo(...points[0]);
+      sized.ctx.lineTo(...points[1]);
+      sized.ctx.lineTo(...points[2]);
+      sized.ctx.lineTo(...points[3]);
+      sized.ctx.closePath();
+      sized.ctx.stroke();
+      sized.ctx.restore();
+
+      M().drawArrowBetween(sized.ctx, frame, O, alphaU, frame.p.accent, "αu", 3.1, { tailDot: true });
+      M().drawArrowBetween(sized.ctx, frame, alphaU, total, frame.p.coral, "βv", 3.1);
+      M().drawArrowBetween(sized.ctx, frame, O, total, frame.p.blue, "w", 3.7);
+
+      sized.ctx.save();
+      sized.ctx.fillStyle = frame.p.muted;
+      sized.ctx.font = "650 12px ui-sans-serif, system-ui";
+      sized.ctx.fillText(state.n > 2 ? `二维投影 · 完整向量属于 F^${state.n}` : "二维完整视图", 14, 22);
+      sized.ctx.restore();
     }
 
     function render() {
@@ -390,17 +434,18 @@
       root.querySelector("[data-n-value]").textContent = String(state.n);
       root.querySelector("[data-alpha-value]").textContent = M().formatNumber(state.alpha);
       root.querySelector("[data-beta-value]").textContent = M().formatNumber(state.beta);
+      root.querySelector("[data-projection-note]").textContent = state.n > 2 ? `仅显示第 1、2 坐标 · 完整维数 n=${state.n}` : "二维完整视图";
       root.querySelector("[data-u-vector]").innerHTML = M().htmlVector(state.u.slice(0, state.n).map(M().fromNumber));
       root.querySelector("[data-v-vector]").innerHTML = M().htmlVector(state.v.slice(0, state.n).map(M().fromNumber));
       root.querySelector("[data-w-vector]").innerHTML = M().htmlVector(w.map(M().fromNumber));
-      root.querySelector("[data-formula]").innerHTML = `${tex(String.raw`w=${M().formatNumber(state.alpha)}u+(${M().formatNumber(state.beta)})v`)}<div class="ch3-math">${tex(String.raw`w=${formatCombo(w)}`)}</div>`;
+      root.querySelector("[data-formula]").innerHTML = `${texD(String.raw`w=${M().formatNumber(state.alpha)}u+(${M().formatNumber(state.beta)})v`)}<div class="ch3-basis-line">${tex(String.raw`w=${formatCombo(w)}`)}</div>`;
       root.querySelector("[data-bars]").innerHTML = w.map((value, index) => {
         const width = Math.min(100, Math.abs(value) / 4 * 100);
-        return `<div class="ch3-bar-row"><span>w${index + 1}</span><div class="ch3-bar-track"><div class="ch3-bar-fill" style="width:${width}%"></div></div><span>${M().formatNumber(value)}</span></div>`;
+        return `<div class="ch3-bar-row ${value < 0 ? "is-negative" : "is-positive"}"><span>w${index + 1}</span><div class="ch3-bar-track"><div class="ch3-bar-fill" style="width:${width}%"></div></div><strong>${M().formatNumber(value)}</strong></div>`;
       }).join("");
       root.querySelector("[data-note]").textContent = state.n > 2
-        ? "画布只是一种投影。第三个及以后坐标的变化会完整反映在坐标列和分量条中。"
-        : "二维画布与完整坐标一致。";
+        ? "图中只保留前两坐标，所以它是投影，不是完整的高维向量；完整结论请读右侧坐标列。"
+        : "αu 与 βv 首尾相接，合向量 w 从原点直接指向同一个终点。";
       M().pulse(root.querySelector("[data-formula-card]"));
       draw();
     }
@@ -460,7 +505,7 @@
     root.innerHTML = `
       <h2>交互实验</h2>
       <div class="ch3-lab" data-ch3-lab="dependence">
-        <div class="ch3-lab-head"><h3>冗余探测器</h3><p>拖动向量端点。系统按 0.05 网格取精确有理坐标，关系证书使用完整向量编号，不会因删除中间向量而错位。</p></div>
+        <div class="ch3-lab-head"><span class="ch3-lab-kicker">目标 · 判断新向量有没有带来新方向</span><h3>冗余探测器</h3><p>拖动真正的向量箭头，让 v₃ 进入或离开已有张成。图形给直觉，右侧非平凡零组合才是严格证书。</p></div><div class="ch3-mission"><strong>操作任务</strong><span>选择“第三个是和”，再取消保留 v₂，比较秩与张成是否改变。</span><span class="ch3-mission-result">看结论：删掉冗余向量，张成不变</span></div>
         <div class="ch3-presets">
           <button type="button" class="is-active" data-preset="basis">二维基</button>
           <button type="button" data-preset="proportional">比例向量</button>

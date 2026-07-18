@@ -124,7 +124,7 @@
     root.innerHTML = `
       <h2>交互实验</h2>
       <div class="ch3-lab" data-ch3-lab="resultant">
-        <div class="ch3-lab-head"><h3>结式消元台</h3><p>按步骤推进：整理系数、构造 Sylvester 矩阵、计算结式、求候选、回代验解。未完成验证的点不会被标成最终解。</p></div>
+        <div class="ch3-lab-head"><span class="ch3-lab-kicker">目标 · 区分“结式候选”和“原方程组真解”</span><h3>结式消元流程</h3><p>一次只推进一个代数动作。左侧曲线帮助观察，右侧当前说明告诉你这一阶段究竟产出了什么信息。</p></div><div class="ch3-mission"><strong>操作任务</strong><span>选择“抛物线与切线”，逐步推进到回代，观察二重根为何对应相切。</span><span class="ch3-mission-result">看结论：候选必须回代</span></div>
         <div class="ch3-presets">
           <button type="button" class="is-active" data-preset="crossing">圆与割线</button>
           <button type="button" data-preset="tangent">抛物线与切线</button>

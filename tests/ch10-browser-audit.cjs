@@ -109,7 +109,7 @@ async function auditRoute(browser, route, viewport, options = {}) {
     assert(layout.katexErrors.length === 0, `${label}: KaTeX errors ${JSON.stringify(layout.katexErrors)}`);
 
     if (route.lesson) {
-      await page.waitForSelector(".ch10-primary-lab");
+      await page.waitForSelector(".ch10-primary-lab", { state: "attached" });
       await page.waitForSelector("[data-ch10-cinema]");
       const lessonState = await page.evaluate(() => ({
         legacySvgCount: document.querySelectorAll(".ch10-primary-lab svg").length,

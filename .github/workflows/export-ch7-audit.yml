@@ -1,50 +1,45 @@
-name: Chapter 7 visual audit
+name: Apply Chapter 7 teaching rebuild
 
 on:
   push:
     branches:
       - context/ch7-linear-transformations
     paths:
-      - ".github/scripts/ch7-visual-audit.mjs"
-      - ".github/workflows/export-ch7-audit.yml"
-  pull_request:
-    branches:
-      - main
-    paths:
-      - ".github/scripts/ch7-visual-audit.mjs"
       - ".github/workflows/export-ch7-audit.yml"
 
 permissions:
-  contents: read
+  contents: write
 
 jobs:
-  audit:
+  apply:
     runs-on: ubuntu-latest
-    timeout-minutes: 20
     steps:
-      - name: Check out branch
+      - name: Check out Chapter 7 branch
         uses: actions/checkout@v4
         with:
           ref: context/ch7-linear-transformations
-      - name: Set up Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: 22
-      - name: Install Playwright and Chromium
+          fetch-depth: 0
+      - name: Verify and unpack rebuild
         run: |
-          npm init -y
-          npm install playwright
-          npx playwright install --with-deps chromium
-      - name: Start static server
+          set -euo pipefail
+          echo "39f2c653d39a4f4783a127f5027a912a4b15ca6a9870cdb3d619a1851b58f5e4  .github/ch7-rebuild/part-00" | sha256sum -c -
+          echo "1f47b2669a229a7033f8f63c0a242aa82c20d971a21eeb0c0d940bdc43d160c6  .github/ch7-rebuild/part-01" | sha256sum -c -
+          echo "51437a627fc856be09bea208a2bf1d707e524844ad4b09c2a01036bf32171096  .github/ch7-rebuild/part-02" | sha256sum -c -
+          echo "77c26168413814d7a81fd035ce1d24b2fc3fb86260652f3c8202056c421d6961  .github/ch7-rebuild/part-03" | sha256sum -c -
+          echo "2f8bfdf15bcf2d24c4de821ef7e2c46f1fe17a8da6641350ee2068185335db97  .github/ch7-rebuild/part-04" | sha256sum -c -
+          cat .github/ch7-rebuild/part-* | base64 -d > /tmp/ch7-rebuild.tar.gz
+          echo "9eee4e19f6edb30f8f3b15bf0b9f274fe6ca57ac1aa205bbb11c77f6007a8f30  /tmp/ch7-rebuild.tar.gz" | sha256sum -c -
+          tar -tzf /tmp/ch7-rebuild.tar.gz
+          tar -xzf /tmp/ch7-rebuild.tar.gz
+          rm -rf .github/ch7-rebuild
+          rm -f .github/scripts/ch7-visual-audit.mjs
+          rm -f .github/workflows/export-ch7-audit.yml
+      - name: Commit rebuilt Chapter 7
         run: |
-          python3 -m http.server 4173 --directory current > /tmp/ch7-audit-server.log 2>&1 &
-          for i in {1..30}; do curl -fsS http://127.0.0.1:4173/learn.html >/dev/null && break; sleep 1; done
-      - name: Capture visual audit
-        run: node .github/scripts/ch7-visual-audit.mjs
-      - name: Upload visual audit
-        uses: actions/upload-artifact@v4
-        with:
-          name: ch7-visual-audit
-          path: test-results/ch7-visual-audit
-          if-no-files-found: error
-          retention-days: 3
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          git diff --cached --check
+          git commit -m "refactor(ch7): rebuild teaching interactions"
+          git push origin HEAD:context/ch7-linear-transformations

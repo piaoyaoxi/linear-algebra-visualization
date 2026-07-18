@@ -6,6 +6,7 @@ on:
     paths:
       - "current/**"
       - "tests/ch10-browser-audit.cjs"
+      - "tests/ch10-source-audit.cjs"
       - ".github/workflows/ch10-browser-audit.yml"
 
 permissions:
@@ -47,6 +48,21 @@ jobs:
           node --check current/visuals/ch10/section4-presentation.js
           node --check current/visuals/ch10/mount.js
           node --check tests/ch10-browser-audit.cjs
+          node --check tests/ch10-source-audit.cjs
+
+      - name: Capture source diagnostics
+        continue-on-error: true
+        run: |
+          mkdir -p artifacts/ch10-browser-audit
+          node tests/ch10-source-audit.cjs > artifacts/ch10-browser-audit/source-audit.json
+          tar -czf artifacts/ch10-browser-audit/source-snapshot.tar.gz \
+            current/content/ch10*.js \
+            current/structured-learning.js \
+            current/learn.html \
+            current/visuals/structured-chapter-registry.js \
+            current/visuals/ch10 \
+            tests/ch10-browser-audit.cjs \
+            tests/ch10-source-audit.cjs
 
       - name: Install Chromium audit runtime
         run: |

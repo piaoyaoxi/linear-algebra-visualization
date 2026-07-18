@@ -53,16 +53,33 @@ jobs:
       - name: Capture source diagnostics
         continue-on-error: true
         run: |
-          mkdir -p artifacts/ch10-browser-audit
-          node tests/ch10-source-audit.cjs > artifacts/ch10-browser-audit/source-audit.json
-          tar -czf artifacts/ch10-browser-audit/source-snapshot.tar.gz \
-            current/content/ch10*.js \
+          mkdir -p artifacts/ch10-browser-audit/source
+          node tests/ch10-source-audit.cjs > artifacts/ch10-browser-audit/source-audit.json || true
+          cp --parents \
+            current/content/ch10-registry.js \
+            current/content/ch10-section1.js \
+            current/content/ch10-section2.js \
+            current/content/ch10-section3.js \
+            current/content/ch10-section4.js \
+            current/content/ch10.js \
             current/structured-learning.js \
             current/learn.html \
             current/visuals/structured-chapter-registry.js \
-            current/visuals/ch10 \
+            current/visuals/ch10/registry.js \
+            current/visuals/ch10/shared.js \
+            current/visuals/ch10/section1-presentation.js \
+            current/visuals/ch10/section2-presentation.js \
+            current/visuals/ch10/section3-presentation.js \
+            current/visuals/ch10/section4-presentation.js \
+            current/visuals/ch10/mount.js \
+            current/visuals/ch10/base.css \
+            current/visuals/ch10/section1-presentation.css \
+            current/visuals/ch10/section2-presentation.css \
+            current/visuals/ch10/section3-presentation.css \
+            current/visuals/ch10/section4-presentation.css \
             tests/ch10-browser-audit.cjs \
-            tests/ch10-source-audit.cjs
+            tests/ch10-source-audit.cjs \
+            artifacts/ch10-browser-audit/source/
 
       - name: Install Chromium audit runtime
         run: |

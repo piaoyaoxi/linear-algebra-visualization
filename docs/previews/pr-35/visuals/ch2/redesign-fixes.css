@@ -6,6 +6,17 @@
   }
 }
 
+.ch2-v2-solution-formula > div {
+  display: grid;
+  gap: 5px;
+}
+
+.ch2-v2-solution-formula > div > strong {
+  display: block;
+  color: var(--text);
+  font: 800 1.22rem ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+}
+
 .ch2-v2-cofactor-board .ch2-v2-matrix-grid button.is-selected.is-deleted {
   opacity: 1;
   border-color: color-mix(in srgb, var(--coral) 62%, var(--line));

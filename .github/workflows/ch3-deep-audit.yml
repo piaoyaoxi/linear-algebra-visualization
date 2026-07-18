@@ -1,0 +1,89 @@
+name: Chapter 3 deep visual audit
+
+on:
+  push:
+    branches:
+      - content/ch3-linear-systems
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Install Playwright
+        run: |
+          npm init -y >/dev/null 2>&1
+          npm install playwright@1.52.0 >/dev/null 2>&1
+          npx playwright install --with-deps chromium
+      - name: Start static server
+        run: |
+          python3 -m http.server 4173 --directory current > /tmp/ch3-server.log 2>&1 &
+          for i in {1..30}; do curl -fsS http://127.0.0.1:4173/learn.html >/dev/null && break; sleep 1; done
+      - name: Capture every Chapter 3 section
+        run: |
+          cat > /tmp/audit.mjs <<'EOF'
+          import { chromium } from 'playwright';
+          import fs from 'node:fs';
+          const sections = [
+            ['elimination','消元法'],
+            ['n-vector-space','n维向量空间'],
+            ['linear-dependence','线性相关性'],
+            ['matrix-rank','矩阵的秩'],
+            ['solvability','有解判别'],
+            ['solution-structure','解的结构'],
+            ['binary-higher-degree','二元高次'],
+          ];
+          fs.mkdirSync('audit-output', { recursive: true });
+          const browser = await chromium.launch();
+          const errors = [];
+          async function capture(viewport, prefix, dark=false) {
+            const page = await browser.newPage({ viewportSize: viewport, colorScheme: dark ? 'dark' : 'light' });
+            page.on('console', msg => { if (msg.type() === 'error') errors.push(`${prefix}: console ${msg.text()}`); });
+            page.on('pageerror', err => errors.push(`${prefix}: pageerror ${err.message}`));
+            await page.goto('http://127.0.0.1:4173/learn.html#ch3', { waitUntil: 'networkidle' });
+            await page.waitForTimeout(900);
+            for (const [id,label] of sections) {
+              const candidate = page.getByText(label, { exact: true }).last();
+              await candidate.click();
+              await page.waitForTimeout(500);
+              const story = page.locator(`[data-ch3-story="${id}"]`);
+              await story.scrollIntoViewIfNeeded();
+              await page.waitForTimeout(250);
+              await story.screenshot({ path: `audit-output/${prefix}-${id}-story.png` });
+              await page.screenshot({ path: `audit-output/${prefix}-${id}-page.png`, fullPage: true });
+              const stepButtons = story.locator('[data-story-step]');
+              const count = await stepButtons.count();
+              for (let i=0;i<count;i++) {
+                await stepButtons.nth(i).click();
+                await page.waitForTimeout(180);
+                await story.screenshot({ path: `audit-output/${prefix}-${id}-step-${i+1}.png` });
+              }
+              const overflow = await page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth);
+              if (overflow > 1) errors.push(`${prefix}/${id}: overflow ${overflow}`);
+              const katexErrors = await page.locator('.katex-error').count();
+              if (katexErrors) errors.push(`${prefix}/${id}: katex errors ${katexErrors}`);
+            }
+            await page.close();
+          }
+          await capture({width:1440,height:1000}, 'desktop-light');
+          await capture({width:390,height:844}, 'mobile-light');
+          await capture({width:1440,height:1000}, 'desktop-dark', true);
+          await browser.close();
+          fs.writeFileSync('audit-output/errors.txt', errors.join('\n') || 'PASS');
+          if (errors.length) { console.error(errors.join('\n')); process.exitCode = 1; }
+          EOF
+          node /tmp/audit.mjs
+      - name: Upload audit screenshots
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: ch3-deep-audit
+          path: audit-output

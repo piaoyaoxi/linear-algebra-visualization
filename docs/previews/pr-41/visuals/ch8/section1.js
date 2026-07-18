@@ -267,13 +267,41 @@
         bindRootButtons();
         updateScan();
       });
+
+      function setRangeFromPointer(clientX) {
+        const rect = scanElements.range.getBoundingClientRect();
+        const min = Number(scanElements.range.min);
+        const max = Number(scanElements.range.max);
+        const step = Number(scanElements.range.step) || 1;
+        const ratio = Math.max(0, Math.min(1, (clientX - rect.left) / rect.width));
+        const raw = min + ratio * (max - min);
+        const snapped = min + Math.round((raw - min) / step) * step;
+        scanElements.range.value = String(Math.max(min, Math.min(max, snapped)));
+        lambda = Number(scanElements.range.value);
+        updateScan({ syncRange: false });
+      }
+
       on(scanElements.range, "input", (event) => {
         lambda = Number(event.currentTarget.value);
         updateScan({ syncRange: false });
       });
-      on(scanElements.range, "pointerdown", () => scanElements.range.classList.add("is-dragging"));
-      on(scanElements.range, "pointerup", () => scanElements.range.classList.remove("is-dragging"));
-      on(scanElements.range, "pointercancel", () => scanElements.range.classList.remove("is-dragging"));
+      on(scanElements.range, "pointerdown", (event) => {
+        event.preventDefault();
+        scanElements.range.classList.add("is-dragging");
+        scanElements.range.setPointerCapture?.(event.pointerId);
+        setRangeFromPointer(event.clientX);
+      });
+      on(scanElements.range, "pointermove", (event) => {
+        if (!scanElements.range.hasPointerCapture?.(event.pointerId)) return;
+        event.preventDefault();
+        setRangeFromPointer(event.clientX);
+      });
+      const finishPointer = (event) => {
+        if (scanElements.range.hasPointerCapture?.(event.pointerId)) scanElements.range.releasePointerCapture?.(event.pointerId);
+        scanElements.range.classList.remove("is-dragging");
+      };
+      on(scanElements.range, "pointerup", finishPointer);
+      on(scanElements.range, "pointercancel", finishPointer);
       bindRootButtons();
       updateScan();
     }

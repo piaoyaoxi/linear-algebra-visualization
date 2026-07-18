@@ -53,50 +53,96 @@ async function auditRoute(browser, route, viewport, options = {}) {
   const page = await context.newPage();
   const label = `${route.id}-${viewport.id}${options.reducedMotion ? "-reduced" : ""}`;
   const assertNoPageErrors = await collectPageErrors(page, label);
+  const screenshotPath = path.join(outputDir, `${label}.png`);
 
-  await page.goto(`${baseURL}${route.hash}`, { waitUntil: "networkidle" });
-  await page.waitForSelector("#mainContent h1");
+  try {
+    await page.goto(`${baseURL}${route.hash}`, { waitUntil: "networkidle" });
+    await page.waitForSelector("#mainContent h1");
 
-  if (options.dark) {
-    await page.click("#themeToggle");
-    await page.waitForFunction(() => document.body.classList.contains("dark"));
+    if (options.dark) {
+      await page.click("#themeToggle");
+      await page.waitForFunction(() => document.body.classList.contains("dark"));
+    }
+
+    await page.screenshot({ path: screenshotPath, fullPage: true });
+
+    const layout = await page.evaluate(() => {
+      const root = document.documentElement;
+      const overflowing = [...document.querySelectorAll("body *")]
+        .filter((element) => {
+          const style = getComputedStyle(element);
+          if (style.display === "none" || style.visibility === "hidden") return false;
+          const rect = element.getBoundingClientRect();
+          return rect.right > root.clientWidth + 2 || rect.left < -2 || element.scrollWidth > element.clientWidth + 2;
+        })
+        .slice(0, 12)
+        .map((element) => {
+          const rect = element.getBoundingClientRect();
+          return {
+            tag: element.tagName.toLowerCase(),
+            id: element.id,
+            className: typeof element.className === "string" ? element.className : "",
+            text: (element.textContent || "").trim().slice(0, 80),
+            left: Math.round(rect.left),
+            right: Math.round(rect.right),
+            width: Math.round(rect.width),
+            clientWidth: element.clientWidth,
+            scrollWidth: element.scrollWidth,
+          };
+        });
+      return {
+        scrollWidth: root.scrollWidth,
+        clientWidth: root.clientWidth,
+        h1Count: document.querySelectorAll("#mainContent h1").length,
+        text: document.querySelector("#mainContent")?.textContent || "",
+        katexErrors: [...document.querySelectorAll(".katex-error")].map((node) => node.textContent.trim()).slice(0, 8),
+        overflowing,
+      };
+    });
+    assert(
+      layout.scrollWidth <= layout.clientWidth + 2,
+      `${label}: horizontal overflow ${layout.scrollWidth} > ${layout.clientWidth}; suspects=${JSON.stringify(layout.overflowing)}`,
+    );
+    assert(layout.h1Count === 1, `${label}: expected one h1, found ${layout.h1Count}`);
+    assert(!layout.text.includes("适合配合教材相应章节阅读"), `${label}: placeholder chapter copy is visible`);
+    assert(!layout.text.includes("正在开发"), `${label}: internal development wording is visible`);
+    assert(layout.katexErrors.length === 0, `${label}: KaTeX errors ${JSON.stringify(layout.katexErrors)}`);
+
+    if (route.lesson) {
+      await page.waitForSelector(".ch10-primary-lab");
+      const lessonState = await page.evaluate(() => ({
+        svgCount: document.querySelectorAll(".ch10-primary-lab svg").length,
+        moduleCount: document.querySelectorAll(".ch10-formal-flow .ch10-module").length,
+        taskCount: document.querySelectorAll(".ch10-task-list li").length,
+        emptyMounts: [...document.querySelectorAll("[data-ch10-interactive], [data-ch10-formal]")]
+          .filter((node) => !node.textContent.trim() && !node.querySelector("svg")).length,
+      }));
+      assert(lessonState.svgCount >= 1, `${label}: main experiment has no SVG`);
+      assert(lessonState.moduleCount >= 4, `${label}: formal lesson has only ${lessonState.moduleCount} modules`);
+      assert(lessonState.taskCount >= 3, `${label}: observation task list is incomplete`);
+      assert(lessonState.emptyMounts === 0, `${label}: found empty presentation mounts`);
+
+      const touchTargets = await page.evaluate(() => [...document.querySelectorAll(".ch10-primary-lab button")]
+        .filter((button) => button.offsetParent !== null)
+        .map((button) => ({
+          text: button.textContent.trim(),
+          width: button.getBoundingClientRect().width,
+          height: button.getBoundingClientRect().height,
+        }))
+        .filter((item) => item.width < 32 || item.height < 32));
+      assert(touchTargets.length === 0, `${label}: undersized visible controls ${JSON.stringify(touchTargets)}`);
+    }
+
+    assertNoPageErrors();
+    results.push({ label, status: "passed" });
+  } catch (error) {
+    if (!fs.existsSync(screenshotPath)) {
+      await page.screenshot({ path: screenshotPath, fullPage: true }).catch(() => {});
+    }
+    throw error;
+  } finally {
+    await context.close();
   }
-
-  const layout = await page.evaluate(() => ({
-    scrollWidth: document.documentElement.scrollWidth,
-    clientWidth: document.documentElement.clientWidth,
-    h1Count: document.querySelectorAll("#mainContent h1").length,
-    text: document.querySelector("#mainContent")?.textContent || "",
-  }));
-  assert(layout.scrollWidth <= layout.clientWidth + 2, `${label}: horizontal overflow ${layout.scrollWidth} > ${layout.clientWidth}`);
-  assert(layout.h1Count === 1, `${label}: expected one h1, found ${layout.h1Count}`);
-  assert(!layout.text.includes("适合配合教材相应章节阅读"), `${label}: placeholder chapter copy is visible`);
-  assert(!layout.text.includes("正在开发"), `${label}: internal development wording is visible`);
-
-  if (route.lesson) {
-    await page.waitForSelector(".ch10-primary-lab");
-    const lessonState = await page.evaluate(() => ({
-      svgCount: document.querySelectorAll(".ch10-primary-lab svg").length,
-      moduleCount: document.querySelectorAll(".ch10-formal-flow .ch10-module").length,
-      taskCount: document.querySelectorAll(".ch10-task-list li").length,
-      emptyMounts: [...document.querySelectorAll("[data-ch10-interactive], [data-ch10-formal]")]
-        .filter((node) => !node.textContent.trim() && !node.querySelector("svg")).length,
-    }));
-    assert(lessonState.svgCount >= 1, `${label}: main experiment has no SVG`);
-    assert(lessonState.moduleCount >= 4, `${label}: formal lesson has only ${lessonState.moduleCount} modules`);
-    assert(lessonState.taskCount >= 3, `${label}: observation task list is incomplete`);
-    assert(lessonState.emptyMounts === 0, `${label}: found empty presentation mounts`);
-
-    const touchTargets = await page.evaluate(() => [...document.querySelectorAll(".ch10-primary-lab button")]
-      .map((button) => ({ text: button.textContent.trim(), width: button.getBoundingClientRect().width, height: button.getBoundingClientRect().height }))
-      .filter((item) => item.width < 32 || item.height < 32));
-    assert(touchTargets.length === 0, `${label}: undersized controls ${JSON.stringify(touchTargets)}`);
-  }
-
-  await page.screenshot({ path: path.join(outputDir, `${label}.png`), fullPage: true });
-  assertNoPageErrors();
-  results.push({ label, status: "passed" });
-  await context.close();
 }
 
 async function auditInteractions(browser) {
@@ -121,6 +167,7 @@ async function auditInteractions(browser) {
   await page.goto(`${baseURL}#ch10/dual-space`, { waitUntil: "networkidle" });
   assert(await page.locator(".dual-reader-stack").count() === 1, "§2 covector reader visual missing");
   assert(await page.locator(".is-functional-plane .ch10-vector").count() === 0, "§2 incorrectly draws the covector as an ordinary vector arrow");
+  assert(await page.locator(".katex-error").count() === 0, "§2 contains a KaTeX rendering error");
   await page.click('[data-dual-basis-preset="singular"]');
   assert((await page.locator("[data-dual-basis-readout]").textContent()).includes("对偶基不存在"), "§2 dependent basis failure is not explained");
   await page.click('[data-dual-basis-preset="near"]');

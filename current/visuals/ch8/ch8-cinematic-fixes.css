@@ -74,6 +74,16 @@
   width: 230px;
 }
 
+.ch8-basis-control input[type="range"] {
+  touch-action: none;
+  user-select: none;
+  cursor: grab;
+}
+
+.ch8-basis-control input[type="range"].is-dragging {
+  cursor: grabbing;
+}
+
 .ch8-jordan-field {
   grid-template-columns: minmax(0, 1.3fr) minmax(330px, 0.72fr);
 }
@@ -136,6 +146,10 @@
   .ch8-compression-field .ch8-invariant-output {
     top: 535px;
     right: auto;
+  }
+
+  .ch8-basis-control input[type="range"] {
+    min-height: 52px;
   }
 
   .ch8-growth-readout strong {

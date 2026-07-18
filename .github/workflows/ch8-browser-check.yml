@@ -40,7 +40,10 @@ jobs:
           cat /tmp/ch8-static.log
           exit 1
       - name: Exercise Chapter 8 in Chromium
-        run: node .github/scripts/ch8-browser-check.mjs
+        run: |
+          mkdir -p /tmp/ch8-screenshots
+          set -o pipefail
+          node .github/scripts/ch8-browser-check.mjs 2>&1 | tee /tmp/ch8-screenshots/browser-check.log
       - name: Upload browser screenshots
         if: always()
         uses: actions/upload-artifact@v4

@@ -50,4 +50,40 @@
   .ch1-story-copy h4 {
     max-width: none;
   }
+
+  .ch1-story-stage text {
+    font-size: 24px;
+  }
+
+  .ch1-story-stage .story-caption,
+  .ch1-story-stage .story-field-note,
+  .ch1-story-stage .story-degree,
+  .ch1-story-stage .story-axis-label {
+    font-size: 19px;
+  }
+
+  .ch1-story-stage .story-field-symbol {
+    font-size: 34px !important;
+  }
+
+  .ch1-story-stage .story-number-token text,
+  .ch1-story-stage .story-pill text,
+  .ch1-story-stage .story-coeff-cell text,
+  .ch1-story-stage .story-label {
+    font-size: 23px;
+  }
+
+  .ch1-story-stage .story-pill.is-large text,
+  .ch1-story-stage .story-pill.is-root text,
+  .ch1-story-stage .story-row-name,
+  .ch1-story-stage .story-variable-node text {
+    font-size: 26px !important;
+  }
+
+  .ch1-story-stage .story-pill.is-small text,
+  .ch1-story-stage .story-derivative-lamp text,
+  .ch1-story-stage .story-sample-point text,
+  .ch1-story-stage .story-lattice-point text {
+    font-size: 18px;
+  }
 }

@@ -58,9 +58,9 @@
 
   function matrixHtml(matrix, digits = 2) {
     if (matrix.length === 2 && matrix[0].length === 2) {
-      return tex(`\\begin{bmatrix}${fmt(matrix[0][0], digits)}&${fmt(matrix[0][1], digits)}\\\\${fmt(matrix[1][0], digits)}&${fmt(matrix[1][1], digits)}\\end{bmatrix}`);
+      return tex(`\begin{bmatrix}${fmt(matrix[0][0], digits)}&${fmt(matrix[0][1], digits)}\\${fmt(matrix[1][0], digits)}&${fmt(matrix[1][1], digits)}\end{bmatrix}`);
     }
-    return tex(`\\begin{bmatrix}${matrix.map((row) => row.map((value) => fmt(value, digits)).join("&")).join("\\\\")}\\end{bmatrix}`);
+    return tex(`\begin{bmatrix}${matrix.map((row) => row.map((value) => fmt(value, digits)).join("&")).join("\\")}\end{bmatrix}`);
   }
 
   function determinant(matrix) {
@@ -82,4 +82,96 @@
     matrixHtml,
     determinant,
   };
+
+  // Screenshot-driven refinements shared by the story renderers.
+  if (!document.querySelector("#ch2-story-polish")) {
+    const style = document.createElement("style");
+    style.id = "ch2-story-polish";
+    style.textContent = `
+      .ch2-story-formula [data-area-matrix],
+      .ch2-story-formula [data-area-matrix] .katex {
+        white-space: nowrap;
+        overflow-wrap: normal;
+      }
+      .ch2-story-formula [data-area-matrix] {
+        display: flex;
+        align-items: center;
+        min-height: 46px;
+        overflow-x: auto;
+      }
+      [data-perm-svg] > .story-caption { display: none; }
+      .ch2-story-matrix-stage {
+        min-height: 350px;
+        padding-block: 22px;
+      }
+      .ch2-story-matrix-grid {
+        grid-template-columns: repeat(3, 96px);
+        gap: 12px;
+      }
+      .ch2-story-matrix-grid button,
+      .ch2-story-matrix-grid span {
+        width: 96px;
+        height: 76px;
+        font-size: 1.16rem;
+      }
+      @media (max-width: 820px) {
+        .ch2-story-matrix-stage { min-height: 315px; }
+        .ch2-story-matrix-grid { grid-template-columns: repeat(3, 72px); gap: 9px; }
+        .ch2-story-matrix-grid button,
+        .ch2-story-matrix-grid span { width: 72px; height: 62px; }
+      }
+    `;
+    document.head.append(style);
+  }
+
+  function mirrorText(root, selector) {
+    const nodes = Array.from(root.querySelectorAll(selector));
+    if (nodes.length < 2) return null;
+    const source = nodes[0];
+    const sync = () => nodes.slice(1).forEach((node) => { node.textContent = source.textContent; });
+    const observer = new MutationObserver(sync);
+    observer.observe(source, { childList: true, subtree: true, characterData: true });
+    sync();
+    return () => observer.disconnect();
+  }
+
+  function polishCramerLabels(root) {
+    const scene = root.querySelector("[data-cramer-scene]");
+    if (!scene) return null;
+    const apply = () => {
+      scene.querySelectorAll("text").forEach((label) => {
+        if (label.textContent === "a₁") {
+          label.setAttribute("x", "248");
+          label.setAttribute("y", "404");
+        }
+        if (label.textContent === "2a₁") {
+          label.setAttribute("x", "310");
+          label.setAttribute("y", "344");
+        }
+      });
+    };
+    const observer = new MutationObserver(apply);
+    observer.observe(scene, { childList: true, subtree: true });
+    apply();
+    return () => observer.disconnect();
+  }
+
+  window.defineChapter2LessonEnhancer?.((section, root) => {
+    const cleanups = [];
+    if (section?.id === "determinant-computation") {
+      const cleanup = mirrorText(root, "[data-elim-op]");
+      if (cleanup) cleanups.push(cleanup);
+    }
+    if (section?.id === "laplace-and-product") {
+      ["[data-lap-minor]", "[data-lap-sign]", "[data-lap-complement]"].forEach((selector) => {
+        const cleanup = mirrorText(root, selector);
+        if (cleanup) cleanups.push(cleanup);
+      });
+    }
+    if (section?.id === "cramer-rule") {
+      const cleanup = polishCramerLabels(root);
+      if (cleanup) cleanups.push(cleanup);
+    }
+    return cleanups.length ? () => cleanups.reverse().forEach((cleanup) => cleanup()) : undefined;
+  });
 })();

@@ -1,0 +1,24 @@
+/* Screenshot-pass fixes that must load after story.css and story-polish.css. */
+.ch2-story-formula .katex span,
+.ch2-story-formula strong span {
+  display: inline;
+  margin: 0;
+  color: inherit;
+  font-size: inherit;
+  font-weight: inherit;
+  letter-spacing: normal;
+}
+
+.ch2-story-formula .katex {
+  white-space: nowrap;
+}
+
+.ch2-story-formula > div[hidden] {
+  display: none !important;
+}
+
+@media (max-width: 560px) {
+  .ch2-story-formula .katex {
+    font-size: 0.96em;
+  }
+}

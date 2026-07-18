@@ -1,0 +1,63 @@
+name: Chapter 3 SVG story browser review
+
+on:
+  pull_request:
+    branches:
+      - main
+    types:
+      - opened
+      - reopened
+      - synchronize
+
+permissions:
+  contents: read
+
+jobs:
+  browser-review:
+    if: github.event.pull_request.head.ref == 'content/ch3-linear-systems'
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - name: Check out PR branch
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.ref }}
+          repository: ${{ github.event.pull_request.head.repo.full_name }}
+
+      - name: Static checks
+        run: |
+          node --check current/visuals/ch3/visual-story.js
+          node --check scripts/ch3-visual-story-review.mjs
+          git diff --check
+
+      - name: Install Chromium runtime
+        run: |
+          mkdir -p /tmp/ch3-playwright
+          cd /tmp/ch3-playwright
+          npm init -y >/dev/null
+          npm install --silent playwright@1.55.0
+          npx playwright install --with-deps chromium
+          cp "${GITHUB_WORKSPACE}/scripts/ch3-visual-story-review.mjs" .
+
+      - name: Run browser review
+        run: |
+          mkdir -p browser-artifacts
+          python3 -m http.server 4173 --directory current >/tmp/ch3-story-server.log 2>&1 &
+          for attempt in {1..30}; do
+            if curl --silent --fail http://127.0.0.1:4173/learn.html >/dev/null; then break; fi
+            sleep 1
+          done
+          cd /tmp/ch3-playwright
+          set +e
+          BASE_URL=http://127.0.0.1:4173/learn.html ARTIFACT_DIR="${GITHUB_WORKSPACE}/browser-artifacts" node ch3-visual-story-review.mjs 2>&1 | tee "${GITHUB_WORKSPACE}/browser-artifacts/browser.log"
+          status=${PIPESTATUS[0]}
+          set -e
+          exit ${status}
+
+      - name: Upload visual review
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: ch3-svg-story-review
+          path: browser-artifacts/
+          if-no-files-found: warn

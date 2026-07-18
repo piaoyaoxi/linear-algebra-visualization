@@ -25,8 +25,9 @@ jobs:
           ref: context/ch7-linear-transformations
           fetch-depth: 0
       - name: Replace vector-tip circles with semantic image crosses
-        shell: python
+        shell: bash
         run: |
+          python3 - <<'PY'
           from pathlib import Path
 
           js_path = Path("current/visuals/ch7/cinematic.js")
@@ -63,7 +64,9 @@ jobs:
           if test.count(old_test) != 1:
               raise SystemExit(f"unexpected browser assertion match count: {test.count(old_test)}")
           test_path.write_text(test.replace(old_test, new_test))
+          PY
       - name: Validate and commit
+        shell: bash
         run: |
           node --check current/visuals/ch7/cinematic.js
           node --check .github/scripts/ch7-browser-check.mjs
@@ -75,4 +78,4 @@ jobs:
           git commit -m "fix(ch7): separate vector arrows from image sample markers"
           git push origin HEAD:context/ch7-linear-transformations
 
-# Reviewed semantic marker patch; run after full browser audit exposed the endpoint-dot case.
+# Standard-shell retry after the complete browser audit exposed the endpoint-dot case.

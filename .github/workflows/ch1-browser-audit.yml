@@ -6,6 +6,7 @@ on:
       - "current/**"
       - "tests/ch1-browser-audit.mjs"
       - "tests/ch1-browser-audit-v2.mjs"
+      - "tests/ch1-browser-audit-v3.mjs"
       - "tests/ch1-failure-capture.mjs"
       - ".github/workflows/ch1-browser-audit.yml"
   workflow_dispatch:
@@ -36,7 +37,7 @@ jobs:
           cat /tmp/ch1-http.log
           exit 1
       - name: Run Chapter 1 browser audit
-        run: node --import ./tests/ch1-failure-capture.mjs tests/ch1-browser-audit-v2.mjs
+        run: node --import ./tests/ch1-failure-capture.mjs tests/ch1-browser-audit-v3.mjs
       - name: Upload browser evidence
         if: always()
         uses: actions/upload-artifact@v4

@@ -55,6 +55,49 @@
   line-height: 1.6;
 }
 
+/* Keep prose and inline KaTeX in one normal text flow.
+   The shared checklist uses CSS Grid, which turns text fragments and the
+   formula span into separate grid items. The formula then falls into the
+   22px checkmark column and renders vertically. */
+#positive-definite-formal .ch5-check-list {
+  gap: 12px;
+}
+
+#positive-definite-formal .ch5-check-list li {
+  position: relative;
+  display: block;
+  min-width: 0;
+  min-height: 24px;
+  padding-left: 32px;
+  line-height: 1.65;
+}
+
+#positive-definite-formal .ch5-check-list li::before {
+  position: absolute;
+  top: 0.18em;
+  left: 0;
+}
+
+#positive-definite-formal .ch5-check-list .tex-inline {
+  display: inline !important;
+  width: auto !important;
+  min-width: 0 !important;
+  max-width: none !important;
+  padding: 0 0.08em !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  color: var(--accent-strong);
+  white-space: nowrap;
+  vertical-align: baseline;
+}
+
+#positive-definite-formal .ch5-check-list .tex-inline .katex {
+  display: inline-block;
+  white-space: nowrap;
+}
+
 #positive-definite-formal .ch5s4-minor-chain {
   display: flex;
   flex-wrap: wrap;

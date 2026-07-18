@@ -12,6 +12,14 @@
     return `<path class="jordan-edge ${level <= built ? "is-visible" : "is-ghost"}" d="M${x1} ${y1 - 34}L${x2} ${y2 + 34}"></path>`;
   }
 
+  function growthEquation(k, value) {
+    return `<strong class="ch8-growth-equation"><span>ν<sub>${k}</sub></span><i>=</i><span>dim ker N<sup>${k}</sup></span><i>=</i><b>${value}</b></strong>`;
+  }
+
+  function differenceEquation(k, value, previous, result) {
+    return `<span class="ch8-growth-difference">b<sub>${k}</sub> = ν<sub>${k}</sub> − ν<sub>${k - 1}</sub> = ${value} − ${previous} = <b>${result}</b></span>`;
+  }
+
   function mount(host) {
     let built = 1;
     let activeK = 1;
@@ -72,8 +80,8 @@
               </div>
               <div class="ch8-growth-readout">
                 <span>当前读数</span>
-                <strong>${I(`\\nu_${activeK}=\\dim\\ker N^${activeK}=${activeDim}`)}</strong>
-                ${activeK > 0 ? `<p>${I(`b_${activeK}=\\nu_${activeK}-\\nu_${activeK - 1}=${atLeast}`)}：共有 ${atLeast} 个块的大小至少为 ${activeK}。</p>` : `<p>ν₀=0 只是增长序列的起点。</p>`}
+                ${growthEquation(activeK, activeDim)}
+                ${activeK > 0 ? `<p>${differenceEquation(activeK, activeDim, previousDim, atLeast)}<em>共有 ${atLeast} 个块的大小至少为 ${activeK}。</em></p>` : `<p>ν₀=0 只是增长序列的起点。</p>`}
               </div>
             </aside>
           </section>

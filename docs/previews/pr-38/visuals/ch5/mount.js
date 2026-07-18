@@ -5,6 +5,8 @@
 
   window.renderLessonPage = function renderLessonPageWithChapter5Extensions(section, chapter) {
     baseRenderLessonPage(section, chapter);
-    window.mountChapter5Lesson?.(section, document.querySelector("#mainContent"));
+    const root = document.querySelector("#mainContent");
+    window.mountChapter5Lesson?.(section, root);
+    root?.querySelector(".qv-lab")?.classList.add("ch5-lab");
   };
 })();

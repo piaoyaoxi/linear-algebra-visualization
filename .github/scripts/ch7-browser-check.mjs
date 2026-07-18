@@ -192,6 +192,7 @@ for (const route of routes) {
 
 // Dark appearance: inspect every lab, not only one representative page.
 await page.evaluate(() => localStorage.setItem("la-visual-theme", "dark"));
+await page.reload({ waitUntil: "networkidle" });
 for (const route of routes) {
   await page.goto(`${base}#ch7/${route}`, { waitUntil: "networkidle" });
   assert.equal(await page.locator("body").evaluate((body) => body.classList.contains("dark")), true);

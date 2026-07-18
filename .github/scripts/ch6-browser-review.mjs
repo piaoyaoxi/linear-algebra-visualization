@@ -154,8 +154,7 @@ async function reviewInteractions(page, configName) {
   await openLesson(page, "basis-coordinates", configName);
   if (!(await hasText(page.locator(".ch6-basis-verdict"), "1 · 一条直线"))) throw new Error("§3 initial span is not one-dimensional");
   await page.locator('[data-basis-preset="independent"]').click();
-  await page.waitForTimeout(500);
-  if (!(await hasText(page.locator(".ch6-basis-verdict"), "2 · 整个平面"))) throw new Error("§3 dimension did not rise to two");
+  await page.waitForFunction(() => document.querySelector(".ch6-basis-verdict")?.textContent?.includes("2 · 整个平面"), null, { timeout: 2500 });
   if ((await page.locator(".ch6-basis-area.is-visible").count()) < 1) throw new Error("§3 nonzero area is not visible");
   await assertVectors(page, "§3 independent state");
   await page.locator("[data-redundant]").check();
@@ -167,8 +166,7 @@ async function reviewInteractions(page, configName) {
   await openLesson(page, "change-of-basis", configName);
   if (!(await hasText(page.locator(".ch6-mode-badge.is-passive"), "白色向量 v 的端点始终固定"))) throw new Error("§4 fixed-object cue missing");
   await page.locator('[data-passive-preset="collapse"]').click();
-  await page.waitForTimeout(450);
-  if (!(await hasText(page.locator(".ch6-conclusion-box"), "W 不再是一组基"))) throw new Error("§4 degenerate basis was not rejected");
+  await page.waitForFunction(() => document.querySelector(".ch6-conclusion-box")?.textContent?.includes("W 不再是一组基"), null, { timeout: 2500 });
   await assertVectors(page, "§4 degenerate basis");
   await page.locator('[data-change-mode="active"]').click();
   if (await page.locator("[data-change-p]").count()) throw new Error("§4 transition matrix leaked into active mode");
@@ -196,7 +194,6 @@ async function reviewInteractions(page, configName) {
 }
 
 const browser = await chromium.launch();
-let failure = "";
 try {
   for (const config of [
     { name: "desktop-light", viewport: { width: 1440, height: 1000 }, colorScheme: "light", reducedMotion: "no-preference" },
@@ -216,8 +213,7 @@ try {
     await context.close();
   }
 } catch (error) {
-  failure = error?.stack || String(error);
-  fs.writeFileSync(path.join(shots, "failure.txt"), failure);
+  fs.writeFileSync(path.join(shots, "failure.txt"), error?.stack || String(error));
   throw error;
 } finally {
   await browser.close();

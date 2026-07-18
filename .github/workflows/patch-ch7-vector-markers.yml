@@ -1,0 +1,76 @@
+name: Patch Chapter 7 vector markers
+
+on:
+  push:
+    branches:
+      - context/ch7-linear-transformations
+    paths:
+      - ".github/workflows/patch-ch7-vector-markers.yml"
+  pull_request:
+    branches:
+      - main
+    paths:
+      - ".github/workflows/patch-ch7-vector-markers.yml"
+
+permissions:
+  contents: write
+
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out branch
+        uses: actions/checkout@v4
+        with:
+          ref: context/ch7-linear-transformations
+          fetch-depth: 0
+      - name: Replace vector-tip circles with semantic image crosses
+        shell: python
+        run: |
+          from pathlib import Path
+
+          js_path = Path("current/visuals/ch7/cinematic.js")
+          js = js_path.read_text()
+          old = '        content += plane.point({ at: images[index], role: residuals[index] < 0.025 ? "success" : "danger", r: 4.5 });'
+          new = '''        const [imageX, imageY] = plane.p(images[index]);
+          const imageRole = residuals[index] < 0.025 ? "success" : "danger";
+          content += `<path d="M${imageX - 5} ${imageY} H${imageX + 5} M${imageX} ${imageY - 5} V${imageY + 5}" class="ch7-cinema-sample-cross is-${imageRole}"/>`;'''
+          if js.count(old) != 1:
+              raise SystemExit(f"unexpected cinematic marker match count: {js.count(old)}")
+          js_path.write_text(js.replace(old, new))
+
+          css_path = Path("current/visuals/ch7/cinematic.css")
+          css = css_path.read_text()
+          anchor = '.ch7-cinema-annihilation-track.is-alive { stroke: color-mix(in srgb, var(--ch7-cinema-danger) 70%, transparent); }\n'
+          addition = '''
+.ch7-cinema-sample-cross {
+  fill: none;
+  stroke-width: 3;
+  stroke-linecap: round;
+  vector-effect: non-scaling-stroke;
+}
+.ch7-cinema-sample-cross.is-success { stroke: var(--ch7-cinema-success); }
+.ch7-cinema-sample-cross.is-danger { stroke: var(--ch7-cinema-danger); }
+'''
+          if anchor not in css:
+              raise SystemExit("cinematic CSS anchor missing")
+          css_path.write_text(css.replace(anchor, anchor + addition, 1))
+
+          test_path = Path(".github/scripts/ch7-browser-check.mjs")
+          test = test_path.read_text()
+          old_test = 'assert.ok((await page.locator(".ch7-cinema-svg circle.ch7-cinema-point").count()) >= 8, "invariant subspace must inspect multiple samples");'
+          new_test = 'assert.ok((await page.locator(".ch7-cinema-svg .ch7-cinema-point, .ch7-cinema-svg .ch7-cinema-sample-cross").count()) >= 8, "invariant subspace must inspect multiple samples");'
+          if test.count(old_test) != 1:
+              raise SystemExit(f"unexpected browser assertion match count: {test.count(old_test)}")
+          test_path.write_text(test.replace(old_test, new_test))
+      - name: Validate and commit
+        run: |
+          node --check current/visuals/ch7/cinematic.js
+          node --check .github/scripts/ch7-browser-check.mjs
+          git diff --check
+          rm -f .github/workflows/patch-ch7-vector-markers.yml
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          git commit -m "fix(ch7): separate vector arrows from image sample markers"
+          git push origin HEAD:context/ch7-linear-transformations

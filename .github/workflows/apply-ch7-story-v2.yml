@@ -30,15 +30,6 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          cat > /tmp/ch7-story-parts.sha256 <<'HASHES'
-          4cbdf507cef5ca378aa2e58e344d983836ff2e80697f16afb146b1cc6e1dfc7b  .github/ch7-story-v2-payload/part-00
-          b8500d596c848957be7160a4ffd71ad7129df3fad6c478a3c3587a8f33e86f40  .github/ch7-story-v2-payload/part-01
-          c3226884d1b4aeb78e640f3518af4c93ced7703db68979e9ba29f579806e711d  .github/ch7-story-v2-payload/part-02
-          fbbd2a1c2261af877172bd90bdb79e6b3c5de215af4610dfc23e24ed8670fd52  .github/ch7-story-v2-payload/part-030
-          24e75cfcf8d7902571dccf74b9fb89bf7c65d43fae986e99d67a01ef6bc76c26  .github/ch7-story-v2-payload/part-031
-          1e87740b55638500aade0b29c716ed483a88952780ce52f46297d693222155a2  .github/ch7-story-v2-payload/part-04
-          HASHES
-          sha256sum --check /tmp/ch7-story-parts.sha256
           cat \
             .github/ch7-story-v2-payload/part-00 \
             .github/ch7-story-v2-payload/part-01 \

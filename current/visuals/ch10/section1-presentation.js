@@ -236,7 +236,7 @@
       q(lab, "[data-functional-readout]").innerHTML = result.isZero
         ? `<article><span>函数状态</span><strong>零函数</strong><p>整个平面都是核；没有唯一的读取方向。</p></article>`
         : `
-          <article><span>当前读数</span><strong>${format(result.value)}</strong><p>${mathInline(`[${format(result.a)}\;${format(result.b)}]\\begin{bmatrix}${format(state.vector[0])}\\\\${format(state.vector[1])}\\end{bmatrix}`)}</p></article>
+          <article><span>当前读数</span><strong>${format(result.value)}</strong><p>${mathInline(`[${format(result.a)}\\;${format(result.b)}]\\begin{bmatrix}${format(state.vector[0])}\\\\${format(state.vector[1])}\\end{bmatrix}`)}</p></article>
           <article><span>基向量读数</span><strong>f(e₁)=${format(result.a)} · f(e₂)=${format(result.b)}</strong><p>这两个数就是函数在标准基下的行坐标。</p></article>
           <article><span>核直线</span><strong>${format(result.a)}u₁ ${result.b >= 0 ? "+" : "−"} ${format(Math.abs(result.b))}u₂ = 0</strong><p>核只由方向决定，不受整体倍率影响。</p></article>`;
 

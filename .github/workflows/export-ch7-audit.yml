@@ -1,0 +1,28 @@
+name: Export Chapter 7 audit workspace
+
+on:
+  push:
+    branches:
+      - context/ch7-linear-transformations
+    paths:
+      - ".github/workflows/export-ch7-audit.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  export:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out branch
+        uses: actions/checkout@v4
+        with:
+          ref: context/ch7-linear-transformations
+      - name: Upload repository workspace
+        uses: actions/upload-artifact@v4
+        with:
+          name: ch7-audit-workspace
+          path: .
+          include-hidden-files: true
+          if-no-files-found: error
+          retention-days: 1

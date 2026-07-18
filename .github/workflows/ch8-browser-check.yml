@@ -5,6 +5,7 @@ on:
     paths:
       - "current/**"
       - ".github/scripts/ch8-browser-check.mjs"
+      - ".github/scripts/ch8-cinematic-check.mjs"
       - ".github/workflows/ch8-browser-check.yml"
   push:
     branches:
@@ -12,6 +13,7 @@ on:
     paths:
       - "current/**"
       - ".github/scripts/ch8-browser-check.mjs"
+      - ".github/scripts/ch8-cinematic-check.mjs"
       - ".github/workflows/ch8-browser-check.yml"
 
 permissions:
@@ -50,7 +52,7 @@ jobs:
             return (await locator.innerText()).includes(value);
           }'''
           new = '''async function textIncludes(locator, value) {
-            const normalize = (text) => String(text).replace(/\\s+/g, "").toLowerCase();
+            const normalize = (text) => String(text).replace(/\s+/g, "").toLowerCase();
             return normalize(await locator.innerText()).includes(normalize(value));
           }'''
           if old not in text:
@@ -59,6 +61,7 @@ jobs:
           PY
           set -o pipefail
           node .github/scripts/ch8-browser-check.mjs 2>&1 | tee /tmp/ch8-screenshots/browser-check.log
+          node .github/scripts/ch8-cinematic-check.mjs 2>&1 | tee /tmp/ch8-screenshots/cinematic-check.log
       - name: Upload browser screenshots
         if: always()
         uses: actions/upload-artifact@v4

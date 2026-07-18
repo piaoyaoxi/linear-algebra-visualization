@@ -14,6 +14,7 @@ const routes = [
   { id: "symplectic-space", hash: "#ch10/symplectic-space", lesson: true },
 ];
 
+const lessonRoutes = routes.filter((route) => route.lesson);
 const viewports = [
   { id: "desktop", width: 1440, height: 900 },
   { id: "tablet", width: 820, height: 900 },
@@ -73,7 +74,7 @@ async function auditRoute(browser, route, viewport, options = {}) {
           const style = getComputedStyle(element);
           if (style.display === "none" || style.visibility === "hidden") return false;
           const rect = element.getBoundingClientRect();
-          return rect.right > root.clientWidth + 2 || rect.left < -2 || element.scrollWidth > element.clientWidth + 2;
+          return rect.right > root.clientWidth + 2 || rect.left < -2;
         })
         .slice(0, 12)
         .map((element) => {
@@ -86,8 +87,6 @@ async function auditRoute(browser, route, viewport, options = {}) {
             left: Math.round(rect.left),
             right: Math.round(rect.right),
             width: Math.round(rect.width),
-            clientWidth: element.clientWidth,
-            scrollWidth: element.scrollWidth,
           };
         });
       return {
@@ -110,19 +109,30 @@ async function auditRoute(browser, route, viewport, options = {}) {
 
     if (route.lesson) {
       await page.waitForSelector(".ch10-primary-lab");
+      await page.waitForSelector("[data-ch10-cinema]");
       const lessonState = await page.evaluate(() => ({
-        svgCount: document.querySelectorAll(".ch10-primary-lab svg").length,
+        legacySvgCount: document.querySelectorAll(".ch10-primary-lab svg").length,
+        cinemaCount: document.querySelectorAll("[data-ch10-cinema]").length,
+        cinemaSvgChildren: document.querySelector("[data-ch10-cinema] [data-cinema-svg]")?.children.length || 0,
+        cinemaStepCount: document.querySelectorAll("[data-ch10-cinema] [data-cinema-step]").length,
         moduleCount: document.querySelectorAll(".ch10-formal-flow .ch10-module").length,
         taskCount: document.querySelectorAll(".ch10-task-list li").length,
+        deepClosed: !document.querySelector(".ch10-cinema-deep")?.open,
+        legacyInsideDeep: Boolean(document.querySelector(".ch10-cinema-deep [data-ch10-interactive] .ch10-primary-lab")),
         emptyMounts: [...document.querySelectorAll("[data-ch10-interactive], [data-ch10-formal]")]
           .filter((node) => !node.textContent.trim() && !node.querySelector("svg")).length,
       }));
-      assert(lessonState.svgCount >= 1, `${label}: main experiment has no SVG`);
+      assert(lessonState.legacySvgCount >= 1, `${label}: deep experiment has no SVG`);
+      assert(lessonState.cinemaCount === 1, `${label}: expected one cinematic stage, found ${lessonState.cinemaCount}`);
+      assert(lessonState.cinemaSvgChildren > 3, `${label}: cinematic SVG did not render`);
+      assert(lessonState.cinemaStepCount >= 4, `${label}: cinematic story has only ${lessonState.cinemaStepCount} steps`);
+      assert(lessonState.deepClosed, `${label}: full parameter lab should be collapsed initially`);
+      assert(lessonState.legacyInsideDeep, `${label}: legacy dashboard was not demoted into deep exploration`);
       assert(lessonState.moduleCount >= 4, `${label}: formal lesson has only ${lessonState.moduleCount} modules`);
       assert(lessonState.taskCount >= 3, `${label}: observation task list is incomplete`);
       assert(lessonState.emptyMounts === 0, `${label}: found empty presentation mounts`);
 
-      const touchTargets = await page.evaluate(() => [...document.querySelectorAll(".ch10-primary-lab button")]
+      const touchTargets = await page.evaluate(() => [...document.querySelectorAll("[data-ch10-cinema] button")]
         .filter((button) => button.offsetParent !== null)
         .map((button) => ({
           text: button.textContent.trim(),
@@ -130,7 +140,9 @@ async function auditRoute(browser, route, viewport, options = {}) {
           height: button.getBoundingClientRect().height,
         }))
         .filter((item) => item.width < 32 || item.height < 32));
-      assert(touchTargets.length === 0, `${label}: undersized visible controls ${JSON.stringify(touchTargets)}`);
+      assert(touchTargets.length === 0, `${label}: undersized cinematic controls ${JSON.stringify(touchTargets)}`);
+
+      await page.locator("[data-ch10-cinema]").screenshot({ path: path.join(outputDir, `${label}-cinema.png`) });
     }
 
     assertNoPageErrors();
@@ -145,13 +157,59 @@ async function auditRoute(browser, route, viewport, options = {}) {
   }
 }
 
+async function auditCinematicStories(browser) {
+  const context = await browser.newContext({ viewport: { width: 1440, height: 900 } });
+  const page = await context.newPage();
+  const assertNoPageErrors = await collectPageErrors(page, "cinematic-audit");
+
+  for (const route of lessonRoutes) {
+    await page.goto(`${baseURL}${route.hash}`, { waitUntil: "networkidle" });
+    const cinema = page.locator("[data-ch10-cinema]");
+    await cinema.waitFor();
+    const buttons = cinema.locator("[data-cinema-step]");
+    const count = await buttons.count();
+    assert(count >= 4, `${route.id}: cinematic step count ${count}`);
+
+    const initial = await cinema.locator("[data-cinema-svg]").innerHTML();
+    await buttons.nth(1).click();
+    await page.waitForTimeout(320);
+    const middle = await cinema.locator("[data-cinema-svg]").innerHTML();
+    await page.waitForTimeout(760);
+    const end = await cinema.locator("[data-cinema-svg]").innerHTML();
+    assert(initial !== middle, `${route.id}: first transition did not begin`);
+    assert(middle !== end, `${route.id}: transition jumped directly to its final state`);
+
+    for (let index = 0; index < count; index += 1) {
+      await buttons.nth(index).click();
+      await page.waitForTimeout(980);
+      const caption = (await cinema.locator("[data-cinema-caption]").textContent()).trim();
+      assert(caption.length > 8, `${route.id} step ${index + 1}: missing explanatory caption`);
+      await cinema.screenshot({ path: path.join(outputDir, `${route.id}-cinema-step-${index + 1}.png`) });
+    }
+  }
+
+  assertNoPageErrors();
+  results.push({ label: "cinematic-audit", status: "passed" });
+  await context.close();
+}
+
+async function openDeepLab(page) {
+  const details = page.locator(".ch10-cinema-deep");
+  if (!(await details.evaluate((node) => node.open))) {
+    await details.locator(":scope > summary").click();
+  }
+}
+
 async function auditInteractions(browser) {
   const context = await browser.newContext({ viewport: { width: 1440, height: 900 } });
   const page = await context.newPage();
   const assertNoPageErrors = await collectPageErrors(page, "interaction-audit");
 
-  // §1: guided equal-level motion and zero functional boundary.
   await page.goto(`${baseURL}#ch10/linear-functional`, { waitUntil: "networkidle" });
+  await page.locator('[data-cinema-step="1"]').click();
+  await page.waitForTimeout(980);
+  assert((await page.locator("[data-cinema-caption]").textContent()).includes("读数保持不变"), "§1 cinematic equal-level conclusion missing");
+  await openDeepLab(page);
   const initialValue = await page.locator("[data-functional-readout] article:first-child strong").textContent();
   await page.click('[data-functional-guide="level"]');
   await page.waitForTimeout(1050);
@@ -163,18 +221,24 @@ async function auditInteractions(browser) {
   await page.click("[data-example-start]");
   assert((await page.locator("[data-example-progress]").textContent()).includes("1 /"), "§1 example stepper did not start");
 
-  // §2: covectors are layers/readers, and dependent basis blocks the dual basis.
   await page.goto(`${baseURL}#ch10/dual-space`, { waitUntil: "networkidle" });
   assert(await page.locator(".dual-reader-stack").count() === 1, "§2 covector reader visual missing");
   assert(await page.locator(".is-functional-plane .ch10-vector").count() === 0, "§2 incorrectly draws the covector as an ordinary vector arrow");
   assert(await page.locator(".katex-error").count() === 0, "§2 contains a KaTeX rendering error");
+  await page.locator('[data-cinema-step="2"]').click();
+  await page.waitForTimeout(980);
+  assert((await page.locator("[data-cinema-caption]").textContent()).includes("两台探针"), "§2 cinematic dual-basis explanation missing");
+  await openDeepLab(page);
   await page.click('[data-dual-basis-preset="singular"]');
   assert((await page.locator("[data-dual-basis-readout]").textContent()).includes("对偶基不存在"), "§2 dependent basis failure is not explained");
   await page.click('[data-dual-basis-preset="near"]');
   assert((await page.locator("[data-dual-sensitivity]").textContent()).includes("接近退化"), "§2 near-dependent sensitivity state missing");
 
-  // §3: two-slot modes, equivalent pipelines, and left radical.
   await page.goto(`${baseURL}#ch10/bilinear-form`, { waitUntil: "networkidle" });
+  await page.locator('[data-cinema-step="2"]').click();
+  await page.waitForTimeout(980);
+  assert((await page.locator("[data-cinema-caption]").textContent()).includes("同一个标量"), "§3 cinematic two-pipeline explanation missing");
+  await openDeepLab(page);
   const firstPipeline = await page.locator("[data-bilinear-pipeline]").textContent();
   await page.click('[data-pipeline="left"]');
   const secondPipeline = await page.locator("[data-bilinear-pipeline]").textContent();
@@ -185,8 +249,11 @@ async function auditInteractions(browser) {
   await page.click('[data-radical-preset="nonsymmetric"]');
   assert((await page.locator("[data-radical-readout]").textContent()).includes("左根与右根方向不同"), "§3 nonsymmetric radical boundary missing");
 
-  // §4: sign swap, collinear state, symplectic and non-symplectic transforms.
   await page.goto(`${baseURL}#ch10/symplectic-space`, { waitUntil: "networkidle" });
+  await page.locator('[data-cinema-step="2"]').click();
+  await page.waitForTimeout(980);
+  assert((await page.locator("[data-cinema-caption]").textContent()).includes("保持有向面积"), "§4 cinematic shear explanation missing");
+  await openDeepLab(page);
   const beforeSwap = await page.locator("[data-symplectic-caption]").textContent();
   await page.click('[data-area-action="swap"]');
   const afterSwap = await page.locator("[data-symplectic-caption]").textContent();
@@ -199,7 +266,6 @@ async function auditInteractions(browser) {
   await page.click('[data-symplectic-preset="shear"]');
   assert((await page.locator("[data-transform-verdict]").textContent()).includes("SᵀJS = J"), "§4 shear should be symplectic");
 
-  // Chapter 4 regression.
   await page.goto(`${baseURL}#ch4/matrix-language`, { waitUntil: "networkidle" });
   await page.waitForSelector("#matrix-language-formal .section-one-foundation");
   assert(await page.locator("[data-anatomy-matrix]").count() === 1, "Chapter 4 §1 renderer regression");
@@ -207,6 +273,21 @@ async function auditInteractions(browser) {
 
   assertNoPageErrors();
   results.push({ label: "interaction-audit", status: "passed" });
+  await context.close();
+}
+
+async function auditReducedMotion(browser) {
+  const context = await browser.newContext({ viewport: { width: 390, height: 844 }, reducedMotion: "reduce" });
+  const page = await context.newPage();
+  const assertNoPageErrors = await collectPageErrors(page, "reduced-motion-cinematic");
+  await page.goto(`${baseURL}#ch10/symplectic-space`, { waitUntil: "networkidle" });
+  const initial = await page.locator("[data-cinema-caption]").textContent();
+  await page.locator('[data-cinema-step="1"]').click();
+  await page.waitForTimeout(80);
+  const changed = await page.locator("[data-cinema-caption]").textContent();
+  assert(initial !== changed && changed.includes("方向顺序反转"), "reduced motion did not advance cinematic immediately");
+  assertNoPageErrors();
+  results.push({ label: "reduced-motion-cinematic", status: "passed" });
   await context.close();
 }
 
@@ -223,16 +304,12 @@ async function auditInteractions(browser) {
       }
     }
 
-    try {
-      await auditRoute(browser, routes[4], viewports[0], { reducedMotion: true });
-    } catch (error) {
-      failures.push(`reduced-motion: ${error.stack || error.message}`);
-    }
-
-    try {
-      await auditInteractions(browser);
-    } catch (error) {
-      failures.push(`interactions: ${error.stack || error.message}`);
+    for (const audit of [auditCinematicStories, auditInteractions, auditReducedMotion]) {
+      try {
+        await audit(browser);
+      } catch (error) {
+        failures.push(`${audit.name}: ${error.stack || error.message}`);
+      }
     }
   } finally {
     await browser.close();

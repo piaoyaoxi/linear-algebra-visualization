@@ -204,7 +204,7 @@
       q(lab, "[data-dual-x2-output]").value = format(x2);
       q(lab, "[data-dual-a-output]").value = format(a);
       q(lab, "[data-dual-b-output]").value = format(b);
-      q(lab, "[data-dual-vector-label]").innerHTML = mathInline(`x=\\begin{bmatrix}${format(x1)}\\\\${format(x2)}\end{bmatrix}`);
+      q(lab, "[data-dual-vector-label]").innerHTML = mathInline(`x=\\begin{bmatrix}${format(x1)}\\\\${format(x2)}\\end{bmatrix}`);
       q(lab, "[data-dual-functional-label]").innerHTML = mathInline(`f=[${format(a)}\\;${format(b)}]`);
 
       vectorSvgNode.innerHTML = `${markerDefs}<g class="ch10-grid">${gridPaths()}</g>${state.view === "vector" ? measurementStrips(a, b, pairing, "dual-strip") : ""}${vectorSvg(state.vector, "x", "x", { ariaLabel: "拖动向量 x" })}`;
@@ -308,7 +308,7 @@
           <article><span>第二读取器</span>${mathDisplay(`v^2=[${format(row2[0])}\\;${format(row2[1])}]`)}<p>核沿 v₁ 方向。</p></article>
         </div>
         <div class="dual-kronecker-live"><span></span><strong>v₁</strong><strong>v₂</strong><strong>v¹</strong><b>${format(pairing[0])}</b><b>${format(pairing[1])}</b><strong>v²</strong><b>${format(pairing[2])}</b><b>${format(pairing[3])}</b></div>
-        <p>${mathInline(`P^{-1}=\\begin{bmatrix}${format(inverse[0])}&${format(inverse[1])}\\\\${format(inverse[2])}&${format(inverse[3])}\end{bmatrix}`)}；逆矩阵的两行就是对偶基。</p>`;
+        <p>${mathInline(`P^{-1}=\\begin{bmatrix}${format(inverse[0])}&${format(inverse[1])}\\\\${format(inverse[2])}&${format(inverse[3])}\\end{bmatrix}`)}；逆矩阵的两行就是对偶基。</p>`;
       const sensitivity = Math.max(...inverse.map(Math.abs));
       q(builder, "[data-dual-sensitivity]").innerHTML = Math.abs(det) < 0.2
         ? `<strong>接近退化</strong><span>最大读取器系数约为 ${format(sensitivity)}。基向量几乎共线时，微小坐标误差会被明显放大。</span>`
@@ -338,7 +338,7 @@
     const update = () => {
       const vector = mode === "standard" ? section.balance.vector : vectorNew;
       const functional = mode === "standard" ? section.balance.functional : functionNew;
-      q(panel, "[data-balance-vector]").innerHTML = mathDisplay(`[x]=\\begin{bmatrix}${format(vector[0])}\\\\${format(vector[1])}\end{bmatrix}`);
+      q(panel, "[data-balance-vector]").innerHTML = mathDisplay(`[x]=\\begin{bmatrix}${format(vector[0])}\\\\${format(vector[1])}\\end{bmatrix}`);
       q(panel, "[data-balance-functional]").innerHTML = mathDisplay(`[f]=[${format(functional[0])}\\;${format(functional[1])}]`);
       q(panel, "[data-balance-equation]").innerHTML = mode === "standard" ? mathInline("x=2e_1+e_2") : mathInline(`x=${format(vector[0])}v_1${vector[1] >= 0 ? "+" : ""}${format(vector[1])}v_2`);
       q(panel, "[data-balance-invariant]").innerHTML = `<span>不变量</span><strong>${mathInline(`[f][x]=${format(value)}`)}</strong><p>坐标表示改变，几何配对值不变。</p>`;
@@ -371,7 +371,6 @@
     renderIntuition,
     renderInteractive,
     renderFormal,
-    mountIntuition,
     mountInteractive,
     mountFormal(section, root) {
       mountCoordinateReader(section, root);

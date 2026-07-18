@@ -196,8 +196,8 @@
       svg.innerHTML = `${markerDefs}<g class="ch10-grid">${gridPaths()}</g>${implicitLineSvg(fixedCoefficients[0], fixedCoefficients[1], value, "ch10-current-level", `B=${format(value)}`)}${implicitLineSvg(fixedCoefficients[0], fixedCoefficients[1], 0, "ch10-kernel-line", "零值线")}${vectorSvg(state.x, "x", "x", { ariaLabel: "左输入向量 x" })}${vectorSvg(state.y, "y", "y", { ariaLabel: "右输入向量 y" })}`;
       q(lab, "[data-bilinear-caption]").innerHTML = mathInline(`B(x,y)=${format(value)}`);
       q(lab, "[data-bilinear-pipeline]").innerHTML = state.pipeline === "right"
-        ? `<article><span>01</span><strong>${mathInline(`Ay=\\begin{bmatrix}${format(Ay[0])}\\\\${format(Ay[1])}\end{bmatrix}`)}</strong><p>固定 y 后，Ay 给出左槽中的线性读取器。</p></article><i>→</i><article><span>02</span><strong>${mathInline(`x^T(Ay)=${format(value)}`)}</strong><p>由 x 读取这个中间向量。</p></article>`
-        : `<article><span>01</span><strong>${mathInline(`A^Tx=\\begin{bmatrix}${format(Atx[0])}\\\\${format(Atx[1])}\end{bmatrix}`)}</strong><p>固定 x 后，Aᵀx 给出右槽中的读取器。</p></article><i>→</i><article><span>02</span><strong>${mathInline(`(A^Tx)^Ty=${format(value)}`)}</strong><p>两条计算路线汇合为同一个标量。</p></article>`;
+        ? `<article><span>01</span><strong>${mathInline(`Ay=\\begin{bmatrix}${format(Ay[0])}\\\\${format(Ay[1])}\\end{bmatrix}`)}</strong><p>固定 y 后，Ay 给出左槽中的线性读取器。</p></article><i>→</i><article><span>02</span><strong>${mathInline(`x^T(Ay)=${format(value)}`)}</strong><p>由 x 读取这个中间向量。</p></article>`
+        : `<article><span>01</span><strong>${mathInline(`A^Tx=\\begin{bmatrix}${format(Atx[0])}\\\\${format(Atx[1])}\\end{bmatrix}`)}</strong><p>固定 x 后，Aᵀx 给出右槽中的读取器。</p></article><i>→</i><article><span>02</span><strong>${mathInline(`(A^Tx)^Ty=${format(value)}`)}</strong><p>两条计算路线汇合为同一个标量。</p></article>`;
       const det = determinant(state.matrix);
       const symmetric = nearZero(state.matrix[1] - state.matrix[2]);
       const alternating = nearZero(state.matrix[0]) && nearZero(state.matrix[3]) && nearZero(state.matrix[1] + state.matrix[2]);

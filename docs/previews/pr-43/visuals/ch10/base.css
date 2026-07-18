@@ -783,3 +783,46 @@ body.dark .ch10-coordinate-stage {
     animation: none !important;
   }
 }
+
+
+/* Browser-audit refinements: intrinsic sizing and formula flow. */
+.ch10-formal-flow,
+.ch10-formal-flow > *,
+.ch10-module,
+.ch10-module > *,
+.ch10-module-heading,
+.ch10-module-heading > div,
+.ch10-canvas-head > div:first-child {
+  min-width: 0;
+  max-width: 100%;
+}
+
+.ch10-formal-flow {
+  width: 100%;
+  grid-template-columns: minmax(0, 1fr);
+}
+
+.ch10-canvas-head > div:first-child {
+  flex: 1 1 auto;
+}
+
+.ch10-canvas-head strong {
+  min-width: 0;
+  white-space: nowrap;
+}
+
+.ch10-formal-flow .katex-display,
+.ch10-example .katex-display {
+  max-width: 100%;
+  overflow-x: auto;
+  overflow-y: hidden;
+}
+
+@media (max-width: 720px) {
+  .ch10-formal-lead,
+  .ch10-formal-flow,
+  .ch10-module {
+    width: 100%;
+    max-width: 100%;
+  }
+}

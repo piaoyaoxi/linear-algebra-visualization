@@ -61,7 +61,7 @@ jobs:
           )
           text = text.replace(
               '    ensure(!(await page.locator("[data-multiply-module]").getAttribute("hidden")), "§10: multiply module did not open");',
-              '    ensure(!(await page.locator("[data-multiply-module]").getAttribute("hidden")), "§10: multiply module did not open");\n    const productText = (await page.locator("[data-product-result]").textContent()) || "";\n    ensure(!/\\\\cdot|cdot/.test(productText), `§10: multiplication formula leaked raw TeX: ${productText}`);'
+              '    ensure(!(await page.locator("[data-multiply-module]").getAttribute("hidden")), "§10: multiply module did not open");\n    const productText = (await page.locator("[data-product-result]").innerText()) || "";\n    ensure(!/\\\\cdot|cdot/.test(productText), `§10: multiplication formula leaked raw TeX: ${productText}`);'
           )
           path.write_text(text)
           PY

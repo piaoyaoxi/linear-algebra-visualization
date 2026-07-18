@@ -16,9 +16,9 @@
 }
 
 .ch10-cinema-head {
-  display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: start;
   gap: 24px;
   padding: 26px 28px 22px;
   border-bottom: 1px solid rgba(160, 185, 205, 0.12);
@@ -41,8 +41,10 @@
 .ch10-cinema-head h3 {
   margin: 7px 0 8px;
   color: #f4f7fb;
-  font-size: clamp(22px, 3vw, 34px);
-  line-height: 1.18;
+  font-size: clamp(22px, 2.6vw, 32px);
+  line-height: 1.22;
+  text-wrap: balance;
+  overflow-wrap: anywhere;
 }
 
 .ch10-cinema-head p {
@@ -547,6 +549,40 @@
   fill: #ff8d99;
 }
 
+
+.ch10-cinema .cinema-mobile-value rect {
+  fill: rgba(7, 17, 31, 0.84);
+  stroke: rgba(98, 230, 238, 0.42);
+  stroke-width: 1.5;
+}
+
+.ch10-cinema .cinema-mobile-value text {
+  fill: rgba(205, 223, 235, 0.7);
+  font: 750 11px ui-sans-serif, system-ui, sans-serif;
+}
+
+.ch10-cinema .cinema-mobile-value text.is-number {
+  fill: #f5fbff;
+  font-size: 24px;
+  font-weight: 850;
+}
+
+.ch10-cinema .cinema-mobile-note {
+  fill: rgba(218, 232, 241, 0.78);
+  font: 700 13px ui-sans-serif, system-ui, sans-serif;
+}
+
+.ch10-cinema .cinema-mobile-note.is-amber {
+  fill: #ffc58e;
+}
+
+@media (min-width: 921px) {
+  body:not(.sidebar-collapsed) .ch10-cinema {
+    width: calc(100% - 72px);
+    margin-left: 72px;
+  }
+}
+
 @media (max-width: 760px) {
   .ch10-cinema {
     border-radius: 20px;
@@ -562,12 +598,14 @@
   }
 
   .ch10-cinema-stage {
-    overflow-x: auto;
+    overflow: hidden;
   }
 
   .ch10-cinema-stage svg {
-    min-width: 720px;
-    min-height: 405px;
+    width: 100%;
+    min-width: 0;
+    min-height: 0;
+    aspect-ratio: 360 / 520;
   }
 
   .ch10-cinema-controls {

@@ -1,0 +1,98 @@
+name: Apply Chapter 7 story v2
+
+on:
+  push:
+    branches:
+      - context/ch7-linear-transformations
+    paths:
+      - ".github/workflows/apply-ch7-story-v2.yml"
+
+permissions:
+  contents: write
+
+jobs:
+  apply:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Check out Chapter 7 branch
+        uses: actions/checkout@v4
+        with:
+          ref: context/ch7-linear-transformations
+          fetch-depth: 0
+
+      - name: Verify and unpack reviewed redesign
+        shell: bash
+        run: |
+          set -euo pipefail
+          cat > /tmp/ch7-story-parts.sha256 <<'HASHES'
+          4cbdf507cef5ca378aa2e58e344d983836ff2e80697f16afb146b1cc6e1dfc7b  .github/ch7-story-v2-payload/part-00
+          b8500d596c848957be7160a4ffd71ad7129df3fad6c478a3c3587a8f33e86f40  .github/ch7-story-v2-payload/part-01
+          c3226884d1b4aeb78e640f3518af4c93ced7703db68979e9ba29f579806e711d  .github/ch7-story-v2-payload/part-02
+          fbbd2a1c2261af877172bd90bdb79e6b3c5de215af4610dfc23e24ed8670fd52  .github/ch7-story-v2-payload/part-030
+          24e75cfcf8d7902571dccf74b9fb89bf7c65d43fae986e99d67a01ef6bc76c26  .github/ch7-story-v2-payload/part-031
+          1e87740b55638500aade0b29c716ed483a88952780ce52f46297d693222155a2  .github/ch7-story-v2-payload/part-04
+          HASHES
+          sha256sum --check /tmp/ch7-story-parts.sha256
+          cat \
+            .github/ch7-story-v2-payload/part-00 \
+            .github/ch7-story-v2-payload/part-01 \
+            .github/ch7-story-v2-payload/part-02 \
+            .github/ch7-story-v2-payload/part-030 \
+            .github/ch7-story-v2-payload/part-031 \
+            .github/ch7-story-v2-payload/part-04 \
+            > /tmp/ch7-story-v2.b64
+          test "$(wc -c < /tmp/ch7-story-v2.b64)" -eq 37216
+          echo "96ddf9c02b38b386dfae24ad5fb1a44ce35f946d26ec4b44bd09d7dd4266d329  /tmp/ch7-story-v2.b64" | sha256sum --check
+          base64 --decode /tmp/ch7-story-v2.b64 > /tmp/ch7-story-v2.tar.gz
+          echo "c11c25ab550f6252f842aabdb032fb5143c24bf9da3ef1eca2fa171de89d222e  /tmp/ch7-story-v2.tar.gz" | sha256sum --check
+          tar -xzf /tmp/ch7-story-v2.tar.gz
+
+      - name: Load the new story layer last
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          from pathlib import Path
+
+          path = Path("current/learn.html")
+          text = path.read_text()
+
+          css_anchor = '    <link rel="stylesheet" href="./visuals/ch7/cinematic.css?v=40b" />'
+          css_tag = '    <link rel="stylesheet" href="./visuals/ch7/story-v2.css?v=40e" />'
+          if css_tag not in text:
+              if css_anchor not in text:
+                  raise SystemExit("Chapter 7 cinematic stylesheet anchor missing")
+              text = text.replace(css_anchor, css_anchor + "\n" + css_tag, 1)
+
+          js_anchor = '    <script defer src="./visuals/ch7/drag-controls.js?v=40d"></script>'
+          js_tag = '    <script defer src="./visuals/ch7/story-v2.js?v=40e"></script>'
+          if js_tag not in text:
+              if js_anchor not in text:
+                  raise SystemExit("Chapter 7 drag-controls script anchor missing")
+              text = text.replace(js_anchor, js_anchor + "\n" + js_tag, 1)
+
+          path.write_text(text)
+          PY
+          rm -rf .github/ch7-story-v2-payload
+          rm -f .github/workflows/apply-ch7-story-v2.yml
+
+      - name: Validate final source
+        shell: bash
+        run: |
+          set -euo pipefail
+          node --check current/visuals/ch7/story-v2.js
+          node --check .github/scripts/ch7-browser-check.mjs
+          git diff --check
+          grep -q 'story-v2.css?v=40e' current/learn.html
+          grep -q 'story-v2.js?v=40e' current/learn.html
+
+      - name: Commit to the existing PR branch
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          git commit -m "refactor(ch7): replace dashboard visuals with geometric stories"
+          git push origin HEAD:context/ch7-linear-transformations

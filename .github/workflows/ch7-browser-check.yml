@@ -6,6 +6,7 @@ on:
       - "current/**"
       - "docs/ch7-*.md"
       - ".github/scripts/ch7-browser-check.mjs"
+      - ".github/scripts/ch7-browser-check-runner.mjs"
       - ".github/workflows/ch7-browser-check.yml"
   push:
     branches:
@@ -29,8 +30,8 @@ jobs:
 
       - name: Install Playwright and Chromium
         run: |
-          npm install --no-save playwright@1.55.0
-          npx playwright install --with-deps chromium
+          npm install --no-save playwright@1.55.0 >/tmp/ch7-npm-install.log 2>&1 || { cat /tmp/ch7-npm-install.log; exit 1; }
+          npx playwright install --with-deps chromium >/tmp/ch7-playwright-install.log 2>&1 || { cat /tmp/ch7-playwright-install.log; exit 1; }
 
       - name: Start static server
         run: |
@@ -43,7 +44,7 @@ jobs:
           exit 1
 
       - name: Exercise Chapter 7 in Chromium
-        run: node .github/scripts/ch7-browser-check.mjs
+        run: node .github/scripts/ch7-browser-check-runner.mjs
 
       - name: Upload browser evidence
         if: always()

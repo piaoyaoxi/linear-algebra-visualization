@@ -10,5 +10,5 @@ try {
   await writeFile(`${evidence}/failure.txt`, `${message}\n`, "utf8");
   console.error("CHAPTER_7_BROWSER_CHECK_FAILURE");
   console.error(message);
-  process.exitCode = 1;
+  process.exit(1);
 }

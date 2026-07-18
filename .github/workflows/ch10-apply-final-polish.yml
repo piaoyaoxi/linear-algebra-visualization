@@ -1,0 +1,31 @@
+name: Apply Chapter 10 final cinematic polish
+
+on:
+  push:
+    branches: [content/ch10-dual-bilinear-symplectic]
+    paths: [scripts/ch10-final-polish.patch.gz.b64]
+
+permissions:
+  contents: write
+
+jobs:
+  apply:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: content/ch10-dual-bilinear-symplectic
+          fetch-depth: 0
+      - name: Apply final visual and audit refinements
+        run: |
+          set -euo pipefail
+          base64 -d scripts/ch10-final-polish.patch.gz.b64 | gzip -d > /tmp/ch10-final-polish.patch
+          git apply --check /tmp/ch10-final-polish.patch
+          git apply /tmp/ch10-final-polish.patch
+          rm scripts/ch10-final-polish.patch.gz.b64
+          rm .github/workflows/ch10-apply-final-polish.yml
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          git commit -m "fix(ch10): polish mobile cinematic clarity"
+          git push origin HEAD:content/ch10-dual-bilinear-symplectic

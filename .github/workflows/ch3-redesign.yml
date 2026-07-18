@@ -1,0 +1,1436 @@
+name: Rebuild Chapter 3 visual teaching
+
+on:
+  pull_request:
+    branches:
+      - main
+    types:
+      - synchronize
+      - opened
+      - reopened
+
+permissions:
+  contents: write
+
+jobs:
+  redesign:
+    if: github.event.pull_request.head.ref == 'content/ch3-linear-systems'
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    env:
+      BRANCH_NAME: content/ch3-linear-systems
+      GH_TOKEN: ${{ github.token }}
+    steps:
+      - name: Fetch PR branch
+        run: |
+          git init -q .
+          git remote add origin "https://x-access-token:${GH_TOKEN}@github.com/${GITHUB_REPOSITORY}.git"
+          git fetch -q --depth=1 origin "${BRANCH_NAME}"
+          git checkout -q -B "${BRANCH_NAME}" FETCH_HEAD
+
+      - name: Apply the reviewed redesign
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+
+          def replace_between(source, start, end, replacement, label):
+              left = source.find(start)
+              if left < 0:
+                  raise SystemExit(f'missing start marker for {label}')
+              right = source.find(end, left)
+              if right < 0:
+                  raise SystemExit(f'missing end marker for {label}')
+              return source[:left] + replacement.rstrip() + "\n\n" + source[right:]
+
+          # 1. Replace the old line-plus-circle vector glyph with a real arrow.
+          math_path = Path('current/visuals/ch3/shared-math.js')
+          math_source = math_path.read_text()
+          arrow_start = '  function drawArrow(ctx, frame, point, color, label = "", width = 2.6) {'
+          arrow_end = '  function drawPoint(ctx, frame, point, color, label = "", radius = 5) {'
+          new_arrow = r'''  function drawArrowBetween(ctx, frame, from, to, color, label = "", width = 3, options = {}) {
+    const [x1, y1] = toCanvas(frame, from);
+    const [x2, y2] = toCanvas(frame, to);
+    const dx = x2 - x1;
+    const dy = y2 - y1;
+    const length = Math.hypot(dx, dy);
+    if (length < 1.5) {
+      if (label) {
+        ctx.save();
+        ctx.fillStyle = color;
+        ctx.font = "750 12px ui-sans-serif, system-ui";
+        ctx.fillText(label, x1 + 9, y1 - 9);
+        ctx.restore();
+      }
+      return;
+    }
+    const ux = dx / length;
+    const uy = dy / length;
+    const px = -uy;
+    const py = ux;
+    const headLength = Math.min(16, Math.max(11, length * 0.17));
+    const headHalf = Math.min(7.2, Math.max(5.4, width * 2.05));
+    const neckX = x2 - ux * headLength;
+    const neckY = y2 - uy * headLength;
+
+    ctx.save();
+    ctx.globalAlpha = options.alpha ?? 1;
+    ctx.strokeStyle = color;
+    ctx.fillStyle = color;
+    ctx.lineWidth = width;
+    ctx.lineCap = "round";
+    ctx.lineJoin = "round";
+    if (options.dashed) ctx.setLineDash([7, 6]);
+    ctx.beginPath();
+    ctx.moveTo(x1, y1);
+    ctx.lineTo(neckX, neckY);
+    ctx.stroke();
+    ctx.setLineDash([]);
+    ctx.beginPath();
+    ctx.moveTo(x2, y2);
+    ctx.lineTo(neckX + px * headHalf, neckY + py * headHalf);
+    ctx.quadraticCurveTo(neckX, neckY, neckX - px * headHalf, neckY - py * headHalf);
+    ctx.closePath();
+    ctx.fill();
+
+    if (options.tailDot) {
+      ctx.beginPath();
+      ctx.arc(x1, y1, Math.max(2.2, width * 0.8), 0, Math.PI * 2);
+      ctx.fill();
+    }
+
+    if (label) {
+      ctx.font = "760 12px ui-sans-serif, system-ui";
+      const metrics = ctx.measureText(label);
+      const padX = 7;
+      const boxW = metrics.width + padX * 2;
+      const boxH = 22;
+      let labelX = x2 + (ux >= 0 ? 8 : -boxW - 8);
+      let labelY = y2 + (uy >= 0 ? 7 : -boxH - 7);
+      labelX = Math.max(4, Math.min(frame.width - boxW - 4, labelX));
+      labelY = Math.max(4, Math.min(frame.height - boxH - 4, labelY));
+      ctx.globalAlpha = 0.94;
+      ctx.fillStyle = frame.p.surface;
+      ctx.strokeStyle = color;
+      ctx.lineWidth = 1;
+      ctx.beginPath();
+      ctx.roundRect(labelX, labelY, boxW, boxH, 11);
+      ctx.fill();
+      ctx.stroke();
+      ctx.fillStyle = color;
+      ctx.textBaseline = "middle";
+      ctx.fillText(label, labelX + padX, labelY + boxH / 2 + 0.5);
+    }
+    ctx.restore();
+  }
+
+  function drawArrow(ctx, frame, point, color, label = "", width = 3, options = {}) {
+    drawArrowBetween(ctx, frame, [0, 0], point, color, label, width, options);
+  }
+'''
+          math_source = replace_between(math_source, arrow_start, arrow_end, new_arrow, 'vector arrow')
+          export_marker = '    drawArrow,\n    drawPoint,'
+          if export_marker not in math_source:
+              raise SystemExit('drawArrow export marker missing')
+          math_source = math_source.replace(export_marker, '    drawArrow,\n    drawArrowBetween,\n    drawPoint,', 1)
+          math_path.write_text(math_source)
+
+          # 2. Rebuild the vector-space experiment around head-to-tail vector addition.
+          s13_path = Path('current/visuals/ch3/section1-3-presentation.js')
+          s13_source = s13_path.read_text()
+          new_vector_space = r'''  function interactiveVectorSpace(root) {
+    if (!root) return;
+    root.innerHTML = `
+      <h2>交互实验</h2>
+      <div class="ch3-lab ch3-lab--vector" data-ch3-lab="vector-space">
+        <div class="ch3-lab-head">
+          <span class="ch3-lab-kicker">向量不是端点，而是从起点到终点的有向位移</span>
+          <h3>把线性组合走一遍</h3>
+          <p>先沿着 αu 走，再从它的终点沿 βv 走；最终从原点指向终点的箭头，就是 w=αu+βv。</p>
+        </div>
+        <div class="ch3-mission" aria-label="实验任务">
+          <strong>操作任务</strong>
+          <span>改变 α、β 或任意坐标，观察“首尾相接”的两段位移怎样合成为 w。</span>
+          <span class="ch3-mission-result">看结论：每一个坐标都独立相加</span>
+        </div>
+        <div class="ch3-control-row ch3-scenario-row">
+          <label>空间维数 n <input type="range" min="1" max="8" step="1" value="3" data-n /></label>
+          <span class="viz-badge" data-n-value>3</span>
+          <button type="button" data-negate>反向 u</button>
+          <button type="button" data-swap>交换 u、v</button>
+          <button type="button" data-zero>清零</button>
+        </div>
+        <div class="ch3-scene-grid">
+          <section class="ch3-stage-shell" aria-label="线性组合几何过程">
+            <div class="ch3-stage-caption"><strong>几何视图</strong><span data-projection-note>前两坐标投影</span></div>
+            <div class="ch3-stage"><canvas data-canvas aria-label="向量首尾相接与合向量"></canvas></div>
+            <div class="ch3-stage-legend" aria-label="图例">
+              <span><i class="is-accent"></i>第一段 αu</span>
+              <span><i class="is-coral"></i>第二段 βv</span>
+              <span><i class="is-blue"></i>合向量 w</span>
+            </div>
+          </section>
+          <aside class="ch3-readout ch3-vector-readout">
+            <section class="ch3-equation-hero" data-formula-card>
+              <span>当前线性组合</span>
+              <div data-formula></div>
+              <p>虚线平行四边形只帮助观察；右侧坐标列才是完整的 n 维向量。</p>
+            </section>
+            <section class="ch3-coefficient-panel">
+              <h4>缩放两条位移</h4>
+              <label class="ch3-slider"><span>α</span><input type="range" min="-2" max="2" step="0.05" value="1" data-alpha /><strong data-alpha-value>1</strong></label>
+              <label class="ch3-slider"><span>β</span><input type="range" min="-2" max="2" step="0.05" value="1" data-beta /><strong data-beta-value>1</strong></label>
+            </section>
+            <section class="ch3-vector-table" aria-label="完整坐标">
+              <div><span>u</span><div data-u-vector></div></div>
+              <div><span>v</span><div data-v-vector></div></div>
+              <div class="is-result"><span>w</span><div data-w-vector></div></div>
+            </section>
+          </aside>
+        </div>
+        <details class="ch3-details" open>
+          <summary>编辑完整坐标</summary>
+          <div class="ch3-vector-editor">
+            <section><h4>u 的坐标</h4><div class="ch3-sliders" data-u-sliders></div></section>
+            <section><h4>v 的坐标</h4><div class="ch3-sliders" data-v-sliders></div></section>
+          </div>
+        </details>
+        <section class="ch3-coordinate-summary"><div><h4>w 的每个坐标</h4><p>条形只表示大小，右端数字保留正负号。</p></div><div class="ch3-coord-bars" data-bars></div></section>
+        <p class="ch3-feedback" data-note aria-live="polite"></p>
+      </div>`;
+    const scope = M().createScope(root);
+    const state = {
+      n: 3,
+      u: [1.2, 0.4, -0.6, 0.8, 0, 0, 0, 0],
+      v: [-0.3, 1.1, 0.5, 0, 0, 0, 0, 0],
+      alpha: 1,
+      beta: 1,
+    };
+    const canvas = root.querySelector("[data-canvas]");
+
+    function formatCombo(vector) {
+      const terms = [];
+      vector.forEach((value, index) => {
+        if (Math.abs(value) < 1e-9) return;
+        const magnitude = M().formatNumber(Math.abs(value));
+        const body = magnitude === "1" ? `e_{${index + 1}}` : `${magnitude}e_{${index + 1}}`;
+        if (!terms.length) terms.push(value < 0 ? `-${body}` : body);
+        else terms.push(value < 0 ? `- ${body}` : `+ ${body}`);
+      });
+      return terms.join(" ") || "0";
+    }
+
+    function wVector() {
+      return Array.from({ length: state.n }, (_, index) => state.alpha * state.u[index] + state.beta * state.v[index]);
+    }
+
+    function buildSliders(key, container) {
+      container.innerHTML = Array.from({ length: state.n }, (_, index) => `
+        <label class="ch3-slider"><span>${key}<sub>${index + 1}</sub></span>
+          <input type="range" min="-2" max="2" step="0.05" value="${state[key][index]}" data-coordinate="${index}" />
+          <strong data-value>${M().formatNumber(state[key][index])}</strong>
+        </label>`).join("");
+      container.querySelectorAll("[data-coordinate]").forEach((input) => scope.listen(input, "input", () => {
+        const index = Number(input.dataset.coordinate);
+        state[key][index] = Number(input.value);
+        input.parentElement.querySelector("[data-value]").textContent = M().formatNumber(state[key][index]);
+        render();
+      }));
+    }
+
+    function rebuildEditors() {
+      buildSliders("u", root.querySelector("[data-u-sliders]"));
+      buildSliders("v", root.querySelector("[data-v-sliders]"));
+    }
+
+    function draw() {
+      const sized = M().sizeCanvas(canvas);
+      if (!sized) return;
+      const frame = M().drawAxes(sized.ctx, sized.width, sized.height, 54);
+      const w = wVector();
+      const alphaU = [state.alpha * (state.u[0] || 0), state.alpha * (state.u[1] || 0)];
+      const betaV = [state.beta * (state.v[0] || 0), state.beta * (state.v[1] || 0)];
+      const total = [alphaU[0] + betaV[0], alphaU[1] + betaV[1]];
+      const O = [0, 0];
+
+      const points = [O, alphaU, total, betaV].map((point) => M().toCanvas(frame, point));
+      sized.ctx.save();
+      sized.ctx.strokeStyle = frame.p.muted;
+      sized.ctx.globalAlpha = 0.42;
+      sized.ctx.lineWidth = 1.4;
+      sized.ctx.setLineDash([6, 6]);
+      sized.ctx.beginPath();
+      sized.ctx.moveTo(...points[0]);
+      sized.ctx.lineTo(...points[1]);
+      sized.ctx.lineTo(...points[2]);
+      sized.ctx.lineTo(...points[3]);
+      sized.ctx.closePath();
+      sized.ctx.stroke();
+      sized.ctx.restore();
+
+      M().drawArrowBetween(sized.ctx, frame, O, alphaU, frame.p.accent, "αu", 3.1, { tailDot: true });
+      M().drawArrowBetween(sized.ctx, frame, alphaU, total, frame.p.coral, "βv", 3.1);
+      M().drawArrowBetween(sized.ctx, frame, O, total, frame.p.blue, "w", 3.7);
+
+      sized.ctx.save();
+      sized.ctx.fillStyle = frame.p.muted;
+      sized.ctx.font = "650 12px ui-sans-serif, system-ui";
+      sized.ctx.fillText(state.n > 2 ? `二维投影 · 完整向量属于 F^${state.n}` : "二维完整视图", 14, 22);
+      sized.ctx.restore();
+    }
+
+    function render() {
+      const w = wVector();
+      root.querySelector("[data-n-value]").textContent = String(state.n);
+      root.querySelector("[data-alpha-value]").textContent = M().formatNumber(state.alpha);
+      root.querySelector("[data-beta-value]").textContent = M().formatNumber(state.beta);
+      root.querySelector("[data-projection-note]").textContent = state.n > 2 ? `仅显示第 1、2 坐标 · 完整维数 n=${state.n}` : "二维完整视图";
+      root.querySelector("[data-u-vector]").innerHTML = M().htmlVector(state.u.slice(0, state.n).map(M().fromNumber));
+      root.querySelector("[data-v-vector]").innerHTML = M().htmlVector(state.v.slice(0, state.n).map(M().fromNumber));
+      root.querySelector("[data-w-vector]").innerHTML = M().htmlVector(w.map(M().fromNumber));
+      root.querySelector("[data-formula]").innerHTML = `${texD(String.raw`w=${M().formatNumber(state.alpha)}u+(${M().formatNumber(state.beta)})v`)}<div class="ch3-basis-line">${tex(String.raw`w=${formatCombo(w)}`)}</div>`;
+      root.querySelector("[data-bars]").innerHTML = w.map((value, index) => {
+        const width = Math.min(100, Math.abs(value) / 4 * 100);
+        return `<div class="ch3-bar-row ${value < 0 ? "is-negative" : "is-positive"}"><span>w${index + 1}</span><div class="ch3-bar-track"><div class="ch3-bar-fill" style="width:${width}%"></div></div><strong>${M().formatNumber(value)}</strong></div>`;
+      }).join("");
+      root.querySelector("[data-note]").textContent = state.n > 2
+        ? "图中只保留前两坐标，所以它是投影，不是完整的高维向量；完整结论请读右侧坐标列。"
+        : "αu 与 βv 首尾相接，合向量 w 从原点直接指向同一个终点。";
+      M().pulse(root.querySelector("[data-formula-card]"));
+      draw();
+    }
+
+    scope.listen(root.querySelector("[data-n]"), "input", (event) => {
+      state.n = Number(event.target.value);
+      rebuildEditors();
+      render();
+    });
+    scope.listen(root.querySelector("[data-alpha]"), "input", (event) => { state.alpha = Number(event.target.value); render(); });
+    scope.listen(root.querySelector("[data-beta]"), "input", (event) => { state.beta = Number(event.target.value); render(); });
+    scope.listen(root.querySelector("[data-negate]"), "click", () => {
+      for (let i = 0; i < state.n; i += 1) state.u[i] *= -1;
+      rebuildEditors(); render();
+    });
+    scope.listen(root.querySelector("[data-swap]"), "click", () => {
+      [state.u, state.v] = [state.v, state.u];
+      rebuildEditors(); render();
+    });
+    scope.listen(root.querySelector("[data-zero]"), "click", () => {
+      for (let i = 0; i < state.n; i += 1) { state.u[i] = 0; state.v[i] = 0; }
+      rebuildEditors(); render();
+    });
+    scope.resize(draw);
+    rebuildEditors();
+    render();
+    return scope.cleanup;
+  }
+'''
+          s13_source = replace_between(
+              s13_source,
+              '  function interactiveVectorSpace(root) {',
+              '  // §3 -----------------------------------------------------------------------',
+              new_vector_space,
+              'vector-space experiment',
+          )
+          head_replacements = {
+              '<div class="ch3-lab-head">\n          <h3>消元控制台</h3>\n          <p>每一步都使用精确有理数。你可以自己选择行操作，也可以让系统只给出“下一步建议”，但不会跳过等价变换的路径。</p>\n        </div>': '<div class="ch3-lab-head"><span class="ch3-lab-kicker">目标 · 用可逆操作逐步暴露主元</span><h3>消元控制台</h3><p>不要只盯着最后答案。每次操作后同时观察方程、增广矩阵和几何解集：外观在变，解集不变。</p></div><div class="ch3-mission"><strong>操作任务</strong><span>先选“需要换行”，用一次换行建立第一个主元，再清除主元下方元素。</span><span class="ch3-mission-result">看结论：主元结构决定解的类型</span></div>',
+              '<div class="ch3-lab-head"><h3>冗余探测器</h3><p>拖动向量端点。系统按 0.05 网格取精确有理坐标，关系证书使用完整向量编号，不会因删除中间向量而错位。</p></div>': '<div class="ch3-lab-head"><span class="ch3-lab-kicker">目标 · 判断新向量有没有带来新方向</span><h3>冗余探测器</h3><p>拖动真正的向量箭头，让 v₃ 进入或离开已有张成。图形给直觉，右侧非平凡零组合才是严格证书。</p></div><div class="ch3-mission"><strong>操作任务</strong><span>选择“第三个是和”，再取消保留 v₂，比较秩与张成是否改变。</span><span class="ch3-mission-result">看结论：删掉冗余向量，张成不变</span></div>',
+          }
+          for old, new in head_replacements.items():
+              if old not in s13_source:
+                  raise SystemExit('missing section 1/3 lab head')
+              s13_source = s13_source.replace(old, new, 1)
+          s13_path.write_text(s13_source)
+
+          # 3. Clarify rank/solvability and completely rebuild the solution-family experiment.
+          s46_path = Path('current/visuals/ch3/section4-6-presentation.js')
+          s46_source = s46_path.read_text()
+          simple_replacements = {
+              '<div class="ch3-lab-head"><h3>秩证书工作台</h3><p>所有秩判定使用完整矩阵；画布只显示前两行坐标的投影，并明确标注投影限制。</p></div>': '<div class="ch3-lab-head"><span class="ch3-lab-kicker">目标 · 用三种证书读出同一个秩</span><h3>秩证书工作台</h3><p>先看列向量张成，再对照 RREF 主元与非零子式。二维画布只是投影，最终秩始终由完整矩阵精确计算。</p></div><div class="ch3-mission"><strong>操作任务</strong><span>选择“投影陷阱”：画面看似共线，但完整三维列仍然无关。</span><span class="ch3-mission-result">看结论：投影不能代替秩判定</span></div>',
+              '<div class="ch3-lab-head"><h3>可达性闸门</h3><p>目标 b 可直接在画布中拖动，并吸附到 0.05 网格；矩阵、RREF、秩与解类型使用同一组精确坐标。</p></div>': '<div class="ch3-lab-head"><span class="ch3-lab-kicker">目标 · 判断目标向量 b 是否落在列空间中</span><h3>可达性闸门</h3><p>拖动向量 b 穿过列空间边界。几何上的“能否到达”和增广矩阵是否产生新主元，是同一件事。</p></div><div class="ch3-mission"><strong>操作任务</strong><span>在“秩 1 · 在线”和“秩 1 · 线外”之间切换，再拖动 b 回到带状列空间。</span><span class="ch3-mission-result">看结论：rank(A)=rank([A|b])</span></div>',
+              'M().drawPoint(sized.ctx, frame, state.b, M().analyzeAugmented(augmented()).inconsistent ? frame.p.coral : frame.p.blue, "b");': 'M().drawArrow(sized.ctx, frame, state.b, M().analyzeAugmented(augmented()).inconsistent ? frame.p.coral : frame.p.blue, "b", 3.5, { tailDot: true });',
+          }
+          for old, new in simple_replacements.items():
+              if old not in s46_source:
+                  raise SystemExit(f'missing section 4/5 marker: {old[:36]}')
+              s46_source = s46_source.replace(old, new, 1)
+
+          new_solution = r'''  function interactiveSolutionStructure(root) {
+    if (!root) return;
+    root.innerHTML = `
+      <h2>交互实验</h2>
+      <div class="ch3-lab ch3-lab--solution" data-ch3-lab="solution-structure">
+        <div class="ch3-lab-head">
+          <span class="ch3-lab-kicker">目标 · 把“特解 + 零空间”变成看得见的位移</span>
+          <h3>沿着零空间生成全部解</h3>
+          <p>蓝色箭头 x 是当前解；青色箭头 x₀ 是一个特解；从 x₀ 出发的橙色箭头是零空间方向。改变参数，只会沿这些方向移动。</p>
+        </div>
+        <div class="ch3-mission">
+          <strong>操作任务</strong>
+          <span>选择“一条解直线”，拖动参数 s₁，观察 x−x₀ 始终平行 η₁。</span>
+          <span class="ch3-mission-result">看结论：解集 = x₀ + Ker(A)</span>
+        </div>
+        <div class="ch3-presets ch3-solution-presets">
+          <button type="button" data-preset="unique">唯一解</button>
+          <button type="button" class="is-active" data-preset="line">一条解直线</button>
+          <button type="button" data-preset="plane">一个解平面</button>
+          <button type="button" data-preset="homogeneous">齐次子空间</button>
+          <button type="button" data-preset="none">无解</button>
+        </div>
+        <div class="ch3-solution-layout">
+          <section class="ch3-stage-shell">
+            <div class="ch3-stage-caption"><strong>解空间几何</strong><span data-geometry-note>二维完整视图</span></div>
+            <div class="ch3-stage"><canvas data-canvas aria-label="特解、零空间方向与当前解"></canvas></div>
+            <div class="ch3-stage-legend">
+              <span><i class="is-accent"></i>特解 x₀</span>
+              <span><i class="is-coral"></i>零空间方向 η</span>
+              <span><i class="is-blue"></i>当前解 x</span>
+            </div>
+          </section>
+          <aside class="ch3-solution-readout">
+            <section class="ch3-equation-hero" data-solution-card>
+              <span>通解结构</span>
+              <div data-family></div>
+              <p data-family-note>参数改变位置，不改变 Ax=b。</p>
+            </section>
+            <section class="ch3-parameter-panel">
+              <div class="ch3-panel-heading"><h4>移动参数</h4><span>沿零空间方向移动</span></div>
+              <div class="ch3-sliders" data-parameters></div>
+            </section>
+            <div class="ch3-meter ch3-solution-summary">
+              <div class="ch3-meter-card"><strong>解类型</strong><span data-type>—</span></div>
+              <div class="ch3-meter-card"><strong>rank(A)</strong><span data-rank>—</span></div>
+              <div class="ch3-meter-card"><strong>nullity</strong><span data-nullity>—</span></div>
+              <div class="ch3-meter-card"><strong>自由变量</strong><span data-free>—</span></div>
+            </div>
+            <details class="ch3-details ch3-rref-details">
+              <summary>查看精确 RREF</summary>
+              <div data-rref></div>
+            </details>
+          </aside>
+        </div>
+        <section class="ch3-decomposition" aria-label="通解分解">
+          <article><span>① 选一个特解</span><div class="ch3-decomposition-value" data-x0></div><button type="button" data-shift>沿 η₁ 换一个特解</button></article>
+          <div class="ch3-decomposition-arrow" aria-hidden="true">＋</div>
+          <article><span>② 加零空间位移</span><div class="ch3-decomposition-value" data-basis></div></article>
+          <div class="ch3-decomposition-arrow" aria-hidden="true">＝</div>
+          <article class="is-current"><span>③ 得到当前解</span><div class="ch3-decomposition-value" data-current></div></article>
+        </section>
+        <section class="ch3-proof-strip" aria-label="实时验证">
+          <div data-verify-axb></div>
+          <div data-verify-null></div>
+        </section>
+        <p class="ch3-feedback" data-note aria-live="polite"></p>
+      </div>`;
+
+    const scope = M().createScope(root);
+    const presets = {
+      unique: [[1, 1, 3], [1, 2, 4]],
+      line: [[1, 1, 2], [2, 2, 4]],
+      plane: [[1, 1, 1, 2], [2, 2, 2, 4]],
+      homogeneous: [[1, 1, 0], [2, 2, 0]],
+      none: [[1, 1, 2], [2, 2, 5]],
+    };
+    const state = { key: "line", aug: null, parameters: [], shift: 0 };
+    const canvas = root.querySelector("[data-canvas]");
+
+    function load(key) {
+      state.key = key;
+      state.aug = M().matFromNumbers(presets[key]);
+      state.parameters = [];
+      state.shift = 0;
+      rebuildParameters();
+      render();
+    }
+
+    function data() {
+      const info = M().analyzeAugmented(state.aug);
+      const A = state.aug.map((row) => row.slice(0, -1));
+      const b = state.aug.map((row) => row[row.length - 1]);
+      const part = M().particularSolution(state.aug);
+      const nullspace = M().nullspaceBasis(A);
+      let x0 = part.ok ? part.x.map(M().F) : [];
+      if (x0.length && state.shift && nullspace.basis.length) {
+        x0 = x0.map((value, index) => M().add(value, M().mul(M().F(state.shift), nullspace.basis[0][index])));
+      }
+      return { info, A, b, part, nullspace, x0 };
+    }
+
+    function rebuildParameters() {
+      const count = data().nullspace.basis.length;
+      state.parameters = Array.from({ length: count }, (_, index) => state.parameters[index] || 0);
+      const container = root.querySelector("[data-parameters]");
+      if (!count) {
+        container.innerHTML = `<p class="ch3-note">没有自由参数，解不会移动。</p>`;
+        return;
+      }
+      container.innerHTML = state.parameters.map((value, index) => `
+        <label class="ch3-slider ch3-parameter-slider"><span>s${index + 1}</span><input type="range" min="-2" max="2" step="0.05" value="${value}" data-param="${index}" /><strong data-value>${M().formatNumber(value)}</strong></label>`).join("");
+      container.querySelectorAll("[data-param]").forEach((input) => scope.listen(input, "input", () => {
+        const index = Number(input.dataset.param);
+        state.parameters[index] = Number(input.value);
+        input.parentElement.querySelector("[data-value]").textContent = M().formatNumber(state.parameters[index]);
+        render();
+      }));
+    }
+
+    function currentVector(payload) {
+      if (!payload.part.ok) return [];
+      return payload.x0.map((value, index) => payload.nullspace.basis.reduce(
+        (sum, basis, k) => M().add(sum, M().mul(M().fromNumber(state.parameters[k] || 0), basis[index])),
+        value,
+      ));
+    }
+
+    function familyLatex(payload) {
+      if (!payload.part.ok) return String.raw`\varnothing`;
+      if (!payload.nullspace.basis.length) return String.raw`x=x_0`;
+      const terms = payload.nullspace.basis.map((_, index) => `s_${index + 1}\eta_${index + 1}`).join("+");
+      return `x=x_0+${terms}`;
+    }
+
+    function draw(payload, current) {
+      const sized = M().sizeCanvas(canvas);
+      if (!sized) return;
+      const frame = M().drawAxes(sized.ctx, sized.width, sized.height, 54);
+      sized.ctx.save();
+      sized.ctx.fillStyle = frame.p.muted;
+      sized.ctx.font = "650 12px ui-sans-serif, system-ui";
+      sized.ctx.fillText(payload.info.n > 2 ? "前两坐标投影 · 方向关系仍按完整向量计算" : "二维解空间", 14, 22);
+      sized.ctx.restore();
+
+      if (!payload.part.ok) {
+        sized.ctx.save();
+        sized.ctx.fillStyle = frame.p.coral;
+        sized.ctx.font = "760 16px ui-sans-serif, system-ui";
+        sized.ctx.textAlign = "center";
+        sized.ctx.fillText("RREF 出现矛盾行：没有任何向量 x 满足 Ax=b", frame.width / 2, frame.height / 2 - 4);
+        sized.ctx.font = "600 13px ui-sans-serif, system-ui";
+        sized.ctx.fillStyle = frame.p.muted;
+        sized.ctx.fillText("因此也不存在“特解 + 零空间”的非齐次解族", frame.width / 2, frame.height / 2 + 24);
+        sized.ctx.restore();
+        return;
+      }
+
+      const x0 = payload.x0.map(M().toNumber);
+      const x0p = [x0[0] || 0, x0[1] || 0];
+      const xp = [M().toNumber(current[0] || M().F(0)), M().toNumber(current[1] || M().F(0))];
+      const directions = payload.nullspace.basis.map((basis) => [M().toNumber(basis[0] || M().F(0)), M().toNumber(basis[1] || M().F(0))]);
+
+      if (directions.length === 1) {
+        const d = directions[0];
+        const A = M().toCanvas(frame, [x0p[0] - 12 * d[0], x0p[1] - 12 * d[1]]);
+        const B = M().toCanvas(frame, [x0p[0] + 12 * d[0], x0p[1] + 12 * d[1]]);
+        sized.ctx.save();
+        sized.ctx.strokeStyle = frame.p.coral;
+        sized.ctx.globalAlpha = 0.32;
+        sized.ctx.lineWidth = 8;
+        sized.ctx.lineCap = "round";
+        sized.ctx.beginPath();
+        sized.ctx.moveTo(...A);
+        sized.ctx.lineTo(...B);
+        sized.ctx.stroke();
+        sized.ctx.restore();
+      } else if (directions.length >= 2) {
+        const d1 = directions[0];
+        const d2 = directions[1];
+        const corners = [[-2, -2], [2, -2], [2, 2], [-2, 2]].map(([a, b]) => [
+          x0p[0] + a * d1[0] + b * d2[0],
+          x0p[1] + a * d1[1] + b * d2[1],
+        ]).map((point) => M().toCanvas(frame, point));
+        sized.ctx.save();
+        sized.ctx.fillStyle = frame.p.accent;
+        sized.ctx.globalAlpha = 0.09;
+        sized.ctx.beginPath();
+        sized.ctx.moveTo(...corners[0]);
+        corners.slice(1).forEach((point) => sized.ctx.lineTo(...point));
+        sized.ctx.closePath();
+        sized.ctx.fill();
+        sized.ctx.restore();
+      }
+
+      if (Math.hypot(...x0p) > 1e-8) M().drawArrowBetween(sized.ctx, frame, [0, 0], x0p, frame.p.accent, "x₀", 3.1, { tailDot: true });
+      else {
+        const O = M().toCanvas(frame, [0, 0]);
+        sized.ctx.save();
+        sized.ctx.fillStyle = frame.p.accent;
+        sized.ctx.font = "760 12px ui-sans-serif, system-ui";
+        sized.ctx.fillText("x₀=0", O[0] + 9, O[1] - 10);
+        sized.ctx.restore();
+      }
+
+      directions.forEach((direction, index) => {
+        const endpoint = [x0p[0] + direction[0], x0p[1] + direction[1]];
+        M().drawArrowBetween(sized.ctx, frame, x0p, endpoint, frame.p.coral, `η${index + 1}`, 2.7, { alpha: 0.9 });
+      });
+
+      if (Math.hypot(xp[0] - x0p[0], xp[1] - x0p[1]) > 1e-8) {
+        M().drawArrowBetween(sized.ctx, frame, x0p, xp, frame.p.blue, "参数位移", 2.2, { dashed: true, alpha: 0.72 });
+      }
+      M().drawArrowBetween(sized.ctx, frame, [0, 0], xp, frame.p.blue, "x", 3.8, { tailDot: true });
+    }
+
+    function render() {
+      const payload = data();
+      const classification = M().classifySystem(state.aug);
+      const current = currentVector(payload);
+      const type = root.querySelector("[data-type]");
+      type.textContent = classification.label;
+      type.className = `ch3-status ${classification.cls}`;
+      root.querySelector("[data-rank]").textContent = String(payload.info.rankA);
+      root.querySelector("[data-nullity]").textContent = payload.part.ok ? String(payload.nullspace.basis.length) : "—";
+      root.querySelector("[data-free]").textContent = payload.part.ok && payload.info.free.length ? payload.info.free.map((i) => `x${i + 1}`).join(",") : "无";
+      root.querySelector("[data-rref]").innerHTML = M().htmlMatrix(payload.info.rref, payload.info.n);
+      root.querySelector("[data-family]").innerHTML = texD(familyLatex(payload));
+      root.querySelector("[data-family-note]").textContent = payload.part.ok
+        ? payload.nullspace.basis.length
+          ? "参数只改变零空间位移；A 会把这些位移全部压到 0。"
+          : "没有零空间方向，所以特解就是唯一解。"
+        : "没有特解，通解集合为空。";
+      root.querySelector("[data-geometry-note]").textContent = payload.info.n > 2 ? `前两坐标投影 · 完整维数 n=${payload.info.n}` : "二维完整视图";
+      root.querySelector("[data-x0]").innerHTML = payload.part.ok ? `${tex(String.raw`x_0=`)}${M().htmlVector(payload.x0)}` : "不存在";
+      root.querySelector("[data-basis]").innerHTML = payload.part.ok && payload.nullspace.basis.length
+        ? payload.nullspace.basis.map((basis, index) => `<div>${tex(String.raw`\eta_{${index + 1}}=`)}${M().htmlVector(basis)}</div>`).join("")
+        : payload.part.ok ? tex(String.raw`\operatorname{Ker}(A)=\{0\}`) : "不存在";
+      root.querySelector("[data-current]").innerHTML = payload.part.ok ? `${tex(String.raw`x=`)}${M().htmlVector(current)}` : "无解";
+      const shiftButton = root.querySelector("[data-shift]");
+      shiftButton.disabled = !payload.part.ok || !payload.nullspace.basis.length;
+      shiftButton.textContent = state.shift ? "恢复原特解" : "沿 η₁ 换一个特解";
+
+      if (payload.part.ok) {
+        const Ax = M().matVec(payload.A, current);
+        const difference = current.map((value, index) => M().sub(value, payload.x0[index]));
+        const Adiff = M().matVec(payload.A, difference);
+        const axOk = Ax.every((value, index) => M().eq(value, payload.b[index]));
+        const nullOk = Adiff.every(M().isZero);
+        root.querySelector("[data-verify-axb]").innerHTML = `<span class="ch3-check ${axOk ? "is-ok" : "is-bad"}">${axOk ? "✓" : "!"}</span><div><strong>${tex(String.raw`Ax=b`)}</strong><p>${axOk ? "验证通过：当前箭头的终点仍是原方程组的解。" : "验证失败"}</p></div>`;
+        root.querySelector("[data-verify-null]").innerHTML = `<span class="ch3-check ${nullOk ? "is-ok" : "is-bad"}">${nullOk ? "✓" : "!"}</span><div><strong>${tex(String.raw`A(x-x_0)=0`)}</strong><p>${nullOk ? "验证通过：从 x₀ 到 x 的位移完全落在零空间中。" : "验证失败"}</p></div>`;
+        root.querySelector("[data-note]").textContent = state.shift
+          ? "你换了一个特解，参数原点随之改变；但整条（或整个平面）解集没有移动。"
+          : payload.nullspace.basis.length ? "拖动参数：蓝色 x 会移动，青色 x₀ 与橙色零空间方向共同解释它为何始终满足 Ax=b。" : "没有自由参数，因此当前系统只有一个解。";
+      } else {
+        root.querySelector("[data-verify-axb]").innerHTML = `<span class="ch3-check is-bad">×</span><div><strong>没有 Ax=b 的解</strong><p>RREF 的矛盾行阻止了特解出现。</p></div>`;
+        root.querySelector("[data-verify-null]").innerHTML = `<span class="ch3-check is-muted">—</span><div><strong>结构公式不适用</strong><p>只有系统有解时，才能写成 x₀+Ker(A)。</p></div>`;
+        root.querySelector("[data-note]").textContent = "先通过有解判别，才能讨论解族结构。";
+      }
+      M().pulse(root.querySelector("[data-solution-card]"));
+      draw(payload, current);
+    }
+
+    root.querySelectorAll("[data-preset]").forEach((button) => scope.listen(button, "click", () => {
+      root.querySelectorAll("[data-preset]").forEach((item) => item.classList.toggle("is-active", item === button));
+      load(button.dataset.preset);
+    }));
+    scope.listen(root.querySelector("[data-shift]"), "click", () => { state.shift = state.shift ? 0 : 1; render(); });
+    scope.resize(() => { const payload = data(); draw(payload, currentVector(payload)); });
+    load("line");
+    return scope.cleanup;
+  }
+'''
+          s46_source = replace_between(
+              s46_source,
+              '  function interactiveSolutionStructure(root) {',
+              '  window.defineChapter3Renderer?.("matrix-rank"',
+              new_solution,
+              'solution-structure experiment',
+          )
+          s46_path.write_text(s46_source)
+
+          # 4. Turn the resultant lab into a guided workflow rather than five tiny boxes.
+          s7_path = Path('current/visuals/ch3/section7-presentation.js')
+          s7_source = s7_path.read_text()
+          old_head = '<div class="ch3-lab-head"><h3>结式消元台</h3><p>按步骤推进：整理系数、构造 Sylvester 矩阵、计算结式、求候选、回代验解。未完成验证的点不会被标成最终解。</p></div>'
+          new_head = '<div class="ch3-lab-head"><span class="ch3-lab-kicker">目标 · 区分“结式候选”和“原方程组真解”</span><h3>结式消元流程</h3><p>一次只推进一个代数动作。左侧曲线帮助观察，右侧当前说明告诉你这一阶段究竟产出了什么信息。</p></div><div class="ch3-mission"><strong>操作任务</strong><span>选择“抛物线与切线”，逐步推进到回代，观察二重根为何对应相切。</span><span class="ch3-mission-result">看结论：候选必须回代</span></div>'
+          if old_head not in s7_source:
+              raise SystemExit('missing section 7 lab head')
+          s7_source = s7_source.replace(old_head, new_head, 1)
+          s7_path.write_text(s7_source)
+
+          # 5. Apply a calmer Chapter-4-quality layout and section-specific visual hierarchy.
+          css_path = Path('current/visuals/ch3/shared-presentation.css')
+          css_source = css_path.read_text()
+          marker = '/* Chapter 3 redesign — visual hierarchy, real vectors, and guided experiments. */'
+          if marker in css_source:
+              css_source = css_source[:css_source.index(marker)].rstrip() + '\n'
+          css_source += r'''
+
+/* Chapter 3 redesign — visual hierarchy, real vectors, and guided experiments. */
+.ch3-formal {
+  gap: 28px;
+}
+
+.ch3-formal-lead {
+  max-width: 76ch;
+  color: var(--muted);
+  font-size: 16px;
+  line-height: 1.85;
+}
+
+.ch3-module {
+  gap: 18px;
+  padding: 6px 0 12px;
+  border: 0;
+  background: transparent;
+}
+
+.ch3-module-heading {
+  grid-template-columns: 40px minmax(0, 1fr);
+}
+
+.ch3-module-heading > span {
+  width: 34px;
+  height: 34px;
+  border: 1px solid color-mix(in srgb, var(--accent) 34%, var(--line));
+  border-radius: 50%;
+  background: var(--accent-soft);
+}
+
+.ch3-module-heading h3 {
+  font-size: clamp(19px, 2vw, 23px);
+}
+
+.ch3-module-heading p {
+  font-size: 14px;
+  line-height: 1.65;
+}
+
+.ch3-card-grid {
+  gap: 14px;
+}
+
+.ch3-card {
+  padding: 19px 18px;
+  border-radius: var(--radius);
+  background: var(--surface-solid);
+  box-shadow: var(--shadow-soft);
+}
+
+.ch3-card h4 {
+  font-size: 16px;
+}
+
+.ch3-card p {
+  font-size: 14px;
+  line-height: 1.72;
+}
+
+.ch3-lab {
+  gap: 22px;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+}
+
+.ch3-lab-head {
+  display: grid;
+  gap: 7px;
+  max-width: 82ch;
+}
+
+.ch3-lab-head h3 {
+  margin: 0;
+  font-size: clamp(22px, 2.8vw, 30px);
+}
+
+.ch3-lab-head p {
+  max-width: 76ch;
+  font-size: 15px;
+  line-height: 1.78;
+}
+
+.ch3-lab-kicker {
+  color: var(--accent-strong);
+  font-size: 12px;
+  font-weight: 820;
+  letter-spacing: 0.055em;
+}
+
+.ch3-mission {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  gap: 14px;
+  align-items: center;
+  padding: 13px 16px;
+  border: 1px solid color-mix(in srgb, var(--accent) 22%, var(--line));
+  border-radius: 14px;
+  background: color-mix(in srgb, var(--accent-soft) 58%, var(--surface-solid));
+  color: var(--muted);
+  font-size: 13px;
+  line-height: 1.6;
+}
+
+.ch3-mission strong {
+  color: var(--text);
+  white-space: nowrap;
+}
+
+.ch3-mission-result {
+  color: var(--accent-strong);
+  font-weight: 760;
+  white-space: nowrap;
+}
+
+.ch3-presets {
+  gap: 9px;
+}
+
+.ch3-presets button,
+.ch3-toolbar button,
+.ch3-control-row button,
+.ch3-panel button,
+.ch3-operation-grid button {
+  min-height: 40px;
+  padding: 0 16px;
+  font-size: 13px;
+}
+
+.ch3-lab-grid,
+.ch3-scene-grid,
+.ch3-solution-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1.35fr) minmax(300px, 0.65fr);
+  gap: 20px;
+  align-items: start;
+  min-width: 0;
+}
+
+.ch3-stage-shell {
+  display: grid;
+  gap: 10px;
+  min-width: 0;
+}
+
+.ch3-stage-caption {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  align-items: baseline;
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.ch3-stage-caption strong {
+  color: var(--text);
+  font-size: 13px;
+}
+
+.ch3-stage {
+  height: 400px;
+  min-height: 400px;
+  border-radius: 20px;
+  background:
+    radial-gradient(ellipse 62% 52% at 28% 62%, color-mix(in srgb, var(--accent) 8%, transparent), transparent 78%),
+    linear-gradient(168deg, color-mix(in srgb, var(--surface-soft) 86%, var(--bg)), var(--surface-solid));
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--line) 82%, transparent), var(--shadow-soft);
+}
+
+.ch3-stage-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 14px;
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.ch3-stage-legend span {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.ch3-stage-legend i {
+  width: 18px;
+  height: 3px;
+  border-radius: 999px;
+  background: currentColor;
+}
+
+.ch3-stage-legend .is-accent { color: var(--accent-strong); }
+.ch3-stage-legend .is-coral { color: var(--coral); }
+.ch3-stage-legend .is-blue { color: var(--blue); }
+
+.ch3-side,
+.ch3-readout,
+.ch3-solution-readout {
+  display: grid;
+  gap: 14px;
+  min-width: 0;
+  align-content: start;
+}
+
+.ch3-meter {
+  gap: 0;
+  overflow: hidden;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  background: var(--surface-solid);
+}
+
+.ch3-meter-card {
+  padding: 14px 15px;
+  border: 0;
+  border-right: 1px solid var(--line);
+  border-radius: 0;
+  background: transparent;
+}
+
+.ch3-meter-card:last-child {
+  border-right: 0;
+}
+
+.ch3-meter-card > span {
+  font-size: 1.08rem;
+}
+
+.ch3-panel,
+.ch3-parameter-panel,
+.ch3-equation-hero,
+.ch3-details,
+.ch3-coordinate-summary {
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  background: var(--surface-solid);
+}
+
+.ch3-panel,
+.ch3-parameter-panel {
+  padding: 16px;
+}
+
+.ch3-panel h4,
+.ch3-vector-editor h4,
+.ch3-resultant-steps h4,
+.ch3-parameter-panel h4,
+.ch3-coordinate-summary h4 {
+  color: var(--text);
+  font-size: 13px;
+  letter-spacing: 0;
+  text-transform: none;
+}
+
+.ch3-equation-hero {
+  display: grid;
+  gap: 10px;
+  padding: 20px;
+  border-color: color-mix(in srgb, var(--accent) 24%, var(--line));
+  background: color-mix(in srgb, var(--accent-soft) 54%, var(--surface-solid));
+}
+
+.ch3-equation-hero > span {
+  color: var(--accent-strong);
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.05em;
+}
+
+.ch3-equation-hero .tex-display {
+  margin: 4px 0;
+  font-size: clamp(1.05rem, 2.2vw, 1.35rem);
+}
+
+.ch3-equation-hero p {
+  margin: 0;
+  color: var(--muted);
+  font-size: 13px;
+  line-height: 1.65;
+}
+
+.ch3-basis-line {
+  margin-top: 9px;
+  color: var(--muted);
+}
+
+.ch3-scenario-row {
+  padding: 12px 14px;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  background: var(--surface-soft);
+}
+
+.ch3-scenario-row > label {
+  display: grid;
+  grid-template-columns: auto minmax(130px, 220px);
+  gap: 10px;
+  align-items: center;
+}
+
+.ch3-coefficient-panel {
+  display: grid;
+  gap: 14px;
+  padding: 17px;
+  border-top: 1px solid var(--line);
+  border-bottom: 1px solid var(--line);
+}
+
+.ch3-coefficient-panel h4 {
+  margin: 0;
+  font-size: 14px;
+}
+
+.ch3-slider strong,
+.ch3-bar-row strong {
+  font-variant-numeric: tabular-nums;
+  text-align: right;
+}
+
+.ch3-vector-table {
+  display: grid;
+  overflow: hidden;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+}
+
+.ch3-vector-table > div {
+  display: grid;
+  grid-template-columns: 34px minmax(0, 1fr);
+  gap: 12px;
+  align-items: center;
+  min-width: 0;
+  padding: 11px 13px;
+  border-bottom: 1px solid var(--line);
+}
+
+.ch3-vector-table > div:last-child {
+  border-bottom: 0;
+}
+
+.ch3-vector-table > div > span {
+  color: var(--muted);
+  font-weight: 800;
+}
+
+.ch3-vector-table > div.is-result {
+  background: color-mix(in srgb, var(--blue) 7%, var(--surface-solid));
+}
+
+.ch3-details {
+  overflow: hidden;
+}
+
+.ch3-details summary {
+  padding: 14px 16px;
+  color: var(--text);
+  font-weight: 760;
+  cursor: pointer;
+}
+
+.ch3-details[open] summary {
+  border-bottom: 1px solid var(--line);
+}
+
+.ch3-details .ch3-vector-editor,
+.ch3-rref-details > div {
+  padding: 16px;
+}
+
+.ch3-vector-editor > section {
+  background: transparent;
+}
+
+.ch3-coordinate-summary {
+  display: grid;
+  grid-template-columns: minmax(150px, 0.32fr) minmax(0, 1fr);
+  gap: 18px;
+  padding: 17px;
+}
+
+.ch3-coordinate-summary p {
+  margin: 6px 0 0;
+  color: var(--muted);
+  font-size: 12px;
+  line-height: 1.6;
+}
+
+.ch3-bar-row {
+  grid-template-columns: 42px minmax(0, 1fr) 52px;
+}
+
+.ch3-bar-row.is-negative .ch3-bar-fill {
+  background: var(--coral);
+}
+
+.ch3-operation-grid {
+  padding: 16px;
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  background: var(--surface-soft);
+}
+
+.ch3-solution-layout {
+  grid-template-columns: minmax(0, 1.3fr) minmax(320px, 0.7fr);
+}
+
+.ch3-solution-readout {
+  gap: 16px;
+}
+
+.ch3-panel-heading {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  align-items: baseline;
+  margin-bottom: 12px;
+}
+
+.ch3-panel-heading h4 {
+  margin: 0;
+}
+
+.ch3-panel-heading span {
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.ch3-solution-summary {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.ch3-solution-summary .ch3-meter-card:nth-child(2n) {
+  border-right: 0;
+}
+
+.ch3-solution-summary .ch3-meter-card:nth-child(-n+2) {
+  border-bottom: 1px solid var(--line);
+}
+
+.ch3-decomposition {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto minmax(0, 1.1fr) auto minmax(0, 1fr);
+  gap: 12px;
+  align-items: stretch;
+}
+
+.ch3-decomposition article {
+  display: grid;
+  gap: 10px;
+  min-width: 0;
+  padding: 16px;
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  background: var(--surface-solid);
+}
+
+.ch3-decomposition article > span {
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 760;
+}
+
+.ch3-decomposition article.is-current {
+  border-color: color-mix(in srgb, var(--blue) 34%, var(--line));
+  background: color-mix(in srgb, var(--blue) 6%, var(--surface-solid));
+}
+
+.ch3-decomposition-value {
+  min-width: 0;
+  overflow-x: auto;
+  font-size: 14px;
+}
+
+.ch3-decomposition-arrow {
+  display: grid;
+  place-items: center;
+  color: var(--muted);
+  font-size: 24px;
+  font-weight: 500;
+}
+
+.ch3-proof-strip {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  overflow: hidden;
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  background: var(--surface-solid);
+}
+
+.ch3-proof-strip > div {
+  display: grid;
+  grid-template-columns: 34px minmax(0, 1fr);
+  gap: 12px;
+  align-items: start;
+  padding: 16px;
+}
+
+.ch3-proof-strip > div + div {
+  border-left: 1px solid var(--line);
+}
+
+.ch3-proof-strip strong {
+  display: block;
+  margin-bottom: 4px;
+}
+
+.ch3-proof-strip p {
+  margin: 0;
+  color: var(--muted);
+  font-size: 13px;
+  line-height: 1.6;
+}
+
+.ch3-check {
+  display: grid;
+  place-items: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: var(--surface-soft);
+  font-weight: 900;
+}
+
+.ch3-check.is-ok { color: var(--accent-strong); background: var(--accent-soft); }
+.ch3-check.is-bad { color: var(--coral); background: color-mix(in srgb, var(--coral) 10%, var(--surface-solid)); }
+.ch3-check.is-muted { color: var(--muted); }
+
+.ch3-resultant-steps {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.ch3-resultant-steps > section {
+  padding: 16px;
+  background: var(--surface-solid);
+}
+
+.ch3-resultant-steps > section.is-current {
+  grid-column: 1 / -1;
+  border-color: color-mix(in srgb, var(--accent) 52%, var(--line));
+  box-shadow: var(--shadow-soft);
+}
+
+@media (max-width: 980px) {
+  .ch3-lab-grid,
+  .ch3-scene-grid,
+  .ch3-solution-layout {
+    grid-template-columns: 1fr;
+  }
+
+  .ch3-stage {
+    height: 350px;
+    min-height: 350px;
+  }
+
+  .ch3-decomposition {
+    grid-template-columns: 1fr;
+  }
+
+  .ch3-decomposition-arrow {
+    min-height: 20px;
+  }
+}
+
+@media (max-width: 680px) {
+  .ch3-mission {
+    grid-template-columns: 1fr;
+    gap: 5px;
+  }
+
+  .ch3-mission-result {
+    white-space: normal;
+  }
+
+  .ch3-stage {
+    height: 290px;
+    min-height: 290px;
+  }
+
+  .ch3-meter,
+  .ch3-meter.is-3,
+  .ch3-meter.is-4,
+  .ch3-solution-summary,
+  .ch3-proof-strip,
+  .ch3-coordinate-summary,
+  .ch3-resultant-steps {
+    grid-template-columns: 1fr;
+  }
+
+  .ch3-meter-card,
+  .ch3-solution-summary .ch3-meter-card {
+    border-right: 0;
+    border-bottom: 1px solid var(--line);
+  }
+
+  .ch3-meter-card:last-child,
+  .ch3-solution-summary .ch3-meter-card:last-child {
+    border-bottom: 0;
+  }
+
+  .ch3-proof-strip > div + div {
+    border-left: 0;
+    border-top: 1px solid var(--line);
+  }
+
+  .ch3-coordinate-summary {
+    gap: 12px;
+  }
+
+  .ch3-scenario-row > label {
+    grid-template-columns: 1fr;
+  }
+
+  .ch3-stage-caption {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .ch3-resultant-steps > section.is-current {
+    grid-column: auto;
+  }
+}
+'''
+          css_path.write_text(css_source)
+          PY
+
+          find current/visuals/ch3 -name '*.js' -print0 | xargs -0 -n1 node --check
+          git diff --check
+
+      - name: Install Chromium
+        run: |
+          mkdir -p /tmp/ch3-redesign-test
+          cd /tmp/ch3-redesign-test
+          npm init -y >/dev/null
+          npm install --silent playwright@1.55.0
+          npx playwright install --with-deps chromium
+
+      - name: Browser review and screenshots
+        run: |
+          mkdir -p browser-artifacts
+          python3 -m http.server 4173 --directory current >/tmp/ch3-redesign-server.log 2>&1 &
+          for attempt in {1..30}; do
+            curl --silent --fail http://127.0.0.1:4173/learn.html >/dev/null && break
+            sleep 1
+          done
+          cat > /tmp/ch3-redesign-test/check.mjs <<'JS'
+          import assert from 'node:assert/strict';
+          import { chromium } from 'playwright';
+          import fs from 'node:fs/promises';
+
+          const out = process.env.ARTIFACT_DIR;
+          await fs.mkdir(out, { recursive: true });
+          const routes = [
+            ['elimination', 'elimination'],
+            ['n-vector-space', 'vector-space'],
+            ['linear-dependence', 'dependence'],
+            ['matrix-rank', 'rank'],
+            ['solvability', 'solvability'],
+            ['solution-structure', 'solution-structure'],
+            ['binary-higher-degree', 'resultant'],
+          ];
+          const browser = await chromium.launch({ headless: true });
+          const failures = [];
+
+          async function inspect(page, route, lab, mode) {
+            const errors = [];
+            page.on('pageerror', (error) => errors.push(error.message));
+            page.on('console', (message) => { if (message.type() === 'error') errors.push(message.text()); });
+            await page.goto(`http://127.0.0.1:4173/learn.html#ch3/${route}`, { waitUntil: 'networkidle' });
+            await page.waitForSelector(`[data-ch3-lab="${lab}"]`);
+            await page.waitForFunction(() => document.querySelectorAll('.katex').length > 4);
+            const state = await page.evaluate(() => ({
+              overflow: document.documentElement.scrollWidth - window.innerWidth,
+              katexErrors: document.querySelectorAll('.katex-error').length,
+              canvas: Array.from(document.querySelectorAll('canvas')).map((c) => {
+                const r = c.getBoundingClientRect(); return [r.width, r.height];
+              }),
+            }));
+            assert.ok(state.overflow <= 4, `${mode}/${route}: horizontal overflow ${state.overflow}`);
+            assert.equal(state.katexErrors, 0, `${mode}/${route}: KaTeX errors`);
+            assert.ok(state.canvas.every(([w, h]) => w > 180 && h > 220), `${mode}/${route}: unusable canvas`);
+            assert.deepEqual(errors, [], `${mode}/${route}: ${errors.join('; ')}`);
+          }
+
+          const desktop = await browser.newContext({ viewport: { width: 1440, height: 1000 } });
+          for (const [route, lab] of routes) {
+            const page = await desktop.newPage();
+            try {
+              await inspect(page, route, lab, 'desktop');
+              if (route === 'elimination') {
+                await page.click('[data-preset="swapPivot"]');
+                await page.click('[data-guide]');
+              } else if (route === 'n-vector-space') {
+                await page.locator('[data-n]').evaluate((el) => { el.value = '2'; el.dispatchEvent(new Event('input', { bubbles: true })); });
+                await page.locator('[data-alpha]').evaluate((el) => { el.value = '1.5'; el.dispatchEvent(new Event('input', { bubbles: true })); });
+                await page.locator('[data-beta]').evaluate((el) => { el.value = '-0.8'; el.dispatchEvent(new Event('input', { bubbles: true })); });
+              } else if (route === 'linear-dependence') {
+                await page.click('[data-preset="three"]');
+              } else if (route === 'matrix-rank') {
+                await page.click('[data-preset="projectionTrap"]');
+              } else if (route === 'solvability') {
+                await page.click('[data-preset="miss"]');
+              } else if (route === 'solution-structure') {
+                const slider = page.locator('[data-param]').first();
+                await slider.evaluate((el) => { el.value = '1.35'; el.dispatchEvent(new Event('input', { bubbles: true })); });
+                assert.match(await page.locator('[data-verify-axb]').innerText(), /通过/);
+                assert.match(await page.locator('[data-verify-null]').innerText(), /通过/);
+              } else if (route === 'binary-higher-degree') {
+                await page.click('[data-preset="tangent"]');
+                for (let i = 0; i < 5; i += 1) await page.click('[data-next]');
+              }
+              await page.waitForTimeout(100);
+              await page.screenshot({ path: `${out}/desktop-${route}.png`, fullPage: true });
+              if (route === 'n-vector-space' || route === 'solution-structure' || route === 'solvability') {
+                await page.locator('[data-ch3-lab] .ch3-stage').screenshot({ path: `${out}/stage-${route}.png` });
+              }
+              console.log(`PASS desktop ${route}`);
+            } catch (error) {
+              failures.push(`desktop ${route}: ${error.stack || error.message}`);
+            } finally { await page.close(); }
+          }
+          await desktop.close();
+
+          const mobile = await browser.newContext({ viewport: { width: 390, height: 844 } });
+          for (const [route, lab] of routes) {
+            const page = await mobile.newPage();
+            try {
+              await inspect(page, route, lab, 'mobile');
+              await page.screenshot({ path: `${out}/mobile-${route}.png`, fullPage: true });
+              console.log(`PASS mobile ${route}`);
+            } catch (error) {
+              failures.push(`mobile ${route}: ${error.stack || error.message}`);
+            } finally { await page.close(); }
+          }
+          await mobile.close();
+
+          const dark = await browser.newContext({ viewport: { width: 1280, height: 900 }, colorScheme: 'dark' });
+          for (const route of ['n-vector-space', 'solution-structure']) {
+            const page = await dark.newPage();
+            try {
+              await page.goto(`http://127.0.0.1:4173/learn.html#ch3/${route}`, { waitUntil: 'networkidle' });
+              await page.click('#themeToggle');
+              await page.waitForFunction(() => document.body.classList.contains('dark'));
+              await page.screenshot({ path: `${out}/dark-${route}.png`, fullPage: true });
+              console.log(`PASS dark ${route}`);
+            } catch (error) { failures.push(`dark ${route}: ${error.stack || error.message}`); }
+            finally { await page.close(); }
+          }
+          await dark.close();
+          await browser.close();
+          if (failures.length) {
+            console.error(failures.join('\n\n'));
+            process.exit(1);
+          }
+          JS
+          cd /tmp/ch3-redesign-test
+          set +e
+          ARTIFACT_DIR="${GITHUB_WORKSPACE}/browser-artifacts" node check.mjs 2>&1 | tee "${GITHUB_WORKSPACE}/browser-artifacts/browser.log"
+          status=${PIPESTATUS[0]}
+          set -e
+          exit ${status}
+
+      - name: Upload visual review
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: ch3-redesign-browser-review
+          path: browser-artifacts/
+          if-no-files-found: warn
+
+      - name: Commit the verified redesign
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git rm .github/workflows/ch3-redesign.yml
+          git add current/visuals/ch3/shared-math.js current/visuals/ch3/shared-presentation.css current/visuals/ch3/section1-3-presentation.js current/visuals/ch3/section4-6-presentation.js current/visuals/ch3/section7-presentation.js
+          git commit -m "refactor(ch3): rebuild visual hierarchy and vector interactions"
+          git push -q origin HEAD:"${BRANCH_NAME}"

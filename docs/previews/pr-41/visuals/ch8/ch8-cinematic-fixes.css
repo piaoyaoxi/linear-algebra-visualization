@@ -107,7 +107,48 @@
 }
 
 .ch8-growth-readout p {
+  display: grid;
+  gap: 7px;
   white-space: normal;
+}
+
+.ch8-growth-equation {
+  display: flex !important;
+  flex-wrap: nowrap;
+  align-items: baseline;
+  gap: 8px;
+  width: max-content;
+  min-width: 100%;
+  margin: 9px 0 12px !important;
+  padding: 12px 14px;
+  border: 1px solid var(--ch8-accent-line);
+  border-radius: 12px;
+  background: var(--ch8-accent-soft);
+  color: var(--text);
+  font: 700 1rem/1.25 Georgia, "Times New Roman", serif;
+}
+
+.ch8-growth-equation i {
+  color: var(--ch8-muted);
+  font-style: normal;
+}
+
+.ch8-growth-equation b {
+  color: var(--ch8-accent);
+  font-size: 1.15rem;
+}
+
+.ch8-growth-difference {
+  display: block;
+  white-space: nowrap;
+  font-family: Georgia, "Times New Roman", serif;
+}
+
+.ch8-growth-readout em {
+  display: block;
+  color: var(--muted);
+  font-style: normal;
+  line-height: 1.5;
 }
 
 .ch8-krylov-machine svg {
@@ -157,6 +198,12 @@
   }
 
   .ch8-growth-readout strong {
+    font-size: 0.9rem;
+  }
+
+  .ch8-growth-equation {
+    gap: 6px;
+    padding: 10px;
     font-size: 0.9rem;
   }
 }

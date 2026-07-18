@@ -50,7 +50,6 @@ jobs:
       - name: Unpack and verify source
         run: |
           tar -xzf /tmp/ch8-rework.tar.gz -C .
-          rm .github/ch8-rework.part-* .github/workflows/ch8-rework-bootstrap.yml
           node --check current/content/ch8.js
           node --check current/ch8-entry.js
           node --check current/visuals/ch8/ch8.js
@@ -75,10 +74,88 @@ jobs:
           print('static source verification passed')
           PY
 
-      - name: Publish rebuilt commit to temporary branch
+      - name: Create remote Git objects
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPOSITORY: ${{ github.repository }}
         run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add -A
-          git commit -m "feat(ch8): rebuild lessons around visible causal experiments"
-          git push --force origin HEAD:refs/heads/automation/ch8-rework-output
+          python3 - <<'PY'
+          import base64
+          import json
+          import os
+          import urllib.parse
+          import urllib.request
+          from pathlib import Path
+
+          token = os.environ['GH_TOKEN']
+          repository = os.environ['GH_REPOSITORY']
+          branch = 'context/ch8-lambda-matrices'
+          api_root = f'https://api.github.com/repos/{repository}'
+
+          def api(method, path, payload=None):
+              data = None if payload is None else json.dumps(payload).encode()
+              request = urllib.request.Request(
+                  api_root + path,
+                  data=data,
+                  method=method,
+                  headers={
+                      'Accept': 'application/vnd.github+json',
+                      'Authorization': f'Bearer {token}',
+                      'X-GitHub-Api-Version': '2022-11-28',
+                      'User-Agent': 'chapter-8-rework-bootstrap',
+                  },
+              )
+              with urllib.request.urlopen(request) as response:
+                  return json.loads(response.read().decode())
+
+          final_paths = [
+              'current/content/ch8.js',
+              'current/ch8-entry.js',
+              'current/learn.html',
+              'current/visuals/ch8/ch8.js',
+              'current/visuals/ch8/ch8.css',
+              'current/visuals/ch8/section1.js',
+              'current/visuals/ch8/section2.js',
+              'current/visuals/ch8/section3.js',
+              'current/visuals/ch8/section4.js',
+              'current/visuals/ch8/section5.js',
+              'current/visuals/ch8/section6.js',
+              'current/visuals/ch8/section7.js',
+              '.github/scripts/ch8-browser-check.mjs',
+              '.github/workflows/ch8-browser-check.yml',
+              'docs/ch8-production-matrix.md',
+          ]
+          temporary_paths = [
+              *[f'.github/ch8-rework.part-{index:02d}' for index in range(10)],
+              *[f'.github/ch8-rework.part-09{letter}' for letter in 'abcde'],
+              '.github/workflows/ch8-rework-bootstrap.yml',
+          ]
+
+          ref = api('GET', '/git/ref/heads/' + urllib.parse.quote(branch, safe=''))
+          parent = ref['object']['sha']
+          parent_commit = api('GET', f'/git/commits/{parent}')
+          entries = []
+          for path in final_paths:
+              content = base64.b64encode(Path(path).read_bytes()).decode()
+              blob = api('POST', '/git/blobs', {'content': content, 'encoding': 'base64'})
+              entries.append({'path': path, 'mode': '100644', 'type': 'blob', 'sha': blob['sha']})
+          for path in temporary_paths:
+              entries.append({'path': path, 'mode': '100644', 'type': 'blob', 'sha': None})
+
+          tree = api('POST', '/git/trees', {'base_tree': parent_commit['tree']['sha'], 'tree': entries})
+          commit = api('POST', '/git/commits', {
+              'message': 'feat(ch8): rebuild lessons around visible causal experiments',
+              'tree': tree['sha'],
+              'parents': [parent],
+          })
+          output = Path('/tmp/ch8-rework-remote-commit.txt')
+          output.write_text(commit['sha'] + '\n')
+          print('REMOTE_COMMIT=' + commit['sha'])
+          PY
+
+      - name: Upload remote commit pointer
+        uses: actions/upload-artifact@v4
+        with:
+          name: ch8-rework-remote-commit
+          path: /tmp/ch8-rework-remote-commit.txt
+          if-no-files-found: error

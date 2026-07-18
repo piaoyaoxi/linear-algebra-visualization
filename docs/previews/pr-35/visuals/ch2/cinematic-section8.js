@@ -61,7 +61,9 @@
     const controller = new AbortController();
     const { signal } = controller;
     const svg = root.querySelector("[data-c8-product-svg]");
+    const I = [[1, 0], [0, 1]];
     let current = { A: [[2, 0], [0, 1]], B: [[1.5, 0], [0, 1]] };
+    let busy = false;
     const presets = {
       scale: { A: [[2, 0], [0, 1]], B: [[1.5, 0], [0, 1]] },
       shear: { A: [[1.2, 0], [0, 1]], B: [[1, 1], [0, 1]] },
@@ -78,34 +80,71 @@
       return [[0, 0], [A[0][0], A[1][0]], [A[0][0] + A[0][1], A[1][0] + A[1][1]], [A[0][1], A[1][1]]].map(map).map((point) => point.join(",")).join(" ");
     }
 
-    function render() {
-      const I = [[1, 0], [0, 1]];
-      const AB = M().mul2(current.A, current.B);
-      const matrices = [I, current.B, AB];
+    function setBusy(value) {
+      busy = value;
+      root.querySelectorAll("[data-prod-preset], [data-prod-replay]").forEach((button) => { button.disabled = value; });
+    }
+
+    function paint(stageB, stageAB) {
+      const matrices = [I, stageB, stageAB];
       svg.querySelector("[data-c8-product-scenes]").innerHTML = panels.map((panel, index) => {
         const determinant = M().det2(matrices[index]);
         const caption = index === 0 ? "单位形 I" : index === 1 ? "第一步：I → B" : "第二步：B → AB";
         return `<g><rect x="${panel.x}" y="118" width="300" height="390" rx="26" class="cinema-panel-bg"/><text x="${panel.x + 22}" y="154" class="cinema-small">${caption}</text><polygon points="${polygon(matrices[index], panel)}" class="cinema-parallelogram${determinant < 0 ? " is-negative" : ""}${Math.abs(determinant) < 1e-8 ? " is-zero" : ""}"/><text x="${panel.x + 22}" y="486" class="cinema-title-small">det = ${fmt(determinant, 3)}</text></g>`;
       }).join("");
       const dA = M().det2(current.A);
-      const dB = M().det2(current.B);
-      const dAB = M().det2(AB);
+      const dB = M().det2(stageB);
+      const dAB = M().det2(stageAB);
       root.querySelector("[data-da]").textContent = fmt(dA, 3);
       root.querySelector("[data-db]").textContent = fmt(dB, 3);
       root.querySelector("[data-prod]").textContent = fmt(dA * dB, 3);
       root.querySelector("[data-dab]").textContent = fmt(dAB, 3);
     }
 
+    function renderFinal() {
+      paint(current.B, M().mul2(current.A, current.B));
+    }
+
+    async function play() {
+      if (busy) return;
+      if (M().reducedMotion()) {
+        renderFinal();
+        return;
+      }
+      setBusy(true);
+      const B = current.B.map((row) => row.slice());
+      const AB = M().mul2(current.A, current.B);
+      try {
+        paint(I, B);
+        await M().animateTo(svg, 0, 1, 700, (t) => {
+          const eased = M().easeInOutCubic(t);
+          paint(M().lerpMat2(I, B, eased), B);
+        });
+        paint(B, B);
+        await M().animateTo(svg, 0, 1, 760, (t) => {
+          const eased = M().easeInOutCubic(t);
+          paint(B, M().lerpMat2(B, AB, eased));
+        });
+        renderFinal();
+      } finally {
+        setBusy(false);
+      }
+    }
+
     root.querySelectorAll("[data-prod-preset]").forEach((button) => button.addEventListener("click", () => {
+      if (busy) return;
       const preset = presets[button.dataset.prodPreset];
       current = { A: preset.A.map((row) => row.slice()), B: preset.B.map((row) => row.slice()) };
       setActive(root, "[data-prod-preset]", button);
-      render();
+      void play();
     }, { signal }));
-    root.querySelector("[data-prod-replay]").addEventListener("click", render, { signal });
+    root.querySelector("[data-prod-replay]").addEventListener("click", () => { void play(); }, { signal });
 
-    render();
-    return () => controller.abort();
+    void play();
+    return () => {
+      controller.abort();
+      M().cancelAnim(svg);
+    };
   }
 
   window.extendChapter2Renderer("laplace-and-product", {

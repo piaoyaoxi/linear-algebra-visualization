@@ -1,5 +1,5 @@
-@import url("./presentation-foundation.css?v=10c");
-@import url("./presentation-labs.css?v=10c");
+@import url("./presentation-foundation.css?v=10d");
+@import url("./presentation-labs.css?v=10d");
 
 /* The path length differs by section. Auto-fit keeps every step legible without
    leaving a mysterious empty column in three-step experiments. */
@@ -8,17 +8,35 @@
 }
 
 /* Long mathematical definitions stay inside the mobile reading column. */
+.ch9v2-foundation-section,
 .ch9v2-foundation,
 .ch9v2-module,
 .ch9v2-definition-focus,
 .ch9v2-definition-focus > div {
+  box-sizing: border-box;
+  width: 100%;
   min-width: 0;
+  max-width: 100%;
+}
+
+.ch9v2-foundation-section {
+  overflow-x: clip;
+}
+
+.ch9v2-definition-focus {
+  overflow-x: auto;
+  overflow-y: hidden;
+  -webkit-overflow-scrolling: touch;
+}
+
+.ch9v2-definition-focus .tex-display,
+.ch9v2-definition-focus .katex-display,
+.ch9v2-definition-focus .katex {
   max-width: 100%;
 }
 
 .ch9v2-definition-focus .tex-display,
 .ch9v2-definition-focus .katex-display {
-  max-width: 100%;
   overflow-x: auto;
   overflow-y: hidden;
 }

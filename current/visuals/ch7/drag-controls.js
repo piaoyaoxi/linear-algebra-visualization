@@ -1,18 +1,28 @@
 /* Stable continuous dragging for Chapter 7 cinematic range controls.
  * Native range inputs remain keyboard-accessible. This layer broadens the
- * hit target to the whole labelled rail and keeps tracking outside the rail.
+ * hit target to the whole visible rail and keeps tracking outside the rail.
  */
 (() => {
   const labelSelector = ".ch7-cinema-range";
-  const inputSelector = 'input[type="range"]';
+  const inputSelector = '.ch7-cinema-controls input[type="range"]';
   let active = null;
 
   const clamp = (value, min, max) => Math.min(max, Math.max(min, value));
 
-  function resolveInput(target) {
-    if (!(target instanceof Element)) return null;
-    if (target.matches(`${labelSelector} ${inputSelector}`)) return target;
-    return target.closest(labelSelector)?.querySelector(inputSelector) || null;
+  function inputAt(target, clientX, clientY) {
+    if (target instanceof Element) {
+      if (target.matches(inputSelector)) return target;
+      const labelled = target.closest(labelSelector)?.querySelector('input[type="range"]');
+      if (labelled) return labelled;
+    }
+    // Some engines expose the painted range track through native shadow DOM.
+    // In that case the event target is not the light-DOM input, so hit-test the
+    // actual input rectangles instead of losing the drag.
+    return [...document.querySelectorAll(inputSelector)].find((input) => {
+      const rect = input.getBoundingClientRect();
+      return clientX >= rect.left - 4 && clientX <= rect.right + 4
+        && clientY >= rect.top - 10 && clientY <= rect.bottom + 10;
+    }) || null;
   }
 
   function updateAt(input, clientX) {
@@ -35,14 +45,17 @@
     active = { input, kind, id };
     input.focus({ preventScroll: true });
     updateAt(input, clientX);
+    document.documentElement.dataset.ch7RangeDragging = kind;
   }
 
-  // Mouse fallback is intentionally independent from Pointer Events. Chromium,
-  // Safari and embedded webviews do not always expose identical pointer events
-  // for a restyled native range input.
+  function clearActive() {
+    active = null;
+    delete document.documentElement.dataset.ch7RangeDragging;
+  }
+
   document.addEventListener("mousedown", (event) => {
     if (event.button !== 0) return;
-    const input = resolveInput(event.target);
+    const input = inputAt(event.target, event.clientX, event.clientY);
     if (!input) return;
     begin(input, "mouse", 0, event.clientX);
     event.preventDefault();
@@ -57,13 +70,13 @@
   window.addEventListener("mouseup", (event) => {
     if (active?.kind !== "mouse" || event.button !== 0) return;
     updateAt(active.input, event.clientX);
-    active = null;
+    clearActive();
     event.preventDefault();
   }, { capture: true, passive: false });
 
   document.addEventListener("pointerdown", (event) => {
     if (event.pointerType === "mouse" || (event.button !== 0 && event.button !== -1)) return;
-    const input = resolveInput(event.target);
+    const input = inputAt(event.target, event.clientX, event.clientY);
     if (!input) return;
     begin(input, "pointer", event.pointerId, event.clientX);
     input.setPointerCapture?.(event.pointerId);
@@ -80,7 +93,7 @@
     if (active?.kind !== "pointer" || active.id !== event.pointerId) return;
     updateAt(active.input, event.clientX);
     if (active.input.hasPointerCapture?.(event.pointerId)) active.input.releasePointerCapture(event.pointerId);
-    active = null;
+    clearActive();
     event.preventDefault();
   };
   window.addEventListener("pointerup", endPointer, { capture: true, passive: false });

@@ -1,0 +1,283 @@
+#linear-functional-intuition .ch10-intro-mini {
+  position: relative;
+  min-height: 120px;
+  overflow: hidden;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  background:
+    repeating-linear-gradient(135deg, transparent 0 22px, color-mix(in srgb, var(--accent) 16%, transparent) 23px 24px),
+    linear-gradient(135deg, color-mix(in srgb, var(--coral) 8%, var(--surface-solid)), color-mix(in srgb, var(--accent) 8%, var(--surface-solid)));
+}
+
+#linear-functional-intuition .ch10-mini-kernel {
+  position: absolute;
+  inset: 8% auto 8% 50%;
+  width: 2px;
+  background: var(--coral);
+  transform: rotate(var(--kernel-angle, 0deg));
+  transform-origin: center;
+}
+
+#linear-functional-intuition [data-functional-opening="1"] .ch10-mini-kernel {
+  --kernel-angle: 45deg;
+}
+
+#linear-functional-intuition [data-functional-opening="2"] .ch10-intro-mini {
+  background: var(--surface-soft);
+}
+
+#linear-functional-intuition [data-functional-opening="2"] .ch10-mini-kernel {
+  inset: 10%;
+  width: auto;
+  border: 2px dashed color-mix(in srgb, var(--coral) 42%, transparent);
+  background: transparent;
+}
+
+#linear-functional-intuition .ch10-mini-point {
+  position: absolute;
+  left: 66%;
+  top: 35%;
+  width: 12px;
+  height: 12px;
+  border: 3px solid var(--surface-solid);
+  border-radius: 50%;
+  background: var(--accent);
+  box-shadow: 0 0 0 1px var(--accent);
+}
+
+.functional-field-lab .ch10-view-switches label {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 34px;
+  padding: 5px 10px;
+  cursor: pointer;
+}
+
+.functional-field-lab .ch10-view-switches input {
+  accent-color: var(--accent);
+}
+
+.functional-field-lab .negative-stop {
+  stop-color: color-mix(in srgb, var(--coral) 13%, var(--surface-solid));
+}
+
+.functional-field-lab .positive-stop {
+  stop-color: color-mix(in srgb, var(--accent) 13%, var(--surface-solid));
+}
+
+.functional-field-lab .ch10-sign-field {
+  fill: url(#functional-sign-gradient);
+}
+
+.functional-field-lab .ch10-zero-field {
+  fill: color-mix(in srgb, var(--violet) 7%, var(--surface-solid));
+  stroke: color-mix(in srgb, var(--violet) 28%, var(--line));
+  stroke-dasharray: 2.5 2;
+}
+
+.functional-field-lab .ch10-zero-label {
+  fill: var(--violet);
+  font: 800 5px ui-sans-serif, system-ui, sans-serif;
+}
+
+.functional-field-lab .ch10-level-line {
+  stroke: var(--accent);
+  stroke-width: 0.55;
+  opacity: 0.34;
+}
+
+.functional-field-lab .ch10-current-level {
+  stroke: var(--accent-strong);
+  stroke-width: 1.15;
+}
+
+.functional-field-lab .ch10-kernel-line {
+  stroke: var(--coral);
+  stroke-width: 1.2;
+  stroke-dasharray: 3 2;
+}
+
+.functional-linearity-lab,
+.basis-value-builder,
+.affine-comparator {
+  padding: 18px;
+  border: 1px solid var(--line);
+  border-radius: 18px;
+  background: var(--surface-solid);
+}
+
+.linearity-paths {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+  gap: 14px;
+  align-items: center;
+  margin: 18px 0;
+}
+
+.linearity-paths article {
+  display: grid;
+  place-items: center;
+  gap: 8px;
+  min-height: 150px;
+  padding: 16px;
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  background: var(--surface-soft);
+  text-align: center;
+}
+
+.linearity-paths article > span {
+  color: var(--muted);
+  font-size: 11px;
+  font-weight: 800;
+}
+
+.linearity-paths article > strong {
+  color: var(--accent-strong);
+  font-size: 24px;
+}
+
+.linearity-paths > i {
+  color: var(--accent-strong);
+  font: normal 800 25px ui-serif, Georgia, serif;
+}
+
+.linearity-controls {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.linearity-controls label {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  gap: 8px;
+  align-items: center;
+  padding: 10px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: var(--surface-soft);
+}
+
+.linearity-controls input {
+  width: 100%;
+  accent-color: var(--accent);
+}
+
+.functional-linearity-lab > p {
+  margin: 14px 0 0;
+  color: var(--muted);
+}
+
+.basis-builder-layout {
+  display: grid;
+  grid-template-columns: minmax(300px, 1fr) minmax(280px, 0.85fr);
+  gap: 18px;
+  align-items: stretch;
+  margin-top: 16px;
+}
+
+.basis-builder-layout svg {
+  width: 100%;
+  min-height: 330px;
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  background: var(--surface-soft);
+}
+
+.basis-builder-equation {
+  display: grid;
+  align-content: center;
+  gap: 12px;
+  padding: 18px;
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  background: var(--surface-soft);
+}
+
+.basis-value-cards {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.basis-value-cards article {
+  padding: 12px;
+  border-radius: 12px;
+  background: var(--surface-solid);
+}
+
+.basis-value-cards span {
+  display: block;
+  color: var(--muted);
+  font-size: 11px;
+}
+
+.basis-builder-equation p {
+  margin: 0;
+  color: var(--muted);
+}
+
+.affine-cards {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px;
+}
+
+.affine-cards article {
+  display: grid;
+  gap: 9px;
+  padding: 17px;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  background: var(--surface-soft);
+}
+
+.affine-cards article > span {
+  color: var(--accent-strong);
+  font-size: 12px;
+  font-weight: 850;
+}
+
+.affine-cards p,
+.affine-comparator > p {
+  margin: 0;
+  color: var(--muted);
+}
+
+.affine-comparator > label {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  gap: 12px;
+  align-items: center;
+  margin-top: 16px;
+}
+
+.affine-comparator input {
+  width: 100%;
+  accent-color: var(--coral);
+}
+
+.affine-comparator > p {
+  margin-top: 14px;
+  padding: 12px 14px;
+  border-radius: 12px;
+  background: color-mix(in srgb, var(--coral) 8%, var(--surface-soft));
+}
+
+@media (max-width: 800px) {
+  .linearity-paths,
+  .basis-builder-layout,
+  .affine-cards {
+    grid-template-columns: 1fr;
+  }
+
+  .linearity-paths > i {
+    text-align: center;
+  }
+
+  .linearity-controls {
+    grid-template-columns: 1fr;
+  }
+}

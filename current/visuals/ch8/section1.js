@@ -302,6 +302,20 @@
       };
       on(scanElements.range, "pointerup", finishPointer);
       on(scanElements.range, "pointercancel", finishPointer);
+      on(scanElements.range, "touchstart", (event) => {
+        if (!event.touches.length) return;
+        event.preventDefault();
+        scanElements.range.classList.add("is-dragging");
+        setRangeFromPointer(event.touches[0].clientX);
+      }, { passive: false });
+      on(scanElements.range, "touchmove", (event) => {
+        if (!event.touches.length) return;
+        event.preventDefault();
+        setRangeFromPointer(event.touches[0].clientX);
+      }, { passive: false });
+      const finishTouch = () => scanElements.range.classList.remove("is-dragging");
+      on(scanElements.range, "touchend", finishTouch, { passive: true });
+      on(scanElements.range, "touchcancel", finishTouch, { passive: true });
       bindRootButtons();
       updateScan();
     }

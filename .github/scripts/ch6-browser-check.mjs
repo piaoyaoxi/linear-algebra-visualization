@@ -78,7 +78,7 @@ async function assertGuidedLayout(page, id) {
   if (!geometry) throw new Error(`${id}: guided lab geometry missing`);
   if (geometry.oldSplitLayout) throw new Error(`${id}: legacy split dashboard layout is still present`);
   if (geometry.widthRatio < 0.94) throw new Error(`${id}: main visual does not use the lesson width (${geometry.widthRatio})`);
-  if (geometry.readoutTop < geometry.stageBottom - 1) throw new Error(`${id}: result area is still beside/overlapping the main visual`);
+  if (geometry.readoutTop < geometry.stageBottom - 1) throw new Error(`${id}: result area is beside or overlapping the main visual`);
   if (geometry.controlsBottom !== null && geometry.controlsBottom > geometry.stageTop + 1) {
     throw new Error(`${id}: controls are not placed before the main visual`);
   }
@@ -89,26 +89,45 @@ async function assertArrowLabels(page, id) {
     [...document.querySelectorAll("svg text[data-arrow-label]")]
       .map((label) => {
         const svg = label.ownerSVGElement;
-        const box = label.getBBox();
-        const view = svg?.viewBox?.baseVal;
-        const cx = box.x + box.width / 2;
-        const cy = box.y + box.height / 2;
-        const tipX = Number(label.dataset.tipX);
-        const tipY = Number(label.dataset.tipY);
+        if (!svg) return { text: label.textContent, inside: false, tipDistance: 0 };
+        const labelRect = label.getBoundingClientRect();
+        const svgRect = svg.getBoundingClientRect();
+        const point = svg.createSVGPoint();
+        point.x = Number(label.dataset.tipX);
+        point.y = Number(label.dataset.tipY);
+        const screenTip = point.matrixTransform(svg.getScreenCTM());
+        const cx = labelRect.left + labelRect.width / 2;
+        const cy = labelRect.top + labelRect.height / 2;
         return {
           text: label.textContent,
           inside:
-            Boolean(view) &&
-            box.x >= view.x - 1 &&
-            box.y >= view.y - 1 &&
-            box.x + box.width <= view.x + view.width + 1 &&
-            box.y + box.height <= view.y + view.height + 1,
-          tipDistance: Math.hypot(cx - tipX, cy - tipY),
+            labelRect.left >= svgRect.left - 2 &&
+            labelRect.top >= svgRect.top - 2 &&
+            labelRect.right <= svgRect.right + 2 &&
+            labelRect.bottom <= svgRect.bottom + 2,
+          tipDistance: Math.hypot(cx - screenTip.x, cy - screenTip.y),
         };
       })
-      .filter((item) => !item.inside || item.tipDistance < 20),
+      .filter((item) => !item.inside || item.tipDistance < 16),
   );
   if (bad.length) throw new Error(`${id}: clipped or tip-overlapping vector labels ${JSON.stringify(bad.slice(0, 6))}`);
+}
+
+async function assertVectorQuality(page, id) {
+  const result = await page.evaluate(() => {
+    const visibleOrigins = [...document.querySelectorAll(".ch6-plane .ch6-origin")].filter(
+      (node) => getComputedStyle(node).display !== "none" && node.getBoundingClientRect().width > 0,
+    ).length;
+    const badArrows = [...document.querySelectorAll(".ch6-plane .ch6-arrow")]
+      .map((path) => {
+        const box = path.getBBox();
+        return { width: box.width, height: box.height, text: path.nextElementSibling?.textContent || "" };
+      })
+      .filter((box) => Math.max(box.width, box.height) < 34 || Math.min(box.width, box.height) < 5);
+    return { visibleOrigins, badArrows: badArrows.slice(0, 6) };
+  });
+  if (result.visibleOrigins) throw new Error(`${id}: visible origin circles still make vectors look like line-plus-dot symbols`);
+  if (result.badArrows.length) throw new Error(`${id}: weak or malformed filled arrows ${JSON.stringify(result.badArrows)}`);
 }
 
 async function openLesson(page, id, shotName = "") {
@@ -119,19 +138,16 @@ async function openLesson(page, id, shotName = "") {
   for (const selector of [".ch6-lesson-module", ".example-challenge", ".self-test-list"]) {
     if (!(await page.locator(selector).first().isVisible())) throw new Error(`${id}: missing ${selector}`);
   }
-  if ((await page.locator(".concept-strip").count()) !== 0) {
-    throw new Error(`${id}: legacy generic concept strip is still rendered`);
-  }
+  if ((await page.locator(".concept-strip").count()) !== 0) throw new Error(`${id}: legacy generic concept strip is still rendered`);
   if ((await page.locator(".ch6-guided-lab").innerText()).includes("阿贝尔群")) {
     throw new Error(`${id}: abstract-algebra jargon leaked into the linear-space lesson`);
   }
   await assertFormulaLegibility(page, id);
   await assertGuidedLayout(page, id);
   await assertArrowLabels(page, id);
+  await assertVectorQuality(page, id);
   await assertNoOverflow(page, id);
-  if (shotName) {
-    await page.locator("main.content").screenshot({ path: path.join(shots, `${shotName}-${id}.png`) });
-  }
+  if (shotName) await page.locator("main.content").screenshot({ path: path.join(shots, `${shotName}-${id}.png`) });
 }
 
 function textHas(locator, needle) {
@@ -175,18 +191,36 @@ async function exerciseChapter(page, configName) {
   if (!(await minusULabel.isVisible())) throw new Error("quadrant counterexample label −u is not visible");
   await assertArrowLabels(page, "vector-space-definition/quadrant");
   await extraShot(page, configName, "vector-space-quadrant");
+  await page.locator('[data-space-case="p1"]').click();
+  if ((await page.locator(".ch6-polynomial-panel").count()) !== 2) throw new Error("polynomial counterexample is not a two-panel transformation");
+  const polynomialFormulas = await page.locator(".ch6-polynomial-panel .katex").evaluateAll((nodes) =>
+    nodes.map((node) => {
+      const rect = node.getBoundingClientRect();
+      return { width: rect.width, height: rect.height };
+    }),
+  );
+  if (polynomialFormulas.length !== 2 || polynomialFormulas.some((box) => box.width < 80 || box.height > 90)) {
+    throw new Error(`polynomial formulas are fragmented: ${JSON.stringify(polynomialFormulas)}`);
+  }
+  await extraShot(page, configName, "vector-space-polynomial");
   await page.locator('[data-space-case="rgb"]').click();
   if ((await page.locator(".ch6-rgb-channel").count()) !== 6) throw new Error("RGB lab is not a two-row, three-channel demonstration");
   if (!(await textHas(page.locator("[data-space-scale]"), "存在数乘反例"))) throw new Error("RGB counterexample did not fail scalar closure");
 
   await openLesson(page, "basis-coordinates");
-  await page.locator('[data-basis-mode="redundant"]').click();
-  if (!(await textHas(page.locator("[data-basis-final]"), "两项条件未同时成立"))) throw new Error("redundant generating set was called a basis");
-  await page.locator('[data-generator="2"]').uncheck();
-  if (!(await textHas(page.locator("[data-basis-final]"), "生成且无关"))) throw new Error("removing redundancy did not produce a basis");
-  await page.locator('[data-basis-phase="coordinates"]').click();
-  if (!(await page.locator("[data-swap-basis]").isVisible())) throw new Error("coordinate phase did not open");
-  if ((await page.locator(".ch6-basis-lab.is-coordinates").count()) !== 1) throw new Error("basis lab did not separate its coordinate phase");
+  if (!(await textHas(page.locator(".ch6-basis-verdict"), "1 · 一条直线"))) throw new Error("basis lab does not begin with a one-dimensional span");
+  await page.locator('[data-basis-preset="independent"]').click();
+  await page.waitForTimeout(480);
+  if (!(await textHas(page.locator(".ch6-basis-verdict"), "2 · 整个平面"))) throw new Error("independent direction did not increase the dimension");
+  if ((await page.locator(".ch6-basis-area.is-visible").count()) < 1) throw new Error("nonzero determinant is not represented by a visible area");
+  const areaOpacity = await page.locator(".ch6-basis-area.is-visible").first().evaluate((node) => Number(getComputedStyle(node).opacity));
+  if (areaOpacity < 0.9) throw new Error("basis parallelogram remains visually hidden");
+  await page.locator("[data-redundant]").check();
+  if (!(await textHas(page.locator(".ch6-basis-verdict"), "v₃ 是冗余方向"))) throw new Error("redundant third vector was not identified");
+  await page.locator('[data-basis-mode="coordinates"]').click();
+  if (!(await page.locator(".ch6-coordinate-reader").isVisible())) throw new Error("coordinate mode did not open");
+  await page.locator("[data-target-x]").fill("0.8");
+  if (!(await textHas(page.locator(".ch6-coordinate-reader"), "坐标"))) throw new Error("coordinate reader stopped responding after the animation");
   await extraShot(page, configName, "basis-coordinate-phase");
 
   await openLesson(page, "change-of-basis");

@@ -50,11 +50,10 @@ jobs:
           node --check tests/ch10-browser-audit.cjs
           node --check tests/ch10-source-audit.cjs
 
-      - name: Capture source diagnostics
-        continue-on-error: true
+      - name: Audit source escapes and capture diagnostics
         run: |
           mkdir -p artifacts/ch10-browser-audit/source
-          node tests/ch10-source-audit.cjs > artifacts/ch10-browser-audit/source-audit.json || true
+          node tests/ch10-source-audit.cjs > artifacts/ch10-browser-audit/source-audit.json
           cp --parents \
             current/content/ch10-registry.js \
             current/content/ch10-section1.js \

@@ -31,7 +31,7 @@
 
     function render() {
       const info = cases[key];
-      let vector = target.slice();
+      const vector = target.slice();
       let uPart = [0, 0];
       let wPart = [0, 0];
       let exists = false;
@@ -68,29 +68,31 @@
         if (U().norm(info.w) > 1e-8) inner += U().line(info.w, info.zero ? "is-w" : "is-overlap", "W");
       }
       if (exists) {
-        inner += U().softArrow([0, 0], uPart, "is-u", "u");
-        inner += U().softArrow(uPart, vector, "is-w", "w");
+        inner += U().softArrow([0, 0], uPart, "is-u", "");
+        inner += U().softArrow(uPart, vector, "is-w", "");
       }
       inner += U().softArrow([0, 0], vector, exists ? "is-target" : "is-bad", "目标 v");
 
       const controls = `${U().segmented([["oblique", "非正交直和"], ["orthogonal", "正交直和"], ["overlap", "覆盖但不唯一"], ["incomplete", "零交但未覆盖"]], "direct-case", key)}${info.kind === "plane-overlap" ? `<div class="ch6-progress-control"><label>把多少公共方向放进 W 分量：t <output>${U().formatNumber(t, 1)}</output><input type="range" min="-1.5" max="1.5" step="0.1" value="${t}" data-direct-t></label><p>w=t z，u=v−t z。拖动后两个分量改变，但总和始终等于 v。</p></div>` : `<div class="ch6-coordinate-sliders"><label>目标 v 横坐标 <output>${U().formatNumber(target[0], 1)}</output><input type="range" min="-2.2" max="2.2" step="0.1" value="${target[0]}" data-direct-vx></label><label>目标 v 纵坐标 <output>${U().formatNumber(target[1], 1)}</output><input type="range" min="-1.8" max="1.8" step="0.1" value="${target[1]}" data-direct-vy></label></div>`}`;
       const final = info.cover && info.zero;
-      const readout = `<div class="ch6-gate-stack">${U().gate("1. 覆盖目标空间 V=U+W", "direct-cover")}${U().gate("2. 没有公共非零方向", "direct-zero")}${U().gate("当前目标 v 有分解", "direct-exists")}${U().gate("当前分解唯一", "direct-unique")}</div><div class="ch6-current-story"><span>当前情形</span><h4>${info.label}</h4><p>${info.note}</p></div><div class="ch6-component-reader"><div><span>u 分量</span><strong>${exists ? U().formatVector(uPart) : "—"}</strong></div><div><span>w 分量</span><strong>${exists ? U().formatVector(wPart) : "—"}</strong></div><div><span>u+w</span><strong>${exists ? U().formatVector(U().add(uPart, wPart)) : "无法表示当前 v"}</strong></div></div><div class="ch6-conclusion-box ${final ? "is-ok" : "is-bad"}"><span>能否写 ⊕</span><strong>${final ? "可以：V=U⊕W" : "不可以：至少一道全局闸门失败"}</strong></div>`;
+      const readout = `<div class="ch6-gate-stack">${U().gate("1. 覆盖目标空间 V=U+W", "direct-cover")}${U().gate("2. 没有公共非零方向", "direct-zero")}${U().gate("当前目标 v 有分解", "direct-exists")}${U().gate("当前分解唯一", "direct-unique")}</div><div class="ch6-current-story"><span>当前情形</span><h4>${info.label}</h4><p>${info.note}</p></div><div class="ch6-component-reader"><div><span>青色 u 分量</span><strong>${exists ? U().formatVector(uPart) : "—"}</strong></div><div><span>橙色 w 分量</span><strong>${exists ? U().formatVector(wPart) : "—"}</strong></div><div><span>u+w</span><strong>${exists ? U().formatVector(U().add(uPart, wPart)) : "无法表示当前 v"}</strong></div></div><div class="ch6-conclusion-box ${final ? "is-ok" : "is-bad"}"><span>能否写 ⊕</span><strong>${final ? "可以：V=U⊕W" : "不可以：至少一道全局闸门失败"}</strong></div>`;
 
       host.innerHTML = U().labShell({
         title: "把“存在”和“唯一”分成两道闸门",
         lead: "先判断 U+W 是否覆盖整个目标空间，再判断 U 与 W 是否共享非零方向。当前一个 v 的表现不能替代全局条件。",
-        focus: info.kind === "plane-overlap" ? "拖动 t：黑色目标 v 不动，但青色 u 与橙色 w 不断改变，这就是非唯一。" : "先看背景是否覆盖整个平面，再看两条方向是否重合。",
-        stage: `<div class="ch6-stage-shell">${U().planeSvg(inner, info.label)}</div>`,
+        focus: info.kind === "plane-overlap" ? "拖动 t：白色目标 v 不动，但青色第一段与橙色第二段不断改变，这就是非唯一。" : "先看背景是否覆盖整个平面，再看两条方向是否重合。",
+        stage: `<div class="ch6-stage-shell">${U().planeSvg(inner, info.label)}${exists ? `<div class="ch6-stage-legend"><span class="is-u">青色：u 分量</span><span class="is-w">橙色：w 分量</span><span class="is-target">白色：固定目标 v</span></div>` : ""}</div>`,
         controls,
         readout,
         tasks: U().taskBlock(section),
         className: "ch6-direct-lab",
       });
+
       U().updateGate(host, "direct-cover", info.cover, info.cover ? "每个目标向量都能由两边合成" : "U+W 没有覆盖整个目标空间");
       U().updateGate(host, "direct-zero", info.zero, info.zero ? "U∩W={0}" : "存在可在两边搬运的公共方向");
       U().updateGate(host, "direct-exists", exists, exists ? "当前 v∈U+W" : "当前 v∉U+W");
       U().updateGate(host, "direct-unique", unique, unique ? "只有这一组分量" : exists ? "改变 t 可得到多组分量" : "分解尚不存在");
+
       host.querySelectorAll("[data-direct-case]").forEach((button) => button.addEventListener("click", () => {
         key = button.dataset.directCase;
         t = 0;
@@ -110,6 +112,7 @@
         render();
       });
     }
+
     render();
   }
 

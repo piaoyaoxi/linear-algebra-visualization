@@ -1,5 +1,5 @@
 (() => {
-  const { I, D, on, matrix, setPressed, markExperimentStep, conclusionMarkup } = window.Chapter8Lab;
+  const { I, on, matrix, setPressed, markExperimentStep, conclusionMarkup } = window.Chapter8Lab;
 
   const presets = {
     distinct: { label: "两个不同实特征值", A: [[3, 1], [0, 1]], roots: [1, 3], range: [-1, 5], polynomial: "(\\lambda-1)(\\lambda-3)" },
@@ -69,8 +69,10 @@
     let selectedCell = "11";
     let presetKey = "distinct";
     let lambda = 1;
+    let scanElements = null;
 
     function renderBuild() {
+      scanElements = null;
       markExperimentStep(host, 0);
       const cells = {
         "11": { label: "左上角", from: "a_{11}=2", result: "\\lambda-2", explanation: "对角位置来自 λI 的 λ，再减去 A 的对应元素 2。" },
@@ -107,6 +109,7 @@
     }
 
     function drawPlot(canvas, preset, currentLambda) {
+      if (!canvas?.isConnected) return;
       const rect = canvas.getBoundingClientRect();
       const dpr = Math.min(window.devicePixelRatio || 1, 2);
       const width = Math.max(300, rect.width || 620);
@@ -165,55 +168,118 @@
       ctx.fillText("det(λI−A)", pad.left, 15);
     }
 
+    function rootButtonsMarkup(preset) {
+      return preset.roots.length
+        ? preset.roots.map((root) => `<button type="button" data-jump-root="${root}">跳到 λ=${root}</button>`).join("")
+        : `<span>实数域中没有奇异参数；曲线不会穿过横轴。扩到复数域时，根为 ±i。</span>`;
+    }
+
+    function bindRootButtons() {
+      scanElements.rootButtons.querySelectorAll("[data-jump-root]").forEach((button) => on(button, "click", () => {
+        lambda = Number(button.dataset.jumpRoot);
+        updateScan();
+      }));
+    }
+
+    function updateScan(options = {}) {
+      if (!scanElements?.range?.isConnected) return;
+      const { syncRange = true } = options;
+      const preset = presets[presetKey];
+      const info = kernelInfo(preset.A, lambda);
+      const det = detAt(preset.A, lambda);
+      const singular = Math.abs(det) < 1e-7;
+
+      if (syncRange) scanElements.range.value = String(lambda);
+      scanElements.range.setAttribute("aria-valuetext", `λ 等于 ${fmt(lambda)}`);
+      scanElements.current.textContent = fmt(lambda);
+      scanElements.kernelVisual.innerHTML = kernelSvg(info);
+      scanElements.kernelTitle.textContent = info.type === "zero" ? "只有原点" : info.type === "line" ? "出现一条非零方向" : "整个平面";
+      scanElements.kernelText.textContent = info.text;
+      scanElements.matrix.innerHTML = matrix(characteristicAt(preset.A, lambda));
+      scanElements.det.textContent = fmt(det);
+      scanElements.det.classList.toggle("is-danger", singular);
+      scanElements.rank.textContent = String(info.rank);
+      scanElements.nullity.textContent = String(info.nullity);
+      scanElements.conclusion.innerHTML = conclusionMarkup(
+        "四个信号",
+        singular ? "此刻 λ 是特征值" : "此刻 λ 不是特征值",
+        singular ? "行列式归零、秩下降、非零核出现；核中的方向就是特征方向。" : "行列式非零，特征矩阵满秩，齐次方程只有零解。",
+        singular ? "danger" : "accent",
+      );
+      host.dataset.scanValue = fmt(lambda);
+      drawPlot(scanElements.canvas, preset, lambda);
+    }
+
     function renderScan() {
       markExperimentStep(host, 1);
       const preset = presets[presetKey];
       if (lambda < preset.range[0] || lambda > preset.range[1]) lambda = preset.roots[0] ?? 0;
-      const info = kernelInfo(preset.A, lambda);
-      const det = detAt(preset.A, lambda);
       stage.innerHTML = `
-        <div class="ch8-scene-intro"><span>参数扫描</span><h3>让 λ 移动，只追踪 det、rank、ker</h3><p>曲线只是定位根的工具；右侧核空间才是特征方向真正出现的地方。</p></div>
+        <div class="ch8-scene-intro"><span>参数扫描</span><h3>拖动 λ，只追踪同一条因果链</h3><p>先移动滑块，再依次看曲线上的点、特征矩阵、秩和核空间。四处必须同步变化。</p></div>
         <div class="ch8-lambda-controls">
           <label>选择矩阵<select data-scan-preset>${Object.entries(presets).map(([key, item]) => `<option value="${key}" ${key === presetKey ? "selected" : ""}>${item.label}</option>`).join("")}</select></label>
-          <div class="ch8-root-buttons">${preset.roots.length ? preset.roots.map((root) => `<button type="button" data-jump-root="${root}">跳到 λ=${root}</button>`).join("") : `<span>实数域中没有奇异参数；曲线不会穿过横轴。扩到复数域时，根为 ±i。</span>`}</div>
+          <div class="ch8-root-buttons" data-root-buttons>${rootButtonsMarkup(preset)}</div>
         </div>
+        <section class="ch8-range-panel" aria-label="调整 λ">
+          <div><span>当前 λ</span><output data-scan-current for="ch8-lambda-range">${fmt(lambda)}</output></div>
+          <input id="ch8-lambda-range" data-scan-range type="range" min="${preset.range[0]}" max="${preset.range[1]}" step="0.05" value="${lambda}" aria-label="当前 λ">
+          <small>拖动圆点、点击轨道，或用左右方向键微调；下面所有读数会连续更新。</small>
+        </section>
         <div class="ch8-scan-layout">
-          <article class="ch8-scan-plot"><canvas data-scan-plot aria-label="特征多项式曲线"></canvas><label><span>当前 λ</span><strong>${fmt(lambda)}</strong><input data-scan-range type="range" min="${preset.range[0]}" max="${preset.range[1]}" step="0.05" value="${lambda}"></label></article>
+          <article class="ch8-scan-plot"><div class="ch8-object-label">① 先看 det(λI−A) 是否碰到 0</div><canvas data-scan-plot aria-label="特征多项式曲线"></canvas></article>
           <article class="ch8-kernel-stage">
-            <div class="ch8-kernel-visual">${kernelSvg(info)}</div>
-            <div class="ch8-kernel-copy"><span>当前核空间</span><strong>${info.type === "zero" ? "只有原点" : info.type === "line" ? "出现一条非零方向" : "整个平面"}</strong><p>${info.text}</p></div>
+            <div class="ch8-object-label">② 再看非零核是否出现</div>
+            <div class="ch8-kernel-visual" data-scan-kernel-visual></div>
+            <div class="ch8-kernel-copy"><span>当前核空间</span><strong data-scan-kernel-title></strong><p data-scan-kernel-text></p></div>
           </article>
         </div>
         <div class="ch8-signal-row">
-          <div><span>当前矩阵</span>${matrix(characteristicAt(preset.A, lambda))}</div>
-          <div><span>det</span><strong class="${Math.abs(det) < 1e-7 ? "is-danger" : ""}">${fmt(det)}</strong></div>
-          <div><span>rank</span><strong>${info.rank}</strong></div>
-          <div><span>dim ker</span><strong>${info.nullity}</strong></div>
+          <div><span>③ 当前特征矩阵</span><div data-scan-matrix></div></div>
+          <div><span>④ det</span><strong data-scan-det></strong></div>
+          <div><span>⑤ rank</span><strong data-scan-rank></strong></div>
+          <div><span>⑥ dim ker</span><strong data-scan-nullity></strong></div>
         </div>
-        ${conclusionMarkup(
-          "四个信号",
-          Math.abs(det) < 1e-7 ? "此刻 λ 是特征值" : "此刻 λ 不是特征值",
-          Math.abs(det) < 1e-7 ? "行列式归零、秩下降、非零核出现；核中的方向就是特征方向。" : "行列式非零，特征矩阵满秩，齐次方程只有零解。",
-          Math.abs(det) < 1e-7 ? "danger" : "accent",
-        )}`;
-      const canvas = stage.querySelector("[data-scan-plot]");
-      drawPlot(canvas, preset, lambda);
-      on(stage.querySelector("[data-scan-preset]"), "change", (event) => {
-        presetKey = event.target.value;
-        lambda = presets[presetKey].roots[0] ?? 0;
-        renderScan();
+        <div data-scan-conclusion></div>`;
+
+      scanElements = {
+        preset: stage.querySelector("[data-scan-preset]"),
+        rootButtons: stage.querySelector("[data-root-buttons]"),
+        range: stage.querySelector("[data-scan-range]"),
+        current: stage.querySelector("[data-scan-current]"),
+        canvas: stage.querySelector("[data-scan-plot]"),
+        kernelVisual: stage.querySelector("[data-scan-kernel-visual]"),
+        kernelTitle: stage.querySelector("[data-scan-kernel-title]"),
+        kernelText: stage.querySelector("[data-scan-kernel-text]"),
+        matrix: stage.querySelector("[data-scan-matrix]"),
+        det: stage.querySelector("[data-scan-det]"),
+        rank: stage.querySelector("[data-scan-rank]"),
+        nullity: stage.querySelector("[data-scan-nullity]"),
+        conclusion: stage.querySelector("[data-scan-conclusion]"),
+      };
+
+      on(scanElements.preset, "change", (event) => {
+        presetKey = event.currentTarget.value;
+        const nextPreset = presets[presetKey];
+        lambda = nextPreset.roots[0] ?? 0;
+        scanElements.range.min = String(nextPreset.range[0]);
+        scanElements.range.max = String(nextPreset.range[1]);
+        scanElements.rootButtons.innerHTML = rootButtonsMarkup(nextPreset);
+        bindRootButtons();
+        updateScan();
       });
-      on(stage.querySelector("[data-scan-range]"), "input", (event) => {
-        lambda = Number(event.target.value);
-        renderScan();
+      on(scanElements.range, "input", (event) => {
+        lambda = Number(event.currentTarget.value);
+        updateScan({ syncRange: false });
       });
-      stage.querySelectorAll("[data-jump-root]").forEach((button) => on(button, "click", () => {
-        lambda = Number(button.dataset.jumpRoot);
-        renderScan();
-      }));
+      on(scanElements.range, "pointerdown", () => scanElements.range.classList.add("is-dragging"));
+      on(scanElements.range, "pointerup", () => scanElements.range.classList.remove("is-dragging"));
+      on(scanElements.range, "pointercancel", () => scanElements.range.classList.remove("is-dragging"));
+      bindRootButtons();
+      updateScan();
     }
 
     function renderCompare() {
+      scanElements = null;
       markExperimentStep(host, 2);
       stage.innerHTML = `
         <div class="ch8-scene-intro"><span>结构对比</span><h3>同一个重根，为什么特征方向数量不同？</h3><p>两个矩阵都把特征值 2 重复了两次；区别只在核空间。</p></div>
@@ -249,7 +315,7 @@
       renderScene();
     }));
     on(window, "resize", () => {
-      if (scene === "scan") renderScan();
+      if (scene === "scan") updateScan({ syncRange: false });
     }, { passive: true });
     renderScene();
   }

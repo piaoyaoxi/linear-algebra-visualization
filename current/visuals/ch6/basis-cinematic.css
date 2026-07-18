@@ -84,6 +84,11 @@
   fill: rgba(92, 224, 235, 0.035);
 }
 
+/* Geometry changes every animation frame; do not restart the stage entrance animation. */
+.ch6-basis-lab .ch6-lab-stage > * {
+  animation: none;
+}
+
 .ch6-drag-handle {
   fill: rgba(7, 21, 37, 0.82);
   stroke: var(--ch6-orange);

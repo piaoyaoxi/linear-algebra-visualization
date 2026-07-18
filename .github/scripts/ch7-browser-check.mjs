@@ -194,8 +194,10 @@ for (const route of routes) {
   assert.equal(await page.locator("[data-example-challenge]").getAttribute("data-state"), "correct");
 }
 
-// Dark mode: inspect every lab.
+// Dark mode: inspect every lab. Reload once so the stored theme is applied
+// during the same initialization path used by a real returning visitor.
 await page.evaluate(() => localStorage.setItem("la-visual-theme", "dark"));
+await page.reload({ waitUntil: "networkidle" });
 for (const route of routes) {
   await page.goto(`${base}#ch7/${route}`, { waitUntil: "networkidle" });
   await page.waitForTimeout(100);

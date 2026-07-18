@@ -14,7 +14,7 @@
       if (this.sidebarMotion.target === 1) return;
       this.pendingLanguage = null;
       this.closeLanguage({ restoreFocus: false });
-      this.closeSearch({ restoreFocus: false });
+      this.closeSearch({ restoreFocus: false, skipMerge: true });
       this.sidebarRestoreFocus = restoreFocus;
       this.elements.sidebar.dataset.phase = "opening";
       this.elements.sidebar.setAttribute("aria-hidden", "false");
@@ -168,7 +168,7 @@
     },
 
     closeForRouteChange() {
-      this.closeSearch({ restoreFocus: false });
+      this.closeSearch({ restoreFocus: false, skipMerge: true });
       this.pendingLanguage = null;
       this.closeLanguage({ restoreFocus: false });
       if (this.mobileQuery.matches) this.closeSidebar({ restoreFocus: false, persist: false });

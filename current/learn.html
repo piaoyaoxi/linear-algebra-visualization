@@ -24,7 +24,7 @@
     <link rel="stylesheet" href="./visuals/page-toc-rail.css?v=21i" />
     <link rel="stylesheet" href="./visuals/theme-transition.css?v=21i" />
     <link rel="stylesheet" href="./visuals/chrome-motion.css?v=30n" />
-    <link rel="stylesheet" href="./visuals/chrome-motion-search.css?v=30n" />
+    <link rel="stylesheet" href="./visuals/chrome-motion-search.css?v=30o" />
     <link rel="stylesheet" href="./visuals/chrome-motion-language.css?v=30i" />
     <link rel="stylesheet" href="./visuals/chrome-motion-sidebar.css?v=30i" />
     <link rel="stylesheet" href="./visuals/liquid-glass-inline.css?v=30n" />
@@ -32,10 +32,10 @@
     <script defer src="./vendor/katex/katex.min.js"></script>
     <script defer src="./visuals/chrome-motion-optics.js?v=30i"></script>
     <script defer src="./visuals/chrome-motion-runtime.js?v=30i"></script>
-    <script defer src="./visuals/chrome-motion-controller.js?v=30n"></script>
-    <script defer src="./visuals/chrome-motion-events.js?v=30n"></script>
-    <script defer src="./visuals/chrome-motion-lifecycle.js?v=30n"></script>
-    <script defer src="./visuals/chrome-motion-search.js?v=30n"></script>
+    <script defer src="./visuals/chrome-motion-controller.js?v=30o"></script>
+    <script defer src="./visuals/chrome-motion-events.js?v=30o"></script>
+    <script defer src="./visuals/chrome-motion-lifecycle.js?v=30o"></script>
+    <script defer src="./visuals/chrome-motion-search.js?v=30o"></script>
     <script defer src="./visuals/chrome-motion-language.js?v=30i"></script>
     <script defer src="./visuals/chrome-motion-sidebar.js?v=30i"></script>
     <script defer src="./visuals/chrome-motion.js?v=30i"></script>
@@ -70,6 +70,7 @@
     <script defer src="./content/ch8.js"></script>
     <script defer src="./content/ch9.js"></script>
     <script defer src="./content/ch10.js"></script>
+    <script defer src="./visuals/search-index.js?v=30o"></script>
     <script defer src="./learn-entry.js"></script>
     <script defer src="./learn-placeholder.js"></script>
     <script defer src="./guide-nav.js"></script>
@@ -245,13 +246,9 @@
       >
         <h2 class="visually-hidden" id="searchModalTitle">搜索课程内容</h2>
         <div class="search-modal-bar-anchor" aria-hidden="true"></div>
-        <div class="search-results-panel liquid-panel">
-          <div class="search-modal-body" id="searchModalDescription" aria-live="polite">
-            <div class="search-empty-state">
-              <span class="search-empty-kicker">课程搜索</span>
-              <p>输入章节名称、概念或关键词。</p>
-            </div>
-          </div>
+        <div class="search-results-merge-field" aria-hidden="true"></div>
+        <div class="search-results-panel liquid-panel" aria-hidden="true" inert>
+          <div class="search-modal-body" id="searchModalDescription" aria-live="polite"></div>
         </div>
       </div>
     </div>

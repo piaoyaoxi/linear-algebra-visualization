@@ -25,6 +25,7 @@
         searchBackdrop: document.querySelector("#searchModal .search-modal-backdrop"),
         searchPanel: document.querySelector("#searchModal .search-modal-panel"),
         searchBar: document.querySelector("#searchModal .search-modal-bar-anchor"),
+        searchMergeField: document.querySelector("#searchModal .search-results-merge-field"),
         searchResultsPanel: document.querySelector("#searchModal .search-results-panel"),
         searchBody: document.querySelector("#searchModal .search-modal-body"),
         searchInput: document.querySelector("#searchModalInput"),
@@ -45,6 +46,7 @@
       this.languageRestoreFocus = false;
       this.sidebarRestoreFocus = false;
       this.searchShouldFocus = false;
+      this.searchResultsInteractive = false;
       this.languageShouldFocus = false;
       this.languageInteractive = false;
       this.sidebarInteractive = false;
@@ -60,6 +62,14 @@
         closeDamping: reduced ? 1 : 0.97,
         onUpdate: (value, raw, target) => this.renderSearch(value, raw, target),
         onSettle: (value) => this.settleSearch(value),
+      });
+      this.searchResultsMotion = new ReversibleSpring({
+        openFrequency: reduced ? 50 : 14.2,
+        closeFrequency: reduced ? 52 : 14.5,
+        openDamping: reduced ? 1 : 0.92,
+        closeDamping: reduced ? 1 : 0.98,
+        onUpdate: (value, raw, target) => this.renderSearchResultsMotion(value, raw, target),
+        onSettle: (value) => this.settleSearchResults(value),
       });
       this.languageMotion = new ReversibleSpring({
         openFrequency: reduced ? 52 : 22,
@@ -84,6 +94,7 @@
       this.body.classList.add("chrome-motion-ready");
       this.initializeSidebar();
       this.renderSearch(0, 0, 0);
+      this.renderSearchResultsMotion(0, 0, 0);
       this.renderLanguage(0, 0, 0);
       this.emitState();
     }

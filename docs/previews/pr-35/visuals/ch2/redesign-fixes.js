@@ -146,9 +146,9 @@
             </div>
             <aside class="ch2-v2-inspector">
               <div class="ch2-v2-cramer-flow">
-                <div class="ch2-v2-cramer-row" data-row-choice="0" data-row-choice><span>第 1 行</span><strong>尚未选择</strong><i>→</i></div>
-                <div class="ch2-v2-cramer-row" data-row-choice="1" data-row-choice><span>第 2 行</span><strong>尚未选择</strong><i>→</i></div>
-                <div class="ch2-v2-cramer-row" data-row-choice="2" data-row-choice><span>第 3 行</span><strong>尚未选择</strong><i>→</i></div>
+                <div class="ch2-v2-cramer-row" data-row-choice="0"><span>第 1 行</span><strong>尚未选择</strong><i>→</i></div>
+                <div class="ch2-v2-cramer-row" data-row-choice="1"><span>第 2 行</span><strong>尚未选择</strong><i>→</i></div>
+                <div class="ch2-v2-cramer-row" data-row-choice="2"><span>第 3 行</span><strong>尚未选择</strong><i>→</i></div>
               </div>
               <div class="ch2-v2-equation">
                 <span>路径压缩成排列与符号</span>
@@ -171,6 +171,28 @@
         button.classList.remove("is-active");
         button.setAttribute("aria-pressed", "false");
       });
+    }
+
+    if (section.id === "cofactor-expansion") {
+      const board = root.querySelector("[data-cofactor-board]");
+      if (!board) return undefined;
+      const syncStrikeOffsets = () => {
+        const row = Number(board.style.getPropertyValue("--strike-row") || 1);
+        const col = Number(board.style.getPropertyValue("--strike-col") || 1);
+        const desired = {
+          "--strike-row-desktop": `${(row - 1) * 98}px`,
+          "--strike-col-desktop": `${(col - 1) * 98}px`,
+          "--strike-row-mobile": `${(row - 1) * 84}px`,
+          "--strike-col-mobile": `${(col - 1) * 84}px`,
+        };
+        Object.entries(desired).forEach(([property, value]) => {
+          if (board.style.getPropertyValue(property) !== value) board.style.setProperty(property, value);
+        });
+      };
+      syncStrikeOffsets();
+      const observer = new MutationObserver(syncStrikeOffsets);
+      observer.observe(board, { attributes: true, attributeFilter: ["style"] });
+      return () => observer.disconnect();
     }
 
     if (section.id !== "laplace-and-product") return undefined;

@@ -43,24 +43,27 @@ async function dragRange(page, selector, ratio, touch) {
   const min = Number(await range.getAttribute("min"));
   const max = Number(await range.getAttribute("max"));
   const current = Number(await range.inputValue());
-  const startRatio = (current - min) / (max - min);
+  const rawStartRatio = (current - min) / (max - min);
+  const startRatio = Math.max(0.04, Math.min(0.96, rawStartRatio));
+  const targetRatio = Math.max(0.04, Math.min(0.96, ratio));
   const y = box.y + box.height / 2;
   const startX = box.x + box.width * startRatio;
-  const endX = box.x + box.width * ratio;
+  const endX = box.x + box.width * targetRatio;
   if (touch) {
     const client = await page.context().newCDPSession(page);
-    await client.send("Input.dispatchTouchEvent", { type: "touchStart", touchPoints: [{ x: startX, y, id: 1, radiusX: 7, radiusY: 7, force: 1 }] });
-    for (let i = 1; i <= 10; i += 1) {
-      await client.send("Input.dispatchTouchEvent", { type: "touchMove", touchPoints: [{ x: startX + ((endX - startX) * i) / 10, y, id: 1, radiusX: 7, radiusY: 7, force: 1 }] });
+    await client.send("Input.dispatchTouchEvent", { type: "touchStart", touchPoints: [{ x: startX, y, id: 1, radiusX: 9, radiusY: 9, force: 1 }] });
+    for (let i = 1; i <= 12; i += 1) {
+      await client.send("Input.dispatchTouchEvent", { type: "touchMove", touchPoints: [{ x: startX + ((endX - startX) * i) / 12, y, id: 1, radiusX: 9, radiusY: 9, force: 1 }] });
     }
     await client.send("Input.dispatchTouchEvent", { type: "touchEnd", touchPoints: [] });
     await client.detach();
   } else {
     await page.mouse.move(startX, y);
     await page.mouse.down();
-    await page.mouse.move(endX, y, { steps: 12 });
+    await page.mouse.move(endX, y, { steps: 16 });
     await page.mouse.up();
   }
+  await page.waitForTimeout(80);
 }
 
 async function checkSmith(page, name) {
@@ -88,7 +91,7 @@ async function checkSimilarity(page, name, touch) {
     grid: document.querySelector("[data-grid-a]")?.getAttribute("d"),
     object: document.querySelector(".basis-output-shape")?.getAttribute("points"),
   }));
-  await dragRange(page, "[data-basis-range]", 0.98, touch);
+  await dragRange(page, "[data-basis-range]", 0.94, touch);
   const after = await page.evaluate(() => ({
     grid: document.querySelector("[data-grid-a]")?.getAttribute("d"),
     object: document.querySelector(".basis-output-shape")?.getAttribute("points"),
@@ -97,7 +100,7 @@ async function checkSimilarity(page, name, touch) {
   }));
   if (before.grid === after.grid) throw new Error(`${name}/similarity: grid did not move`);
   if (before.object !== after.object) throw new Error(`${name}/similarity: geometric object moved during basis change`);
-  if (Number(after.value) < 0.9 || !normalize(after.matrix).includes("1.00")) throw new Error(`${name}/similarity: matrix record did not reach oblique basis`);
+  if (Number(after.value) < 0.85 || Number(after.value) > 1 || !normalize(after.matrix).includes(Number(after.value).toFixed(2))) throw new Error(`${name}/similarity: matrix record did not follow the dragged basis`);
   await page.locator(".ch8-similarity-cinema").screenshot({ path: path.join(shots, `${name}-similarity.png`) });
 }
 

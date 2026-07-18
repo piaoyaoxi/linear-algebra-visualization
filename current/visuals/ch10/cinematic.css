@@ -4,6 +4,7 @@
 }
 
 .ch10-cinema {
+  scroll-margin-top: calc(var(--topbar-height, 48px) + 34px);
   --cinema-cyan: #62e6ee;
   --cinema-amber: #ffad62;
   --cinema-coral: #ff6f7f;

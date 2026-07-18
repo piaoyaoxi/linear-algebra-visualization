@@ -143,7 +143,15 @@ async function auditRoute(browser, route, viewport, options = {}) {
         .filter((item) => item.width < 32 || item.height < 32));
       assert(touchTargets.length === 0, `${label}: undersized cinematic controls ${JSON.stringify(touchTargets)}`);
 
-      await page.locator("[data-ch10-cinema]").screenshot({ path: path.join(outputDir, `${label}-cinema.png`) });
+      const cinemaLocator = page.locator("[data-ch10-cinema]");
+      await cinemaLocator.scrollIntoViewIfNeeded();
+      const chromeClearance = await page.evaluate(() => {
+        const cinema = document.querySelector("[data-ch10-cinema]")?.getBoundingClientRect();
+        const topbar = document.querySelector(".topbar")?.getBoundingClientRect();
+        return cinema && topbar ? cinema.top >= topbar.bottom - 1 : true;
+      });
+      assert(chromeClearance, `${label}: fixed top controls overlap the cinematic title`);
+      await cinemaLocator.screenshot({ path: path.join(outputDir, `${label}-cinema.png`) });
     }
 
     assertNoPageErrors();
@@ -192,6 +200,35 @@ async function auditCinematicStories(browser) {
 
   assertNoPageErrors();
   results.push({ label: "cinematic-audit", status: "passed" });
+  await context.close();
+}
+
+async function auditMobileCinematicStories(browser) {
+  const context = await browser.newContext({ viewport: { width: 390, height: 844 }, colorScheme: "dark" });
+  const page = await context.newPage();
+  const assertNoPageErrors = await collectPageErrors(page, "mobile-cinematic-audit");
+
+  for (const route of lessonRoutes) {
+    await page.goto(`${baseURL}${route.hash}`, { waitUntil: "networkidle" });
+    const cinema = page.locator("[data-ch10-cinema]");
+    await cinema.waitFor();
+    const buttons = cinema.locator("[data-cinema-step]");
+    const count = await buttons.count();
+    for (let index = 0; index < count; index += 1) {
+      await buttons.nth(index).click();
+      await page.waitForTimeout(980);
+      const bounds = await cinema.locator("[data-cinema-svg]").evaluate((svg) => ({
+        scrollWidth: svg.scrollWidth,
+        clientWidth: svg.clientWidth,
+        rectWidth: svg.getBoundingClientRect().width,
+      }));
+      assert(bounds.scrollWidth <= bounds.clientWidth + 2, `${route.id} mobile step ${index + 1}: SVG overflows its stage`);
+      await cinema.screenshot({ path: path.join(outputDir, `${route.id}-mobile-cinema-step-${index + 1}.png`) });
+    }
+  }
+
+  assertNoPageErrors();
+  results.push({ label: "mobile-cinematic-audit", status: "passed" });
   await context.close();
 }
 
@@ -313,7 +350,7 @@ async function auditReducedMotion(browser) {
       }
     }
 
-    for (const audit of [auditCinematicStories, auditInteractions, auditReducedMotion]) {
+    for (const audit of [auditCinematicStories, auditMobileCinematicStories, auditInteractions, auditReducedMotion]) {
       try {
         await audit(browser);
       } catch (error) {

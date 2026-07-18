@@ -29,7 +29,7 @@
             <p>伴随矩阵不是凭空写出的模板。它完整记录了“前移”和“反馈”两种动作。</p>
           </header>
 
-          <section class="ch8-krylov-machine">
+          <section class="ch8-krylov-machine ch8-companion-matrix">
             <svg viewBox="0 0 980 470" role="img" aria-label="Krylov 轨道推进并在第一次线性相关时回流到前面向量">
               <defs><marker id="ch8-krylov-arrow" markerWidth="10" markerHeight="10" refX="8" refY="5" orient="auto"><path d="M0 0L10 5L0 10Z"></path></marker></defs>
               <path class="belt-line" d="M90 235H650"></path>
@@ -43,7 +43,7 @@
               <path class="feedback-branch ${feedback ? "is-visible" : ""}" d="M500 92C455 128 385 150 305 190"></path>
               <text class="feedback-label ${feedback ? "is-visible" : ""}" x="342" y="66">A³v = −v + 2Av</text>
 
-              <g class="companion-shell ch8-companion-matrix" transform="translate(730 95)">
+              <g class="companion-shell" transform="translate(730 95)">
                 <text x="0" y="0">在基 (v, Av, A²v) 中</text>
                 <path class="matrix-brace" d="M12 38H0V282H12M226 38H238V282H226"></path>
                 ${[

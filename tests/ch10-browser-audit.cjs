@@ -146,9 +146,9 @@ async function auditRoute(browser, route, viewport, options = {}) {
       const cinemaLocator = page.locator("[data-ch10-cinema]");
       await cinemaLocator.scrollIntoViewIfNeeded();
       const chromeClearance = await page.evaluate(() => {
-        const cinema = document.querySelector("[data-ch10-cinema]")?.getBoundingClientRect();
+        const heading = document.querySelector("[data-ch10-cinema] .ch10-cinema-head > div")?.getBoundingClientRect();
         const topbar = document.querySelector(".topbar")?.getBoundingClientRect();
-        return cinema && topbar ? cinema.top >= topbar.bottom - 1 : true;
+        return heading && topbar ? heading.top >= topbar.bottom + 8 : true;
       });
       assert(chromeClearance, `${label}: fixed top controls overlap the cinematic title`);
       await cinemaLocator.screenshot({ path: path.join(outputDir, `${label}-cinema.png`) });

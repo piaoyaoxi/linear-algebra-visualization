@@ -1,21 +1,34 @@
-/* Ensure the division scene receives its exact step data before the first resize paint. */
+/* Compatibility hooks for the focused Chapter 1 motion upgrades. */
 (() => {
   "use strict";
+
   const math = window.Ch1Math;
-  if (!math?.observeCanvas || math.observeCanvas.__ch1MotionDeferred) return;
-  const baseObserveCanvas = math.observeCanvas;
-  math.observeCanvas = function observeCanvasAfterState(root, draw) {
-    if (!root?.classList?.contains("ch1-division-canvas-shell")) return baseObserveCanvas(root, draw);
-    let queued = false;
-    const deferredDraw = () => {
-      if (queued) return;
-      queued = true;
-      queueMicrotask(() => {
-        queued = false;
-        if (root.isConnected) draw();
-      });
+  if (math?.observeCanvas && !math.observeCanvas.__ch1MotionDeferred) {
+    const baseObserveCanvas = math.observeCanvas;
+    math.observeCanvas = function observeCanvasAfterState(root, draw) {
+      if (!root?.classList?.contains("ch1-division-canvas-shell")) return baseObserveCanvas(root, draw);
+      let queued = false;
+      const deferredDraw = () => {
+        if (queued) return;
+        queued = true;
+        queueMicrotask(() => {
+          queued = false;
+          if (root.isConnected) draw();
+        });
+      };
+      return baseObserveCanvas(root, deferredDraw);
     };
-    return baseObserveCanvas(root, deferredDraw);
-  };
-  math.observeCanvas.__ch1MotionDeferred = true;
+    math.observeCanvas.__ch1MotionDeferred = true;
+  }
+
+  if (typeof window.mountChapter1Lesson === "function" && !window.mountChapter1Lesson.__ch1MotionHeadCompatible) {
+    const baseMountChapter1Lesson = window.mountChapter1Lesson;
+    const compatibleMount = function mountChapter1LessonWithMotionHead(section, root) {
+      baseMountChapter1Lesson(section, root);
+      if (!section?.id || !root) return;
+      root.querySelector(`#${CSS.escape(section.id)}-interactive .ch1-motion-head`)?.classList.add("ch1-lab-head");
+    };
+    compatibleMount.__ch1MotionHeadCompatible = true;
+    window.mountChapter1Lesson = compatibleMount;
+  }
 })();

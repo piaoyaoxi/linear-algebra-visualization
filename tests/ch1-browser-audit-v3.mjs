@@ -46,6 +46,21 @@ async function checkMath(page, section) {
   ensure(!result.raw, `${section}: raw LaTeX exists outside rendered formulas`);
 }
 
+async function checkVisibleText(page, section) {
+  const result = await page.evaluate((sectionId) => {
+    const lab = document.querySelector(`#${CSS.escape(sectionId)}-interactive .ch1-lab`);
+    if (!lab) return { clipped: ["lab missing"] };
+    const candidates = [...lab.querySelectorAll("h3, h4, p, strong, output, [data-title], [data-step]")];
+    const clipped = candidates.filter((node) => {
+      const style = getComputedStyle(node);
+      const hidden = ["hidden", "clip"].includes(style.overflowX) || ["hidden", "clip"].includes(style.overflow);
+      return hidden && node.scrollWidth > node.clientWidth + 2;
+    }).slice(0, 8).map((node) => `${node.tagName}:${(node.textContent || "").replace(/\s+/g, " ").trim().slice(0, 80)}`);
+    return { clipped };
+  }, section);
+  ensure(result.clipped.length === 0, `${section}: clipped visible text ${result.clipped.join(" | ")}`);
+}
+
 async function division(page, verifyAnimation) {
   const lab = page.locator("#polynomial-divisibility-interactive");
   const next = lab.locator("[data-next]");
@@ -90,6 +105,25 @@ async function division(page, verifyAnimation) {
   }
 }
 
+async function checkDivisionSummary(page, viewport) {
+  const result = await page.evaluate(() => {
+    const title = document.querySelector("#polynomial-divisibility-interactive [data-title]");
+    const first = title?.parentElement;
+    return {
+      text: title?.textContent || "",
+      titleOverflow: title ? title.scrollWidth - title.clientWidth : 999,
+      parentOverflow: first ? first.scrollWidth - first.clientWidth : 999,
+      overflowX: title ? getComputedStyle(title).overflowX : "missing",
+    };
+  });
+  ensure(result.text.includes("x²+x+1"), `§3: example formula is incomplete: ${result.text}`);
+  if (viewport.width >= 760) {
+    ensure(result.titleOverflow <= 2 && result.parentOverflow <= 2, `§3: example formula is visually clipped (${result.titleOverflow}/${result.parentOverflow})`);
+  } else {
+    ensure(result.titleOverflow <= 2 || ["auto", "scroll"].includes(result.overflowX), "§3 mobile: formula overflow has no readable scroll path");
+  }
+}
+
 async function dragConjugate(page) {
   const canvas = page.locator("[data-complex-canvas]");
   const box = await canvas.boundingBox();
@@ -106,6 +140,37 @@ async function dragConjugate(page) {
   ensure(Math.abs(v[0] - v[2]) < 1e-9 && Math.abs(v[1] + v[3]) < 1e-9, "§8: conjugate mirroring failed");
 }
 
+async function checkMultivariateLayout(page, viewport) {
+  const result = await page.evaluate(() => {
+    const primary = document.querySelector("#multivariate-polynomials-interactive .ch1-multivariate-primary");
+    const stage = primary?.querySelector(".ch1-multivariate-stage");
+    const inspector = primary?.querySelector(".ch1-multivariate-inspector");
+    const support = document.querySelector("#multivariate-polynomials-interactive [data-support-module]");
+    const p = primary?.getBoundingClientRect();
+    const s = stage?.getBoundingClientRect();
+    const i = inspector?.getBoundingClientRect();
+    const m = support?.getBoundingClientRect();
+    return {
+      primary: Boolean(primary),
+      stage: Boolean(stage),
+      inspector: Boolean(inspector),
+      support: Boolean(support),
+      sameRow: s && i ? Math.abs(s.top - i.top) <= 3 : false,
+      heightDiff: s && i ? Math.abs(s.height - i.height) : 999,
+      supportBelow: p && m ? m.top >= p.bottom - 2 : false,
+      legacyGrid: Boolean(document.querySelector("#multivariate-polynomials-interactive .ch1-lab-grid")),
+    };
+  });
+  ensure(result.primary && result.stage && result.inspector && result.support, "§10: rebuilt workspace is incomplete");
+  ensure(!result.legacyGrid, "§10: legacy two-column lab grid still mounted");
+  ensure(result.supportBelow, "§10: explanation modules still compete beside the main graph");
+  if (viewport.width > 1040) {
+    ensure(result.sameRow && result.heightDiff <= 4, `§10 desktop: main graph and inspector are unbalanced (${result.heightDiff}px)`);
+  } else {
+    ensure(!result.sameRow, "§10 tablet/mobile: graph and inspector should stack instead of squeezing");
+  }
+}
+
 async function operate(page, section, viewport, theme) {
   const detail = (viewport.name === "desktop" && theme === "light") || (viewport.name === "mobile" && theme === "dark");
   if (section === "number-fields") {
@@ -114,6 +179,7 @@ async function operate(page, section, viewport, theme) {
     await clickIf(page, '[data-mode="mul"]'); if (await page.locator("[data-k]").count()) await page.locator("[data-k]").fill("4");
     await clickIf(page, '[data-preset="fraction"]'); await clickIf(page, '[data-mode="mul"]');
   } else if (section === "polynomial-divisibility") {
+    await checkDivisionSummary(page, viewport);
     await division(page, viewport.name === "desktop" && theme === "light");
   } else if (section === "gcd-polynomials") {
     const next = page.locator("[data-next]"); for (let i = 0; i < 8 && !(await next.isDisabled()); i += 1) await next.click();
@@ -133,7 +199,12 @@ async function operate(page, section, viewport, theme) {
   } else if (section === "rational-polynomials") {
     await clickIf(page, '[data-rational-example="quartic"]'); await clickIf(page, '[data-prime="2"]');
   } else if (section === "multivariate-polynomials") {
-    await clickIf(page, '[data-lattice-mode="multiply"]'); await clickIf(page, "[data-mul-demo]");
+    await checkMultivariateLayout(page, viewport);
+    if (detail) await page.locator("#multivariate-polynomials-interactive .ch1-lab").screenshot({ path: path.join(outputDir, `${viewport.name}-${theme}-multivariate-support.png`) });
+    await clickIf(page, '[data-lattice-mode="multiply"]');
+    await clickIf(page, '[data-first="{\"i\":1,\"j\":2}"]');
+    await clickIf(page, '[data-second="{\"i\":0,\"j\":1}"]');
+    ensure(!(await page.locator("[data-multiply-module]").getAttribute("hidden")), "§10: multiply module did not open");
   } else if (section === "symmetric-polynomials") {
     await clickIf(page, "[data-cycle]"); await clickIf(page, "[data-swap-xy]"); await clickIf(page, "[data-rewrite-next]");
   }
@@ -155,7 +226,7 @@ for (const viewport of viewports) {
       const lab = page.locator(`#${section}-interactive .ch1-lab`);
       await lab.waitFor({ state: "visible" });
       if ((theme === "dark") !== Boolean(await page.locator("body.dark").count())) await page.locator("#themeToggle").click();
-      await checkMath(page, section); await operate(page, section, viewport, theme); await checkMath(page, section);
+      await checkMath(page, section); await checkVisibleText(page, section); await operate(page, section, viewport, theme); await checkMath(page, section); await checkVisibleText(page, section);
       const layout = await page.evaluate((id) => {
         const node = document.querySelector(`#${CSS.escape(id)}-interactive .ch1-lab`);
         return {

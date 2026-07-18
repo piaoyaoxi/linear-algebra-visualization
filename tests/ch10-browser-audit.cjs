@@ -52,6 +52,7 @@ async function auditRoute(browser, route, viewport, options = {}) {
     colorScheme: "light",
   });
   const page = await context.newPage();
+  page.setDefaultTimeout(8000);
   const label = `${route.id}-${viewport.id}${options.reducedMotion ? "-reduced" : ""}`;
   const assertNoPageErrors = await collectPageErrors(page, label);
   const screenshotPath = path.join(outputDir, `${label}.png`);
@@ -65,7 +66,7 @@ async function auditRoute(browser, route, viewport, options = {}) {
       await page.waitForFunction(() => document.body.classList.contains("dark"));
     }
 
-    await page.screenshot({ path: screenshotPath, fullPage: true });
+    await page.screenshot({ path: screenshotPath, fullPage: viewport.id === "desktop" });
 
     const layout = await page.evaluate(() => {
       const root = document.documentElement;
@@ -149,7 +150,7 @@ async function auditRoute(browser, route, viewport, options = {}) {
     results.push({ label, status: "passed" });
   } catch (error) {
     if (!fs.existsSync(screenshotPath)) {
-      await page.screenshot({ path: screenshotPath, fullPage: true }).catch(() => {});
+      await page.screenshot({ path: screenshotPath }).catch(() => {});
     }
     throw error;
   } finally {
@@ -160,6 +161,7 @@ async function auditRoute(browser, route, viewport, options = {}) {
 async function auditCinematicStories(browser) {
   const context = await browser.newContext({ viewport: { width: 1440, height: 900 } });
   const page = await context.newPage();
+  page.setDefaultTimeout(8000);
   const assertNoPageErrors = await collectPageErrors(page, "cinematic-audit");
 
   for (const route of lessonRoutes) {
@@ -203,8 +205,10 @@ async function openDeepLab(page) {
 async function auditInteractions(browser) {
   const context = await browser.newContext({ viewport: { width: 1440, height: 900 } });
   const page = await context.newPage();
+  page.setDefaultTimeout(8000);
   const assertNoPageErrors = await collectPageErrors(page, "interaction-audit");
 
+  // §1: cinematic continuity, guided equal-level motion and zero functional boundary.
   await page.goto(`${baseURL}#ch10/linear-functional`, { waitUntil: "networkidle" });
   await page.locator('[data-cinema-step="1"]').click();
   await page.waitForTimeout(980);
@@ -221,6 +225,7 @@ async function auditInteractions(browser) {
   await page.click("[data-example-start]");
   assert((await page.locator("[data-example-progress]").textContent()).includes("1 /"), "§1 example stepper did not start");
 
+  // §2: covectors are layers/readers, and dependent basis blocks the dual basis.
   await page.goto(`${baseURL}#ch10/dual-space`, { waitUntil: "networkidle" });
   assert(await page.locator(".dual-reader-stack").count() === 1, "§2 covector reader visual missing");
   assert(await page.locator(".is-functional-plane .ch10-vector").count() === 0, "§2 incorrectly draws the covector as an ordinary vector arrow");
@@ -234,6 +239,7 @@ async function auditInteractions(browser) {
   await page.click('[data-dual-basis-preset="near"]');
   assert((await page.locator("[data-dual-sensitivity]").textContent()).includes("接近退化"), "§2 near-dependent sensitivity state missing");
 
+  // §3: two-slot modes, equivalent pipelines, and left radical.
   await page.goto(`${baseURL}#ch10/bilinear-form`, { waitUntil: "networkidle" });
   await page.locator('[data-cinema-step="2"]').click();
   await page.waitForTimeout(980);
@@ -249,6 +255,7 @@ async function auditInteractions(browser) {
   await page.click('[data-radical-preset="nonsymmetric"]');
   assert((await page.locator("[data-radical-readout]").textContent()).includes("左根与右根方向不同"), "§3 nonsymmetric radical boundary missing");
 
+  // §4: cinematic geometry, sign swap, collinear state, symplectic and non-symplectic transforms.
   await page.goto(`${baseURL}#ch10/symplectic-space`, { waitUntil: "networkidle" });
   await page.locator('[data-cinema-step="2"]').click();
   await page.waitForTimeout(980);
@@ -266,6 +273,7 @@ async function auditInteractions(browser) {
   await page.click('[data-symplectic-preset="shear"]');
   assert((await page.locator("[data-transform-verdict]").textContent()).includes("SᵀJS = J"), "§4 shear should be symplectic");
 
+  // Chapter 4 regression.
   await page.goto(`${baseURL}#ch4/matrix-language`, { waitUntil: "networkidle" });
   await page.waitForSelector("#matrix-language-formal .section-one-foundation");
   assert(await page.locator("[data-anatomy-matrix]").count() === 1, "Chapter 4 §1 renderer regression");
@@ -279,6 +287,7 @@ async function auditInteractions(browser) {
 async function auditReducedMotion(browser) {
   const context = await browser.newContext({ viewport: { width: 390, height: 844 }, reducedMotion: "reduce" });
   const page = await context.newPage();
+  page.setDefaultTimeout(8000);
   const assertNoPageErrors = await collectPageErrors(page, "reduced-motion-cinematic");
   await page.goto(`${baseURL}#ch10/symplectic-space`, { waitUntil: "networkidle" });
   const initial = await page.locator("[data-cinema-caption]").textContent();

@@ -5,6 +5,7 @@ on:
     paths:
       - "current/**"
       - ".github/scripts/ch6-browser-check.mjs"
+      - ".github/scripts/ch6-browser-review.mjs"
       - ".github/workflows/ch6-browser-check.yml"
 
 permissions:
@@ -43,7 +44,7 @@ jobs:
         shell: bash
         run: |
           set +e
-          node .github/scripts/ch6-browser-check.mjs 2>&1 | tee /tmp/ch6-screenshots/browser-check.log
+          node .github/scripts/ch6-browser-review.mjs 2>&1 | tee /tmp/ch6-screenshots/browser-check.log
           status=${PIPESTATUS[0]}
           exit "$status"
 

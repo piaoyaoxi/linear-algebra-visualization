@@ -418,9 +418,9 @@
       sized.ctx.stroke();
       sized.ctx.restore();
 
-      M().drawArrowBetween(sized.ctx, frame, O, alphaU, frame.p.accent, "αu", 3.1, { tailDot: true });
-      M().drawArrowBetween(sized.ctx, frame, alphaU, total, frame.p.coral, "βv", 3.1);
-      M().drawArrowBetween(sized.ctx, frame, O, total, frame.p.blue, "w", 3.7);
+      M().drawArrowBetween(sized.ctx, frame, O, alphaU, frame.p.accent, "αu", 3.1, { tailDot: true, labelT: 0.72, labelOffset: -9 });
+      M().drawArrowBetween(sized.ctx, frame, alphaU, total, frame.p.coral, "βv", 3.1, { labelT: 0.48, labelOffset: 12 });
+      M().drawArrowBetween(sized.ctx, frame, O, total, frame.p.blue, "w", 3.7, { labelT: 1, labelOffset: -12 });
 
       sized.ctx.save();
       sized.ctx.fillStyle = frame.p.muted;

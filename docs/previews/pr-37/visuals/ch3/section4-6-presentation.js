@@ -561,12 +561,12 @@ x0p[1] + a * d1[1] + b * d2[1],
       }
 
       directions.forEach((direction, index) => {
-        const endpoint = [x0p[0] + direction[0], x0p[1] + direction[1]];
-        M().drawArrowBetween(sized.ctx, frame, x0p, endpoint, frame.p.coral, `η${index + 1}`, 2.7, { alpha: 0.9 });
+        const endpoint = [x0p[0] + 0.72 * direction[0], x0p[1] + 0.72 * direction[1]];
+        M().drawArrowBetween(sized.ctx, frame, x0p, endpoint, frame.p.coral, `η${index + 1}`, 2.7, { alpha: 0.9, labelT: 0.62, labelOffset: 12 });
       });
 
       if (Math.hypot(xp[0] - x0p[0], xp[1] - x0p[1]) > 1e-8) {
-        M().drawArrowBetween(sized.ctx, frame, x0p, xp, frame.p.blue, "参数位移", 2.2, { dashed: true, alpha: 0.72 });
+        M().drawArrowBetween(sized.ctx, frame, x0p, xp, frame.p.blue, "", 2.2, { dashed: true, alpha: 0.72 });
       }
       M().drawArrowBetween(sized.ctx, frame, [0, 0], xp, frame.p.blue, "x", 3.8, { tailDot: true });
     }

@@ -1,185 +1,217 @@
 (() => {
   const M = () => window.Ch5Math;
-  const tex = (s) => (window.texInline ? window.texInline(s) : s);
-  const display = (s) => (window.texDisplay ? window.texDisplay(s) : s);
+  const inline = (source) => (window.texInline ? window.texInline(source) : source);
+  const display = (source) => (window.texDisplay ? window.texDisplay(source) : source);
 
-  function formalShell(title, lead, body) {
-    return `<h2>${title}</h2><div class="ch5-formal"><p class="ch5-formal-lead">${lead}</p>${body}</div>`;
-  }
-
-  function module(num, title, sub, body) {
-    return `<section class="ch5-module"><div class="ch5-module-heading"><span>${num}</span><div><h3>${title}</h3><p>${sub}</p></div></div>${body}</section>`;
+  function module(index, title, subtitle, body) {
+    return `<section class="ch5-module"><div class="ch5-module-heading"><span>${index}</span><div><h3>${title}</h3><p>${subtitle}</p></div></div>${body}</section>`;
   }
 
   function renderFormal(formal) {
     if (!formal) return;
-    formal.innerHTML = formalShell(
-      "配方法：消去交叉项",
-      "标准形是无交叉项的对角二次型。教材主方法是配方法；矩阵语言里，每一步对应可逆替换的累积合同 CᵀAC → D。标准形系数一般不唯一。",
-      module(
-        "1",
-        "标准形",
-        "对角形式，非零项个数 = 秩",
-        `${display("f=d_1y_1^2+\\cdots+d_ry_r^2\\ (d_i\\neq 0)")}
-         <p class="ch5-muted" style="margin:12px 0 0">存在性由配方法或合同初等变换保证；具体 dᵢ 还可缩放，唯一性见 §3。</p>`,
-      ) +
-        module(
-          "2",
-          "配方一步",
-          "主平方项吸收交叉项",
-          `<p class="ch5-muted">若 a≠0，则 ${tex("ax_1^2+2bx_1x_2+cx_2^2=a\\bigl(x_1+\\tfrac{b}{a}x_2\\bigr)^2+\\bigl(c-\\tfrac{b^2}{a}\\bigr)x_2^2")}。</p>
-           <p class="ch5-muted">若先出现纯交叉项而没有平方项，先做和差替换，再配方。</p>`,
-        ) +
-        module(
-          "3",
-          "合同初等变换",
-          "行操作必须配合同列操作",
-          `<p class="ch5-muted">对对称矩阵做合同变换时，交换/倍乘/倍加都要在行与列上同步进行，才能保持对称并对应合法变量替换。不要把普通行消元直接当作合同变换。</p>`,
-        ),
-    );
+    formal.innerHTML = `
+      <h2>把交叉项一步一步消掉</h2>
+      <div class="ch5-foundation ch5s2-foundation">
+        <p class="ch5-lead">化标准形的核心不是“看见一张摆正的椭圆”，而是写出一个可逆变量替换，把原二次型真实地改写成平方项之和。本节的主方法只有一条：Lagrange 配方法，以及它在矩阵中的合同语言。</p>
+
+        ${module(
+          "01",
+          "交叉项意味着当前坐标没有对准",
+          "同一个二次型，换坐标后可以写得更简单",
+          `<div class="ch5-pair">
+            <div class="ch5-card ch5s2-axis-card"><div class="ch5s2-tilted-axes"><span></span><i></i><b></b></div><h4>原坐标</h4><p>${inline("x_1^2+4x_1x_2+5x_2^2")} 含交叉项。</p></div>
+            <div class="ch5-card ch5s2-axis-card"><div class="ch5s2-straight-axes"><span></span><i></i><b></b></div><h4>新坐标</h4><p>${inline("y_1^2+y_2^2")} 只剩平方项。</p></div>
+          </div>`,
+        )}
+
+        ${module(
+          "02",
+          "什么叫标准形",
+          "没有交叉项的对角二次型",
+          `<div class="ch5-equation">${display("f=d_1y_1^2+\\cdots+d_ry_r^2,\\qquad d_i\\ne0")}</div>
+          <ul class="ch5-check-list"><li>没有任何 ${inline("y_iy_j")} 交叉项。</li><li>非零平方项的个数 r 等于二次型的秩。</li><li>具体系数通常不唯一；本节只解决怎样化到标准形。</li></ul>`,
+        )}
+
+        ${module(
+          "03",
+          "配方的一步到底做了什么",
+          "先收集，再完成平方，再定义新变量",
+          `<div class="ch5s2-square-identity">
+            <div>${inline("ax_1^2+2bx_1x_2+cx_2^2")}</div><span>=</span>
+            <div>${inline("a\\left(x_1+\\frac ba x_2\\right)^2+\\left(c-\\frac{b^2}{a}\\right)x_2^2")}</div>
+          </div>
+          <p class="ch5-muted">这里假设 ${inline("a\\ne0")}。若没有平方项却有交叉项，先作和差替换，把乘积变成平方差，再继续。</p>`,
+        )}
+
+        ${module(
+          "04",
+          "矩阵中必须行列成对",
+          "普通行消元不是合同变换",
+          `<div class="ch5s2-paired-operation"><div><strong>做一次行操作</strong><span>第 2 行减去 k 倍第 1 行</span></div><b>+</b><div><strong>同步做同名列操作</strong><span>第 2 列减去 k 倍第 1 列</span></div><b>→</b><div><strong>仍是 CᵀAC</strong><span>矩阵保持对称，换元可追踪</span></div></div>`,
+        )}
+
+        <div class="ch5-next-note"><span>后续连接</span><p>学过实对称矩阵的正交对角化后，还可以用正交替换寻找主轴。但这不是本节配方法的前置工具，也不替代下面的变量替换过程。</p></div>
+      </div>`;
   }
 
   function mountLab(root) {
     if (!root) return;
     root.innerHTML = `
       <h2>交互实验</h2>
-      <div class="ch5-lab">
-        <div class="ch5-lab-head">
-          <h3>配方步进器</h3>
-          <p>逐步配方，同步查看当前多项式、替换矩阵 C、合同后的矩阵 B=CᵀAC，以及等高线在新表达下如何变为轴对齐。</p>
+      <div class="ch5-lab ch5s2-lab">
+        <div class="ch5-lab-head"><h3>配方步进器</h3><p>一次只看一步。你的任务不是拖参数，而是沿着配方逻辑走到最后，并在终点核对三件事：替换可逆、交叉项为 0、秩没有改变。</p></div>
+        <div class="ch5-task"><span>1</span><div><strong>选择一个典型例子</strong><p>建议先走“含交叉项”，再看“只有交叉项”为什么必须先做和差替换。</p></div></div>
+        <div class="ch5-toolbar" role="group" aria-label="选择配方例子">
+          <button type="button" class="is-active" data-s2-preset="regular">含交叉项</button>
+          <button type="button" data-s2-preset="cross">只有交叉项</button>
+          <button type="button" data-s2-preset="rank1">退化为一个平方</button>
+          <button type="button" data-s2-preset="indef">一正一负</button>
         </div>
+
+        <div class="ch5-controls-row">
+          <div class="ch5s2-step-count" data-s2-step-count></div>
+          <div class="ch5-toolbar" role="group" aria-label="配方步骤控制">
+            <button type="button" data-s2-nav="prev">上一步</button>
+            <button type="button" data-s2-nav="next">下一步</button>
+            <button type="button" data-s2-nav="reset">重置</button>
+          </div>
+        </div>
+        <div class="ch5-progress" data-s2-progress></div>
+
         <div class="ch5-lab-grid">
           <div class="ch5-panel">
-            <div class="ch5-sliders">
-              <label class="ch5-slider-row"><span>a</span><input data-k="a" type="range" min="-2" max="3" step="0.05" value="1" /><span data-v="a">1</span></label>
-              <label class="ch5-slider-row"><span>b</span><input data-k="b" type="range" min="-2" max="2" step="0.05" value="0.8" /><span data-v="b">0.8</span></label>
-              <label class="ch5-slider-row"><span>c</span><input data-k="c" type="range" min="-2" max="3" step="0.05" value="2" /><span data-v="c">2</span></label>
-            </div>
-            <div class="ch5-toolbar">
-              <button type="button" data-preset="tilt">倾斜椭圆型</button>
-              <button type="button" data-preset="axis">已对角</button>
-              <button type="button" data-preset="hyper">不定型</button>
-              <button type="button" data-preset="cross">纯交叉项</button>
-            </div>
-            <div class="ch5-stage"><canvas data-contour aria-label="当前二次型等高线"></canvas></div>
-            <div class="ch5-toolbar">
-              <button type="button" data-step-btn="prev">上一步</button>
-              <button type="button" data-step-btn="next">下一步</button>
-              <button type="button" data-step-btn="reset">重置到起点</button>
-            </div>
-            <p class="ch5-muted" data-step-label>步骤 1 / 1</p>
+            <article class="ch5-step-card" aria-live="polite">
+              <span class="ch5-step-kicker" data-s2-kicker></span>
+              <h4 data-s2-title></h4>
+              <div class="ch5-equation" data-s2-poly></div>
+              <p data-s2-note></p>
+            </article>
+            <div class="ch5-stage"><canvas data-s2-canvas aria-label="当前坐标中的二次型等高线"></canvas></div>
+            <p class="ch5-muted" data-s2-look></p>
           </div>
+
           <div class="ch5-panel">
-            <div class="ch5-steps" data-steps></div>
-            <div class="ch5-readout">
-              <strong>当前替换 x = C y</strong>
-              <div data-c-mat class="ch5-matrix-wrap"></div>
-              <p class="ch5-muted">det C = <span data-det>—</span>（必须非零）</p>
+            <div class="ch5-reading"><h4>当前变量替换</h4><div class="ch5-matrix-wrap" data-s2-c></div><p data-s2-substitution></p></div>
+            <div class="ch5-reading"><h4>当前矩阵</h4><div class="ch5-matrix-wrap" data-s2-d></div></div>
+            <div class="ch5-reading">
+              <div class="ch5-reading-row"><span>det C</span><strong data-s2-det></strong></div>
+              <div class="ch5-reading-row"><span>交叉项系数</span><strong data-s2-cross></strong></div>
+              <div class="ch5-reading-row"><span>原矩阵的秩</span><strong data-s2-rank-a></strong></div>
+              <div class="ch5-reading-row"><span>当前矩阵的秩</span><strong data-s2-rank-d></strong></div>
             </div>
-            <div class="ch5-readout">
-              <strong>当前矩阵（合同后）</strong>
-              <div data-d-mat class="ch5-matrix-wrap"></div>
-              <p class="ch5-muted">标准形系数：<span data-std>—</span></p>
-            </div>
+            <div class="ch5-result-card" data-s2-result><span class="ch5-status" data-s2-status></span><h4 data-s2-result-title></h4><p data-s2-result-copy></p></div>
           </div>
         </div>
       </div>`;
 
-    const state = { a: 1, b: 0.8, c: 2, step: 0 };
+    const controller = new AbortController();
+    const signal = controller.signal;
+    const presets = {
+      regular: { label: "含交叉项", A: M().mat2FromAbc(1, 2, 5) },
+      cross: { label: "只有交叉项", A: M().mat2FromAbc(0, 1, 0) },
+      rank1: { label: "退化为一个平方", A: M().mat2FromAbc(1, 1, 1) },
+      indef: { label: "一正一负", A: M().mat2FromAbc(1, 0.5, -1) },
+    };
+    const state = { preset: "regular", step: 0 };
 
-    function mat() {
-      return M().mat2FromAbc(state.a, state.b, state.c);
+    function currentPack() {
+      return M().completeSquareSteps2(presets[state.preset].A);
+    }
+
+    function lookCopy(kind, final) {
+      if (final) return "终点：矩阵已经对角化，等高线相对新坐标轴对齐。现在核对右侧三项，而不是只凭图形判断。";
+      const copy = {
+        start: "先看原式：交叉项还在，所以当前矩阵的非对角元不为 0。",
+        pick: "这一页只是在选择主平方项并收集相关项，还没有完成变量替换。",
+        square: "完成平方以后，新变量的组合已经出现，但还要明确写出新旧变量关系。",
+        sub: "变量替换已经写出；下一步用 CᵀAC 核对矩阵是否真的对角。",
+      };
+      return copy[kind] || "观察当前公式、矩阵和等高线是否说的是同一个状态。";
+    }
+
+    function substitutionCopy(step, pack) {
+      if (step.C) {
+        if (pack.method === "sumdiff") return "x₁=(y₁+y₂)/2，x₂=(y₁−y₂)/2；这是和差替换的反解。";
+        const r = pack.C[0][1] ? -pack.C[0][1] : 0;
+        return `x₁=y₁−${M().formatNum(r, 3)}y₂，x₂=y₂；因此 x=Cy。`;
+      }
+      return "尚未定义新变量，当前 C 为单位矩阵。";
     }
 
     function paint() {
-      ["a", "b", "c"].forEach((k) => {
-        root.querySelector(`[data-k="${k}"]`).value = String(state[k]);
-        root.querySelector(`[data-v="${k}"]`).textContent = M().formatNum(state[k], 2);
-      });
-
-      const pack = M().completeSquareSteps2(mat());
+      const A = presets[state.preset].A;
+      const pack = currentPack();
       const steps = pack.steps || [];
-      const max = Math.max(0, steps.length - 1);
-      state.step = M().clamp(state.step, 0, max);
-      const cur = steps[state.step] || { title: "—", poly: "—", note: "—", matrix: mat(), C: M().identity(2) };
+      state.step = M().clamp(state.step, 0, Math.max(0, steps.length - 1));
+      const step = steps[state.step] || { title: "起点", poly: M().polyPlain2(A), note: "", kind: "start", matrix: A };
+      const C = step.C || M().identity(2);
+      const D = step.matrix || A;
+      const final = state.step === steps.length - 1;
+      const detC = M().det2(C);
+      const cross = 2 * D[0][1];
+      const rankA = M().matrixRank(A);
+      const rankD = M().matrixRank(D);
 
-      root.querySelector("[data-steps]").innerHTML = steps
-        .map((s, i) => {
-          const active = i === state.step ? " is-active" : i < state.step ? " is-done" : "";
-          return `<article class="ch5-step${active}">
-            <h4>${i + 1}. ${s.title}</h4>
-            <p class="ch5-step-poly">${s.poly}</p>
-            <p>${s.note}</p>
-          </article>`;
-        })
-        .join("");
+      root.querySelector("[data-s2-step-count]").textContent = `第 ${state.step + 1} 步，共 ${steps.length} 步`;
+      const progress = root.querySelector("[data-s2-progress]");
+      progress.style.setProperty("--ch5-steps", String(steps.length));
+      progress.innerHTML = steps.map((_, index) => `<span class="${index < state.step ? "is-done" : index === state.step ? "is-current" : ""}"></span>`).join("");
+      root.querySelector("[data-s2-kicker]").textContent = `${presets[state.preset].label} · 步骤 ${state.step + 1}`;
+      root.querySelector("[data-s2-title]").textContent = step.title;
+      root.querySelector("[data-s2-poly]").innerHTML = inline(step.poly.replace(/²/g, "^2").replace(/x₁/g, "x_1").replace(/x₂/g, "x_2").replace(/y₁/g, "y_1").replace(/y₂/g, "y_2"));
+      root.querySelector("[data-s2-note]").textContent = step.note;
+      root.querySelector("[data-s2-look]").textContent = lookCopy(step.kind, final);
+      root.querySelector("[data-s2-c]").innerHTML = M().matrixHtml(C);
+      root.querySelector("[data-s2-d]").innerHTML = M().matrixHtml(D);
+      root.querySelector("[data-s2-substitution]").textContent = substitutionCopy(step, pack);
+      root.querySelector("[data-s2-det]").textContent = M().formatNum(detC, 4);
+      root.querySelector("[data-s2-cross]").textContent = M().formatNum(cross, 6);
+      root.querySelector("[data-s2-rank-a]").textContent = String(rankA);
+      root.querySelector("[data-s2-rank-d]").textContent = String(rankD);
 
-      root.querySelector("[data-step-label]").textContent = `步骤 ${state.step + 1} / ${steps.length}`;
-
-      const C = cur.C || pack.C || M().identity(2);
-      const showMat = cur.matrix || pack.D || mat();
-      root.querySelector("[data-c-mat]").innerHTML = M().matrixHtml(C);
-      root.querySelector("[data-d-mat]").innerHTML = M().matrixHtml(showMat);
-      root.querySelector("[data-det]").textContent = M().formatNum(M().det2(C), 3);
-      if (pack.standard) {
-        root.querySelector("[data-std]").textContent = `d₁=${M().formatNum(pack.standard[0], 3)}, d₂=${M().formatNum(pack.standard[1], 3)}`;
+      const result = root.querySelector("[data-s2-result]");
+      const status = root.querySelector("[data-s2-status]");
+      if (final) {
+        const ok = Math.abs(detC) > 1e-8 && Math.abs(cross) < 1e-7 && rankA === rankD;
+        result.className = `ch5-result-card ${ok ? "is-success" : "is-warning"}`;
+        status.className = `ch5-status ${ok ? "is-ok" : "is-warn"}`;
+        status.textContent = ok ? "标准形完成" : "还需检查";
+        root.querySelector("[data-s2-result-title]").textContent = ok ? "三个条件同时通过" : "结果尚未闭环";
+        root.querySelector("[data-s2-result-copy]").textContent = ok
+          ? "det C≠0，替换可逆；新矩阵的交叉项为 0；合同前后秩相同。因此这不是形式上的改写，而是一次合法的标准形变换。"
+          : "请检查变量替换、合同矩阵和交叉项是否完全一致。";
       } else {
-        root.querySelector("[data-std]").textContent = "—";
+        result.className = "ch5-result-card";
+        status.className = "ch5-status is-neutral";
+        status.textContent = "过程未结束";
+        root.querySelector("[data-s2-result-title]").textContent = "先完成当前一步";
+        root.querySelector("[data-s2-result-copy]").textContent = "不要提前看终点。每一步只回答一个问题：现在收集了什么、完成了哪个平方、定义了什么新变量。";
       }
 
-      // Show the matrix that the student is "looking at" this step
-      const drawA = state.step >= steps.length - 1 && pack.D ? pack.D : showMat;
-      const caption =
-        cur.kind === "check" || cur.kind === "done"
-          ? "标准形坐标：等高线相对新轴对齐（无交叉项）"
-          : cur.kind === "sub"
-            ? "完成替换后的二次型"
-            : "原坐标：交叉项使等高线倾斜";
-      M().drawContours(root.querySelector("[data-contour]"), drawA, { caption });
+      M().drawContours(root.querySelector("[data-s2-canvas]"), D, { caption: final ? "标准形坐标：交叉项为 0" : "当前表达：交叉项仍可能存在" });
     }
 
-    root.querySelectorAll("[data-k]").forEach((input) => {
-      input.addEventListener("input", () => {
-        state[input.dataset.k] = Number(input.value);
+    root.querySelectorAll("[data-s2-preset]").forEach((button) => {
+      button.addEventListener("click", () => {
+        state.preset = button.dataset.s2Preset;
         state.step = 0;
+        root.querySelectorAll("[data-s2-preset]").forEach((item) => item.classList.toggle("is-active", item === button));
         paint();
-      });
+      }, { signal });
     });
-
-    root.querySelectorAll("[data-preset]").forEach((btn) => {
-      btn.addEventListener("click", () => {
-        const p = btn.dataset.preset;
-        if (p === "tilt") Object.assign(state, { a: 1, b: 0.9, c: 2, step: 0 });
-        if (p === "axis") Object.assign(state, { a: 1.5, b: 0, c: 1, step: 0 });
-        if (p === "hyper") Object.assign(state, { a: 1, b: 0.3, c: -1.2, step: 0 });
-        if (p === "cross") Object.assign(state, { a: 0, b: 1, c: 0, step: 0 });
+    root.querySelectorAll("[data-s2-nav]").forEach((button) => {
+      button.addEventListener("click", () => {
+        const max = Math.max(0, currentPack().steps.length - 1);
+        if (button.dataset.s2Nav === "prev") state.step = Math.max(0, state.step - 1);
+        if (button.dataset.s2Nav === "next") state.step = Math.min(max, state.step + 1);
+        if (button.dataset.s2Nav === "reset") state.step = 0;
         paint();
-      });
+      }, { signal });
     });
-
-    root.querySelectorAll("[data-step-btn]").forEach((btn) => {
-      btn.addEventListener("click", () => {
-        const pack = M().completeSquareSteps2(mat());
-        const max = Math.max(0, (pack.steps || []).length - 1);
-        if (btn.dataset.stepBtn === "next") state.step = Math.min(max, state.step + 1);
-        if (btn.dataset.stepBtn === "prev") state.step = Math.max(0, state.step - 1);
-        if (btn.dataset.stepBtn === "reset") state.step = 0;
-        paint();
-      });
-    });
-
-    window.addEventListener(
-      "resize",
-      () => {
-        if (document.body.contains(root)) paint();
-      },
-      { passive: true },
-    );
+    window.addEventListener("resize", paint, { signal, passive: true });
     paint();
+    return () => controller.abort();
   }
 
-  window.defineChapter5Renderer("quadratic-standard-form", {
-    formal: renderFormal,
-    interactive: mountLab,
-  });
+  window.defineChapter5Renderer("quadratic-standard-form", { formal: renderFormal, interactive: mountLab });
 })();

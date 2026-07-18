@@ -131,6 +131,10 @@
   color: var(--ch6-green);
 }
 
+.ch6-stage-legend .is-overlap {
+  color: #bc8cff;
+}
+
 .ch6-stage-legend .is-muted {
   color: rgba(243, 247, 251, 0.48);
 }

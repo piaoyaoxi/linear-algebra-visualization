@@ -424,7 +424,7 @@
     if (!interactive || !lab || interactive.querySelector("[data-ch3-story]")) return null;
 
     const heading = interactive.querySelector(":scope > h2");
-    if (heading) heading.textContent = "视觉实验";
+    if (heading) heading.textContent = "精确实验";
 
     const state = { step: 0, alpha: 1, beta: 1, s: 0.65 };
     const story = document.createElement("section");
@@ -443,7 +443,13 @@
     summary.innerHTML = `<span><strong>继续做精确实验</strong><small>打开 RREF、完整坐标、参数验证和数值控制</small></span><i aria-hidden="true">＋</i>`;
     lab.replaceWith(details);
     details.append(summary, lab);
-    interactive.insertBefore(story, details);
+    const formal = root.querySelector(`#${CSS.escape(section.id)}-formal`);
+    const storySection = document.createElement("section");
+    storySection.className = "ch3-story-section";
+    storySection.innerHTML = "<h2>几何直觉</h2>";
+    storySection.append(story);
+    if (formal) formal.before(storySection);
+    else interactive.insertBefore(storySection, details);
 
     const svg = story.querySelector("[data-story-svg]");
     const buttons = [...story.querySelectorAll("[data-story-step]")];

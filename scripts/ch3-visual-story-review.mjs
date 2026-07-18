@@ -74,6 +74,7 @@ async function inspectPage(page, section, expectedSteps, mode) {
   assert.notEqual(await precision.getAttribute('open'), null, `${section}: exact lab cannot open`);
 
   if (mode === 'desktop') await page.screenshot({ path: `${outputDir}/full-${section}.png`, fullPage: true });
+  if (mode === 'desktop') await page.screenshot({ path: `${outputDir}/full-${section}.png`, fullPage: true });
   const snapshot = await page.evaluate(() => ({ scrollWidth: document.documentElement.scrollWidth, viewportWidth: window.innerWidth, storyCount: document.querySelectorAll('[data-ch3-story]').length }));
   assert.equal(snapshot.storyCount, 1, `${section}: story duplicated`);
   assert.ok(snapshot.scrollWidth <= snapshot.viewportWidth + 4, `${section}: page overflow ${snapshot.scrollWidth}/${snapshot.viewportWidth}`);

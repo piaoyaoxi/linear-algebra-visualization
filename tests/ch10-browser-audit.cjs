@@ -144,14 +144,28 @@ async function auditRoute(browser, route, viewport, options = {}) {
       assert(touchTargets.length === 0, `${label}: undersized cinematic controls ${JSON.stringify(touchTargets)}`);
 
       const cinemaLocator = page.locator("[data-ch10-cinema]");
-      await cinemaLocator.scrollIntoViewIfNeeded();
+      if (viewport.id === "mobile") {
+        await page.evaluate(() => {
+          const cinema = document.querySelector("[data-ch10-cinema]");
+          if (!cinema) return;
+          const top = cinema.getBoundingClientRect().top + window.scrollY;
+          window.scrollTo(0, Math.max(0, top));
+        });
+        await page.waitForTimeout(100);
+      } else {
+        await cinemaLocator.scrollIntoViewIfNeeded();
+      }
       const chromeClearance = await page.evaluate(() => {
         const heading = document.querySelector("[data-ch10-cinema] .ch10-cinema-head > div")?.getBoundingClientRect();
         const topbar = document.querySelector(".topbar")?.getBoundingClientRect();
         return heading && topbar ? heading.top >= topbar.bottom + 8 : true;
       });
       assert(chromeClearance, `${label}: fixed top controls overlap the cinematic title`);
-      await cinemaLocator.screenshot({ path: path.join(outputDir, `${label}-cinema.png`) });
+      if (viewport.id === "mobile") {
+        await page.screenshot({ path: path.join(outputDir, `${label}-cinema.png`), fullPage: false });
+      } else {
+        await cinemaLocator.screenshot({ path: path.join(outputDir, `${label}-cinema.png`) });
+      }
     }
 
     assertNoPageErrors();
@@ -223,7 +237,14 @@ async function auditMobileCinematicStories(browser) {
         rectWidth: svg.getBoundingClientRect().width,
       }));
       assert(bounds.scrollWidth <= bounds.clientWidth + 2, `${route.id} mobile step ${index + 1}: SVG overflows its stage`);
-      await cinema.screenshot({ path: path.join(outputDir, `${route.id}-mobile-cinema-step-${index + 1}.png`) });
+      await page.evaluate(() => {
+        const node = document.querySelector("[data-ch10-cinema]");
+        if (!node) return;
+        const top = node.getBoundingClientRect().top + window.scrollY;
+        window.scrollTo(0, Math.max(0, top));
+      });
+      await page.waitForTimeout(80);
+      await page.screenshot({ path: path.join(outputDir, `${route.id}-mobile-cinema-step-${index + 1}.png`), fullPage: false });
     }
   }
 

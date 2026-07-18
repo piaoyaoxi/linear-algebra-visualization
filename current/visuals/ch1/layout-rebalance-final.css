@@ -6,6 +6,15 @@
     max-height: none !important;
     align-self: stretch;
   }
+
+  .ch1-section-multivariate-polynomials .ch1-multivariate-layer-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .ch1-section-multivariate-polynomials .ch1-multivariate-layer-card:nth-child(4) {
+    grid-column: 1 / -1;
+    min-height: 0;
+  }
 }
 
 @media (max-width: 1040px) {
@@ -14,6 +23,10 @@
     min-height: 360px !important;
     max-height: 360px !important;
   }
+
+  .ch1-section-multivariate-polynomials .ch1-multivariate-layer-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
 }
 
 @media (max-width: 720px) {
@@ -21,5 +34,11 @@
     height: 300px !important;
     min-height: 300px !important;
     max-height: 300px !important;
+  }
+}
+
+@media (max-width: 460px) {
+  .ch1-section-multivariate-polynomials .ch1-multivariate-layer-grid {
+    grid-template-columns: 1fr;
   }
 }

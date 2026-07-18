@@ -41,8 +41,8 @@
     const prompts = section?.interactive?.prompts?.length ? section.interactive.prompts : fallback;
     if (!prompts.length) return "";
     return `
-      <div class="ch6-observe-list">
-        <strong>按这个顺序观察</strong>
+      <div class="ch6-observe-strip">
+        <strong>操作以后，按顺序核对</strong>
         <ol>${prompts.map((item) => `<li>${item}</li>`).join("")}</ol>
       </div>
     `;
@@ -58,17 +58,13 @@
             <p>${lead}</p>
           </div>
           <div class="ch6-focus-note">
-            <span>先看什么</span>
+            <span>第一眼先看</span>
             <strong>${focus}</strong>
           </div>
         </div>
-        <div class="ch6-lab-layout">
-          <div class="ch6-lab-main">
-            ${stage}
-            ${controls ? `<div class="ch6-lab-controls">${controls}</div>` : ""}
-          </div>
-          <aside class="ch6-lab-readout">${readout}</aside>
-        </div>
+        ${controls ? `<div class="ch6-lab-controls" aria-label="实验控制">${controls}</div>` : ""}
+        <div class="ch6-lab-stage">${stage}</div>
+        <div class="ch6-lab-readout" aria-live="polite">${readout}</div>
         ${tasks}
       </div>
     `;
@@ -231,11 +227,19 @@
       `A ${half} ${half} 0 0 0 ${p(x1 + px * half, y1 + py * half)}`,
       "Z",
     ].join(" ");
-    const labelX = Math.min(config.width - 48, Math.max(20, x2 + ux * 10));
-    const labelY = Math.min(config.height - 16, Math.max(18, y2 + uy * 10 - 8));
-    return `<path class="ch6-arrow ${className}" d="${d}"></path>${
-      label ? `<text class="ch6-plane-label ${className}" x="${labelX}" y="${labelY}">${escapeHtml(label)}</text>` : ""
-    }`;
+
+    if (!label) return `<path class="ch6-arrow ${className}" d="${d}"></path>`;
+
+    const labelAt = length < 78 ? 0.52 : 0.67;
+    const side = className.includes("is-bad") || className.includes("is-w-soft") ? -1 : 1;
+    const perpendicularGap = Math.min(17, Math.max(11, length * 0.055)) * side;
+    const rawX = x1 + dx * labelAt + px * perpendicularGap;
+    const rawY = y1 + dy * labelAt + py * perpendicularGap;
+    const marginX = Math.min(config.width * 0.28, Math.max(28, Array.from(label).length * 6.6));
+    const labelX = Math.min(config.width - marginX, Math.max(marginX, rawX));
+    const labelY = Math.min(config.height - 20, Math.max(20, rawY));
+
+    return `<path class="ch6-arrow ${className}" d="${d}"></path><text class="ch6-plane-label ${className}" data-arrow-label data-tip-x="${f(x2)}" data-tip-y="${f(y2)}" text-anchor="middle" x="${f(labelX)}" y="${f(labelY)}">${escapeHtml(label)}</text>`;
   }
 
   function line(direction, className, label = "", offset = [0, 0], config = plane) {
@@ -247,7 +251,7 @@
     const pa = point(a, config);
     const pb = point(b, config);
     return `<line class="ch6-span-line ${className}" x1="${pa[0]}" y1="${pa[1]}" x2="${pb[0]}" y2="${pb[1]}"></line>${
-      label ? `<text class="ch6-plane-label ${className}" x="${Math.min(config.width - 56, pb[0] - 36)}" y="${Math.max(18, pb[1] - 10)}">${escapeHtml(label)}</text>` : ""
+      label ? `<text class="ch6-plane-label ${className}" text-anchor="middle" x="${Math.min(config.width - 64, Math.max(64, pb[0] - 42))}" y="${Math.min(config.height - 20, Math.max(20, pb[1] - 12))}">${escapeHtml(label)}</text>` : ""
     }`;
   }
 
@@ -283,13 +287,14 @@
     const x = 64;
     const y = 196;
     const yAt = (index, count) => 34 + (82 / Math.max(1, count - 1)) * index;
-    let body = `<svg class="ch6-mini-map" viewBox="0 0 ${width} ${height}" role="img" aria-label="${escapeHtml(label)}"><ellipse cx="${x}" cy="75" rx="42" ry="63"></ellipse><ellipse cx="${y}" cy="75" rx="42" ry="63"></ellipse>`;
+    const markerId = `mini-arrow-${xCount}-${yCount}-${map.join("-")}`.replace(/[^a-zA-Z0-9-]/g, "");
+    let body = `<svg class="ch6-mini-map" viewBox="0 0 ${width} ${height}" role="img" aria-label="${escapeHtml(label)}"><defs><marker id="${markerId}" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="5" markerHeight="5" orient="auto"><path class="ch6-mini-map-marker" d="M0,0 L8,4 L0,8 Z"></path></marker></defs><ellipse cx="${x}" cy="75" rx="42" ry="63"></ellipse><ellipse cx="${y}" cy="75" rx="42" ry="63"></ellipse>`;
     for (let i = 0; i < xCount; i += 1) {
       const yy = yAt(i, xCount);
       body += `<circle cx="${x}" cy="${yy}" r="8"></circle><text x="${x}" y="${yy + 4}">${i + 1}</text>`;
       if (map[i] >= 0 && map[i] < yCount) {
         const ty = yAt(map[i], yCount);
-        body += `<path d="M ${x + 9} ${yy} C 105 ${yy}, 150 ${ty}, ${y - 9} ${ty}"></path>`;
+        body += `<path marker-end="url(#${markerId})" d="M ${x + 9} ${yy} C 105 ${yy}, 150 ${ty}, ${y - 11} ${ty}"></path>`;
       }
     }
     for (let j = 0; j < yCount; j += 1) {

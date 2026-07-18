@@ -3,6 +3,48 @@
   const baseRenderLessonPage = window.renderLessonPage;
   if (typeof baseRenderLessonPage !== "function") return;
 
+  function loadStyle(href) {
+    if (document.querySelector(`link[href="${href}"]`)) return;
+    const link = document.createElement("link");
+    link.rel = "stylesheet";
+    link.href = href;
+    document.head.append(link);
+  }
+
+  function loadScript(src) {
+    return new Promise((resolve, reject) => {
+      const existing = document.querySelector(`script[src="${src}"]`);
+      if (existing?.dataset.loaded === "true") {
+        resolve();
+        return;
+      }
+      const script = existing || document.createElement("script");
+      script.src = src;
+      script.async = false;
+      script.addEventListener("load", () => {
+        script.dataset.loaded = "true";
+        resolve();
+      }, { once: true });
+      script.addEventListener("error", () => reject(new Error(`Failed to load ${src}`)), { once: true });
+      if (!existing) document.head.append(script);
+    });
+  }
+
+  loadStyle("./visuals/ch2/story-polish.css?v=ch2story2");
+  const overrideSources = [
+    "./visuals/ch2/story-vector-core.js?v=ch2story2",
+    "./visuals/ch2/story-overrides-1-4.js?v=ch2story2",
+    "./visuals/ch2/story-override-5.js?v=ch2story2",
+    "./visuals/ch2/story-override-7.js?v=ch2story2",
+    "./visuals/ch2/story-override-8.js?v=ch2story2",
+  ];
+  const overridesReady = overrideSources.reduce(
+    (promise, source) => promise.then(() => loadScript(source)),
+    Promise.resolve(),
+  ).catch((error) => {
+    console.error(error);
+  });
+
   function renderList(items) {
     if (!Array.isArray(items) || !items.length) return "";
     return `<ul>${items.map((item) => `<li>${typeof item === "string" ? item : item.text || ""}</li>`).join("")}</ul>`;
@@ -78,12 +120,13 @@
 
   window.renderLessonPage = function renderLessonPageWithChapter2Extensions(section, chapter) {
     baseRenderLessonPage(section, chapter);
-    window.mountChapter2Lesson?.(section, document.querySelector("#mainContent"));
+    const routeAtRender = window.location.hash;
+    void overridesReady.then(() => {
+      if (window.location.hash !== routeAtRender) return;
+      window.mountChapter2Lesson?.(section, document.querySelector("#mainContent"));
+    });
   };
 
-  // A Chapter 2 renderer owns resize listeners and animation frames. Tear it down
-  // before every route transition, including transitions to the guide, overview,
-  // or another chapter where no new Chapter 2 renderer will mount.
   window.addEventListener("hashchange", () => window.teardownChapter2Lesson?.());
   window.addEventListener("pagehide", () => window.teardownChapter2Lesson?.());
 })();

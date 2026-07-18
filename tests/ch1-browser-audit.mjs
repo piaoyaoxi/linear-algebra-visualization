@@ -37,7 +37,74 @@ async function clickIf(page, selector) {
   if (await locator.count()) await locator.click();
 }
 
-async function operateSection(page, section) {
+async function canvasSnapshot(locator) {
+  return locator.evaluate((canvas) => canvas.toDataURL("image/png"));
+}
+
+async function canvasCornerLuminance(locator) {
+  return locator.evaluate((canvas) => {
+    const data = canvas.getContext("2d").getImageData(4, 4, 1, 1).data;
+    return (data[0] + data[1] + data[2]) / 3;
+  });
+}
+
+async function finishDivision(page, verifyMotion) {
+  const next = page.locator("[data-next]").first();
+  const canvas = page.locator("[data-division-canvas]").first();
+  let checked = false;
+  for (let i = 0; i < 8 && await next.count() && !(await next.isDisabled()); i += 1) {
+    if (verifyMotion && !checked) {
+      const before = await canvasSnapshot(canvas);
+      await next.click();
+      await page.waitForTimeout(220);
+      const middle = await canvasSnapshot(canvas);
+      await page.waitForFunction(() => {
+        const button = document.querySelector("#polynomial-divisibility-interactive [data-next]");
+        return button && !button.disabled;
+      }, null, { timeout: 2200 }).catch(() => {});
+      const after = await canvasSnapshot(canvas);
+      ensure(before !== middle, "§3: clicking next did not create an intermediate animation frame");
+      ensure(middle !== after, "§3: division animation jumped directly to the final frame");
+      checked = true;
+    } else {
+      await next.click();
+      await page.waitForFunction(() => {
+        const button = document.querySelector("#polynomial-divisibility-interactive [data-next]");
+        const status = document.querySelector("#polynomial-divisibility-interactive [data-status]")?.textContent || "";
+        return (button && !button.disabled) || /整除成立|不整除/.test(status);
+      }, null, { timeout: 2200 }).catch(() => {});
+    }
+  }
+}
+
+async function dragConjugateRoot(page) {
+  const canvas = page.locator("[data-complex-canvas]").first();
+  const box = await canvas.boundingBox();
+  ensure(box, "§8: complex canvas has no visible bounding box");
+  const pad = box.width < 520 ? 38 : 52;
+  const usableW = box.width - 2 * pad;
+  const usableH = box.height - 2 * pad;
+  const toScreen = (x, y) => ({
+    x: box.x + pad + ((x + 3) / 6) * usableW,
+    y: box.y + pad + ((3 - y) / 6) * usableH,
+  });
+  const start = toScreen(1, 1.5);
+  const end = toScreen(1.55, 0.9);
+  await page.mouse.move(start.x, start.y);
+  await page.mouse.down();
+  await page.mouse.move(end.x, end.y, { steps: 8 });
+  await page.mouse.up();
+  const values = await page.evaluate(() => ({
+    ar: Number(document.querySelector("#complex-real-factorization-interactive [data-re]")?.value),
+    ai: Number(document.querySelector("#complex-real-factorization-interactive [data-im]")?.value),
+    br: Number(document.querySelector("#complex-real-factorization-interactive [data-bre]")?.value),
+    bi: Number(document.querySelector("#complex-real-factorization-interactive [data-bim]")?.value),
+  }));
+  ensure(Math.abs(values.ar - values.br) < 1e-9, "§8: conjugate root did not mirror the real coordinate during drag");
+  ensure(Math.abs(values.ai + values.bi) < 1e-9, "§8: conjugate root did not mirror the imaginary coordinate during drag");
+}
+
+async function operateSection(page, section, viewport, theme) {
   if (section === "number-fields") {
     await clickIf(page, '[data-domain="P"]');
     await clickIf(page, '[data-domain="Q2"]');
@@ -47,7 +114,9 @@ async function operateSection(page, section) {
     if (await slider.count()) await slider.fill("4");
     await clickIf(page, '[data-preset="fraction"]');
     await clickIf(page, '[data-mode="mul"]');
-  } else if (section === "polynomial-divisibility" || section === "gcd-polynomials") {
+  } else if (section === "polynomial-divisibility") {
+    await finishDivision(page, viewport.name === "desktop" && theme === "light");
+  } else if (section === "gcd-polynomials") {
     const next = page.locator("[data-next]").first();
     for (let i = 0; i < 8 && await next.count() && !(await next.isDisabled()); i += 1) await next.click();
   } else if (section === "factorization-theorem") {
@@ -62,9 +131,14 @@ async function operateSection(page, section) {
     await clickIf(page, '[data-mode="roots"]');
     await clickIf(page, '[data-mode="interp"]');
   } else if (section === "complex-real-factorization") {
+    if ((viewport.name === "desktop" && theme === "light") || (viewport.name === "mobile" && theme === "dark")) {
+      await dragConjugateRoot(page);
+    }
     await clickIf(page, '[data-mode="C"]');
     const re = page.locator("[data-re]");
     if (await re.count()) await re.fill("1.5");
+    const status = await page.locator("[data-real-status]").textContent();
+    ensure(/虚部/.test(status || ""), "§8: unlocking the pair did not explain the complex coefficient");
   } else if (section === "rational-polynomials") {
     await clickIf(page, '[data-rational-example="quartic"]');
     await clickIf(page, '[data-prime="2"]');
@@ -76,7 +150,7 @@ async function operateSection(page, section) {
     await clickIf(page, "[data-swap-xy]");
     await clickIf(page, "[data-rewrite-next]");
   }
-  await page.waitForTimeout(80);
+  await page.waitForTimeout(100);
 }
 
 for (const viewport of viewports) {
@@ -103,7 +177,7 @@ for (const viewport of viewports) {
 
       const dark = await page.locator("body.dark").count();
       if ((theme === "dark") !== Boolean(dark)) await page.locator("#themeToggle").click();
-      await operateSection(page, section);
+      await operateSection(page, section, viewport, theme);
 
       const layout = await page.evaluate((sectionId) => {
         const lab = document.querySelector(`#${CSS.escape(sectionId)}-interactive .ch1-lab`);
@@ -125,6 +199,22 @@ for (const viewport of viewports) {
       ensure(consoleErrors.length === 0, `${viewport.name}/${theme}/${section}: console errors: ${consoleErrors.join(" | ")}`);
       ensure(pageErrors.length === 0, `${viewport.name}/${theme}/${section}: page errors: ${pageErrors.join(" | ")}`);
       ensure(failedResponses.length === 0, `${viewport.name}/${theme}/${section}: failed resources: ${failedResponses.join(" | ")}`);
+
+      if (section === "polynomial-divisibility") {
+        ensure(await page.locator("[data-division-canvas]").count(), `${viewport.name}/${theme}/§3: continuous division canvas missing`);
+        if (theme === "light") {
+          const luminance = await canvasCornerLuminance(page.locator("[data-division-canvas]"));
+          ensure(luminance > 145, `${viewport.name}/light/§3: canvas unexpectedly uses a dark presentation (${luminance})`);
+        }
+      }
+
+      if (section === "complex-real-factorization") {
+        ensure(await page.locator("[data-complex-canvas]").count(), `${viewport.name}/${theme}/§8: conjugate geometry canvas missing`);
+        if (theme === "light") {
+          const luminance = await canvasCornerLuminance(page.locator("[data-complex-canvas]"));
+          ensure(luminance > 145, `${viewport.name}/light/§8: canvas unexpectedly uses a dark presentation (${luminance})`);
+        }
+      }
 
       if (section === "univariate-polynomials") {
         const coefficientLayout = await page.evaluate(() => {

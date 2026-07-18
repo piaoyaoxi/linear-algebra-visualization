@@ -1,133 +1,204 @@
 (() => {
-  const { I, on, setPressed, markExperimentStep, conclusionMarkup } = window.Chapter8Lab;
+  const { I, on, markExperimentStep, conclusionMarkup } = window.Chapter8Lab;
 
   const steps = [
     {
-      title: "原矩阵",
-      operation: "先找一个最容易制造单位主元的位置",
+      title: "先找到单位主元",
+      operation: "观察右上角的 1",
       side: "observe",
       matrix: [["\\lambda", "1"], ["\\lambda^2-1", "\\lambda+1"]],
-      highlight: [0, 1],
-      why: "右上角已经是单位 1。把它移动到左上角后，后续可以同时清掉第一行和第一列。",
-      invariant: "尚未操作；目标是把 1 移到主元位置。",
+      active: [0, 1],
+      why: "单位 1 已经存在。先把它移到左上角，后面才能同时清掉第一行和第一列。",
+      invariant: "还没有改变矩阵，只是在选择最有效的主元。",
     },
     {
-      title: "交换两列",
+      title: "把主元送到左上角",
       operation: "C_1\\leftrightarrow C_2",
       side: "right",
       matrix: [["1", "\\lambda"], ["\\lambda+1", "\\lambda^2-1"]],
-      highlightCol: 0,
-      why: "列交换对应右乘一个可逆初等 λ-矩阵。单位 1 到达左上角。",
-      invariant: "列交换只改变行列式一个非零常数因子 −1，不改变等价类。",
+      activeCol: 0,
+      why: "列交换对应右乘可逆初等 λ-矩阵。输入生成元换了顺序，但等价类没有改变。",
+      invariant: "右侧 V(λ) 发生变化；Smith 指纹保持不变。",
     },
     {
-      title: "清掉左下角",
+      title: "清掉主元下方",
       operation: "R_2\\leftarrow R_2-(\\lambda+1)R_1",
       side: "left",
       matrix: [["1", "\\lambda"], ["0", "-\\lambda-1"]],
-      highlightRow: 1,
-      why: "用第一行的多项式倍数加到第二行。反操作是加回同样的倍数，所以仍可逆。",
-      invariant: "这是左乘；第一列已经变成 (1,0)^T。",
+      activeRow: 1,
+      why: "用第一行的多项式倍数加到第二行，反操作就是把同样的倍数加回去。",
+      invariant: "左侧 U(λ) 发生变化；第一列已经被压成 (1,0)ᵀ。",
     },
     {
-      title: "清掉右上角",
+      title: "清掉主元右侧",
       operation: "C_2\\leftarrow C_2-\\lambda C_1",
       side: "right",
       matrix: [["1", "0"], ["0", "-\\lambda-1"]],
-      highlightCol: 1,
-      why: "左上角的 1 可以消掉同一行中的 λ。列倍加同样有可逆反操作。",
-      invariant: "这是右乘；矩阵已经对角化。",
+      activeCol: 1,
+      why: "列倍加把右上角 λ 消掉。矩阵第一次真正成为对角形。",
+      invariant: "右侧 V(λ) 再次变化；对角线已经显形。",
     },
     {
       title: "首一化并检查整除链",
       operation: "R_2\\leftarrow -R_2",
       side: "left",
       matrix: [["1", "0"], ["0", "\\lambda+1"]],
-      highlightRow: 1,
-      why: "−1 是非零常数，是 F[λ] 中的单位。最后一个对角元因此变成首一多项式。",
-      invariant: "1 | (λ+1)，所以得到唯一的 Smith 标准形。",
+      activeRow: 1,
+      why: "−1 是 F[λ] 的单位，所以可以把最后一个对角元改成首一多项式。",
+      invariant: "1∣(λ+1)。这不是任意对角形，而是唯一的 Smith 标准形。",
     },
   ];
-
-  function polyMatrix(rows, step) {
-    return `
-      <div class="ch8-poly-matrix" role="img" aria-label="当前 λ-矩阵">
-        <i class="brace left"></i>
-        <div class="cells">
-          ${rows
-            .map((row, rowIndex) => row.map((tex, colIndex) => {
-              const active =
-                step.highlightRow === rowIndex ||
-                step.highlightCol === colIndex ||
-                (step.highlight && step.highlight[0] === rowIndex && step.highlight[1] === colIndex);
-              return `<span class="${active ? "is-active" : ""}" data-row="${rowIndex}" data-col="${colIndex}">${I(tex)}</span>`;
-            }).join(""))
-            .join("")}
-        </div>
-        <i class="brace right"></i>
-      </div>`;
-  }
 
   function mount(host) {
     let index = 0;
     let legalChoice = "";
     let showVerification = false;
 
+    host.innerHTML = `
+      <div class="ch8-lab ch8-cinema ch8-smith-cinema">
+        <header class="ch8-cinema-head">
+          <div><span>连续化简 · 对象始终是同一个等价类</span><h3>左边改输出组合，右边改输入生成元</h3></div>
+          <div class="ch8-cinema-counter"><b data-smith-index>1</b><span>/ ${steps.length}</span></div>
+        </header>
+
+        <div class="ch8-smith-film">
+          <svg class="ch8-smith-rails" viewBox="0 0 1000 430" role="img" aria-label="左右初等变换通道与中央 λ-矩阵">
+            <defs>
+              <marker id="ch8-smith-arrow" markerWidth="10" markerHeight="10" refX="8" refY="5" orient="auto"><path d="M0 0L10 5L0 10Z"></path></marker>
+            </defs>
+            <path class="rail rail-left" d="M120 92C250 92 270 170 380 202"></path>
+            <path class="rail rail-right" d="M880 92C750 92 730 170 620 202"></path>
+            <path class="rail rail-left return" d="M380 312C270 338 250 372 120 372"></path>
+            <path class="rail rail-right return" d="M620 312C730 338 750 372 880 372"></path>
+            <text x="70" y="64">U(λ)</text><text x="828" y="64">V(λ)</text>
+            <text x="38" y="408">累计行操作</text><text x="804" y="408">累计列操作</text>
+          </svg>
+
+          <section class="ch8-smith-operator is-observe" data-smith-operator>
+            <span data-smith-side>先观察</span>
+            <strong data-smith-operation></strong>
+            <i aria-hidden="true"></i>
+          </section>
+
+          <section class="ch8-smith-matrix-focus" aria-live="polite">
+            <div class="ch8-matrix-bracket" aria-label="当前 λ-矩阵">
+              <i></i>
+              <div class="ch8-smith-cells">
+                ${[0, 1, 2, 3].map((cell) => `<span data-smith-cell="${cell}"></span>`).join("")}
+              </div>
+              <i></i>
+            </div>
+            <div class="ch8-smith-caption"><strong data-smith-title></strong><p data-smith-why></p></div>
+          </section>
+
+          <div class="ch8-smith-meaning">
+            <div data-smith-left><span>左乘 U(λ)</span><b>行操作</b><p>重新组合输出方程</p></div>
+            <div class="is-object"><span>中央对象</span><b>等价类不动</b><p>外形在变，结构指纹不变</p></div>
+            <div data-smith-right><span>右乘 V(λ)</span><b>列操作</b><p>重新选择输入生成元</p></div>
+          </div>
+        </div>
+
+        <nav class="ch8-smith-timeline" aria-label="Smith 化简轨迹">
+          ${steps.map((item, stepIndex) => `<button type="button" data-smith-step="${stepIndex}"><span>${String(stepIndex + 1).padStart(2, "0")}</span><b>${item.title}</b></button>`).join("")}
+        </nav>
+
+        <div class="ch8-smith-controls">
+          <button type="button" data-smith-prev>← 上一步</button>
+          <div><span>这一帧保持什么？</span><strong data-smith-invariant></strong></div>
+          <button type="button" class="is-primary" data-smith-next>下一步 →</button>
+        </div>
+
+        <div data-smith-conclusion></div>
+
+        <section class="ch8-legality-gate">
+          <div><span>可逆性检查</span><h4>哪一个倍乘仍然拥有多项式反操作？</h4></div>
+          <div class="ch8-legality-options" role="group" aria-label="判断合法倍乘">
+            <button type="button" data-legal="lambda">${I("R_1\\leftarrow\\lambda R_1")}</button>
+            <button type="button" data-legal="minus">${I("R_1\\leftarrow- R_1")}</button>
+            <button type="button" data-legal="poly">${I("R_1\\leftarrow(\\lambda+1)R_1")}</button>
+          </div>
+          <p data-legal-feedback>不要看形式像不像消元；只检查乘数是不是 F[λ] 的单位。</p>
+        </section>
+
+        <button type="button" class="ch8-detail-toggle" data-smith-verification aria-expanded="false">展开累计关系</button>
+        <div data-smith-verification-slot></div>
+      </div>`;
+
+    const cells = [...host.querySelectorAll("[data-smith-cell]")];
+    const operator = host.querySelector("[data-smith-operator]");
+    const side = host.querySelector("[data-smith-side]");
+    const operation = host.querySelector("[data-smith-operation]");
+    const title = host.querySelector("[data-smith-title]");
+    const why = host.querySelector("[data-smith-why]");
+    const invariant = host.querySelector("[data-smith-invariant]");
+    const counter = host.querySelector("[data-smith-index]");
+    const left = host.querySelector("[data-smith-left]");
+    const right = host.querySelector("[data-smith-right]");
+    const prev = host.querySelector("[data-smith-prev]");
+    const next = host.querySelector("[data-smith-next]");
+    const conclusion = host.querySelector("[data-smith-conclusion]");
+    const verificationSlot = host.querySelector("[data-smith-verification-slot]");
+
     function render() {
       const step = steps[index];
       markExperimentStep(host, Math.min(index, 3));
-      const sideLabel = step.side === "left" ? "左乘：行操作" : step.side === "right" ? "右乘：列操作" : "先观察";
-      host.innerHTML = `
-        <div class="ch8-lab ch8-story-lab ch8-smith-story">
-          <div class="ch8-smith-progress" aria-label="Smith 化简进度">
-            ${steps.map((item, stepIndex) => `<button type="button" data-smith-step="${stepIndex}" class="${stepIndex === index ? "is-active" : stepIndex < index ? "is-complete" : ""}" ${stepIndex > index + 1 ? "disabled" : ""}><span>${stepIndex}</span><b>${item.title}</b></button>`).join("")}
-          </div>
+      counter.textContent = String(index + 1);
+      side.textContent = step.side === "left" ? "左乘：行操作" : step.side === "right" ? "右乘：列操作" : "先观察主元";
+      operation.innerHTML = step.side === "observe" ? step.operation : I(step.operation);
+      title.textContent = step.title;
+      why.textContent = step.why;
+      invariant.textContent = step.invariant;
+      operator.className = `ch8-smith-operator is-${step.side}`;
+      left.classList.toggle("is-lit", step.side === "left");
+      right.classList.toggle("is-lit", step.side === "right");
 
-          <div class="ch8-smith-stage">
-            <div class="ch8-operation-direction is-${step.side}">
-              <span>${sideLabel}</span>
-              <strong>${step.side === "observe" ? step.operation : I(step.operation)}</strong>
-            </div>
-            <div class="ch8-smith-matrix-focus">
-              <span class="ch8-object-label">同一个 λ-矩阵的当前形态</span>
-              ${polyMatrix(step.matrix, step)}
-              <div class="ch8-smith-caption"><strong>${step.title}</strong><p>${step.why}</p></div>
-            </div>
-            <div class="ch8-smith-side-map">
-              <div class="${step.side === "left" ? "is-lit" : ""}"><span>左侧 U(λ)</span><b>累计行操作</b><p>改变输出坐标的组合方式</p></div>
-              <div class="ch8-smith-object"><span>A(λ)</span><b>等价类不变</b><p>矩阵外形在变，Smith 指纹不变</p></div>
-              <div class="${step.side === "right" ? "is-lit" : ""}"><span>右侧 V(λ)</span><b>累计列操作</b><p>改变输入生成元的组合方式</p></div>
-            </div>
-          </div>
+      cells.forEach((cell, cellIndex) => {
+        const row = Math.floor(cellIndex / 2);
+        const col = cellIndex % 2;
+        cell.innerHTML = I(step.matrix[row][col]);
+        cell.classList.toggle("is-active", Boolean(
+          (step.active && step.active[0] === row && step.active[1] === col) ||
+          step.activeRow === row ||
+          step.activeCol === col,
+        ));
+      });
 
-          <div class="ch8-smith-controls">
-            <button type="button" data-smith-prev ${index === 0 ? "disabled" : ""}>← 上一步</button>
-            <div><span>步骤 ${index + 1} / ${steps.length}</span><strong>${step.title}</strong></div>
-            <button type="button" class="is-primary" data-smith-next ${index === steps.length - 1 ? "disabled" : ""}>下一步 →</button>
-          </div>
-
-          ${conclusionMarkup("这一操作为什么安全", step.invariant, index === steps.length - 1 ? "非零对角元首一且满足整除链；这才是 Smith 标准形，而不只是任意对角形。" : "每一步都有明确反操作，因此都对应可逆 λ-矩阵。")}
-
-          <section class="ch8-legality-gate">
-            <div><span>快速判定</span><h4>下面哪一个“倍乘”仍是合法初等变换？</h4></div>
-            <div class="ch8-legality-options" role="group" aria-label="判断合法倍乘">
-              <button type="button" data-legal="lambda" class="${legalChoice === "lambda" ? "is-wrong" : ""}">${I("R_1\\leftarrow\\lambda R_1")}</button>
-              <button type="button" data-legal="minus" class="${legalChoice === "minus" ? "is-correct" : ""}">${I("R_1\\leftarrow- R_1")}</button>
-              <button type="button" data-legal="poly" class="${legalChoice === "poly" ? "is-wrong" : ""}">${I("R_1\\leftarrow(\\lambda+1)R_1")}</button>
-            </div>
-            <p data-legal-feedback>${legalChoice ? (legalChoice === "minus" ? "正确：−1 是非零常数单位，反操作仍是乘 −1。" : "不合法：次数大于 0 的多项式不是 F[λ] 中的单位，不能保证可逆。") : "先选一个操作，再检查它是否有多项式反操作。"}</p>
-          </section>
-
-          <button type="button" class="ch8-detail-toggle" data-smith-verification aria-expanded="${showVerification}">${showVerification ? "收起" : "展开"}累计左右操作的验证</button>
-          ${showVerification ? `<div class="ch8-smith-verification"><span>最终关系</span>${I("D(\\lambda)=U(\\lambda)A(\\lambda)V(\\lambda)")}<p>这里的 U 与 V 来自两套独立的行、列操作；它们一般不互为逆，所以这是等价，不是相似。</p></div>` : ""}
-        </div>`;
-
-      host.querySelectorAll("[data-smith-step]").forEach((button) => on(button, "click", () => { index = Number(button.dataset.smithStep); render(); }));
-      on(host.querySelector("[data-smith-prev]"), "click", () => { index = Math.max(0, index - 1); render(); });
-      on(host.querySelector("[data-smith-next]"), "click", () => { index = Math.min(steps.length - 1, index + 1); render(); });
-      host.querySelectorAll("[data-legal]").forEach((button) => on(button, "click", () => { legalChoice = button.dataset.legal; render(); }));
-      on(host.querySelector("[data-smith-verification]"), "click", () => { showVerification = !showVerification; render(); });
+      host.querySelectorAll("[data-smith-step]").forEach((button, stepIndex) => {
+        button.classList.toggle("is-active", stepIndex === index);
+        button.classList.toggle("is-complete", stepIndex < index);
+        button.disabled = stepIndex > index + 1;
+      });
+      prev.disabled = index === 0;
+      next.disabled = index === steps.length - 1;
+      conclusion.innerHTML = conclusionMarkup(
+        "结构没有丢失",
+        index === steps.length - 1 ? "对角线已经变成 Smith 指纹" : step.invariant,
+        index === steps.length - 1 ? "非零对角元首一，并满足 1∣(λ+1)。左右两条操作通道只改变表示，不改变等价类。" : "跟着发亮的左轨或右轨看：每一步都必须有明确反操作。",
+        index === steps.length - 1 ? "accent" : "quiet",
+      );
+      verificationSlot.innerHTML = showVerification ? `<div class="ch8-smith-verification"><span>累计关系</span><strong>${I("D(\\lambda)=U(\\lambda)A(\\lambda)V(\\lambda)")}</strong><p>U 与 V 分别累计行操作和列操作，一般不互为逆。因此这里是等价，不是相似。</p></div>` : "";
     }
+
+    host.querySelectorAll("[data-smith-step]").forEach((button) => on(button, "click", () => {
+      index = Number(button.dataset.smithStep);
+      render();
+    }));
+    on(prev, "click", () => { index = Math.max(0, index - 1); render(); });
+    on(next, "click", () => { index = Math.min(steps.length - 1, index + 1); render(); });
+    host.querySelectorAll("[data-legal]").forEach((button) => on(button, "click", () => {
+      legalChoice = button.dataset.legal;
+      host.querySelectorAll("[data-legal]").forEach((item) => item.classList.remove("is-correct", "is-wrong"));
+      button.classList.add(legalChoice === "minus" ? "is-correct" : "is-wrong");
+      host.querySelector("[data-legal-feedback]").textContent = legalChoice === "minus"
+        ? "正确：−1 是非零常数单位，反操作仍然是乘 −1。"
+        : "不合法：次数大于 0 的多项式不是 F[λ] 的单位，不能保证可逆。";
+    }));
+    on(host.querySelector("[data-smith-verification]"), "click", (event) => {
+      showVerification = !showVerification;
+      event.currentTarget.setAttribute("aria-expanded", String(showVerification));
+      event.currentTarget.textContent = showVerification ? "收起累计关系" : "展开累计关系";
+      render();
+    });
 
     render();
   }

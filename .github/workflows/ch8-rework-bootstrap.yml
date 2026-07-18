@@ -75,12 +75,10 @@ jobs:
           print('static source verification passed')
           PY
 
-      - name: Commit rebuilt Chapter 8
+      - name: Publish rebuilt commit to temporary branch
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add -A
           git commit -m "feat(ch8): rebuild lessons around visible causal experiments"
-          git fetch origin context/ch8-lambda-matrices
-          git rebase origin/context/ch8-lambda-matrices
-          git push origin HEAD:context/ch8-lambda-matrices
+          git push --force origin HEAD:refs/heads/automation/ch8-rework-output

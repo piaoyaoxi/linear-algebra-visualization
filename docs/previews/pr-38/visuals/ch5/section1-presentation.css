@@ -186,6 +186,7 @@
 #quadratic-matrix-interactive .ch5s1-flow > b {
   color: var(--accent-strong);
   font-size: 20px;
+  pointer-events: none;
 }
 
 #quadratic-matrix-interactive .ch5s1-canvas-pair {

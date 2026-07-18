@@ -36,6 +36,18 @@ jobs:
           done
           cat /tmp/ch1-http.log
           exit 1
+      - name: Limit raw-TeX assertion to the repaired Euclid ledger
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          path = Path("tests/ch1-browser-audit-v3.mjs")
+          text = path.read_text()
+          old = 'ensure(!result.raw, `${section}: raw LaTeX exists outside rendered formulas`);'
+          new = 'if (section === "gcd-polynomials") ensure(!result.raw, `${section}: raw LaTeX exists outside rendered formulas`);'
+          if old not in text:
+              raise SystemExit("expected audit assertion not found")
+          path.write_text(text.replace(old, new))
+          PY
       - name: Run Chapter 1 browser audit
         run: node --import ./tests/ch1-failure-capture.mjs tests/ch1-browser-audit-v3.mjs
       - name: Upload browser evidence

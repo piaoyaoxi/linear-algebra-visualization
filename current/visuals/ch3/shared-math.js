@@ -534,8 +534,12 @@
       const padX = 7;
       const boxW = metrics.width + padX * 2;
       const boxH = 22;
-      let labelX = x2 + (ux >= 0 ? 8 : -boxW - 8);
-      let labelY = y2 + (uy >= 0 ? 7 : -boxH - 7);
+      const labelT = options.labelT ?? 1;
+      const labelOffset = options.labelOffset ?? 0;
+      const anchorX = x1 + dx * labelT + px * labelOffset;
+      const anchorY = y1 + dy * labelT + py * labelOffset;
+      let labelX = anchorX + (ux >= 0 ? 8 : -boxW - 8);
+      let labelY = anchorY + (uy >= 0 ? 7 : -boxH - 7);
       labelX = Math.max(4, Math.min(frame.width - boxW - 4, labelX));
       labelY = Math.max(4, Math.min(frame.height - boxH - 4, labelY));
       ctx.globalAlpha = 0.94;

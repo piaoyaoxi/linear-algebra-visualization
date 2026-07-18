@@ -477,38 +477,84 @@
   const toCanvas = (frame, point) => [frame.cx + point[0] * frame.scale, frame.cy - point[1] * frame.scale];
   const toWorld = (frame, point) => [(point[0] - frame.cx) / frame.scale, (frame.cy - point[1]) / frame.scale];
 
-  function drawArrow(ctx, frame, point, color, label = "", width = 2.6) {
-    const [x, y] = toCanvas(frame, point);
-    const [ox, oy] = [frame.cx, frame.cy];
-    const angle = Math.atan2(y - oy, x - ox);
+  function drawArrowBetween(ctx, frame, from, to, color, label = "", width = 3, options = {}) {
+    const [x1, y1] = toCanvas(frame, from);
+    const [x2, y2] = toCanvas(frame, to);
+    const dx = x2 - x1;
+    const dy = y2 - y1;
+    const length = Math.hypot(dx, dy);
+    if (length < 1.5) {
+      if (label) {
+        ctx.save();
+        ctx.fillStyle = color;
+        ctx.font = "750 12px ui-sans-serif, system-ui";
+        ctx.fillText(label, x1 + 9, y1 - 9);
+        ctx.restore();
+      }
+      return;
+    }
+    const ux = dx / length;
+    const uy = dy / length;
+    const px = -uy;
+    const py = ux;
+    const headLength = Math.min(16, Math.max(11, length * 0.17));
+    const headHalf = Math.min(7.2, Math.max(5.4, width * 2.05));
+    const neckX = x2 - ux * headLength;
+    const neckY = y2 - uy * headLength;
+
     ctx.save();
+    ctx.globalAlpha = options.alpha ?? 1;
     ctx.strokeStyle = color;
     ctx.fillStyle = color;
     ctx.lineWidth = width;
     ctx.lineCap = "round";
+    ctx.lineJoin = "round";
+    if (options.dashed) ctx.setLineDash([7, 6]);
     ctx.beginPath();
-    ctx.moveTo(ox, oy);
-    ctx.lineTo(x, y);
+    ctx.moveTo(x1, y1);
+    ctx.lineTo(neckX, neckY);
     ctx.stroke();
+    ctx.setLineDash([]);
     ctx.beginPath();
-    ctx.moveTo(x, y);
-    ctx.lineTo(x - 10 * Math.cos(angle - Math.PI / 6), y - 10 * Math.sin(angle - Math.PI / 6));
-    ctx.lineTo(x - 10 * Math.cos(angle + Math.PI / 6), y - 10 * Math.sin(angle + Math.PI / 6));
+    ctx.moveTo(x2, y2);
+    ctx.lineTo(neckX + px * headHalf, neckY + py * headHalf);
+    ctx.quadraticCurveTo(neckX, neckY, neckX - px * headHalf, neckY - py * headHalf);
     ctx.closePath();
     ctx.fill();
-    ctx.beginPath();
-    ctx.arc(x, y, 5.5, 0, Math.PI * 2);
-    ctx.fillStyle = frame.p.surface;
-    ctx.fill();
-    ctx.strokeStyle = color;
-    ctx.lineWidth = 2.5;
-    ctx.stroke();
+
+    if (options.tailDot) {
+      ctx.beginPath();
+      ctx.arc(x1, y1, Math.max(2.2, width * 0.8), 0, Math.PI * 2);
+      ctx.fill();
+    }
+
     if (label) {
+      ctx.font = "760 12px ui-sans-serif, system-ui";
+      const metrics = ctx.measureText(label);
+      const padX = 7;
+      const boxW = metrics.width + padX * 2;
+      const boxH = 22;
+      let labelX = x2 + (ux >= 0 ? 8 : -boxW - 8);
+      let labelY = y2 + (uy >= 0 ? 7 : -boxH - 7);
+      labelX = Math.max(4, Math.min(frame.width - boxW - 4, labelX));
+      labelY = Math.max(4, Math.min(frame.height - boxH - 4, labelY));
+      ctx.globalAlpha = 0.94;
+      ctx.fillStyle = frame.p.surface;
+      ctx.strokeStyle = color;
+      ctx.lineWidth = 1;
+      ctx.beginPath();
+      ctx.roundRect(labelX, labelY, boxW, boxH, 11);
+      ctx.fill();
+      ctx.stroke();
       ctx.fillStyle = color;
-      ctx.font = "700 12px ui-sans-serif, system-ui";
-      ctx.fillText(label, x + 8, y - 8);
+      ctx.textBaseline = "middle";
+      ctx.fillText(label, labelX + padX, labelY + boxH / 2 + 0.5);
     }
     ctx.restore();
+  }
+
+  function drawArrow(ctx, frame, point, color, label = "", width = 3, options = {}) {
+    drawArrowBetween(ctx, frame, [0, 0], point, color, label, width, options);
   }
 
   function drawPoint(ctx, frame, point, color, label = "", radius = 5) {
@@ -720,6 +766,7 @@
     toCanvas,
     toWorld,
     drawArrow,
+    drawArrowBetween,
     drawPoint,
     drawLineEquation,
     drawSpan,

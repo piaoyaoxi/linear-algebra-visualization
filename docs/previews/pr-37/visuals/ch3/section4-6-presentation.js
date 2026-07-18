@@ -43,7 +43,7 @@
     root.innerHTML = `
       <h2>交互实验</h2>
       <div class="ch3-lab" data-ch3-lab="rank">
-        <div class="ch3-lab-head"><h3>秩证书工作台</h3><p>所有秩判定使用完整矩阵；画布只显示前两行坐标的投影，并明确标注投影限制。</p></div>
+        <div class="ch3-lab-head"><span class="ch3-lab-kicker">目标 · 用三种证书读出同一个秩</span><h3>秩证书工作台</h3><p>先看列向量张成，再对照 RREF 主元与非零子式。二维画布只是投影，最终秩始终由完整矩阵精确计算。</p></div><div class="ch3-mission"><strong>操作任务</strong><span>选择“投影陷阱”：画面看似共线，但完整三维列仍然无关。</span><span class="ch3-mission-result">看结论：投影不能代替秩判定</span></div>
         <div class="ch3-presets">
           <button type="button" class="is-active" data-preset="full2">满秩 2×2</button>
           <button type="button" data-preset="rankOne">秩 1</button>
@@ -216,7 +216,7 @@
     root.innerHTML = `
       <h2>交互实验</h2>
       <div class="ch3-lab" data-ch3-lab="solvability">
-        <div class="ch3-lab-head"><h3>可达性闸门</h3><p>目标 b 可直接在画布中拖动，并吸附到 0.05 网格；矩阵、RREF、秩与解类型使用同一组精确坐标。</p></div>
+        <div class="ch3-lab-head"><span class="ch3-lab-kicker">目标 · 判断目标向量 b 是否落在列空间中</span><h3>可达性闸门</h3><p>拖动向量 b 穿过列空间边界。几何上的“能否到达”和增广矩阵是否产生新主元，是同一件事。</p></div><div class="ch3-mission"><strong>操作任务</strong><span>在“秩 1 · 在线”和“秩 1 · 线外”之间切换，再拖动 b 回到带状列空间。</span><span class="ch3-mission-result">看结论：rank(A)=rank([A|b])</span></div>
         <div class="ch3-presets">
           <button type="button" data-preset="full">满秩平面</button>
           <button type="button" class="is-active" data-preset="line">秩 1 · 在线</button>
@@ -281,7 +281,7 @@
       M().drawSpan(sized.ctx, frame, columns, frame.p.accent);
       const colors = [frame.p.accent, frame.p.coral];
       columns.forEach((column, index) => M().drawArrow(sized.ctx, frame, column, colors[index], `a${index + 1}`));
-      M().drawPoint(sized.ctx, frame, state.b, M().analyzeAugmented(augmented()).inconsistent ? frame.p.coral : frame.p.blue, "b");
+      M().drawArrow(sized.ctx, frame, state.b, M().analyzeAugmented(augmented()).inconsistent ? frame.p.coral : frame.p.blue, "b", 3.5, { tailDot: true });
       if (rank === 1) {
         sized.ctx.fillStyle = frame.p.muted;
         sized.ctx.font = "600 12px ui-sans-serif, system-ui";
@@ -360,37 +360,67 @@
     if (!root) return;
     root.innerHTML = `
       <h2>交互实验</h2>
-      <div class="ch3-lab" data-ch3-lab="solution-structure">
-        <div class="ch3-lab-head"><h3>解族生成器</h3><p>系统从精确 RREF 自动生成特解与零空间基。每次移动参数都会同时验证 Ax=b 和 A(x−x₀)=0。</p></div>
-        <div class="ch3-presets">
-          <button type="button" data-preset="unique">唯一解</button>
-          <button type="button" class="is-active" data-preset="line">仿射直线</button>
-          <button type="button" data-preset="plane">仿射平面</button>
-          <button type="button" data-preset="homogeneous">齐次直线</button>
-          <button type="button" data-preset="none">无解边界</button>
+      <div class="ch3-lab ch3-lab--solution" data-ch3-lab="solution-structure">
+        <div class="ch3-lab-head">
+<span class="ch3-lab-kicker">目标 · 把“特解 + 零空间”变成看得见的位移</span>
+<h3>沿着零空间生成全部解</h3>
+<p>蓝色箭头 x 是当前解；青色箭头 x₀ 是一个特解；从 x₀ 出发的橙色箭头是零空间方向。改变参数，只会沿这些方向移动。</p>
         </div>
-        <div class="ch3-lab-grid">
-          <div class="ch3-stage"><canvas data-canvas aria-label="解集前两坐标投影"></canvas></div>
-          <div class="ch3-side">
-            <div class="ch3-meter is-4">
-              <div class="ch3-meter-card" data-solution-card><strong>解类型</strong><span data-type>—</span></div>
-              <div class="ch3-meter-card"><strong>rank(A)</strong><span data-rank>—</span></div>
-              <div class="ch3-meter-card"><strong>nullity</strong><span data-nullity>—</span></div>
-              <div class="ch3-meter-card"><strong>自由变量</strong><span data-free>—</span></div>
-            </div>
-            <div class="ch3-panel"><h4>RREF</h4><div data-rref></div></div>
-            <div class="ch3-panel"><h4>参数</h4><div class="ch3-sliders" data-parameters></div></div>
-          </div>
+        <div class="ch3-mission">
+<strong>操作任务</strong>
+<span>选择“一条解直线”，拖动参数 s₁，观察 x−x₀ 始终平行 η₁。</span>
+<span class="ch3-mission-result">看结论：解集 = x₀ + Ker(A)</span>
         </div>
-        <div class="ch3-lab-grid is-3">
-          <div class="ch3-panel"><h4>特解 x₀</h4><div data-x0></div><button type="button" data-shift>换一个特解</button></div>
-          <div class="ch3-panel"><h4>零空间基</h4><div data-basis></div></div>
-          <div class="ch3-panel"><h4>当前解 x</h4><div data-current></div></div>
+        <div class="ch3-presets ch3-solution-presets">
+<button type="button" data-preset="unique">唯一解</button>
+<button type="button" class="is-active" data-preset="line">一条解直线</button>
+<button type="button" data-preset="plane">一个解平面</button>
+<button type="button" data-preset="homogeneous">齐次子空间</button>
+<button type="button" data-preset="none">无解</button>
         </div>
-        <div class="ch3-verification-grid">
-          <div class="viz-callout" data-verify-axb></div>
-          <div class="viz-callout" data-verify-null></div>
+        <div class="ch3-solution-layout">
+<section class="ch3-stage-shell">
+  <div class="ch3-stage-caption"><strong>解空间几何</strong><span data-geometry-note>二维完整视图</span></div>
+  <div class="ch3-stage"><canvas data-canvas aria-label="特解、零空间方向与当前解"></canvas></div>
+  <div class="ch3-stage-legend">
+    <span><i class="is-accent"></i>特解 x₀</span>
+    <span><i class="is-coral"></i>零空间方向 η</span>
+    <span><i class="is-blue"></i>当前解 x</span>
+  </div>
+</section>
+<aside class="ch3-solution-readout">
+  <section class="ch3-equation-hero" data-solution-card>
+    <span>通解结构</span>
+    <div data-family></div>
+    <p data-family-note>参数改变位置，不改变 Ax=b。</p>
+  </section>
+  <section class="ch3-parameter-panel">
+    <div class="ch3-panel-heading"><h4>移动参数</h4><span>沿零空间方向移动</span></div>
+    <div class="ch3-sliders" data-parameters></div>
+  </section>
+  <div class="ch3-meter ch3-solution-summary">
+    <div class="ch3-meter-card"><strong>解类型</strong><span data-type>—</span></div>
+    <div class="ch3-meter-card"><strong>rank(A)</strong><span data-rank>—</span></div>
+    <div class="ch3-meter-card"><strong>nullity</strong><span data-nullity>—</span></div>
+    <div class="ch3-meter-card"><strong>自由变量</strong><span data-free>—</span></div>
+  </div>
+  <details class="ch3-details ch3-rref-details">
+    <summary>查看精确 RREF</summary>
+    <div data-rref></div>
+  </details>
+</aside>
         </div>
+        <section class="ch3-decomposition" aria-label="通解分解">
+<article><span>① 选一个特解</span><div class="ch3-decomposition-value" data-x0></div><button type="button" data-shift>沿 η₁ 换一个特解</button></article>
+<div class="ch3-decomposition-arrow" aria-hidden="true">＋</div>
+<article><span>② 加零空间位移</span><div class="ch3-decomposition-value" data-basis></div></article>
+<div class="ch3-decomposition-arrow" aria-hidden="true">＝</div>
+<article class="is-current"><span>③ 得到当前解</span><div class="ch3-decomposition-value" data-current></div></article>
+        </section>
+        <section class="ch3-proof-strip" aria-label="实时验证">
+<div data-verify-axb></div>
+<div data-verify-null></div>
+        </section>
         <p class="ch3-feedback" data-note aria-live="polite"></p>
       </div>`;
 
@@ -413,6 +443,7 @@
       rebuildParameters();
       render();
     }
+
     function data() {
       const info = M().analyzeAugmented(state.aug);
       const A = state.aug.map((row) => row.slice(0, -1));
@@ -425,16 +456,17 @@
       }
       return { info, A, b, part, nullspace, x0 };
     }
+
     function rebuildParameters() {
       const count = data().nullspace.basis.length;
       state.parameters = Array.from({ length: count }, (_, index) => state.parameters[index] || 0);
       const container = root.querySelector("[data-parameters]");
       if (!count) {
-        container.innerHTML = `<p class="ch3-note">没有自由参数。</p>`;
+        container.innerHTML = `<p class="ch3-note">没有自由参数，解不会移动。</p>`;
         return;
       }
       container.innerHTML = state.parameters.map((value, index) => `
-        <label class="ch3-slider"><span>s${index + 1}</span><input type="range" min="-2" max="2" step="0.05" value="${value}" data-param="${index}" /><span data-value>${M().formatNumber(value)}</span></label>`).join("");
+        <label class="ch3-slider ch3-parameter-slider"><span>s${index + 1}</span><input type="range" min="-2" max="2" step="0.05" value="${value}" data-param="${index}" /><strong data-value>${M().formatNumber(value)}</strong></label>`).join("");
       container.querySelectorAll("[data-param]").forEach((input) => scope.listen(input, "input", () => {
         const index = Number(input.dataset.param);
         state.parameters[index] = Number(input.value);
@@ -442,74 +474,145 @@
         render();
       }));
     }
+
     function currentVector(payload) {
       if (!payload.part.ok) return [];
-      return payload.x0.map((value, index) => payload.nullspace.basis.reduce((sum, basis, k) => M().add(sum, M().mul(M().fromNumber(state.parameters[k] || 0), basis[index])), value));
+      return payload.x0.map((value, index) => payload.nullspace.basis.reduce(
+        (sum, basis, k) => M().add(sum, M().mul(M().fromNumber(state.parameters[k] || 0), basis[index])),
+        value,
+      ));
     }
+
+    function familyLatex(payload) {
+      if (!payload.part.ok) return String.raw`\varnothing`;
+      if (!payload.nullspace.basis.length) return String.raw`x=x_0`;
+      const terms = payload.nullspace.basis.map((_, index) => `s_${index + 1}\eta_${index + 1}`).join("+");
+      return `x=x_0+${terms}`;
+    }
+
     function draw(payload, current) {
       const sized = M().sizeCanvas(canvas);
       if (!sized) return;
-      const frame = M().drawAxes(sized.ctx, sized.width, sized.height, 46);
+      const frame = M().drawAxes(sized.ctx, sized.width, sized.height, 54);
+      sized.ctx.save();
+      sized.ctx.fillStyle = frame.p.muted;
+      sized.ctx.font = "650 12px ui-sans-serif, system-ui";
+      sized.ctx.fillText(payload.info.n > 2 ? "前两坐标投影 · 方向关系仍按完整向量计算" : "二维解空间", 14, 22);
+      sized.ctx.restore();
+
       if (!payload.part.ok) {
+        sized.ctx.save();
         sized.ctx.fillStyle = frame.p.coral;
-        sized.ctx.font = "700 14px ui-sans-serif, system-ui";
-        sized.ctx.fillText("矛盾行：当前系统无解，没有可绘制的解族。", 16, 28);
+        sized.ctx.font = "760 16px ui-sans-serif, system-ui";
+        sized.ctx.textAlign = "center";
+        sized.ctx.fillText("RREF 出现矛盾行：没有任何向量 x 满足 Ax=b", frame.width / 2, frame.height / 2 - 4);
+        sized.ctx.font = "600 13px ui-sans-serif, system-ui";
+        sized.ctx.fillStyle = frame.p.muted;
+        sized.ctx.fillText("因此也不存在“特解 + 零空间”的非齐次解族", frame.width / 2, frame.height / 2 + 24);
+        sized.ctx.restore();
         return;
       }
+
       const x0 = payload.x0.map(M().toNumber);
-      if (payload.nullspace.basis.length === 1 && x0.length >= 2) {
-        const direction = payload.nullspace.basis[0].map(M().toNumber);
-        const start = [x0[0] - 8 * direction[0], (x0[1] || 0) - 8 * (direction[1] || 0)];
-        const end = [x0[0] + 8 * direction[0], (x0[1] || 0) + 8 * (direction[1] || 0)];
-        const a = M().toCanvas(frame, start);
-        const b = M().toCanvas(frame, end);
+      const x0p = [x0[0] || 0, x0[1] || 0];
+      const xp = [M().toNumber(current[0] || M().F(0)), M().toNumber(current[1] || M().F(0))];
+      const directions = payload.nullspace.basis.map((basis) => [M().toNumber(basis[0] || M().F(0)), M().toNumber(basis[1] || M().F(0))]);
+
+      if (directions.length === 1) {
+        const d = directions[0];
+        const A = M().toCanvas(frame, [x0p[0] - 12 * d[0], x0p[1] - 12 * d[1]]);
+        const B = M().toCanvas(frame, [x0p[0] + 12 * d[0], x0p[1] + 12 * d[1]]);
         sized.ctx.save();
-        sized.ctx.strokeStyle = frame.p.blue;
-        sized.ctx.lineWidth = 2.3;
-        sized.ctx.setLineDash([7, 5]);
-        sized.ctx.beginPath(); sized.ctx.moveTo(...a); sized.ctx.lineTo(...b); sized.ctx.stroke(); sized.ctx.restore();
-      } else if (payload.nullspace.basis.length >= 2) {
-        M().drawSpan(sized.ctx, frame, payload.nullspace.basis.map((basis) => basis.slice(0, 2).map(M().toNumber)), frame.p.accent);
+        sized.ctx.strokeStyle = frame.p.coral;
+        sized.ctx.globalAlpha = 0.32;
+        sized.ctx.lineWidth = 8;
+        sized.ctx.lineCap = "round";
+        sized.ctx.beginPath();
+        sized.ctx.moveTo(...A);
+        sized.ctx.lineTo(...B);
+        sized.ctx.stroke();
+        sized.ctx.restore();
+      } else if (directions.length >= 2) {
+        const d1 = directions[0];
+        const d2 = directions[1];
+        const corners = [[-2, -2], [2, -2], [2, 2], [-2, 2]].map(([a, b]) => [
+x0p[0] + a * d1[0] + b * d2[0],
+x0p[1] + a * d1[1] + b * d2[1],
+        ]).map((point) => M().toCanvas(frame, point));
+        sized.ctx.save();
+        sized.ctx.fillStyle = frame.p.accent;
+        sized.ctx.globalAlpha = 0.09;
+        sized.ctx.beginPath();
+        sized.ctx.moveTo(...corners[0]);
+        corners.slice(1).forEach((point) => sized.ctx.lineTo(...point));
+        sized.ctx.closePath();
+        sized.ctx.fill();
+        sized.ctx.restore();
       }
-      M().drawPoint(sized.ctx, frame, [x0[0] || 0, x0[1] || 0], frame.p.accent, "x₀");
-      M().drawPoint(sized.ctx, frame, [M().toNumber(current[0] || M().F(0)), M().toNumber(current[1] || M().F(0))], frame.p.blue, "x");
-      if (payload.info.n > 2) {
-        sized.ctx.fillStyle = frame.p.muted;
-        sized.ctx.font = "600 12px ui-sans-serif, system-ui";
-        sized.ctx.fillText("仅显示解向量的前两坐标投影", 14, 22);
+
+      if (Math.hypot(...x0p) > 1e-8) M().drawArrowBetween(sized.ctx, frame, [0, 0], x0p, frame.p.accent, "x₀", 3.1, { tailDot: true });
+      else {
+        const O = M().toCanvas(frame, [0, 0]);
+        sized.ctx.save();
+        sized.ctx.fillStyle = frame.p.accent;
+        sized.ctx.font = "760 12px ui-sans-serif, system-ui";
+        sized.ctx.fillText("x₀=0", O[0] + 9, O[1] - 10);
+        sized.ctx.restore();
       }
+
+      directions.forEach((direction, index) => {
+        const endpoint = [x0p[0] + direction[0], x0p[1] + direction[1]];
+        M().drawArrowBetween(sized.ctx, frame, x0p, endpoint, frame.p.coral, `η${index + 1}`, 2.7, { alpha: 0.9 });
+      });
+
+      if (Math.hypot(xp[0] - x0p[0], xp[1] - x0p[1]) > 1e-8) {
+        M().drawArrowBetween(sized.ctx, frame, x0p, xp, frame.p.blue, "参数位移", 2.2, { dashed: true, alpha: 0.72 });
+      }
+      M().drawArrowBetween(sized.ctx, frame, [0, 0], xp, frame.p.blue, "x", 3.8, { tailDot: true });
     }
+
     function render() {
       const payload = data();
       const classification = M().classifySystem(state.aug);
       const current = currentVector(payload);
-      root.querySelector("[data-type]").textContent = classification.label;
-      root.querySelector("[data-type]").className = `ch3-status ${classification.cls}`;
+      const type = root.querySelector("[data-type]");
+      type.textContent = classification.label;
+      type.className = `ch3-status ${classification.cls}`;
       root.querySelector("[data-rank]").textContent = String(payload.info.rankA);
       root.querySelector("[data-nullity]").textContent = payload.part.ok ? String(payload.nullspace.basis.length) : "—";
       root.querySelector("[data-free]").textContent = payload.part.ok && payload.info.free.length ? payload.info.free.map((i) => `x${i + 1}`).join(",") : "无";
       root.querySelector("[data-rref]").innerHTML = M().htmlMatrix(payload.info.rref, payload.info.n);
-      root.querySelector("[data-x0]").innerHTML = payload.part.ok ? M().htmlVector(payload.x0) : "不存在";
+      root.querySelector("[data-family]").innerHTML = texD(familyLatex(payload));
+      root.querySelector("[data-family-note]").textContent = payload.part.ok
+        ? payload.nullspace.basis.length
+? "参数只改变零空间位移；A 会把这些位移全部压到 0。"
+: "没有零空间方向，所以特解就是唯一解。"
+        : "没有特解，通解集合为空。";
+      root.querySelector("[data-geometry-note]").textContent = payload.info.n > 2 ? `前两坐标投影 · 完整维数 n=${payload.info.n}` : "二维完整视图";
+      root.querySelector("[data-x0]").innerHTML = payload.part.ok ? `${tex(String.raw`x_0=`)}${M().htmlVector(payload.x0)}` : "不存在";
       root.querySelector("[data-basis]").innerHTML = payload.part.ok && payload.nullspace.basis.length
         ? payload.nullspace.basis.map((basis, index) => `<div>${tex(String.raw`\eta_{${index + 1}}=`)}${M().htmlVector(basis)}</div>`).join("")
-        : payload.part.ok ? `${tex(String.raw`\{0\}`)}` : "不存在";
-      root.querySelector("[data-current]").innerHTML = payload.part.ok ? M().htmlVector(current) : "无解";
-      root.querySelector("[data-shift]").disabled = !payload.part.ok || !payload.nullspace.basis.length;
+        : payload.part.ok ? tex(String.raw`\operatorname{Ker}(A)=\{0\}`) : "不存在";
+      root.querySelector("[data-current]").innerHTML = payload.part.ok ? `${tex(String.raw`x=`)}${M().htmlVector(current)}` : "无解";
+      const shiftButton = root.querySelector("[data-shift]");
+      shiftButton.disabled = !payload.part.ok || !payload.nullspace.basis.length;
+      shiftButton.textContent = state.shift ? "恢复原特解" : "沿 η₁ 换一个特解";
+
       if (payload.part.ok) {
         const Ax = M().matVec(payload.A, current);
         const difference = current.map((value, index) => M().sub(value, payload.x0[index]));
         const Adiff = M().matVec(payload.A, difference);
         const axOk = Ax.every((value, index) => M().eq(value, payload.b[index]));
         const nullOk = Adiff.every(M().isZero);
-        root.querySelector("[data-verify-axb]").innerHTML = `${tex(String.raw`Ax=b`)}：${axOk ? "验证通过" : "验证失败"}<div>${M().htmlVector(Ax)}</div>`;
-        root.querySelector("[data-verify-null]").innerHTML = `${tex(String.raw`A(x-x_0)=0`)}：${nullOk ? "验证通过" : "验证失败"}<div>${M().htmlVector(Adiff)}</div>`;
+        root.querySelector("[data-verify-axb]").innerHTML = `<span class="ch3-check ${axOk ? "is-ok" : "is-bad"}">${axOk ? "✓" : "!"}</span><div><strong>${tex(String.raw`Ax=b`)}</strong><p>${axOk ? "验证通过：当前箭头的终点仍是原方程组的解。" : "验证失败"}</p></div>`;
+        root.querySelector("[data-verify-null]").innerHTML = `<span class="ch3-check ${nullOk ? "is-ok" : "is-bad"}">${nullOk ? "✓" : "!"}</span><div><strong>${tex(String.raw`A(x-x_0)=0`)}</strong><p>${nullOk ? "验证通过：从 x₀ 到 x 的位移完全落在零空间中。" : "验证失败"}</p></div>`;
         root.querySelector("[data-note]").textContent = state.shift
-          ? "当前特解沿第一个零空间方向移动了一步；参数原点改变，但解集没有改变。"
-          : "移动参数只会沿零空间方向改变当前解。";
+? "你换了一个特解，参数原点随之改变；但整条（或整个平面）解集没有移动。"
+: payload.nullspace.basis.length ? "拖动参数：蓝色 x 会移动，青色 x₀ 与橙色零空间方向共同解释它为何始终满足 Ax=b。" : "没有自由参数，因此当前系统只有一个解。";
       } else {
-        root.querySelector("[data-verify-axb]").textContent = "系统无解，无法验证 Ax=b。";
-        root.querySelector("[data-verify-null]").textContent = "没有特解，因此不存在非齐次解族。";
-        root.querySelector("[data-note]").textContent = "解的结构公式以系统有解为前提。";
+        root.querySelector("[data-verify-axb]").innerHTML = `<span class="ch3-check is-bad">×</span><div><strong>没有 Ax=b 的解</strong><p>RREF 的矛盾行阻止了特解出现。</p></div>`;
+        root.querySelector("[data-verify-null]").innerHTML = `<span class="ch3-check is-muted">—</span><div><strong>结构公式不适用</strong><p>只有系统有解时，才能写成 x₀+Ker(A)。</p></div>`;
+        root.querySelector("[data-note]").textContent = "先通过有解判别，才能讨论解族结构。";
       }
       M().pulse(root.querySelector("[data-solution-card]"));
       draw(payload, current);

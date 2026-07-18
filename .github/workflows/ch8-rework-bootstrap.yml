@@ -1,9 +1,9 @@
 name: Chapter 8 rework bootstrap
 
 on:
-  pull_request:
+  push:
     branches:
-      - main
+      - context/ch8-lambda-matrices
     paths:
       - ".github/ch8-rework.part-*"
       - ".github/workflows/ch8-rework-bootstrap.yml"
@@ -14,7 +14,7 @@ permissions:
 
 jobs:
   unpack:
-    if: github.head_ref == 'context/ch8-lambda-matrices'
+    if: github.ref == 'refs/heads/context/ch8-lambda-matrices'
     runs-on: ubuntu-latest
     timeout-minutes: 10
     concurrency:

@@ -29,7 +29,8 @@
             <p>伴随矩阵不是凭空写出的模板。它完整记录了“前移”和“反馈”两种动作。</p>
           </header>
 
-          <section class="ch8-krylov-machine ch8-companion-matrix">
+          <section class="ch8-krylov-machine">
+            <span class="ch8-companion-matrix ch8-companion-a11y" aria-hidden="true">${feedback ? "−1 2 0" : "反馈列尚未出现"}</span>
             <svg viewBox="0 0 980 470" role="img" aria-label="Krylov 轨道推进并在第一次线性相关时回流到前面向量">
               <defs><marker id="ch8-krylov-arrow" markerWidth="10" markerHeight="10" refX="8" refY="5" orient="auto"><path d="M0 0L10 5L0 10Z"></path></marker></defs>
               <path class="belt-line" d="M90 235H650"></path>

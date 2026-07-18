@@ -12,71 +12,25 @@
   }
 
   function moduleBlock(number, title, subtitle, body, className = "") {
-    return `
-      <section class="ch6-lesson-module ${className}">
-        <div class="ch6-module-heading">
-          <span>${number}</span>
-          <div>
-            <h3>${title}</h3>
-            <p>${subtitle}</p>
-          </div>
-        </div>
-        <div class="ch6-module-body">${body}</div>
-      </section>
-    `;
+    return `<section class="ch6-lesson-module ${className}"><div class="ch6-module-heading"><span>${number}</span><div><h3>${title}</h3><p>${subtitle}</p></div></div><div class="ch6-module-body">${body}</div></section>`;
   }
 
   function formalShell(title, lead, modules, bridge = "") {
-    return `
-      <h2>${title}</h2>
-      <div class="ch6-foundation">
-        <p class="ch6-lead">${lead}</p>
-        ${modules.join("")}
-        ${bridge ? `<div class="ch6-bridge-note">${bridge}</div>` : ""}
-      </div>
-    `;
+    return `<h2>${title}</h2><div class="ch6-foundation"><p class="ch6-lead">${lead}</p>${modules.join("")}${bridge ? `<div class="ch6-bridge-note">${bridge}</div>` : ""}</div>`;
   }
 
   function taskBlock(section, fallback = []) {
     const prompts = section?.interactive?.prompts?.length ? section.interactive.prompts : fallback;
     if (!prompts.length) return "";
-    return `
-      <div class="ch6-observe-strip">
-        <strong>操作以后，按顺序核对</strong>
-        <ol>${prompts.map((item) => `<li>${item}</li>`).join("")}</ol>
-      </div>
-    `;
+    return `<div class="ch6-observe-strip"><strong>操作以后，按顺序核对</strong><ol>${prompts.map((item) => `<li>${item}</li>`).join("")}</ol></div>`;
   }
 
   function labShell({ title, lead, focus, stage, controls, readout, tasks = "", className = "" }) {
-    return `
-      <div class="ch6-guided-lab ${className}">
-        <div class="ch6-lab-header">
-          <div>
-            <span class="ch6-lab-kicker">交互实验</span>
-            <h3>${title}</h3>
-            <p>${lead}</p>
-          </div>
-          <div class="ch6-focus-note">
-            <span>第一眼先看</span>
-            <strong>${focus}</strong>
-          </div>
-        </div>
-        ${controls ? `<div class="ch6-lab-controls" aria-label="实验控制">${controls}</div>` : ""}
-        <div class="ch6-lab-stage">${stage}</div>
-        <div class="ch6-lab-readout" aria-live="polite">${readout}</div>
-        ${tasks}
-      </div>
-    `;
+    return `<div class="ch6-guided-lab ${className}"><div class="ch6-lab-header"><div><span class="ch6-lab-kicker">交互实验</span><h3>${title}</h3><p>${lead}</p></div><div class="ch6-focus-note"><span>第一眼先看</span><strong>${focus}</strong></div></div>${controls ? `<div class="ch6-lab-controls" aria-label="实验控制">${controls}</div>` : ""}<div class="ch6-lab-stage">${stage}</div><div class="ch6-lab-readout" aria-live="polite">${readout}</div>${tasks}</div>`;
   }
 
   function segmented(items, dataName, active) {
-    return `<div class="ch6-segmented" role="group">${items
-      .map(
-        ([value, label]) =>
-          `<button type="button" data-${dataName}="${value}" aria-pressed="${String(value === active)}" class="${value === active ? "is-active" : ""}">${label}</button>`,
-      )
-      .join("")}</div>`;
+    return `<div class="ch6-segmented" role="group">${items.map(([value, label]) => `<button type="button" data-${dataName}="${value}" aria-pressed="${String(value === active)}" class="${value === active ? "is-active" : ""}">${label}</button>`).join("")}</div>`;
   }
 
   function setActive(root, selector, predicate) {
@@ -120,83 +74,42 @@
   }
 
   function formatMatrix(matrix, digits = 2) {
-    return `[[${matrix[0].map((value) => formatNumber(value, digits)).join(", ")}], [${matrix[1]
-      .map((value) => formatNumber(value, digits))
-      .join(", ")}]]`;
+    return `[[${matrix[0].map((value) => formatNumber(value, digits)).join(", ")}], [${matrix[1].map((value) => formatNumber(value, digits)).join(", ")}]]`;
   }
 
-  function add(a, b) {
-    return [a[0] + b[0], a[1] + b[1]];
-  }
-
-  function sub(a, b) {
-    return [a[0] - b[0], a[1] - b[1]];
-  }
-
-  function scale(a, scalar) {
-    return [a[0] * scalar, a[1] * scalar];
-  }
-
-  function dot(a, b) {
-    return a[0] * b[0] + a[1] * b[1];
-  }
-
-  function cross(a, b) {
-    return a[0] * b[1] - a[1] * b[0];
-  }
-
-  function norm(a) {
-    return Math.hypot(a[0], a[1]);
-  }
-
-  function columns(a, b) {
-    return [
-      [a[0], b[0]],
-      [a[1], b[1]],
-    ];
-  }
-
-  function determinant(matrix) {
-    return matrix[0][0] * matrix[1][1] - matrix[0][1] * matrix[1][0];
-  }
+  const add = (a, b) => [a[0] + b[0], a[1] + b[1]];
+  const sub = (a, b) => [a[0] - b[0], a[1] - b[1]];
+  const scale = (a, scalar) => [a[0] * scalar, a[1] * scalar];
+  const dot = (a, b) => a[0] * b[0] + a[1] * b[1];
+  const cross = (a, b) => a[0] * b[1] - a[1] * b[0];
+  const norm = (a) => Math.hypot(a[0], a[1]);
+  const columns = (a, b) => [[a[0], b[0]], [a[1], b[1]]];
+  const determinant = (matrix) => matrix[0][0] * matrix[1][1] - matrix[0][1] * matrix[1][0];
 
   function inverse(matrix) {
     const det = determinant(matrix);
     if (Math.abs(det) < 1e-8) return null;
-    return [
-      [matrix[1][1] / det, -matrix[0][1] / det],
-      [-matrix[1][0] / det, matrix[0][0] / det],
-    ];
+    return [[matrix[1][1] / det, -matrix[0][1] / det], [-matrix[1][0] / det, matrix[0][0] / det]];
   }
 
-  function matVec(matrix, vector) {
-    return [
-      matrix[0][0] * vector[0] + matrix[0][1] * vector[1],
-      matrix[1][0] * vector[0] + matrix[1][1] * vector[1],
-    ];
-  }
-
-  function matMul(a, b) {
-    return [
-      [a[0][0] * b[0][0] + a[0][1] * b[1][0], a[0][0] * b[0][1] + a[0][1] * b[1][1]],
-      [a[1][0] * b[0][0] + a[1][1] * b[1][0], a[1][0] * b[0][1] + a[1][1] * b[1][1]],
-    ];
-  }
+  const matVec = (matrix, vector) => [matrix[0][0] * vector[0] + matrix[0][1] * vector[1], matrix[1][0] * vector[0] + matrix[1][1] * vector[1]];
+  const matMul = (a, b) => [[a[0][0] * b[0][0] + a[0][1] * b[1][0], a[0][0] * b[0][1] + a[0][1] * b[1][1]], [a[1][0] * b[0][0] + a[1][1] * b[1][0], a[1][0] * b[0][1] + a[1][1] * b[1][1]]];
 
   function solve(a, b, vector) {
     const inv = inverse(columns(a, b));
     return inv ? matVec(inv, vector) : null;
   }
 
-  const plane = {
-    width: 640,
-    height: 360,
-    origin: [320, 190],
-    scale: 64,
-  };
+  const plane = { width: 640, height: 360, origin: [320, 190], scale: 64 };
+  const point = (vector, config = plane) => [config.origin[0] + vector[0] * config.scale, config.origin[1] - vector[1] * config.scale];
 
-  function point(vector, config = plane) {
-    return [config.origin[0] + vector[0] * config.scale, config.origin[1] - vector[1] * config.scale];
+  function vectorLabel(label, x, y, tipX, tipY, className, config) {
+    const chars = Array.from(label).length;
+    const width = Math.max(38, Math.min(118, 18 + chars * 8.2));
+    const height = 25;
+    const safeX = Math.max(width / 2 + 8, Math.min(config.width - width / 2 - 8, x));
+    const safeY = Math.max(height / 2 + 8, Math.min(config.height - height / 2 - 8, y));
+    return `<g class="ch6-vector-label ${className}" transform="translate(${safeX.toFixed(2)} ${safeY.toFixed(2)})"><rect x="${(-width / 2).toFixed(2)}" y="${(-height / 2).toFixed(2)}" width="${width.toFixed(2)}" height="${height}" rx="12.5"></rect><text data-arrow-label data-tip-x="${tipX.toFixed(2)}" data-tip-y="${tipY.toFixed(2)}" text-anchor="middle" dominant-baseline="central">${escapeHtml(label)}</text></g>`;
   }
 
   function softArrow(from, to, className, label = "", config = plane) {
@@ -209,9 +122,9 @@
     const uy = dy / length;
     const px = -uy;
     const py = ux;
-    const half = 2.4;
-    const head = Math.min(17, Math.max(12, length * 0.17));
-    const headHalf = 6.8;
+    const half = Math.min(5.2, Math.max(3.5, length * 0.026));
+    const head = Math.min(25, Math.max(17, length * 0.2));
+    const headHalf = Math.min(12, Math.max(8.5, length * 0.08));
     const neckX = x2 - ux * head;
     const neckY = y2 - uy * head;
     const f = (n) => n.toFixed(2);
@@ -220,39 +133,32 @@
       `M ${p(x1 + px * half, y1 + py * half)}`,
       `L ${p(neckX + px * half, neckY + py * half)}`,
       `L ${p(neckX + px * headHalf, neckY + py * headHalf)}`,
-      `Q ${p(x2 - ux * head * 0.2 + px, y2 - uy * head * 0.2 + py)} ${p(x2, y2)}`,
-      `Q ${p(x2 - ux * head * 0.2 - px, y2 - uy * head * 0.2 - py)} ${p(neckX - px * headHalf, neckY - py * headHalf)}`,
+      `Q ${p(x2 - ux * head * 0.16 + px * 1.6, y2 - uy * head * 0.16 + py * 1.6)} ${p(x2, y2)}`,
+      `Q ${p(x2 - ux * head * 0.16 - px * 1.6, y2 - uy * head * 0.16 - py * 1.6)} ${p(neckX - px * headHalf, neckY - py * headHalf)}`,
       `L ${p(neckX - px * half, neckY - py * half)}`,
       `L ${p(x1 - px * half, y1 - py * half)}`,
-      `A ${half} ${half} 0 0 0 ${p(x1 + px * half, y1 + py * half)}`,
+      `Q ${p(x1 - ux * 2 - px * half, y1 - uy * 2 - py * half)} ${p(x1 + px * half, y1 + py * half)}`,
       "Z",
     ].join(" ");
-
-    if (!label) return `<path class="ch6-arrow ${className}" d="${d}"></path>`;
-
-    const labelAt = length < 78 ? 0.52 : 0.67;
+    const body = `<path class="ch6-arrow ${className}" d="${d}"></path>`;
+    if (!label) return body;
+    const labelAt = length < 90 ? 0.48 : 0.7;
     const side = className.includes("is-bad") || className.includes("is-w-soft") ? -1 : 1;
-    const perpendicularGap = Math.min(17, Math.max(11, length * 0.055)) * side;
-    const rawX = x1 + dx * labelAt + px * perpendicularGap;
-    const rawY = y1 + dy * labelAt + py * perpendicularGap;
-    const marginX = Math.min(config.width * 0.28, Math.max(28, Array.from(label).length * 6.6));
-    const labelX = Math.min(config.width - marginX, Math.max(marginX, rawX));
-    const labelY = Math.min(config.height - 20, Math.max(20, rawY));
-
-    return `<path class="ch6-arrow ${className}" d="${d}"></path><text class="ch6-plane-label ${className}" data-arrow-label data-tip-x="${f(x2)}" data-tip-y="${f(y2)}" text-anchor="middle" x="${f(labelX)}" y="${f(labelY)}">${escapeHtml(label)}</text>`;
+    const gap = Math.min(24, Math.max(16, length * 0.07)) * side;
+    const labelX = x1 + dx * labelAt + px * gap;
+    const labelY = y1 + dy * labelAt + py * gap;
+    return `${body}${vectorLabel(label, labelX, labelY, x2, y2, className, config)}`;
   }
 
   function line(direction, className, label = "", offset = [0, 0], config = plane) {
-    const length = 6;
     const size = norm(direction) || 1;
     const unit = scale(direction, 1 / size);
-    const a = add(offset, scale(unit, -length));
-    const b = add(offset, scale(unit, length));
+    const a = add(offset, scale(unit, -6));
+    const b = add(offset, scale(unit, 6));
     const pa = point(a, config);
     const pb = point(b, config);
-    return `<line class="ch6-span-line ${className}" x1="${pa[0]}" y1="${pa[1]}" x2="${pb[0]}" y2="${pb[1]}"></line>${
-      label ? `<text class="ch6-plane-label ${className}" text-anchor="middle" x="${Math.min(config.width - 64, Math.max(64, pb[0] - 42))}" y="${Math.min(config.height - 20, Math.max(20, pb[1] - 12))}">${escapeHtml(label)}</text>` : ""
-    }`;
+    const labelPoint = point(add(offset, scale(unit, 2.65)), config);
+    return `<line class="ch6-span-line ${className}" x1="${pa[0]}" y1="${pa[1]}" x2="${pb[0]}" y2="${pb[1]}"></line>${label ? vectorLabel(label, labelPoint[0], labelPoint[1] - 24, pb[0], pb[1], className, config) : ""}`;
   }
 
   function planeGrid(config = plane) {
@@ -269,12 +175,11 @@
     }
     result += `<line class="ch6-axis-line" x1="12" y1="${config.origin[1]}" x2="${config.width - 12}" y2="${config.origin[1]}"></line>`;
     result += `<line class="ch6-axis-line" x1="${config.origin[0]}" y1="12" x2="${config.origin[0]}" y2="${config.height - 12}"></line>`;
-    result += `<circle class="ch6-origin" cx="${config.origin[0]}" cy="${config.origin[1]}" r="3.5"></circle>`;
     return result;
   }
 
   function planeSvg(inner, label, className = "") {
-    return `<svg class="ch6-plane ${className}" viewBox="0 0 ${plane.width} ${plane.height}" role="img" aria-label="${escapeHtml(label)}">${inner}</svg>`;
+    return `<svg class="ch6-plane ${className}" viewBox="0 0 ${plane.width} ${plane.height}" role="img" aria-label="${escapeHtml(label)}"><defs><filter id="ch6-vector-glow" x="-30%" y="-30%" width="160%" height="160%"><feGaussianBlur stdDeviation="2.2" result="blur"></feGaussianBlur><feMerge><feMergeNode in="blur"></feMergeNode><feMergeNode in="SourceGraphic"></feMergeNode></feMerge></filter></defs>${inner}</svg>`;
   }
 
   function formulaCard(label, formula, note = "") {
@@ -307,53 +212,13 @@
   function register(sectionId, formal, interactive) {
     window.defineChapter6Renderer(sectionId, {
       formal(formalRoot, section) {
-        if (!formalRoot) return;
-        formal(formalRoot, section);
+        if (formalRoot) formal(formalRoot, section);
       },
       interactive(interactiveRoot, section) {
-        if (!interactiveRoot) return;
-        interactive(interactiveRoot, section);
+        if (interactiveRoot) interactive(interactiveRoot, section);
       },
     });
   }
 
-  window.Ch6UI = {
-    texInline,
-    texDisplay,
-    escapeHtml,
-    moduleBlock,
-    formalShell,
-    taskBlock,
-    labShell,
-    segmented,
-    setActive,
-    setStatus,
-    metric,
-    gate,
-    updateGate,
-    formatNumber,
-    formatVector,
-    formatMatrix,
-    add,
-    sub,
-    scale,
-    dot,
-    cross,
-    norm,
-    columns,
-    determinant,
-    inverse,
-    matVec,
-    matMul,
-    solve,
-    plane,
-    point,
-    softArrow,
-    line,
-    planeGrid,
-    planeSvg,
-    formulaCard,
-    miniMap,
-    register,
-  };
+  window.Ch6UI = { texInline, texDisplay, escapeHtml, moduleBlock, formalShell, taskBlock, labShell, segmented, setActive, setStatus, metric, gate, updateGate, formatNumber, formatVector, formatMatrix, add, sub, scale, dot, cross, norm, columns, determinant, inverse, matVec, matMul, solve, plane, point, softArrow, line, planeGrid, planeSvg, formulaCard, miniMap, register };
 })();

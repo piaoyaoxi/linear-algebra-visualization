@@ -81,6 +81,7 @@ async function openLesson(page, id, shotName = "") {
 
 async function dragNativeRange(page, selector, targetRatio, pointerMode) {
   const range = page.locator(selector);
+  await range.scrollIntoViewIfNeeded();
   const box = await range.boundingBox();
   if (!box) throw new Error("range has no bounding box");
 

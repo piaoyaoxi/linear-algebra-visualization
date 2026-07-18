@@ -121,6 +121,7 @@
     addCleanup(renderer?.mountIntuition?.(section, root));
     addCleanup(renderer?.mountInteractive?.(section, root));
     addCleanup(renderer?.mountFormal?.(section, root));
+    addCleanup(window.Chapter10Cinematic?.mount?.(section, root));
     ui.bindExample(root, section.example);
     activeTeardown = () => {
       cleanups.reverse().forEach((cleanup) => cleanup());

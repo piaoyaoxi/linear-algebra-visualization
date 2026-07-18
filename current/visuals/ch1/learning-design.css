@@ -186,6 +186,11 @@
   font-size: clamp(16px, 1.7vw, 20px);
 }
 
+.ch1-guided-lab .ch1-result-band .katex span {
+  color: inherit;
+  font-size: inherit;
+}
+
 .ch1-guided-lab .ch1-strip {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(64px, 1fr));
@@ -236,19 +241,16 @@
   background: color-mix(in srgb, var(--accent) 8%, var(--surface-solid));
 }
 
-.ch1-live-conclusion > p {
-  margin: 0;
-  color: var(--text);
-  font-size: 15px;
-  line-height: 1.7;
+.ch1-live-conclusion > [data-ch1-live-result] {
+  display: none;
 }
 
 .ch1-live-conclusion > small {
   grid-column: 2;
-  margin-top: -10px;
-  color: var(--muted);
-  font-size: 12.5px;
-  line-height: 1.55;
+  margin: 0;
+  color: var(--text);
+  font-size: 15px;
+  line-height: 1.7;
 }
 
 /* §2 — the coefficient workbench is a sequence, not two unmatched columns. */
@@ -436,7 +438,22 @@
   gap: 12px;
 }
 
-.ch1-section-polynomial-functions .ch1-two-col,
+.ch1-section-polynomial-functions .ch1-two-col {
+  grid-template-columns: 1fr;
+  align-items: start;
+}
+
+.ch1-section-polynomial-functions .ch1-panel {
+  order: 1;
+}
+
+.ch1-section-polynomial-functions .ch1-stage {
+  order: 2;
+  height: 360px;
+  min-height: 360px;
+  max-height: 360px;
+}
+
 .ch1-section-complex-real-factorization .ch1-two-col {
   grid-template-columns: minmax(320px, 0.95fr) minmax(0, 1.05fr);
 }
@@ -446,6 +463,20 @@
 .ch1-section-symmetric-polynomials .ch1-lab-grid {
   gap: 20px;
   align-items: stretch;
+}
+
+.ch1-section-symmetric-polynomials .ch1-orbit span {
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+}
+
+.ch1-section-symmetric-polynomials .ch1-orbit > span {
+  padding: 8px 10px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: var(--surface-soft);
 }
 
 @media (max-width: 1040px) {
@@ -466,7 +497,6 @@
 
   .ch1-guided-lab .ch1-two-col,
   .ch1-section-number-fields .ch1-two-col,
-  .ch1-section-polynomial-functions .ch1-two-col,
   .ch1-section-complex-real-factorization .ch1-two-col {
     grid-template-columns: 1fr;
   }
@@ -507,7 +537,6 @@
 
   .ch1-live-conclusion > small {
     grid-column: 1;
-    margin-top: 0;
   }
 
   .ch1-coeff-card .ch1-strip {
@@ -534,7 +563,8 @@
     gap: 4px;
   }
 
-  .ch1-guided-lab .ch1-stage {
+  .ch1-guided-lab .ch1-stage,
+  .ch1-section-polynomial-functions .ch1-stage {
     height: 290px;
     min-height: 290px;
     max-height: 290px;

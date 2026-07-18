@@ -17,6 +17,7 @@
     const origin = { x: 430, y: 420 };
     const scale = 145;
     const state = { u: [1, 0], v: [0.65, 1], dragging: null, animating: false };
+    let queuedTarget = null;
     const presets = {
       identity: { u: [1, 0], v: [0, 1] },
       shear: { u: [1, 0], v: [1.15, 1] },
@@ -80,9 +81,14 @@
     }
 
     async function goTo(target) {
-      if (state.animating) return;
       if (M().reducedMotion()) {
+        state.animating = false;
+        queuedTarget = null;
         setTarget(target);
+        return;
+      }
+      if (state.animating) {
+        queuedTarget = target;
         return;
       }
       state.animating = true;
@@ -96,6 +102,11 @@
         setTarget(target);
       } finally {
         state.animating = false;
+      }
+      if (queuedTarget) {
+        const next = queuedTarget;
+        queuedTarget = null;
+        void goTo(next);
       }
     }
 

@@ -127,6 +127,10 @@
   color: var(--ch6-white);
 }
 
+.ch6-stage-legend .is-result {
+  color: var(--ch6-green);
+}
+
 .ch6-stage-legend .is-muted {
   color: rgba(243, 247, 251, 0.48);
 }

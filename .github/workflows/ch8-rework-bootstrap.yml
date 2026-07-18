@@ -31,7 +31,22 @@ jobs:
 
       - name: Rebuild Chapter 8 rework payload
         run: |
-          cat .github/ch8-rework.part-* | base64 -d > /tmp/ch8-rework.tar.gz
+          cat \
+            .github/ch8-rework.part-00 \
+            .github/ch8-rework.part-01 \
+            .github/ch8-rework.part-02 \
+            .github/ch8-rework.part-03 \
+            .github/ch8-rework.part-04 \
+            .github/ch8-rework.part-05 \
+            .github/ch8-rework.part-06 \
+            .github/ch8-rework.part-07 \
+            .github/ch8-rework.part-08 \
+            .github/ch8-rework.part-09a \
+            .github/ch8-rework.part-09b \
+            .github/ch8-rework.part-09c \
+            .github/ch8-rework.part-09d \
+            .github/ch8-rework.part-09e \
+            | base64 -d > /tmp/ch8-rework.tar.gz
           echo "ec74f5f7d562f5ce80496eaa980d75074a2d69915327d15266d106e2bff9d74a  /tmp/ch8-rework.tar.gz" | sha256sum --check
           tar -tzf /tmp/ch8-rework.tar.gz
 

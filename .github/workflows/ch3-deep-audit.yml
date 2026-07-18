@@ -7,14 +7,17 @@ on:
   workflow_dispatch:
 
 permissions:
-  contents: read
+  contents: write
 
 jobs:
   audit:
+    if: ${{ !contains(github.event.head_commit.message, '[skip audit]') }}
     runs-on: ubuntu-latest
     timeout-minutes: 25
     steps:
       - uses: actions/checkout@v4
+        with:
+          ref: content/ch3-linear-systems
       - uses: actions/setup-node@v4
         with:
           node-version: 22
@@ -29,6 +32,7 @@ jobs:
           for i in {1..30}; do curl -fsS http://127.0.0.1:4173/learn.html >/dev/null && break; sleep 1; done
       - name: Capture every Chapter 3 section
         run: |
+          rm -rf audit-output
           cat > /tmp/audit.mjs <<'EOF'
           import { chromium } from 'playwright';
           import fs from 'node:fs';
@@ -58,7 +62,6 @@ jobs:
               await story.scrollIntoViewIfNeeded();
               await page.waitForTimeout(250);
               await story.screenshot({ path: `audit-output/${prefix}-${id}-story.png` });
-              await page.screenshot({ path: `audit-output/${prefix}-${id}-page.png`, fullPage: true });
               const stepButtons = story.locator('[data-story-step]');
               const count = await stepButtons.count();
               for (let i=0;i<count;i++) {
@@ -81,9 +84,13 @@ jobs:
           if (errors.length) { console.error(errors.join('\n')); process.exitCode = 1; }
           EOF
           node /tmp/audit.mjs
-      - name: Upload audit screenshots
+      - name: Commit audit screenshots to branch
         if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: ch3-deep-audit
-          path: audit-output
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -f audit-output
+          if ! git diff --cached --quiet; then
+            git commit -m "chore(ch3): browser audit evidence [skip audit]"
+            git push origin HEAD:content/ch3-linear-systems
+          fi

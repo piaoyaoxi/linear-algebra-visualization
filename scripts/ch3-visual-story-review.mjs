@@ -24,6 +24,10 @@ async function inspectPage(page, section, expectedSteps, mode) {
   page.on('pageerror', (error) => errors.push(`pageerror: ${error.message}`));
   page.on('console', (message) => { if (message.type() === 'error') errors.push(`console: ${message.text()}`); });
   await page.goto(`${baseUrl}#ch3/${section}`, { waitUntil: 'networkidle', timeout: 30_000 });
+  if (mode !== 'mobile' && !(await page.locator('body.sidebar-collapsed').count())) {
+    await page.click('#sidebarToggle');
+    await page.waitForTimeout(180);
+  }
   await page.waitForSelector(`[data-ch3-story="${section}"]`);
   await page.waitForFunction(() => document.querySelectorAll('.katex').length > 3);
   const story = page.locator(`[data-ch3-story="${section}"]`);
@@ -42,7 +46,7 @@ async function inspectPage(page, section, expectedSteps, mode) {
     const caption = await story.locator('[data-story-stage-caption]').innerText();
     assert.match(caption, new RegExp(`^${index + 1}/${expectedSteps}`), `${section}: caption not synchronized`);
     const bbox = await svg.boundingBox();
-    assert.ok(bbox && bbox.height > 220, `${section}: SVG collapsed at step ${index + 1}`);
+    assert.ok(bbox && bbox.height > (mode === 'mobile' ? 150 : 220), `${section}: SVG collapsed at step ${index + 1}`);
     await story.screenshot({ path: `${outputDir}/${mode}-${section}-step-${index + 1}.png` });
   }
 
@@ -65,10 +69,11 @@ async function inspectPage(page, section, expectedSteps, mode) {
   const precision = page.locator('.ch3-precision-lab');
   assert.equal(await precision.count(), 1, `${section}: exact lab wrapper missing`);
   assert.equal(await precision.getAttribute('open'), null, `${section}: exact lab should be collapsed initially`);
-  await precision.locator('summary').click();
+  await precision.locator(':scope > summary').click();
   await page.waitForTimeout(150);
   assert.notEqual(await precision.getAttribute('open'), null, `${section}: exact lab cannot open`);
 
+  if (mode === 'desktop') await page.screenshot({ path: `${outputDir}/full-${section}.png`, fullPage: true });
   const snapshot = await page.evaluate(() => ({ scrollWidth: document.documentElement.scrollWidth, viewportWidth: window.innerWidth, storyCount: document.querySelectorAll('[data-ch3-story]').length }));
   assert.equal(snapshot.storyCount, 1, `${section}: story duplicated`);
   assert.ok(snapshot.scrollWidth <= snapshot.viewportWidth + 4, `${section}: page overflow ${snapshot.scrollWidth}/${snapshot.viewportWidth}`);

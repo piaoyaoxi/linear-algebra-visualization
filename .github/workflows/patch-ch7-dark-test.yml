@@ -1,0 +1,56 @@
+name: Patch Chapter 7 dark audit reload
+
+on:
+  push:
+    branches:
+      - context/ch7-linear-transformations
+    paths:
+      - ".github/workflows/patch-ch7-dark-test.yml"
+  pull_request:
+    branches:
+      - main
+    paths:
+      - ".github/workflows/patch-ch7-dark-test.yml"
+
+permissions:
+  contents: write
+
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out branch
+        uses: actions/checkout@v4
+        with:
+          ref: context/ch7-linear-transformations
+          fetch-depth: 0
+      - name: Reload document after selecting dark theme
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          path = Path('.github/scripts/ch7-browser-check.mjs')
+          text = path.read_text()
+          old = '''// Dark mode: inspect every lab.
+          await page.evaluate(() => localStorage.setItem("la-visual-theme", "dark"));
+          for (const route of routes) {'''
+          new = '''// Dark mode: inspect every lab. Reload once so the stored theme is applied
+          // during the same initialization path used by a real returning visitor.
+          await page.evaluate(() => localStorage.setItem("la-visual-theme", "dark"));
+          await page.reload({ waitUntil: "networkidle" });
+          for (const route of routes) {'''
+          if text.count(old) != 1:
+              raise SystemExit(f'unexpected dark audit anchor count: {text.count(old)}')
+          path.write_text(text.replace(old, new))
+          PY
+      - name: Validate and commit
+        shell: bash
+        run: |
+          node --check .github/scripts/ch7-browser-check.mjs
+          git diff --check
+          rm -f .github/workflows/patch-ch7-dark-test.yml
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          git commit -m "test(ch7): reload before dark theme screenshot sweep"
+          git push origin HEAD:context/ch7-linear-transformations

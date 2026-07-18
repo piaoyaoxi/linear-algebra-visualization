@@ -83,13 +83,13 @@ jobs:
           import base64
           import json
           import os
-          import urllib.parse
+          import subprocess
+          import urllib.error
           import urllib.request
           from pathlib import Path
 
           token = os.environ['GH_TOKEN']
           repository = os.environ['GH_REPOSITORY']
-          branch = 'context/ch8-lambda-matrices'
           api_root = f'https://api.github.com/repos/{repository}'
 
           def api(method, path, payload=None):
@@ -105,8 +105,13 @@ jobs:
                       'User-Agent': 'chapter-8-rework-bootstrap',
                   },
               )
-              with urllib.request.urlopen(request) as response:
-                  return json.loads(response.read().decode())
+              try:
+                  with urllib.request.urlopen(request) as response:
+                      return json.loads(response.read().decode())
+              except urllib.error.HTTPError as error:
+                  detail = error.read().decode(errors='replace')
+                  print(f'HTTP {error.code} while calling {method} {path}: {detail}', flush=True)
+                  raise
 
           final_paths = [
               'current/content/ch8.js',
@@ -131,9 +136,8 @@ jobs:
               '.github/workflows/ch8-rework-bootstrap.yml',
           ]
 
-          ref = api('GET', '/git/ref/heads/' + urllib.parse.quote(branch, safe=''))
-          parent = ref['object']['sha']
-          parent_commit = api('GET', f'/git/commits/{parent}')
+          parent = subprocess.check_output(['git', 'rev-parse', 'HEAD'], text=True).strip()
+          base_tree = subprocess.check_output(['git', 'rev-parse', 'HEAD^{tree}'], text=True).strip()
           entries = []
           for path in final_paths:
               content = base64.b64encode(Path(path).read_bytes()).decode()
@@ -142,7 +146,7 @@ jobs:
           for path in temporary_paths:
               entries.append({'path': path, 'mode': '100644', 'type': 'blob', 'sha': None})
 
-          tree = api('POST', '/git/trees', {'base_tree': parent_commit['tree']['sha'], 'tree': entries})
+          tree = api('POST', '/git/trees', {'base_tree': base_tree, 'tree': entries})
           commit = api('POST', '/git/commits', {
               'message': 'feat(ch8): rebuild lessons around visible causal experiments',
               'tree': tree['sha'],

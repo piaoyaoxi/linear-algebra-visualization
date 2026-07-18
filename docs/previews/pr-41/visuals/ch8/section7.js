@@ -2,10 +2,10 @@
   const { I, on, markExperimentStep, conclusionMarkup } = window.Chapter8Lab;
 
   const orbit = [
-    { label: "v", rank: 1, note: "起点向量建立循环子空间的第一维。" },
-    { label: "Av", rank: 2, note: "Av 与 v 独立，轨道继续扩张。" },
-    { label: "A^2v", rank: 3, note: "A²v 仍然独立，得到三维 Krylov 基。" },
-    { label: "A^3v", rank: 3, note: "第一次不再增加秩：A³v 回流到前面三项的张成空间。" },
+    { label: "v", svgLabel: "v", rank: 1, note: "起点向量建立循环子空间的第一维。" },
+    { label: "Av", svgLabel: "Av", rank: 2, note: "Av 与 v 独立，轨道继续扩张。" },
+    { label: "A^2v", svgLabel: "A²v", rank: 3, note: "A²v 仍然独立，得到三维 Krylov 基。" },
+    { label: "A^3v", svgLabel: "A³v", rank: 3, note: "第一次不再增加秩：A³v 回流到前面三项的张成空间。" },
   ];
 
   function mount(host) {
@@ -36,14 +36,14 @@
               ${orbit.map((vector, index) => {
                 const x = 120 + index * 175;
                 const state = index < step ? "is-past" : index === step ? "is-current" : "is-future";
-                return `<g class="belt-node ${state}" transform="translate(${x} 235)"><circle r="42"></circle><text text-anchor="middle" dy="7">${vector.label.replace("^", "")}</text><small></small></g>`;
+                return `<g class="belt-node ${state}" transform="translate(${x} 235)"><circle r="42"></circle><text class="belt-node-label" text-anchor="middle" dy="7">${vector.svgLabel}</text></g>`;
               }).join("")}
-              <text class="belt-index" x="109" y="305">0</text><text class="belt-index" x="284" y="305">1</text><text class="belt-index" x="459" y="305">2</text><text class="belt-index" x="634" y="305">3</text>
+              <text class="belt-index" x="115" y="305">0</text><text class="belt-index" x="290" y="305">1</text><text class="belt-index" x="465" y="305">2</text><text class="belt-index" x="640" y="305">3</text>
               <path class="feedback-curve ${feedback ? "is-visible" : ""}" d="M645 185C610 70 300 55 125 180"></path>
               <path class="feedback-branch ${feedback ? "is-visible" : ""}" d="M500 92C455 128 385 150 305 190"></path>
               <text class="feedback-label ${feedback ? "is-visible" : ""}" x="342" y="66">A³v = −v + 2Av</text>
 
-              <g class="companion-shell" transform="translate(730 95)">
+              <g class="companion-shell ch8-companion-matrix" transform="translate(730 95)">
                 <text x="0" y="0">在基 (v, Av, A²v) 中</text>
                 <path class="matrix-brace" d="M12 38H0V282H12M226 38H238V282H226"></path>
                 ${[

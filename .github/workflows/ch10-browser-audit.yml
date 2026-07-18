@@ -46,6 +46,7 @@ jobs:
           node --check current/visuals/ch10/section2-presentation.js
           node --check current/visuals/ch10/section3-presentation.js
           node --check current/visuals/ch10/section4-presentation.js
+          node --check current/visuals/ch10/cinematic.js
           node --check current/visuals/ch10/mount.js
           node --check tests/ch10-browser-audit.cjs
           node --check tests/ch10-source-audit.cjs
@@ -70,12 +71,14 @@ jobs:
             current/visuals/ch10/section2-presentation.js \
             current/visuals/ch10/section3-presentation.js \
             current/visuals/ch10/section4-presentation.js \
+            current/visuals/ch10/cinematic.js \
             current/visuals/ch10/mount.js \
             current/visuals/ch10/base.css \
             current/visuals/ch10/section1-presentation.css \
             current/visuals/ch10/section2-presentation.css \
             current/visuals/ch10/section3-presentation.css \
             current/visuals/ch10/section4-presentation.css \
+            current/visuals/ch10/cinematic.css \
             tests/ch10-browser-audit.cjs \
             tests/ch10-source-audit.cjs \
             artifacts/ch10-browser-audit/source/

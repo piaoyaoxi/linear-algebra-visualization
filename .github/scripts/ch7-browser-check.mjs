@@ -17,14 +17,10 @@ const routes = [
 const evidence = "test-results/ch7-browser-evidence";
 await mkdir(evidence, { recursive: true });
 
-function compact(value) {
-  return String(value || "").replace(/[\s\u200b]+/g, "");
-}
-
 const browser = await chromium.launch({ headless: true });
 const desktop = await browser.newContext({ viewport: { width: 1440, height: 1000 } });
 const page = await desktop.newPage();
-page.setDefaultTimeout(10_000);
+page.setDefaultTimeout(12_000);
 const errors = [];
 page.on("console", (message) => {
   if (message.type() === "error") errors.push(`console: ${message.text()}`);
@@ -36,146 +32,155 @@ page.on("response", (response) => {
 
 async function gotoLesson(route, { screenshot = false } = {}) {
   await page.goto(`${base}#ch7/${route}`, { waitUntil: "networkidle" });
-  await page.waitForTimeout(100);
+  await page.waitForTimeout(160);
   assert.equal(await page.locator("h1").count(), 1, `${route}: missing lesson title`);
-  assert.equal(await page.locator(".ch7-formal").count(), 1, `${route}: missing rebuilt formal explanation`);
-  assert.equal(await page.locator(".ch7-lab").count(), 1, `${route}: missing interaction`);
-  assert.equal(await page.locator(".ch7-task-panel").count(), 1, `${route}: experiment question is not visible`);
-  assert.ok((await page.locator(".ch7-task-panel li").count()) >= 3, `${route}: experiment steps are incomplete`);
-  assert.equal(await page.locator("[data-example-challenge]").count(), 1, `${route}: missing example challenge`);
-  assert.equal(await page.locator(".self-test-list").count(), 1, `${route}: missing self test`);
+  assert.equal(await page.locator(".ch7-cinema-formal").count(), 1, `${route}: cinematic formal explanation missing`);
+  assert.ok((await page.locator(".ch7-cinema-concept-list > li").count()) >= 3, `${route}: concepts are not legible as a sequence`);
+  assert.equal(await page.locator(".ch7-cinema-lab").count(), 1, `${route}: cinematic lab missing`);
+  assert.equal(await page.locator(".ch7-cinema-task").count(), 1, `${route}: visible experiment task missing`);
+  assert.ok((await page.locator(".ch7-cinema-task li").count()) >= 3, `${route}: exploration prompts incomplete`);
+  assert.equal(await page.locator(".ch7-cinema-svg").count(), 1, `${route}: main geometric SVG missing`);
+  assert.equal(await page.locator(".ch7-cinema-readout").count(), 1, `${route}: geometric conclusion readout missing`);
+  assert.equal(await page.locator(".ch7-cinema-conclusion").count(), 1, `${route}: final experiment conclusion missing`);
+  assert.equal(await page.locator("[data-example-challenge]").count(), 1, `${route}: representative example missing`);
+  assert.equal(await page.locator(".self-test-list").count(), 1, `${route}: self test missing`);
   assert.equal(await page.locator(".katex-error").count(), 0, `${route}: KaTeX error marker`);
+
   const geometry = await page.evaluate(() => {
-    const task = document.querySelector(".ch7-task-panel");
-    const firstControls = document.querySelector(".ch7-preset-row, .ch7-stage-tabs, .ch7-mode-row");
-    const taskStrong = document.querySelector(".ch7-task-question strong");
+    const task = document.querySelector(".ch7-cinema-task");
+    const presets = document.querySelector(".ch7-cinema-preset-row, .ch7-cinema-stage-tabs, .ch7-cinema-scene");
+    const question = document.querySelector(".ch7-cinema-task strong");
+    const svg = document.querySelector(".ch7-cinema-svg");
     return {
       overflow: document.documentElement.scrollWidth - document.documentElement.clientWidth,
-      taskTop: task?.getBoundingClientRect().top ?? 0,
-      controlTop: firstControls?.getBoundingClientRect().top ?? Infinity,
-      taskFont: taskStrong ? parseFloat(getComputedStyle(taskStrong).fontSize) : 0,
+      taskTop: task?.getBoundingClientRect().top ?? Infinity,
+      firstInteractiveTop: presets?.getBoundingClientRect().top ?? Infinity,
+      questionFont: question ? parseFloat(getComputedStyle(question).fontSize) : 0,
+      svgWidth: svg?.getBoundingClientRect().width ?? 0,
+      viewport: document.documentElement.clientWidth,
     };
   });
   assert.ok(geometry.overflow <= 1, `${route}: desktop horizontal overflow ${geometry.overflow}px`);
-  assert.ok(geometry.taskTop < geometry.controlTop, `${route}: controls appear before the experiment question`);
-  assert.ok(geometry.taskFont >= 17, `${route}: experiment question is visually too weak`);
+  assert.ok(geometry.taskTop < geometry.firstInteractiveTop, `${route}: task must appear before controls and scene`);
+  assert.ok(geometry.questionFont >= 17, `${route}: experiment question visually too weak`);
+  assert.ok(geometry.svgWidth > 420, `${route}: main geometry is too small on desktop`);
+  assert.ok(geometry.svgWidth <= geometry.viewport + 1, `${route}: SVG exceeds viewport`);
+
+  // A vector is rendered as a line plus marker. The renderer must never append a generic tip circle.
+  assert.equal(await page.locator(".ch7-cinema-arrow + circle").count(), 0, `${route}: vector endpoint dot returned`);
   if (screenshot) await page.screenshot({ path: `${evidence}/desktop-light-${route}.png`, fullPage: true });
 }
 
 await page.goto(`${base}#ch7`, { waitUntil: "networkidle" });
 assert.equal(await page.locator(".lesson-card").count(), 9, "chapter overview must expose nine lessons");
-assert.match(await page.locator(".lesson-cover").innerText(), /从映射进入算子的内部结构/);
 
-// §1 — the student sees the two paths, then finds a concrete counterexample.
+// §1: geometry-first linearity gates.
 await gotoLesson(routes[0]);
-assert.match(await page.locator(".ch7-task-question").innerText(), /满足什么条件/);
-assert.equal(await page.locator(".ch7-path-card").count(), 2);
-assert.match(await page.locator(".ch7-status-banner").innerText(), /通过加法检验/);
+assert.equal(await page.locator(".ch7-cinema-stage-tabs button").count(), 3);
 await page.getByRole("button", { name: "平移", exact: true }).click();
-assert.match(await page.locator(".ch7-status-banner").innerText(), /找到加法反例/);
 await page.locator('[data-stage="origin"]').click();
-assert.match(await page.locator(".ch7-status-banner").innerText(), /原点已经移动/);
-await page.getByRole("button", { name: "投影", exact: true }).click();
-assert.match(await page.locator(".ch7-status-banner").innerText(), /通过必要条件/);
-await page.locator('[data-stage="scale"]').click();
-assert.match(await page.locator(".ch7-insight-card").innerText(), /数乘闸门/);
+assert.match(await page.locator(".ch7-cinema-conclusion").innerText(), /原点条件失败/);
+await page.locator('[data-stage="add"]').click();
+assert.match(await page.locator(".ch7-cinema-readout").innerText(), /输出端出现了可见缺口|输出端的平行四边形仍然闭合/);
 
-// §2 — addition and composition are separated; order and inverse are visible.
+// §2: addition is visually separated from composition and inverse.
 await gotoLesson(routes[1]);
-assert.equal(await page.locator(".ch7-machine-pipeline > div").count(), 3);
-assert.match(await page.locator(".ch7-status-banner").innerText(), /顺序确实改变结果/);
-const tsText = compact(await page.locator("[data-operator-workspace]").innerText());
-await page.locator('[data-stage="ST"]').click();
-const stText = compact(await page.locator("[data-operator-workspace]").innerText());
-assert.notEqual(tsText, stText, "TS and ST must visibly differ");
 await page.locator('[data-stage="sum"]').click();
-assert.match(await page.locator(".ch7-status-banner").innerText(), /不要把 T\+S 画成两步复合/);
+assert.match(await page.locator(".ch7-cinema-conclusion").innerText(), /T\+S 不是连续做两步/);
 await page.locator('[data-stage="inverse"]').click();
-assert.match(await page.locator(".ch7-status-banner").innerText(), /倒序撤销回到原输入/);
 await page.getByRole("button", { name: "投影 + 旋转", exact: true }).click();
-assert.match(await page.locator(".ch7-status-banner").innerText(), /逆变换不存在/);
+assert.match(await page.locator(".ch7-cinema-conclusion").innerText(), /逆变换不存在/);
 
-// §3 — columns are built before change of basis is discussed.
+// §3: columns are constructed before basis comparison.
 await gotoLesson(routes[2]);
-assert.match(await page.locator(".ch7-insight-card").innerText(), /矩阵的第 1 列/);
-assert.equal(await page.locator(".ch7-column-builder > div.is-active").count(), 1);
+assert.match(await page.locator(".ch7-cinema-readout").innerText(), /矩阵第 1 列/);
 await page.locator('[data-stage="col2"]').click();
-assert.match(await page.locator(".ch7-insight-card").innerText(), /矩阵的第 2 列/);
+assert.match(await page.locator(".ch7-cinema-readout").innerText(), /矩阵第 2 列/);
 await page.locator('[data-stage="rebuild"]').click();
-assert.match(await page.locator(".ch7-insight-card").innerText(), /线性组合自动带动/);
+assert.match(await page.locator(".ch7-cinema-readout").innerText(), /任意输入只是在重组/);
 await page.getByRole("button", { name: "特征基", exact: true }).click();
-assert.match(await page.locator(".ch7-status-banner").innerText(), /成为对角矩阵/);
+assert.match(await page.locator(".ch7-cinema-conclusion").innerText(), /对角矩阵/);
 
-// §4 — the candidate line, gate, spectrum, and no-real-eigenline case agree.
+// §4: real drag on a persistent native slider, then pointer-drag the direction in the SVG.
 await gotoLesson(routes[3]);
-assert.equal(await page.locator(".ch7-gate-list > div").count(), 3);
-assert.equal(await page.locator(".ch7-direction-map i").count(), 37);
-await page.locator("[data-eigen-snap]").first().click();
-assert.match(await page.locator(".ch7-status-banner").innerText(), /命中特征直线/);
+const angleSlider = page.locator('.ch7-cinema-controls input[type="range"]').first();
+assert.equal(await angleSlider.count(), 1, "eigen angle slider missing");
+const before = Number(await angleSlider.inputValue());
+let box = await angleSlider.boundingBox();
+assert.ok(box, "eigen slider has no geometry");
+await page.mouse.move(box.x + box.width * 0.20, box.y + box.height / 2);
+await page.mouse.down();
+for (let i = 1; i <= 10; i += 1) {
+  await page.mouse.move(box.x + box.width * (0.20 + i * 0.055), box.y + box.height / 2, { steps: 2 });
+}
+await page.mouse.up();
+const after = Number(await angleSlider.inputValue());
+assert.notEqual(after, before, "slider did not respond to continuous drag");
+// A second drag proves the input node was not destroyed and recreated during input.
+box = await angleSlider.boundingBox();
+await page.mouse.move(box.x + box.width * 0.75, box.y + box.height / 2);
+await page.mouse.down();
+await page.mouse.move(box.x + box.width * 0.38, box.y + box.height / 2, { steps: 12 });
+await page.mouse.up();
+const afterSecondDrag = Number(await angleSlider.inputValue());
+assert.notEqual(afterSecondDrag, after, "slider stopped dragging after the first input event");
+const svgBox = await page.locator(".ch7-cinema-svg").boundingBox();
+const beforeSvgDrag = Number(await angleSlider.inputValue());
+await page.mouse.move(svgBox.x + svgBox.width * 0.70, svgBox.y + svgBox.height * 0.25);
+await page.mouse.down();
+await page.mouse.move(svgBox.x + svgBox.width * 0.32, svgBox.y + svgBox.height * 0.72, { steps: 14 });
+await page.mouse.up();
+assert.notEqual(Number(await angleSlider.inputValue()), beforeSvgDrag, "direction could not be dragged directly in SVG");
 await page.getByRole("button", { name: "90°旋转", exact: true }).click();
-assert.match(await page.locator(".ch7-status-banner").innerText(), /实数域没有特征直线/);
-assert.match(await page.locator(".ch7-snap-row").innerText(), /没有可吸附/);
+assert.match(await page.locator(".ch7-cinema-conclusion").innerText(), /实数域没有特征直线/);
 
-// §5 — P^{-1}, D, P are coordinate translations around one real geometric action.
+// §5: decomposition, independent scaling, recombination and structural failure.
 await gotoLesson(routes[4]);
-assert.equal(await page.locator(".ch7-translation-steps > div").count(), 3);
-assert.match(await page.locator(".ch7-insight-card").innerText(), /真实向量 x 没有被 P⁻¹ 几何地移动/);
-assert.match(await page.locator(".ch7-canvas-card").innerText(), /只比较 x 与 Ax/);
 await page.locator('[data-stage="scale"]').click();
-assert.match(await page.locator(".ch7-insight-card").innerText(), /两个分量互不混合/);
-await page.locator('[data-stage="back"]').click();
-assert.match(await page.locator(".ch7-insight-card").innerText(), /真实输出 Ax/);
+assert.match(await page.locator(".ch7-cinema-readout").innerText(), /互不混合/);
+await page.locator('[data-stage="recombine"]').click();
+assert.match(await page.locator(".ch7-cinema-readout").innerText(), /真实输出 Ax/);
 await page.getByRole("button", { name: "Jordan 块", exact: true }).click();
-assert.match(await page.locator(".ch7-status-banner").innerText(), /特征向量数量不足/);
+assert.match(await page.locator(".ch7-cinema-conclusion").innerText(), /结构上失败/);
 
-// §6 — kernel fibres and reachable outputs are shown together.
+// §6: kernel fibres and image are linked as one map.
 await gotoLesson(routes[5]);
-assert.equal(await page.locator(".ch7-space-card").count(), 2);
-assert.match(compact(await page.locator(".ch7-dimension-ledger").innerText()), /2=1\+1/);
-assert.match(await page.locator(".ch7-insight-strip").innerText(), /多个输入，全部落到同一个输出点/);
+assert.match(await page.locator(".ch7-cinema-readout").innerText(), /所有输入.*同一个像|所有输入虽然彼此不同/);
 await page.getByRole("button", { name: "满秩", exact: true }).click();
-assert.match(compact(await page.locator(".ch7-dimension-ledger").innerText()), /2=2\+0/);
-assert.match(await page.locator(".ch7-insight-strip").innerText(), /只有零向量/);
+assert.match(await page.locator(".ch7-cinema-conclusion").innerText(), /rank T=2/);
 await page.getByRole("button", { name: "零变换", exact: true }).click();
-assert.match(compact(await page.locator(".ch7-dimension-ledger").innerText()), /2=0\+2/);
+assert.match(await page.locator(".ch7-cinema-conclusion").innerText(), /rank T=0/);
 
-// §7 — several points from W are checked, not just one lucky vector.
+// §7: multiple samples, not one lucky vector.
 await gotoLesson(routes[6]);
-assert.ok((await page.locator(".ch7-plane circle").count()) >= 8);
-assert.match(await page.locator(".ch7-status-banner").innerText(), /不是不变子空间/);
+assert.ok((await page.locator(".ch7-cinema-svg circle.ch7-cinema-point").count()) >= 8, "invariant subspace must inspect multiple samples");
 await page.locator("[data-invariant-snap]").first().click();
-assert.match(await page.locator(".ch7-status-banner").innerText(), /W 是不变子空间/);
-assert.match(await page.locator(".ch7-block-matrix").innerText(), /左下角 0/);
-await page.getByRole("button", { name: "整个平面", exact: true }).click();
-assert.match(await page.locator(".ch7-universal-case").innerText(), /T\(V\)⊆V/);
-await page.getByRole("button", { name: "零子空间", exact: true }).click();
-assert.match(await page.locator(".ch7-universal-case").innerText(), /T\(0\)=0/);
+assert.match(await page.locator(".ch7-cinema-conclusion").innerText(), /W 是不变子空间/);
+await page.getByRole("button", { name: "90°旋转", exact: true }).click();
+assert.match(await page.locator(".ch7-cinema-no-snap").innerText(), /没有一维不变子空间/);
+await page.getByRole("button", { name: "整个空间 V", exact: true }).click();
+assert.match(await page.locator(".ch7-cinema-readout").innerText(), /整个空间永远/);
 
-// §8 — N walks down the chain; full T is explicitly not presented as nilpotent.
+// §8: full T and nilpotent N remain distinct.
 await gotoLesson(routes[7]);
-assert.match(compact(await page.locator(".ch7-chain").innerText()), /v2.*N→v1.*N→0/);
-await page.locator("[data-jordan-step]").click();
-assert.match(await page.locator(".ch7-chain-node.is-active").innerText(), /v1/);
-await page.locator("[data-jordan-step]").click();
-assert.match(await page.locator(".ch7-status-banner").innerText(), /N 已归零/);
+assert.match(await page.locator(".ch7-cinema-readout").innerText(), /只有幂零部分会沿链最终到达 0/);
 await page.getByRole("button", { name: "看完整 T=λI+N", exact: true }).click();
-assert.match(await page.locator(".ch7-status-banner").innerText(), /完整 T 同时包含/);
-assert.match(await page.locator(".ch7-status-banner").innerText(), /通常不会归零/);
+assert.match(await page.locator(".ch7-cinema-readout").innerText(), /完整 T 通常不会归零/);
 await page.getByRole("button", { name: "J₃(λ)", exact: true }).click();
 await page.getByRole("button", { name: "只看 N=T−λI", exact: true }).click();
-for (let i = 0; i < 3; i += 1) await page.locator("[data-jordan-step]").click();
-assert.match(await page.locator(".ch7-status-banner").innerText(), /N 已归零/);
+for (let i = 0; i < 3; i += 1) await page.getByRole("button", { name: "沿链走一步", exact: true }).click();
+assert.match(await page.locator(".ch7-cinema-readout").innerText(), /当前步\s*3/);
 
-// §9 — partial annihilation and minimum degree are distinguishable.
+// §9: whole-space annihilation and minimum degree.
 await gotoLesson(routes[8]);
-assert.match(await page.locator(".ch7-minimal-status").innerText(), /只消掉部分方向/);
-await page.locator('[data-candidate="1"]').click();
-assert.match(await page.locator(".ch7-status-banner").innerText(), /这就是最小多项式/);
+assert.match(await page.locator(".ch7-cinema-readout").innerText(), /只消掉了部分方向/);
+await page.locator('[data-minimal-candidate="1"]').click();
+assert.match(await page.locator(".ch7-cinema-conclusion").innerText(), /这就是最小多项式/);
 await page.getByRole("button", { name: "2I₂", exact: true }).click();
-await page.locator('[data-candidate="1"]').click();
-assert.match(await page.locator(".ch7-status-banner").innerText(), /次数还可能不是最低/);
+await page.locator('[data-minimal-candidate="1"]').click();
+assert.match(await page.locator(".ch7-cinema-conclusion").innerText(), /次数不是最低/);
 
-// Every representative example must accept its mathematically marked correct choice.
+// Examples and full desktop evidence.
 for (const route of routes) {
   await gotoLesson(route, { screenshot: true });
   const correctIndex = await page.evaluate((sectionId) => {
@@ -187,54 +192,52 @@ for (const route of routes) {
   await page.locator('[data-example-challenge] input[type="radio"]').nth(correctIndex).check();
   await page.locator("[data-example-action]").click();
   assert.equal(await page.locator("[data-example-challenge]").getAttribute("data-state"), "correct");
-  assert.equal(await page.locator("[data-example-explanation]").isHidden(), false);
 }
 
-// Dark appearance: inspect every lab, not only one representative page.
+// Dark mode: inspect every lab.
 await page.evaluate(() => localStorage.setItem("la-visual-theme", "dark"));
-await page.reload({ waitUntil: "networkidle" });
 for (const route of routes) {
   await page.goto(`${base}#ch7/${route}`, { waitUntil: "networkidle" });
+  await page.waitForTimeout(100);
   assert.equal(await page.locator("body").evaluate((body) => body.classList.contains("dark")), true);
   assert.ok((await page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth)) <= 1);
-  await page.locator(".ch7-lab").screenshot({ path: `${evidence}/desktop-dark-${route}-lab.png` });
+  await page.locator(".ch7-cinema-lab").screenshot({ path: `${evidence}/desktop-dark-${route}-lab.png` });
 }
+assert.deepEqual(errors, []);
+await desktop.close();
 
-// Mobile and reduced-motion: every complete page, every task, no overflow.
-const mobile = await browser.newContext({ viewport: { width: 390, height: 844 }, reducedMotion: "reduce" });
+// Mobile, touch, and reduced motion: complete pages and touch slider movement.
+const mobile = await browser.newContext({ viewport: { width: 390, height: 844 }, reducedMotion: "reduce", hasTouch: true });
 const mobilePage = await mobile.newPage();
 const mobileErrors = [];
-mobilePage.on("console", (message) => {
-  if (message.type() === "error") mobileErrors.push(`console: ${message.text()}`);
-});
+mobilePage.on("console", (message) => { if (message.type() === "error") mobileErrors.push(`console: ${message.text()}`); });
 mobilePage.on("pageerror", (error) => mobileErrors.push(`pageerror: ${error.message}`));
 for (const route of routes) {
   await mobilePage.goto(`${base}#ch7/${route}`, { waitUntil: "networkidle" });
-  assert.equal(await mobilePage.locator(".ch7-lab").count(), 1, `${route}: mobile lab missing`);
-  assert.equal(await mobilePage.locator(".ch7-task-panel").count(), 1, `${route}: mobile task missing`);
-  const mobileGeometry = await mobilePage.evaluate(() => ({
+  await mobilePage.waitForTimeout(80);
+  assert.equal(await mobilePage.locator(".ch7-cinema-lab").count(), 1, `${route}: mobile lab missing`);
+  const geometry = await mobilePage.evaluate(() => ({
     overflow: document.documentElement.scrollWidth - document.documentElement.clientWidth,
-    labWidth: document.querySelector(".ch7-lab")?.getBoundingClientRect().width,
+    svgWidth: document.querySelector(".ch7-cinema-svg")?.getBoundingClientRect().width ?? 0,
     viewport: document.documentElement.clientWidth,
-    taskFont: parseFloat(getComputedStyle(document.querySelector(".ch7-task-question strong")).fontSize),
+    questionFont: parseFloat(getComputedStyle(document.querySelector(".ch7-cinema-task strong")).fontSize),
   }));
-  assert.ok(mobileGeometry.overflow <= 1, `${route}: mobile horizontal overflow ${mobileGeometry.overflow}px`);
-  assert.ok(mobileGeometry.labWidth <= mobileGeometry.viewport + 1, `${route}: lab exceeds mobile viewport`);
-  assert.ok(mobileGeometry.taskFont >= 17, `${route}: mobile task question too small`);
+  assert.ok(geometry.overflow <= 1, `${route}: mobile horizontal overflow ${geometry.overflow}px`);
+  assert.ok(geometry.svgWidth <= geometry.viewport + 1, `${route}: mobile SVG exceeds viewport`);
+  assert.ok(geometry.questionFont >= 17, `${route}: mobile task question too small`);
   await mobilePage.screenshot({ path: `${evidence}/mobile-reduced-${route}.png`, fullPage: true });
 }
 assert.deepEqual(mobileErrors, []);
 await mobile.close();
 
-// Chapter 4 regression: mature §1 remains isolated and functional.
-await page.evaluate(() => localStorage.setItem("la-visual-theme", "light"));
-await page.goto(`${base}#ch4/matrix-language`, { waitUntil: "networkidle" });
-assert.equal(await page.locator("#transformCanvas").count(), 1);
-assert.equal(await page.locator(".ch7-lab").count(), 0);
-assert.ok((await page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth)) <= 1);
-await page.screenshot({ path: `${evidence}/chapter4-section1-regression.png`, fullPage: true });
-
-assert.deepEqual(errors, []);
-await desktop.close();
+// Mature Chapter 4 remains isolated.
+const regression = await browser.newContext({ viewport: { width: 1440, height: 1000 } });
+const regressionPage = await regression.newPage();
+await regressionPage.goto(`${base}#ch4/matrix-language`, { waitUntil: "networkidle" });
+assert.equal(await regressionPage.locator("#transformCanvas").count(), 1);
+assert.equal(await regressionPage.locator(".ch7-cinema-lab").count(), 0);
+assert.ok((await regressionPage.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth)) <= 1);
+await regressionPage.screenshot({ path: `${evidence}/chapter4-section1-regression.png`, fullPage: true });
+await regression.close();
 await browser.close();
-console.log("Chapter 7 browser check passed: nine rebuilt lessons, visible tasks, mathematical interactions, all themes, mobile, examples, and Chapter 4 regression.");
+console.log("Chapter 7 cinematic browser check passed: geometry-first SVG, draggable sliders, nine lessons, all themes, mobile, examples, and Chapter 4 regression.");

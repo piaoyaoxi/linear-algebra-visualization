@@ -1,0 +1,206 @@
+name: Chapter 3 redesign bootstrap
+
+on:
+  pull_request:
+    branches:
+      - main
+    types:
+      - synchronize
+      - opened
+      - reopened
+
+permissions:
+  contents: write
+
+jobs:
+  redesign:
+    if: github.event.pull_request.head.ref == 'content/ch3-linear-systems'
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    env:
+      BRANCH_NAME: content/ch3-linear-systems
+      GH_TOKEN: ${{ github.token }}
+    steps:
+      - name: Fetch PR branch
+        run: |
+          git init -q .
+          git remote add origin "https://x-access-token:${GH_TOKEN}@github.com/${GITHUB_REPOSITORY}.git"
+          git fetch -q --depth=1 origin "${BRANCH_NAME}"
+          git checkout -q -B "${BRANCH_NAME}" FETCH_HEAD
+
+      - name: Extract and apply reviewed redesign
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+
+          lines = Path('.github/workflows/ch3-redesign.yml').read_text().splitlines()
+          start = next(i for i, line in enumerate(lines) if line.strip() == "python3 - <<'PY'")
+          end = next(i for i in range(start + 1, len(lines)) if lines[i].strip() == 'PY')
+          body = []
+          for line in lines[start + 1:end]:
+              body.append(line[10:] if line.startswith('          ') else line)
+          Path('/tmp/apply_ch3_redesign.py').write_text('\n'.join(body) + '\n')
+          print(f'extracted {len(body)} Python lines')
+          PY
+          python3 /tmp/apply_ch3_redesign.py
+          find current/visuals/ch3 -name '*.js' -print0 | xargs -0 -n1 node --check
+          git diff --check
+
+      - name: Install Chromium runtime
+        run: |
+          mkdir -p /tmp/ch3-browser
+          cd /tmp/ch3-browser
+          npm init -y >/dev/null
+          npm install --silent playwright@1.55.0
+          npx playwright install --with-deps chromium
+
+      - name: Run browser review
+        run: |
+          mkdir -p browser-artifacts
+          python3 -m http.server 4173 --directory current >/tmp/ch3-server.log 2>&1 &
+          for attempt in {1..30}; do
+            curl --silent --fail http://127.0.0.1:4173/learn.html >/dev/null && break
+            sleep 1
+          done
+          cat > /tmp/ch3-browser/check.mjs <<'JS'
+          import assert from 'node:assert/strict';
+          import fs from 'node:fs/promises';
+          import { chromium } from 'playwright';
+
+          const out = process.env.ARTIFACT_DIR;
+          await fs.mkdir(out, { recursive: true });
+          const routes = [
+            ['elimination', 'elimination'],
+            ['n-vector-space', 'vector-space'],
+            ['linear-dependence', 'dependence'],
+            ['matrix-rank', 'rank'],
+            ['solvability', 'solvability'],
+            ['solution-structure', 'solution-structure'],
+            ['binary-higher-degree', 'resultant'],
+          ];
+          const browser = await chromium.launch({ headless: true });
+          const failures = [];
+
+          async function check(page, route, lab, mode) {
+            const errors = [];
+            page.on('pageerror', (error) => errors.push(`page: ${error.message}`));
+            page.on('console', (message) => { if (message.type() === 'error') errors.push(`console: ${message.text()}`); });
+            await page.goto(`http://127.0.0.1:4173/learn.html#ch3/${route}`, { waitUntil: 'networkidle', timeout: 30000 });
+            await page.waitForSelector(`[data-ch3-lab="${lab}"]`);
+            await page.waitForFunction(() => document.querySelectorAll('.katex').length > 4);
+            const snapshot = await page.evaluate(() => ({
+              overflow: document.documentElement.scrollWidth - window.innerWidth,
+              katexErrors: document.querySelectorAll('.katex-error').length,
+              canvases: Array.from(document.querySelectorAll('canvas')).map((canvas) => {
+                const box = canvas.getBoundingClientRect();
+                return [box.width, box.height];
+              }),
+            }));
+            assert.ok(snapshot.overflow <= 4, `${mode}/${route}: horizontal overflow ${snapshot.overflow}`);
+            assert.equal(snapshot.katexErrors, 0, `${mode}/${route}: KaTeX error`);
+            assert.ok(snapshot.canvases.every(([w, h]) => w > 180 && h > 220), `${mode}/${route}: canvas too small`);
+            assert.deepEqual(errors, [], `${mode}/${route}: ${errors.join('; ')}`);
+          }
+
+          const desktop = await browser.newContext({ viewport: { width: 1440, height: 1000 } });
+          for (const [route, lab] of routes) {
+            const page = await desktop.newPage();
+            try {
+              await check(page, route, lab, 'desktop');
+              if (route === 'elimination') {
+                await page.click('[data-preset="swapPivot"]');
+                await page.click('[data-guide]');
+              }
+              if (route === 'n-vector-space') {
+                await page.locator('[data-n]').evaluate((el) => { el.value = '2'; el.dispatchEvent(new Event('input', { bubbles: true })); });
+                await page.locator('[data-alpha]').evaluate((el) => { el.value = '1.5'; el.dispatchEvent(new Event('input', { bubbles: true })); });
+                await page.locator('[data-beta]').evaluate((el) => { el.value = '-0.8'; el.dispatchEvent(new Event('input', { bubbles: true })); });
+              }
+              if (route === 'linear-dependence') await page.click('[data-preset="three"]');
+              if (route === 'matrix-rank') await page.click('[data-preset="projectionTrap"]');
+              if (route === 'solvability') await page.click('[data-preset="miss"]');
+              if (route === 'solution-structure') {
+                const slider = page.locator('[data-param]').first();
+                await slider.evaluate((el) => { el.value = '1.35'; el.dispatchEvent(new Event('input', { bubbles: true })); });
+                assert.match(await page.locator('[data-verify-axb]').innerText(), /通过/);
+                assert.match(await page.locator('[data-verify-null]').innerText(), /通过/);
+              }
+              if (route === 'binary-higher-degree') {
+                await page.click('[data-preset="tangent"]');
+                for (let i = 0; i < 5; i += 1) await page.click('[data-next]');
+              }
+              await page.waitForTimeout(120);
+              await page.screenshot({ path: `${out}/desktop-${route}.png`, fullPage: true });
+              if (['n-vector-space', 'solvability', 'solution-structure'].includes(route)) {
+                await page.locator('[data-ch3-lab] .ch3-stage').screenshot({ path: `${out}/stage-${route}.png` });
+              }
+              console.log(`PASS desktop ${route}`);
+            } catch (error) {
+              failures.push(`desktop ${route}: ${error.stack || error.message}`);
+            } finally {
+              await page.close();
+            }
+          }
+          await desktop.close();
+
+          const mobile = await browser.newContext({ viewport: { width: 390, height: 844 } });
+          for (const [route, lab] of routes) {
+            const page = await mobile.newPage();
+            try {
+              await check(page, route, lab, 'mobile');
+              await page.screenshot({ path: `${out}/mobile-${route}.png`, fullPage: true });
+              console.log(`PASS mobile ${route}`);
+            } catch (error) {
+              failures.push(`mobile ${route}: ${error.stack || error.message}`);
+            } finally {
+              await page.close();
+            }
+          }
+          await mobile.close();
+
+          const dark = await browser.newContext({ viewport: { width: 1280, height: 900 } });
+          for (const route of ['n-vector-space', 'solution-structure']) {
+            const page = await dark.newPage();
+            try {
+              await page.goto(`http://127.0.0.1:4173/learn.html#ch3/${route}`, { waitUntil: 'networkidle' });
+              await page.click('#themeToggle');
+              await page.waitForFunction(() => document.body.classList.contains('dark'));
+              await page.screenshot({ path: `${out}/dark-${route}.png`, fullPage: true });
+              console.log(`PASS dark ${route}`);
+            } catch (error) {
+              failures.push(`dark ${route}: ${error.stack || error.message}`);
+            } finally {
+              await page.close();
+            }
+          }
+          await dark.close();
+          await browser.close();
+
+          if (failures.length) {
+            console.error('\n' + failures.join('\n\n'));
+            process.exit(1);
+          }
+          JS
+          cd /tmp/ch3-browser
+          set +e
+          ARTIFACT_DIR="${GITHUB_WORKSPACE}/browser-artifacts" node check.mjs 2>&1 | tee "${GITHUB_WORKSPACE}/browser-artifacts/browser.log"
+          status=${PIPESTATUS[0]}
+          set -e
+          exit ${status}
+
+      - name: Upload browser evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: ch3-redesign-browser-review
+          path: browser-artifacts/
+          if-no-files-found: warn
+
+      - name: Commit verified redesign
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git rm .github/workflows/ch3-redesign.yml .github/workflows/ch3-redesign-bootstrap.yml .ch3-redesign-trigger
+          git add current/visuals/ch3/shared-math.js current/visuals/ch3/shared-presentation.css current/visuals/ch3/section1-3-presentation.js current/visuals/ch3/section4-6-presentation.js current/visuals/ch3/section7-presentation.js
+          git commit -m "refactor(ch3): rebuild visual hierarchy and vector interactions"
+          git push -q origin HEAD:"${BRANCH_NAME}"

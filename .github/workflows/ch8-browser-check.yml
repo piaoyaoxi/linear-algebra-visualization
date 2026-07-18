@@ -43,7 +43,22 @@ jobs:
         run: |
           mkdir -p /tmp/ch8-screenshots
           set -o pipefail
-          node .github/scripts/ch8-browser-check.mjs 2>&1 | tee /tmp/ch8-screenshots/browser-check.log
+          if ! node .github/scripts/ch8-browser-check.mjs 2>&1 | tee /tmp/ch8-screenshots/browser-check.log; then
+            node --input-type=module <<'JS' 2>&1 | tee -a /tmp/ch8-screenshots/browser-check.log
+          import { chromium } from "playwright";
+          const browser = await chromium.launch();
+          const page = await browser.newPage({ viewport: { width: 1440, height: 1000 } });
+          await page.goto("http://127.0.0.1:4173/learn.html#ch8/lambda-matrix", { waitUntil: "networkidle" });
+          await page.locator('[data-lambda-scene="scan"]').click();
+          await page.locator('[data-scan-preset]').selectOption('jordan');
+          await page.locator('[data-jump-root="2"]').click();
+          console.log('SIGNAL COUNT', await page.locator('.ch8-signal-row').count());
+          console.log('SIGNAL TEXT', JSON.stringify(await page.locator('.ch8-signal-row').innerText()));
+          console.log('SIGNAL LABELS', JSON.stringify(await page.locator('.ch8-signal-row > div > span').allInnerTexts()));
+          await browser.close();
+          JS
+            exit 1
+          fi
       - name: Upload browser screenshots
         if: always()
         uses: actions/upload-artifact@v4

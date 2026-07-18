@@ -156,5 +156,48 @@
   window.addEventListener("pointerup", endPointer, { capture: true, passive: false });
   window.addEventListener("pointercancel", endPointer, { capture: true, passive: false });
 
+  // A vector is a directed segment, never a segment with a ball attached to
+  // its arrowhead. Some multi-sample scenes originally emitted an image point
+  // immediately after the arrow. Keep the sample point at the arrow tail and
+  // replace the image location with a distinct cross marker.
+  const SVG_NS = "http://www.w3.org/2000/svg";
+  function normalizeVectorTipMarkers(root = document) {
+    root.querySelectorAll?.(".ch7-cinema-arrow + circle.ch7-cinema-point").forEach((circle) => {
+      const arrow = circle.previousElementSibling;
+      if (!(arrow instanceof SVGElement)) return;
+      const imageX = Number(circle.getAttribute("cx"));
+      const imageY = Number(circle.getAttribute("cy"));
+      const tailX = Number(arrow.getAttribute("x1"));
+      const tailY = Number(arrow.getAttribute("y1"));
+      if (![imageX, imageY, tailX, tailY].every(Number.isFinite)) return;
+
+      const cross = document.createElementNS(SVG_NS, "path");
+      cross.setAttribute("d", `M${imageX - 5} ${imageY} H${imageX + 5} M${imageX} ${imageY - 5} V${imageY + 5}`);
+      cross.setAttribute("class", "ch7-cinema-sample-image");
+      const tone = circle.classList.contains("is-success")
+        ? "var(--ch7-cinema-success)"
+        : circle.classList.contains("is-danger")
+          ? "var(--ch7-cinema-danger)"
+          : "var(--accent)";
+      cross.setAttribute("style", `fill:none;stroke:${tone};stroke-width:3;stroke-linecap:round;vector-effect:non-scaling-stroke`);
+      arrow.after(cross);
+
+      // The circle remains a sample-of-W marker at the vector tail. It overlaps
+      // the already drawn source sample instead of changing the represented point.
+      circle.setAttribute("cx", String(tailX));
+      circle.setAttribute("cy", String(tailY));
+      circle.setAttribute("r", "3.2");
+      circle.setAttribute("aria-hidden", "true");
+    });
+  }
+
+  const markerObserver = new MutationObserver((records) => {
+    records.forEach((record) => record.addedNodes.forEach((node) => {
+      if (node instanceof Element) normalizeVectorTipMarkers(node);
+    }));
+  });
+  markerObserver.observe(document.documentElement, { childList: true, subtree: true });
+  queueMicrotask(() => normalizeVectorTipMarkers(document));
+
   window.__ch7DragControlsReady = true;
 })();

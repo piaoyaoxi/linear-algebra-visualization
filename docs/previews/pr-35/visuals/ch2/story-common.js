@@ -57,10 +57,8 @@
   }
 
   function matrixHtml(matrix, digits = 2) {
-    if (matrix.length === 2 && matrix[0].length === 2) {
-      return tex(`\begin{bmatrix}${fmt(matrix[0][0], digits)}&${fmt(matrix[0][1], digits)}\\${fmt(matrix[1][0], digits)}&${fmt(matrix[1][1], digits)}\end{bmatrix}`);
-    }
-    return tex(`\begin{bmatrix}${matrix.map((row) => row.map((value) => fmt(value, digits)).join("&")).join("\\")}\end{bmatrix}`);
+    const rows = matrix.map((row) => row.map((value) => fmt(value, digits)).join("&")).join("\\\\");
+    return tex(`\\begin{bmatrix}${rows}\\end{bmatrix}`);
   }
 
   function determinant(matrix) {
@@ -83,42 +81,66 @@
     determinant,
   };
 
-  // Screenshot-driven refinements shared by the story renderers.
   if (!document.querySelector("#ch2-story-polish")) {
     const style = document.createElement("style");
     style.id = "ch2-story-polish";
     style.textContent = `
-      .ch2-story-formula [data-area-matrix],
-      .ch2-story-formula [data-area-matrix] .katex {
-        white-space: nowrap;
-        overflow-wrap: normal;
+      .story-plain-matrix {
+        position: relative;
+        display: grid;
+        grid-template-columns: repeat(2, minmax(28px, auto));
+        gap: 5px 14px;
+        width: max-content;
+        min-width: 82px;
+        padding: 5px 14px;
+        color: var(--story-ink);
+        font: 600 1rem/1.25 system-ui, sans-serif;
+        text-align: center;
+      }
+      .story-plain-matrix::before,
+      .story-plain-matrix::after {
+        content: "";
+        position: absolute;
+        top: 0;
+        bottom: 0;
+        width: 7px;
+        border-top: 2px solid currentColor;
+        border-bottom: 2px solid currentColor;
+      }
+      .story-plain-matrix::before {
+        left: 0;
+        border-left: 2px solid currentColor;
+      }
+      .story-plain-matrix::after {
+        right: 0;
+        border-right: 2px solid currentColor;
       }
       .ch2-story-formula [data-area-matrix] {
         display: flex;
         align-items: center;
-        min-height: 46px;
-        overflow-x: auto;
+        min-height: 48px;
+        overflow: visible;
       }
       [data-perm-svg] > .story-caption { display: none; }
       .ch2-story-matrix-stage {
-        min-height: 350px;
-        padding-block: 22px;
+        min-height: 320px;
+        padding-block: 12px;
       }
       .ch2-story-matrix-grid {
-        grid-template-columns: repeat(3, 96px);
+        grid-template-columns: repeat(3, 108px);
         gap: 12px;
       }
       .ch2-story-matrix-grid button,
       .ch2-story-matrix-grid span {
-        width: 96px;
-        height: 76px;
-        font-size: 1.16rem;
+        width: 108px;
+        height: 82px;
+        font-size: 1.22rem;
       }
       @media (max-width: 820px) {
-        .ch2-story-matrix-stage { min-height: 315px; }
-        .ch2-story-matrix-grid { grid-template-columns: repeat(3, 72px); gap: 9px; }
+        .ch2-story-matrix-stage { min-height: 300px; padding-block: 10px; }
+        .ch2-story-matrix-grid { grid-template-columns: repeat(3, 78px); gap: 9px; }
         .ch2-story-matrix-grid button,
-        .ch2-story-matrix-grid span { width: 72px; height: 62px; }
+        .ch2-story-matrix-grid span { width: 78px; height: 66px; font-size: 1.05rem; }
       }
     `;
     document.head.append(style);
@@ -129,6 +151,28 @@
     if (nodes.length < 2) return null;
     const source = nodes[0];
     const sync = () => nodes.slice(1).forEach((node) => { node.textContent = source.textContent; });
+    const observer = new MutationObserver(sync);
+    observer.observe(source, { childList: true, subtree: true, characterData: true });
+    sync();
+    return () => observer.disconnect();
+  }
+
+  function polishAreaMatrix(root) {
+    const source = root.querySelector("[data-area-cross]");
+    const target = root.querySelector("[data-area-matrix]");
+    if (!source || !target) return null;
+
+    const sync = () => {
+      const values = String(source.textContent || "").match(/-?\d+(?:\.\d+)?/g)?.map(Number) || [];
+      if (values.length < 4) return;
+      const [u0, v1, v0, u1] = values;
+      target.innerHTML = `
+        <span class="story-plain-matrix" role="img" aria-label="矩阵，第一行 ${fmt(u0, 2)}，${fmt(v0, 2)}；第二行 ${fmt(u1, 2)}，${fmt(v1, 2)}">
+          <span>${fmt(u0, 2)}</span><span>${fmt(v0, 2)}</span>
+          <span>${fmt(u1, 2)}</span><span>${fmt(v1, 2)}</span>
+        </span>`;
+    };
+
     const observer = new MutationObserver(sync);
     observer.observe(source, { childList: true, subtree: true, characterData: true });
     sync();
@@ -158,6 +202,10 @@
 
   window.defineChapter2LessonEnhancer?.((section, root) => {
     const cleanups = [];
+    if (section?.id === "determinant-intro") {
+      const cleanup = polishAreaMatrix(root);
+      if (cleanup) cleanups.push(cleanup);
+    }
     if (section?.id === "determinant-computation") {
       const cleanup = mirrorText(root, "[data-elim-op]");
       if (cleanup) cleanups.push(cleanup);

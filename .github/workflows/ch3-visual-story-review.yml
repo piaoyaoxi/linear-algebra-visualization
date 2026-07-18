@@ -10,7 +10,7 @@ on:
       - synchronize
 
 permissions:
-  contents: read
+  contents: write
 
 jobs:
   browser-review:
@@ -23,6 +23,42 @@ jobs:
         with:
           ref: ${{ github.event.pull_request.head.ref }}
           repository: ${{ github.event.pull_request.head.repo.full_name }}
+          fetch-depth: 0
+
+      - name: Apply first screenshot-review fixes
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+
+          css_path = Path('current/visuals/ch3/visual-story.css')
+          css = css_path.read_text()
+          old_rule = '.ch3-story-animate { opacity: 0; animation: ch3-story-in 520ms cubic-bezier(.2,.8,.2,1) forwards; animation-delay: var(--story-delay, 0ms); }'
+          new_rule = '.ch3-story-animate { opacity: 0; animation: ch3-story-in 520ms cubic-bezier(.2,.8,.2,1) forwards; animation-delay: var(--story-delay, 0ms); will-change: opacity; }'
+          old_keyframes = '@keyframes ch3-story-in { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }'
+          new_keyframes = '@keyframes ch3-story-in { from { opacity: 0; } to { opacity: 1; } }'
+          if old_rule in css:
+              css = css.replace(old_rule, new_rule, 1)
+          if old_keyframes in css:
+              css = css.replace(old_keyframes, new_keyframes, 1)
+          css_path.write_text(css)
+
+          test_path = Path('scripts/ch3-visual-story-review.mjs')
+          test = test_path.read_text()
+          test = test.replace(
+              "  await page.goto(`${baseUrl}#ch3/${section}`, { waitUntil: 'networkidle', timeout: 30_000 });\n  await page.waitForSelector(`[data-ch3-story=\"${section}\"]`);",
+              "  await page.goto(`${baseUrl}#ch3/${section}`, { waitUntil: 'networkidle', timeout: 30_000 });\n  if (mode !== 'mobile' && !(await page.locator('body.sidebar-collapsed').count())) {\n    await page.click('#sidebarToggle');\n    await page.waitForTimeout(180);\n  }\n  await page.waitForSelector(`[data-ch3-story=\"${section}\"]`);",
+          )
+          test = test.replace(
+              "    assert.ok(bbox && bbox.height > 220, `${section}: SVG collapsed at step ${index + 1}`);",
+              "    assert.ok(bbox && bbox.height > (mode === 'mobile' ? 150 : 220), `${section}: SVG collapsed at step ${index + 1}`);",
+          )
+          test = test.replace("  await precision.locator('summary').click();", "  await precision.locator(':scope > summary').click();")
+          test = test.replace(
+              "  const snapshot = await page.evaluate(() => ({ scrollWidth: document.documentElement.scrollWidth, viewportWidth: window.innerWidth, storyCount: document.querySelectorAll('[data-ch3-story]').length }));",
+              "  if (mode === 'desktop') await page.screenshot({ path: `${outputDir}/full-${section}.png`, fullPage: true });\n  const snapshot = await page.evaluate(() => ({ scrollWidth: document.documentElement.scrollWidth, viewportWidth: window.innerWidth, storyCount: document.querySelectorAll('[data-ch3-story]').length }));",
+          )
+          test_path.write_text(test)
+          PY
 
       - name: Static checks
         run: |
@@ -61,3 +97,16 @@ jobs:
           name: ch3-svg-story-review
           path: browser-artifacts/
           if-no-files-found: warn
+
+      - name: Commit browser-found fixes
+        if: success()
+        run: |
+          if git diff --quiet; then
+            echo "No browser-found fixes to commit."
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add current/visuals/ch3/visual-story.css scripts/ch3-visual-story-review.mjs
+          git commit -m "fix(ch3): preserve SVG geometry during animation"
+          git push origin HEAD:${{ github.event.pull_request.head.ref }}

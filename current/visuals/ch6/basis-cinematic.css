@@ -137,16 +137,23 @@
   color: rgba(243, 247, 251, 0.48);
 }
 
+/* The arrowhead itself is the visual vector. This circle is only a transparent touch target. */
 .ch6-drag-handle {
-  fill: rgba(7, 21, 37, 0.82);
-  stroke: var(--ch6-orange);
-  stroke-width: 3;
+  fill: transparent;
+  stroke: transparent;
+  stroke-width: 0;
   cursor: grab;
-  filter: drop-shadow(0 0 8px rgba(255, 173, 91, 0.35));
+  filter: none;
+  pointer-events: all;
 }
 
 .ch6-drag-handle:active {
   cursor: grabbing;
+}
+
+/* In the live structure scene, identities are explained by the fixed legend, not tiny SVG pills. */
+.ch6-basis-lab.is-structure .ch6-vector-label {
+  display: none;
 }
 
 .ch6-redundant-toggle {
@@ -192,6 +199,32 @@
   line-height: 1.45;
 }
 
+/* Override the older first-child panel rule so both sides of the polynomial transform are equal. */
+.ch6-polynomial-stage > .ch6-polynomial-panel,
+.ch6-polynomial-stage > .ch6-polynomial-panel:first-child {
+  display: grid;
+  place-items: center;
+  min-height: 190px;
+  padding: 22px;
+  border: 1px solid rgba(168, 182, 199, 0.2);
+  border-radius: 20px;
+  background: rgba(16, 31, 49, 0.72);
+  color: var(--ch6-white);
+  text-align: center;
+}
+
+.ch6-polynomial-stage > .ch6-polynomial-panel > span,
+.ch6-polynomial-stage > .ch6-polynomial-panel:first-child > span {
+  color: var(--ch6-slate);
+}
+
+.ch6-polynomial-stage .ch6-polynomial-panel .tex-display,
+.ch6-polynomial-stage .ch6-polynomial-panel .katex {
+  color: var(--ch6-white);
+  font-size: clamp(1.08rem, 2.2vw, 1.55rem);
+  white-space: nowrap;
+}
+
 @media (max-width: 900px) {
   .ch6-span-frames {
     grid-template-columns: 1fr;
@@ -222,5 +255,17 @@
 
   .ch6-stage-legend {
     justify-content: flex-start;
+  }
+
+  /* Give geometric scenes enough physical size on a phone without adding horizontal scrolling. */
+  .ch6-stage-shell > .ch6-plane {
+    width: 122%;
+    max-width: none;
+    margin-left: -11%;
+  }
+
+  .ch6-polynomial-stage .ch6-polynomial-panel .tex-display,
+  .ch6-polynomial-stage .ch6-polynomial-panel .katex {
+    font-size: 1.05rem;
   }
 }

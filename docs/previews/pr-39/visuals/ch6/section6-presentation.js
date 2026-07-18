@@ -10,9 +10,9 @@
       U().planeGrid(config) +
       U().line(a, "is-u", "U", [0, 0], config) +
       U().line(b, "is-w", "W", [0, 0], config) +
-      U().softArrow([0, 0], a, "is-u", "u", config) +
+      U().softArrow([0, 0], a, "is-u", "", config) +
       U().softArrow(a, sum, "is-w", "", config) +
-      U().softArrow([0, 0], sum, "is-result", "u+w", config);
+      U().softArrow([0, 0], sum, "is-result", "", config);
     return `<svg class="ch6-sum-union-figure" viewBox="0 0 400 230" role="img" aria-label="先沿青色 u 前进，再沿橙色 w 前进，得到绿色 u+w">${inner}</svg>`;
   }
 
@@ -64,18 +64,18 @@
       const uPart = U().scale(u, 1.35);
       const sum = U().scale(u, 0.72);
       inner += U().line(u, "is-overlap", "U=W");
-      inner += U().softArrow([0, 0], uPart, "is-u", "u");
+      inner += U().softArrow([0, 0], uPart, "is-u", "");
       inner += U().softArrow(uPart, sum, "is-w", "");
-      inner += U().softArrow([0, 0], sum, "is-result", "u+w");
+      inner += U().softArrow([0, 0], sum, "is-result", "");
     } else {
       const uPart = U().scale(u, 1.35);
       const sum = U().add(uPart, U().scale(w, 1.05));
       inner += `<rect class="ch6-plane-fill" x="14" y="14" width="612" height="332" rx="20"></rect>`;
       inner += U().line(u, "is-u", "U");
       inner += U().line(w, "is-w", "W");
-      inner += U().softArrow([0, 0], uPart, "is-u", "u");
+      inner += U().softArrow([0, 0], uPart, "is-u", "");
       inner += U().softArrow(uPart, sum, "is-w", "");
-      inner += U().softArrow([0, 0], sum, "is-result", "u+w");
+      inner += U().softArrow([0, 0], sum, "is-result", "");
     }
     return U().planeSvg(inner, same ? "同一条直线中的 u 与 w 合成" : "两条不同直线中的 u 与 w 合成");
   }

@@ -66,6 +66,12 @@ async function inspectPage(page, section, expectedSteps, mode) {
     assert.ok((await svg.locator('.ch3-svg-arrow-group').count()) >= 4, 'solution story: decomposition arrows missing');
   }
 
+  if (mode === 'mobile') {
+    const stepBoxes = await buttons.evaluateAll((items) => items.map((item) => { const box = item.getBoundingClientRect(); return { x: box.x, y: box.y, width: box.width }; }));
+    assert.ok(stepBoxes.every((box) => box.width > 130), `${section}: mobile step buttons are too narrow`);
+    assert.ok(stepBoxes.length < 2 || Math.abs(stepBoxes[0].y - stepBoxes[1].y) < 4, `${section}: mobile step buttons did not form a two-column grid`);
+  }
+
   const precision = page.locator('.ch3-precision-lab');
   assert.equal(await precision.count(), 1, `${section}: exact lab wrapper missing`);
   assert.equal(await precision.getAttribute('open'), null, `${section}: exact lab should be collapsed initially`);
@@ -73,6 +79,7 @@ async function inspectPage(page, section, expectedSteps, mode) {
   await page.waitForTimeout(150);
   assert.notEqual(await precision.getAttribute('open'), null, `${section}: exact lab cannot open`);
 
+  if (mode === 'desktop') await page.screenshot({ path: `${outputDir}/full-${section}.png`, fullPage: true });
   if (mode === 'desktop') await page.screenshot({ path: `${outputDir}/full-${section}.png`, fullPage: true });
   if (mode === 'desktop') await page.screenshot({ path: `${outputDir}/full-${section}.png`, fullPage: true });
   const snapshot = await page.evaluate(() => ({ scrollWidth: document.documentElement.scrollWidth, viewportWidth: window.innerWidth, storyCount: document.querySelectorAll('[data-ch3-story]').length }));

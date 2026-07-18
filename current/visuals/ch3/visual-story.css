@@ -20,6 +20,9 @@
 .ch3-story-section { margin: 2rem 0; }
 .ch3-story-section > h2 { margin: 0 0 .9rem; }
 .ch3-story-section .ch3-visual-story { margin-top: 0; }
+.ch3-story-section { margin: 2rem 0; }
+.ch3-story-section > h2 { margin: 0 0 .9rem; }
+.ch3-story-section .ch3-visual-story { margin-top: 0; }
 .ch3-story-header { max-width: 900px; margin-bottom: 1.25rem; }
 .ch3-story-kicker { display: inline-flex; align-items: center; gap: .45rem; margin-bottom: .55rem; color: var(--story-accent); font-size: .74rem; font-weight: 800; letter-spacing: .12em; }
 .ch3-story-kicker::before { width: 1.6rem; height: 2px; background: currentColor; content: ""; }
@@ -110,5 +113,5 @@
 @keyframes ch3-story-in { from { opacity: 0; } to { opacity: 1; } }
 body.dark .ch3-visual-story { --story-coral: #ef9a69; --story-blue: #75a9eb; background: radial-gradient(circle at 10% 5%, color-mix(in srgb, var(--story-accent) 13%, transparent), transparent 34%), radial-gradient(circle at 92% 0%, color-mix(in srgb, var(--story-blue) 10%, transparent), transparent 32%), color-mix(in srgb, var(--surface, #111a18) 94%, transparent); }
 @media (max-width: 980px) { .ch3-story-layout { grid-template-columns: 1fr; } .ch3-story-guide { display: grid; grid-template-columns: minmax(0, .9fr) minmax(0, 1.1fr); align-items: start; } .ch3-story-control-set { grid-column: 1 / -1; } }
-@media (max-width: 680px) { .ch3-visual-story { margin-inline: -.25rem; padding: 1rem; border-radius: 22px; } .ch3-story-header h3 { font-size: 1.55rem; } .ch3-story-header p { font-size: .92rem; } .ch3-story-svg { min-height: 0; border-radius: 18px; } .ch3-story-guide { display: flex; } .ch3-story-step-list { display: grid; grid-template-columns: repeat(auto-fit, minmax(92px, 1fr)); gap: .4rem; overflow: visible; padding: 0; } .ch3-story-step-list button { min-width: 0; grid-template-columns: 1.7rem minmax(0, 1fr); padding: .56rem .62rem; font-size: .78rem; line-height: 1.3; } .ch3-story-step-list button span { width: 1.7rem; height: 1.7rem; } .ch3-story-copy { padding: .95rem 1rem; } .ch3-story-control-set label { grid-template-columns: 4.2rem minmax(0, 1fr) 2.4rem; } .ch3-story-stage-caption { font-size: .76rem; } }
+@media (max-width: 680px) { .ch3-visual-story { margin-inline: -.25rem; padding: 1rem; border-radius: 22px; } .ch3-story-header h3 { font-size: 1.55rem; } .ch3-story-header p { font-size: .92rem; } .ch3-story-svg { min-height: 0; border-radius: 18px; } .ch3-story-guide { display: flex; align-items: stretch; } .ch3-story-step-list { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: .4rem; overflow: visible; padding: 0; } .ch3-story-step-list button:last-child:nth-child(odd) { grid-column: 1 / -1; } .ch3-story-step-list button { min-width: 0; grid-template-columns: 1.7rem minmax(0, 1fr); padding: .56rem .62rem; font-size: .78rem; line-height: 1.3; } .ch3-story-step-list button span { width: 1.7rem; height: 1.7rem; } .ch3-story-copy { padding: .95rem 1rem; } .ch3-story-control-set label { grid-template-columns: 4.2rem minmax(0, 1fr) 2.4rem; } .ch3-story-stage-caption { font-size: .76rem; } }
 @media (prefers-reduced-motion: reduce) { .ch3-story-animate { opacity: 1; animation: none; } .ch3-story-step-list button { transition: none; } }

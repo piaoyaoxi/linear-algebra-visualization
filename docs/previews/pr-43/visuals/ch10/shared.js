@@ -63,11 +63,17 @@
       <marker id="ch10-arrow-measure" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="5" markerHeight="5" orient="auto"><path d="M0 0L8 4L0 8Z"></path></marker>
     </defs>`;
   const vectorSvg = (vector, label, role = "x", options = {}) => {
-    const [x, y] = toSvgPoint(vector, options.range || stage.range);
-    const origin = toSvgPoint([0, 0], options.range || stage.range);
+    const range = options.range ?? stage.range;
+    const [x, y] = toSvgPoint(vector, range);
+    const origin = toSvgPoint([0, 0], range);
+    const interactive = options.handleRadius !== 0;
+    const handleRadius = options.handleRadius ?? 2.5;
+    const handle = interactive
+      ? `<circle class="ch10-vector-handle is-${role}" cx="${x}" cy="${y}" r="${handleRadius}" data-vector-handle="${role}" tabindex="0" role="slider" aria-label="${options.ariaLabel || label}"></circle>`
+      : "";
     return `
       <line class="ch10-vector is-${role}" x1="${origin[0]}" y1="${origin[1]}" x2="${x}" y2="${y}" marker-end="url(#ch10-arrow-${role})"></line>
-      <circle class="ch10-vector-handle is-${role}" cx="${x}" cy="${y}" r="${options.handleRadius || 2.5}" data-vector-handle="${role}" tabindex="0" role="slider" aria-label="${options.ariaLabel || label}"></circle>
+      ${handle}
       <text class="ch10-vector-label is-${role}" x="${x + 2.4}" y="${y - 2.2}">${label}</text>`;
   };
   const lineClip = (a, b, c, range = stage.range) => {

@@ -142,9 +142,10 @@
     ].join(" ");
     const body = `<path class="ch6-arrow ${className}" d="${d}"></path>`;
     if (!label) return body;
-    const labelAt = length < 90 ? 0.48 : 0.7;
-    const side = className.includes("is-bad") || className.includes("is-w-soft") ? -1 : 1;
-    const gap = Math.min(24, Math.max(16, length * 0.07)) * side;
+    const labelAt = length < 90 ? 0.8 : 0.68;
+    const warm = /is-w(?:2|-soft)?|is-g2|is-g3|is-bad|is-target/.test(className);
+    const side = warm ? -1 : 1;
+    const gap = Math.min(30, Math.max(20, length * 0.085)) * side;
     const labelX = x1 + dx * labelAt + px * gap;
     const labelY = y1 + dy * labelAt + py * gap;
     return `${body}${vectorLabel(label, labelX, labelY, x2, y2, className, config)}`;

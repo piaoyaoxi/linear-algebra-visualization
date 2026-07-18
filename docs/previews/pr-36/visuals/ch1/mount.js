@@ -13,7 +13,6 @@
   addStylesheet("./visuals/ch1/refinement.css?v=ch1-final2");
   addStylesheet("./visuals/ch1/learning-design.css?v=ch1-learning1");
 
-  // Compatibility for the original §9—§11 interaction modules.
   const math = window.Ch1Math;
   if (math) {
     math.polyFrom ||= math.poly;
@@ -235,7 +234,8 @@
       queued = true;
       queueMicrotask(() => {
         queued = false;
-        output.textContent = currentObservation(section.id, lab);
+        const next = currentObservation(section.id, lab);
+        if (output.textContent !== next) output.textContent = next;
       });
     };
     const observer = new MutationObserver(update);

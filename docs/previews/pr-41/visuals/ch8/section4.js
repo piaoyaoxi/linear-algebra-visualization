@@ -139,6 +139,7 @@
         basisTwoLabel.textContent = basisT < 0.02 ? "e₂" : basisT > 0.98 ? "f₂=e₁+e₂" : "f₂(t)";
         output.textContent = basisT.toFixed(2);
         range.value = String(basisT);
+        range.setAttribute("aria-valuetext", `换基参数 ${basisT.toFixed(2)}`);
         name.textContent = basisT < 0.02 ? "E=(e₁,e₂)" : basisT > 0.98 ? "F=(e₁,e₁+e₂)" : `F(t)=(e₁, te₁+e₂)`;
         pSlot.innerHTML = I(`P(t)=\\begin{bmatrix}1&${basisT.toFixed(2)}\\\\0&1\\end{bmatrix}`);
         matrixSlot.innerHTML = I(`B(t)=P(t)^{-1}AP(t)=\\begin{bmatrix}2&${basisT.toFixed(2)}\\\\0&1\\end{bmatrix}`);
@@ -155,7 +156,46 @@
         markExperimentStep(host, basisT < 0.05 ? 0 : basisT < 0.95 ? 1 : 2);
       }
 
+      function setFromClientX(clientX) {
+        const rect = range.getBoundingClientRect();
+        const ratio = Math.max(0, Math.min(1, (clientX - rect.left) / rect.width));
+        basisT = Number(ratio.toFixed(2));
+        update();
+      }
+
       on(range, "input", (event) => { basisT = Number(event.currentTarget.value); update(); });
+      on(range, "pointerdown", (event) => {
+        event.preventDefault();
+        range.classList.add("is-dragging");
+        range.setPointerCapture?.(event.pointerId);
+        setFromClientX(event.clientX);
+      });
+      on(range, "pointermove", (event) => {
+        if (!range.hasPointerCapture?.(event.pointerId)) return;
+        event.preventDefault();
+        setFromClientX(event.clientX);
+      });
+      const finishPointer = (event) => {
+        if (range.hasPointerCapture?.(event.pointerId)) range.releasePointerCapture?.(event.pointerId);
+        range.classList.remove("is-dragging");
+      };
+      on(range, "pointerup", finishPointer);
+      on(range, "pointercancel", finishPointer);
+      on(range, "touchstart", (event) => {
+        if (!event.touches.length) return;
+        event.preventDefault();
+        range.classList.add("is-dragging");
+        setFromClientX(event.touches[0].clientX);
+      }, { passive: false });
+      on(range, "touchmove", (event) => {
+        if (!event.touches.length) return;
+        event.preventDefault();
+        setFromClientX(event.touches[0].clientX);
+      }, { passive: false });
+      const finishTouch = () => range.classList.remove("is-dragging");
+      on(range, "touchend", finishTouch, { passive: true });
+      on(range, "touchcancel", finishTouch, { passive: true });
+
       host.querySelectorAll("[data-basis-snap]").forEach((button) => on(button, "click", () => { basisT = Number(button.dataset.basisSnap); update(); }));
       host.querySelectorAll("[data-sim-mode]").forEach((button) => on(button, "click", () => {
         mode = button.dataset.simMode;

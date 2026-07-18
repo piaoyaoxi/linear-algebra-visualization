@@ -1,0 +1,48 @@
+/* Chapter 6 formal details introduced by the third review pass. */
+.ch6-axiom-list {
+  display: grid;
+  gap: 0;
+  margin-top: 10px;
+  border-top: 1px solid var(--line);
+}
+
+.ch6-axiom-rule {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(190px, 0.85fr);
+  gap: 14px;
+  align-items: center;
+  padding: 14px 0;
+  border-bottom: 1px solid var(--line);
+}
+
+.ch6-axiom-rule:last-child {
+  border-bottom: 0;
+}
+
+.ch6-axiom-rule strong {
+  display: block;
+  margin-bottom: 4px;
+  color: var(--text);
+  font-size: 14px;
+}
+
+.ch6-axiom-rule p {
+  margin: 0;
+  color: var(--muted);
+  font-size: 13px;
+  line-height: 1.6;
+}
+
+.ch6-axiom-rule .tex-display {
+  padding: 10px 12px;
+  border-radius: 11px;
+  background: var(--surface-soft);
+  font-size: 0.92rem;
+}
+
+@media (max-width: 760px) {
+  .ch6-axiom-rule {
+    grid-template-columns: 1fr;
+    gap: 8px;
+  }
+}

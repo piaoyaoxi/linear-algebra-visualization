@@ -11,7 +11,21 @@ const commands = [
   "mathbb", "ker", "det", "dim", "in", "to", "ne", "forall", "cdot", "mapsto",
   "langle", "rangle", "diag",
 ];
+const spacingCharacters = new Set([";", ",", "!", ":"]);
 const findings = [];
+
+function slashRunBefore(line, index) {
+  let slashCount = 0;
+  for (let position = index - 1; position >= 0 && line[position] === "\\"; position -= 1) slashCount += 1;
+  return slashCount;
+}
+
+function recordOddRun(file, line, lineNumber, token, index) {
+  const slashCount = slashRunBefore(line, index);
+  if (slashCount % 2 === 1) {
+    findings.push({ file, line: lineNumber, token, slashCount, text: line.trim() });
+  }
+}
 
 function inspectLine(file, line, lineNumber) {
   for (const command of commands) {
@@ -19,12 +33,14 @@ function inspectLine(file, line, lineNumber) {
     while (cursor < line.length) {
       const index = line.indexOf(command, cursor);
       if (index < 0) break;
-      let slashCount = 0;
-      for (let position = index - 1; position >= 0 && line[position] === "\\"; position -= 1) slashCount += 1;
-      if (slashCount % 2 === 1) {
-        findings.push({ file, line: lineNumber, command, slashCount, text: line.trim() });
-      }
+      recordOddRun(file, line, lineNumber, `\\${command}`, index);
       cursor = index + command.length;
+    }
+  }
+
+  for (let index = 0; index < line.length; index += 1) {
+    if (spacingCharacters.has(line[index])) {
+      recordOddRun(file, line, lineNumber, `\\${line[index]}`, index);
     }
   }
 }

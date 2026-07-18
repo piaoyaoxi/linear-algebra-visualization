@@ -1,5 +1,5 @@
 (() => {
-  const { I, on, setPressed, markExperimentStep, conclusionMarkup, matrix } = window.Chapter8Lab;
+  const { I, on, markExperimentStep, conclusionMarkup, matrix } = window.Chapter8Lab;
 
   const passportPairs = {
     similar: {
@@ -30,91 +30,164 @@
     },
   };
 
-  function coordinateRoom(kind) {
-    const oblique = kind === "new";
-    return `
-      <svg class="ch8-coordinate-svg" viewBox="0 0 320 220" role="img" aria-label="${oblique ? "斜基坐标房间" : "标准基坐标房间"}">
-        <g class="room-grid ${oblique ? "is-oblique" : ""}">
-          ${oblique
-            ? `<path d="M38 184L166 28M76 196L204 40M114 208L242 52M152 220L280 64"></path><path d="M18 184L294 184M6 150L282 150M0 116L270 116M0 82L258 82M0 48L246 48"></path>`
-            : `<path d="M40 28V204M80 28V204M120 28V204M160 28V204M200 28V204M240 28V204M280 28V204"></path><path d="M20 44H300M20 78H300M20 112H300M20 146H300M20 180H300"></path>`}
-        </g>
-        <path class="room-axis" d="M20 180H302M80 206V26"></path>
-        <path class="room-basis-one" d="M80 180L166 180"></path>
-        <path class="room-basis-two" d="${oblique ? "M80 180L132 112" : "M80 180L80 96"}"></path>
-        <path class="room-vector" d="M80 180L218 86"></path>
-        <circle class="room-vector-tip" cx="218" cy="86" r="5"></circle>
-        <g class="room-map-shape"><path d="M80 180L166 180L218 112L132 112Z"></path><path d="M80 180L252 180L304 112L132 112Z"></path></g>
-        <text x="224" y="80">v</text>
-        <text x="170" y="199">${oblique ? "f₁" : "e₁"}</text>
-        <text x="${oblique ? 137 : 91}" y="${oblique ? 106 : 92}">${oblique ? "f₂" : "e₂"}</text>
-      </svg>`;
-  }
-
   function mount(host) {
     let mode = "rooms";
     let pairKey = "false";
     let page = 0;
+    let basisT = 0;
 
     function renderRooms() {
-      markExperimentStep(host, 0);
+      markExperimentStep(host, basisT < 0.05 ? 0 : basisT < 0.95 ? 1 : 2);
       host.innerHTML = `
-        <div class="ch8-lab ch8-story-lab ch8-similarity-story">
+        <div class="ch8-lab ch8-cinema ch8-similarity-cinema">
           <div class="ch8-story-tabs" role="tablist" aria-label="相似实验模式">
-            <button type="button" class="is-active" data-sim-mode="rooms" aria-pressed="true"><span>01</span>同一变换换基</button>
-            <button type="button" data-sim-mode="passport" aria-pressed="false"><span>02</span>打开结构护照</button>
+            <button type="button" class="is-active" data-sim-mode="rooms" aria-pressed="true"><span>01</span>连续换基</button>
+            <button type="button" data-sim-mode="passport" aria-pressed="false"><span>02</span>结构护照</button>
           </div>
-          <div class="ch8-scene-intro"><span>被动换基</span><h3>几何对象不动，坐标网格与矩阵记录改变</h3><p>下面两个房间画的是同一个向量、同一个线性变换，只是使用不同基。</p></div>
-          <div class="ch8-coordinate-rooms">
-            <article>
-              <div class="ch8-room-title"><span>标准基 E</span><strong>${I("e_1,e_2")}</strong></div>
-              ${coordinateRoom("standard")}
-              <div class="ch8-room-matrix"><span>变换矩阵</span>${matrix([[2, 0], [0, 1]])}</div>
-              <p>在标准基下，它是沿 e₁ 方向放大 2 倍。</p>
-            </article>
-            <div class="ch8-basis-bridge">
-              <span>坐标翻译</span>
-              ${I("P=\\begin{bmatrix}1&1\\\\0&1\\end{bmatrix}")}
-              <b>${I("B=P^{-1}AP")}</b>
-              <i>对象不动</i>
-            </div>
-            <article>
-              <div class="ch8-room-title"><span>斜基 F</span><strong>${I("f_1=e_1,\\ f_2=e_1+e_2")}</strong></div>
-              ${coordinateRoom("new")}
-              <div class="ch8-room-matrix"><span>变换矩阵</span>${matrix([[2, 1], [0, 1]])}</div>
-              <p>数值不同，但描述的仍是左边同一个线性变换。</p>
-            </article>
-          </div>
-          ${conclusionMarkup("换基结论", "A 与 B 不同，但线性变换没有改变", "P 只负责在两套坐标之间翻译；因此相似关系是同一个对象的两种坐标记录。")}
+
+          <header class="ch8-cinema-head">
+            <div><span>对象不动 · 坐标网格连续倾斜</span><h3>拖动换基参数，观察矩阵怎样随坐标语言改变</h3></div>
+            <p>蓝色几何对象和线性变换始终固定。只有基向量、坐标网格和矩阵记录在变化。</p>
+          </header>
+
+          <section class="ch8-basis-stage ch8-coordinate-rooms">
+            <svg data-basis-svg viewBox="0 0 900 500" role="img" aria-label="同一线性变换在连续变化的基下保持几何对象不变">
+              <defs>
+                <marker id="ch8-basis-arrow" markerWidth="10" markerHeight="10" refX="8" refY="5" orient="auto"><path d="M0 0L10 5L0 10Z"></path></marker>
+              </defs>
+              <g class="basis-grid"><path data-grid-a></path><path data-grid-b></path></g>
+              <path class="basis-axis" d="M70 360H830M245 462V48"></path>
+              <polygon class="basis-input-shape" points="245,360 345,360 345,260 245,260"></polygon>
+              <polygon class="basis-output-shape" points="245,360 445,360 445,260 245,260"></polygon>
+              <path class="basis-map-arrow" d="M350 232C392 200 430 204 470 232"></path>
+              <text class="basis-caption" x="252" y="246">单位方形</text>
+              <text class="basis-caption" x="455" y="246">A 作用后</text>
+              <path class="basis-vector" d="M245 360L365 235"></path>
+              <path class="basis-vector image" d="M245 360L485 235"></path>
+              <text class="basis-vector-label" x="356" y="224">v</text>
+              <text class="basis-vector-label" x="486" y="224">Av</text>
+              <path class="basis-one" data-basis-one></path>
+              <path class="basis-two" data-basis-two></path>
+              <text data-basis-one-label x="354" y="382">e₁</text>
+              <text data-basis-two-label></text>
+              <g class="basis-fixed-note"><rect x="590" y="72" width="250" height="96" rx="18"></rect><text x="618" y="108">固定的几何事实</text><text x="618" y="140">沿第一特征方向放大 2 倍</text></g>
+            </svg>
+
+            <aside class="ch8-basis-readout">
+              <span>当前基</span>
+              <strong data-basis-name></strong>
+              <div data-basis-p></div>
+              <span>同一变换的矩阵记录</span>
+              <div data-basis-matrix></div>
+              <p data-basis-explanation></p>
+            </aside>
+          </section>
+
+          <section class="ch8-basis-control">
+            <div><span>换基参数 t</span><output data-basis-output>${basisT.toFixed(2)}</output></div>
+            <input data-basis-range type="range" min="0" max="1" step="0.01" value="${basisT}" aria-label="换基参数 t">
+            <div class="ch8-basis-presets"><button type="button" data-basis-snap="0">标准基 E</button><button type="button" data-basis-snap="0.5">中间状态</button><button type="button" data-basis-snap="1">斜基 F</button></div>
+          </section>
+
+          <div data-basis-conclusion></div>
         </div>`;
+
+      const gridA = host.querySelector("[data-grid-a]");
+      const gridB = host.querySelector("[data-grid-b]");
+      const basisOne = host.querySelector("[data-basis-one]");
+      const basisTwo = host.querySelector("[data-basis-two]");
+      const basisTwoLabel = host.querySelector("[data-basis-two-label]");
+      const range = host.querySelector("[data-basis-range]");
+      const output = host.querySelector("[data-basis-output]");
+      const name = host.querySelector("[data-basis-name]");
+      const pSlot = host.querySelector("[data-basis-p]");
+      const matrixSlot = host.querySelector("[data-basis-matrix]");
+      const explanation = host.querySelector("[data-basis-explanation]");
+      const conclusion = host.querySelector("[data-basis-conclusion]");
+
+      function gridPath(t) {
+        const origin = { x: 245, y: 360 };
+        const b1 = { x: 100, y: 0 };
+        const b2 = { x: 58 * t, y: -100 };
+        const linesA = [];
+        const linesB = [];
+        for (let i = -4; i <= 5; i += 1) {
+          const x1 = origin.x + i * b1.x - 4 * b2.x;
+          const y1 = origin.y + i * b1.y - 4 * b2.y;
+          const x2 = origin.x + i * b1.x + 4 * b2.x;
+          const y2 = origin.y + i * b1.y + 4 * b2.y;
+          linesA.push(`M${x1.toFixed(1)} ${y1.toFixed(1)}L${x2.toFixed(1)} ${y2.toFixed(1)}`);
+        }
+        for (let j = -4; j <= 4; j += 1) {
+          const x1 = origin.x - 4 * b1.x + j * b2.x;
+          const y1 = origin.y - 4 * b1.y + j * b2.y;
+          const x2 = origin.x + 5 * b1.x + j * b2.x;
+          const y2 = origin.y + 5 * b1.y + j * b2.y;
+          linesB.push(`M${x1.toFixed(1)} ${y1.toFixed(1)}L${x2.toFixed(1)} ${y2.toFixed(1)}`);
+        }
+        return { a: linesA.join(""), b: linesB.join(""), b2 };
+      }
+
+      function update() {
+        const { a, b, b2 } = gridPath(basisT);
+        gridA.setAttribute("d", a);
+        gridB.setAttribute("d", b);
+        basisOne.setAttribute("d", "M245 360L345 360");
+        basisTwo.setAttribute("d", `M245 360L${(245 + b2.x).toFixed(1)} ${(360 + b2.y).toFixed(1)}`);
+        basisTwoLabel.setAttribute("x", String(257 + b2.x));
+        basisTwoLabel.setAttribute("y", String(350 + b2.y));
+        basisTwoLabel.textContent = basisT < 0.02 ? "e₂" : basisT > 0.98 ? "f₂=e₁+e₂" : "f₂(t)";
+        output.textContent = basisT.toFixed(2);
+        range.value = String(basisT);
+        name.textContent = basisT < 0.02 ? "E=(e₁,e₂)" : basisT > 0.98 ? "F=(e₁,e₁+e₂)" : `F(t)=(e₁, te₁+e₂)`;
+        pSlot.innerHTML = I(`P(t)=\\begin{bmatrix}1&${basisT.toFixed(2)}\\\\0&1\\end{bmatrix}`);
+        matrixSlot.innerHTML = I(`B(t)=P(t)^{-1}AP(t)=\\begin{bmatrix}2&${basisT.toFixed(2)}\\\\0&1\\end{bmatrix}`);
+        explanation.textContent = basisT < 0.02
+          ? "网格是正交的，矩阵记录为对角形。"
+          : basisT > 0.98
+            ? "网格已经倾斜，矩阵出现非零上三角项，但蓝色几何对象完全没有动。"
+            : "网格正在倾斜；矩阵中的非对角项连续增加，只是在记录坐标语言的变化。";
+        conclusion.innerHTML = conclusionMarkup(
+          "相似的几何意义",
+          "矩阵在变，线性变换本身没有变",
+          "同一个对象在连续变化的基下由 B(t)=P(t)⁻¹AP(t) 记录。相似不是图形碰巧像，而是同一线性变换的不同坐标表达。",
+        );
+        markExperimentStep(host, basisT < 0.05 ? 0 : basisT < 0.95 ? 1 : 2);
+      }
+
+      on(range, "input", (event) => { basisT = Number(event.currentTarget.value); update(); });
+      host.querySelectorAll("[data-basis-snap]").forEach((button) => on(button, "click", () => { basisT = Number(button.dataset.basisSnap); update(); }));
       host.querySelectorAll("[data-sim-mode]").forEach((button) => on(button, "click", () => {
         mode = button.dataset.simMode;
         if (mode === "passport") renderPassport();
       }));
+      update();
     }
 
     function renderPassport() {
       markExperimentStep(host, Math.min(page + 1, 3));
       const pair = passportPairs[pairKey];
-      const visibleRows = pair.rows.slice(0, page + 1);
       const final = page === pair.rows.length - 1;
       const current = pair.rows[page];
       host.innerHTML = `
-        <div class="ch8-lab ch8-story-lab ch8-similarity-story">
+        <div class="ch8-lab ch8-cinema ch8-similarity-cinema">
           <div class="ch8-story-tabs" role="tablist" aria-label="相似实验模式">
-            <button type="button" data-sim-mode="rooms" aria-pressed="false"><span>01</span>同一变换换基</button>
-            <button type="button" class="is-active" data-sim-mode="passport" aria-pressed="true"><span>02</span>打开结构护照</button>
+            <button type="button" data-sim-mode="rooms" aria-pressed="false"><span>01</span>连续换基</button>
+            <button type="button" class="is-active" data-sim-mode="passport" aria-pressed="true"><span>02</span>结构护照</button>
           </div>
-          <div class="ch8-passport-toolbar">
-            <label>选择一对矩阵<select data-passport-pair>${Object.entries(passportPairs).map(([key, item]) => `<option value="${key}" ${key === pairKey ? "selected" : ""}>${item.label}</option>`).join("")}</select></label>
-            <div class="ch8-passport-page"><span>已打开 ${page + 1}/${pair.rows.length} 页</span><b>${current[0]}</b></div>
-          </div>
+
+          <header class="ch8-cinema-head">
+            <div><span>不要把必要条件当充分条件</span><h3>逐层打开相似类的结构护照</h3></div>
+            <label>比较对象<select data-passport-pair>${Object.entries(passportPairs).map(([key, item]) => `<option value="${key}" ${key === pairKey ? "selected" : ""}>${item.label}</option>`).join("")}</select></label>
+          </header>
+
           <div class="ch8-passport-matrices">
             <article><span>矩阵 A</span>${matrix(pair.A)}</article>
-            <div><b>?</b><span>是否相似</span></div>
+            <div><b>${final ? (pairKey === "similar" ? "≈" : "≠") : "?"}</b><span>是否相似</span></div>
             <article><span>矩阵 B</span>${matrix(pair.B)}</article>
           </div>
-          <div class="ch8-passport-book">
+
+          <section class="ch8-passport-book">
             ${pair.rows.map((row, rowIndex) => {
               const visible = rowIndex <= page;
               return `<article class="${visible ? "is-visible" : "is-locked"} ${visible && !row[3] ? "is-fail" : ""}">
@@ -126,18 +199,22 @@
                 <small>${visible ? row[4] : "继续打开下一层"}</small>
               </article>`;
             }).join("")}
-          </div>
+          </section>
+
           <div class="ch8-passport-controls">
-            <button type="button" data-passport-prev ${page === 0 ? "disabled" : ""}>← 收回一页</button>
-            <div><span>当前能否下结论？</span><strong>${final ? pair.conclusion : current[3] ? "还不能；相同的必要条件仍可能不足。" : "已经发现不变量不同，可以立即排除相似。"}</strong></div>
+            <button type="button" data-passport-prev ${page === 0 ? "disabled" : ""}>← 收回一层</button>
+            <div><span>当前判断</span><strong>${final ? pair.conclusion : current[3] ? "仍然不能下结论：当前只通过了一个必要条件。" : "已经发现不变量不同，可以立即排除相似。"}</strong></div>
             <button type="button" class="is-primary" data-passport-next ${final ? "disabled" : ""}>打开下一层 →</button>
           </div>
-          ${conclusionMarkup("护照判定", final ? (pairKey === "similar" ? "不变因子完全一致：相似" : "不变因子不同：不相似") : `当前只检查到“${current[0]}”`, final ? pair.conclusion : "不要把目前通过的必要条件提前当作充分条件。", final && pairKey === "false" ? "danger" : "accent")}
+
+          ${conclusionMarkup(
+            "护照判定",
+            final ? (pairKey === "similar" ? "不变因子完全一致：相似" : "不变因子不同：不相似") : `目前只检查到“${current[0]}”`,
+            final ? pair.conclusion : "越粗的不变量越容易相同；只有完整的不变因子才能给出相似分类。",
+            final && pairKey === "false" ? "danger" : "accent",
+          )}
         </div>`;
-      host.querySelectorAll("[data-sim-mode]").forEach((button) => on(button, "click", () => {
-        mode = button.dataset.simMode;
-        if (mode === "rooms") renderRooms();
-      }));
+      host.querySelectorAll("[data-sim-mode]").forEach((button) => on(button, "click", () => { mode = button.dataset.simMode; if (mode === "rooms") renderRooms(); }));
       on(host.querySelector("[data-passport-pair]"), "change", (event) => { pairKey = event.target.value; page = 0; renderPassport(); });
       on(host.querySelector("[data-passport-prev]"), "click", () => { page = Math.max(0, page - 1); renderPassport(); });
       on(host.querySelector("[data-passport-next]"), "click", () => { page = Math.min(passportPairs[pairKey].rows.length - 1, page + 1); renderPassport(); });

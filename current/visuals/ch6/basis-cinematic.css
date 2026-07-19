@@ -1,4 +1,5 @@
-/* Dedicated §3 visual system and shared scene refinements. */
+/* Chapter 6 §3 and shared geometry details, aligned with Chapters 1, 4 and 5. */
+
 .ch6-lab-stage > * {
   animation: none;
 }
@@ -20,15 +21,16 @@
   gap: 10px;
   min-width: 0;
   padding: 16px;
-  border: 1px solid rgba(168, 182, 199, 0.2);
-  border-radius: 20px;
-  background: rgba(16, 31, 49, 0.62);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: var(--surface-solid);
+  box-shadow: var(--shadow-soft);
 }
 
 .ch6-span-frame > span {
-  color: var(--ch6-cyan) !important;
+  color: var(--accent-strong) !important;
   font-size: 12px;
-  font-weight: 800;
+  font-weight: 760;
   letter-spacing: 0.04em;
 }
 
@@ -37,6 +39,9 @@
   width: 100%;
   height: auto;
   aspect-ratio: 280 / 190;
+  border: 1px solid var(--line);
+  border-radius: calc(var(--radius) + 2px);
+  background: var(--surface-soft);
 }
 
 .ch6-span-frame > div {
@@ -45,18 +50,20 @@
 }
 
 .ch6-span-frame strong {
+  color: var(--text);
   font-size: 15px;
   line-height: 1.45;
 }
 
 .ch6-span-frame small {
+  color: var(--muted);
   line-height: 1.45;
 }
 
 .ch6-basis-area {
-  fill: rgba(92, 224, 235, 0.16);
-  stroke: var(--ch6-cyan);
-  stroke-width: 2;
+  fill: color-mix(in srgb, var(--accent) 10%, transparent);
+  stroke: color-mix(in srgb, var(--accent-strong) 72%, var(--line));
+  stroke-width: 1.5;
   stroke-linejoin: round;
   opacity: 0;
   transition: opacity 220ms ease;
@@ -67,8 +74,8 @@
 }
 
 .ch6-basis-area.is-soft {
-  fill: rgba(92, 224, 235, 0.08);
-  stroke: rgba(92, 224, 235, 0.5);
+  fill: color-mix(in srgb, var(--accent) 6%, transparent);
+  stroke: color-mix(in srgb, var(--accent-strong) 38%, transparent);
 }
 
 .ch6-basis-lattice {
@@ -77,26 +84,26 @@
 }
 
 .ch6-basis-lattice.is-v1 {
-  stroke: rgba(92, 224, 235, 0.14);
+  stroke: color-mix(in srgb, var(--accent-strong) 14%, transparent);
 }
 
 .ch6-basis-lattice.is-v2 {
-  stroke: rgba(255, 173, 91, 0.14);
+  stroke: color-mix(in srgb, var(--coral) 12%, transparent);
 }
 
 .ch6-plane-field {
-  fill: rgba(92, 224, 235, 0.035);
+  fill: color-mix(in srgb, var(--accent) 4%, transparent);
 }
 
 .ch6-stage-legend {
   display: flex;
   flex-wrap: wrap;
   justify-content: center;
-  gap: 8px 16px;
-  padding: 8px 8px 2px;
-  color: var(--ch6-slate);
+  gap: 7px 14px;
+  padding: 9px 8px 2px;
+  color: var(--muted);
   font-size: 12px;
-  font-weight: 750;
+  font-weight: 650;
 }
 
 .ch6-stage-legend span {
@@ -106,38 +113,38 @@
 }
 
 .ch6-stage-legend span::before {
-  width: 18px;
-  height: 5px;
+  width: 16px;
+  height: 3px;
   border-radius: 99px;
   background: currentColor;
   content: "";
 }
 
 .ch6-stage-legend .is-u {
-  color: var(--ch6-cyan);
+  color: var(--accent-strong);
 }
 
 .ch6-stage-legend .is-w {
-  color: var(--ch6-orange);
+  color: var(--coral);
 }
 
 .ch6-stage-legend .is-target {
-  color: var(--ch6-white);
+  color: var(--text);
 }
 
 .ch6-stage-legend .is-result {
-  color: var(--ch6-green);
+  color: color-mix(in srgb, var(--accent-strong) 82%, var(--text));
 }
 
 .ch6-stage-legend .is-overlap {
-  color: #bc8cff;
+  color: var(--violet);
 }
 
 .ch6-stage-legend .is-muted {
-  color: rgba(243, 247, 251, 0.48);
+  color: var(--faint);
 }
 
-/* The arrowhead itself is the visual vector. This circle is only a transparent touch target. */
+/* The visible arrowhead remains the vector; this circle is only a transparent touch target. */
 .ch6-drag-handle {
   fill: transparent;
   stroke: transparent;
@@ -151,7 +158,6 @@
   cursor: grabbing;
 }
 
-/* In the live structure scene, identities are explained by the fixed legend, not tiny SVG pills. */
 .ch6-basis-lab.is-structure .ch6-vector-label {
   display: none;
 }
@@ -181,7 +187,7 @@
   min-width: 0;
   padding: 14px;
   border: 1px solid var(--line);
-  border-radius: 14px;
+  border-radius: var(--radius);
   background: var(--surface-soft);
 }
 
@@ -195,33 +201,33 @@
 .ch6-basis-verdict strong {
   display: block;
   overflow-wrap: anywhere;
+  color: var(--text);
   font-size: 14px;
   line-height: 1.45;
 }
 
-/* Override the older first-child panel rule so both sides of the polynomial transform are equal. */
 .ch6-polynomial-stage > .ch6-polynomial-panel,
 .ch6-polynomial-stage > .ch6-polynomial-panel:first-child {
   display: grid;
   place-items: center;
-  min-height: 190px;
-  padding: 22px;
-  border: 1px solid rgba(168, 182, 199, 0.2);
-  border-radius: 20px;
-  background: rgba(16, 31, 49, 0.72);
-  color: var(--ch6-white);
+  min-height: 176px;
+  padding: 20px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: var(--surface-solid);
+  color: var(--text);
   text-align: center;
 }
 
 .ch6-polynomial-stage > .ch6-polynomial-panel > span,
 .ch6-polynomial-stage > .ch6-polynomial-panel:first-child > span {
-  color: var(--ch6-slate);
+  color: var(--muted);
 }
 
 .ch6-polynomial-stage .ch6-polynomial-panel .tex-display,
 .ch6-polynomial-stage .ch6-polynomial-panel .katex {
-  color: var(--ch6-white);
-  font-size: clamp(1.08rem, 2.2vw, 1.55rem);
+  color: var(--text);
+  font-size: clamp(1.05rem, 2vw, 1.45rem);
   white-space: nowrap;
 }
 
@@ -247,6 +253,7 @@
 @media (max-width: 600px) {
   .ch6-span-frame {
     grid-template-columns: 1fr;
+    padding: 13px;
   }
 
   .ch6-basis-verdict {
@@ -257,15 +264,20 @@
     justify-content: flex-start;
   }
 
-  /* Give geometric scenes enough physical size on a phone without adding horizontal scrolling. */
   .ch6-stage-shell > .ch6-plane {
-    width: 122%;
+    width: 112%;
     max-width: none;
-    margin-left: -11%;
+    margin-left: -6%;
   }
 
   .ch6-polynomial-stage .ch6-polynomial-panel .tex-display,
   .ch6-polynomial-stage .ch6-polynomial-panel .katex {
-    font-size: 1.05rem;
+    font-size: 1.02rem;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ch6-basis-area {
+    transition: none;
   }
 }

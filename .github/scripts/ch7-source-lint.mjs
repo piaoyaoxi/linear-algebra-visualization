@@ -13,12 +13,13 @@ const files = [
   "current/visuals/ch7/story-section9.js",
 ];
 
-const commands = "lambda|operatorname|text|ne|notin|in|subseteq|mid|dim|ker|forall|deg|quad|circ";
+const nativeEscapes = new Set(["b", "f", "n", "r", "t", "v", "x", "u", "0"]);
 const malformed = [];
 for (const file of files) {
   const source = await readFile(file, "utf8");
-  const pattern = new RegExp(`(?<!\\\\)\\\\(?:${commands})`, "g");
+  const pattern = /(?<!\\)\\([A-Za-z]+)/g;
   for (const match of source.matchAll(pattern)) {
+    if (nativeEscapes.has(match[1])) continue;
     const line = source.slice(0, match.index).split("\n").length;
     malformed.push(`${file}:${line}:${match[0]}`);
   }

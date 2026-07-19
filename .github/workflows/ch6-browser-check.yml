@@ -40,7 +40,7 @@ jobs:
           cat /tmp/ch6-static.log
           exit 1
 
-      - name: Exercise Chapter 6 in Chromium
+      - name: Exercise Chapter 6 and compare project visual language in Chromium
         shell: bash
         run: |
           set +e

@@ -48,6 +48,26 @@ body[data-route="ch8"] :is(.ch8-lambda-story, .ch8-invariant-cinema) .katex-html
   white-space: nowrap !important;
 }
 
+/* A legacy `.ch8-cause-strip span { display:block }` rule was also reaching every
+   internal KaTeX span and stacking λ−2 vertically. Restore KaTeX's inline flow. */
+body[data-route="ch8"] .ch8-cause-strip .katex span {
+  display: inline-block !important;
+  width: auto !important;
+  min-width: 0 !important;
+  max-width: none !important;
+  margin: 0 !important;
+  white-space: nowrap !important;
+}
+
+body[data-route="ch8"] .ch8-cause-strip > div {
+  min-height: 0 !important;
+  padding: 0 !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+}
+
 /* Coordinate selection is indicated by one underline only; never by a box inside a box. */
 body[data-route="ch8"] .ch8-bare-matrix > span.is-source-active,
 body[data-route="ch8"] .ch8-click-matrix button.is-active,
@@ -66,15 +86,28 @@ body[data-route="ch8"] .ch8-click-matrix button:not(.is-active) {
 }
 
 body[data-route="ch8"] .ch8-trace-formula,
-body[data-route="ch8"] .ch8-trace-formula strong {
-  min-width: 0;
-  white-space: nowrap;
+body[data-route="ch8"] .ch8-trace-formula strong,
+body[data-route="ch8"] .ch8-trace-formula strong .tex-inline,
+body[data-route="ch8"] .ch8-trace-formula strong .katex,
+body[data-route="ch8"] .ch8-trace-formula strong .katex-html {
+  width: max-content !important;
+  min-width: max-content !important;
+  max-width: none !important;
+  white-space: nowrap !important;
+  word-break: keep-all !important;
+  overflow-wrap: normal !important;
+}
+
+body[data-route="ch8"] .ch8-trace-formula {
+  display: flex !important;
+  flex-wrap: nowrap !important;
+  align-items: baseline !important;
 }
 
 body[data-route="ch8"] .ch8-trace-formula strong {
-  display: inline-flex;
-  flex: 0 0 auto;
-  align-items: baseline;
+  display: inline-flex !important;
+  flex: 0 0 auto !important;
+  align-items: baseline !important;
 }
 
 body[data-route="ch8"] .ch8-invariant-reference,
@@ -89,4 +122,12 @@ body[data-route="ch8"] .ch8-invariant-output strong {
   border-radius: 0 !important;
   background: transparent !important;
   box-shadow: none !important;
+}
+
+@media (max-width: 620px) {
+  body[data-route="ch8"] .ch8-trace-formula {
+    max-width: 100% !important;
+    overflow-x: auto !important;
+    padding-bottom: 4px !important;
+  }
 }

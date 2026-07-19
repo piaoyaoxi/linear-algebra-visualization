@@ -54,7 +54,7 @@
         };
       }
       if (key === "homogeneous" || key === "pzero") return { zero: true, add: true, scale: true, story: "条件由线性等式给出，任意线性组合仍满足同一条件。", conclusion: "是线性子空间" };
-      if (key === "quadrant") return { zero: true, add: true, scale: false, story: "第一象限包含零，且加法封闭；但红色 −u 说明负标量数乘会离开集合。", conclusion: "不是子空间" };
+      if (key === "quadrant") return { zero: true, add: true, scale: false, story: "第一象限包含零，且加法封闭；但 −u 说明负标量数乘会离开集合。", conclusion: "不是子空间" };
       return { zero: false, add: false, scale: false, story: "集合不含零向量；无需继续证明，子空间判定已经失败。", conclusion: "不是子空间，是仿射集合" };
     }
 
@@ -67,7 +67,7 @@
       host.innerHTML = U().labShell({
         title: "先过原点，再检查线性组合",
         lead: "直线、平面和多项式集合都可能只差一个常数项，却从子空间变成仿射集合。按三步过滤，不靠外形猜。",
-        focus: key === "line" ? "先看黑色零向量是否落在直线上；离开原点就立即失败。" : "先找红色公式或红色箭头，它给出一个可以直接写进证明的反例。",
+        focus: key === "line" ? "先看零向量是否落在直线上；离开原点就立即失败。" : "先找失败的公式或箭头，它给出一个可以直接写进证明的反例。",
         stage: `<div class="ch6-stage-shell">${visualFor(info, shift)}</div>`,
         controls,
         readout,

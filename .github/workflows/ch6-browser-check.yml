@@ -8,12 +8,14 @@ on:
       - "current/**"
       - ".github/scripts/ch6-browser-check.mjs"
       - ".github/scripts/ch6-browser-review.mjs"
+      - ".github/scripts/ch6-source-style-check.mjs"
       - ".github/workflows/ch6-browser-check.yml"
   pull_request:
     paths:
       - "current/**"
       - ".github/scripts/ch6-browser-check.mjs"
       - ".github/scripts/ch6-browser-review.mjs"
+      - ".github/scripts/ch6-source-style-check.mjs"
       - ".github/workflows/ch6-browser-check.yml"
 
 permissions:
@@ -29,6 +31,9 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 20
+
+      - name: Reject off-brand Chapter 6 source styles
+        run: node .github/scripts/ch6-source-style-check.mjs
 
       - name: Install Playwright
         run: |

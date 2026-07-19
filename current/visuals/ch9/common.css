@@ -1,0 +1,542 @@
+/* Chapter 9 follows the established Chapter 1 / 4 / 5 visual language.
+   No chapter-local colour theme: every surface and accent comes from the site. */
+
+.ch9-foundation {
+  display: grid;
+  gap: 28px;
+}
+
+.ch9-lead {
+  max-width: 76ch;
+  margin: 0;
+  color: var(--muted);
+  font-size: 16px;
+  line-height: 1.85;
+}
+
+.ch9-module {
+  display: grid;
+  gap: 17px;
+  padding-top: 4px;
+}
+
+.ch9-module-heading {
+  display: grid;
+  grid-template-columns: 40px minmax(0, 1fr);
+  gap: 12px;
+  align-items: start;
+}
+
+.ch9-module-heading > span {
+  display: grid;
+  place-items: center;
+  width: 34px;
+  height: 34px;
+  border: 1px solid color-mix(in srgb, var(--accent) 34%, var(--line));
+  border-radius: 50%;
+  color: var(--accent-strong);
+  background: var(--accent-soft);
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.ch9-module-heading h3 {
+  margin: 0 0 4px;
+  font-size: clamp(19px, 2vw, 23px);
+}
+
+.ch9-module-heading p {
+  margin: 0;
+  color: var(--muted);
+  line-height: 1.65;
+}
+
+.ch9-card,
+.ch9-equation,
+.ch9-note,
+.ch9-reading,
+.ch9-lab,
+.ch9-stage,
+.ch9-result,
+.ch9-step-card {
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: var(--surface-solid);
+}
+
+.ch9-card,
+.ch9-note,
+.ch9-reading,
+.ch9-result,
+.ch9-step-card {
+  padding: 18px;
+}
+
+.ch9-card,
+.ch9-note,
+.ch9-reading,
+.ch9-result,
+.ch9-step-card,
+.ch9-formal-body {
+  min-width: 0;
+}
+
+.ch9-card p,
+.ch9-note p,
+.ch9-reading p,
+.ch9-result p,
+.ch9-step-card p {
+  margin: 0;
+  color: var(--muted);
+  line-height: 1.7;
+}
+
+.ch9-formal-body {
+  display: grid;
+  gap: 14px;
+  padding: 20px;
+  border: 1px solid var(--line);
+  border-radius: calc(var(--radius) + 4px);
+  background: var(--surface-solid);
+  box-shadow: var(--shadow-soft);
+  line-height: 1.75;
+}
+
+.ch9-formal-body > .tex-display,
+.ch9-equation > .tex-display {
+  margin: 0;
+}
+
+.ch9-formal-body .tex-display,
+.ch9-equation {
+  overflow-x: auto;
+  overflow-y: hidden;
+}
+
+.ch9-equation {
+  padding: 16px;
+  border-color: color-mix(in srgb, var(--accent) 24%, var(--line));
+  background: color-mix(in srgb, var(--accent) 6%, var(--surface-soft));
+  text-align: center;
+}
+
+.ch9-lab {
+  display: grid;
+  gap: 20px;
+  padding: 22px;
+  box-shadow: var(--shadow-soft);
+}
+
+.ch9-lab-head {
+  display: grid;
+  gap: 6px;
+  max-width: 78ch;
+}
+
+.ch9-lab-head h3 {
+  margin: 0;
+  font-size: clamp(20px, 2vw, 24px);
+}
+
+.ch9-lab-head p {
+  margin: 0;
+  color: var(--muted);
+  line-height: 1.72;
+}
+
+.ch9-task {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: 12px;
+  align-items: start;
+  padding: 14px 16px;
+  border: 1px solid color-mix(in srgb, var(--accent) 32%, var(--line));
+  border-radius: 14px;
+  background: color-mix(in srgb, var(--accent) 7%, var(--surface-soft));
+}
+
+.ch9-task > span {
+  display: grid;
+  place-items: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: var(--accent-strong);
+  color: white;
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.ch9-task strong {
+  display: block;
+  margin-bottom: 4px;
+}
+
+.ch9-task p {
+  margin: 0;
+  color: var(--muted);
+  line-height: 1.65;
+}
+
+.ch9-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.ch9-toolbar button,
+.ch9-action {
+  min-height: 38px;
+  padding: 0 14px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: var(--surface-solid);
+  color: var(--muted);
+  font: inherit;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: border-color 150ms ease, background 150ms ease, color 150ms ease, transform 150ms ease;
+}
+
+.ch9-toolbar button:hover,
+.ch9-action:hover {
+  border-color: color-mix(in srgb, var(--accent) 45%, var(--line));
+  color: var(--text);
+}
+
+.ch9-toolbar button.is-active,
+.ch9-action.is-active,
+.ch9-action.is-primary {
+  border-color: color-mix(in srgb, var(--accent) 52%, var(--line));
+  background: var(--accent-soft);
+  color: var(--accent-strong);
+}
+
+.ch9-toolbar button:focus-visible,
+.ch9-action:focus-visible,
+.ch9-lab input:focus-visible,
+.ch9-stage canvas:focus-visible {
+  outline: 3px solid color-mix(in srgb, var(--accent) 30%, transparent);
+  outline-offset: 2px;
+}
+
+.ch9-lab-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.12fr) minmax(280px, 0.88fr);
+  gap: 18px;
+  align-items: start;
+}
+
+.ch9-lab-grid.is-even {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.ch9-panel {
+  display: grid;
+  gap: 13px;
+  min-width: 0;
+}
+
+.ch9-stage {
+  position: relative;
+  min-width: 0;
+  min-height: 320px;
+  overflow: hidden;
+  background:
+    radial-gradient(circle at 18% 20%, color-mix(in srgb, var(--accent) 7%, transparent), transparent 42%),
+    radial-gradient(circle at 84% 78%, color-mix(in srgb, var(--coral) 5%, transparent), transparent 42%),
+    var(--surface-soft);
+}
+
+.ch9-stage.is-short {
+  min-height: 260px;
+}
+
+.ch9-stage canvas {
+  display: block;
+  width: 100%;
+  height: 320px;
+  min-height: 320px;
+  touch-action: none;
+}
+
+.ch9-stage.is-short canvas {
+  height: 260px;
+  min-height: 260px;
+}
+
+.ch9-reading {
+  display: grid;
+  gap: 10px;
+  background: var(--surface-soft);
+}
+
+.ch9-reading h4,
+.ch9-result h4,
+.ch9-step-card h4 {
+  margin: 0;
+}
+
+.ch9-reading-row {
+  display: grid;
+  grid-template-columns: minmax(112px, auto) minmax(0, 1fr);
+  gap: 14px;
+  align-items: baseline;
+  padding-bottom: 8px;
+  border-bottom: 1px solid var(--line);
+}
+
+.ch9-reading-row:last-child {
+  padding-bottom: 0;
+  border-bottom: 0;
+}
+
+.ch9-reading-row span {
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.ch9-reading-row strong {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.ch9-status {
+  display: inline-flex;
+  align-items: center;
+  width: fit-content;
+  min-height: 30px;
+  padding: 0 11px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: var(--surface-soft);
+  color: var(--muted);
+  font-size: 12.5px;
+  font-weight: 800;
+}
+
+.ch9-status.is-ok {
+  border-color: color-mix(in srgb, var(--accent) 38%, var(--line));
+  background: color-mix(in srgb, var(--accent) 10%, var(--surface-solid));
+  color: var(--accent-strong);
+}
+
+.ch9-status.is-warn {
+  border-color: color-mix(in srgb, var(--coral) 42%, var(--line));
+  background: color-mix(in srgb, var(--coral) 9%, var(--surface-solid));
+  color: var(--coral);
+}
+
+.ch9-status.is-neutral {
+  color: var(--text);
+}
+
+.ch9-result {
+  display: grid;
+  gap: 10px;
+  min-height: 136px;
+  align-content: center;
+}
+
+.ch9-result.is-success {
+  border-color: color-mix(in srgb, var(--accent) 35%, var(--line));
+  background: color-mix(in srgb, var(--accent) 7%, var(--surface-solid));
+}
+
+.ch9-result.is-warning {
+  border-color: color-mix(in srgb, var(--coral) 34%, var(--line));
+  background: color-mix(in srgb, var(--coral) 6%, var(--surface-solid));
+}
+
+.ch9-range-list {
+  display: grid;
+  gap: 10px;
+}
+
+.ch9-range {
+  display: grid;
+  grid-template-columns: minmax(110px, auto) minmax(120px, 1fr) 64px;
+  gap: 10px;
+  align-items: center;
+  padding: 11px 14px;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  background: var(--surface-soft);
+}
+
+.ch9-range span {
+  color: var(--muted);
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.ch9-range input {
+  width: 100%;
+  min-width: 0;
+  accent-color: var(--accent);
+}
+
+.ch9-range output {
+  justify-self: end;
+  font-variant-numeric: tabular-nums;
+  font-weight: 800;
+}
+
+.ch9-steps {
+  display: grid;
+  grid-template-columns: repeat(var(--ch9-steps, 4), minmax(0, 1fr));
+  gap: 7px;
+}
+
+.ch9-steps button {
+  min-width: 0;
+  padding: 10px 8px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: var(--surface-soft);
+  color: var(--muted);
+  cursor: pointer;
+  font: inherit;
+  font-size: 12.5px;
+  font-weight: 700;
+}
+
+.ch9-steps button.is-active {
+  border-color: color-mix(in srgb, var(--accent) 42%, var(--line));
+  background: color-mix(in srgb, var(--accent) 10%, var(--surface-solid));
+  color: var(--accent-strong);
+}
+
+.ch9-pair {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.ch9-mini-map {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.ch9-mini-map > div {
+  display: grid;
+  gap: 4px;
+  padding: 13px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: var(--surface-soft);
+}
+
+.ch9-mini-map span {
+  color: var(--accent-strong);
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.ch9-mini-map p {
+  margin: 0;
+  color: var(--muted);
+  font-size: 13px;
+  line-height: 1.58;
+}
+
+.ch9-proof-line {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+.ch9-proof-line > span {
+  color: var(--muted);
+  font-weight: 800;
+}
+
+.ch9-proof-line > div {
+  min-width: 112px;
+  padding: 12px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: var(--surface-soft);
+  text-align: center;
+}
+
+@media (max-width: 980px) {
+  .ch9-lab-grid,
+  .ch9-lab-grid.is-even {
+    grid-template-columns: 1fr;
+  }
+
+  .ch9-stage,
+  .ch9-stage canvas {
+    min-height: 300px;
+    height: 300px;
+  }
+}
+
+@media (max-width: 680px) {
+  .ch9-lab {
+    padding: 16px;
+  }
+
+  .ch9-task {
+    padding: 12px;
+  }
+
+  .ch9-pair,
+  .ch9-mini-map {
+    grid-template-columns: 1fr;
+  }
+
+  .ch9-range {
+    grid-template-columns: 1fr auto;
+  }
+
+  .ch9-range input {
+    grid-column: 1 / -1;
+    grid-row: 2;
+  }
+
+  .ch9-steps {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .ch9-stage,
+  .ch9-stage canvas {
+    min-height: 280px;
+    height: 280px;
+  }
+
+  .ch9-reading-row {
+    grid-template-columns: 1fr;
+    gap: 2px;
+  }
+}
+
+@media (max-width: 460px) {
+  .ch9-lab {
+    margin-inline: -4px;
+    padding: 14px;
+  }
+
+  .ch9-toolbar button,
+  .ch9-action {
+    flex: 1 1 auto;
+  }
+
+  .ch9-stage,
+  .ch9-stage canvas {
+    min-height: 250px;
+    height: 250px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ch9-toolbar button,
+  .ch9-action {
+    transition: none;
+  }
+}

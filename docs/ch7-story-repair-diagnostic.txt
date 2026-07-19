@@ -1,0 +1,6 @@
+failure byte=5442 produced=21508 error=Error -3 while decompressing data: invalid distance too far back
+approximate base64 char=7256 original=+5Sg2B4mSaMU+d3H642tpcBa
+radius=32 tries=4095 found=False
+radius=128 tries=16191 found=False
+radius=512 tries=64575 found=False
+no single substitution or nearby adjacent swap produced a valid tar archive

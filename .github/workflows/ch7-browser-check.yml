@@ -37,7 +37,7 @@ jobs:
           done
           node --check .github/scripts/ch7-browser-check.mjs
           git diff --check
-          grep -q 'story-section9.js?v=41a' current/learn.html
+          grep -q 'story-section9.js?v=42c' current/learn.html
 
       - name: Install Playwright and Chromium
         run: |

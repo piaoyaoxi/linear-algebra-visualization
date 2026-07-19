@@ -1,0 +1,104 @@
+name: Sync Chapter 7 with main
+
+on:
+  push:
+    branches:
+      - context/ch7-linear-transformations
+    paths:
+      - ".github/workflows/sync-ch7-with-main.yml"
+
+permissions:
+  contents: write
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: context/ch7-linear-transformations
+          fetch-depth: 0
+      - name: Merge latest main and resolve shared entry files
+        shell: bash
+        run: |
+          set -euo pipefail
+          git fetch origin main
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          set +e
+          git merge --no-commit --no-ff origin/main
+          merge_status=$?
+          set -e
+
+          conflicts="$(git diff --name-only --diff-filter=U || true)"
+          printf 'merge status: %s\nconflicts:\n%s\n' "$merge_status" "$conflicts"
+
+          for file in $conflicts; do
+            case "$file" in
+              current/app.js|current/learn.html|current/learn-entry.js)
+                git checkout --theirs -- "$file"
+                ;;
+              *)
+                git checkout --ours -- "$file"
+                ;;
+            esac
+            git add "$file"
+          done
+
+          python3 - <<'PY'
+          from pathlib import Path
+
+          html = Path('current/learn.html')
+          text = html.read_text()
+
+          css_anchor = '    <link rel="stylesheet" href="./visuals/ch5/geometry-orbit-fit.css?v=ch5g3" />'
+          css_tag = '    <link rel="stylesheet" href="./visuals/ch7/story.css?v=41a" />'
+          if css_tag not in text:
+              if css_anchor not in text:
+                  raise SystemExit('main stylesheet anchor missing')
+              text = text.replace(css_anchor, css_anchor + '\n' + css_tag, 1)
+
+          content_anchor = '    <script defer src="./content/ch7.js"></script>'
+          ch7_block = '''    <script defer src="./content/ch7.js?v=41a"></script>
+    <script defer src="./visuals/ch7/registry.js?v=41a"></script>
+    <script defer src="./visuals/ch7/story-core.js?v=41a"></script>
+    <script defer src="./visuals/ch7/story-section1.js?v=41a"></script>
+    <script defer src="./visuals/ch7/story-section2.js?v=41a"></script>
+    <script defer src="./visuals/ch7/story-section3.js?v=41a"></script>
+    <script defer src="./visuals/ch7/story-section4.js?v=41a"></script>
+    <script defer src="./visuals/ch7/story-section5.js?v=41a"></script>
+    <script defer src="./visuals/ch7/story-section6.js?v=41a"></script>
+    <script defer src="./visuals/ch7/story-section7.js?v=41a"></script>
+    <script defer src="./visuals/ch7/story-section8.js?v=41a"></script>
+    <script defer src="./visuals/ch7/story-section9.js?v=41a"></script>
+    <script defer src="./visuals/ch7/mount.js?v=41a"></script>'''
+          if 'story-section9.js?v=41a' not in text:
+              if content_anchor not in text:
+                  raise SystemExit('main Chapter 7 content anchor missing')
+              text = text.replace(content_anchor, ch7_block, 1)
+
+          html.write_text(text)
+
+          entry = Path('current/learn-entry.js')
+          entry_text = entry.read_text()
+          route_anchor = 'renderRoute = function renderLearningRoute() {\n'
+          teardown = 'renderRoute = function renderLearningRoute() {\n  window.teardownChapter7Lesson?.();\n'
+          if 'window.teardownChapter7Lesson?.();' not in entry_text:
+              if route_anchor not in entry_text:
+                  raise SystemExit('learn-entry route anchor missing')
+              entry_text = entry_text.replace(route_anchor, teardown, 1)
+          entry.write_text(entry_text)
+          PY
+
+          git add current/app.js current/learn.html current/learn-entry.js
+          git diff --check --cached
+          if git diff --name-only --diff-filter=U | grep -q .; then
+            echo 'unresolved conflicts remain'
+            git diff --name-only --diff-filter=U
+            exit 1
+          fi
+          rm -f .github/workflows/sync-ch7-with-main.yml
+          git add -A
+          git commit -m "merge: synchronize Chapter 7 redesign with latest main"
+          git push origin HEAD:context/ch7-linear-transformations

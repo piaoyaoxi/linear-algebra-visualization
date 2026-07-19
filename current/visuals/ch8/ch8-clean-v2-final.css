@@ -145,11 +145,15 @@ body[data-route="ch8"] .ch8-invariant-output strong {
     gap: 10px !important;
   }
 
-  /* In a vertical stack, − and = remain horizontal mathematical operators.
-     Rotating them turns them into one and two meaningless vertical strokes. */
+  /* In a vertical stack, − and = remain horizontal and centered. */
   body[data-route="ch8"] .ch8-build-equation > .ch8-equation-operator {
+    display: grid !important;
+    place-items: center !important;
+    width: 100% !important;
+    min-height: 28px !important;
     transform: none !important;
     font-size: 1.8rem !important;
     line-height: 1 !important;
+    text-align: center !important;
   }
 }

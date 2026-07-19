@@ -118,26 +118,26 @@
         tone = "pass";
         title = "两个 1×1 块没有链耦合，N=0";
         text = "相同特征值并不自动产生 Jordan 链；若已有足够多独立特征向量，仍然可以完全对角化。";
-        formula = "T=\lambda I,\quad N=T-\lambda I=0";
+        formula = "T=\\lambda I,\\quad N=T-\\lambda I=0";
         facts = [["独立特征向量", "2"], ["最大链长", "1"]];
       } else if (state.mode === "compare") {
         tone = "warn";
         title = "第二个方向不是特征方向，但它的偏离完全落在 v₁ 上";
         text = "这段额外剪切正是对角矩阵无法记录的信息。Jordan 块用超对角线上的 1 保存它。";
-        formula = "T(v_2)=\lambda v_2+v_1";
+        formula = "T(v_2)=\\lambda v_2+v_1";
         facts = [["独立特征线", "1"], ["链长", String(structure.size)]];
       } else if (state.mode === "T") {
         tone = "neutral";
         title = "完整 T 同时做 λ 倍缩放与向前一级的剪切";
         text = "因此当 λ≠0 时，反复作用 T 通常不会把向量送到零。";
-        formula = "T(v_k)=\lambda v_k+v_{k-1}";
+        formula = "T(v_k)=\\lambda v_k+v_{k-1}";
         facts = [["λ", S.fmt(state.lambda, 1)], ["当前步", String(state.step)]];
       } else {
         const finished = state.step >= structure.size;
         tone = finished ? "pass" : "warn";
         title = finished ? "幂零部分沿链走完，最终到达 0" : "去掉缩放后，只剩向前一级的链传递";
         text = finished ? "最大 Jordan 链长决定需要多少次 N 才能把所有链向量消去。" : "点击“沿链走一步”，观察当前广义特征向量怎样落入前一级。";
-        formula = "Nv_k=v_{k-1},\quad Nv_1=0";
+        formula = "Nv_k=v_{k-1},\\quad Nv_1=0";
         facts = [["当前步", String(state.step)], ["幂零指数", String(structure.size)]];
       }
 

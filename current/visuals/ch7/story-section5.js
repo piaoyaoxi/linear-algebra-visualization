@@ -57,7 +57,7 @@
           tone: "fail",
           title: "不是所有矩阵都能找到一整组特征基",
           text: "这里只有一条独立特征直线。不能伪造第二个方向，因此 P 不可逆，P⁻¹AP=D 的流程从结构上失败。",
-          formula: "A\ne PDP^{-1}",
+          formula: "A\\ne PDP^{-1}",
           facts: [["几何重数", "1"], ["空间维数", "2"]],
         });
         return;
@@ -105,7 +105,7 @@
       } else if (state.stage === "scale") {
         title = "D 分别缩放两个坐标，不让它们互相混合";
         text = "对角矩阵最重要的几何意义，就是每条特征方向只负责自己的伸缩。";
-        formula = "D(c_1,c_2)=(\lambda_1c_1,\lambda_2c_2)";
+        formula = "D(c_1,c_2)=(\\lambda_1c_1,\\lambda_2c_2)";
       } else {
         title = "P 把缩放后的两个分量重新合成为真实输出 Ax";
         text = "三个步骤合起来仍是原来的变换 A；中间只是换了一种更容易计算的语言。";

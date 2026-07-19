@@ -152,7 +152,7 @@
       let tone = isMinimal ? "pass" : isZero ? "warn" : "fail";
       let title = isMinimal ? "所有基方向归零，而且次数已经最低" : isZero ? "它确实消掉整个空间，但还不是最短关系" : killed.some(Boolean) ? "只消掉了部分方向，不能写成 p(T)=0" : "当前多项式没有消掉任何基方向";
       let text = isMinimal ? "检查一组基已经足够：线性保证 p(T) 也会消掉它们的所有线性组合。" : isZero ? "零化多项式不唯一；继续降低次数，直到再也无法保持全空间归零。" : "局部方向归零只是一个向量关系。零算子关系要求每一条基方向都同时归零。";
-      let formula = isMinimal ? "m_T(T)=0" : isZero ? "p(T)=0,\quad \deg p>\deg m_T" : "p(T)\ne0";
+      let formula = isMinimal ? "m_T(T)=0" : isZero ? "p(T)=0,\\quad \\deg p>\\deg m_T" : "p(T)\\ne0";
       const facts = [["当前候选", candidate.label], ["最小多项式", preset.minimal], ["特征多项式", preset.characteristic], ["算子剩余范数", S.fmt(matrixNorm(pA), 5)]];
 
       shell.stage.innerHTML = S.svg(content, { width, height, label: "候选多项式对所有基方向的向量和与全空间零化检查" });

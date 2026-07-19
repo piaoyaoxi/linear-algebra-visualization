@@ -2,6 +2,7 @@ import fs from "node:fs";
 import path from "node:path";
 import { chromium } from "playwright";
 
+// Final gate for the project-native Chapter 9 implementation.
 const base = "http://127.0.0.1:4173/learn.html";
 const shots = "/tmp/ch9-browser-screenshots";
 fs.mkdirSync(shots, { recursive: true });

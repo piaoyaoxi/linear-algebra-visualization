@@ -1,0 +1,22 @@
+/* Final reset for legacy §3 selectors that previously reintroduced nested boxes. */
+body[data-route="ch8"] .ch8-compression-field {
+  overflow: visible;
+}
+
+body[data-route="ch8"] .ch8-compression-field .ch8-gcd-core,
+body[data-route="ch8"] .ch8-compression-field .ch8-invariant-output {
+  display: block;
+  justify-items: stretch;
+  gap: 0;
+  transform: none;
+  text-align: left;
+}
+
+body[data-route="ch8"] .ch8-compression-field .ch8-gcd-core strong,
+body[data-route="ch8"] .ch8-compression-field .ch8-invariant-output strong {
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+}

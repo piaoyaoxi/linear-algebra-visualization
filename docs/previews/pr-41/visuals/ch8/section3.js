@@ -1,5 +1,5 @@
 (() => {
-  const { I, on, markExperimentStep, conclusionMarkup, polynomialChip } = window.Chapter8Lab;
+  const { I, on, markExperimentStep, conclusionMarkup } = window.Chapter8Lab;
 
   const levels = {
     1: {
@@ -37,59 +37,54 @@
             <button type="button" data-invariant-mode="compare" aria-pressed="false"><span>02</span>同一 χ 的分叉</button>
           </div>
 
-          <header class="ch8-cinema-head">
-            <div><span>固定 Smith 对角形</span><h3>${I("D(\\lambda)=\\operatorname{diag}(1,\\lambda-1,(\\lambda-1)^2(\\lambda+2))")}</h3></div>
-            <p>大量子式不是答案；它们先被压成 Δₖ，再由相邻层之间新增的部分生成 dₖ。</p>
+          <header class="ch8-cinema-head ch8-invariant-head">
+            <div><span>固定 Smith 对角形</span><h3>从所有子式中，只保留这一层真正新增的结构</h3></div>
+            <p>先把同阶子式压成首一最大公因式 Δₖ，再比较相邻两层；不变因子不是又做一次因式分解。</p>
           </header>
+
+          <div class="ch8-invariant-reference" aria-label="固定的 Smith 对角形">
+            ${I("D(\\lambda)=\\operatorname{diag}(1,\\lambda-1,(\\lambda-1)^2(\\lambda+2))")}
+          </div>
 
           <div class="ch8-k-selector" role="group" aria-label="选择子式阶数">
             ${[1, 2, 3].map((value) => `<button type="button" data-k="${value}" class="${k === value ? "is-active" : ""}"><span>k=${value}</span><b>${value} 阶子式</b></button>`).join("")}
           </div>
 
           <section class="ch8-compression-field" aria-live="polite">
-            <svg class="ch8-compression-svg" viewBox="0 0 1000 430" role="img" aria-label="子式经过最大公因式压缩成行列式因子，再拆出不变因子">
-              <defs>
-                <marker id="ch8-compress-arrow" markerWidth="10" markerHeight="10" refX="8" refY="5" orient="auto"><path d="M0 0L10 5L0 10Z"></path></marker>
-              </defs>
-              <path class="flow" d="M318 212C400 212 420 212 472 212"></path>
-              <path class="flow" d="M606 212C680 212 705 212 760 212"></path>
-              <circle class="pulse" cx="540" cy="212" r="72"></circle>
-              <text x="473" y="94">首一 gcd</text>
-              <text x="706" y="94">相邻相除</text>
-            </svg>
-
-            <div class="ch8-minor-constellation" style="--minor-count:${level.minors.length}">
+            <div class="ch8-minor-stream">
               <span class="ch8-field-label">全部 ${k} 阶子式</span>
-              ${level.minors.map((minor, index) => `<i style="--i:${index};--n:${level.minors.length}" class="${minor === "0" ? "is-zero" : ""}">${I(minor)}</i>`).join("")}
+              <div class="ch8-minor-list">
+                ${level.minors.map((minor) => `<i class="${minor === "0" ? "is-zero" : ""}">${I(minor)}</i>`).join("")}
+              </div>
             </div>
 
+            <div class="ch8-flow-arrow" aria-hidden="true"><span>取首一 gcd</span><b>→</b></div>
+
             <div class="ch8-gcd-core">
-              <span>压缩结果</span>
+              <span>第 ${k} 层压缩结果</span>
               <strong>${I(`\\Delta_${k}=${level.delta}`)}</strong>
               <p>${level.note}</p>
             </div>
+
+            <div class="ch8-flow-arrow" aria-hidden="true"><span>与上一层相除</span><b>→</b></div>
 
             <div class="ch8-invariant-output">
               <span>这一层新增的信息</span>
               <small>${I(`d_${k}=\\Delta_${k}/\\Delta_${k - 1}`)}</small>
               <strong>${I(`d_${k}=${level.invariant}`)}</strong>
-              <p>不是重新因式分解，而是读取相邻压缩层之间新增了什么。</p>
+              <p>只读取从第 ${k - 1} 层到第 ${k} 层新出现的共同因子。</p>
             </div>
           </section>
 
           <div class="ch8-invariant-chain">
-            <span>整除链正在被恢复</span>
-            ${polynomialChip("d_1=1")}
-            <i>∣</i>
-            ${polynomialChip(k >= 2 ? "d_2=\\lambda-1" : "d_2=?")}
-            <i>∣</i>
-            ${polynomialChip(k >= 3 ? "d_3=(\\lambda-1)^2(\\lambda+2)" : "d_3=?")}
+            <span>恢复出的整除链</span>
+            <strong>${I(`d_1=1\\mid ${k >= 2 ? "d_2=\\lambda-1" : "d_2=?"}\\mid ${k >= 3 ? "d_3=(\\lambda-1)^2(\\lambda+2)" : "d_3=?"}`)}</strong>
           </div>
 
           ${conclusionMarkup(
             "信息压缩",
-            `Δ${k} 保存这一阶所有子式的共同结构`,
-            `d${k}=Δ${k}/Δ${k - 1} 只保留从第 ${k - 1} 层到第 ${k} 层新出现的部分。三层完成后，Smith 对角线被唯一恢复。`,
+            `Δ${k} 保存全部 ${k} 阶子式的共同结构`,
+            `d${k}=Δ${k}/Δ${k - 1} 只保留这一层新增的部分。三层完成后，Smith 对角线被唯一恢复。`,
           )}
         </div>`;
 
@@ -120,7 +115,7 @@
 
           <header class="ch8-cinema-head">
             <div><span>同一个特征多项式</span><h3>${I("A=2I_2")} 与 ${I("B=J_2(2)")}</h3></div>
-            <p>不要同时摊开所有答案。逐层打开结构指纹，观察两条路径从哪一层开始分叉。</p>
+            <p>逐层打开结构指纹，观察两条路径从哪一层开始分叉。</p>
           </header>
 
           <section class="ch8-fingerprint-stage">

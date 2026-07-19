@@ -1,0 +1,77 @@
+name: Chapter 6 native-theme final review
+
+on:
+  push:
+    branches:
+      - "content/ch6-linear-spaces"
+
+permissions:
+  contents: write
+
+jobs:
+  native-theme-review:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Reject the removed private palette and SVG language
+        shell: bash
+        run: |
+          mkdir -p /tmp/ch6-native-final
+          set +e
+          node .github/scripts/ch6-source-style-check.mjs 2>&1 | tee /tmp/ch6-native-final/source-style-report.txt
+          status=${PIPESTATUS[0]}
+          exit "$status"
+
+      - name: Install Chromium
+        run: |
+          npm install --no-save playwright@1.52.0
+          npx playwright install --with-deps chromium
+
+      - name: Start current learning site
+        run: |
+          python3 -m http.server 4173 --directory current > /tmp/ch6-static.log 2>&1 &
+          for attempt in {1..20}; do
+            if curl --fail --silent http://127.0.0.1:4173/learn.html > /dev/null; then
+              exit 0
+            fi
+            sleep 1
+          done
+          cat /tmp/ch6-static.log
+          exit 1
+
+      - name: Review Chapter 6 in real Chromium
+        shell: bash
+        run: |
+          set +e
+          node .github/scripts/ch6-browser-review.mjs 2>&1 | tee /tmp/ch6-native-final/browser-review.log
+          status=${PIPESTATUS[0]}
+          cp -R /tmp/ch6-screenshots/. /tmp/ch6-native-final/ 2>/dev/null || true
+          exit "$status"
+
+      - name: Upload final browser evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: ch6-native-theme-final
+          path: /tmp/ch6-native-final
+          if-no-files-found: error
+
+      - name: Record final review run
+        if: always()
+        run: |
+          {
+            echo "run_id=${GITHUB_RUN_ID}"
+            echo "head_sha=${GITHUB_SHA}"
+            echo "workflow=${GITHUB_WORKFLOW}"
+          } > docs/ch6-native-final-run.txt
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add docs/ch6-native-final-run.txt
+          git commit -m "chore(ch6): record native-theme review [skip ci]" || exit 0
+          git push origin HEAD:content/ch6-linear-spaces

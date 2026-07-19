@@ -32,6 +32,54 @@
     if (cursor < text.length) element.append(document.createTextNode(text.slice(cursor)));
   };
 
+  const topMorphPath = (x, y, width, height, bow) => {
+    const radius = height / 2;
+    const right = x + width;
+    const bottom = y + height;
+    const straightSpan = Math.max(0, width - radius * 2);
+    const curveInset = straightSpan * 0.22;
+    const curveStart = right - radius - curveInset;
+    const curveEnd = x + radius + curveInset;
+    const curveWidth = Math.max(0, curveStart - curveEnd);
+    const curveDepth = bow * 4 / 3;
+    return [
+      `M ${x + radius} ${y}`,
+      `H ${right - radius}`,
+      `A ${radius} ${radius} 0 0 1 ${right - radius} ${bottom}`,
+      `H ${curveStart}`,
+      `C ${curveStart - curveWidth / 3} ${bottom + curveDepth}, ${curveEnd + curveWidth / 3} ${bottom + curveDepth}, ${curveEnd} ${bottom}`,
+      `H ${x + radius}`,
+      `A ${radius} ${radius} 0 0 1 ${x + radius} ${y}`,
+      "Z",
+    ].join(" ");
+  };
+
+  const resultsMorphPath = (x, y, width, height, bow) => {
+    const radius = Math.min(23, height / 2, width / 2);
+    const right = x + width;
+    const bottom = y + height;
+    const straightSpan = Math.max(0, width - radius * 2);
+    const curveInset = straightSpan * 0.22;
+    const curveStart = x + radius + curveInset;
+    const curveEnd = right - radius - curveInset;
+    const curveWidth = Math.max(0, curveEnd - curveStart);
+    const curveDepth = bow * 4 / 3;
+    return [
+      `M ${x + radius} ${y}`,
+      `H ${curveStart}`,
+      `C ${curveStart + curveWidth / 3} ${y - curveDepth}, ${curveEnd - curveWidth / 3} ${y - curveDepth}, ${curveEnd} ${y}`,
+      `H ${right - radius}`,
+      `A ${radius} ${radius} 0 0 1 ${right} ${y + radius}`,
+      `V ${bottom - radius}`,
+      `A ${radius} ${radius} 0 0 1 ${right - radius} ${bottom}`,
+      `H ${x + radius}`,
+      `A ${radius} ${radius} 0 0 1 ${x} ${bottom - radius}`,
+      `V ${y + radius}`,
+      `A ${radius} ${radius} 0 0 1 ${x + radius} ${y}`,
+      "Z",
+    ].join(" ");
+  };
+
   Object.assign(ChromeMotionController.prototype, {
     toggleSearch(options = {}) {
       const phase = this.elements.searchModal.dataset.phase || "closed";
@@ -125,9 +173,10 @@
     },
 
     measureSearch() {
-      const { searchCapsule, searchBar, searchResultsPanel } = this.elements;
+      const { searchCapsule, searchBar, searchPanel, searchResultsPanel } = this.elements;
       const sourceHost = searchCapsule.parentElement;
       const hostRect = sourceHost?.getBoundingClientRect();
+      const panelRect = searchPanel.getBoundingClientRect();
       const sourceWidth = hostRect?.width || searchCapsule.offsetWidth || 1;
       const sourceHeight = parseFloat(getComputedStyle(document.documentElement).getPropertyValue("--chrome-control-size")) || 44;
       const sourceLeft = hostRect?.left ?? searchCapsule.offsetLeft;
@@ -140,6 +189,7 @@
           height: sourceHeight,
         },
         end: searchBar.getBoundingClientRect(),
+        panelWidth: panelRect.width,
         resultsHeight: searchResultsPanel.getBoundingClientRect().height || 344,
       };
     },
@@ -256,26 +306,48 @@
     renderSearchResultsMotion(progress, raw, target) {
       const { searchResultsPanel, searchBody, searchMergeField } = this.elements;
       const p = clamp(progress);
-      const revealBase = Math.pow(p, target === 1 ? 1.18 : 0.68);
-      const reveal = revealBase * smootherstep(range(p, 0.003, 0.045));
-      const opacity = smootherstep(range(p, 0.015, 0.18));
-      const bodyProgress = smootherstep(range(p, 0.25, 0.74));
-      const widthProgress = smootherstep(range(p, 0.02, 0.56));
+      const seed = smootherstep(range(p, 0.003, 0.12));
+      const dropProgress = smootherstep(range(p, 0.03, 0.55));
+      const widthEnvelope = smootherstep(range(p, 0.06, 0.72));
+      const widthProgress = widthEnvelope * widthEnvelope;
+      const revealProgress = smootherstep(range(p, 0.1, 0.78));
+      const opacity = smootherstep(range(p, 0.006, 0.11));
+      const bodyProgress = smootherstep(range(p, 0.4, 0.76));
       const resultsHeight = this.searchGeometry?.resultsHeight || searchResultsPanel.offsetHeight || 344;
+      const panelWidth = this.searchGeometry?.panelWidth || this.elements.searchPanel.offsetWidth || 590;
+      const visibleHeight = Math.max(1, lerp(18, resultsHeight, revealProgress) * seed);
+      const scaleX = lerp(0.16, 1, widthProgress);
+      const translateY = lerp(-28, 0, dropProgress);
       const overshoot = target === 1 ? clamp(raw - 1, -0.045, 0.045) : 0;
+      const impact = target === 0 ? Math.sin(range(p, 0.015, 0.24) * Math.PI) * 0.055 : 0;
+      const visualRadius = lerp(Math.min(visibleHeight / 2, 28), 23, widthProgress);
+      const radiusX = visualRadius / Math.max(0.08, scaleX + impact);
+      const radiusY = visualRadius;
 
       searchResultsPanel.style.visibility = p > 0.001 ? "visible" : "hidden";
       searchResultsPanel.style.opacity = opacity.toFixed(4);
-      searchResultsPanel.style.clipPath = `inset(0 0 ${px(Math.max(0, resultsHeight * (1 - reveal)))}px 0 round var(--search-results-radius))`;
-      searchResultsPanel.style.transform = `translateY(${px(lerp(-17, 0, reveal) + overshoot * 7)}px) scaleX(${lerp(0.78, 1, widthProgress).toFixed(4)})`;
+      searchResultsPanel.style.borderRadius = `${px(radiusX)}px / ${px(radiusY)}px`;
+      searchResultsPanel.style.clipPath = `inset(0 0 ${px(Math.max(0, resultsHeight - visibleHeight))}px 0 round ${px(radiusX)}px / ${px(radiusY)}px)`;
+      searchResultsPanel.style.transform = `translateY(${px(translateY + overshoot * 7)}px) scaleX(${(scaleX + impact).toFixed(4)})`;
       searchBody.style.opacity = bodyProgress.toFixed(4);
-      searchBody.style.transform = `translateY(${px(lerp(-7, 0, bodyProgress))}px)`;
+      searchBody.style.transform = `translateY(${px(lerp(-9, 0, bodyProgress))}px)`;
 
-      const bridgeRise = smootherstep(range(p, 0.015, 0.27));
-      const bridgeRelease = 1 - smootherstep(range(p, 0.46, 0.84));
+      const bridgeRise = smootherstep(range(p, 0.01, 0.18));
+      const bridgeRelease = 1 - smootherstep(range(p, 0.58, 0.94));
       const bridge = bridgeRise * bridgeRelease;
-      searchMergeField.style.opacity = (bridge * 0.92).toFixed(4);
-      searchMergeField.style.transform = `translate3d(-50%, ${px(lerp(-5, 3, bridge))}px, 0) scaleX(${lerp(0.42, 1, bridge).toFixed(4)}) scaleY(${lerp(0.66, 1, bridge).toFixed(4)})`;
+      const morphHeight = 104;
+      const resultWidth = panelWidth * Math.max(0.08, scaleX + impact);
+      const resultX = (panelWidth - resultWidth) / 2;
+      const resultY = 66 + translateY;
+      const bow = bridge * 6.5;
+      this.searchLiquidBlobs ||= {
+        top: searchMergeField.querySelector(".search-liquid-top-blob"),
+        results: searchMergeField.querySelector(".search-liquid-results-blob"),
+      };
+      searchMergeField.setAttribute("viewBox", `0 0 ${px(panelWidth)} ${morphHeight}`);
+      this.searchLiquidBlobs.top?.setAttribute("d", topMorphPath(0, 0, panelWidth, 56, bow));
+      this.searchLiquidBlobs.results?.setAttribute("d", resultsMorphPath(resultX, resultY, resultWidth, visibleHeight, bow));
+      searchMergeField.style.opacity = (bridge * 0.96).toFixed(4);
 
       const interactive = p > 0.94 && target === 1 && this.elements.searchModal.dataset.phase === "open";
       if (interactive !== this.searchResultsInteractive) {
@@ -286,7 +358,7 @@
     },
 
     settleSearchResults(value) {
-      const { searchModal, searchResultsPanel } = this.elements;
+      const { searchModal, searchResultsPanel, searchBody, searchInput } = this.elements;
       if (value === 1) {
         if (searchModal.dataset.phase === "merging" || searchModal.dataset.phase === "returning") return;
         searchModal.dataset.resultsPhase = "open";
@@ -306,6 +378,7 @@
       if (searchModal.dataset.phase === "merging") {
         requestAnimationFrame(() => requestAnimationFrame(() => this.beginSearchReturn()));
       } else {
+        if (!normalizeSearchText(searchInput?.value)) searchBody.replaceChildren();
         this.emitState();
       }
     },
@@ -313,13 +386,14 @@
     renderSearchResults(value) {
       const { searchBody } = this.elements;
       const query = normalizeSearchText(value);
-      searchBody.replaceChildren();
-      searchBody.scrollTop = 0;
 
       if (!query) {
         this.setSearchResultsTarget(false);
         return;
       }
+
+      searchBody.replaceChildren();
+      searchBody.scrollTop = 0;
 
       const response = window.AlgebraSearch?.search(value) || { total: 0, results: [] };
       const header = document.createElement("div");

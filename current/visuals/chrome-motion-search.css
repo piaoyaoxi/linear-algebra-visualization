@@ -1,5 +1,5 @@
 /* --------------------------------------------------------------------------
-   Search: a travelling pill reveals a separate results surface
+   Search: a fixed pill emits and reabsorbs a liquid results surface
    -------------------------------------------------------------------------- */
 
 .topbar-search,
@@ -299,31 +299,37 @@ body.dark .search-modal-panel {
   opacity: 0;
   pointer-events: none;
   visibility: hidden;
-  transform: translateY(-17px) scaleX(0.78);
+  transform: translateY(-28px) scaleX(0.16);
   transform-origin: 50% 0;
   will-change: opacity, transform, clip-path;
 }
 
 .search-results-merge-field {
   position: absolute;
-  top: 45px;
-  left: 50%;
-  z-index: 1;
-  width: min(172px, 42vw);
-  height: 31px;
-  border-radius: 999px;
-  background:
-    linear-gradient(180deg, color-mix(in srgb, var(--liquid-highlight) 26%, transparent), transparent 58%),
-    var(--liquid-fill-strong);
-  box-shadow:
-    inset 0 1px 0 color-mix(in srgb, var(--liquid-highlight) 58%, transparent),
-    0 8px 18px color-mix(in srgb, var(--text) 9%, transparent);
-  filter: blur(3.2px) saturate(128%);
+  top: 0;
+  left: 0;
+  z-index: 4;
+  width: 100%;
+  height: 104px;
+  overflow: hidden;
+  color: color-mix(in srgb, var(--liquid-fill-strong) 88%, var(--liquid-highlight));
+  filter: drop-shadow(0 7px 13px color-mix(in srgb, var(--text) 8%, transparent));
   opacity: 0;
   pointer-events: none;
-  transform: translate3d(-50%, -5px, 0) scale(0.42, 0.66);
-  transform-origin: 50% 50%;
-  will-change: opacity, transform;
+  will-change: opacity;
+}
+
+.search-liquid-blob {
+  fill: currentColor;
+}
+
+.search-liquid-flood {
+  flood-color: currentColor;
+}
+
+body.dark .search-results-merge-field {
+  color: color-mix(in srgb, var(--liquid-fill-strong) 92%, var(--liquid-highlight));
+  filter: drop-shadow(0 8px 15px rgba(0, 0, 0, 0.22));
 }
 
 .search-modal-body {

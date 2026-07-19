@@ -38,7 +38,7 @@
     <link rel="stylesheet" href="./visuals/page-toc-rail.css?v=21i" />
     <link rel="stylesheet" href="./visuals/theme-transition.css?v=21i" />
     <link rel="stylesheet" href="./visuals/chrome-motion.css?v=30p" />
-    <link rel="stylesheet" href="./visuals/chrome-motion-search.css?v=30o" />
+    <link rel="stylesheet" href="./visuals/chrome-motion-search.css?v=30q" />
     <link rel="stylesheet" href="./visuals/chrome-motion-language.css?v=30p" />
     <link rel="stylesheet" href="./visuals/chrome-motion-sidebar.css?v=30i" />
     <link rel="stylesheet" href="./visuals/liquid-glass-inline.css?v=30n" />
@@ -49,7 +49,7 @@
     <script defer src="./visuals/chrome-motion-controller.js?v=30o"></script>
     <script defer src="./visuals/chrome-motion-events.js?v=30o"></script>
     <script defer src="./visuals/chrome-motion-lifecycle.js?v=30o"></script>
-    <script defer src="./visuals/chrome-motion-search.js?v=30o"></script>
+    <script defer src="./visuals/chrome-motion-search.js?v=30q"></script>
     <script defer src="./visuals/chrome-motion-language.js?v=30p"></script>
     <script defer src="./visuals/chrome-motion-sidebar.js?v=30i"></script>
     <script defer src="./visuals/chrome-motion.js?v=30i"></script>
@@ -300,7 +300,25 @@
       >
         <h2 class="visually-hidden" id="searchModalTitle">搜索课程内容</h2>
         <div class="search-modal-bar-anchor" aria-hidden="true"></div>
-        <div class="search-results-merge-field" aria-hidden="true"></div>
+        <svg class="search-results-merge-field" aria-hidden="true" preserveAspectRatio="none">
+          <defs>
+            <filter id="searchLiquidFusion" x="-12%" y="-32%" width="124%" height="164%" color-interpolation-filters="sRGB">
+              <feGaussianBlur in="SourceGraphic" stdDeviation="4.5 7.5" result="searchFusionBlur" />
+              <feColorMatrix
+                in="searchFusionBlur"
+                type="matrix"
+                values="0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 23 -15.5"
+                result="searchFusionAlpha"
+              />
+              <feFlood class="search-liquid-flood" result="searchFusionColor" />
+              <feComposite in="searchFusionColor" in2="searchFusionAlpha" operator="in" />
+            </filter>
+          </defs>
+          <g filter="url(#searchLiquidFusion)">
+            <path class="search-liquid-blob search-liquid-top-blob" />
+            <path class="search-liquid-blob search-liquid-results-blob" />
+          </g>
+        </svg>
         <div class="search-results-panel liquid-panel" aria-hidden="true" inert>
           <div class="search-modal-body" id="searchModalDescription" aria-live="polite"></div>
         </div>

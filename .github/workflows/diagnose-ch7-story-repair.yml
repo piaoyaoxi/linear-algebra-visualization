@@ -1,0 +1,113 @@
+name: Diagnose Chapter 7 story repair
+
+on:
+  push:
+    branches:
+      - context/ch7-linear-transformations
+    paths:
+      - ".github/workflows/diagnose-ch7-story-repair.yml"
+
+permissions:
+  contents: write
+
+jobs:
+  diagnose:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: context/ch7-linear-transformations
+          fetch-depth: 0
+      - name: Search local repairs and write report
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          import base64, io, tarfile, zlib, traceback
+
+          root = Path('.github/ch7-story-v2-payload')
+          names = ['part-00','part-01','part-02','part-030','part-031','part-04']
+          encoded = ''.join(''.join((root / name).read_text().split()) for name in names)
+          encoded += '=' * (-len(encoded) % 4)
+          alphabet = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/'
+          report = []
+
+          def decode(text):
+              return base64.b64decode(text, validate=False)
+
+          def inspect(text):
+              try:
+                  archive = decode(text)
+                  with tarfile.open(fileobj=io.BytesIO(archive), mode='r:gz') as tar:
+                      members = tar.getnames()
+                  return archive, members, None
+              except Exception as exc:
+                  return None, None, f'{type(exc).__name__}: {exc}'
+
+          archive = decode(encoded)
+          probe = zlib.decompressobj(16 + zlib.MAX_WBITS)
+          fail_at = None
+          produced = 0
+          for index, byte in enumerate(archive):
+              try:
+                  produced += len(probe.decompress(bytes([byte])))
+              except zlib.error as exc:
+                  fail_at = index
+                  report.append(f'failure byte={index} produced={produced} error={exc}')
+                  break
+          if fail_at is None:
+              report.append(f'no streaming failure; produced={produced}')
+              fail_at = len(archive)//2
+          approximate = (fail_at // 3) * 4
+          report.append(f'approximate base64 char={approximate} original={encoded[approximate:approximate+24]}')
+
+          found = []
+          for radius in [32, 128, 512]:
+              left = max(0, approximate-radius)
+              right = min(len(encoded.rstrip('=')), approximate+radius+1)
+              tries = 0
+              for position in range(left, right):
+                  original = encoded[position]
+                  for replacement in alphabet:
+                      if replacement == original:
+                          continue
+                      tries += 1
+                      candidate = encoded[:position] + replacement + encoded[position+1:]
+                      _, members, error = inspect(candidate)
+                      if members:
+                          found.append((position, original, replacement, members))
+                          break
+                  if found:
+                      break
+              report.append(f'radius={radius} tries={tries} found={bool(found)}')
+              if found:
+                  break
+
+          if not found:
+              for position in range(max(0, approximate-64), min(len(encoded.rstrip('='))-1, approximate+65)):
+                  candidate = encoded[:position] + encoded[position+1] + encoded[position] + encoded[position+2:]
+                  _, members, _ = inspect(candidate)
+                  if members:
+                      found.append((position, encoded[position:position+2], encoded[position+1]+encoded[position], members))
+                      report.append(f'adjacent swap found at {position}')
+                      break
+
+          if found:
+              report.append(f'FOUND={found[0][0:3]}')
+              report.append('members:')
+              report.extend(found[0][3])
+          else:
+              report.append('no single substitution or nearby adjacent swap produced a valid tar archive')
+
+          Path('docs/ch7-story-repair-diagnostic.txt').write_text('\n'.join(report))
+          PY
+      - name: Commit report and remove workflow
+        shell: bash
+        run: |
+          rm -f .github/workflows/diagnose-ch7-story-repair.yml
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          git commit -m "chore(ch7): record story repair diagnostics"
+          git push origin HEAD:context/ch7-linear-transformations

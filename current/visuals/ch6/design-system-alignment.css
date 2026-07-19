@@ -126,6 +126,13 @@
   .ch6-map-missing-label {
     font-size: 10.5px;
   }
+
+  /* Use the phone width for the mathematical object, not for empty coordinate margins. */
+  .ch6-stage-shell > .ch6-plane {
+    width: 138%;
+    max-width: none;
+    margin-left: -19%;
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {

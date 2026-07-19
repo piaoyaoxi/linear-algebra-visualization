@@ -130,7 +130,6 @@
           const next = [current[0] + projected[0] * scaleFactor, current[1] - projected[1] * scaleFactor];
           if (S.norm(projected) > 1e-8) {
             content += S.softArrow(current[0], current[1], next[0], next[1], `is-${roles[termIndex % roles.length]}`);
-            content += `<text x="${(current[0] + next[0]) / 2}" y="${(current[1] + next[1]) / 2 - 9}" text-anchor="middle" class="ch7-story-caption">c${termIndex}T${termIndex ? `<tspan baseline-shift="super" font-size="9">${termIndex}</tspan>` : ""}e${index + 1}</text>`;
           }
           current = next;
         });
@@ -149,10 +148,10 @@
       const sealY = height - 43;
       content += `<rect x="375" y="${sealY - 32}" width="250" height="64" rx="22" class="${isZero ? "ch7-story-zero-seal" : "ch7-story-chain-node"}"/><text x="500" y="${sealY + 7}" text-anchor="middle" class="ch7-story-big-label">${isZero ? "p(T)=0：整个空间闭合" : "仍有方向未被消去"}</text>`;
 
-      let tone = isMinimal ? "pass" : isZero ? "warn" : "fail";
-      let title = isMinimal ? "所有基方向归零，而且次数已经最低" : isZero ? "它确实消掉整个空间，但还不是最短关系" : killed.some(Boolean) ? "只消掉了部分方向，不能写成 p(T)=0" : "当前多项式没有消掉任何基方向";
-      let text = isMinimal ? "检查一组基已经足够：线性保证 p(T) 也会消掉它们的所有线性组合。" : isZero ? "零化多项式不唯一；继续降低次数，直到再也无法保持全空间归零。" : "局部方向归零只是一个向量关系。零算子关系要求每一条基方向都同时归零。";
-      let formula = isMinimal ? "m_T(T)=0" : isZero ? "p(T)=0,\\quad \\deg p>\\deg m_T" : "p(T)\\ne0";
+      const tone = isMinimal ? "pass" : isZero ? "warn" : "fail";
+      const title = isMinimal ? "所有基方向归零，而且次数已经最低" : isZero ? "它确实消掉整个空间，但还不是最短关系" : killed.some(Boolean) ? "只消掉了部分方向，不能写成 p(T)=0" : "当前多项式没有消掉任何基方向";
+      const text = isMinimal ? "检查一组基已经足够：线性保证 p(T) 也会消掉它们的所有线性组合。" : isZero ? "零化多项式不唯一；继续降低次数，直到再也无法保持全空间归零。" : "局部方向归零只是一个向量关系。零算子关系要求每一条基方向都同时归零。";
+      const formula = isMinimal ? "m_T(T)=0" : isZero ? "p(T)=0,\\quad \\deg p>\\deg m_T" : "p(T)\\ne0";
       const facts = [["当前候选", candidate.label], ["最小多项式", preset.minimal], ["特征多项式", preset.characteristic], ["算子剩余范数", S.fmt(matrixNorm(pA), 5)]];
 
       shell.stage.innerHTML = S.svg(content, { width, height, label: "候选多项式对所有基方向的向量和与全空间零化检查" });

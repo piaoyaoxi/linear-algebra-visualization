@@ -7,6 +7,10 @@
   let activeRange = null;
   const clamp = (value, min, max) => Math.min(max, Math.max(min, value));
 
+  function findRange(target) {
+    return target instanceof Element ? target.closest(rangeSelector) : null;
+  }
+
   function updateRange(input, clientX) {
     if (!input?.isConnected || !Number.isFinite(clientX)) return;
     const rect = input.getBoundingClientRect();
@@ -22,35 +26,69 @@
     input.dispatchEvent(new Event("input", { bubbles: true }));
   }
 
-  document.addEventListener("pointerdown", (event) => {
-    const input = event.target instanceof Element ? event.target.closest(rangeSelector) : null;
-    if (!input || (event.button !== 0 && event.button !== -1)) return;
-    activeRange = { input, pointerId: event.pointerId };
+  function beginRange(input, kind, id, clientX) {
+    activeRange = { input, kind, id };
     input.focus({ preventScroll: true });
-    input.setPointerCapture?.(event.pointerId);
-    updateRange(input, event.clientX);
+    updateRange(input, clientX);
     document.documentElement.dataset.ch7StoryDragging = "range";
+  }
+
+  function clearRange() {
+    activeRange = null;
+    delete document.documentElement.dataset.ch7StoryDragging;
+  }
+
+  // Playwright, desktop browsers, and older WebViews reliably emit mouse
+  // events. Handle them explicitly rather than relying on pointer synthesis.
+  document.addEventListener("mousedown", (event) => {
+    if (event.button !== 0) return;
+    const input = findRange(event.target);
+    if (!input) return;
+    beginRange(input, "mouse", 0, event.clientX);
+    event.preventDefault();
+  }, { capture: true, passive: false });
+
+  window.addEventListener("mousemove", (event) => {
+    if (activeRange?.kind !== "mouse") return;
+    updateRange(activeRange.input, event.clientX);
+    event.preventDefault();
+  }, { capture: true, passive: false });
+
+  window.addEventListener("mouseup", (event) => {
+    if (activeRange?.kind !== "mouse" || event.button !== 0) return;
+    updateRange(activeRange.input, event.clientX);
+    clearRange();
+    event.preventDefault();
+  }, { capture: true, passive: false });
+
+  // Pointer capture is reserved for touch and pen so mobile drags continue
+  // even when the finger leaves the visible track.
+  document.addEventListener("pointerdown", (event) => {
+    if (event.pointerType === "mouse" || (event.button !== 0 && event.button !== -1)) return;
+    const input = findRange(event.target);
+    if (!input) return;
+    beginRange(input, "pointer", event.pointerId, event.clientX);
+    input.setPointerCapture?.(event.pointerId);
     event.preventDefault();
   }, { capture: true, passive: false });
 
   window.addEventListener("pointermove", (event) => {
-    if (!activeRange || activeRange.pointerId !== event.pointerId) return;
+    if (activeRange?.kind !== "pointer" || activeRange.id !== event.pointerId) return;
     updateRange(activeRange.input, event.clientX);
     event.preventDefault();
   }, { capture: true, passive: false });
 
-  const finishRange = (event) => {
-    if (!activeRange || activeRange.pointerId !== event.pointerId) return;
+  const finishPointer = (event) => {
+    if (activeRange?.kind !== "pointer" || activeRange.id !== event.pointerId) return;
     updateRange(activeRange.input, event.clientX);
     if (activeRange.input.hasPointerCapture?.(event.pointerId)) {
       activeRange.input.releasePointerCapture(event.pointerId);
     }
-    activeRange = null;
-    delete document.documentElement.dataset.ch7StoryDragging;
+    clearRange();
     event.preventDefault();
   };
-  window.addEventListener("pointerup", finishRange, { capture: true, passive: false });
-  window.addEventListener("pointercancel", finishRange, { capture: true, passive: false });
+  window.addEventListener("pointerup", finishPointer, { capture: true, passive: false });
+  window.addEventListener("pointercancel", finishPointer, { capture: true, passive: false });
 
   window.renderLessonPage = function renderLessonPageWithChapter7Extensions(section, chapter) {
     window.teardownChapter7Lesson?.();

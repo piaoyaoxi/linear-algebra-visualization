@@ -103,7 +103,7 @@
         text = "真实向量没有被搬到另一个世界；我们只是把同一个 x 写成 c₁v₁+c₂v₂。";
         formula = "P^{-1}x=(c_1,c_2)";
       } else if (state.stage === "scale") {
-        title = "D 分别缩放两个坐标，不让它们互相混合";
+        title = "D 分别缩放两个坐标，两个分量互不混合";
         text = "对角矩阵最重要的几何意义，就是每条特征方向只负责自己的伸缩。";
         formula = "D(c_1,c_2)=(\\lambda_1c_1,\\lambda_2c_2)";
       } else {

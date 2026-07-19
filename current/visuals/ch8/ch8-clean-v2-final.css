@@ -48,8 +48,6 @@ body[data-route="ch8"] :is(.ch8-lambda-story, .ch8-invariant-cinema) .katex-html
   white-space: nowrap !important;
 }
 
-/* A legacy `.ch8-cause-strip span { display:block }` rule was also reaching every
-   internal KaTeX span and stacking λ−2 vertically. Restore KaTeX's inline flow. */
 body[data-route="ch8"] .ch8-cause-strip .katex span {
   display: inline-block !important;
   width: auto !important;
@@ -102,12 +100,27 @@ body[data-route="ch8"] .ch8-trace-formula {
   display: flex !important;
   flex-wrap: nowrap !important;
   align-items: baseline !important;
+  gap: 14px !important;
+  color: var(--ch8-ink);
+}
+
+body[data-route="ch8"] .ch8-trace-formula .ch8-trace-plain,
+body[data-route="ch8"] .ch8-trace-formula i {
+  font: 500 clamp(1.25rem, 2vw, 1.55rem)/1.2 Georgia, "Times New Roman", serif !important;
+  letter-spacing: 0 !important;
+}
+
+body[data-route="ch8"] .ch8-trace-formula i {
+  color: var(--ch8-muted);
+  font-style: normal;
 }
 
 body[data-route="ch8"] .ch8-trace-formula strong {
   display: inline-flex !important;
   flex: 0 0 auto !important;
   align-items: baseline !important;
+  color: var(--ch8-accent-strong);
+  font-weight: 600;
 }
 
 body[data-route="ch8"] .ch8-invariant-reference,
@@ -129,5 +142,6 @@ body[data-route="ch8"] .ch8-invariant-output strong {
     max-width: 100% !important;
     overflow-x: auto !important;
     padding-bottom: 4px !important;
+    gap: 10px !important;
   }
 }

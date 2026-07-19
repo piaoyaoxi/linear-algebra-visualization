@@ -120,7 +120,7 @@
         tone = error < 0.02 ? "pass" : "fail";
         title = error < 0.02 ? "缩放可以穿过 T" : "缩放前后得到不同终点";
         text = error < 0.02 ? "改变 α 时，两条输出箭头始终完全重合。" : "当前映射没有保留数乘，因而不是线性变换。";
-        formula = "T(\alpha u)=\alpha T(u)";
+        formula = "T(\\alpha u)=\\alpha T(u)";
         facts = [["α", S.fmt(state.alpha)], ["路径误差", S.fmt(error, 4)]];
       }
 

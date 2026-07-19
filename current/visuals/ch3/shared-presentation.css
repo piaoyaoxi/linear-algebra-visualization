@@ -70,10 +70,7 @@
   overflow: hidden;
   border: 1px solid var(--line);
   border-radius: calc(var(--radius) + 6px);
-  background:
-    radial-gradient(circle at 18% 18%, color-mix(in srgb, var(--accent) 10%, transparent), transparent 40%),
-    radial-gradient(circle at 82% 82%, color-mix(in srgb, var(--blue, #5679bd) 8%, transparent), transparent 42%),
-    var(--surface-soft);
+  background: var(--surface-soft);
 }
 
 .ch3-stage canvas {

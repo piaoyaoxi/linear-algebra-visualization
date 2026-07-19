@@ -1,0 +1,842 @@
+/* Chapter 7 geometric story layer.
+ * The stage is the lesson. Controls and formulas remain supporting actors.
+ */
+
+.ch7-story,
+.ch7-story-formal {
+  --story-primary: var(--accent-strong);
+  --story-secondary: color-mix(in srgb, var(--coral) 86%, var(--text));
+  --story-output: color-mix(in srgb, #7457dc 78%, var(--accent));
+  --story-success: color-mix(in srgb, #168f78 82%, var(--accent));
+  --story-danger: color-mix(in srgb, #d95662 88%, var(--text));
+  --story-gold: color-mix(in srgb, #d59627 84%, var(--text));
+  --story-grid: color-mix(in srgb, var(--line-strong) 30%, transparent);
+  --story-axis: color-mix(in srgb, var(--muted) 58%, var(--line-strong));
+}
+
+.ch7-story-formal {
+  display: grid;
+  gap: 30px;
+}
+
+.ch7-story-formal > header {
+  display: grid;
+  grid-template-columns: minmax(0, 1.25fr) minmax(250px, 0.75fr);
+  gap: 28px;
+  align-items: end;
+  padding-bottom: 24px;
+  border-bottom: 1px solid color-mix(in srgb, var(--line) 86%, var(--accent) 14%);
+}
+
+.ch7-story-formal > header > span,
+.ch7-story-intro > div > span,
+.ch7-story-result-inner > div > span {
+  color: var(--story-primary);
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+}
+
+.ch7-story-formal > header h3 {
+  max-width: 18ch;
+  margin: 8px 0 12px;
+  font-size: clamp(28px, 4vw, 46px);
+  line-height: 1.16;
+  letter-spacing: -0.025em;
+}
+
+.ch7-story-formal > header p {
+  max-width: 62ch;
+  margin: 0;
+  color: var(--muted);
+  font-size: 16px;
+  line-height: 1.85;
+}
+
+.ch7-story-formal-formula {
+  min-width: 0;
+  padding: 20px 22px;
+  border-left: 3px solid color-mix(in srgb, var(--story-primary) 64%, transparent);
+  background: color-mix(in srgb, var(--accent-soft) 60%, transparent);
+}
+
+.ch7-story-formal-formula .tex-display {
+  margin: 0;
+  overflow-x: auto;
+  font-size: clamp(0.9rem, 1.8vw, 1.1rem);
+}
+
+.ch7-story-formal-steps {
+  display: grid;
+  gap: 0;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  border-top: 1px solid var(--line);
+}
+
+.ch7-story-formal-steps li {
+  display: grid;
+  grid-template-columns: 58px minmax(0, 1fr);
+  gap: 18px;
+  align-items: start;
+  padding: 22px 0;
+  border-bottom: 1px solid var(--line);
+}
+
+.ch7-story-formal-steps li > span {
+  color: var(--story-primary);
+  font-size: 13px;
+  font-weight: 850;
+}
+
+.ch7-story-formal-steps strong {
+  display: block;
+  margin-bottom: 5px;
+  font-size: 19px;
+}
+
+.ch7-story-formal-steps p,
+.ch7-story-formal-notes p,
+.ch7-story-boundary {
+  margin: 0;
+  color: var(--muted);
+  line-height: 1.75;
+}
+
+.ch7-story-formal-notes {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 20px 32px;
+}
+
+.ch7-story-formal-notes section {
+  padding-top: 18px;
+  border-top: 2px solid color-mix(in srgb, var(--line) 75%, var(--story-primary) 25%);
+}
+
+.ch7-story-formal-notes h3 {
+  margin: 0 0 8px;
+  font-size: 18px;
+}
+
+.ch7-story-boundary {
+  padding: 16px 18px;
+  border: 1px solid color-mix(in srgb, var(--story-gold) 28%, var(--line));
+  border-radius: 16px;
+  background: color-mix(in srgb, var(--story-gold) 7%, var(--surface-solid));
+}
+
+.ch7-story {
+  display: grid;
+  gap: 20px;
+}
+
+.ch7-story-intro {
+  display: grid;
+  grid-template-columns: minmax(0, 1.1fr) minmax(280px, 0.9fr);
+  gap: 28px;
+  align-items: end;
+  padding: 8px 0 22px;
+  border-bottom: 1px solid color-mix(in srgb, var(--line) 84%, var(--accent) 16%);
+}
+
+.ch7-story-intro h3 {
+  max-width: 22ch;
+  margin: 8px 0 10px;
+  font-size: clamp(26px, 3.2vw, 40px);
+  line-height: 1.18;
+  letter-spacing: -0.02em;
+}
+
+.ch7-story-intro p {
+  max-width: 65ch;
+  margin: 0;
+  color: var(--muted);
+  line-height: 1.75;
+}
+
+.ch7-story-intro ol {
+  display: grid;
+  gap: 12px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.ch7-story-intro li {
+  display: grid;
+  grid-template-columns: 30px minmax(0, 1fr);
+  gap: 11px;
+  align-items: start;
+  color: var(--muted);
+  line-height: 1.55;
+}
+
+.ch7-story-intro li span {
+  display: grid;
+  place-items: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: color-mix(in srgb, var(--story-primary) 10%, var(--surface-solid));
+  color: var(--story-primary);
+  font-size: 12px;
+  font-weight: 850;
+}
+
+.ch7-story-toolbar {
+  min-height: 0;
+}
+
+.ch7-story-buttons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 9px;
+}
+
+.ch7-story-buttons button,
+.ch7-story-action,
+.ch7-story-polynomial-buttons button {
+  min-height: 42px;
+  padding: 0 16px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: var(--surface-solid);
+  color: var(--muted);
+  font: inherit;
+  font-size: 14px;
+  font-weight: 760;
+  cursor: pointer;
+  transition: border-color 150ms ease, background 150ms ease, color 150ms ease, transform 150ms ease;
+}
+
+.ch7-story-buttons button:hover,
+.ch7-story-action:hover,
+.ch7-story-polynomial-buttons button:hover {
+  border-color: color-mix(in srgb, var(--story-primary) 44%, var(--line));
+  color: var(--text);
+}
+
+.ch7-story-buttons button.is-active,
+.ch7-story-action.is-active,
+.ch7-story-polynomial-buttons button.is-active {
+  border-color: color-mix(in srgb, var(--story-primary) 62%, var(--line));
+  background: color-mix(in srgb, var(--story-primary) 9%, var(--surface-solid));
+  color: var(--story-primary);
+  box-shadow: inset 0 0 0 2px color-mix(in srgb, var(--story-primary) 16%, transparent);
+}
+
+.ch7-story-buttons button:focus-visible,
+.ch7-story-action:focus-visible,
+.ch7-story-polynomial-buttons button:focus-visible,
+.ch7-story-range input:focus-visible {
+  outline: 3px solid color-mix(in srgb, var(--story-primary) 30%, transparent);
+  outline-offset: 2px;
+}
+
+.ch7-story-stage {
+  min-width: 0;
+  overflow: hidden;
+  border: 1px solid color-mix(in srgb, var(--line) 88%, var(--accent) 12%);
+  border-radius: 28px;
+  background:
+    radial-gradient(circle at 20% 18%, color-mix(in srgb, var(--accent) 5%, transparent), transparent 36%),
+    linear-gradient(160deg, color-mix(in srgb, var(--surface-soft) 74%, var(--surface-solid)), var(--surface-solid));
+}
+
+.ch7-story-svg {
+  display: block;
+  width: 100%;
+  height: auto;
+  min-height: 440px;
+  overflow: visible;
+  touch-action: none;
+  user-select: none;
+}
+
+.ch7-story-grid,
+.ch7-story-axis,
+.ch7-story-warp-grid,
+.ch7-story-line,
+.ch7-story-trace,
+.ch7-story-helper,
+.ch7-story-leak,
+.ch7-story-shape-outline {
+  fill: none;
+  vector-effect: non-scaling-stroke;
+}
+
+.ch7-story-grid {
+  stroke: var(--story-grid);
+  stroke-width: 1;
+}
+
+.ch7-story-axis {
+  stroke: var(--story-axis);
+  stroke-width: 1.35;
+}
+
+.ch7-story-warp-grid {
+  stroke-width: 1.2;
+  opacity: 0.55;
+}
+
+.ch7-story-warp-grid.is-input {
+  stroke: color-mix(in srgb, var(--story-primary) 35%, transparent);
+}
+
+.ch7-story-warp-grid.is-output {
+  stroke: color-mix(in srgb, var(--story-output) 58%, transparent);
+}
+
+.ch7-story-warp-grid.is-muted {
+  stroke: color-mix(in srgb, var(--muted) 28%, transparent);
+}
+
+.ch7-story-arrow {
+  fill: currentColor;
+  stroke: currentColor;
+  stroke-width: 0.45;
+  stroke-linejoin: round;
+  stroke-linecap: round;
+  vector-effect: non-scaling-stroke;
+}
+
+.ch7-story-arrow.is-primary,
+.ch7-story-line.is-primary,
+.ch7-story-label.is-primary,
+.ch7-story-point.is-primary {
+  color: var(--story-primary);
+  stroke: var(--story-primary);
+  fill: var(--story-primary);
+}
+
+.ch7-story-arrow.is-secondary,
+.ch7-story-line.is-secondary,
+.ch7-story-label.is-secondary,
+.ch7-story-point.is-secondary {
+  color: var(--story-secondary);
+  stroke: var(--story-secondary);
+  fill: var(--story-secondary);
+}
+
+.ch7-story-arrow.is-output,
+.ch7-story-line.is-output,
+.ch7-story-label.is-output,
+.ch7-story-point.is-output {
+  color: var(--story-output);
+  stroke: var(--story-output);
+  fill: var(--story-output);
+}
+
+.ch7-story-arrow.is-success,
+.ch7-story-line.is-success,
+.ch7-story-label.is-success,
+.ch7-story-point.is-success {
+  color: var(--story-success);
+  stroke: var(--story-success);
+  fill: var(--story-success);
+}
+
+.ch7-story-arrow.is-danger,
+.ch7-story-line.is-danger,
+.ch7-story-label.is-danger,
+.ch7-story-point.is-danger {
+  color: var(--story-danger);
+  stroke: var(--story-danger);
+  fill: var(--story-danger);
+}
+
+.ch7-story-arrow.is-gold,
+.ch7-story-line.is-gold,
+.ch7-story-label.is-gold,
+.ch7-story-point.is-gold {
+  color: var(--story-gold);
+  stroke: var(--story-gold);
+  fill: var(--story-gold);
+}
+
+.ch7-story-arrow.is-muted,
+.ch7-story-line.is-muted,
+.ch7-story-label.is-muted,
+.ch7-story-point.is-muted {
+  color: var(--muted);
+  stroke: var(--muted);
+  fill: var(--muted);
+  opacity: 0.45;
+}
+
+.ch7-story-line {
+  stroke-width: 4;
+  stroke-linecap: round;
+}
+
+.ch7-story-line.is-dashed,
+.ch7-story-helper.is-dashed {
+  stroke-dasharray: 8 8;
+}
+
+.ch7-story-band {
+  opacity: 0.15;
+  vector-effect: non-scaling-stroke;
+}
+
+.ch7-story-band.is-primary { fill: var(--story-primary); }
+.ch7-story-band.is-output { fill: var(--story-output); }
+.ch7-story-band.is-success { fill: var(--story-success); }
+.ch7-story-band.is-danger { fill: var(--story-danger); }
+.ch7-story-band.is-secondary { fill: var(--story-secondary); }
+
+.ch7-story-point {
+  stroke: var(--surface-solid);
+  stroke-width: 3;
+  vector-effect: non-scaling-stroke;
+}
+
+.ch7-story-point.is-hollow {
+  fill: var(--surface-solid);
+  stroke-width: 4;
+}
+
+.ch7-story-handle {
+  fill: var(--surface-solid);
+  stroke: currentColor;
+  stroke-width: 4;
+  vector-effect: non-scaling-stroke;
+  cursor: grab;
+  pointer-events: all;
+}
+
+.ch7-story-handle:active {
+  cursor: grabbing;
+}
+
+.ch7-story-label,
+.ch7-story-caption,
+.ch7-story-big-label,
+.ch7-story-matrix-text,
+.ch7-story-node-text {
+  font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+  paint-order: stroke;
+  stroke: color-mix(in srgb, var(--surface-solid) 92%, transparent);
+  stroke-width: 5px;
+  stroke-linejoin: round;
+}
+
+.ch7-story-label {
+  font-size: 14px;
+  font-weight: 780;
+}
+
+.ch7-story-caption {
+  fill: var(--muted);
+  font-size: 13px;
+  font-weight: 650;
+}
+
+.ch7-story-big-label {
+  fill: var(--text);
+  font-size: 20px;
+  font-weight: 820;
+}
+
+.ch7-story-panel-title {
+  fill: var(--text);
+  font-size: 16px;
+  font-weight: 820;
+}
+
+.ch7-story-panel-subtitle {
+  fill: var(--muted);
+  font-size: 12px;
+  font-weight: 620;
+}
+
+.ch7-story-panel-bg {
+  fill: color-mix(in srgb, var(--surface-solid) 94%, var(--accent) 6%);
+  stroke: color-mix(in srgb, var(--line) 88%, var(--accent) 12%);
+  stroke-width: 1;
+}
+
+.ch7-story-shape {
+  fill: color-mix(in srgb, var(--story-primary) 12%, transparent);
+  stroke: var(--story-primary);
+  stroke-width: 3;
+  stroke-linejoin: round;
+  vector-effect: non-scaling-stroke;
+}
+
+.ch7-story-shape.is-secondary {
+  fill: color-mix(in srgb, var(--story-secondary) 12%, transparent);
+  stroke: var(--story-secondary);
+}
+
+.ch7-story-shape.is-output {
+  fill: color-mix(in srgb, var(--story-output) 12%, transparent);
+  stroke: var(--story-output);
+}
+
+.ch7-story-trace {
+  stroke: color-mix(in srgb, var(--story-output) 56%, transparent);
+  stroke-width: 2;
+  stroke-dasharray: 5 7;
+}
+
+.ch7-story-helper {
+  stroke: color-mix(in srgb, var(--muted) 55%, transparent);
+  stroke-width: 1.5;
+}
+
+.ch7-story-leak {
+  stroke: var(--story-danger);
+  stroke-width: 3;
+  stroke-linecap: round;
+}
+
+.ch7-story-controls:empty,
+.ch7-story-toolbar:empty {
+  display: none;
+}
+
+.ch7-story-range-row {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+  gap: 18px;
+  padding: 18px 22px;
+  border-top: 1px solid var(--line);
+  border-bottom: 1px solid var(--line);
+  background: color-mix(in srgb, var(--surface-soft) 72%, transparent);
+}
+
+.ch7-story-range {
+  display: grid;
+  gap: 12px;
+  min-width: 0;
+}
+
+.ch7-story-range > span {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  color: var(--muted);
+  font-size: 14px;
+  font-weight: 720;
+}
+
+.ch7-story-range output {
+  color: var(--text);
+  font-variant-numeric: tabular-nums;
+}
+
+.ch7-story-range input {
+  width: 100%;
+  min-height: 28px;
+  accent-color: var(--story-primary);
+  cursor: ew-resize;
+}
+
+.ch7-story-result-inner {
+  display: grid;
+  grid-template-columns: minmax(0, 1.2fr) minmax(220px, 0.8fr);
+  gap: 20px 30px;
+  align-items: center;
+  padding: 22px 24px;
+  border-left: 4px solid var(--story-primary);
+  background: color-mix(in srgb, var(--surface-soft) 58%, transparent);
+}
+
+.ch7-story-result-inner.is-pass { border-left-color: var(--story-success); }
+.ch7-story-result-inner.is-fail { border-left-color: var(--story-danger); }
+.ch7-story-result-inner.is-warn { border-left-color: var(--story-gold); }
+
+.ch7-story-result-inner strong {
+  display: block;
+  margin: 6px 0 5px;
+  font-size: clamp(19px, 2vw, 24px);
+}
+
+.ch7-story-result-inner p {
+  margin: 0;
+  color: var(--muted);
+  line-height: 1.7;
+}
+
+.ch7-story-result-formula .tex-display {
+  margin: 0;
+  overflow-x: auto;
+  font-size: 1rem;
+}
+
+.ch7-story-result-inner dl {
+  grid-column: 1 / -1;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 18px;
+  margin: 0;
+  padding-top: 14px;
+  border-top: 1px solid var(--line);
+}
+
+.ch7-story-result-inner dl div {
+  display: flex;
+  gap: 8px;
+}
+
+.ch7-story-result-inner dt {
+  color: var(--muted);
+}
+
+.ch7-story-result-inner dd {
+  margin: 0;
+  color: var(--text);
+  font-weight: 780;
+}
+
+/* Story-specific SVG pieces */
+.ch7-story-parallelogram {
+  fill: color-mix(in srgb, var(--story-primary) 8%, transparent);
+  stroke: color-mix(in srgb, var(--story-primary) 55%, transparent);
+  stroke-width: 2;
+  stroke-dasharray: 7 7;
+  vector-effect: non-scaling-stroke;
+}
+
+.ch7-story-gap {
+  fill: none;
+  stroke: var(--story-danger);
+  stroke-width: 5;
+  stroke-linecap: round;
+  vector-effect: non-scaling-stroke;
+}
+
+.ch7-story-gate {
+  fill: color-mix(in srgb, var(--surface-solid) 90%, var(--accent) 10%);
+  stroke: color-mix(in srgb, var(--line) 72%, var(--story-primary) 28%);
+  stroke-width: 1.5;
+}
+
+.ch7-story-gate-label {
+  fill: var(--story-primary);
+  font-size: 20px;
+  font-weight: 850;
+}
+
+.ch7-story-column-bracket {
+  fill: color-mix(in srgb, var(--story-primary) 7%, var(--surface-solid));
+  stroke: color-mix(in srgb, var(--story-primary) 32%, var(--line));
+  stroke-width: 1.5;
+}
+
+.ch7-story-matrix-text {
+  fill: var(--text);
+  font-size: 18px;
+  font-weight: 760;
+}
+
+.ch7-story-eigen-ring {
+  fill: none;
+  stroke: color-mix(in srgb, var(--muted) 18%, transparent);
+  stroke-width: 1.2;
+}
+
+.ch7-story-eigen-tick {
+  stroke: color-mix(in srgb, var(--story-output) 38%, transparent);
+  stroke-width: 2;
+  stroke-linecap: round;
+  vector-effect: non-scaling-stroke;
+}
+
+.ch7-story-eigen-tick.is-near {
+  stroke: var(--story-success);
+  stroke-width: 4;
+}
+
+.ch7-story-overlap {
+  mix-blend-mode: multiply;
+}
+
+body.dark .ch7-story-overlap {
+  mix-blend-mode: screen;
+}
+
+.ch7-story-kernel-trail {
+  fill: none;
+  stroke: color-mix(in srgb, var(--story-danger) 55%, transparent);
+  stroke-width: 3;
+  stroke-dasharray: 7 8;
+  vector-effect: non-scaling-stroke;
+}
+
+.ch7-story-image-glow {
+  fill: none;
+  stroke: color-mix(in srgb, var(--story-success) 26%, transparent);
+  stroke-width: 18;
+  stroke-linecap: round;
+  vector-effect: non-scaling-stroke;
+}
+
+.ch7-story-jordan-trail {
+  fill: none;
+  stroke: color-mix(in srgb, var(--story-output) 55%, transparent);
+  stroke-width: 3;
+  stroke-dasharray: 8 7;
+  vector-effect: non-scaling-stroke;
+}
+
+.ch7-story-chain-node {
+  fill: var(--surface-solid);
+  stroke: var(--line-strong);
+  stroke-width: 1.5;
+}
+
+.ch7-story-chain-node.is-active {
+  fill: color-mix(in srgb, var(--story-output) 10%, var(--surface-solid));
+  stroke: var(--story-output);
+  stroke-width: 3;
+}
+
+.ch7-story-chain-node.is-zero {
+  fill: color-mix(in srgb, var(--story-success) 10%, var(--surface-solid));
+  stroke: var(--story-success);
+}
+
+.ch7-story-node-text {
+  fill: var(--text);
+  font-size: 15px;
+  font-weight: 800;
+}
+
+.ch7-story-polynomial-buttons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  padding: 16px 20px;
+  border-top: 1px solid var(--line);
+}
+
+.ch7-story-polynomial-buttons button {
+  display: grid;
+  gap: 2px;
+  min-height: 54px;
+  border-radius: 16px;
+  text-align: left;
+}
+
+.ch7-story-polynomial-buttons small {
+  color: var(--muted);
+  font-weight: 600;
+}
+
+.ch7-story-equation-lane {
+  fill: color-mix(in srgb, var(--surface-solid) 88%, transparent);
+  stroke: var(--line);
+  stroke-width: 1;
+}
+
+.ch7-story-zero-seal {
+  fill: color-mix(in srgb, var(--story-success) 12%, var(--surface-solid));
+  stroke: var(--story-success);
+  stroke-width: 3;
+}
+
+@media (max-width: 900px) {
+  .ch7-story-formal > header,
+  .ch7-story-intro,
+  .ch7-story-result-inner {
+    grid-template-columns: 1fr;
+  }
+
+  .ch7-story-formal > header h3,
+  .ch7-story-intro h3 {
+    max-width: none;
+  }
+
+  .ch7-story-formal-notes {
+    grid-template-columns: 1fr;
+  }
+
+  .ch7-story-svg {
+    min-height: 390px;
+  }
+}
+
+@media (max-width: 620px) {
+  .ch7-story,
+  .ch7-story-formal {
+    gap: 18px;
+  }
+
+  .ch7-story-intro {
+    gap: 18px;
+    padding-bottom: 18px;
+  }
+
+  .ch7-story-intro h3 {
+    font-size: 26px;
+  }
+
+  .ch7-story-formal > header h3 {
+    font-size: 30px;
+  }
+
+  .ch7-story-formal-steps li {
+    grid-template-columns: 42px minmax(0, 1fr);
+    gap: 10px;
+    padding: 18px 0;
+  }
+
+  .ch7-story-stage {
+    border-radius: 20px;
+  }
+
+  .ch7-story-svg {
+    min-height: 330px;
+  }
+
+  .ch7-story-buttons {
+    gap: 7px;
+  }
+
+  .ch7-story-buttons button,
+  .ch7-story-action {
+    min-height: 40px;
+    padding: 0 13px;
+    font-size: 13px;
+  }
+
+  .ch7-story-range-row {
+    grid-template-columns: 1fr;
+    padding: 16px;
+  }
+
+  .ch7-story-result-inner {
+    padding: 18px;
+  }
+
+  .ch7-story-result-inner dl {
+    display: grid;
+    grid-template-columns: 1fr;
+  }
+
+  .ch7-story-label {
+    font-size: 12px;
+  }
+
+  .ch7-story-caption,
+  .ch7-story-panel-subtitle {
+    font-size: 10px;
+  }
+
+  .ch7-story-panel-title {
+    font-size: 14px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ch7-story-buttons button,
+  .ch7-story-action,
+  .ch7-story-polynomial-buttons button {
+    transition: none;
+  }
+}

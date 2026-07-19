@@ -1,0 +1,69 @@
+name: Diagnose Chapter 7 story payload
+
+on:
+  push:
+    branches:
+      - context/ch7-linear-transformations
+    paths:
+      - ".github/workflows/diagnose-ch7-story-payload.yml"
+
+permissions:
+  contents: write
+
+jobs:
+  diagnose:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: context/ch7-linear-transformations
+          fetch-depth: 0
+      - name: Inspect payload and write report
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          import base64, gzip, hashlib, io, tarfile, traceback
+
+          root = Path('.github/ch7-story-v2-payload')
+          parts = [root / name for name in ['part-00','part-01','part-02','part-030','part-031','part-04']]
+          report = []
+          report.append('parts:')
+          for path in parts:
+              data = path.read_bytes() if path.exists() else b''
+              report.append(f'{path.name}: exists={path.exists()} bytes={len(data)} sha256={hashlib.sha256(data).hexdigest() if data else "-"}')
+          try:
+              encoded_text = ''.join(path.read_text() for path in parts)
+              compact = ''.join(encoded_text.split())
+              report.append(f'encoded chars raw={len(encoded_text)} compact={len(compact)} mod4={len(compact)%4}')
+              padded = compact + '=' * (-len(compact) % 4)
+              archive = base64.b64decode(padded, validate=False)
+              report.append(f'decoded bytes={len(archive)} sha256={hashlib.sha256(archive).hexdigest()} prefix={archive[:16].hex()}')
+              try:
+                  plain = gzip.decompress(archive)
+                  report.append(f'gzip plain bytes={len(plain)} prefix={plain[:32].hex()}')
+              except Exception:
+                  report.append('gzip error:')
+                  report.append(traceback.format_exc())
+              try:
+                  with tarfile.open(fileobj=io.BytesIO(archive), mode='r:gz') as tar:
+                      report.append('tar members:')
+                      report.extend(tar.getnames())
+              except Exception:
+                  report.append('tar error:')
+                  report.append(traceback.format_exc())
+          except Exception:
+              report.append('decode setup error:')
+              report.append(traceback.format_exc())
+
+          Path('docs/ch7-story-payload-diagnostic.txt').write_text('\n'.join(report))
+          PY
+      - name: Commit report and remove diagnostic workflow
+        shell: bash
+        run: |
+          rm -f .github/workflows/diagnose-ch7-story-payload.yml
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          git commit -m "chore(ch7): record story payload diagnostics"
+          git push origin HEAD:context/ch7-linear-transformations

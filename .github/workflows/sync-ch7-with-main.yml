@@ -20,20 +20,19 @@ jobs:
           ref: context/ch7-linear-transformations
           fetch-depth: 0
       - name: Merge latest main and resolve shared entry files
+        id: merge
+        continue-on-error: true
         shell: bash
         run: |
-          set -euo pipefail
+          set -u
+          exec > >(tee /tmp/ch7-sync.log) 2>&1
           git fetch origin main
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          set +e
-          git merge --no-commit --no-ff origin/main
-          merge_status=$?
-          set -e
+          git merge --no-commit --no-ff origin/main || true
 
           conflicts="$(git diff --name-only --diff-filter=U || true)"
-          printf 'merge status: %s\nconflicts:\n%s\n' "$merge_status" "$conflicts"
-
+          printf 'conflicts:\n%s\n' "$conflicts"
           for file in $conflicts; do
             case "$file" in
               current/app.js|current/learn.html|current/learn-entry.js)
@@ -51,7 +50,6 @@ jobs:
 
           html = Path('current/learn.html')
           text = html.read_text()
-
           css_anchor = '    <link rel="stylesheet" href="./visuals/ch5/geometry-orbit-fit.css?v=ch5g3" />'
           css_tag = '    <link rel="stylesheet" href="./visuals/ch7/story.css?v=41a" />'
           if css_tag not in text:
@@ -77,28 +75,45 @@ jobs:
               if content_anchor not in text:
                   raise SystemExit('main Chapter 7 content anchor missing')
               text = text.replace(content_anchor, ch7_block, 1)
-
           html.write_text(text)
 
           entry = Path('current/learn-entry.js')
           entry_text = entry.read_text()
           route_anchor = 'renderRoute = function renderLearningRoute() {\n'
-          teardown = 'renderRoute = function renderLearningRoute() {\n  window.teardownChapter7Lesson?.();\n'
           if 'window.teardownChapter7Lesson?.();' not in entry_text:
               if route_anchor not in entry_text:
                   raise SystemExit('learn-entry route anchor missing')
-              entry_text = entry_text.replace(route_anchor, teardown, 1)
+              entry_text = entry_text.replace(route_anchor, route_anchor + '  window.teardownChapter7Lesson?.();\n', 1)
           entry.write_text(entry_text)
           PY
 
           git add current/app.js current/learn.html current/learn-entry.js
-          git diff --check --cached
           if git diff --name-only --diff-filter=U | grep -q .; then
             echo 'unresolved conflicts remain'
             git diff --name-only --diff-filter=U
             exit 1
           fi
+          git diff --check --cached
+          node --check current/app.js
+          node --check current/learn-entry.js
+          for file in current/visuals/ch7/story-core.js current/visuals/ch7/story-section{1..9}.js; do node --check "$file"; done
           rm -f .github/workflows/sync-ch7-with-main.yml
+          rm -f docs/ch7-v3-check-trigger.md
           git add -A
           git commit -m "merge: synchronize Chapter 7 redesign with latest main"
           git push origin HEAD:context/ch7-linear-transformations
+      - name: Record failed synchronization
+        if: steps.merge.outcome != 'success'
+        shell: bash
+        run: |
+          git merge --abort 2>/dev/null || true
+          cp /tmp/ch7-sync.log docs/ch7-main-sync-report.txt 2>/dev/null || echo 'sync step failed before log creation' > docs/ch7-main-sync-report.txt
+          rm -f .github/workflows/sync-ch7-with-main.yml
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          git commit -m "chore(ch7): record main synchronization failure"
+          git push origin HEAD:context/ch7-linear-transformations
+      - name: Enforce synchronization success
+        if: steps.merge.outcome != 'success'
+        run: exit 1

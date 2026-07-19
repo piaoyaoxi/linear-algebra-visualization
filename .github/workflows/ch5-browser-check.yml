@@ -1,0 +1,64 @@
+name: Chapter 5 browser check
+
+on:
+  pull_request:
+    paths:
+      - "current/**"
+      - ".github/scripts/ch5-browser-check.mjs"
+      - ".github/workflows/ch5-browser-check.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  browser-check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+
+      - name: Install Playwright
+        run: |
+          npm install --no-save playwright@1.52.0
+          npx playwright install --with-deps chromium
+
+      - name: Start static site
+        run: |
+          python3 -m http.server 4173 --directory current > /tmp/ch5-static.log 2>&1 &
+          echo $! > /tmp/ch5-static.pid
+          for attempt in {1..20}; do
+            if curl --fail --silent http://127.0.0.1:4173/learn.html > /dev/null; then
+              exit 0
+            fi
+            sleep 1
+          done
+          cat /tmp/ch5-static.log
+          exit 1
+
+      - name: Exercise Chapter 5 in Chromium
+        id: browser
+        continue-on-error: true
+        run: node .github/scripts/ch5-browser-check.mjs > /tmp/ch5-browser.log 2>&1
+
+      - name: Print browser result
+        if: always()
+        run: cat /tmp/ch5-browser.log
+
+      - name: Upload browser evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: ch5-browser-evidence
+          path: |
+            /tmp/ch5-browser.log
+            /tmp/ch5-shots
+          if-no-files-found: warn
+          retention-days: 3
+
+      - name: Fail when browser check failed
+        if: steps.browser.outcome == 'failure'
+        run: exit 1

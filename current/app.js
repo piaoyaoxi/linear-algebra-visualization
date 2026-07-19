@@ -527,6 +527,19 @@ function getChapterOverviewConfig(chapter) {
       ],
     };
   }
+  if (chapter.id === "ch5") {
+    return {
+      coverId: "chapter5",
+      eyebrow: "第五章 · 二次型",
+      title: "从二次多项式到合同分类与正定判别",
+      structureTitle: "一条主线串起四个小节",
+      panels: [
+        { title: "表达视角", text: "二次齐次多项式与实对称矩阵互相唯一决定，交叉项系数要在对称位置平分。" },
+        { title: "变换视角", text: "非退化替换 x=Cy 对应合同 CᵀAC；配方法与成对初等变换消去交叉项。" },
+        { title: "分类与判别", text: "惯性锁定正、负、零方向数量；顺序主子式给出正定的代数判据。" },
+      ],
+    };
+  }
   return {
     coverId: chapter.id,
     eyebrow: chapter.title,
@@ -877,6 +890,9 @@ function renderLessonCard(section, chapter = null) {
 
 function renderVisualPanel(item) {
   const visual = item?.type ? item : getVisual(item);
+
+  // Presentation modules own slot labs; keep the shell empty.
+  if (visual.type === "slot") return "";
 
   if (visual.type === "transform") {
     return `

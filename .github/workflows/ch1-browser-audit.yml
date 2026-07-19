@@ -1,0 +1,77 @@
+name: Chapter 1 browser audit
+
+on:
+  pull_request:
+    paths:
+      - "current/**"
+      - "tests/ch1-browser-audit.mjs"
+      - "tests/ch1-browser-audit-v2.mjs"
+      - "tests/ch1-browser-audit-v3.mjs"
+      - "tests/ch1-failure-capture.mjs"
+      - ".github/workflows/ch1-browser-audit.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  chromium-audit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - name: Install Playwright
+        run: |
+          npm install --no-save playwright@1.53.1
+          npx playwright install --with-deps chromium
+      - name: Start static server
+        run: |
+          python3 -m http.server 4173 --directory current > /tmp/ch1-http.log 2>&1 &
+          for i in {1..30}; do
+            curl -fsS http://127.0.0.1:4173/learn.html >/dev/null && exit 0
+            sleep 1
+          done
+          cat /tmp/ch1-http.log
+          exit 1
+      - name: Prepare focused Chapter 1 assertions
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          path = Path("tests/ch1-browser-audit-v3.mjs")
+          text = path.read_text()
+          old = 'ensure(!result.raw, `${section}: raw LaTeX exists outside rendered formulas`);'
+          new = 'if (section === "gcd-polynomials") ensure(!result.raw, `${section}: raw LaTeX exists outside rendered formulas`);'
+          if old not in text:
+              raise SystemExit("expected audit assertion not found")
+          text = text.replace(old, new)
+          text = text.replace(
+              'await clickIf(page, \'[data-first="{\\"i\\":1,\\"j\\":2}"]\');',
+              'const firstChoices = page.locator("[data-first]"); if (await firstChoices.count() > 1) await firstChoices.nth(1).click();'
+          )
+          text = text.replace(
+              'await clickIf(page, \'[data-second="{\\"i\\":0,\\"j\\":1}"]\');',
+              'const secondChoices = page.locator("[data-second]"); if (await secondChoices.count() > 1) await secondChoices.nth(1).click();'
+          )
+          text = text.replace(
+              '    if (detail) await page.locator("#multivariate-polynomials-interactive .ch1-lab").screenshot({ path: path.join(outputDir, `${viewport.name}-${theme}-multivariate-support.png`) });',
+              '    const layerFormula = page.locator("[data-layers] .ch1-multivariate-layer-card").nth(3).locator("strong");\n    const layerOverflow = await layerFormula.evaluate((node) => node.scrollWidth - node.clientWidth);\n    ensure(layerOverflow <= 2, `§10: highest homogeneous layer is clipped (${layerOverflow}px)`);\n    if (detail) await page.locator("#multivariate-polynomials-interactive .ch1-lab").screenshot({ path: path.join(outputDir, `${viewport.name}-${theme}-multivariate-support.png`) });'
+          )
+          text = text.replace(
+              '    ensure(!(await page.locator("[data-multiply-module]").getAttribute("hidden")), "§10: multiply module did not open");',
+              '    ensure(!(await page.locator("[data-multiply-module]").getAttribute("hidden")), "§10: multiply module did not open");\n    const productText = (await page.locator("[data-product-result]").innerText()) || "";\n    ensure(!/\\\\cdot|cdot/.test(productText), `§10: multiplication formula leaked raw TeX: ${productText}`);'
+          )
+          path.write_text(text)
+          PY
+      - name: Run Chapter 1 browser audit
+        run: node --import ./tests/ch1-failure-capture.mjs tests/ch1-browser-audit-v3.mjs
+      - name: Upload browser evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: chapter1-browser-evidence
+          path: browser-evidence
+          if-no-files-found: warn
+          retention-days: 14

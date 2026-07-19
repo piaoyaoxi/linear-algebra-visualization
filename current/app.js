@@ -148,6 +148,7 @@ window.getStructuredSections = getStructuredSections;
 window.chapterHasStructuredLessons = chapterHasStructuredLessons;
 window.findStructuredSection = findStructuredSection;
 
+
 function getSectionLabel(section) {
   return typeof section === "string" ? section : section.navTitle || section.title;
 }
@@ -293,29 +294,29 @@ function renderNav() {
       const chapterHref = chapter.id === "home" ? "#home" : `#${chapter.id}`;
       const structured = getStructuredSections(chapter);
       const sectionLinks = structured.length
-        ? structured
-            .map(
-              (section) => `
-                <a class="nav-section" href="#${chapter.id}/${section.id}" data-section-link="${section.id}" data-search-text="${normalizeSearchText(
-                  getSectionSearchText(section),
-                )}">
-                  <span class="status-dot"></span>
-                  <span>${section.number} ${section.navTitle}</span>
-                  <span class="section-status">未掌握</span>
-                </a>
-              `,
-            )
-            .join("")
-        : chapter.sections
-            .map(
-              (section) => `
-                <a class="nav-section" href="${chapterHref}" data-search-text="${normalizeSearchText(getSectionSearchText(section))}">
-                  <span class="status-dot"></span>
-                  <span>${getSectionLabel(section)}</span>
-                </a>
-              `,
-            )
-            .join("");
+          ? structured
+              .map(
+                (section) => `
+                  <a class="nav-section" href="#${chapter.id}/${section.id}" data-section-link="${section.id}" data-search-text="${normalizeSearchText(
+                    getSectionSearchText(section),
+                  )}">
+                    <span class="status-dot"></span>
+                    <span>${section.number} ${section.navTitle}</span>
+                    <span class="section-status">未掌握</span>
+                  </a>
+                `,
+              )
+              .join("")
+          : chapter.sections
+              .map(
+                (section) => `
+                  <a class="nav-section" href="${chapterHref}" data-search-text="${normalizeSearchText(getSectionSearchText(section))}">
+                    <span class="status-dot"></span>
+                    <span>${getSectionLabel(section)}</span>
+                  </a>
+                `,
+              )
+              .join("");
 
       return `
         <div class="chapter-group" data-chapter="${chapter.id}" data-search-text="${normalizeSearchText(
@@ -372,7 +373,6 @@ function getChapterSubtitle(id) {
 function renderRoute() {
   cancelTransformAnimation();
   window.teardownSection2ContinuousLab?.();
-  window.teardownChapter7Lesson?.();
 
   const raw = decodeURIComponent(window.location.hash.replace(/^#/, "")) || "home";
   const [route, section] = raw.split("/");
@@ -388,6 +388,7 @@ function renderRoute() {
   if (chapter.id === "home") {
     renderHome();
   } else if (chapterHasStructuredLessons(chapter)) {
+    // Only accept section ids that belong to this chapter.
     if (state.section && !getStructuredSections(chapter).some((item) => item.id === state.section)) {
       state.section = "";
       document.body.dataset.view = "overview";
@@ -513,21 +514,32 @@ function getChapterOverviewConfig(chapter) {
       ],
     };
   }
-
-  if (chapter.id === "ch7") {
+  if (chapter.id === "ch1") {
     return {
-      coverId: "chapter7",
-      eyebrow: "第七章 · 线性变换",
-      title: "从映射进入算子的内部结构",
-      structureTitle: "九个小节沿一条结构主线递进",
+      coverId: "chapter1",
+      eyebrow: "第一章 · 多项式",
+      title: "从数域到形式对象与分解结构",
+      structureTitle: "一条主线串起十一个小节",
       panels: [
-        { title: "映射与坐标", text: "先判断一个变换是否线性，再看选定基以后怎样用矩阵记录同一个算子。" },
-        { title: "方向与子空间", text: "从特征方向、核、值域和不变子空间读出变换保留或压缩的结构。" },
-        { title: "标准形与多项式", text: "当特征向量不足时，用 Jordan 链和最小多项式描述剩余的代数信息。" },
+        { title: "对象视角", text: "先指定数域，再把多项式看成有位置的系数序列，而不是仅看函数图像。" },
+        { title: "算法视角", text: "用除法阶梯、欧几里得算法与 Bézout 回代，把整除与最大公因式变成可见过程。" },
+        { title: "结构视角", text: "从因式分解、重因式、实复根到多元与对称，把分解与不变量连成主线。" },
       ],
     };
   }
-
+  if (chapter.id === "ch5") {
+    return {
+      coverId: "chapter5",
+      eyebrow: "第五章 · 二次型",
+      title: "从二次多项式到合同分类与正定判别",
+      structureTitle: "一条主线串起四个小节",
+      panels: [
+        { title: "表达视角", text: "二次齐次多项式与实对称矩阵互相唯一决定，交叉项系数要在对称位置平分。" },
+        { title: "变换视角", text: "非退化替换 x=Cy 对应合同 CᵀAC；配方法与成对初等变换消去交叉项。" },
+        { title: "分类与判别", text: "惯性锁定正、负、零方向数量；顺序主子式给出正定的代数判据。" },
+      ],
+    };
+  }
   return {
     coverId: chapter.id,
     eyebrow: chapter.title,
@@ -553,7 +565,6 @@ function renderStructuredChapter(chapter) {
     videoCount ? `${videoCount} 个概念短讲` : "",
     exampleCount ? `${exampleCount} 个代表例题` : "",
   ].filter(Boolean);
-
   if (activeLesson) {
     renderLessonPage(activeLesson, chapter);
     return;
@@ -613,11 +624,12 @@ function renderChapter4() {
 window.renderStructuredChapter = renderStructuredChapter;
 window.renderChapter4 = renderChapter4;
 
+
 function renderLessonPage(section, chapter = null) {
+  const owner = chapter || findStructuredSection(section.id)?.chapter || getChapterById(state.route);
   const concepts = getConcepts(section);
   const video = getVideo(section);
   const interactive = getInteractive(section);
-  const owner = chapter || findStructuredSection(section.id)?.chapter || getChapterById(state.route);
   const breadcrumb = owner?.title || "课程";
   els.main.innerHTML = `
     <section class="lesson-cover" id="${section.id}">
@@ -655,6 +667,7 @@ function renderLessonPage(section, chapter = null) {
 }
 
 window.renderLessonPage = renderLessonPage;
+
 
 function getCourseNavigationNodes() {
   return getChapters()
@@ -866,8 +879,8 @@ function renderLessonCard(section, chapter = null) {
   return `
     <a class="lesson-card" href="${href}">
       <div class="section-kicker">${section.number} · ${section.textbookSection || section.title}</div>
-      <h3>${section.navTitle}</h3>
-      <p>${section.question}</p>
+      <h3>${section.navTitle || section.title}</h3>
+      <p>${section.question || section.goal || ""}</p>
       <div class="meta-row">
         ${(section.tags || []).map((tag) => `<span class="tag">${tag}</span>`).join("")}
       </div>
@@ -877,6 +890,9 @@ function renderLessonCard(section, chapter = null) {
 
 function renderVisualPanel(item) {
   const visual = item?.type ? item : getVisual(item);
+
+  // Presentation modules own slot labs; keep the shell empty.
+  if (visual.type === "slot") return "";
 
   if (visual.type === "transform") {
     return `

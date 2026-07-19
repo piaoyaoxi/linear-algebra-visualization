@@ -14,6 +14,15 @@ const forbidden = [
   "rgba(255, 173, 91",
   "ch6-vector-glow",
   "<ellipse class=\"ch6-map-set\"",
+  "青色：",
+  "橙色：",
+  "白色：",
+  "绿色：",
+  "青色段",
+  "橙色段",
+  "绿色箭头",
+  "白色向量",
+  "橙色方向",
 ];
 
 function walk(directory) {
@@ -24,8 +33,9 @@ function walk(directory) {
   });
 }
 
+const files = walk(root);
 const problems = [];
-for (const file of walk(root)) {
+for (const file of files) {
   const source = fs.readFileSync(file, "utf8").toLowerCase();
   for (const token of forbidden) {
     if (source.includes(token.toLowerCase())) problems.push(`${file}: ${token}`);
@@ -36,4 +46,4 @@ if (problems.length) {
   throw new Error(`Rejected Chapter 6 visual language remains:\n${problems.join("\n")}`);
 }
 
-console.log(`PASS source-style-check (${walk(root).length} files)`);
+console.log(`PASS source-style-check (${files.length} files)`);

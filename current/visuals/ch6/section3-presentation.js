@@ -123,13 +123,13 @@
         : `<div class="ch6-coordinate-pair"><article><span>有序基 B</span><strong>(b₁,b₂)</strong></article><b>→</b><article><span>目标向量 v</span><strong>${U().formatVector(target)}</strong></article></div><div class="ch6-coordinate-reader"><span>坐标 [v]ᵦ</span><strong>${coordinates ? U().formatVector(coordinates) : "—"}</strong><span>验证</span><strong>${coordinates ? `${U().formatNumber(coordinates[0])}b₁ + ${U().formatNumber(coordinates[1])}b₂ = v` : "先让两个基方向独立"}</strong></div><div class="ch6-conclusion-box is-ok"><span>读图方法</span><strong>先沿 b₁ 走第一段，再沿 b₂ 走第二段，终点正好落到 v</strong></div>`;
 
       const legend = mode === "structure"
-        ? `<div class="ch6-stage-legend"><span class="is-u">青色：固定方向 v₁</span><span class="is-w">橙色：可拖动方向 v₂</span>${showRedundant ? `<span class="is-overlap">紫色：冗余向量 v₃</span>` : ""}</div>`
-        : `<div class="ch6-stage-legend"><span class="is-u">青色：沿 b₁ 的分量</span><span class="is-w">橙色：沿 b₂ 的分量</span><span class="is-target">白色：目标向量 v</span></div>`;
+        ? `<div class="ch6-stage-legend"><span class="is-u">固定方向 v₁</span><span class="is-w">可拖动方向 v₂</span>${showRedundant ? `<span class="is-overlap">冗余向量 v₃</span>` : ""}</div>`
+        : `<div class="ch6-stage-legend"><span class="is-u">沿 b₁ 的分量</span><span class="is-w">沿 b₂ 的分量</span><span class="is-target">目标向量 v</span></div>`;
 
       host.innerHTML = U().labShell({
         title: mode === "structure" ? "拖动 v₂：看面积怎样决定维数" : "沿两个基方向走到目标向量",
-        lead: mode === "structure" ? "不要数箭头。拖动第二个方向，观察平行四边形面积从 0 变为非 0，张成空间也会从直线扩展为平面。" : "固定一组独立基，改变目标向量。两段彩色路径就是它的两个坐标分量。",
-        focus: mode === "structure" ? "先看半透明平行四边形是否有面积；面积为 0 时，两个箭头只是同一方向。" : "先看白色目标 v，再沿青色和橙色两段路径追到它的终点。",
+        lead: mode === "structure" ? "不要数箭头。拖动第二个方向，观察平行四边形面积从 0 变为非 0，张成空间也会从直线扩展为平面。" : "固定一组独立基，改变目标向量。两段路径就是它的两个坐标分量。",
+        focus: mode === "structure" ? "先看半透明平行四边形是否有面积；面积为 0 时，两个箭头只是同一方向。" : "先看目标 v，再沿 b₁、b₂ 两段路径追到它的终点。",
         stage: `<div class="ch6-stage-shell">${sceneSvg(v1, v2, showRedundant, target, mode)}${legend}</div>`,
         controls,
         readout,

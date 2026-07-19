@@ -1,2 +1,0 @@
-PR #39 native-theme browser review.
-Read-only exact-head trigger after the temporary review base was advanced to the workflow commit.

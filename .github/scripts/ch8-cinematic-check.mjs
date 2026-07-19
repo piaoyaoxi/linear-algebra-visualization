@@ -66,6 +66,38 @@ async function dragRange(page, selector, ratio, touch) {
   await page.waitForTimeout(80);
 }
 
+async function checkLambdaBuild(page, name) {
+  await open(page, "lambda-matrix");
+  const equationText = normalize(await page.locator(".ch8-build-equation").innerText());
+  if (!equationText.includes("λI") || !equationText.includes("矩阵A") || !equationText.includes("特征矩阵")) {
+    throw new Error(`${name}/lambda-build: equation order or labels missing`);
+  }
+  if ((await page.locator(".ch8-build-equation .ch8-bare-matrix").count()) !== 3) {
+    throw new Error(`${name}/lambda-build: expected three persistent bare matrices`);
+  }
+  const articleChrome = await page.locator(".ch8-build-equation > article").evaluateAll((nodes) => nodes.map((node) => {
+    const style = getComputedStyle(node);
+    return { background: style.backgroundColor, border: style.borderTopWidth, radius: style.borderRadius };
+  }));
+  if (articleChrome.some((item) => item.background !== "rgba(0, 0, 0, 0)" || item.border !== "0px")) {
+    throw new Error(`${name}/lambda-build: matrix is still wrapped in visual cards`);
+  }
+  const cellChrome = await page.locator(".ch8-click-matrix button").evaluateAll((nodes) => nodes.map((node) => ({
+    active: node.classList.contains("is-active"),
+    background: getComputedStyle(node).backgroundColor,
+    border: getComputedStyle(node).borderTopWidth,
+  })));
+  const coloredInactive = cellChrome.filter((item) => !item.active && item.background !== "rgba(0, 0, 0, 0)");
+  if (coloredInactive.length || cellChrome.some((item) => item.border !== "0px")) {
+    throw new Error(`${name}/lambda-build: inactive matrix cells still look like nested cards`);
+  }
+  await page.locator('[data-build-cell="12"]').click();
+  const trace = normalize(await page.locator(".ch8-trace-formula").innerText());
+  if (!trace.includes("0−1=−1") && !trace.includes("0-1=-1")) throw new Error(`${name}/lambda-build: selected coordinate trace is wrong`);
+  await assertNoPageOverflow(page, `${name}/lambda-build`);
+  await page.locator(".ch8-lambda-story").screenshot({ path: path.join(shots, `${name}-lambda-build.png`) });
+}
+
 async function checkSmith(page, name) {
   await open(page, "smith-form");
   await assertSeparated(page, ".ch8-smith-caption", ".ch8-smith-meaning", `${name}/smith caption and meaning`, 8);
@@ -78,10 +110,25 @@ async function checkSmith(page, name) {
 
 async function checkInvariant(page, name) {
   await open(page, "invariant-factors");
+  const formulaBox = await page.locator(".ch8-invariant-reference").boundingBox();
+  if (!formulaBox || formulaBox.height > 110 || formulaBox.width < formulaBox.height * 2.8) {
+    throw new Error(`${name}/invariant: Smith formula is vertically broken or too narrow`);
+  }
+  if (await page.locator(".ch8-invariant-chain .ch8-poly-chip").count()) {
+    throw new Error(`${name}/invariant: divisibility chain still uses nested chips`);
+  }
+  const minorChrome = await page.locator(".ch8-minor-list i").evaluateAll((nodes) => nodes.map((node) => ({
+    background: getComputedStyle(node).backgroundColor,
+    borderRadius: getComputedStyle(node).borderRadius,
+  })));
+  if (minorChrome.some((item) => item.background !== "rgba(0, 0, 0, 0)" || item.borderRadius !== "0px")) {
+    throw new Error(`${name}/invariant: minors still render as rounded cards`);
+  }
   await page.locator('[data-k="3"]').click();
   const text = normalize(await page.locator(".ch8-invariant-output").innerText());
   if (!text.includes("d3") || !text.includes("λ+2")) throw new Error(`${name}/invariant: k=3 output missing`);
   await assertSeparated(page, ".ch8-gcd-core", ".ch8-invariant-output", `${name}/invariant gcd and output`, 12);
+  await assertNoPageOverflow(page, `${name}/invariant`);
   await page.locator(".ch8-invariant-cinema").screenshot({ path: path.join(shots, `${name}-invariant.png`) });
 }
 
@@ -151,6 +198,7 @@ try {
     page.on("console", (message) => { if (message.type() === "error") errors.push(message.text()); });
     page.on("pageerror", (error) => errors.push(error.message));
 
+    await checkLambdaBuild(page, config.name);
     await checkSmith(page, config.name);
     await checkInvariant(page, config.name);
     await checkSimilarity(page, config.name, config.touch);

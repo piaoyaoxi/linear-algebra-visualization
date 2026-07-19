@@ -383,6 +383,5 @@
   }
 
   window.defineChapter4LessonEnhancer?.(enhanceExample);
-  window.defineChapter2LessonEnhancer?.(enhanceExample);
-  window.defineChapter3LessonEnhancer?.(enhanceExample);
+  window.defineChapter1LessonEnhancer?.(enhanceExample);
 })();

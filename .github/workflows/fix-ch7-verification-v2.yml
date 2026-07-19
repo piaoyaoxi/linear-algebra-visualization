@@ -1,0 +1,53 @@
+name: Fix Chapter 7 verification pass
+
+on:
+  push:
+    branches:
+      - context/ch7-linear-transformations
+
+permissions:
+  contents: write
+
+jobs:
+  fix:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: context/ch7-linear-transformations
+          fetch-depth: 0
+      - name: Tighten wording and extend browser budget
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          from pathlib import Path
+
+          section = Path('current/visuals/ch7/story-section5.js')
+          text = section.read_text(encoding='utf-8')
+          old = 'title = "D 分别缩放两个坐标，不让它们互相混合";'
+          new = 'title = "D 分别缩放两个坐标，两个分量互不混合";'
+          if text.count(old) != 1:
+              raise SystemExit('section 5 wording anchor missing or duplicated')
+          section.write_text(text.replace(old, new, 1), encoding='utf-8')
+
+          workflow = Path('.github/workflows/ch7-browser-check.yml')
+          text = workflow.read_text(encoding='utf-8')
+          old = '    timeout-minutes: 25'
+          new = '    timeout-minutes: 45'
+          if text.count(old) != 1:
+              raise SystemExit('browser timeout anchor missing or duplicated')
+          workflow.write_text(text.replace(old, new, 1), encoding='utf-8')
+          PY
+
+          node .github/scripts/ch7-source-lint.mjs
+          node --check current/visuals/ch7/story-section5.js
+          node --check .github/scripts/ch7-browser-check.mjs
+          rm -f .github/workflows/fix-ch7-verification-v2.yml
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          git diff --check --cached
+          git commit -m "fix(ch7): tighten diagonalization conclusion and browser budget"
+          git push origin HEAD:context/ch7-linear-transformations

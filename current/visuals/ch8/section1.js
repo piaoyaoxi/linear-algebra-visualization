@@ -1,5 +1,5 @@
 (() => {
-  const { I, on, matrix, setPressed, markExperimentStep, conclusionMarkup } = window.Chapter8Lab;
+  const { I, on, setPressed, markExperimentStep, conclusionMarkup } = window.Chapter8Lab;
 
   const presets = {
     distinct: { label: "两个不同实特征值", A: [[3, 1], [0, 1]], roots: [1, 3], range: [-1, 5], polynomial: "(\\lambda-1)(\\lambda-3)" },
@@ -31,6 +31,20 @@
     const row = Math.abs(M[0][0]) + Math.abs(M[0][1]) > 1e-9 ? M[0] : M[1];
     const vector = [-row[1], row[0]];
     return { rank: 1, nullity: 1, type: "line", vector, text: `核是一条直线，由方向 (${fmt(vector[0])}, ${fmt(vector[1])}) 张成。` };
+  }
+
+  function bareMatrix(rows, options = {}) {
+    const ids = ["11", "12", "21", "22"];
+    const { interactive = false, selected = "", ariaLabel = "二阶矩阵" } = options;
+    const cells = rows.flat().map((value, index) => {
+      const id = ids[index];
+      const active = selected === id;
+      if (interactive) {
+        return `<button type="button" data-build-cell="${id}" class="${active ? "is-active" : ""}" aria-pressed="${active}">${I(String(value))}</button>`;
+      }
+      return `<span class="${active ? "is-source-active" : ""}">${I(String(value))}</span>`;
+    }).join("");
+    return `<div class="ch8-bare-matrix ${interactive ? "ch8-click-matrix" : ""}" role="${interactive ? "group" : "img"}" aria-label="${ariaLabel}">${cells}</div>`;
   }
 
   function kernelSvg(info) {
@@ -75,33 +89,27 @@
       scanElements = null;
       markExperimentStep(host, 0);
       const cells = {
-        "11": { label: "左上角", from: "a_{11}=2", result: "\\lambda-2", explanation: "对角位置来自 λI 的 λ，再减去 A 的对应元素 2。" },
-        "12": { label: "右上角", from: "a_{12}=1", result: "-1", explanation: "非对角位置在 λI 中是 0，所以只剩 −a₁₂。" },
-        "21": { label: "左下角", from: "a_{21}=0", result: "0", explanation: "非对角位置是 0−0，仍然为 0。" },
-        "22": { label: "右下角", from: "a_{22}=2", result: "\\lambda-2", explanation: "另一个对角位置同样是 λ−a₂₂。" },
+        "11": { label: "左上角", left: "\\lambda", right: "2", result: "\\lambda-2", explanation: "对角位置来自 λI 的 λ，再减去 A 的对应元素 2。" },
+        "12": { label: "右上角", left: "0", right: "1", result: "-1", explanation: "非对角位置在 λI 中是 0，所以计算 0−1，只留下 −1。" },
+        "21": { label: "左下角", left: "0", right: "0", result: "0", explanation: "非对角位置计算 0−0，结果仍然是 0。" },
+        "22": { label: "右下角", left: "\\lambda", right: "2", result: "\\lambda-2", explanation: "另一个对角位置也来自 λ−a₂₂。" },
       };
       const active = cells[selectedCell];
       stage.innerHTML = `
-        <div class="ch8-scene-intro"><span>构造规则</span><h3>同一个位置，逐格做 ${I("\\lambda I-A")}</h3><p>点击结果矩阵中的任意位置，追踪它从哪里来。</p></div>
-        <div class="ch8-build-equation">
-          <article><span>普通矩阵 A</span>${matrix([[2, 1], [0, 2]])}</article>
-          <b aria-hidden="true">→</b>
-          <article><span>λI</span>${matrix([["\\lambda", 0], [0, "\\lambda"]])}</article>
-          <b aria-hidden="true">−</b>
-          <article class="is-result"><span>特征矩阵 λI−A</span>
-            <div class="ch8-click-matrix" role="group" aria-label="选择特征矩阵元素">
-              ${[["11", "\\lambda-2"], ["12", "-1"], ["21", "0"], ["22", "\\lambda-2"]]
-                .map(([id, tex]) => `<button type="button" data-build-cell="${id}" class="${selectedCell === id ? "is-active" : ""}">${I(tex)}</button>`)
-                .join("")}
-            </div>
-          </article>
+        <div class="ch8-scene-intro"><span>构造规则</span><h3>在同一个坐标位置计算 ${I("\\lambda I-A")}</h3><p>点击结果矩阵中的一个元素；三个矩阵的同一位置会同时标出。</p></div>
+        <div class="ch8-build-equation" aria-label="λI 减 A 得到特征矩阵">
+          <article><span>${I("\\lambda I")}</span>${bareMatrix([["\\lambda", "0"], ["0", "\\lambda"]], { selected: selectedCell, ariaLabel: "λI" })}</article>
+          <div class="ch8-equation-operator" aria-hidden="true">−</div>
+          <article><span>矩阵 A</span>${bareMatrix([["2", "1"], ["0", "2"]], { selected: selectedCell, ariaLabel: "矩阵 A" })}</article>
+          <div class="ch8-equation-operator" aria-hidden="true">=</div>
+          <article class="is-result"><span>特征矩阵 ${I("\\lambda I-A")}</span>${bareMatrix([["\\lambda-2", "-1"], ["0", "\\lambda-2"]], { interactive: true, selected: selectedCell, ariaLabel: "选择特征矩阵元素" })}</article>
         </div>
         <div class="ch8-cause-strip">
-          <div><span>你点的是</span><strong>${active.label}</strong></div>
-          <div><span>原矩阵对应位置</span><strong>${I(active.from)}</strong></div>
-          <div><span>结果</span><strong>${I(active.result)}</strong></div>
+          <span>${active.label}</span>
+          <div class="ch8-trace-formula">${I(active.left)}<i>−</i>${I(active.right)}<i>=</i><strong>${I(active.result)}</strong></div>
+          <p>${active.explanation}</p>
         </div>
-        ${conclusionMarkup("现在应该看见", "对角位置带 λ，非对角位置只改变符号", active.explanation)}`;
+        ${conclusionMarkup("现在应该看见", "对角位置保留 λ，非对角位置只做 0−aᵢⱼ", "三个矩阵中同一坐标被同时标出；这不是分块，也不是三组独立卡片，而是一次逐位置相减。")}`;
       stage.querySelectorAll("[data-build-cell]").forEach((button) => on(button, "click", () => {
         selectedCell = button.dataset.buildCell;
         renderBuild();
@@ -139,11 +147,22 @@
       ctx.lineWidth = 1;
       for (let i = 0; i <= 4; i += 1) {
         const y = pad.top + ((height - pad.top - pad.bottom) * i) / 4;
-        ctx.beginPath(); ctx.moveTo(pad.left, y); ctx.lineTo(width - pad.right, y); ctx.stroke();
+        ctx.beginPath();
+        ctx.moveTo(pad.left, y);
+        ctx.lineTo(width - pad.right, y);
+        ctx.stroke();
       }
       ctx.globalAlpha = 0.55;
-      ctx.beginPath(); ctx.moveTo(pad.left, mapY(0)); ctx.lineTo(width - pad.right, mapY(0)); ctx.stroke();
-      if (xmin <= 0 && xmax >= 0) { ctx.beginPath(); ctx.moveTo(mapX(0), pad.top); ctx.lineTo(mapX(0), height - pad.bottom); ctx.stroke(); }
+      ctx.beginPath();
+      ctx.moveTo(pad.left, mapY(0));
+      ctx.lineTo(width - pad.right, mapY(0));
+      ctx.stroke();
+      if (xmin <= 0 && xmax >= 0) {
+        ctx.beginPath();
+        ctx.moveTo(mapX(0), pad.top);
+        ctx.lineTo(mapX(0), height - pad.bottom);
+        ctx.stroke();
+      }
       ctx.globalAlpha = 1;
       ctx.strokeStyle = accent;
       ctx.lineWidth = 3;
@@ -153,15 +172,22 @@
       ctx.stroke();
       preset.roots.forEach((root) => {
         ctx.fillStyle = danger;
-        ctx.beginPath(); ctx.arc(mapX(root), mapY(0), 5, 0, Math.PI * 2); ctx.fill();
+        ctx.beginPath();
+        ctx.arc(mapX(root), mapY(0), 5, 0, Math.PI * 2);
+        ctx.fill();
       });
       const value = detAt(preset.A, currentLambda);
       const singular = Math.abs(value) < 1e-7;
       ctx.strokeStyle = singular ? danger : ink;
       ctx.fillStyle = singular ? danger : ink;
       ctx.lineWidth = 1.5;
-      ctx.beginPath(); ctx.moveTo(mapX(currentLambda), pad.top); ctx.lineTo(mapX(currentLambda), height - pad.bottom); ctx.stroke();
-      ctx.beginPath(); ctx.arc(mapX(currentLambda), mapY(value), 6, 0, Math.PI * 2); ctx.fill();
+      ctx.beginPath();
+      ctx.moveTo(mapX(currentLambda), pad.top);
+      ctx.lineTo(mapX(currentLambda), height - pad.bottom);
+      ctx.stroke();
+      ctx.beginPath();
+      ctx.arc(mapX(currentLambda), mapY(value), 6, 0, Math.PI * 2);
+      ctx.fill();
       ctx.font = "12px ui-monospace, monospace";
       ctx.fillStyle = ink;
       ctx.fillText("λ", width - 18, mapY(0) - 7);
@@ -195,7 +221,7 @@
       scanElements.kernelVisual.innerHTML = kernelSvg(info);
       scanElements.kernelTitle.textContent = info.type === "zero" ? "只有原点" : info.type === "line" ? "出现一条非零方向" : "整个平面";
       scanElements.kernelText.textContent = info.text;
-      scanElements.matrix.innerHTML = matrix(characteristicAt(preset.A, lambda));
+      scanElements.matrix.innerHTML = bareMatrix(characteristicAt(preset.A, lambda), { ariaLabel: "当前特征矩阵" });
       scanElements.det.textContent = fmt(det);
       scanElements.det.classList.toggle("is-danger", singular);
       scanElements.rank.textContent = String(info.rank);
@@ -328,7 +354,7 @@
         <div class="ch8-repeat-comparison">
           <article class="is-scalar">
             <div class="ch8-comparison-title"><span>矩阵 A</span><strong>纯缩放 2I</strong></div>
-            ${matrix([[2, 0], [0, 2]])}
+            ${bareMatrix([["2", "0"], ["0", "2"]], { ariaLabel: "纯缩放矩阵 2I" })}
             <div class="ch8-comparison-polynomial">${I("\\chi_A=(\\lambda-2)^2")}</div>
             ${kernelSvg(kernelInfo([[2, 0], [0, 2]], 2))}
             <div class="ch8-comparison-result"><b>${I("\\dim\\ker(2I-A)=2")}</b><p>所有方向都保持方向不变。</p></div>
@@ -336,7 +362,7 @@
           <div class="ch8-same-badge"><span>相同</span><b>${I("(\\lambda-2)^2")}</b><i>但核不同</i></div>
           <article class="is-jordan">
             <div class="ch8-comparison-title"><span>矩阵 B</span><strong>二阶 Jordan 块</strong></div>
-            ${matrix([[2, 1], [0, 2]])}
+            ${bareMatrix([["2", "1"], ["0", "2"]], { ariaLabel: "二阶 Jordan 块" })}
             <div class="ch8-comparison-polynomial">${I("\\chi_B=(\\lambda-2)^2")}</div>
             ${kernelSvg(kernelInfo([[2, 1], [0, 2]], 2))}
             <div class="ch8-comparison-result"><b>${I("\\dim\\ker(2I-B)=1")}</b><p>只有一条真正的特征方向。</p></div>

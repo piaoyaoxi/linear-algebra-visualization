@@ -33,7 +33,13 @@ jobs:
           node-version: 20
 
       - name: Reject off-brand Chapter 6 source styles
-        run: node .github/scripts/ch6-source-style-check.mjs
+        shell: bash
+        run: |
+          mkdir -p /tmp/ch6-screenshots
+          set +e
+          node .github/scripts/ch6-source-style-check.mjs 2>&1 | tee /tmp/ch6-screenshots/source-style-report.txt
+          status=${PIPESTATUS[0]}
+          exit "$status"
 
       - name: Install Playwright
         run: |

@@ -1,24 +1,26 @@
 name: Synchronize Chapter 7 head
 
 on:
-  pull_request:
+  pull_request_target:
     branches:
       - automation/ch7-sync-base
-    types: [opened, synchronize, reopened, edited]
+    types: [opened, synchronize, reopened, edited, ready_for_review, converted_to_draft]
 
 permissions:
   contents: write
 
 jobs:
   synchronize:
-    if: github.head_ref == 'context/ch7-linear-transformations'
+    if: github.event.pull_request.head.ref == 'context/ch7-linear-transformations'
     runs-on: ubuntu-latest
     timeout-minutes: 20
     steps:
       - uses: actions/checkout@v4
         with:
+          repository: piaoyaoxi/linear-algebra-visualization
           ref: context/ch7-linear-transformations
           fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
       - name: Merge latest main and preserve the Chapter 7 story layer
         shell: bash
         run: |

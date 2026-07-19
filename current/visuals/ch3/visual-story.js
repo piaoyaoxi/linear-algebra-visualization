@@ -1,56 +1,42 @@
-/* Chapter 3 cinematic visual stories — geometry, transformation, then symbols. */
+/* Chapter 3 visual stories — one invariant, three clear pictures. */
 (() => {
   const M = () => window.Ch3Math;
   const texD = (source) => M()?.texD?.(source) ?? `<code>${source}</code>`;
   const esc = (value) => String(value)
-    .replaceAll('&', '&amp;')
-    .replaceAll('<', '&lt;')
-    .replaceAll('>', '&gt;')
-    .replaceAll('"', '&quot;');
+    .replaceAll("&", "&amp;")
+    .replaceAll("<", "&lt;")
+    .replaceAll(">", "&gt;")
+    .replaceAll('"', "&quot;");
   const f = (value) => Number(Number(value).toFixed(2));
 
-  const W = 960;
-  const H = 540;
+  const COLORS = {
+    cyan: "#63e6e2",
+    orange: "#ffb26b",
+    gold: "#ffd166",
+    white: "#f5f7fb",
+    muted: "#9aa8b8",
+    red: "#ff7b7b",
+  };
 
   function defs() {
     return `
       <defs>
-        <radialGradient id="ch3-scene-glow" cx="50%" cy="45%" r="68%">
-          <stop offset="0" stop-color="#17203a" stop-opacity=".88"></stop>
-          <stop offset=".72" stop-color="#0d1427" stop-opacity=".96"></stop>
-          <stop offset="1" stop-color="#090e1b"></stop>
-        </radialGradient>
-        <filter id="ch3-glow-cyan" x="-60%" y="-60%" width="220%" height="220%"><feGaussianBlur stdDeviation="5" result="b"></feGaussianBlur><feMerge><feMergeNode in="b"></feMergeNode><feMergeNode in="SourceGraphic"></feMergeNode></feMerge></filter>
-        <filter id="ch3-glow-gold" x="-60%" y="-60%" width="220%" height="220%"><feGaussianBlur stdDeviation="6" result="b"></feGaussianBlur><feMerge><feMergeNode in="b"></feMergeNode><feMergeNode in="SourceGraphic"></feMergeNode></feMerge></filter>
-        <linearGradient id="ch3-span-plane" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#66d9ef" stop-opacity=".22"></stop><stop offset="1" stop-color="#f4a261" stop-opacity=".08"></stop></linearGradient>
-        <linearGradient id="ch3-unit-fill" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#66d9ef" stop-opacity=".36"></stop><stop offset="1" stop-color="#ffd166" stop-opacity=".18"></stop></linearGradient>
+        <linearGradient id="ch3-panel-fill" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0" stop-color="#101d2d"></stop>
+          <stop offset="1" stop-color="#0b1624"></stop>
+        </linearGradient>
+        <linearGradient id="ch3-area-fill" x1="0" y1="0" x2="1" y2="1">
+          <stop offset="0" stop-color="${COLORS.cyan}" stop-opacity=".30"></stop>
+          <stop offset="1" stop-color="${COLORS.cyan}" stop-opacity=".10"></stop>
+        </linearGradient>
+        <filter id="ch3-soft-glow" x="-60%" y="-60%" width="220%" height="220%">
+          <feGaussianBlur stdDeviation="3.5" result="blur"></feGaussianBlur>
+          <feMerge><feMergeNode in="blur"></feMergeNode><feMergeNode in="SourceGraphic"></feMergeNode></feMerge>
+        </filter>
       </defs>`;
   }
 
-  function sceneBase(options = {}) {
-    const grid = options.grid !== false;
-    const step = options.step ?? 48;
-    const x1 = options.x1 ?? 34;
-    const x2 = options.x2 ?? 926;
-    const y1 = options.y1 ?? 28;
-    const y2 = options.y2 ?? 510;
-    const lines = [];
-    if (grid) {
-      for (let x = x1; x <= x2; x += step) lines.push(`<path d="M${x} ${y1}V${y2}"></path>`);
-      for (let y = y1; y <= y2; y += step) lines.push(`<path d="M${x1} ${y}H${x2}"></path>`);
-    }
-    return `${defs()}<rect class="ch3-scene-bg" width="${W}" height="${H}" rx="24"></rect>${grid ? `<g class="ch3-scene-grid">${lines.join('')}</g>` : ''}<path class="ch3-scene-vignette" d="M0 0H960V540H0Z"></path>`;
-  }
-
-  function axes(ox, oy, bounds = {}) {
-    const x1 = bounds.x1 ?? 40;
-    const x2 = bounds.x2 ?? 920;
-    const y1 = bounds.y1 ?? 32;
-    const y2 = bounds.y2 ?? 504;
-    return `<g class="ch3-axis"><path d="M${x1} ${oy}H${x2}"></path><path d="M${ox} ${y2}V${y1}"></path><text x="${x2 - 12}" y="${oy - 12}">x₁</text><text x="${ox + 12}" y="${y1 + 20}">x₂</text></g>`;
-  }
-
-  function softArrow(x1, y1, x2, y2, color = 'cyan', label = '', options = {}) {
+  function arrowPath(x1, y1, x2, y2, color = "cyan", options = {}) {
     const dx = x2 - x1;
     const dy = y2 - y1;
     const len = Math.hypot(dx, dy) || 1;
@@ -58,406 +44,551 @@
     const uy = dy / len;
     const px = -uy;
     const py = ux;
-    const halfW = options.thin ? 2.1 : 3.7;
-    const headLen = Math.min(23, Math.max(15, len * 0.18));
-    const headHalf = options.thin ? 6.5 : 9.2;
+    const half = options.thin ? 2.2 : 3.7;
+    const headLen = Math.min(22, Math.max(14, len * .19));
+    const headHalf = options.thin ? 6 : 9;
     const neckX = x2 - ux * headLen;
     const neckY = y2 - uy * headLen;
-    const pt = (x, y) => `${f(x)} ${f(y)}`;
+    const p = (x, y) => `${f(x)} ${f(y)}`;
     const d = [
-      `M ${pt(x1 + px * halfW, y1 + py * halfW)}`,
-      `L ${pt(neckX + px * halfW, neckY + py * halfW)}`,
-      `L ${pt(neckX + px * headHalf, neckY + py * headHalf)}`,
-      `Q ${pt(x2 - ux * 3 + px * 1.1, y2 - uy * 3 + py * 1.1)} ${pt(x2, y2)}`,
-      `Q ${pt(x2 - ux * 3 - px * 1.1, y2 - uy * 3 - py * 1.1)} ${pt(neckX - px * headHalf, neckY - py * headHalf)}`,
-      `L ${pt(neckX - px * halfW, neckY - py * halfW)}`,
-      `L ${pt(x1 - px * halfW, y1 - py * halfW)}`,
-      `A ${halfW} ${halfW} 0 0 0 ${pt(x1 + px * halfW, y1 + py * halfW)}`,
-      'Z',
-    ].join(' ');
-    const lx = options.labelX ?? (x1 + dx * 0.56 + px * 20);
-    const ly = options.labelY ?? (y1 + dy * 0.56 + py * 20);
-    return `<g class="ch3-arrow ch3-enter" style="--delay:${options.delay ?? 0}ms;opacity:${options.opacity ?? 1}"><path class="ch3-fill-${color}" d="${d}"></path>${label ? `<text class="ch3-label ch3-text-${color}" x="${f(lx)}" y="${f(ly)}">${esc(label)}</text>` : ''}</g>`;
+      `M ${p(x1 + px * half, y1 + py * half)}`,
+      `L ${p(neckX + px * half, neckY + py * half)}`,
+      `L ${p(neckX + px * headHalf, neckY + py * headHalf)}`,
+      `Q ${p(x2 - ux * 3 + px, y2 - uy * 3 + py)} ${p(x2, y2)}`,
+      `Q ${p(x2 - ux * 3 - px, y2 - uy * 3 - py)} ${p(neckX - px * headHalf, neckY - py * headHalf)}`,
+      `L ${p(neckX - px * half, neckY - py * half)}`,
+      `L ${p(x1 - px * half, y1 - py * half)}`,
+      `A ${half} ${half} 0 0 0 ${p(x1 + px * half, y1 + py * half)}`,
+      "Z",
+    ].join(" ");
+    const labelX = options.labelX ?? (x1 + dx * .58 + px * 16);
+    const labelY = options.labelY ?? (y1 + dy * .58 + py * 16);
+    return `<g class="ch3-arrow" style="opacity:${options.opacity ?? 1}">
+      <path class="ch3-fill-${color}" d="${d}"></path>
+      ${options.label ? `<text class="ch3-label ch3-text-${color}" x="${f(labelX)}" y="${f(labelY)}">${esc(options.label)}</text>` : ""}
+    </g>`;
   }
 
-  function line(x1, y1, x2, y2, color = 'cyan', options = {}) {
-    return `<path class="ch3-line ch3-stroke-${color}${options.dashed ? ' is-dashed' : ''}${options.soft ? ' is-soft' : ''}${options.thin ? ' is-thin' : ''} ch3-enter" style="--delay:${options.delay ?? 0}ms;opacity:${options.opacity ?? 1}" d="M${f(x1)} ${f(y1)}L${f(x2)} ${f(y2)}"></path>`;
+  function line(x1, y1, x2, y2, color = "cyan", options = {}) {
+    return `<path class="ch3-line ch3-stroke-${color}${options.dashed ? " is-dashed" : ""}${options.soft ? " is-soft" : ""}${options.thin ? " is-thin" : ""}" style="opacity:${options.opacity ?? 1}" d="M${f(x1)} ${f(y1)}L${f(x2)} ${f(y2)}"></path>`;
   }
 
-  function path(d, color = 'cyan', options = {}) {
-    return `<path class="ch3-line ch3-stroke-${color}${options.dashed ? ' is-dashed' : ''}${options.soft ? ' is-soft' : ''}${options.thin ? ' is-thin' : ''} ch3-enter" style="--delay:${options.delay ?? 0}ms;opacity:${options.opacity ?? 1}" d="${d}"></path>`;
+  function curve(d, color = "cyan", options = {}) {
+    return `<path class="ch3-line ch3-stroke-${color}${options.dashed ? " is-dashed" : ""}${options.thin ? " is-thin" : ""}" style="opacity:${options.opacity ?? 1}" d="${d}"></path>`;
   }
 
-  function dot(x, y, color = 'gold', label = '', options = {}) {
-    return `<g class="ch3-enter" style="--delay:${options.delay ?? 0}ms"><circle class="ch3-dot ch3-fill-${color}" cx="${f(x)}" cy="${f(y)}" r="${options.r ?? 7}"></circle>${label ? `<text class="ch3-label ch3-text-${color}" x="${f(options.labelX ?? x + 14)}" y="${f(options.labelY ?? y - 14)}">${esc(label)}</text>` : ''}</g>`;
+  function dot(x, y, color = "gold", label = "", options = {}) {
+    return `<g><circle class="ch3-dot ch3-fill-${color}" cx="${f(x)}" cy="${f(y)}" r="${options.r ?? 6}"></circle>
+      ${label ? `<text class="ch3-label ch3-text-${color}" x="${f(options.labelX ?? x + 10)}" y="${f(options.labelY ?? y - 12)}">${esc(label)}</text>` : ""}
+    </g>`;
   }
 
   function text(x, y, value, options = {}) {
-    const anchor = options.anchor ?? 'start';
-    const cls = `ch3-scene-text${options.small ? ' is-small' : ''}${options.big ? ' is-big' : ''}${options.muted ? ' is-muted' : ''}${options.color ? ` ch3-text-${options.color}` : ''}`;
-    return `<text class="${cls} ch3-enter" style="--delay:${options.delay ?? 0}ms" x="${f(x)}" y="${f(y)}" text-anchor="${anchor}">${esc(value)}</text>`;
+    const cls = `ch3-scene-text${options.small ? " is-small" : ""}${options.big ? " is-big" : ""}${options.muted ? " is-muted" : ""}${options.color ? ` ch3-text-${options.color}` : ""}`;
+    return `<text class="${cls}" x="${f(x)}" y="${f(y)}" text-anchor="${options.anchor ?? "start"}">${esc(value)}</text>`;
+  }
+
+  function panelFrame(x, y, w, h, index, label, metric, active) {
+    return `
+      <rect class="ch3-panel-bg${active ? " is-active" : ""}" x="${x}" y="${y}" width="${w}" height="${h}" rx="24"></rect>
+      <text class="ch3-panel-index" x="${x + 22}" y="${y + 32}">${String(index + 1).padStart(2, "0")}</text>
+      <text class="ch3-panel-label" x="${x + 55}" y="${y + 32}">${esc(label)}</text>
+      <text class="ch3-panel-metric" x="${x + 22}" y="${y + h - 18}">${esc(metric)}</text>`;
+  }
+
+  function panelGroup(index, label, metric, active, content, mobile = false) {
+    const x = mobile ? 52 : 28 + index * 310;
+    const y = 18;
+    const w = mobile ? 856 : 284;
+    const h = 392;
+    return `<g class="${mobile ? "ch3-mobile-panel" : "ch3-desktop-panel"}${active ? " is-active" : ""}" data-panel="${index}">
+      ${panelFrame(x, y, w, h, index, label, metric, active)}
+      ${content({ x, y, w, h, mobile })}
+    </g>`;
   }
 
   function matrix(entries, x, y, options = {}) {
+    const cw = options.cellW ?? 34;
+    const ch = options.cellH ?? 34;
     const rows = entries.length;
     const cols = entries[0].length;
-    const cw = options.cellW ?? 44;
-    const ch = options.cellH ?? 38;
     const width = cols * cw;
     const height = rows * ch;
     const pivots = new Set((options.pivots ?? []).map(([r, c]) => `${r}:${c}`));
     const items = [];
     entries.forEach((row, r) => row.forEach((value, c) => {
-      const px = x + c * cw + cw / 2;
-      const py = y + r * ch + ch / 2 + 6;
-      if (pivots.has(`${r}:${c}`)) items.push(`<circle class="ch3-pivot-halo" cx="${px}" cy="${py - 6}" r="16"></circle>`);
-      items.push(`<text class="ch3-matrix-number" x="${px}" y="${py}" text-anchor="middle">${esc(value)}</text>`);
+      const cx = x + c * cw + cw / 2;
+      const cy = y + r * ch + ch / 2 + 5;
+      if (pivots.has(`${r}:${c}`)) items.push(`<circle class="ch3-pivot" cx="${cx}" cy="${cy - 5}" r="15"></circle>`);
+      items.push(`<text class="ch3-matrix-number" x="${cx}" y="${cy}" text-anchor="middle">${esc(value)}</text>`);
     }));
-    return `<g class="ch3-matrix ch3-enter" style="--delay:${options.delay ?? 0}ms"><path d="M${x - 9} ${y}H${x - 18}V${y + height}H${x - 9}M${x + width + 9} ${y}H${x + width + 18}V${y + height}H${x + width + 9}"></path>${items.join('')}</g>`;
+    return `<g class="ch3-matrix">
+      <path d="M${x - 8} ${y}H${x - 16}V${y + height}H${x - 8}M${x + width + 8} ${y}H${x + width + 16}V${y + height}H${x + width + 8}"></path>
+      ${items.join("")}
+    </g>`;
   }
 
-  function mapPoint(ox, oy, scale, x, y) {
-    return [ox + x * scale, oy - y * scale];
-  }
-
-  function storyElimination(step) {
-    const ox = 245;
-    const oy = 420;
-    const s = 70;
-    const P = mapPoint(ox, oy, s, 5 / 3, 7 / 3);
-    const r1a = mapPoint(ox, oy, s, -1, 5);
-    const r1b = mapPoint(ox, oy, s, 5, -1);
-    const r2a = mapPoint(ox, oy, s, -0.5, -2);
-    const r2b = mapPoint(ox, oy, s, 3, 5);
-    const nr2a = mapPoint(ox, oy, s, -1, 7 / 3);
-    const nr2b = mapPoint(ox, oy, s, 5, 7 / 3);
-    const base = `${sceneBase({ x2: 630, step: 42 })}${axes(ox, oy, { x2: 630 })}<path class="ch3-divider-line" d="M650 52V488"></path>`;
-    if (step === 0) {
-      return `${base}${line(...r1a, ...r1b, 'cyan')}${line(...r2a, ...r2b, 'orange', { delay: 100 })}${dot(P[0], P[1], 'gold', '共同解 x*', { r: 9, labelX: P[0] + 18, labelY: P[1] - 18, delay: 220 })}${text(680, 96, '两个方程 = 两个几何约束', { big: true })}${text(680, 152, 'R₁  x + y = 4', { color: 'cyan' })}${text(680, 194, 'R₂  2x − y = 1', { color: 'orange' })}${text(680, 286, '方程组的解', { muted: true, small: true })}${text(680, 328, '就是两条约束', { big: true })}${text(680, 366, '共同穿过的点', { big: true, color: 'gold' })}`;
-    }
-    if (step === 1) {
-      return `${base}${line(...r1a, ...r1b, 'cyan', { opacity: .72 })}${line(...r2a, ...r2b, 'orange', { dashed: true, opacity: .28 })}${line(...nr2a, ...nr2b, 'orange', { delay: 140 })}${dot(P[0], P[1], 'gold', '交点不动', { r: 9, labelX: P[0] + 18, labelY: P[1] - 18, delay: 240 })}${path(`M690 174C744 132 810 132 864 174`, 'gold', { dashed: true, delay: 80 })}${text(680, 92, 'R₂ ← R₂ − 2R₁', { big: true, color: 'gold' })}${text(680, 142, '旧 R₂', { muted: true })}${text(816, 142, '新 R₂', { color: 'orange' })}${text(680, 248, '新方程变成', { muted: true, small: true })}${text(680, 290, '−3y = −7', { big: true, color: 'orange' })}${text(680, 370, '约束写法改变', { big: true })}${text(680, 408, '共同解集保持不变', { big: true, color: 'gold' })}`;
-    }
-    return `${base}${line(...r1a, ...r1b, 'cyan', { opacity: .42 })}${line(...nr2a, ...nr2b, 'orange', { opacity: .62 })}${dot(P[0], P[1], 'gold', 'x*', { r: 8, labelX: P[0] + 14, labelY: P[1] - 16 })}${text(680, 78, '增广矩阵的同一步', { big: true })}${matrix([['1', '1', '│', '4'], ['2', '−1', '│', '1']], 690, 116, { cellW: 46, cellH: 40 })}${softArrow(790, 226, 790, 268, 'gold', '', { thin: true })}${text(816, 252, 'R₂−2R₁', { small: true, color: 'gold' })}${matrix([['1', '1', '│', '4'], ['0', '−3', '│', '−7']], 690, 288, { cellW: 46, cellH: 40, pivots: [[0, 0], [1, 1]], delay: 120 })}${text(680, 438, '主元锁定方向；自由列留下运动方向', { small: true, color: 'cyan' })}`;
-  }
-
-  function vectorGeometry(alpha, beta) {
-    const O = [240, 380];
-    const u = [165, -112];
-    const v = [92, 136];
-    const A = [O[0] + alpha * u[0], O[1] + alpha * u[1]];
-    const B = [O[0] + beta * v[0], O[1] + beta * v[1]];
-    const T = [A[0] + beta * v[0], A[1] + beta * v[1]];
-    return { O, u, v, A, B, T };
-  }
-
-  function storyVector(step, state) {
-    const alpha = state.alpha ?? 1;
-    const beta = state.beta ?? 1;
-    const { O, u, v, A, B, T } = vectorGeometry(alpha, beta);
-    const base = `${sceneBase({ x2: 650, step: 44 })}${axes(O[0], O[1], { x2: 650 })}<path class="ch3-divider-line" d="M674 52V488"></path>`;
-    if (step === 0) {
-      return `${base}${softArrow(O[0], O[1], O[0] + u[0], O[1] + u[1], 'cyan', 'u')}${softArrow(O[0], O[1], O[0] + v[0], O[1] + v[1], 'orange', 'v', { delay: 100 })}${dot(O[0], O[1], 'white', 'O', { r: 4, labelX: O[0] - 22, labelY: O[1] + 25 })}${text(706, 96, '向量不是线段', { big: true })}${text(706, 140, '它是“从这里到那里”', { big: true, color: 'gold' })}${text(706, 210, '方向', { small: true, muted: true })}${text(706, 242, '由箭头给出', { color: 'cyan' })}${text(706, 304, '大小', { small: true, muted: true })}${text(706, 336, '由长度给出', { color: 'orange' })}${text(706, 420, '坐标列只是这段位移的数字记录', { small: true })}`;
-    }
-    if (step === 1) {
-      return `${base}${softArrow(O[0], O[1], A[0], A[1], 'cyan', 'αu')}${softArrow(A[0], A[1], T[0], T[1], 'orange', 'βv', { delay: 100 })}${line(O[0], O[1], B[0], B[1], 'white', { dashed: true, opacity: .25, thin: true })}${line(B[0], B[1], T[0], T[1], 'white', { dashed: true, opacity: .25, thin: true })}${dot(A[0], A[1], 'white', '', { r: 4 })}${text(706, 96, '线性组合是一段路', { big: true })}${text(706, 160, `先走  ${f(alpha)}u`, { color: 'cyan' })}${text(706, 206, `再走  ${f(beta)}v`, { color: 'orange' })}${text(706, 282, '第二个向量', { muted: true, small: true })}${text(706, 316, '必须从第一个终点出发', { big: true, color: 'gold' })}${text(706, 420, '拖动系数，观察长度与方向同时改变', { small: true })}`;
-    }
-    return `${base}<path class="ch3-parallelogram" d="M${O[0]} ${O[1]}L${A[0]} ${A[1]}L${T[0]} ${T[1]}L${B[0]} ${B[1]}Z"></path>${softArrow(O[0], O[1], A[0], A[1], 'cyan', 'αu', { opacity: .7 })}${softArrow(A[0], A[1], T[0], T[1], 'orange', 'βv', { opacity: .7 })}${softArrow(O[0], O[1], T[0], T[1], 'gold', 'w', { delay: 160 })}${text(706, 92, '终点决定和向量', { big: true })}${text(706, 148, 'w = αu + βv', { big: true, color: 'gold' })}${text(706, 226, '几何', { small: true, muted: true })}${text(706, 258, '原点 → 最终终点', { color: 'gold' })}${text(706, 320, '坐标', { small: true, muted: true })}${text(706, 352, '每个分量分别相加', { color: 'cyan' })}${text(706, 424, '两种读法必须得到同一个 w', { small: true })}`;
-  }
-
-  function storyDependence(step) {
-    const O = [270, 360];
-    const v1 = [180, -105];
-    const v2 = [105, 145];
-    const P1 = [O[0] + v1[0], O[1] + v1[1]];
-    const P2 = [O[0] + v2[0], O[1] + v2[1]];
-    const P3 = [P1[0] + v2[0], P1[1] + v2[1]];
-    const base = `${sceneBase({ x2: 650, step: 44 })}${axes(O[0], O[1], { x2: 650 })}<path class="ch3-divider-line" d="M674 52V488"></path>`;
-    if (step === 0) {
-      return `${base}${line(62, 481, 610, 161, 'cyan', { soft: true, opacity: .18 })}${line(62, 481, 610, 161, 'cyan', { opacity: .62 })}${softArrow(O[0], O[1], P1[0], P1[1], 'cyan', 'v₁')}${text(706, 92, '一个独立方向', { big: true })}${text(706, 146, '只能张成一条线', { big: true, color: 'cyan' })}${text(706, 230, '所有倍数 tv₁', { muted: true })}${text(706, 266, '都沿着同一方向', { color: 'cyan' })}${text(706, 410, '维数 = 1', { big: true, color: 'gold' })}`;
-    }
-    if (step === 1) {
-      return `${base}<path class="ch3-span-sheet" d="M60 500L520 230L646 405L186 534Z"></path>${softArrow(O[0], O[1], P1[0], P1[1], 'cyan', 'v₁')}${softArrow(O[0], O[1], P2[0], P2[1], 'orange', 'v₂', { delay: 100 })}${text(706, 92, '第二个新方向', { big: true })}${text(706, 146, '把线铺成平面', { big: true, color: 'orange' })}${text(706, 230, '只要 v₂ 不在', { muted: true })}${text(706, 266, 'span(v₁) 上', { color: 'cyan' })}${text(706, 410, '维数 = 2', { big: true, color: 'gold' })}`;
-    }
-    if (step === 2) {
-      return `${base}<path class="ch3-span-sheet" d="M60 500L520 230L646 405L186 534Z"></path>${softArrow(O[0], O[1], P1[0], P1[1], 'cyan', 'v₁', { opacity: .72 })}${softArrow(O[0], O[1], P2[0], P2[1], 'orange', 'v₂', { opacity: .72 })}${softArrow(O[0], O[1], P3[0], P3[1], 'gold', 'v₃', { delay: 150 })}${line(P1[0], P1[1], P3[0], P3[1], 'orange', { dashed: true, opacity: .5, thin: true })}${line(P2[0], P2[1], P3[0], P3[1], 'cyan', { dashed: true, opacity: .5, thin: true })}${text(706, 82, 'v₃ 看起来是新箭头', { big: true })}${text(706, 138, '但它没有带来新方向', { big: true, color: 'gold' })}${text(706, 232, 'v₃ = v₁ + v₂', { color: 'gold' })}${text(706, 284, 'v₁ + v₂ − v₃ = 0', { color: 'white' })}${text(706, 410, '存在非零关系 ⇒ 线性相关', { big: true, color: 'orange' })}`;
-    }
-    return `${base}<path class="ch3-span-sheet" d="M60 500L520 230L646 405L186 534Z"></path>${softArrow(O[0], O[1], P1[0], P1[1], 'cyan', 'v₁')}${softArrow(O[0], O[1], P2[0], P2[1], 'orange', 'v₂')}${softArrow(O[0], O[1], P3[0], P3[1], 'gold', 'v₃', { opacity: .12 })}${path(`M${P3[0] - 13} ${P3[1] - 13}L${P3[0] + 13} ${P3[1] + 13}M${P3[0] + 13} ${P3[1] - 13}L${P3[0] - 13} ${P3[1] + 13}`, 'orange', { delay: 120 })}${text(706, 90, '删去冗余向量 v₃', { big: true })}${text(706, 152, '张成空间完全不变', { big: true, color: 'gold' })}${text(706, 250, 'span(v₁,v₂,v₃)', { color: 'white' })}${text(706, 290, '= span(v₁,v₂)', { color: 'cyan' })}${text(706, 410, '基：保留全部方向，去掉重复信息', { big: true, color: 'orange' })}`;
-  }
-
-  function transformedGrid(mode) {
-    const lines = [];
-    const srcO = [245, 278];
-    const dstO = [715, 278];
-    const map = (x, y) => {
-      const dx = x - srcO[0];
-      const dy = y - srcO[1];
-      if (mode === 'rank2') return [dstO[0] + .78 * dx + .34 * dy, dstO[1] - .22 * dx + .72 * dy];
-      if (mode === 'rank1') return [dstO[0] + .9 * dx + .48 * dy, dstO[1] - .32 * dx - .17 * dy];
-      return [...dstO];
+  function eliminationPanel(index) {
+    return (box) => {
+      const { x, y, w, h, mobile } = box;
+      const sx = mobile ? 1.75 : 1;
+      const ox = x + (mobile ? 225 : 65);
+      const oy = y + (mobile ? 288 : 260);
+      if (index === 0) {
+        const p = [ox + 92 * sx, oy - 90];
+        return `
+          ${line(ox - 10, oy - 20, ox + 190 * sx, oy - 210, "cyan")}
+          ${line(ox - 5, oy - 190, ox + 196 * sx, oy - 2, "orange")}
+          ${dot(p[0], p[1], "gold", "x*", { r: 7, labelX: p[0] + 12, labelY: p[1] - 12 })}
+          ${text(x + 22, y + 76, "R₁ : x + y = 4", { color: "cyan", small: true })}
+          ${text(x + 22, y + 101, "R₂ : 2x − y = 1", { color: "orange", small: true })}
+          ${text(x + w / 2, y + h - 52, "解就是两条约束的交点", { anchor: "middle", small: true, muted: true })}`;
+      }
+      if (index === 1) {
+        const p = [ox + 92 * sx, oy - 90];
+        return `
+          ${line(ox - 10, oy - 20, ox + 190 * sx, oy - 210, "cyan", { opacity: .75 })}
+          ${line(ox - 5, oy - 190, ox + 196 * sx, oy - 2, "orange", { dashed: true, opacity: .22 })}
+          ${line(ox - 8, p[1], ox + 200 * sx, p[1], "orange")}
+          ${dot(p[0], p[1], "gold", "交点不动", { r: 7, labelX: p[0] + 12, labelY: p[1] - 12 })}
+          ${text(x + 22, y + 78, "R₂ ← R₂ − 2R₁", { color: "gold", big: true })}
+          ${text(x + w / 2, y + h - 52, "方程写法改变，解集保持不变", { anchor: "middle", small: true, muted: true })}`;
+      }
+      const mx = x + (mobile ? 160 : 32);
+      return `
+        ${matrix([["1", "1", "│", "4"], ["2", "−1", "│", "1"]], mx, y + 92, { cellW: mobile ? 50 : 29, cellH: 38 })}
+        ${arrowPath(x + w / 2, y + 195, x + w / 2, y + 235, "gold", { thin: true })}
+        ${text(x + w / 2 + 18, y + 224, "R₂−2R₁", { small: true, color: "gold" })}
+        ${matrix([["1", "1", "│", "4"], ["0", "−3", "│", "−7"]], mx, y + 250, { cellW: mobile ? 50 : 29, cellH: 38, pivots: [[0, 0], [1, 1]] })}
+        ${text(x + w / 2, y + h - 52, "两个主元 → 没有自由方向", { anchor: "middle", small: true, muted: true })}`;
     };
-    for (let i = -3; i <= 3; i += 1) {
-      const a = map(srcO[0] + i * 42, srcO[1] - 150);
-      const b = map(srcO[0] + i * 42, srcO[1] + 150);
-      lines.push(line(a[0], a[1], b[0], b[1], i === 0 ? 'cyan' : 'white', { opacity: i === 0 ? .9 : .18, thin: true }));
-      const c = map(srcO[0] - 150, srcO[1] + i * 42);
-      const d = map(srcO[0] + 150, srcO[1] + i * 42);
-      lines.push(line(c[0], c[1], d[0], d[1], i === 0 ? 'orange' : 'white', { opacity: i === 0 ? .9 : .18, thin: true }));
-    }
-    return { lines: lines.join(''), map, srcO, dstO };
   }
 
-  function storyRank(step) {
-    const mode = ['rank2', 'rank1', 'rank0'][step] ?? 'rank2';
-    const { lines, map, srcO, dstO } = transformedGrid(mode);
-    const square = [[srcO[0], srcO[1]], [srcO[0] + 84, srcO[1]], [srcO[0] + 84, srcO[1] - 84], [srcO[0], srcO[1] - 84]].map(([x, y]) => map(x, y));
-    const rank = mode === 'rank2' ? 2 : mode === 'rank1' ? 1 : 0;
-    const title = mode === 'rank2' ? '面积仍然存在' : mode === 'rank1' ? '平面塌成直线' : '所有方向塌成一点';
-    const base = `${sceneBase({ grid: false })}<path class="ch3-divider-line" d="M480 54V450"></path>${text(80, 72, '输入空间', { small: true, muted: true })}${text(556, 72, '输出空间 Im(A)', { small: true, muted: true })}${softArrow(438, 270, 522, 270, 'gold', 'A', { thin: true, labelY: 248 })}`;
-    const srcGrid = [];
-    for (let i = -3; i <= 3; i += 1) {
-      srcGrid.push(line(srcO[0] + i * 42, srcO[1] - 150, srcO[0] + i * 42, srcO[1] + 150, i === 0 ? 'cyan' : 'white', { opacity: i === 0 ? .9 : .18, thin: true }));
-      srcGrid.push(line(srcO[0] - 150, srcO[1] + i * 42, srcO[0] + 150, srcO[1] + i * 42, i === 0 ? 'orange' : 'white', { opacity: i === 0 ? .9 : .18, thin: true }));
-    }
-    return `${base}${srcGrid.join('')}${lines}<path class="ch3-unit-square" d="M${srcO[0]} ${srcO[1]}L${srcO[0] + 84} ${srcO[1]}L${srcO[0] + 84} ${srcO[1] - 84}L${srcO[0]} ${srcO[1] - 84}Z"></path><path class="ch3-unit-image" d="M${square.map((p) => `${f(p[0])} ${f(p[1])}`).join('L')}Z"></path>${mode === 'rank0' ? dot(dstO[0], dstO[1], 'gold', 'Im(A)', { r: 10, labelX: dstO[0] + 18, labelY: dstO[1] - 18, delay: 120 }) : ''}${text(480, 486, title, { anchor: 'middle', big: true, color: 'gold' })}${text(820, 486, `rank(A) = ${rank}`, { anchor: 'middle', big: true, color: 'cyan' })}`;
+  function vectorPanel(index, state) {
+    return (box) => {
+      const { x, y, w, h, mobile } = box;
+      const scale = mobile ? 1.55 : 1;
+      const O = [x + (mobile ? 220 : 58), y + 278];
+      const u = [94 * scale, -74];
+      const v = [68 * scale, 92];
+      const a = state.alpha ?? 1;
+      const b = state.beta ?? 1;
+      const A = [O[0] + a * u[0], O[1] + a * u[1]];
+      const T = [A[0] + b * v[0], A[1] + b * v[1]];
+      const B = [O[0] + b * v[0], O[1] + b * v[1]];
+      if (index === 0) {
+        return `
+          ${line(O[0] - 18, O[1], O[0] + 190 * scale, O[1], "white", { thin: true, opacity: .22 })}
+          ${line(O[0], O[1] + 24, O[0], O[1] - 190, "white", { thin: true, opacity: .22 })}
+          ${arrowPath(O[0], O[1], O[0] + u[0], O[1] + u[1], "cyan", { label: "u" })}
+          ${arrowPath(O[0], O[1], O[0] + v[0], O[1] + v[1], "orange", { label: "v" })}
+          ${text(x + w / 2, y + h - 52, "箭头同时表达大小与方向", { anchor: "middle", small: true, muted: true })}`;
+      }
+      if (index === 1) {
+        return `
+          ${arrowPath(O[0], O[1], A[0], A[1], "cyan", { label: "αu" })}
+          ${arrowPath(A[0], A[1], T[0], T[1], "orange", { label: "βv" })}
+          ${line(O[0], O[1], B[0], B[1], "white", { dashed: true, thin: true, opacity: .22 })}
+          ${line(B[0], B[1], T[0], T[1], "white", { dashed: true, thin: true, opacity: .22 })}
+          ${text(x + w / 2, y + h - 52, "第二段必须从第一段终点出发", { anchor: "middle", small: true, muted: true })}`;
+      }
+      return `
+        ${arrowPath(O[0], O[1], A[0], A[1], "cyan", { label: "αu", opacity: .56 })}
+        ${arrowPath(A[0], A[1], T[0], T[1], "orange", { label: "βv", opacity: .56 })}
+        ${arrowPath(O[0], O[1], T[0], T[1], "gold", { label: "w", labelX: T[0] + 12, labelY: T[1] - 12 })}
+        ${text(x + w / 2, y + h - 52, "终点向量就是 w = αu + βv", { anchor: "middle", small: true, muted: true })}`;
+    };
   }
 
-  function storySolvability(step) {
-    const O = [660, 330];
-    const a1 = [150, -92];
-    const a2 = [-75, 46];
-    const inside = step !== 2;
-    const b = inside ? [120, -74] : [94, -150];
-    const target = [O[0] + b[0], O[1] + b[1]];
-    const base = `${sceneBase({ x1: 430, step: 42 })}<path class="ch3-divider-line" d="M390 52V488"></path>${text(70, 82, '系数空间', { small: true, muted: true })}${text(70, 124, '选择 x₁、x₂', { big: true })}${text(70, 170, '就是选择两列的权重', { color: 'gold' })}${softArrow(288, 270, 430, 270, 'gold', 'A', { thin: true })}`;
-    if (step === 0) {
-      return `${base}${line(460, 454, 916, 174, 'cyan', { soft: true, opacity: .18 })}${line(460, 454, 916, 174, 'cyan', { opacity: .5 })}${softArrow(O[0], O[1], O[0] + a1[0], O[1] + a1[1], 'cyan', 'a₁')}${softArrow(O[0], O[1], O[0] + a2[0], O[1] + a2[1], 'orange', 'a₂', { delay: 100 })}${text(70, 270, '所有可能的 Ax', { big: true })}${text(70, 318, '组成列空间 Col(A)', { big: true, color: 'cyan' })}${text(70, 410, '这里两列共线', { muted: true })}${text(70, 446, '所以可达区域只有一条线', { color: 'gold' })}`;
-    }
-    return `${base}${line(460, 454, 916, 174, 'cyan', { soft: true, opacity: .18 })}${line(460, 454, 916, 174, 'cyan', { opacity: .5 })}${softArrow(O[0], O[1], target[0], target[1], inside ? 'gold' : 'orange', 'b', { delay: 100 })}${dot(target[0], target[1], inside ? 'gold' : 'orange', inside ? '可达' : '不可达', { r: 8, labelX: target[0] + 16, labelY: target[1] - 16, delay: 180 })}${text(70, 248, inside ? 'b 落在 Col(A) 中' : 'b 落在 Col(A) 外', { big: true, color: inside ? 'gold' : 'orange' })}${text(70, 310, inside ? '存在至少一个 x 使 Ax=b' : '没有任何 x 能命中 b', { big: true })}${text(70, 394, inside ? '增广列没有增加新方向' : '增广列带来了新方向', { muted: true })}${text(70, 438, inside ? 'rank(A)=rank([A|b])' : 'rank(A)<rank([A|b])', { color: inside ? 'cyan' : 'orange' })}`;
+  function dependencePanel(index) {
+    return (box) => {
+      const { x, y, w, h, mobile } = box;
+      const scale = mobile ? 1.6 : 1;
+      const O = [x + (mobile ? 210 : 54), y + 286];
+      const v1 = [106 * scale, -66];
+      const v2 = [64 * scale, 94];
+      const P1 = [O[0] + v1[0], O[1] + v1[1]];
+      const P2 = [O[0] + v2[0], O[1] + v2[1]];
+      const P3 = [P1[0] + v2[0], P1[1] + v2[1]];
+      if (index === 0) {
+        return `
+          ${line(O[0] - 28 * scale, O[1] + 18, O[0] + 178 * scale, O[1] - 112, "cyan", { soft: true, opacity: .12 })}
+          ${arrowPath(O[0], O[1], P1[0], P1[1], "cyan", { label: "v₁" })}
+          ${text(x + w / 2, y + h - 52, "一个方向只能张成一条直线", { anchor: "middle", small: true, muted: true })}`;
+      }
+      const area = `<path class="ch3-area" d="M${O[0]} ${O[1]}L${P1[0]} ${P1[1]}L${P3[0]} ${P3[1]}L${P2[0]} ${P2[1]}Z"></path>`;
+      if (index === 1) {
+        return `
+          ${area}
+          ${arrowPath(O[0], O[1], P1[0], P1[1], "cyan", { label: "v₁" })}
+          ${arrowPath(O[0], O[1], P2[0], P2[1], "orange", { label: "v₂" })}
+          ${text(x + w / 2, y + h - 52, "第二个新方向把直线铺成平面", { anchor: "middle", small: true, muted: true })}`;
+      }
+      return `
+        ${area}
+        ${arrowPath(O[0], O[1], P1[0], P1[1], "cyan", { label: "v₁", opacity: .8 })}
+        ${arrowPath(O[0], O[1], P2[0], P2[1], "orange", { label: "v₂", opacity: .8 })}
+        ${arrowPath(O[0], O[1], P3[0], P3[1], "gold", { label: "v₃=v₁+v₂" })}
+        ${text(x + w / 2, y + h - 76, "v₁ + v₂ − v₃ = 0", { anchor: "middle", color: "gold", small: true })}
+        ${text(x + w / 2, y + h - 52, "v₃ 没有增加新的方向", { anchor: "middle", small: true, muted: true })}`;
+    };
   }
 
-  function solutionPoint(s) {
-    const x0 = [260, 310];
-    const eta = [150, -106];
-    return [x0[0] + s * eta[0], x0[1] + s * eta[1]];
+  function rankPanel(index) {
+    return (box) => {
+      const { x, y, w, h, mobile } = box;
+      const cx = x + w / 2;
+      const cy = y + 220;
+      const scale = mobile ? 1.75 : 1;
+      if (index === 0) {
+        const O = [cx - 80 * scale, cy + 55];
+        const a1 = [110 * scale, -5];
+        const a2 = [42 * scale, -120];
+        const A = [O[0] + a1[0], O[1] + a1[1]];
+        const B = [O[0] + a2[0], O[1] + a2[1]];
+        const C = [A[0] + a2[0], A[1] + a2[1]];
+        return `
+          <path class="ch3-area" d="M${O[0]} ${O[1]}L${A[0]} ${A[1]}L${C[0]} ${C[1]}L${B[0]} ${B[1]}Z"></path>
+          ${arrowPath(O[0], O[1], A[0], A[1], "cyan", { label: "Ae₁" })}
+          ${arrowPath(O[0], O[1], B[0], B[1], "orange", { label: "Ae₂" })}
+          ${text(cx, y + h - 52, "有面积 → 保留两个独立方向", { anchor: "middle", small: true, muted: true })}`;
+      }
+      if (index === 1) {
+        const O = [cx - 92 * scale, cy + 55];
+        const P1 = [cx + 95 * scale, cy - 70];
+        const P2 = [cx + 25 * scale, cy - 23];
+        return `
+          ${line(O[0], O[1], P1[0], P1[1], "cyan", { soft: true, opacity: .12 })}
+          ${arrowPath(O[0], O[1], P1[0], P1[1], "cyan", { label: "Ae₁" })}
+          ${arrowPath(O[0], O[1], P2[0], P2[1], "orange", { label: "Ae₂" })}
+          ${text(cx, y + h - 52, "都落在一条线 → 只剩一个方向", { anchor: "middle", small: true, muted: true })}`;
+      }
+      return `
+        ${line(cx - 100 * scale, cy, cx + 100 * scale, cy, "white", { thin: true, opacity: .15 })}
+        ${line(cx, cy - 100, cx, cy + 100, "white", { thin: true, opacity: .15 })}
+        ${dot(cx, cy, "gold", "0", { r: 10, labelX: cx + 16, labelY: cy - 14 })}
+        ${arrowPath(cx - 70 * scale, cy + 55, cx, cy, "cyan", { label: "Ae₁=0", opacity: .7 })}
+        ${arrowPath(cx + 70 * scale, cy + 55, cx, cy, "orange", { label: "Ae₂=0", opacity: .7 })}
+        ${text(cx, y + h - 52, "全部压到一点 → 没有方向留下", { anchor: "middle", small: true, muted: true })}`;
+    };
   }
 
-  function storySolution(step, state) {
-    const s = state.s ?? .65;
-    const x0 = [260, 310];
-    const eta = [150, -106];
-    const x = solutionPoint(s);
-    const bO = [770, 330];
-    const b = [95, -70];
-    const bP = [bO[0] + b[0], bO[1] + b[1]];
-    const base = `${sceneBase({ grid: false })}<path class="ch3-divider-line" d="M590 52V488"></path>${text(62, 74, '未知量空间', { small: true, muted: true })}${text(650, 74, '输出空间', { small: true, muted: true })}${softArrow(548, 270, 632, 270, 'gold', 'A', { thin: true })}${line(72, 468, 540, 138, 'orange', { soft: true, opacity: .16 })}${line(72, 468, 540, 138, 'orange', { opacity: .34 })}${softArrow(bO[0], bO[1], bP[0], bP[1], 'gold', 'b')}`;
-    if (step === 0) {
-      return `${base}${softArrow(110, 410, x0[0], x0[1], 'cyan', 'x₀')}${dot(x0[0], x0[1], 'cyan', '一个特解', { r: 7, labelX: x0[0] + 16, labelY: x0[1] - 18 })}${path(`M${x0[0] + 8} ${x0[1] - 8}C470 142 626 156 ${bO[0]} ${bO[1] - 14}`, 'white', { dashed: true, opacity: .25, thin: true })}${text(650, 416, 'Ax₀ = b', { big: true, color: 'gold' })}${text(650, 456, 'x₀ 只是解集上的一个锚点', { small: true })}`;
-    }
-    if (step === 1) {
-      return `${base}${softArrow(110, 410, x0[0], x0[1], 'cyan', 'x₀', { opacity: .55 })}${softArrow(110, 410, 110 + eta[0], 410 + eta[1], 'orange', 'η')}${softArrow(x0[0], x0[1], x0[0] + eta[0], x0[1] + eta[1], 'orange', 'η', { delay: 100 })}${dot(bO[0], bO[1], 'white', '0', { r: 5, labelX: bO[0] + 14, labelY: bO[1] + 24 })}${path(`M${110 + eta[0]} ${410 + eta[1]}C470 160 610 206 ${bO[0]} ${bO[1]}`, 'white', { dashed: true, opacity: .25, thin: true })}${text(650, 410, 'Aη = 0', { big: true, color: 'orange' })}${text(650, 454, '核方向在输出端完全消失', { small: true })}`;
-    }
-    if (step === 2) {
-      const samples = [-1.1, -.55, 0, .55, 1.1].map((t, i) => {
-        const p = solutionPoint(t);
-        return `${dot(p[0], p[1], i === 2 ? 'cyan' : 'white', '', { r: i === 2 ? 7 : 4, delay: i * 55 })}${path(`M${p[0] + 6} ${p[1] - 6}C520 ${120 + i * 14} 650 ${180 + i * 8} ${bP[0] - 8} ${bP[1] + 4}`, i === 2 ? 'cyan' : 'white', { dashed: true, opacity: i === 2 ? .45 : .12, thin: true, delay: i * 55 })}`;
-      }).join('');
-      return `${base}${samples}${dot(bP[0], bP[1], 'gold', '同一个 b', { r: 9, labelX: bP[0] - 24, labelY: bP[1] - 20 })}${text(650, 408, '整条仿射直线', { big: true, color: 'orange' })}${text(650, 450, '都被 A 送到同一个 b', { big: true, color: 'gold' })}`;
-    }
-    return `${base}${softArrow(110, 410, x0[0], x0[1], 'cyan', 'x₀', { opacity: .5 })}${softArrow(x0[0], x0[1], x[0], x[1], 'orange', 'sη')}${softArrow(110, 410, x[0], x[1], 'gold', 'x', { delay: 120 })}${dot(x0[0], x0[1], 'cyan', '', { r: 5 })}${dot(x[0], x[1], 'gold', '', { r: 7, delay: 120 })}${path(`M${x[0] + 8} ${x[1] - 8}C520 120 650 170 ${bP[0] - 8} ${bP[1] + 4}`, 'gold', { dashed: true, opacity: .38, thin: true, delay: 150 })}${text(650, 396, 'x = x₀ + sη', { big: true, color: 'gold' })}${text(650, 438, 'Ax = Ax₀ + sAη = b', { color: 'cyan' })}${text(650, 474, '拖动 s：输入在移动，输出不动', { small: true })}`;
+  function solvabilityPanel(index) {
+    return (box) => {
+      const { x, y, w, h, mobile } = box;
+      const cx = x + w / 2;
+      const cy = y + 226;
+      const scale = mobile ? 1.75 : 1;
+      const O = [cx - 100 * scale, cy + 60];
+      const P = [cx + 95 * scale, cy - 70];
+      const on = [cx + 28 * scale, cy - 25];
+      const off = [cx + 25 * scale, cy - 120];
+      if (index === 0) {
+        return `
+          ${line(O[0], O[1], P[0], P[1], "cyan", { soft: true, opacity: .13 })}
+          ${arrowPath(O[0], O[1], cx + 78 * scale, cy - 58, "cyan", { label: "a₁" })}
+          ${arrowPath(O[0], O[1], cx - 8 * scale, cy - 1, "orange", { label: "a₂" })}
+          ${text(cx, y + h - 52, "所有线性组合形成 Col(A)", { anchor: "middle", small: true, muted: true })}`;
+      }
+      if (index === 1) {
+        return `
+          ${line(O[0], O[1], P[0], P[1], "cyan", { soft: true, opacity: .13 })}
+          ${arrowPath(O[0], O[1], on[0], on[1], "gold", { label: "b" })}
+          ${dot(on[0], on[1], "gold", "可达", { r: 7, labelX: on[0] + 12, labelY: on[1] - 14 })}
+          ${text(cx, y + h - 76, "b ∈ Col(A)", { anchor: "middle", color: "gold", small: true })}
+          ${text(cx, y + h - 52, "增广列没有增加新的方向", { anchor: "middle", small: true, muted: true })}`;
+      }
+      return `
+        ${line(O[0], O[1], P[0], P[1], "cyan", { soft: true, opacity: .13 })}
+        ${arrowPath(O[0], O[1], off[0], off[1], "orange", { label: "b" })}
+        ${line(off[0], off[1], on[0], on[1], "white", { dashed: true, thin: true, opacity: .35 })}
+        ${dot(off[0], off[1], "orange", "不可达", { r: 7, labelX: off[0] + 12, labelY: off[1] - 14 })}
+        ${text(cx, y + h - 76, "b ∉ Col(A)", { anchor: "middle", color: "orange", small: true })}
+        ${text(cx, y + h - 52, "增广列带来了新的方向", { anchor: "middle", small: true, muted: true })}`;
+    };
   }
 
-  function curvePath(fn, xMin, xMax, samples, map) {
-    const pts = [];
-    for (let i = 0; i <= samples; i += 1) {
-      const x = xMin + (xMax - xMin) * i / samples;
-      const y = fn(x);
-      if (Number.isFinite(y)) pts.push(map(x, y));
-    }
-    return pts.map((p, i) => `${i ? 'L' : 'M'}${f(p[0])} ${f(p[1])}`).join('');
+  function solutionPanel(index, state) {
+    return (box) => {
+      const { x, y, w, h, mobile } = box;
+      const scale = mobile ? 1.7 : 1;
+      const left = x + (mobile ? 230 : 70);
+      const right = x + w - (mobile ? 170 : 48);
+      const cy = y + 226;
+      const s = state.s ?? .65;
+      const x0 = [left, cy + 35];
+      const eta = [72 * scale, -58];
+      const xp = [x0[0] + s * eta[0], x0[1] + s * eta[1]];
+      if (index === 0) {
+        return `
+          ${arrowPath(left - 54 * scale, cy + 74, x0[0], x0[1], "cyan", { label: "x₀" })}
+          ${dot(right, cy - 15, "gold", "b", { r: 8, labelX: right + 12, labelY: cy - 28 })}
+          ${curve(`M${x0[0] + 10} ${x0[1] - 10}C${left + 95 * scale} ${cy - 90} ${right - 70} ${cy - 80} ${right - 8} ${cy - 18}`, "white", { dashed: true, thin: true, opacity: .35 })}
+          ${text(x + w / 2, y + h - 52, "先找到一个特解 x₀", { anchor: "middle", small: true, muted: true })}`;
+      }
+      if (index === 1) {
+        return `
+          ${line(x0[0] - 72 * scale, x0[1] + 58, x0[0] + 104 * scale, x0[1] - 84, "orange", { soft: true, opacity: .12 })}
+          ${arrowPath(x0[0], x0[1], x0[0] + eta[0], x0[1] + eta[1], "orange", { label: "η" })}
+          ${dot(right, cy - 15, "white", "0", { r: 8, labelX: right + 12, labelY: cy - 28 })}
+          ${curve(`M${x0[0] + eta[0] * .65} ${x0[1] + eta[1] * .65}C${left + 120 * scale} ${cy - 65} ${right - 70} ${cy - 70} ${right - 8} ${cy - 18}`, "white", { dashed: true, thin: true, opacity: .35 })}
+          ${text(x + w / 2, y + h - 76, "Aη = 0", { anchor: "middle", color: "orange", small: true })}
+          ${text(x + w / 2, y + h - 52, "沿核方向移动不会改变输出", { anchor: "middle", small: true, muted: true })}`;
+      }
+      return `
+        ${line(x0[0] - 95 * scale, x0[1] + 76, x0[0] + 122 * scale, x0[1] - 98, "orange", { soft: true, opacity: .13 })}
+        ${dot(x0[0], x0[1], "cyan", "x₀", { r: 6, labelX: x0[0] - 8, labelY: x0[1] - 14 })}
+        ${dot(xp[0], xp[1], "gold", "x", { r: 7, labelX: xp[0] + 10, labelY: xp[1] - 12 })}
+        ${arrowPath(x0[0], x0[1], xp[0], xp[1], "orange", { label: "sη" })}
+        ${dot(right, cy - 15, "gold", "同一个 b", { r: 8, labelX: right - 16, labelY: cy - 30 })}
+        ${curve(`M${xp[0] + 8} ${xp[1] - 8}C${left + 130 * scale} ${cy - 95} ${right - 70} ${cy - 82} ${right - 8} ${cy - 18}`, "gold", { dashed: true, thin: true, opacity: .45 })}
+        ${text(x + w / 2, y + h - 76, "x = x₀ + sη", { anchor: "middle", color: "gold", small: true })}
+        ${text(x + w / 2, y + h - 52, "整条仿射直线都映到同一个 b", { anchor: "middle", small: true, muted: true })}`;
+    };
   }
 
-  function storyResultant(step) {
-    const ox = 360;
-    const oy = 300;
-    const scale = 92;
-    const map = (x, y) => mapPoint(ox, oy, scale, x, y);
-    const upper = curvePath((x) => Math.sqrt(Math.max(0, 4 - x * x)), -2, 2, 120, map);
-    const lower = curvePath((x) => -Math.sqrt(Math.max(0, 4 - x * x)), -2, 2, 120, map);
-    const parabola = curvePath((x) => x * x - 1, -2.1, 2.1, 140, map);
-    const xr = Math.sqrt((1 + Math.sqrt(13)) / 2);
-    const yr = xr * xr - 1;
-    const p1 = map(-xr, yr);
-    const p2 = map(xr, yr);
-    const base = `${sceneBase({ x2: 650, step: 46 })}${axes(ox, oy, { x2: 650 })}<path class="ch3-divider-line" d="M674 52V488"></path>${path(upper, 'cyan')}${path(lower, 'cyan')}${path(parabola, 'orange', { delay: 90 })}`;
-    if (step === 0) {
-      return `${base}${dot(p1[0], p1[1], 'gold', 'P₁', { r: 8, labelX: p1[0] - 34, labelY: p1[1] - 16, delay: 180 })}${dot(p2[0], p2[1], 'gold', 'P₂', { r: 8, labelX: p2[0] + 14, labelY: p2[1] - 16, delay: 240 })}${text(706, 86, '联立方程的解', { big: true })}${text(706, 136, '就是两条曲线的交点', { big: true, color: 'gold' })}${text(706, 236, 'x² + y² = 4', { color: 'cyan' })}${text(706, 280, 'y = x² − 1', { color: 'orange' })}${text(706, 420, '先看原问题，再谈消元', { small: true })}`;
-    }
-    if (step === 1) {
-      return `${base}${dot(p1[0], p1[1], 'gold', '', { r: 7 })}${dot(p2[0], p2[1], 'gold', '', { r: 7 })}${line(p1[0], p1[1], p1[0], oy, 'gold', { dashed: true, thin: true, delay: 100 })}${line(p2[0], p2[1], p2[0], oy, 'gold', { dashed: true, thin: true, delay: 160 })}${dot(p1[0], oy, 'cyan', 'x₁', { r: 5, labelX: p1[0] - 12, labelY: oy + 26 })}${dot(p2[0], oy, 'cyan', 'x₂', { r: 5, labelX: p2[0] - 12, labelY: oy + 26 })}${text(706, 86, '消去 y', { big: true })}${text(706, 136, '就是把交点投影到 x 轴', { big: true, color: 'gold' })}${text(706, 248, '保留横坐标候选', { color: 'cyan' })}${text(706, 420, '二维交点问题 → 一元候选问题', { small: true })}`;
-    }
-    if (step === 2) {
-      return `${base}${text(706, 82, '代入 y = x² − 1', { big: true })}${text(706, 142, 'x² + (x²−1)² = 4', { color: 'cyan' })}${text(706, 210, 'R(x) = x⁴ − x² − 3', { big: true, color: 'gold' })}${text(706, 278, 'R(x)=0 的根', { muted: true })}${text(706, 318, '只是可能的横坐标', { big: true, color: 'orange' })}${text(706, 420, '结式保留“可能有共同 y”的条件', { small: true })}`;
-    }
-    return `${base}${dot(p1[0], p1[1], 'gold', '✓', { r: 8, labelX: p1[0] - 28, labelY: p1[1] - 16 })}${dot(p2[0], p2[1], 'gold', '✓', { r: 8, labelX: p2[0] + 14, labelY: p2[1] - 16 })}${text(706, 82, '最后一步：回代', { big: true })}${text(706, 146, '同时满足两个原方程', { big: true, color: 'gold' })}${text(706, 228, 'f(xᵢ,yᵢ)=0', { color: 'cyan' })}${text(706, 270, 'g(xᵢ,yᵢ)=0', { color: 'orange' })}${text(706, 356, '候选 ≠ 解', { big: true, color: 'orange' })}${text(706, 420, '通过原方程验证后才是真解', { small: true })}`;
+  function resultantPanel(index) {
+    return (box) => {
+      const { x, y, w, h, mobile } = box;
+      const cx = x + w / 2;
+      const scale = mobile ? 1.75 : 1;
+      const baseY = y + 250;
+      const left = cx - 90 * scale;
+      const right = cx + 90 * scale;
+      const p1 = [cx - 45 * scale, baseY - 75];
+      const p2 = [cx + 45 * scale, baseY - 75];
+      const circle = `M${cx - 82 * scale} ${baseY - 55}C${cx - 82 * scale} ${baseY - 155} ${cx + 82 * scale} ${baseY - 155} ${cx + 82 * scale} ${baseY - 55}C${cx + 82 * scale} ${baseY + 45} ${cx - 82 * scale} ${baseY + 45} ${cx - 82 * scale} ${baseY - 55}`;
+      const parabola = `M${left} ${baseY + 16}Q${cx} ${baseY - 152} ${right} ${baseY + 16}`;
+      if (index === 0) {
+        return `
+          ${curve(circle, "cyan")}
+          ${curve(parabola, "orange")}
+          ${dot(p1[0], p1[1], "gold", "P₁", { r: 7, labelX: p1[0] - 10, labelY: p1[1] - 12 })}
+          ${dot(p2[0], p2[1], "gold", "P₂", { r: 7, labelX: p2[0] + 10, labelY: p2[1] - 12 })}
+          ${text(cx, y + h - 52, "联立解就是两条曲线的公共点", { anchor: "middle", small: true, muted: true })}`;
+      }
+      if (index === 1) {
+        return `
+          ${curve(circle, "cyan", { opacity: .48 })}
+          ${curve(parabola, "orange", { opacity: .48 })}
+          ${line(left - 12, baseY + 30, right + 12, baseY + 30, "white", { thin: true, opacity: .35 })}
+          ${line(p1[0], p1[1], p1[0], baseY + 30, "gold", { dashed: true, thin: true })}
+          ${line(p2[0], p2[1], p2[0], baseY + 30, "gold", { dashed: true, thin: true })}
+          ${dot(p1[0], baseY + 30, "gold", "x₁", { r: 5, labelX: p1[0] - 8, labelY: baseY + 54 })}
+          ${dot(p2[0], baseY + 30, "gold", "x₂", { r: 5, labelX: p2[0] + 8, labelY: baseY + 54 })}
+          ${text(cx, y + h - 52, "消去 y，只留下可能的横坐标", { anchor: "middle", small: true, muted: true })}`;
+      }
+      return `
+        ${text(cx, y + 108, "R(x) = 0", { anchor: "middle", big: true, color: "gold" })}
+        ${text(cx, y + 156, "候选 x₁, x₂", { anchor: "middle", color: "white" })}
+        ${arrowPath(cx, y + 178, cx, y + 222, "gold", { thin: true })}
+        ${text(cx, y + 264, "代回原来的两个方程", { anchor: "middle", color: "white" })}
+        ${text(cx - 78, y + 310, "✓ f(xᵢ,yᵢ)=0", { color: "cyan", small: true })}
+        ${text(cx - 78, y + 340, "✓ g(xᵢ,yᵢ)=0", { color: "orange", small: true })}
+        ${text(cx, y + h - 52, "通过回代后才是真解", { anchor: "middle", small: true, muted: true })}`;
+    };
   }
 
   const stories = {
     elimination: {
-      title: '消元不是搬数字，而是在保持交点不动',
-      lead: '先把方程看成几何约束，再把同一个动作翻译成增广矩阵的行变换。',
+      kicker: "消元法 · 解集是不变量",
+      title: "行变换可以改写约束，但不能移动共同解",
+      subtitle: "先盯住两条直线的交点，再看同一步怎样落到增广矩阵上。",
+      panels: [["原方程组", "共同交点"], ["可逆倍加", "交点不动"], ["阶梯形", "唯一解"]],
       steps: [
-        ['共同交点', '先找不变量', '每个方程是一条约束直线，方程组的解是它们的公共交点。', String.raw`R_1\cap R_2=\{x^*\}`, '后面的每一步都必须守住这个交点。'],
-        ['可逆倍加', '让一条约束绕解旋转', '用一行的倍数加到另一行，新方程改变外观，却仍穿过同一个交点。', String.raw`R_2\leftarrow R_2-2R_1`, '可逆行变换改变写法，不改变解集。'],
-        ['读出主元', '几何与矩阵对齐', '同一个行操作在增广矩阵中消去一个位置，主元记录独立约束，自由列记录可移动方向。', String.raw`\operatorname{rank}(A)=2`, '消元的终点，是把解空间的自由度读出来。'],
+        ["共同交点", "两条方程各自是一条直线。方程组的解，是它们共同穿过的点。", String.raw`R_1\cap R_2=\{x^*\}`, "解集是接下来所有合法行变换都必须保持的对象。"],
+        ["可逆倍加", "把一行的倍数加到另一行，新约束的样子会改变，但仍然穿过原来的共同解。", String.raw`R_2\leftarrow R_2-2R_1`, "初等行变换改变表达，不改变解集。"],
+        ["读出主元", "同一步写进增广矩阵后，阶梯形直接显示主元列与自由列。", String.raw`\operatorname{rank}(A)=2`, "两个未知量都有主元，因此没有自由方向。"],
       ],
-      draw: (step) => storyElimination(step),
+      drawPanel: eliminationPanel,
     },
-    'n-vector-space': {
-      title: '向量是一段有方向的位移，线性组合是一条连续路径',
-      lead: '箭头、首尾相接的运动和坐标分量必须讲同一件事。',
+    "n-vector-space": {
+      kicker: "向量空间 · 线性组合",
+      title: "线性组合不是三根孤立线段，而是一段连续位移",
+      subtitle: "先走 αu，再从终点走 βv；从起点直达终点的箭头就是结果向量。",
+      panels: [["两个方向", "u 与 v"], ["首尾相接", "αu + βv"], ["结果向量", "w"]],
       steps: [
-        ['把向量画对', '有向位移', '向量同时包含大小和方向；端点只是结果，完整箭头才表达从哪里到哪里。', String.raw`u=(u_1,\ldots,u_n)^T`, '几何箭头与坐标列是同一个对象的两种读法。'],
-        ['缩放并接续', '先走 αu，再走 βv', '改变系数会改变长度，负系数还会反转方向；第二段必须从第一段终点出发。', String.raw`\alpha u+\beta v`, '线性组合是一条首尾相接的路径。'],
-        ['得到和向量', '终点与坐标一致', '从原点直指最终终点的箭头就是 w，逐分量计算必须抵达同一位置。', String.raw`w_i=\alpha u_i+\beta v_i`, '几何终点和代数坐标一一对应。'],
+        ["先把向量画对", "向量必须有起点、方向和终点；坐标只是这段有向位移的另一种记录。", String.raw`u=(u_1,\ldots,u_n)^T`, "箭头而不是端点，才完整表达向量。"],
+        ["缩放并接续", "系数改变长度，也可能翻转方向。第二段位移必须从第一段终点开始。", String.raw`\alpha u+\beta v`, "首尾相接把两个方向组织成一个连续过程。"],
+        ["闭合成结果", "从最初起点直接指向最终终点的箭头，就是线性组合得到的 w。", String.raw`w=\alpha u+\beta v`, "几何终点与逐坐标相加得到的结果完全一致。"],
       ],
-      controls: 'vector',
-      draw: (step, state) => storyVector(step, state),
+      controls: "vector",
+      drawPanel: vectorPanel,
     },
-    'linear-dependence': {
-      title: '线性相关的本质：新向量没有增加新的方向',
-      lead: '逐个加入向量，看张成空间的维数何时真正增长。',
+    "linear-dependence": {
+      kicker: "线性相关 · 新方向是否出现",
+      title: "相关性不是“长得相似”，而是新向量没有扩张张成空间",
+      subtitle: "逐个加入向量，看张成空间的维数是否真正增加。",
+      panels: [["一个方向", "一条直线"], ["加入 v₂", "铺开平面"], ["加入 v₃", "空间不变"]],
       steps: [
-        ['一个方向', '先张成一条线', '一个非零向量的所有倍数只能沿着同一条直线运动。', String.raw`\operatorname{span}(v_1)`, '一个独立方向对应一维空间。'],
-        ['加入新方向', '从线铺成平面', '第二个向量不在原来的线上，线性组合因此铺开二维平面。', String.raw`\dim\operatorname{span}(v_1,v_2)=2`, '维数只有在出现真正的新方向时才增长。'],
-        ['加入冗余向量', '给出非零关系', 'v₃ 虽然是新箭头，却已经能由 v₁ 与 v₂ 拼出。', String.raw`v_1+v_2-v_3=0`, '存在非全零系数关系，就是线性相关的证书。'],
-        ['删去冗余', '张成空间不缩小', '删去 v₃ 后原来的平面仍然完整存在。', String.raw`\operatorname{span}(v_1,v_2,v_3)=\operatorname{span}(v_1,v_2)`, '基保留全部方向，同时去掉重复信息。'],
+        ["一个向量", "只有一个非零方向时，所有倍数都落在同一条直线上。", String.raw`\operatorname{span}(v_1)`, "张成空间的维数是 1。"],
+        ["增加新方向", "v₂ 不与 v₁ 共线，因此线性组合开始铺开一个二维平面。", String.raw`\dim\operatorname{span}(v_1,v_2)=2`, "真正的新方向才会增加维数。"],
+        ["识别冗余", "v₃ 已经可以由 v₁ 与 v₂ 拼出，删掉它后张成的平面完全不变。", String.raw`v_3=v_1+v_2`, "存在非全零关系，就是线性相关的严格证书。"],
       ],
-      draw: (step) => storyDependence(step),
+      drawPanel: dependencePanel,
     },
-    'matrix-rank': {
-      title: '秩不是主元计数器，而是变换后幸存的维数',
-      lead: '让矩阵作用在整张网格上：平面可以保持二维，也可以塌成线或点。',
+    "matrix-rank": {
+      kicker: "矩阵的秩 · 变换后剩下的维数",
+      title: "不要先背主元个数：看整张平面被压成了什么",
+      subtitle: "二维面积、直线和点，分别对应 rank 2、rank 1 与 rank 0。",
+      panels: [["保留面积", "rank(A)=2"], ["压成直线", "rank(A)=1"], ["压成一点", "rank(A)=0"]],
       steps: [
-        ['保留面积', '二维像空间', '两个基方向经过 A 后仍不共线，单位方格仍有面积。', String.raw`\operatorname{rank}(A)=2`, '输出空间仍有两个独立方向。'],
-        ['压成直线', '一维像空间', '不同输入方向被压到同一条线上，所有小方格失去面积。', String.raw`\operatorname{rank}(A)=1`, '二维信息只剩一个独立方向。'],
-        ['压成一点', '零维像空间', '所有输入都被送到同一个点，没有任何方向被保留。', String.raw`\operatorname{rank}(A)=0`, '秩就是像空间的维数。'],
+        ["二维输出", "两个基方向经过 A 后仍然不共线，单位方格变成有面积的平行四边形。", String.raw`\operatorname{rank}(A)=2`, "输出空间仍然拥有两个独立方向。"],
+        ["一维输出", "两个基方向被送到同一条线上，所有二维面积都消失。", String.raw`\operatorname{rank}(A)=1`, "矩阵只保留了一个独立方向。"],
+        ["零维输出", "所有输入都被送到同一个点，任何方向都没有保留下来。", String.raw`\operatorname{rank}(A)=0`, "秩就是像空间的维数。"],
       ],
-      draw: (step) => storyRank(step),
+      drawPanel: rankPanel,
     },
     solvability: {
-      title: 'Ax=b 是否有解，只看目标 b 能不能被 A 到达',
-      lead: '矩阵的列向量生成全部可能输出；这片可达区域就是列空间。',
+      kicker: "有解判别 · 目标是否可达",
+      title: "Ax=b 有没有解，只看 b 是否落在 A 的可达空间中",
+      subtitle: "矩阵的列向量生成全部可能输出；b 在线上有解，在线外无解。",
+      panels: [["列空间", "Col(A)"], ["b 在线上", "有解"], ["b 在线外", "无解"]],
       steps: [
-        ['看可达区域', '列空间', '所有 Ax 都是 A 的列向量的线性组合；它们共同组成 Col(A)。', String.raw`\operatorname{Col}(A)=\{Ax:x\in F^n\}`, '列空间就是变换 A 的可达区域。'],
-        ['目标可达', 'b 在列空间中', '当 b 落在可达区域里，至少存在一个输入 x 被 A 送到 b。', String.raw`\operatorname{rank}(A)=\operatorname{rank}([A\mid b])`, '增广列没有增加新方向，系统有解。'],
-        ['目标不可达', 'b 在列空间外', '当 b 落在可达区域之外，任何输入都无法命中它。', String.raw`\operatorname{rank}(A)<\operatorname{rank}([A\mid b])`, '增广列增加了新方向，系统无解。'],
+        ["先看可达区域", "A 的列向量的全部线性组合，构成所有可能输出的集合。", String.raw`\operatorname{Col}(A)=\{Ax:x\in F^n\}`, "列空间就是矩阵 A 能够到达的区域。"],
+        ["目标可达", "b 位于列空间中，因此至少存在一个输入 x 被 A 送到 b。", String.raw`\operatorname{rank}(A)=\operatorname{rank}([A\mid b])`, "增广列没有创造新方向，所以方程组有解。"],
+        ["目标不可达", "b 落在列空间之外，无论怎样选择 x 都不能命中它。", String.raw`\operatorname{rank}(A)<\operatorname{rank}([A\mid b])`, "增广列增加了新方向，所以方程组无解。"],
       ],
-      draw: (step) => storySolvability(step),
+      drawPanel: solvabilityPanel,
     },
-    'solution-structure': {
-      title: '全部解 = 一个特解 + 所有不会改变输出的方向',
-      lead: '在未知量空间里沿零空间移动；在输出空间里，结果始终停在同一个 b。',
+    "solution-structure": {
+      kicker: "解的结构 · 特解加零空间",
+      title: "一个特解只是锚点；全部解沿核方向排成仿射空间",
+      subtitle: "核中的方向被 A 压到零，因此沿这些方向移动不会改变输出 b。",
+      panels: [["找到特解", "Ax₀=b"], ["找到核方向", "Aη=0"], ["生成全部解", "x=x₀+sη"]],
       steps: [
-        ['找到锚点', '一个特解 x₀', '先找任意一个满足 Ax₀=b 的点，它只是整条解集上的锚点。', String.raw`Ax_0=b`, '特解给出解集的位置。'],
-        ['找到核方向', 'Aη=0', '沿 η 移动不会改变输出，因为这个方向被 A 压到零。', String.raw`\eta\in\ker(A)`, '零空间给出解集允许移动的方向。'],
-        ['看整条纤维', '许多输入，同一个输出', '整条仿射直线上的点都被 A 送到同一个 b。', String.raw`A(x_0+\eta)=b`, '解集是 x₀ 平移后的零空间。'],
-        ['拖动当前解', 'x=x₀+sη', '改变 s 只会沿零空间方向移动，Ax 始终等于 b。', String.raw`x=x_0+s\eta`, '位置由特解决定，形状由零空间决定。'],
+        ["特解是锚点", "先找到一个满足 Ax₀=b 的输入，它给出解集中的一个已知位置。", String.raw`Ax_0=b`, "x₀ 不是全部解，只是仿射解集的起点。"],
+        ["核方向不改输出", "若 Aη=0，那么把 η 加到任何解上，输出都不会发生变化。", String.raw`A(x_0+\eta)=b`, "零空间给出了所有可以自由移动的方向。"],
+        ["特解加齐次解", "沿 η 方向连续移动，整条仿射直线上的点都映到同一个 b。", String.raw`x=x_0+s\eta`, "非齐次方程的全部解 = 一个特解 + 齐次方程全部解。"],
       ],
-      controls: 'solution',
-      draw: (step, state) => storySolution(step, state),
+      controls: "solution",
+      drawPanel: solutionPanel,
     },
-    'binary-higher-degree': {
-      title: '二元高次消元：把曲线交点投影成一元候选，再回到原图验证',
-      lead: '结式不是黑箱公式，而是“消去一个坐标”的代数实现。',
+    "binary-higher-degree": {
+      kicker: "二元高次 · 消元与回代",
+      title: "消元只是把曲线交点投影成候选坐标，回代才确认真解",
+      subtitle: "先看圆与抛物线的公共点，再把二维问题压缩成一元候选。",
+      panels: [["曲线交点", "原问题"], ["投影到 x 轴", "候选横坐标"], ["结式与回代", "确认真解"]],
       steps: [
-        ['看曲线交点', '原问题', '两个方程各自给出一条曲线，联立解就是公共点。', String.raw`f(x,y)=0,\quad g(x,y)=0`, '交点是问题本身，消元只是读取交点的方法。'],
-        ['投影到 x 轴', '消去 y', '把公共点投影到 x 轴，只保留可能出现交点的横坐标。', String.raw`\exists y:\ f(x,y)=g(x,y)=0`, '二维交点问题被压成一元候选问题。'],
-        ['形成一元条件', '结式或代入', '消去 y 后得到只含 x 的多项式 R(x)。', String.raw`R(x)=0`, 'R(x) 的根只是候选横坐标。'],
-        ['回代原方程', '候选不等于解', '为候选 x 求 y，并同时代回两个原方程。', String.raw`f(x_i,y_i)=g(x_i,y_i)=0`, '通过回代后，候选才重新成为几何交点。'],
+        ["先看几何对象", "两个多项式方程分别给出两条代数曲线，联立解就是它们的公共点。", String.raw`f(x,y)=0,\quad g(x,y)=0`, "交点是原问题，消元只是读取交点的一种方法。"],
+        ["消去一个变量", "把每个交点投影到 x 轴，只留下可能出现公共点的横坐标。", String.raw`\exists y:\ f(x,y)=g(x,y)=0`, "二维交点问题被压缩成一元候选问题。"],
+        ["候选必须回代", "结式给出的根只是一批候选 x；求出 y 后必须代回原来的两个方程。", String.raw`R(x)=0`, "两式同时为零，候选才重新成为真正的几何交点。"],
       ],
-      draw: (step) => storyResultant(step),
+      drawPanel: resultantPanel,
     },
   };
 
+  function buildSvg(config, state) {
+    const desktop = config.panels.map((item, index) =>
+      panelGroup(index, item[0], item[1], index === state.step, config.drawPanel(index, state), false),
+    ).join("");
+    const mobile = panelGroup(state.step, config.panels[state.step][0], config.panels[state.step][1], true, config.drawPanel(state.step, state), true);
+    return `${defs()}<rect class="ch3-stage-bg" width="960" height="430" rx="26"></rect>${desktop}${mobile}`;
+  }
+
   function buildControls(kind, state) {
-    if (kind === 'vector') {
-      return `<div class="ch3-story-control-set" aria-label="线性组合系数"><label><span>α</span><input type="range" min="-1.35" max="1.35" step="0.05" value="${state.alpha}"><strong>${f(state.alpha)}</strong></label><label><span>β</span><input type="range" min="-1.35" max="1.35" step="0.05" value="${state.beta}"><strong>${f(state.beta)}</strong></label></div>`;
+    if (kind === "vector") {
+      return `<div class="ch3-story-control-set" aria-label="线性组合系数">
+        <label><span>α</span><input data-control="alpha" type="range" min="-1.4" max="1.4" step="0.05" value="${state.alpha}"><strong>${f(state.alpha)}</strong></label>
+        <label><span>β</span><input data-control="beta" type="range" min="-1.4" max="1.4" step="0.05" value="${state.beta}"><strong>${f(state.beta)}</strong></label>
+      </div>`;
     }
-    if (kind === 'solution') {
-      return `<div class="ch3-story-control-set is-single" aria-label="解族参数"><label><span>s</span><input type="range" min="-1.1" max="1.1" step="0.05" value="${state.s}"><strong>${f(state.s)}</strong></label></div>`;
+    if (kind === "solution") {
+      return `<div class="ch3-story-control-set is-single" aria-label="解族参数">
+        <label><span>s</span><input data-control="s" type="range" min="-1.2" max="1.2" step="0.05" value="${state.s}"><strong>${f(state.s)}</strong></label>
+      </div>`;
     }
-    return '';
+    return "";
   }
 
   function mountStory(section, root) {
     const config = stories[section.id];
     if (!config) return null;
     const interactive = root.querySelector(`#${CSS.escape(section.id)}-interactive`);
-    const lab = interactive?.querySelector('.ch3-lab');
-    if (!interactive || !lab || interactive.querySelector('[data-ch3-story]')) return null;
+    const lab = interactive?.querySelector(".ch3-lab");
+    if (!interactive || !lab || interactive.querySelector("[data-ch3-story]")) return null;
 
-    const heading = interactive.querySelector(':scope > h2');
-    if (heading) heading.textContent = '交互实验';
+    const heading = interactive.querySelector(":scope > h2");
+    if (heading) heading.textContent = "精确实验";
 
     const state = { step: 0, alpha: 1, beta: 1, s: .65 };
-    const story = document.createElement('section');
-    story.className = 'ch3-visual-story';
+    const storySection = document.createElement("section");
+    storySection.className = "ch3-story-section";
+    storySection.innerHTML = `<h2>几何直觉</h2>`;
+
+    const story = document.createElement("div");
+    story.className = "ch3-visual-story";
     story.dataset.ch3Story = section.id;
     story.innerHTML = `
-      <header class="ch3-story-header"><span class="ch3-story-kicker">GEOMETRIC STORY</span><h3>${config.title}</h3><p>${config.lead}</p></header>
-      <div class="ch3-story-stage-shell"><svg class="ch3-story-svg" data-story-svg viewBox="0 0 ${W} ${H}" role="img" aria-label="${esc(config.title)}"></svg></div>
-      <div class="ch3-story-step-list" role="tablist" aria-label="视觉推导步骤" style="--step-count:${config.steps.length}">${config.steps.map((item, index) => `<button type="button" role="tab" data-story-step="${index}" aria-selected="${index === 0}"><span>${String(index + 1).padStart(2, '0')}</span><strong>${item[0]}</strong><small>${item[1]}</small></button>`).join('')}</div>
-      <div class="ch3-story-reading" aria-live="polite"><div class="ch3-story-copy"><span data-story-kicker></span><h4 data-story-heading></h4><p data-story-text></p></div><div class="ch3-story-symbol"><div class="ch3-story-formula" data-story-formula></div><p data-story-conclusion></p></div></div>
-      <div data-story-controls></div>`;
+      <div class="ch3-story-stage-shell">
+        <header class="ch3-stage-head"><span>${config.kicker}</span><h3>${config.title}</h3><p>${config.subtitle}</p></header>
+        <svg class="ch3-story-svg" data-story-svg viewBox="0 0 960 430" role="img" aria-label="${esc(config.title)}"></svg>
+        <div class="ch3-story-step-list" role="tablist" aria-label="几何推导步骤" style="--step-count:${config.steps.length}">
+          ${config.steps.map((item, index) => `<button type="button" role="tab" data-story-step="${index}" aria-selected="${index === 0}"><span>${String(index + 1).padStart(2, "0")}</span><strong>${item[0]}</strong></button>`).join("")}
+        </div>
+      </div>
+      <div class="ch3-story-reading">
+        <div class="ch3-story-copy" aria-live="polite"><span data-story-kicker></span><h4 data-story-heading></h4><p data-story-text></p><div data-story-controls></div></div>
+        <div class="ch3-story-symbol"><div class="ch3-story-formula" data-story-formula></div><p data-story-conclusion></p></div>
+      </div>`;
+    storySection.append(story);
 
-    const details = document.createElement('details');
-    details.className = 'ch3-precision-lab';
-    const summary = document.createElement('summary');
-    summary.innerHTML = `<span><strong>继续做精确实验</strong><small>展开 RREF、完整坐标、参数验证与边界预设</small></span><i aria-hidden="true">＋</i>`;
+    const details = document.createElement("details");
+    details.className = "ch3-precision-lab";
+    const summary = document.createElement("summary");
+    summary.innerHTML = `<span><strong>继续做精确实验</strong><small>展开 RREF、完整坐标、参数验证和数值控制</small></span><i aria-hidden="true">＋</i>`;
     lab.replaceWith(details);
     details.append(summary, lab);
 
-    const storySection = document.createElement('section');
-    storySection.className = 'ch3-story-section';
-    storySection.append(story);
-    interactive.insertBefore(storySection, details);
+    const formal = root.querySelector(`#${CSS.escape(section.id)}-formal`);
+    if (formal) formal.before(storySection);
+    else interactive.insertBefore(storySection, details);
 
-    const svg = story.querySelector('[data-story-svg]');
-    const buttons = [...story.querySelectorAll('[data-story-step]')];
-    const controlsRoot = story.querySelector('[data-story-controls]');
+    const svg = story.querySelector("[data-story-svg]");
+    const buttons = [...story.querySelectorAll("[data-story-step]")];
+    const controlsRoot = story.querySelector("[data-story-controls]");
     const cleanups = [];
 
-    function render() {
+    function bindControls() {
+      controlsRoot.innerHTML = buildControls(config.controls, state);
+      controlsRoot.querySelectorAll("input").forEach((input) => {
+        const listener = () => {
+          state[input.dataset.control] = Number(input.value);
+          render(false);
+        };
+        input.addEventListener("input", listener);
+      });
+    }
+
+    function render(rebuildControls = true) {
       const item = config.steps[state.step];
       buttons.forEach((button, index) => {
         const active = index === state.step;
-        button.classList.toggle('is-active', active);
-        button.setAttribute('aria-selected', String(active));
+        button.classList.toggle("is-active", active);
+        button.setAttribute("aria-selected", String(active));
       });
-      story.querySelector('[data-story-kicker]').textContent = item[1];
-      story.querySelector('[data-story-heading]').textContent = item[0];
-      story.querySelector('[data-story-text]').textContent = item[2];
-      story.querySelector('[data-story-formula]').innerHTML = texD(item[3]);
-      story.querySelector('[data-story-conclusion]').textContent = item[4];
-      svg.innerHTML = config.draw(state.step, state);
-      controlsRoot.innerHTML = buildControls(config.controls, state);
-      if (config.controls === 'vector') {
-        const [alphaInput, betaInput] = controlsRoot.querySelectorAll('input');
-        alphaInput.addEventListener('input', () => { state.alpha = Number(alphaInput.value); render(); });
-        betaInput.addEventListener('input', () => { state.beta = Number(betaInput.value); render(); });
-      } else if (config.controls === 'solution') {
-        const input = controlsRoot.querySelector('input');
-        input.addEventListener('input', () => { state.s = Number(input.value); render(); });
+      story.querySelector("[data-story-kicker]").textContent = config.panels[state.step][0];
+      story.querySelector("[data-story-heading]").textContent = item[0];
+      story.querySelector("[data-story-text]").textContent = item[1];
+      story.querySelector("[data-story-formula]").innerHTML = texD(item[2]);
+      story.querySelector("[data-story-conclusion]").textContent = item[3];
+      svg.innerHTML = buildSvg(config, state);
+      if (rebuildControls) bindControls();
+      else {
+        controlsRoot.querySelectorAll("strong").forEach((strong, index) => {
+          const key = config.controls === "vector" ? (index === 0 ? "alpha" : "beta") : "s";
+          strong.textContent = f(state[key]);
+        });
       }
     }
 
     buttons.forEach((button) => {
       const listener = () => { state.step = Number(button.dataset.storyStep); render(); };
-      button.addEventListener('click', listener);
-      cleanups.push(() => button.removeEventListener('click', listener));
+      button.addEventListener("click", listener);
+      cleanups.push(() => button.removeEventListener("click", listener));
     });
-    details.addEventListener('toggle', () => { summary.querySelector('i').textContent = details.open ? '−' : '＋'; });
+
+    details.addEventListener("toggle", () => { summary.querySelector("i").textContent = details.open ? "−" : "＋"; });
     render();
     return () => cleanups.splice(0).forEach((cleanup) => cleanup());
   }

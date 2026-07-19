@@ -39,7 +39,30 @@
     shell.toolbar.innerHTML = S.buttons(presets.map((item, index) => ({ value: index, label: item.name })), state.preset, "preset");
     const cleanupRange = S.mountRanges(shell.controls, [{ label: "候选方向 θ", key: "angle", min: 0, max: 179, step: 1, suffix: "°", digits: 0 }], state, () => draw());
     const binder = S.eventBinder();
-    let dragging = false;
+    let dragKind = null;
+    let pointerId = null;
+
+    const syncAngle = () => {
+      const input = shell.controls.querySelector('[data-key="angle"]');
+      if (input) input.value = state.angle;
+      const output = shell.controls.querySelector('[data-output="angle"]');
+      if (output) output.textContent = `${state.angle}°`;
+    };
+
+    const updateAngle = (clientX, clientY) => {
+      const svg = shell.stage.querySelector("svg");
+      if (!svg) return;
+      const rect = svg.getBoundingClientRect();
+      const px = ((clientX - rect.left) / rect.width) * 980;
+      const py = ((clientY - rect.top) / rect.height) * 570;
+      const plane = S.createPlane({ x: 85, y: 55, width: 700, height: 470, extent: 3.2 });
+      const vector = plane.v([px, py]);
+      let angle = Math.atan2(vector[1], vector[0]) * 180 / Math.PI;
+      angle = ((angle % 180) + 180) % 180;
+      state.angle = Math.round(angle);
+      syncAngle();
+      draw();
+    };
 
     const draw = () => {
       const preset = presets[state.preset];
@@ -93,10 +116,10 @@
       });
       content += `<text x="882" y="402" class="ch7-story-panel-subtitle">方向误差</text><text x="882" y="428" class="ch7-story-panel-title">${S.fmt(error, 4)}</text>`;
 
-      let tone = hit ? "pass" : directions.length ? "neutral" : "fail";
-      let title = hit ? "v 与 Av 完全共线：找到一条特征直线" : directions.length ? "当前方向被扭开，继续旋转寻找共线位置" : "所有实方向都会转向";
-      let text = hit ? `沿这条直线的每个非零向量都只乘上同一个比例 ${S.fmt(lambda)}。` : directions.length ? "外圈绿色长刻度提示方向误差的低谷；直接拖动圆环上的手柄靠近它。" : "90° 旋转在实数平面中没有任何经过原点的直线保持自身。";
-      let formula = hit ? "Av=\lambda v" : directions.length ? "Av\notin\operatorname{span}(v)" : "\text{实数域中无特征向量}";
+      const tone = hit ? "pass" : directions.length ? "neutral" : "fail";
+      const title = hit ? "v 与 Av 完全共线：找到一条特征直线" : directions.length ? "当前方向被扭开，继续旋转寻找共线位置" : "所有实方向都会转向";
+      const text = hit ? `沿这条直线的每个非零向量都只乘上同一个比例 ${S.fmt(lambda)}。` : directions.length ? "外圈绿色长刻度提示方向误差的低谷；直接拖动圆环上的手柄靠近它。" : "90° 旋转在实数平面中没有任何经过原点的直线保持自身。";
+      const formula = hit ? "Av=\\lambda v" : directions.length ? "Av\\notin\\operatorname{span}(v)" : "\\text{实数域中无特征向量}";
       const facts = [["θ", `${S.fmt(state.angle, 0)}°`], ["方向误差", S.fmt(error, 4)], ["λ", hit ? S.fmt(lambda) : "尚不可读"]];
 
       shell.stage.innerHTML = S.svg(content, { width, height, label: "在原网格与变换网格中拖动方向寻找特征向量" });
@@ -108,41 +131,54 @@
       if (!preset) return;
       state.preset = Number(preset.dataset.preset);
       state.angle = 18;
-      const input = shell.controls.querySelector('[data-key="angle"]');
-      if (input) input.value = state.angle;
-      const output = shell.controls.querySelector('[data-output="angle"]');
-      if (output) output.textContent = `${state.angle}°`;
+      syncAngle();
       S.setActive(shell.toolbar, "[data-preset]", preset);
       draw();
     });
 
+    // Mouse events are handled explicitly because SVG redraws can interrupt
+    // browser pointer synthesis while a desktop drag is still active.
+    binder.on(shell.stage, "mousedown", (event) => {
+      if (event.button !== 0 || !event.target.closest("[data-drag-handle]")) return;
+      dragKind = "mouse";
+      updateAngle(event.clientX, event.clientY);
+      event.preventDefault();
+    }, { passive: false });
+    binder.on(window, "mousemove", (event) => {
+      if (dragKind !== "mouse") return;
+      updateAngle(event.clientX, event.clientY);
+      event.preventDefault();
+    }, { passive: false });
+    binder.on(window, "mouseup", (event) => {
+      if (dragKind !== "mouse" || event.button !== 0) return;
+      updateAngle(event.clientX, event.clientY);
+      dragKind = null;
+      event.preventDefault();
+    }, { passive: false });
+
     binder.on(shell.stage, "pointerdown", (event) => {
-      if (!event.target.closest("[data-drag-handle]")) return;
-      dragging = true;
-      event.target.closest("svg")?.setPointerCapture?.(event.pointerId);
+      if (event.pointerType === "mouse" || !event.target.closest("[data-drag-handle]")) return;
+      dragKind = "pointer";
+      pointerId = event.pointerId;
+      shell.stage.setPointerCapture?.(event.pointerId);
+      updateAngle(event.clientX, event.clientY);
       event.preventDefault();
     }, { passive: false });
-    binder.on(shell.stage, "pointermove", (event) => {
-      if (!dragging) return;
-      const svg = shell.stage.querySelector("svg");
-      const rect = svg.getBoundingClientRect();
-      const px = ((event.clientX - rect.left) / rect.width) * 980;
-      const py = ((event.clientY - rect.top) / rect.height) * 570;
-      const plane = S.createPlane({ x: 85, y: 55, width: 700, height: 470, extent: 3.2 });
-      const vector = plane.v([px, py]);
-      let angle = Math.atan2(vector[1], vector[0]) * 180 / Math.PI;
-      angle = ((angle % 180) + 180) % 180;
-      state.angle = Math.round(angle);
-      const input = shell.controls.querySelector('[data-key="angle"]');
-      if (input) input.value = state.angle;
-      const output = shell.controls.querySelector('[data-output="angle"]');
-      if (output) output.textContent = `${state.angle}°`;
-      draw();
+    binder.on(window, "pointermove", (event) => {
+      if (dragKind !== "pointer" || pointerId !== event.pointerId) return;
+      updateAngle(event.clientX, event.clientY);
       event.preventDefault();
     }, { passive: false });
-    const end = () => { dragging = false; };
-    binder.on(shell.stage, "pointerup", end);
-    binder.on(shell.stage, "pointercancel", end);
+    const endPointer = (event) => {
+      if (dragKind !== "pointer" || pointerId !== event.pointerId) return;
+      updateAngle(event.clientX, event.clientY);
+      if (shell.stage.hasPointerCapture?.(event.pointerId)) shell.stage.releasePointerCapture(event.pointerId);
+      dragKind = null;
+      pointerId = null;
+      event.preventDefault();
+    };
+    binder.on(window, "pointerup", endPointer, { passive: false });
+    binder.on(window, "pointercancel", endPointer, { passive: false });
 
     draw();
     return () => {

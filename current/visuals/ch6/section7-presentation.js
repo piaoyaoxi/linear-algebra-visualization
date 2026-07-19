@@ -68,10 +68,13 @@
         if (U().norm(info.w) > 1e-8) inner += U().line(info.w, info.zero ? "is-w" : "is-overlap", "W");
       }
       if (exists) {
-        inner += U().softArrow([0, 0], uPart, "is-u", "");
-        inner += U().softArrow(uPart, vector, "is-w", "");
+        inner += U().softArrow([0, 0], uPart, "is-u", "u");
+        inner += U().softArrow(uPart, vector, "is-w");
+        const wStart = U().point(uPart);
+        const wEnd = U().point(vector);
+        inner += `<text class="ch6-component-label" x="${(wStart[0] + wEnd[0]) / 2 + 10}" y="${(wStart[1] + wEnd[1]) / 2 - 10}">w</text>`;
       }
-      inner += U().softArrow([0, 0], vector, exists ? "is-target" : "is-bad", "目标 v");
+      inner += U().softArrow([0, 0], vector, exists ? "is-target" : "is-bad", "v");
 
       const controls = `${U().segmented([["oblique", "非正交直和"], ["orthogonal", "正交直和"], ["overlap", "覆盖但不唯一"], ["incomplete", "零交但未覆盖"]], "direct-case", key)}${info.kind === "plane-overlap" ? `<div class="ch6-progress-control"><label>把多少公共方向放进 W 分量：t <output>${U().formatNumber(t, 1)}</output><input type="range" min="-1.5" max="1.5" step="0.1" value="${t}" data-direct-t></label><p>w=t z，u=v−t z。拖动后两个分量改变，但总和始终等于 v。</p></div>` : `<div class="ch6-coordinate-sliders"><label>目标 v 横坐标 <output>${U().formatNumber(target[0], 1)}</output><input type="range" min="-2.2" max="2.2" step="0.1" value="${target[0]}" data-direct-vx></label><label>目标 v 纵坐标 <output>${U().formatNumber(target[1], 1)}</output><input type="range" min="-1.8" max="1.8" step="0.1" value="${target[1]}" data-direct-vy></label></div>`}`;
       const final = info.cover && info.zero;
@@ -81,7 +84,7 @@
         title: "把“存在”和“唯一”分成两道闸门",
         lead: "先判断 U+W 是否覆盖整个目标空间，再判断 U 与 W 是否共享非零方向。当前一个 v 的表现不能替代全局条件。",
         focus: info.kind === "plane-overlap" ? "拖动 t：目标 v 不动，但 u 分量与 w 分量不断改变，这就是非唯一。" : "先看背景是否覆盖整个平面，再看两条方向是否重合。",
-        stage: `<div class="ch6-stage-shell">${U().planeSvg(inner, info.label)}${exists ? `<div class="ch6-stage-legend"><span class="is-u">u∈U 的分量</span><span class="is-w">w∈W 的分量</span><span class="is-target">固定目标 v</span></div>` : ""}</div>`,
+        stage: `<div class="ch6-stage-shell">${U().planeSvg(inner, info.label)}</div>`,
         controls,
         readout,
         tasks: U().taskBlock(section),

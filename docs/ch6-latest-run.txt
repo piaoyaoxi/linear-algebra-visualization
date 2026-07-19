@@ -1,3 +1,0 @@
-run_id=29681130587
-head_sha=673fe3de44cdb05db368983c9cd89e9023767335
-workflow=Chapter 6 browser check

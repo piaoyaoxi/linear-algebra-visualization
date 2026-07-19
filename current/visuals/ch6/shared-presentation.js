@@ -26,7 +26,7 @@
   }
 
   function labShell({ title, lead, focus, stage, controls, readout, tasks = "", className = "" }) {
-    return `<div class="ch6-guided-lab ${className}"><div class="ch6-lab-header"><div><span class="ch6-lab-kicker">交互实验</span><h3>${title}</h3><p>${lead}</p></div><div class="ch6-focus-note"><span>第一眼先看</span><strong>${focus}</strong></div></div>${controls ? `<div class="ch6-lab-controls" aria-label="实验控制">${controls}</div>` : ""}<div class="ch6-lab-stage">${stage}</div><div class="ch6-lab-readout" aria-live="polite">${readout}</div>${tasks}</div>`;
+    return `<div class="ch6-guided-lab ${className}"><div class="ch6-lab-header"><span class="ch6-lab-kicker">动手观察</span><h3>${title}</h3><p>${lead}</p><div class="ch6-focus-note"><span>观察任务</span><strong>${focus}</strong></div></div><div class="ch6-lab-stage">${stage}</div>${controls ? `<div class="ch6-lab-controls" aria-label="实验控制">${controls}</div>` : ""}<div class="ch6-lab-readout" aria-live="polite">${readout}</div>${tasks}</div>`;
   }
 
   function segmented(items, dataName, active) {
@@ -100,7 +100,7 @@
     return inv ? matVec(inv, vector) : null;
   }
 
-  const plane = { width: 640, height: 360, origin: [320, 190], scale: 64 };
+  const plane = { width: 640, height: 360, origin: [320, 190], scale: 82 };
   const point = (vector, config = plane) => [config.origin[0] + vector[0] * config.scale, config.origin[1] - vector[1] * config.scale];
 
   function vectorLabel(label, x, y, tipX, tipY, className, config) {

@@ -1,0 +1,56 @@
+name: Chapter 5 orbit camera check
+
+on:
+  pull_request:
+    paths:
+      - "current/**"
+      - ".github/scripts/ch5-orbit-check.mjs"
+      - ".github/workflows/ch5-orbit-check.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  orbit-check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+
+      - name: Install Playwright
+        run: |
+          npm install --no-save playwright@1.52.0
+          npx playwright install --with-deps chromium
+
+      - name: Start static site
+        run: |
+          python3 -m http.server 4173 --directory current > /tmp/ch5-orbit-static.log 2>&1 &
+          for attempt in {1..20}; do
+            if curl --fail --silent http://127.0.0.1:4173/learn.html > /dev/null; then
+              exit 0
+            fi
+            sleep 1
+          done
+          cat /tmp/ch5-orbit-static.log
+          exit 1
+
+      - name: Exercise draggable quadratic surfaces
+        run: |
+          set -o pipefail
+          node .github/scripts/ch5-orbit-check.mjs 2>&1 | tee /tmp/ch5-orbit-check.log
+
+      - name: Upload orbit evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: ch5-orbit-evidence
+          path: |
+            /tmp/ch5-orbit-shots
+            /tmp/ch5-orbit-check.log
+            /tmp/ch5-orbit-static.log
+          if-no-files-found: warn
+          retention-days: 3

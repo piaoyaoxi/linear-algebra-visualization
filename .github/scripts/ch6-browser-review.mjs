@@ -2,7 +2,7 @@ import fs from "node:fs";
 import path from "node:path";
 import { chromium } from "playwright";
 
-const base = "http://127.0.0.1:4173/learn.html";
+const base = process.env.CH6_BASE_URL || "http://127.0.0.1:4173/learn.html";
 const shots = "/tmp/ch6-screenshots";
 const sections = [
   "sets-maps",
@@ -20,9 +20,7 @@ const hasText = (locator, text) => locator.innerText().then((value) => value.inc
 
 function assertSourceDesignSystem() {
   const files = [
-    "current/visuals/ch6/cinematic-presentation.css",
-    "current/visuals/ch6/basis-cinematic.css",
-    "current/visuals/ch6/design-system-alignment.css",
+    "current/visuals/ch6/chapter-presentation.css",
     "current/visuals/ch6/shared-presentation.js",
     "current/visuals/ch6/section1-presentation.js",
   ];
@@ -35,6 +33,9 @@ function assertSourceDesignSystem() {
     "#ffad5b",
     "ch6-vector-glow",
     "<ellipse class=\"ch6-map-set\"",
+    "linear-gradient(",
+    "radial-gradient(",
+    "stroke-dasharray",
   ];
   const problems = [];
   for (const file of files) {
@@ -74,8 +75,8 @@ async function assertPageGeometry(page, id) {
       missing: false,
       stageRatio: stageRect.width / innerWidth,
       verticalOrder:
-        (!controlsRect || controlsRect.bottom <= stageRect.top + 1) &&
-        stageRect.bottom <= readoutRect.top + 1,
+        stageRect.bottom <= (controlsRect?.top ?? readoutRect.top) + 1 &&
+        (!controlsRect || controlsRect.bottom <= readoutRect.top + 1),
       legacySplit: lab.querySelectorAll(".ch6-lab-layout, .ch6-lab-main").length,
     };
   });
@@ -212,11 +213,14 @@ async function openLesson(page, id, shotPrefix, colorScheme) {
 
 async function reviewInteractions(page, configName, colorScheme) {
   await openLesson(page, "sets-maps", configName, colorScheme);
-  await page.locator('[data-map-mode="bijective"]').click();
+  await page.locator('[data-map-reset="identity"]').click();
   await assertMappingVisual(page);
   if (!(await hasText(page.locator("[data-map-inverse]"), "可唯一倒退"))) throw new Error("§1 inverse state failed");
-  await page.locator('[data-map-mode="surjective"]').click();
+  await page.locator('[data-map-reset="collision"]').click();
   if (!(await hasText(page.locator("[data-map-injective]"), "至少两个输入同像"))) throw new Error("§1 collision state failed");
+  await page.locator('[data-map-input-node="1"]').click();
+  await page.locator('[data-map-output-node="1"]').click();
+  if (!(await hasText(page.locator("[data-map-inverse]"), "可唯一倒退"))) throw new Error("§1 manual reconnection failed");
   await page.locator("main.content").screenshot({ path: path.join(shots, `${configName}-mapping-state.png`) });
 
   await openLesson(page, "vector-space-definition", configName, colorScheme);
@@ -247,7 +251,7 @@ async function reviewInteractions(page, configName, colorScheme) {
   await page.locator("main.content").screenshot({ path: path.join(shots, `${configName}-basis-coordinate-state.png`) });
 
   await openLesson(page, "change-of-basis", configName, colorScheme);
-  if (!(await hasText(page.locator(".ch6-mode-badge.is-passive"), "白色向量 v 的端点始终固定"))) throw new Error("§4 fixed-object cue missing");
+  if (!(await hasText(page.locator(".ch6-mode-badge.is-passive"), "向量 v 的端点始终固定"))) throw new Error("§4 fixed-object cue missing");
   await page.locator('[data-passive-preset="collapse"]').click();
   await page.waitForFunction(() => document.querySelector(".ch6-conclusion-box")?.textContent?.includes("W 不再是一组基"), null, { timeout: 2500 });
   await assertVectors(page, "§4 degenerate basis");

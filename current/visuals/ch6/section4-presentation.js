@@ -89,6 +89,12 @@
 
     function animateMatrix(next) {
       if (animationFrame) cancelAnimationFrame(animationFrame);
+      if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+        displayMatrix = next.map((row) => row.slice());
+        progress = 1;
+        render();
+        return;
+      }
       const start = displayMatrix.map((row) => row.slice());
       const started = performance.now();
       const duration = 380;
@@ -111,20 +117,21 @@
       const passiveCoordinates = inv ? U().matVec(inv, vector) : null;
       const activeVector = U().matVec(matrix, vector);
       let inner = U().planeGrid();
-      let legend;
 
       if (mode === "passive") {
         inner += basisGrid(matrix, "is-w-grid");
-        inner += U().softArrow([0, 0], [1, 0], "is-u-soft");
-        inner += U().softArrow([0, 0], [0, 1], "is-u-soft");
-        inner += U().softArrow([0, 0], [matrix[0][0], matrix[1][0]], "is-w");
-        inner += U().softArrow([0, 0], [matrix[0][1], matrix[1][1]], "is-w2");
-        inner += U().softArrow([0, 0], vector, "is-target", "同一个 v");
-        legend = `<div class="ch6-stage-legend"><span class="is-u">原基 U</span><span class="is-w">新基 W</span><span class="is-target">固定向量 v</span></div>`;
+        inner += `<text class="ch6-frame-note" x="26" y="30">标准网格 U（固定）</text>`;
+        const w1 = [matrix[0][0], matrix[1][0]];
+        const w2 = [matrix[0][1], matrix[1][1]];
+        const w1Tip = U().point(w1);
+        const w2Tip = U().point(w2);
+        inner += U().softArrow([0, 0], w1, "is-w");
+        inner += U().softArrow([0, 0], w2, "is-w2");
+        inner += `<text class="ch6-basis-tip-label" x="${w1Tip[0] + 9}" y="${w1Tip[1] + 18}">w₁</text><text class="ch6-basis-tip-label" x="${w2Tip[0] - 22}" y="${w2Tip[1] - 10}">w₂</text>`;
+        inner += U().softArrow([0, 0], vector, "is-target", "v（固定）");
       } else {
         inner += U().softArrow([0, 0], vector, "is-target-soft", "输入 v");
         inner += U().softArrow([0, 0], activeVector, "is-target", "输出 Aₜv");
-        legend = `<div class="ch6-stage-legend"><span class="is-muted">输入 v</span><span class="is-target">输出 Aₜv</span></div>`;
       }
 
       const modeControls = U().segmented([["passive", "被动换基：向量不动"], ["active", "主动变换：向量移动"]], "change-mode", mode);
@@ -141,7 +148,7 @@
         title: "把“换坐标”和“移动向量”分开观察",
         lead: "先选择模式，再拖动进度。两种模式使用同一张坐标平面，但固定不动的对象完全不同。",
         focus: mode === "passive" ? "只盯住向量 v 的端点：新基 W 变化时，它不能移动。" : "比较输入 v 与输出 Aₜv；标准网格必须保持固定。",
-        stage: `<div class="ch6-stage-shell">${U().planeSvg(inner, mode === "passive" ? "被动换基实验" : "主动线性变换实验")}${legend}</div>`,
+        stage: `<div class="ch6-stage-shell">${U().planeSvg(inner, mode === "passive" ? "被动换基实验" : "主动线性变换实验")}</div>`,
         controls,
         readout,
         tasks: U().taskBlock(section),

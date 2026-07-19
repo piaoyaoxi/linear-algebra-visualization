@@ -61,23 +61,16 @@
     const w = same ? u : [Math.cos(angleW), Math.sin(angleW)];
     let inner = U().planeGrid();
     if (same) {
-      const uPart = U().scale(u, 1.35);
-      const sum = U().scale(u, 0.72);
-      inner += U().line(u, "is-overlap", "U=W");
-      inner += U().softArrow([0, 0], uPart, "is-u", "");
-      inner += U().softArrow(uPart, sum, "is-w", "");
-      inner += U().softArrow([0, 0], sum, "is-result", "");
+      inner += U().line(u, "is-overlap", "U=W=U∩W=U+W");
     } else {
-      const uPart = U().scale(u, 1.35);
-      const sum = U().add(uPart, U().scale(w, 1.05));
       inner += `<rect class="ch6-plane-fill" x="14" y="14" width="612" height="332" rx="20"></rect>`;
       inner += U().line(u, "is-u", "U");
       inner += U().line(w, "is-w", "W");
-      inner += U().softArrow([0, 0], uPart, "is-u", "");
-      inner += U().softArrow(uPart, sum, "is-w", "");
-      inner += U().softArrow([0, 0], sum, "is-result", "");
+      const ox = U().plane.origin[0];
+      const oy = U().plane.origin[1];
+      inner += `<path class="ch6-origin-cross" d="M ${ox - 6} ${oy} H ${ox + 6} M ${ox} ${oy - 6} V ${oy + 6}"></path><text class="ch6-plane-label" x="${ox + 14}" y="${oy - 12}">U∩W={0}</text><text class="ch6-plane-label ch6-plane-sum-label" x="30" y="40">整片平面：U+W=ℝ²</text>`;
     }
-    return U().planeSvg(inner, same ? "同一条直线中的 u 与 w 合成" : "两条不同直线中的 u 与 w 合成");
+    return U().planeSvg(inner, same ? "同一条直线的交空间与和空间" : "两条不同直线的交空间与和空间");
   }
 
   function r3Visual(kind) {
@@ -119,9 +112,9 @@
 
       host.innerHTML = U().labShell({
         title: "先找公共方向，再做维数账本",
-        lead: "切换不同维数情形。画面负责告诉你哪些方向重复，下面的账本负责把这种重复写成维数公式。",
-        focus: info.kind === "r2" ? "先看 U 与 W 是否是同一条直线，再沿 u、w 两段追到最终的 u+w。" : "先找图中同时属于 U 和 W 的公共方向。",
-        stage: `<div class="ch6-stage-shell">${visual}${info.kind === "r2" || info.kind === "same" ? `<div class="ch6-stage-legend"><span class="is-u">先取 u∈U</span><span class="is-w">再加 w∈W</span><span class="is-result">最终得到 u+w</span></div>` : ""}</div>`,
+        lead: "切换不同维数情形。主画面只回答两件事：共同部分在哪里，两个子空间合起来能铺到哪里；下面再把它写成维数公式。",
+        focus: info.kind === "r2" ? "先找 U 与 W 的共同部分，再看淡色背景是否铺满整个平面。" : "先找图中同时属于 U 和 W 的公共方向。",
+        stage: `<div class="ch6-stage-shell">${visual}</div>`,
         controls,
         readout,
         tasks: U().taskBlock(section),

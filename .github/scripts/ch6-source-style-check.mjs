@@ -23,6 +23,10 @@ const forbidden = [
   "绿色箭头",
   "白色向量",
   "橙色方向",
+  "linear-gradient(",
+  "radial-gradient(",
+  "stroke-dasharray",
+  "filter: drop-shadow",
 ];
 
 function walk(directory) {

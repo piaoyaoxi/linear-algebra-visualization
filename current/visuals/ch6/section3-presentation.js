@@ -64,14 +64,14 @@
       } else {
         inner += U().line(v1, "is-u", "当前张成一条直线", [0, 0], mainConfig);
       }
-      inner += U().softArrow([0, 0], v1, "is-u", "", mainConfig);
-      inner += U().softArrow([0, 0], v2, "is-w", "", mainConfig);
+      inner += U().softArrow([0, 0], v1, "is-u", "v₁（固定）", mainConfig);
+      inner += U().softArrow([0, 0], v2, "is-w", "v₂（可调）", mainConfig);
       if (showRedundant) {
         const v3 = U().add(U().scale(v1, 0.72), U().scale(v2, 0.55));
-        inner += U().softArrow([0, 0], v3, "is-g3", "", mainConfig);
+        inner += U().softArrow([0, 0], v3, "is-g3", "v₃（冗余）", mainConfig);
       }
       const tip = U().point(v2, mainConfig);
-      inner += `<circle class="ch6-drag-handle" data-v2-handle cx="${tip[0]}" cy="${tip[1]}" r="12"></circle>`;
+      inner += `<circle class="ch6-drag-hit" data-v2-handle cx="${tip[0]}" cy="${tip[1]}" r="20"></circle>`;
     } else {
       const coordinates = U().solve(v1, v2, target) || [0, 0];
       const first = U().scale(v1, coordinates[0]);
@@ -96,6 +96,11 @@
 
     function animateV2(next) {
       if (animationFrame) cancelAnimationFrame(animationFrame);
+      if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+        v2 = next.slice();
+        render();
+        return;
+      }
       const start = v2.slice();
       const started = performance.now();
       const duration = 360;
@@ -122,15 +127,12 @@
         ? `<div class="ch6-basis-verdict"><div><span>有向面积</span><strong>|det(v₁,v₂)| = ${U().formatNumber(Math.abs(det), 3)}</strong></div><div><span>张成维数</span><strong>${independent ? "2 · 整个平面" : "1 · 一条直线"}</strong></div><div><span>是否线性无关</span><strong>${independent ? "是" : "否"}</strong></div><div><span>当前向量组是否为基</span><strong>${independent && !showRedundant ? "是：够用且无冗余" : independent ? "否：v₃ 是冗余方向" : "否：缺少第二个独立方向"}</strong></div></div><div class="ch6-conclusion-box ${independent ? "is-ok" : "is-warn"}"><span>几何结论</span><strong>${independent ? "平行四边形有面积，v₂ 真正增加了一个方向" : "面积塌缩为 0，v₂ 没有增加新的方向"}</strong></div>`
         : `<div class="ch6-coordinate-pair"><article><span>有序基 B</span><strong>(b₁,b₂)</strong></article><b>→</b><article><span>目标向量 v</span><strong>${U().formatVector(target)}</strong></article></div><div class="ch6-coordinate-reader"><span>坐标 [v]ᵦ</span><strong>${coordinates ? U().formatVector(coordinates) : "—"}</strong><span>验证</span><strong>${coordinates ? `${U().formatNumber(coordinates[0])}b₁ + ${U().formatNumber(coordinates[1])}b₂ = v` : "先让两个基方向独立"}</strong></div><div class="ch6-conclusion-box is-ok"><span>读图方法</span><strong>先沿 b₁ 走第一段，再沿 b₂ 走第二段，终点正好落到 v</strong></div>`;
 
-      const legend = mode === "structure"
-        ? `<div class="ch6-stage-legend"><span class="is-u">固定方向 v₁</span><span class="is-w">可拖动方向 v₂</span>${showRedundant ? `<span class="is-overlap">冗余向量 v₃</span>` : ""}</div>`
-        : `<div class="ch6-stage-legend"><span class="is-u">沿 b₁ 的分量</span><span class="is-w">沿 b₂ 的分量</span><span class="is-target">目标向量 v</span></div>`;
 
       host.innerHTML = U().labShell({
         title: mode === "structure" ? "拖动 v₂：看面积怎样决定维数" : "沿两个基方向走到目标向量",
         lead: mode === "structure" ? "不要数箭头。拖动第二个方向，观察平行四边形面积从 0 变为非 0，张成空间也会从直线扩展为平面。" : "固定一组独立基，改变目标向量。两段路径就是它的两个坐标分量。",
         focus: mode === "structure" ? "先看半透明平行四边形是否有面积；面积为 0 时，两个箭头只是同一方向。" : "先看目标 v，再沿 b₁、b₂ 两段路径追到它的终点。",
-        stage: `<div class="ch6-stage-shell">${sceneSvg(v1, v2, showRedundant, target, mode)}${legend}</div>`,
+        stage: `<div class="ch6-stage-shell">${sceneSvg(v1, v2, showRedundant, target, mode)}</div>`,
         controls,
         readout,
         tasks: U().taskBlock(section),

@@ -15,7 +15,9 @@
   function visualFor(caseInfo, shift) {
     if (caseInfo.kind === "line") {
       const offset = [shift / 2, -shift / 2];
-      const inner = U().planeGrid() + U().line([1, 1], Math.abs(shift) < 1e-8 ? "is-u" : "is-bad-line", `x−y=${U().formatNumber(shift, 1)}`, offset) + `<circle class="ch6-origin-emphasis" cx="${U().plane.origin[0]}" cy="${U().plane.origin[1]}" r="7"></circle><text class="ch6-plane-label is-target" x="${U().plane.origin[0] + 18}" y="${U().plane.origin[1] - 14}">零向量</text>`;
+      const ox = U().plane.origin[0];
+      const oy = U().plane.origin[1];
+      const inner = U().planeGrid() + U().line([1, 1], Math.abs(shift) < 1e-8 ? "is-u" : "is-bad-line", `x−y=${U().formatNumber(shift, 1)}`, offset) + `<path class="ch6-origin-cross" d="M ${ox - 6} ${oy} H ${ox + 6} M ${ox} ${oy - 6} V ${oy + 6}"></path><text class="ch6-plane-label is-target" x="${ox + 15}" y="${oy - 12}">零向量</text>`;
       return U().planeSvg(inner, "直线平移与子空间判定");
     }
     if (caseInfo.kind === "quadrant") {

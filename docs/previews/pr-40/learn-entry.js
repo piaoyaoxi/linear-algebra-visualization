@@ -35,7 +35,6 @@ function learnOrderedChapters() {
   return [...algebraContent.chapters].sort((a, b) => learnChapterNumber(a) - learnChapterNumber(b));
 }
 
-
 function learnFirstStructuredTarget() {
   for (const chapter of learnOrderedChapters()) {
     const first = learnTrackableSections(chapter)[0];
@@ -179,7 +178,6 @@ function renderLearningRouteCard(chapter) {
   const status = ready
     ? `<div class="route-meter" role="img" aria-label="已掌握 ${done} / ${trackable.length}"><span style="width:${percent}%"></span></div><span class="route-count">${done}/${trackable.length} 已掌握</span>`
     : `<span class="route-count">${chapter.sections.length} 个小节</span>`;
-
   const href = ready ? `#${chapter.id}/${trackable[0].id}` : `#${chapter.id}`;
 
   return `
@@ -191,7 +189,6 @@ function renderLearningRouteCard(chapter) {
 }
 
 renderRoute = function renderLearningRoute() {
-  window.teardownChapter7Lesson?.();
   const raw = decodeURIComponent(window.location.hash.replace(/^#/, "")) || "guide";
   const [requestedRoute, requestedSection] = raw.split("/");
 

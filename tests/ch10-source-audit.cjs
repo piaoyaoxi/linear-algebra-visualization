@@ -13,6 +13,7 @@ const commands = [
 ];
 const spacingCharacters = new Set([";", ",", "!", ":"]);
 const findings = [];
+const visualFindings = [];
 
 function slashRunBefore(line, index) {
   let slashCount = 0;
@@ -57,5 +58,27 @@ function visit(target) {
 }
 
 roots.forEach((root) => visit(root));
-console.log(JSON.stringify({ findings }, null, 2));
-if (findings.length) process.exitCode = 1;
+
+function collectFiles(target) {
+  const stat = fs.statSync(target);
+  if (stat.isDirectory()) return fs.readdirSync(target).flatMap((entry) => collectFiles(path.join(target, entry)));
+  return [target];
+}
+
+for (const file of collectFiles("current/visuals/ch10")) {
+  if (!/\.(css|js)$/.test(file)) continue;
+  const source = fs.readFileSync(file, "utf8");
+  if (/cinematic|ch10-cinema/i.test(source)) visualFindings.push({ file, rule: "cinematic-shell" });
+  if (/radial-gradient|<filter\b|filter:\s*url\(/i.test(source)) visualFindings.push({ file, rule: "glow-or-filter" });
+  if (/#[0-9a-f]{3,8}\b/i.test(source)) visualFindings.push({ file, rule: "hardcoded-color" });
+  if (/box-shadow\s*:/i.test(source)) visualFindings.push({ file, rule: "custom-shadow" });
+  for (const match of source.matchAll(/border-radius:\s*(\d+)px/gi)) {
+    if (Number(match[1]) > 12) visualFindings.push({ file, rule: "oversized-radius", value: match[1] });
+  }
+}
+
+const learnSource = fs.readFileSync("current/learn.html", "utf8");
+if (/cinematic\.css|cinematic\.js/.test(learnSource)) visualFindings.push({ file: "current/learn.html", rule: "cinematic-resource" });
+
+console.log(JSON.stringify({ findings, visualFindings }, null, 2));
+if (findings.length || visualFindings.length) process.exitCode = 1;

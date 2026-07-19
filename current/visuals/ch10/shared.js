@@ -219,6 +219,29 @@
     });
   }
 
+  function animateNumbers(from, to, onFrame, duration = 320) {
+    const reduced = window.matchMedia?.("(prefers-reduced-motion: reduce)")?.matches;
+    if (reduced || duration <= 0) {
+      onFrame([...to], 1);
+      return () => {};
+    }
+    let frameId = 0;
+    let cancelled = false;
+    const startedAt = performance.now();
+    const tick = (now) => {
+      if (cancelled) return;
+      const raw = clamp((now - startedAt) / duration, 0, 1);
+      const eased = 1 - (1 - raw) ** 3;
+      onFrame(from.map((value, index) => value + (to[index] - value) * eased), raw);
+      if (raw < 1) frameId = requestAnimationFrame(tick);
+    };
+    frameId = requestAnimationFrame(tick);
+    return () => {
+      cancelled = true;
+      if (frameId) cancelAnimationFrame(frameId);
+    };
+  }
+
   window.chapter10UI = Object.freeze({
     EPS,
     q,
@@ -252,5 +275,6 @@
     bindExample,
     bindRangeOutputs,
     bindSvgDrag,
+    animateNumbers,
   });
 })();

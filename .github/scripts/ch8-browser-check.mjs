@@ -50,7 +50,8 @@ async function openLesson(page, id, shotName = "") {
   for (const selector of [
     ".ch8-question",
     ".ch8-observe",
-    ".ch8-mission-card",
+    ".ch8-lab-intro",
+    ".ch8-lab-host",
     ".ch8-experiment-roadmap",
     ".ch8-foundation",
     ".ch8-example",
@@ -61,19 +62,22 @@ async function openLesson(page, id, shotName = "") {
   }
 
   if ((await page.locator(".ch8-foundation-module").count()) < 4) throw new Error(`${id}: foundation is too thin`);
-  if ((await page.locator(".ch8-experiment-roadmap article").count()) < 3) throw new Error(`${id}: experiment lacks a visible action roadmap`);
+  if ((await page.locator(".ch8-experiment-roadmap li").count()) < 3) throw new Error(`${id}: experiment lacks a visible action roadmap`);
   if (await page.locator(".ch8-concept-strip").count()) throw new Error(`${id}: old generic concept-card template is still present`);
   if (await page.locator(".katex-error").count()) throw new Error(`${id}: KaTeX error marker found`);
 
   const order = await page.evaluate(() => {
     const interaction = document.querySelector(".ch8-interactive-section")?.getBoundingClientRect().top ?? 0;
+    const observe = document.querySelector(".ch8-observe")?.getBoundingClientRect().top ?? 0;
+    const intro = document.querySelector(".ch8-lab-intro")?.getBoundingClientRect().top ?? 0;
     const foundation = document.querySelector(".ch8-foundation")?.getBoundingClientRect().top ?? 0;
     const roadmap = document.querySelector(".ch8-experiment-roadmap")?.getBoundingClientRect().top ?? 0;
     const lab = document.querySelector(".ch8-lab-host")?.getBoundingClientRect().top ?? 0;
-    return { interaction, foundation, roadmap, lab };
+    return { interaction, observe, intro, foundation, roadmap, lab };
   });
   if (order.interaction >= order.foundation) throw new Error(`${id}: theory appears before the core experiment`);
-  if (order.roadmap >= order.lab) throw new Error(`${id}: students see the lab before the action roadmap`);
+  if (order.observe >= order.interaction || order.intro >= order.lab) throw new Error(`${id}: the observation prompt and experiment mission must appear before the lab`);
+  if (order.lab >= order.roadmap || order.roadmap >= order.foundation) throw new Error(`${id}: action roadmap must connect the lab to the theory`);
 
   await assertNoOverflow(page, id);
   if (shotName) await page.locator("main.content").screenshot({ path: path.join(shots, `${shotName}-${id}.png`) });
@@ -167,8 +171,11 @@ async function verifySlider(page, configName) {
 
 async function exerciseChapter(page, name) {
   await page.goto(`${base}#ch8`, { waitUntil: "networkidle" });
-  if ((await page.locator(".ch8-lesson-grid .lesson-card").count()) !== 7) throw new Error("Chapter 8 overview does not contain seven lesson cards");
-  if (!(await textIncludes(page.locator(".ch8-cover-journey"), "参数化"))) throw new Error("Chapter 8 overview lacks the classification journey");
+  if ((await page.locator(".ch8-lesson-list .ch8-lesson-row").count()) !== 7) throw new Error("Chapter 8 overview does not contain seven lesson routes");
+  const route = page.locator(".ch8-route-line");
+  if (!(await textIncludes(route, "构造")) || !(await textIncludes(route, "压缩")) || !(await textIncludes(route, "分类")) || !(await textIncludes(route, "重建"))) {
+    throw new Error("Chapter 8 overview lacks the classification journey");
+  }
   await assertNoOverflow(page, `${name}/overview`);
 
   for (const id of sections) await openLesson(page, id, name);
@@ -200,7 +207,9 @@ async function exerciseChapter(page, name) {
   if (!(await textIncludes(page.locator("[data-live-conclusion]"), "不相似"))) throw new Error("§3 same-characteristic-polynomial comparison failed");
 
   await openLesson(page, "similarity-criterion");
-  if (!(await textIncludes(page.locator(".ch8-coordinate-rooms"), "对象不动"))) throw new Error("§4 coordinate rooms do not separate object from coordinates");
+  if (!(await textIncludes(page.locator(".ch8-similarity-cinema"), "对象不动")) || !(await textIncludes(page.locator(".ch8-similarity-cinema"), "矩阵记录"))) {
+    throw new Error("§4 basis experiment does not separate the fixed object from its changing coordinate record");
+  }
   await page.locator('[data-sim-mode="passport"]').click();
   for (let index = 0; index < 4; index += 1) await page.locator("[data-passport-next]").click();
   if (!(await textIncludes(page.locator("[data-live-conclusion]"), "不相似"))) throw new Error("§4 passport accepted the false-similarity pair");
@@ -209,7 +218,8 @@ async function exerciseChapter(page, name) {
   await page.locator('[data-factor-field="C"]').click();
   if (!(await textIncludes(page.locator(".ch8-family-columns"), "λ−i")) || !(await textIncludes(page.locator(".ch8-family-columns"), "λ+i"))) throw new Error("§5 complex-field split failed");
   await page.locator('[data-factor-mode="regroup"]').click();
-  if (!(await textIncludes(page.locator(".ch8-regroup-layers"), "d2"))) throw new Error("§5 elementary divisors did not regroup into invariant factors");
+  const regroupText = (await page.locator(".ch8-regroup-layers").innerText()).replace(/\s+/g, "");
+  if (!regroupText.includes("d2")) throw new Error("§5 elementary divisors did not regroup into invariant factors");
 
   await openLesson(page, "jordan-derivation");
   await page.locator("[data-chain-next]").click();

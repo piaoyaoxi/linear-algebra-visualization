@@ -124,6 +124,10 @@ async function checkSmith(page, name) {
   if (!(await page.locator("[data-smith-operator]").evaluate((node) => node.classList.contains("is-right")))) throw new Error(`${name}/smith: column operation did not light right rail`);
   await page.locator("[data-smith-next]").click();
   if (!(await page.locator("[data-smith-operator]").evaluate((node) => node.classList.contains("is-left")))) throw new Error(`${name}/smith: row operation did not light left rail`);
+  const operationBox = await page.locator(".ch8-smith-operator > strong .katex").boundingBox();
+  if (!operationBox || operationBox.width <= operationBox.height * 2) {
+    throw new Error(`${name}/smith: current operation formula collapsed into a vertical stack`);
+  }
   await page.locator(".ch8-smith-cinema").screenshot({ path: path.join(shots, `${name}-smith.png`) });
 }
 

@@ -204,7 +204,7 @@
       },
       interactive: {
         kind: "invariant-story",
-        title: "子式—gcd—不变因子流水线",
+        title: "子式、gcd 与不变因子流水线",
         description: "逐级选择 1 阶、2 阶和 3 阶子式，观察它们怎样被压缩成 Δ₁、Δ₂、Δ₃，再相除得到 d₁、d₂、d₃。",
         mission: "比较 2I 与二阶 Jordan 块：它们有相同特征多项式，为什么不变因子链不同？",
         steps: [

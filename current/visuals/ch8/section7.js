@@ -30,32 +30,27 @@
           </header>
 
           <section class="ch8-krylov-machine">
-            <span class="ch8-companion-matrix ch8-companion-a11y" aria-hidden="true">${feedback ? "−1 2 0" : "反馈列尚未出现"}</span>
-            <svg viewBox="0 0 980 470" role="img" aria-label="Krylov 轨道推进并在第一次线性相关时回流到前面向量">
-              <defs><marker id="ch8-krylov-arrow" markerWidth="10" markerHeight="10" refX="8" refY="5" orient="auto"><path d="M0 0L10 5L0 10Z"></path></marker></defs>
-              <path class="belt-line" d="M90 235H650"></path>
-              ${orbit.map((vector, index) => {
-                const x = 120 + index * 175;
-                const state = index < step ? "is-past" : index === step ? "is-current" : "is-future";
-                return `<g class="belt-node ${state}" transform="translate(${x} 235)"><circle r="42"></circle><text class="belt-node-label" text-anchor="middle" dy="7">${vector.svgLabel}</text></g>`;
-              }).join("")}
-              <text class="belt-index" x="115" y="305">0</text><text class="belt-index" x="290" y="305">1</text><text class="belt-index" x="465" y="305">2</text><text class="belt-index" x="640" y="305">3</text>
-              <path class="feedback-curve ${feedback ? "is-visible" : ""}" d="M645 185C610 70 300 55 125 180"></path>
-              <path class="feedback-branch ${feedback ? "is-visible" : ""}" d="M500 92C455 128 385 150 305 190"></path>
-              <text class="feedback-label ${feedback ? "is-visible" : ""}" x="342" y="66">A³v = −v + 2Av</text>
+            <div class="ch8-orbit-board" role="img" aria-label="Krylov 轨道推进并在第一次线性相关时回流">
+              <div class="ch8-orbit-track">
+                ${orbit.map((vector, index) => {
+                  const state = index < step ? "is-past" : index === step ? "is-current" : "is-future";
+                  return `<div class="ch8-orbit-item ${state}"><span>${I(vector.label)}</span><small>秩 ${vector.rank}</small></div>${index < orbit.length - 1 ? `<i aria-hidden="true">A →</i>` : ""}`;
+                }).join("")}
+                <div class="feedback-curve ${feedback ? "is-visible" : ""}"><span>首次回流</span><strong>${I("A^3v=-v+2Av")}</strong><small>新向量不再增加维数</small></div>
+              </div>
 
-              <g class="companion-shell" transform="translate(730 95)">
-                <text x="0" y="0">在基 (v, Av, A²v) 中</text>
-                <path class="matrix-brace" d="M12 38H0V282H12M226 38H238V282H226"></path>
-                ${[
-                  ["0", "0", feedback ? "−1" : "?"],
-                  ["1", "0", feedback ? "2" : "?"],
-                  ["0", "1", feedback ? "0" : "?"],
-                ].map((row, r) => row.map((value, c) => `<g class="companion-cell ${c === Math.min(step, 2) ? "is-active" : ""}" transform="translate(${48 + c * 72} ${82 + r * 70})"><rect x="-28" y="-28" width="56" height="56" rx="12"></rect><text text-anchor="middle" dy="7">${value}</text></g>`).join("")).join("")}
-                <text class="companion-caption" x="22" y="325">前两列：移位</text>
-                <text class="companion-caption" x="132" y="325">最后一列：反馈</text>
-              </g>
-            </svg>
+              <div class="ch8-companion-panel">
+                <span>在基 ${I("(v,Av,A^2v)")} 中</span>
+                <div class="ch8-companion-matrix" aria-label="伴随矩阵">
+                  ${[
+                    ["0", "0", feedback ? "-1" : "?"],
+                    ["1", "0", feedback ? "2" : "?"],
+                    ["0", "1", feedback ? "0" : "?"],
+                  ].map((row) => row.map((value, column) => `<b class="${column === Math.min(step, 2) ? "is-active" : ""}">${I(value)}</b>`).join("")).join("")}
+                </div>
+                <div class="ch8-companion-key"><span>前两列</span><b>移位</b><span>最后一列</span><b>回流系数</b></div>
+              </div>
+            </div>
 
             <div class="ch8-krylov-status">
               <span>当前向量</span><strong>${I(item.label)}</strong>
@@ -75,7 +70,7 @@
           ${conclusionMarkup(
             "伴随矩阵的来源",
             feedback ? "前两列记录前移，最后一列记录首次回流" : "轨道仍在扩张，还没有形成反馈多项式",
-            feedback ? "Krylov 基把 A 的作用变成一台移位—反馈机器，这正是伴随矩阵的几何与代数含义。" : "继续作用 A，直到新向量第一次不再增加循环子空间维数。",
+            feedback ? "Krylov 基把 A 的作用变成一台移位与反馈机器，这正是伴随矩阵的几何与代数含义。" : "继续作用 A，直到新向量第一次不再增加循环子空间维数。",
           )}
         </div>`;
 

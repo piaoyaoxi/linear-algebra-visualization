@@ -1,5 +1,30 @@
 /* Chapter 7 presentation registry and lifecycle. */
 (() => {
+  if (!document.querySelector("#ch7-story-final-polish")) {
+    const style = document.createElement("style");
+    style.id = "ch7-story-final-polish";
+    style.textContent = `
+      .ch7-story-label,
+      .ch7-story-caption {
+        stroke-width: 1.8px;
+      }
+
+      .ch7-story-big-label,
+      .ch7-story-matrix-text,
+      .ch7-story-node-text {
+        stroke-width: 3px;
+      }
+
+      @media (max-width: 620px) {
+        .ch7-story-label,
+        .ch7-story-caption {
+          stroke-width: 1.35px;
+        }
+      }
+    `;
+    document.head.append(style);
+  }
+
   const renderers = new Map();
   const enhancers = [];
   let activeCleanups = [];

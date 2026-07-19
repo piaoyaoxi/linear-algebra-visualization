@@ -8,6 +8,10 @@ on:
 permissions:
   contents: write
 
+concurrency:
+  group: ch3-sync-main
+  cancel-in-progress: true
+
 jobs:
   sync:
     if: ${{ !contains(github.event.head_commit.message, 'sync main into chapter 3') }}
@@ -22,26 +26,26 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git fetch origin main
-          if git merge-base --is-ancestor origin/main HEAD; then
-            echo "Already up to date"
-            exit 0
-          fi
-          git merge origin/main --no-commit --no-ff || true
+          if ! git merge-base --is-ancestor origin/main HEAD; then
+            git merge origin/main --no-commit --no-ff || true
 
-          for file in current/app.js current/learn-entry.js current/visuals/ch4/mount.js current/visuals/example-challenge.js; do
-            if git ls-files -u -- "$file" | grep -q .; then
-              git checkout --theirs -- "$file"
+            for file in current/app.js current/learn-entry.js current/visuals/ch4/mount.js current/visuals/example-challenge.js; do
+              if git ls-files -u -- "$file" | grep -q .; then
+                git checkout --theirs -- "$file"
+              fi
+            done
+
+            if git ls-files -u -- current/learn.html | grep -q .; then
+              git checkout --theirs -- current/learn.html
             fi
-          done
-
-          if git ls-files -u -- current/learn.html | grep -q .; then
-            git checkout --theirs -- current/learn.html
           fi
 
           python3 - <<'PY'
           from pathlib import Path
-          p = Path('current/learn.html')
-          s = p.read_text()
+
+          # Re-add Chapter 3 wiring on top of the current main document.
+          html = Path('current/learn.html')
+          s = html.read_text()
           css = '    <link rel="stylesheet" href="./visuals/ch3/shared-presentation.css?v=ch3d" />\n    <link rel="stylesheet" href="./visuals/ch3/visual-story.css?v=ch3h" />\n'
           if './visuals/ch3/shared-presentation.css' not in s:
               anchor = '    <link rel="stylesheet" href="./visuals/example-challenge.css" />\n'
@@ -71,15 +75,69 @@ jobs:
           if './visuals/ch3/registry.js' not in s:
               anchor = '    <script defer src="./visuals/ch4/registry.js"></script>\n'
               s = s.replace(anchor, anchor + visuals)
-          s = s.replace('visual-story.css?v=ch3f', 'visual-story.css?v=ch3h')
-          s = s.replace('visual-story.js?v=ch3f', 'visual-story.js?v=ch3h')
-          p.write_text(s)
+          for old in ('ch3f', 'ch3g'):
+              s = s.replace(f'visual-story.css?v={old}', 'visual-story.css?v=ch3h')
+              s = s.replace(f'visual-story.js?v={old}', 'visual-story.js?v=ch3h')
+          html.write_text(s)
+
+          # Mobile uses one large panel rather than shrinking the desktop triptych.
+          js = Path('current/visuals/ch3/visual-story.js')
+          t = js.read_text()
+          replacements = [
+              ('const x = mobile ? 52 : 28 + index * 310;\n    const y = 18;\n    const w = mobile ? 856 : 284;',
+               'const x = mobile ? 24 : 28 + index * 310;\n    const y = 18;\n    const w = mobile ? 432 : 284;'),
+              ('const sx = mobile ? 1.75 : 1;\n      const ox = x + (mobile ? 225 : 65);',
+               'const sx = mobile ? .98 : 1;\n      const ox = x + (mobile ? 105 : 65);'),
+              ('const mx = x + (mobile ? 160 : 32);', 'const mx = x + (mobile ? 82 : 32);'),
+              ('cellW: mobile ? 50 : 29', 'cellW: mobile ? 38 : 29'),
+              ('const scale = mobile ? 1.55 : 1;\n      const O = [x + (mobile ? 220 : 58), y + 278];\n      const u = [94 * scale, -74];\n      const v = [68 * scale, 92];',
+               'const scale = mobile ? 1.45 : 1;\n      const O = [x + w / 2, y + 238];\n      const u = [55 * scale, -55];\n      const v = [40 * scale, 70];'),
+              ('O[0] + 190 * scale', 'O[0] + 120 * scale'),
+              ('O[1] - 190', 'O[1] - 150'),
+              ('const scale = mobile ? 1.6 : 1;\n      const O = [x + (mobile ? 210 : 54), y + 286];',
+               'const scale = mobile ? .95 : 1;\n      const O = [x + (mobile ? 112 : 54), y + 286];'),
+              ('const scale = mobile ? 1.75 : 1;', 'const scale = mobile ? .95 : 1;'),
+              ('const scale = mobile ? 1.7 : 1;\n      const left = x + (mobile ? 230 : 70);\n      const right = x + w - (mobile ? 170 : 48);',
+               'const scale = 1;\n      const left = x + (mobile ? 120 : 90);\n      const right = x + w - (mobile ? 80 : 48);'),
+              ('const eta = [72 * scale, -58];', 'const eta = [55 * scale, -52];'),
+          ]
+          for old, new in replacements:
+              t = t.replace(old, new)
+          old_build = '''  function buildSvg(config, state) {
+    const desktop = config.panels.map((item, index) =>
+      panelGroup(index, item[0], item[1], index === state.step, config.drawPanel(index, state), false),
+    ).join("");
+    const mobile = panelGroup(state.step, config.panels[state.step][0], config.panels[state.step][1], true, config.drawPanel(state.step, state), true);
+    return `${defs()}<rect class="ch3-stage-bg" width="960" height="430" rx="26"></rect>${desktop}${mobile}`;
+  }'''
+          new_build = '''  function buildSvg(config, state, mobile) {
+    if (mobile) {
+      const active = panelGroup(state.step, config.panels[state.step][0], config.panels[state.step][1], true, config.drawPanel(state.step, state), true);
+      return `${defs()}<rect class="ch3-stage-bg" width="480" height="430" rx="26"></rect>${active}`;
+    }
+    const desktop = config.panels.map((item, index) =>
+      panelGroup(index, item[0], item[1], index === state.step, config.drawPanel(index, state), false),
+    ).join("");
+    return `${defs()}<rect class="ch3-stage-bg" width="960" height="430" rx="26"></rect>${desktop}`;
+  }'''
+          t = t.replace(old_build, new_build)
+          t = t.replace('svg.innerHTML = buildSvg(config, state);', 'const mobile = window.matchMedia("(max-width: 760px)").matches;\n      svg.setAttribute("viewBox", mobile ? "0 0 480 430" : "0 0 960 430");\n      svg.innerHTML = buildSvg(config, state, mobile);')
+          js.write_text(t)
+
+          css_file = Path('current/visuals/ch3/visual-story.css')
+          c = css_file.read_text()
+          marker = '@media (max-width: 760px) {'
+          before, after = c.split(marker, 1)
+          after = after.replace('.ch3-story-svg { aspect-ratio: 960 / 430; }', '.ch3-story-svg { aspect-ratio: 480 / 430; }', 1)
+          css_file.write_text(before + marker + after)
           PY
 
+          node --check current/visuals/ch3/visual-story.js
           git add -A
           if git diff --cached --quiet; then
             echo "Nothing to commit"
             exit 0
           fi
           git commit -m "chore: sync main into chapter 3"
+          git pull --rebase origin content/ch3-linear-systems
           git push origin HEAD:content/ch3-linear-systems

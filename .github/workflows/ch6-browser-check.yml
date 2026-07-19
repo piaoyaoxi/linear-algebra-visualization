@@ -1,5 +1,6 @@
 name: Chapter 6 browser check
 
+# Native-theme review revision 2: source scan + four browser configurations.
 on:
   push:
     branches:

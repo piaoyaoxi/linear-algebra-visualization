@@ -144,4 +144,12 @@ body[data-route="ch8"] .ch8-invariant-output strong {
     padding-bottom: 4px !important;
     gap: 10px !important;
   }
+
+  /* In a vertical stack, − and = remain horizontal mathematical operators.
+     Rotating them turns them into one and two meaningless vertical strokes. */
+  body[data-route="ch8"] .ch8-build-equation > .ch8-equation-operator {
+    transform: none !important;
+    font-size: 1.8rem !important;
+    line-height: 1 !important;
+  }
 }

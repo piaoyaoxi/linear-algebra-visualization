@@ -33,7 +33,7 @@
       const height = 570;
       const panelXs = [30, 350, 670];
       const planes = panelXs.map((panelX) => S.createPlane({ x: panelX + 18, y: 120, width: 284, height: 320, extent: 3.5 }));
-      let content = "";
+      let content = `<defs><clipPath id="ch7-s5-left-clip"><rect x="${planes[0].x}" y="${planes[0].y}" width="${planes[0].width}" height="${planes[0].height}" rx="16"/></clipPath></defs>`;
       const panelTitles = ["真实空间", "特征坐标", "回到真实空间"];
       const panelSubs = ["混合的几何作用", "两个坐标分量", "合成最终输出"];
       panelXs.forEach((panelX, index) => {
@@ -44,7 +44,8 @@
 
       if (!preset.P) {
         const plane = planes[0];
-        content += plane.grid() + plane.axes() + S.transformedGrid(plane, preset.A, { extent: 3, step: 0.5, role: "output" });
+        content += plane.grid() + plane.axes();
+        content += `<g clip-path="url(#ch7-s5-left-clip)">${S.transformedGrid(plane, preset.A, { extent: 3, step: 0.5, role: "output" })}</g>`;
         const eigen = [1, 0];
         const generalized = [0.55, 1.15];
         const Ag = S.matVec(preset.A, generalized);
@@ -56,8 +57,8 @@
         shell.result.innerHTML = S.result({
           tone: "fail",
           title: "不是所有矩阵都能找到一整组特征基",
-          text: "这里只有一条独立特征直线。不能伪造第二个方向，因此 P 不可逆，P⁻¹AP=D 的流程从结构上失败。",
-          formula: "A\\ne PDP^{-1}",
+          text: "这里只有一条独立特征直线。不能伪造第二个方向，因此不存在可逆 P 把 A 相似变换为对角矩阵。",
+          formula: "A\\not\\sim D_{\\mathrm{diag}}",
           facts: [["几何重数", "1"], ["空间维数", "2"]],
         });
         return;
@@ -75,13 +76,18 @@
       const transformedX = S.matVec(preset.A, x);
 
       planes.forEach((plane) => { content += plane.grid() + plane.axes(); });
-      content += S.transformedGrid(planes[0], preset.A, { extent: 3.1, step: 0.5, role: "output" });
+      content += `<g clip-path="url(#ch7-s5-left-clip)">${S.transformedGrid(planes[0], preset.A, { extent: 3.1, step: 0.5, role: "output" })}</g>`;
       content += planes[0].line(v1, "primary", 4) + planes[0].line(v2, "secondary", 4);
-      content += planes[0].vector(x, "gold", "x") + planes[0].vector(transformedX, "output", "Ax");
+      content += planes[0].vector(x, "gold", "x") + planes[0].vector(transformedX, "output");
+      const transformedTip = planes[0].p(transformedX);
+      content += `<text x="${transformedTip[0] + 8}" y="${transformedTip[1] + 22}" class="ch7-story-label is-output">Ax</text>`;
       content += planes[1].vector([coeff[0], 0], "primary", "c₁") + planes[1].vector([0, coeff[1]], "secondary", "c₂");
       content += `<line x1="${planes[1].cx}" y1="${planes[1].cy}" x2="${planes[1].p([coeff[0], coeff[1]])[0]}" y2="${planes[1].p([coeff[0], coeff[1]])[1]}" class="ch7-story-line is-gold is-dashed"/>`;
       content += planes[2].line(v1, "primary", 4) + planes[2].line(v2, "secondary", 4);
-      content += planes[2].vector(scaled1, "primary", "λ₁c₁v₁") + planes[2].vector(scaled2, "secondary", "λ₂c₂v₂", scaled1) + planes[2].vector(Ax, "output", "Ax");
+      content += planes[2].vector(scaled1, "primary") + planes[2].vector(scaled2, "secondary", "", scaled1) + planes[2].vector(Ax, "output");
+      const axTip = planes[2].p(Ax);
+      content += `<text x="${axTip[0] + 8}" y="${axTip[1] - 10}" class="ch7-story-label is-output">Ax</text>`;
+      content += `<text x="692" y="449" class="ch7-story-panel-subtitle">青绿：第一特征分量</text><text x="838" y="449" class="ch7-story-panel-subtitle">棕色：第二特征分量</text>`;
 
       if (state.stage === "decompose") {
         content += `<rect x="42" y="82" width="286" height="380" rx="20" fill="none" stroke="var(--story-gold)" stroke-width="4"/><rect x="362" y="82" width="286" height="380" rx="20" fill="none" stroke="var(--story-primary)" stroke-width="4" opacity="0.55"/>`;

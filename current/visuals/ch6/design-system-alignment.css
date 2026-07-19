@@ -1,0 +1,140 @@
+/* Final Chapter 6 design-system alignment, loaded after all section styles. */
+
+.ch6-mini-map-panel {
+  fill: var(--surface-soft);
+  stroke: var(--line);
+  stroke-width: 1;
+}
+
+.ch6-mini-map-node {
+  fill: var(--surface-solid);
+  stroke: var(--line-strong);
+  stroke-width: 1;
+}
+
+.ch6-mini-map-node.is-input {
+  stroke: color-mix(in srgb, var(--accent) 42%, var(--line));
+}
+
+.ch6-mini-map-node.is-output {
+  stroke: color-mix(in srgb, var(--coral) 34%, var(--line));
+}
+
+.ch6-mini-map path {
+  fill: none;
+  stroke: var(--accent-strong);
+  stroke-width: 1.35;
+  stroke-linecap: round;
+}
+
+.ch6-mini-map text {
+  fill: var(--text);
+  text-anchor: middle;
+  font: 680 10.5px ui-sans-serif, system-ui, sans-serif;
+}
+
+.ch6-mini-map-marker {
+  fill: var(--accent-strong);
+  stroke: none;
+}
+
+.ch6-map-workbench,
+.ch6-plane,
+.ch6-space-3d,
+.ch6-coordinate-frame,
+.ch6-sum-union-figure {
+  color: var(--text);
+}
+
+.ch6-map-workbench .ch6-map-curve {
+  transition: d 220ms var(--expand-ease), opacity 160ms ease;
+}
+
+.ch6-map-workbench .ch6-map-node {
+  transition: fill 160ms ease, stroke 160ms ease;
+}
+
+.ch6-gate.is-ok > span {
+  background: var(--accent-strong);
+}
+
+.ch6-gate.is-bad > span {
+  background: var(--coral);
+}
+
+.ch6-conclusion-box.is-ok,
+.ch6-status-card.is-ok {
+  border-color: color-mix(in srgb, var(--accent) 36%, var(--line));
+  background: color-mix(in srgb, var(--accent) 8%, var(--surface-solid));
+}
+
+.ch6-conclusion-box.is-bad,
+.ch6-status-card.is-bad {
+  border-color: color-mix(in srgb, var(--coral) 38%, var(--line));
+  background: color-mix(in srgb, var(--coral) 8%, var(--surface-solid));
+}
+
+.ch6-arrow.is-u2,
+.ch6-plane-label.is-u2,
+.ch6-arrow.is-g2,
+.ch6-plane-label.is-g2 {
+  color: color-mix(in srgb, var(--accent-strong) 68%, var(--blue));
+}
+
+.ch6-arrow.is-w2,
+.ch6-plane-label.is-w2,
+.ch6-arrow.is-g3,
+.ch6-plane-label.is-g3,
+.ch6-space-label.is-overlap {
+  color: var(--violet);
+}
+
+.ch6-span-line.is-overlap,
+.ch6-space-line.is-overlap {
+  stroke: var(--violet);
+}
+
+.ch6-arrow.is-result,
+.ch6-plane-label.is-result {
+  color: color-mix(in srgb, var(--accent-strong) 82%, var(--text));
+}
+
+.ch6-stage-shell,
+.ch6-cinematic-story,
+.ch6-polynomial-stage,
+.ch6-rgb-stage,
+.ch6-equation-stage,
+.ch6-iso-paths,
+.ch6-r4-stage {
+  box-shadow: none;
+}
+
+body:not(.dark) .ch6-stage-shell,
+body:not(.dark) .ch6-cinematic-story,
+body:not(.dark) .ch6-polynomial-stage,
+body:not(.dark) .ch6-rgb-stage,
+body:not(.dark) .ch6-equation-stage,
+body:not(.dark) .ch6-iso-paths,
+body:not(.dark) .ch6-r4-stage {
+  background-color: var(--surface-soft);
+}
+
+@media (max-width: 600px) {
+  .ch6-map-set-title {
+    font-size: 14px;
+  }
+
+  .ch6-map-set-subtitle,
+  .ch6-map-guide,
+  .ch6-map-node-note,
+  .ch6-map-missing-label {
+    font-size: 10.5px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ch6-map-workbench .ch6-map-curve,
+  .ch6-map-workbench .ch6-map-node {
+    transition: none;
+  }
+}

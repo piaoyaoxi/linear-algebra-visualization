@@ -5,7 +5,7 @@
   const mainConfig = { ...U().plane, width: 640, height: 380, origin: [300, 238], scale: 92 };
 
   function defs() {
-    return `<defs><filter id="ch6-vector-glow" x="-30%" y="-30%" width="160%" height="160%"><feGaussianBlur stdDeviation="2.2" result="blur"></feGaussianBlur><feMerge><feMergeNode in="blur"></feMergeNode><feMergeNode in="SourceGraphic"></feMergeNode></feMerge></filter></defs>`;
+    return "";
   }
 
   function parallelogram(v1, v2, config, className = "") {
@@ -49,7 +49,7 @@
       U().moduleBlock("01", "张成回答“能铺到哪里”", "不要先数箭头，先看线性组合实际覆盖的范围", `${spanProgression()}<div class="ch6-formula-band">${U().texDisplay("\\operatorname{span}\\{v_1,\\ldots,v_k\\}=\\{a_1v_1+\\cdots+a_kv_k\\}")}<p>一个方向只能铺成直线；两个真正独立的方向才能铺满平面。</p></div>`),
       U().moduleBlock("02", "线性无关回答“有没有重复方向”", "在二维中，行列式面积提供最直接的几何判据", `<div class="ch6-independence-compare"><article><span>面积为 0</span>${U().texDisplay("\\det(v_1,v_2)=0")}<p>两个向量共线，其中一个方向可以由另一个方向替代。</p></article><article><span>面积非 0</span>${U().texDisplay("\\det(v_1,v_2)\\neq0")}<p>两个方向不可互相替代，因此线性无关。</p></article></div>`),
       U().moduleBlock("03", "基是最小而完整的方向骨架", "生成保证够用，无关保证没有冗余", `<div class="ch6-basis-equation"><div class="ch6-basis-condition"><span>生成</span><strong>覆盖整个空间</strong><p>每个向量都能由这些方向合成。</p></div><b>+</b><div class="ch6-basis-condition"><span>无关</span><strong>没有重复方向</strong><p>删掉任何一个都会损失信息。</p></div><b>=</b><div class="ch6-basis-condition is-result"><span>基</span><strong>唯一坐标</strong><p>每个向量获得唯一的一组系数。</p></div></div>`),
-      U().moduleBlock("04", "坐标记录沿每个基方向走了多少", "对象不变，基的顺序改变时坐标分量也会改变", `<div class="ch6-coordinate-layout"><div>${U().formulaCard("有序基", "B=(b_1,\\ldots,b_n)", "顺序决定坐标分量的顺序。")}${U().formulaCard("坐标定义", "v=x_1b_1+\\cdots+x_nb_n,\\qquad [v]_B=(x_1,\\ldots,x_n)^T", "基保证系数存在且唯一。")}</div><div class="ch6-coordinate-example"><span>同一个向量</span>${U().texDisplay("v=2b_1+3b_2")}<div class="ch6-coordinate-swap"><article><small>基 B=(b₁,b₂)</small><strong>(2,3)ᵀ</strong></article><b>交换顺序</b><article><small>基 B'=(b₂,b₁)</small><strong>(3,2)ᵀ</strong></article></div><p>向量没有移动，只是编码顺序改变。</p></div></div>`),
+      U().moduleBlock("04", "坐标记录沿每个基方向走了多少", "对象不变，基的顺序改变时坐标分量也会改变", `<div class="ch6-coordinate-layout"><div>${U().formulaCard("有序基", "B=(b_1,\\ldots,b_n)", "顺序决定坐标分量的顺序。")} ${U().formulaCard("坐标定义", "v=x_1b_1+\\cdots+x_nb_n,\\qquad [v]_B=(x_1,\\ldots,x_n)^T", "基保证系数存在且唯一。")}</div><div class="ch6-coordinate-example"><span>同一个向量</span>${U().texDisplay("v=2b_1+3b_2")}<div class="ch6-coordinate-swap"><article><small>基 B=(b₁,b₂)</small><strong>(2,3)ᵀ</strong></article><b>交换顺序</b><article><small>基 B'=(b₂,b₁)</small><strong>(3,2)ᵀ</strong></article></div><p>向量没有移动，只是编码顺序改变。</p></div></div>`),
     ];
     root.innerHTML = U().formalShell("基、维数与坐标：从方向到面积，再到编码", "这一节不再把“张成、无关、基”当作三个孤立定义，而是沿一条几何主线理解：新向量是否带来新方向，行列式面积是否从 0 变为非 0。", modules, "下一节固定同一个向量，改变方向骨架，观察坐标如何随之变化。");
   }

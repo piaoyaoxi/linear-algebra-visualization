@@ -100,7 +100,7 @@
         content += S.softArrow(aTp[0], aTp[1], txp[0], txp[1], "is-secondary");
         title = "任意输入只是在重组这两列";
         text = "输入用系数 α、β 组合 b₁、b₂，输出便用完全相同的系数组合 T(b₁)、T(b₂)。";
-        formula = "T(\alpha b_1+\beta b_2)=\alpha T(b_1)+\beta T(b_2)";
+        formula = "T(\\alpha b_1+\\beta b_2)=\\alpha T(b_1)+\\beta T(b_2)";
         facts = [["输入坐标", `(${S.fmt(state.alpha)}, ${S.fmt(state.beta)})`], ["T(x)", S.vectorText(Tx)]];
         tone = "pass";
       } else {

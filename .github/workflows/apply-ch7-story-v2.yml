@@ -30,17 +30,38 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          cat \
-            .github/ch7-story-v2-payload/part-00 \
-            .github/ch7-story-v2-payload/part-01 \
-            .github/ch7-story-v2-payload/part-02 \
-            .github/ch7-story-v2-payload/part-030 \
-            .github/ch7-story-v2-payload/part-031 \
-            .github/ch7-story-v2-payload/part-04 \
-            > /tmp/ch7-story-v2.b64
-          base64 --decode /tmp/ch7-story-v2.b64 > /tmp/ch7-story-v2.tar.gz
-          tar -tzf /tmp/ch7-story-v2.tar.gz
-          tar -xzf /tmp/ch7-story-v2.tar.gz
+          python3 - <<'PY'
+          from pathlib import Path
+          import base64
+          import io
+          import tarfile
+
+          payload_dir = Path('.github/ch7-story-v2-payload')
+          parts = [
+              payload_dir / 'part-00',
+              payload_dir / 'part-01',
+              payload_dir / 'part-02',
+              payload_dir / 'part-030',
+              payload_dir / 'part-031',
+              payload_dir / 'part-04',
+          ]
+          missing = [str(path) for path in parts if not path.exists()]
+          if missing:
+              raise SystemExit(f'missing payload parts: {missing}')
+
+          encoded = ''.join(path.read_text() for path in parts)
+          encoded = ''.join(encoded.split())
+          encoded += '=' * (-len(encoded) % 4)
+          archive = base64.b64decode(encoded, validate=False)
+          print(f'payload chars={len(encoded)} archive bytes={len(archive)}')
+
+          with tarfile.open(fileobj=io.BytesIO(archive), mode='r:gz') as tar:
+              names = tar.getnames()
+              print('archive members:')
+              for name in names:
+                  print(name)
+              tar.extractall('.')
+          PY
 
       - name: Load the new story layer last
         shell: bash

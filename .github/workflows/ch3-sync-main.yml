@@ -1,0 +1,85 @@
+name: Sync main into Chapter 3
+
+on:
+  push:
+    branches:
+      - content/ch3-linear-systems
+
+permissions:
+  contents: write
+
+jobs:
+  sync:
+    if: ${{ !contains(github.event.head_commit.message, 'sync main into chapter 3') }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: content/ch3-linear-systems
+          fetch-depth: 0
+      - name: Merge latest main and keep Chapter 3 wiring
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git fetch origin main
+          if git merge-base --is-ancestor origin/main HEAD; then
+            echo "Already up to date"
+            exit 0
+          fi
+          git merge origin/main --no-commit --no-ff || true
+
+          for file in current/app.js current/learn-entry.js current/visuals/ch4/mount.js current/visuals/example-challenge.js; do
+            if git ls-files -u -- "$file" | grep -q .; then
+              git checkout --theirs -- "$file"
+            fi
+          done
+
+          if git ls-files -u -- current/learn.html | grep -q .; then
+            git checkout --theirs -- current/learn.html
+          fi
+
+          python3 - <<'PY'
+          from pathlib import Path
+          p = Path('current/learn.html')
+          s = p.read_text()
+          css = '    <link rel="stylesheet" href="./visuals/ch3/shared-presentation.css?v=ch3d" />\n    <link rel="stylesheet" href="./visuals/ch3/visual-story.css?v=ch3h" />\n'
+          if './visuals/ch3/shared-presentation.css' not in s:
+              anchor = '    <link rel="stylesheet" href="./visuals/example-challenge.css" />\n'
+              s = s.replace(anchor, anchor + css)
+          content = '''    <script defer src="./content/ch3-registry.js"></script>
+    <script defer src="./content/ch3-section1.js"></script>
+    <script defer src="./content/ch3-section2.js"></script>
+    <script defer src="./content/ch3-section3.js"></script>
+    <script defer src="./content/ch3-section4.js"></script>
+    <script defer src="./content/ch3-section5.js"></script>
+    <script defer src="./content/ch3-section6.js"></script>
+    <script defer src="./content/ch3-section7.js"></script>
+    <script defer src="./content/ch3.js"></script>
+    <script defer src="./content/ch3-assemble.js"></script>
+'''
+          if './content/ch3-registry.js' not in s:
+              anchor = '    <script defer src="./content/ch2.js"></script>\n'
+              s = s.replace(anchor, anchor + content)
+          visuals = '''    <script defer src="./visuals/ch3/registry.js"></script>
+    <script defer src="./visuals/ch3/shared-math.js?v=ch3d"></script>
+    <script defer src="./visuals/ch3/section1-3-presentation.js?v=ch3d"></script>
+    <script defer src="./visuals/ch3/section4-6-presentation.js?v=ch3d"></script>
+    <script defer src="./visuals/ch3/section7-presentation.js?v=ch3d"></script>
+    <script defer src="./visuals/ch3/visual-story.js?v=ch3h"></script>
+    <script defer src="./visuals/ch3/mount.js"></script>
+'''
+          if './visuals/ch3/registry.js' not in s:
+              anchor = '    <script defer src="./visuals/ch4/registry.js"></script>\n'
+              s = s.replace(anchor, anchor + visuals)
+          s = s.replace('visual-story.css?v=ch3f', 'visual-story.css?v=ch3h')
+          s = s.replace('visual-story.js?v=ch3f', 'visual-story.js?v=ch3h')
+          p.write_text(s)
+          PY
+
+          git add -A
+          if git diff --cached --quiet; then
+            echo "Nothing to commit"
+            exit 0
+          fi
+          git commit -m "chore: sync main into chapter 3"
+          git push origin HEAD:content/ch3-linear-systems

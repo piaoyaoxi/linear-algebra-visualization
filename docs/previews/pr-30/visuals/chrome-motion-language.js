@@ -48,13 +48,16 @@
       const { languageControl, languageToggle, languageMenu, languageOptions } = this.elements;
       const p = clamp(progress);
       const geometry = smootherstep(range(p, 0.01, 0.74));
-      const startSize = this.languageClosedSize || 44;
+      const currentControlSize = Number.parseFloat(
+        getComputedStyle(document.documentElement).getPropertyValue("--chrome-control-size"),
+      ) || 44;
+      const startSize = this.languageClosedSize || currentControlSize;
       const menuWidth = 178;
       const menuHeight = 68;
       const overshoot = clamp(raw - 1, -0.05, 0.05);
       const scaleX = Math.max(0.1, lerp(startSize / menuWidth, 1, geometry) + overshoot * 0.025);
       const scaleY = Math.max(0.1, lerp(startSize / menuHeight, 1, geometry) + overshoot * 0.035);
-      const visualRadius = lerp(15, 20, geometry);
+      const visualRadius = lerp(startSize / 2, 20, geometry);
 
       languageControl.style.setProperty("--language-progress", p.toFixed(4));
       languageControl.style.setProperty("--language-overshoot", overshoot.toFixed(4));

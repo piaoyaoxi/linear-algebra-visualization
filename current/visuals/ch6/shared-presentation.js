@@ -105,13 +105,14 @@
 
   function vectorLabel(label, x, y, tipX, tipY, className, config) {
     const chars = Array.from(label).length;
-    const width = Math.max(38, Math.min(118, 18 + chars * 8.2));
-    const height = 25;
-    const safeX = Math.max(width / 2 + 8, Math.min(config.width - width / 2 - 8, x));
-    const safeY = Math.max(height / 2 + 8, Math.min(config.height - height / 2 - 8, y));
-    return `<g class="ch6-vector-label ${className}" transform="translate(${safeX.toFixed(2)} ${safeY.toFixed(2)})"><rect x="${(-width / 2).toFixed(2)}" y="${(-height / 2).toFixed(2)}" width="${width.toFixed(2)}" height="${height}" rx="12.5"></rect><text data-arrow-label data-tip-x="${tipX.toFixed(2)}" data-tip-y="${tipY.toFixed(2)}" text-anchor="middle" dominant-baseline="central">${escapeHtml(label)}</text></g>`;
+    const width = Math.max(34, Math.min(108, 15 + chars * 7.4));
+    const height = 22;
+    const safeX = Math.max(width / 2 + 7, Math.min(config.width - width / 2 - 7, x));
+    const safeY = Math.max(height / 2 + 7, Math.min(config.height - height / 2 - 7, y));
+    return `<g class="ch6-vector-label ${className}" transform="translate(${safeX.toFixed(2)} ${safeY.toFixed(2)})"><rect x="${(-width / 2).toFixed(2)}" y="${(-height / 2).toFixed(2)}" width="${width.toFixed(2)}" height="${height}" rx="7"></rect><text data-arrow-label data-tip-x="${tipX.toFixed(2)}" data-tip-y="${tipY.toFixed(2)}" text-anchor="middle" dominant-baseline="central">${escapeHtml(label)}</text></g>`;
   }
 
+  /* Same single-path arrow construction used by Chapter 4, scaled only when the vector is very long. */
   function softArrow(from, to, className, label = "", config = plane) {
     const [x1, y1] = point(from, config);
     const [x2, y2] = point(to, config);
@@ -122,9 +123,9 @@
     const uy = dy / length;
     const px = -uy;
     const py = ux;
-    const half = Math.min(5.2, Math.max(3.5, length * 0.026));
-    const head = Math.min(25, Math.max(17, length * 0.2));
-    const headHalf = Math.min(12, Math.max(8.5, length * 0.08));
+    const half = Math.min(3.2, Math.max(2.15, length * 0.018));
+    const head = Math.min(18, Math.max(13, length * 0.15));
+    const headHalf = Math.min(8, Math.max(6.1, length * 0.055));
     const neckX = x2 - ux * head;
     const neckY = y2 - uy * head;
     const f = (n) => n.toFixed(2);
@@ -133,19 +134,19 @@
       `M ${p(x1 + px * half, y1 + py * half)}`,
       `L ${p(neckX + px * half, neckY + py * half)}`,
       `L ${p(neckX + px * headHalf, neckY + py * headHalf)}`,
-      `Q ${p(x2 - ux * head * 0.16 + px * 1.6, y2 - uy * head * 0.16 + py * 1.6)} ${p(x2, y2)}`,
-      `Q ${p(x2 - ux * head * 0.16 - px * 1.6, y2 - uy * head * 0.16 - py * 1.6)} ${p(neckX - px * headHalf, neckY - py * headHalf)}`,
+      `Q ${p(x2 - ux * head * 0.18 + px * 1.1, y2 - uy * head * 0.18 + py * 1.1)} ${p(x2, y2)}`,
+      `Q ${p(x2 - ux * head * 0.18 - px * 1.1, y2 - uy * head * 0.18 - py * 1.1)} ${p(neckX - px * headHalf, neckY - py * headHalf)}`,
       `L ${p(neckX - px * half, neckY - py * half)}`,
       `L ${p(x1 - px * half, y1 - py * half)}`,
-      `Q ${p(x1 - ux * 2 - px * half, y1 - uy * 2 - py * half)} ${p(x1 + px * half, y1 + py * half)}`,
+      `A ${f(half)} ${f(half)} 0 0 0 ${p(x1 + px * half, y1 + py * half)}`,
       "Z",
     ].join(" ");
     const body = `<path class="ch6-arrow ${className}" d="${d}"></path>`;
     if (!label) return body;
-    const labelAt = length < 90 ? 0.8 : 0.68;
+    const labelAt = length < 90 ? 0.78 : 0.7;
     const warm = /is-w(?:2|-soft)?|is-g2|is-g3|is-bad|is-target/.test(className);
     const side = warm ? -1 : 1;
-    const gap = Math.min(30, Math.max(20, length * 0.085)) * side;
+    const gap = Math.min(25, Math.max(16, length * 0.065)) * side;
     const labelX = x1 + dx * labelAt + px * gap;
     const labelY = y1 + dy * labelAt + py * gap;
     return `${body}${vectorLabel(label, labelX, labelY, x2, y2, className, config)}`;
@@ -159,7 +160,7 @@
     const pa = point(a, config);
     const pb = point(b, config);
     const labelPoint = point(add(offset, scale(unit, 2.65)), config);
-    return `<line class="ch6-span-line ${className}" x1="${pa[0]}" y1="${pa[1]}" x2="${pb[0]}" y2="${pb[1]}"></line>${label ? vectorLabel(label, labelPoint[0], labelPoint[1] - 24, pb[0], pb[1], className, config) : ""}`;
+    return `<line class="ch6-span-line ${className}" x1="${pa[0]}" y1="${pa[1]}" x2="${pb[0]}" y2="${pb[1]}"></line>${label ? vectorLabel(label, labelPoint[0], labelPoint[1] - 20, pb[0], pb[1], className, config) : ""}`;
   }
 
   function planeGrid(config = plane) {
@@ -180,7 +181,7 @@
   }
 
   function planeSvg(inner, label, className = "") {
-    return `<svg class="ch6-plane ${className}" viewBox="0 0 ${plane.width} ${plane.height}" role="img" aria-label="${escapeHtml(label)}"><defs><filter id="ch6-vector-glow" x="-30%" y="-30%" width="160%" height="160%"><feGaussianBlur stdDeviation="2.2" result="blur"></feGaussianBlur><feMerge><feMergeNode in="blur"></feMergeNode><feMergeNode in="SourceGraphic"></feMergeNode></feMerge></filter></defs>${inner}</svg>`;
+    return `<svg class="ch6-plane ${className}" viewBox="0 0 ${plane.width} ${plane.height}" role="img" aria-label="${escapeHtml(label)}">${inner}</svg>`;
   }
 
   function formulaCard(label, formula, note = "") {
@@ -190,22 +191,29 @@
   function miniMap({ xCount = 3, yCount = 3, map = [0, 1, 2], label = "映射示意" } = {}) {
     const width = 260;
     const height = 150;
-    const x = 64;
-    const y = 196;
-    const yAt = (index, count) => 34 + (82 / Math.max(1, count - 1)) * index;
+    const leftX = 18;
+    const rightX = 164;
+    const panelWidth = 78;
+    const panelY = 12;
+    const panelHeight = 126;
+    const nodeWidth = 34;
+    const nodeHeight = 18;
+    const leftCenter = leftX + panelWidth / 2;
+    const rightCenter = rightX + panelWidth / 2;
+    const yAt = (index, count) => 38 + (76 / Math.max(1, count - 1)) * index;
     const markerId = `mini-arrow-${xCount}-${yCount}-${map.join("-")}`.replace(/[^a-zA-Z0-9-]/g, "");
-    let body = `<svg class="ch6-mini-map" viewBox="0 0 ${width} ${height}" role="img" aria-label="${escapeHtml(label)}"><defs><marker id="${markerId}" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="5" markerHeight="5" orient="auto"><path class="ch6-mini-map-marker" d="M0,0 L8,4 L0,8 Z"></path></marker></defs><ellipse cx="${x}" cy="75" rx="42" ry="63"></ellipse><ellipse cx="${y}" cy="75" rx="42" ry="63"></ellipse>`;
+    let body = `<svg class="ch6-mini-map" viewBox="0 0 ${width} ${height}" role="img" aria-label="${escapeHtml(label)}"><defs><marker id="${markerId}" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="4" markerHeight="4" orient="auto"><path class="ch6-mini-map-marker" d="M0,0 L8,4 L0,8 Z"></path></marker></defs><rect class="ch6-mini-map-panel" x="${leftX}" y="${panelY}" width="${panelWidth}" height="${panelHeight}" rx="12"></rect><rect class="ch6-mini-map-panel" x="${rightX}" y="${panelY}" width="${panelWidth}" height="${panelHeight}" rx="12"></rect>`;
     for (let i = 0; i < xCount; i += 1) {
       const yy = yAt(i, xCount);
-      body += `<circle cx="${x}" cy="${yy}" r="8"></circle><text x="${x}" y="${yy + 4}">${i + 1}</text>`;
+      body += `<rect class="ch6-mini-map-node is-input" x="${leftCenter - nodeWidth / 2}" y="${yy - nodeHeight / 2}" width="${nodeWidth}" height="${nodeHeight}" rx="6"></rect><text x="${leftCenter}" y="${yy + 4}">${i + 1}</text>`;
       if (map[i] >= 0 && map[i] < yCount) {
         const ty = yAt(map[i], yCount);
-        body += `<path marker-end="url(#${markerId})" d="M ${x + 9} ${yy} C 105 ${yy}, 150 ${ty}, ${y - 11} ${ty}"></path>`;
+        body += `<path marker-end="url(#${markerId})" d="M ${leftCenter + nodeWidth / 2 + 2} ${yy} C 112 ${yy}, 142 ${ty}, ${rightCenter - nodeWidth / 2 - 3} ${ty}"></path>`;
       }
     }
     for (let j = 0; j < yCount; j += 1) {
       const yy = yAt(j, yCount);
-      body += `<circle cx="${y}" cy="${yy}" r="8"></circle><text x="${y}" y="${yy + 4}">${String.fromCharCode(97 + j)}</text>`;
+      body += `<rect class="ch6-mini-map-node is-output" x="${rightCenter - nodeWidth / 2}" y="${yy - nodeHeight / 2}" width="${nodeWidth}" height="${nodeHeight}" rx="6"></rect><text x="${rightCenter}" y="${yy + 4}">${String.fromCharCode(97 + j)}</text>`;
     }
     return `${body}</svg>`;
   }

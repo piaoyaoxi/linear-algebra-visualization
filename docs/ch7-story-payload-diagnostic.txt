@@ -1,0 +1,43 @@
+parts:
+part-00: exists=True bytes=8998 sha256=807f11bf7c1d034a53e5faf7c9d460566150ae75f815430575a09f20a512bc78
+part-01: exists=True bytes=9000 sha256=b8500d596c848957be7160a4ffd71ad7129df3fad6c478a3c3587a8f33e86f40
+part-02: exists=True bytes=9000 sha256=c3226884d1b4aeb78e640f3518af4c93ced7703db68979e9ba29f579806e711d
+part-030: exists=True bytes=4499 sha256=79660f58dfdb46d28dddd6e9a146c4d1a0aab499f424713f92293f100e5672d1
+part-031: exists=True bytes=4500 sha256=24e75cfcf8d7902571dccf74b9fb89bf7c65d43fae986e99d67a01ef6bc76c26
+part-04: exists=True bytes=1211 sha256=aca0f55c0257b891932bd2c0d4eebe28a413a8ba0633b5814f3777e779738fdf
+encoded chars raw=37208 compact=37208 mod4=0
+decoded bytes=27904 sha256=a30b59624768ae1e11a2f811c021d7293997b09024759e486b84143662b42027 prefix=1f8b0800000000000003ec3c69731367
+gzip error:
+Traceback (most recent call last):
+  File "<stdin>", line 19, in <module>
+  File "/usr/lib/python3.12/gzip.py", line 632, in decompress
+    decompressed = do.decompress(data[fp.tell():])
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+zlib.error: Error -3 while decompressing data: invalid distance too far back
+
+tar members:
+tar error:
+Traceback (most recent call last):
+  File "<stdin>", line 27, in <module>
+  File "/usr/lib/python3.12/tarfile.py", line 2082, in getnames
+    return [tarinfo.name for tarinfo in self.getmembers()]
+                                        ^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/tarfile.py", line 2074, in getmembers
+    self._load()        # all members, we first have to
+    ^^^^^^^^^^^^
+  File "/usr/lib/python3.12/tarfile.py", line 2854, in _load
+    while self.next() is not None:
+          ^^^^^^^^^^^
+  File "/usr/lib/python3.12/tarfile.py", line 2761, in next
+    if not self.fileobj.read(1):
+           ^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/gzip.py", line 324, in read
+    return self._buffer.read(size)
+           ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/_compression.py", line 68, in readinto
+    data = self.read(len(byte_view))
+           ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/gzip.py", line 537, in read
+    uncompress = self._decompressor.decompress(b"", size)
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+zlib.error: Error -3 while decompressing data: invalid distance too far back

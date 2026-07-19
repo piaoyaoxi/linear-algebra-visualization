@@ -1,0 +1,51 @@
+name: Chapter 9 reference audit
+
+on:
+  pull_request:
+    paths:
+      - "current/**"
+      - ".github/scripts/ch9-reference-audit.mjs"
+      - ".github/workflows/ch9-reference-audit.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  reference-audit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 18
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Install Playwright
+        run: |
+          npm install --no-save playwright@1.52.0
+          npx playwright install --with-deps chromium
+
+      - name: Start static site
+        run: |
+          python3 -m http.server 4173 --directory current > /tmp/ch9-reference.log 2>&1 &
+          for attempt in {1..20}; do
+            if curl --fail --silent http://127.0.0.1:4173/learn.html > /dev/null; then
+              exit 0
+            fi
+            sleep 1
+          done
+          cat /tmp/ch9-reference.log
+          exit 1
+
+      - name: Capture Chapter 1 4 5 references
+        run: node .github/scripts/ch9-reference-audit.mjs
+
+      - name: Upload reference screenshots
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: ch9-reference-audit
+          path: /tmp/ch9-reference-audit
+          if-no-files-found: error

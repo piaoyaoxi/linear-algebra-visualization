@@ -4,11 +4,21 @@
   if (typeof baseRenderLessonPage !== "function") return;
 
   const rangeSelector = '.ch7-story-range input[type="range"]';
+  const rangeLabelSelector = ".ch7-story-range";
   let activeRange = null;
   const clamp = (value, min, max) => Math.min(max, Math.max(min, value));
 
-  function findRange(target) {
-    return target instanceof Element ? target.closest(rangeSelector) : null;
+  function findRange(target, clientX, clientY) {
+    if (target instanceof Element) {
+      if (target.matches(rangeSelector)) return target;
+      const labelled = target.closest(rangeLabelSelector)?.querySelector('input[type="range"]');
+      if (labelled) return labelled;
+    }
+    return [...document.querySelectorAll(rangeSelector)].find((input) => {
+      const rect = input.getBoundingClientRect();
+      return clientX >= rect.left - 5 && clientX <= rect.right + 5
+        && clientY >= rect.top - 14 && clientY <= rect.bottom + 14;
+    }) || null;
   }
 
   function updateRange(input, clientX) {
@@ -38,11 +48,9 @@
     delete document.documentElement.dataset.ch7StoryDragging;
   }
 
-  // Playwright, desktop browsers, and older WebViews reliably emit mouse
-  // events. Handle them explicitly rather than relying on pointer synthesis.
   document.addEventListener("mousedown", (event) => {
     if (event.button !== 0) return;
-    const input = findRange(event.target);
+    const input = findRange(event.target, event.clientX, event.clientY);
     if (!input) return;
     beginRange(input, "mouse", 0, event.clientX);
     event.preventDefault();
@@ -61,11 +69,9 @@
     event.preventDefault();
   }, { capture: true, passive: false });
 
-  // Pointer capture is reserved for touch and pen so mobile drags continue
-  // even when the finger leaves the visible track.
   document.addEventListener("pointerdown", (event) => {
     if (event.pointerType === "mouse" || (event.button !== 0 && event.button !== -1)) return;
-    const input = findRange(event.target);
+    const input = findRange(event.target, event.clientX, event.clientY);
     if (!input) return;
     beginRange(input, "pointer", event.pointerId, event.clientX);
     input.setPointerCapture?.(event.pointerId);

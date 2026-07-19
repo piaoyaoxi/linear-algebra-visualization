@@ -23,7 +23,7 @@ body.dark .language-menu {
   height: 68px;
   padding: 8px;
   overflow: hidden;
-  border-radius: var(--chrome-control-radius);
+  border-radius: 50%;
   opacity: 1;
   visibility: visible !important;
   transform-origin: 100% 0;

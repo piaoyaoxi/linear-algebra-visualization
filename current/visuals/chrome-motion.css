@@ -184,7 +184,7 @@ body.dark .icon-button {
   width: var(--chrome-control-size);
   height: var(--chrome-control-size);
   padding: 0;
-  border-radius: var(--chrome-control-radius);
+  border-radius: 50%;
   cursor: pointer;
 }
 

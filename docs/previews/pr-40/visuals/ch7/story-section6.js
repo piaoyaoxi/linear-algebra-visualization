@@ -118,7 +118,7 @@
       let tone = rank === 2 ? "pass" : rank === 1 ? "warn" : "fail";
       let title = rank === 2 ? "没有非零方向被压成零，输出仍铺满二维" : rank === 1 ? "整张平面最终坍缩到一条线" : "所有方向最终都坍缩到原点";
       let text = rank === 2 ? "不同输入仍保持可区分，值域与陪域同为二维。" : rank === 1 ? "沿红色核方向移动输入不会改变最终紫色输出；与核垂直的有效信息组成绿色值域方向。" : "输入空间中的全部差异都被抹去，核是整个空间，值域只剩零向量。";
-      let formula = rank === 2 ? "\ker T=\{0\},\quad \operatorname{im}T=W" : rank === 1 ? "T(x+k)=T(x),\quad k\in\ker T" : "T(x)=0\quad(\forall x)";
+      let formula = rank === 2 ? "\\ker T=\\{0\\},\\quad \\operatorname{im}T=W" : rank === 1 ? "T(x+k)=T(x),\\quad k\\in\\ker T" : "T(x)=0\\quad(\\forall x)";
       const facts = [["最终形状", rankLabel], ["ker T", kernelLabel], ["im T", imageLabel], ["维数账本", `2=${rank}+${nullity}`]];
 
       shell.stage.innerHTML = S.svg(content, { width, height, label: "线性变换把整张输入网格连续压缩成平面、直线或点" });

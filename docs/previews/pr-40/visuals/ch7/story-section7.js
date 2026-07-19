@@ -51,13 +51,13 @@
         content += `<rect x="105" y="85" width="770" height="425" rx="28" class="ch7-story-band is-success" opacity="0.22"/><text x="${plane.cx}" y="${plane.cy + 8}" text-anchor="middle" class="ch7-story-big-label">W=V，T(W) 仍在 V 内</text>`;
         title = "整个空间 V 对任何线性算子都不变";
         text = "当 T:V→V 时，无论网格怎样扭曲，输出仍属于同一个整个空间。真正有信息的是中间维数的非平凡子空间。";
-        formula = "T(V)\subseteq V";
+        formula = "T(V)\\subseteq V";
         facts = [["类型", "平凡不变子空间"]];
       } else if (state.mode === "zero") {
         content += `<circle cx="${plane.cx}" cy="${plane.cy}" r="34" class="ch7-story-zero-seal"/><text x="${plane.cx}" y="${plane.cy + 6}" text-anchor="middle" class="ch7-story-big-label">0</text>`;
         title = "零子空间也始终不变";
         text = "线性变换必满足 T(0)=0，所以 {0} 永远被保持。";
-        formula = "T(\{0\})=\{0\}";
+        formula = "T(\\{0\\})=\\{0\\}";
         facts = [["类型", "平凡不变子空间"]];
       } else {
         const theta = state.angle * Math.PI / 180;
@@ -114,7 +114,7 @@
         tone = invariant ? "pass" : "fail";
         title = invariant ? "整个 T(W) 仍被 W 包含" : "T(W) 整体转出了 W";
         text = invariant ? "这里并不要求每个向量原地不动；只要求 W 中所有向量的像仍然属于 W。" : "一支探针已经显示泄漏分量，而两条整带的夹角说明这不是某个样本的偶然现象。";
-        formula = invariant ? "T(W)\subseteq W" : "T(W)\not\subseteq W";
+        formula = invariant ? "T(W)\\subseteq W" : "T(W)\\not\\subseteq W";
         facts = [["方向误差", S.fmt(residual, 4)], ["适配基左下角", S.fmt(B[1][0], 4)], ["是否不变", invariant ? "是" : "否"]];
       }
 

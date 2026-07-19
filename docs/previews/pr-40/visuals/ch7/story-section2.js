@@ -94,7 +94,7 @@
         tone = inv ? "pass" : "fail";
         title = inv ? "倒序应用逆变换，原对象完整返回" : "投影已经压掉一个方向，逆变换不存在";
         text = inv ? "可逆变换没有丢失信息，因此每个输出都能追溯到唯一输入。" : "输出线上同一个点来自无数个输入；任何‘返回’都无法知道原先的垂直分量。";
-        formula = inv ? "T^{-1}(T(x))=x" : "\det T=0\Rightarrow T^{-1}\text{ 不存在}";
+        formula = inv ? "T^{-1}(T(x))=x" : "\\det T=0\\Rightarrow T^{-1}\\text{ 不存在}";
         facts = [["det", S.fmt(S.det2(forward))], ["是否可逆", inv ? "是" : "否"]];
       } else {
         const first = state.mode === "TS" ? Sm : T;
@@ -121,7 +121,7 @@
         tone = same ? "warn" : "pass";
         title = same ? "这组特殊变换恰好交换" : `右侧的 ${firstName} 必须先作用`;
         text = same ? "两个对角缩放彼此独立，所以交换顺序没有改变结果；这不是一般规律。" : "中间形状一旦改变，第二台机器收到的输入也随之改变，最终方向和形状便不同。";
-        formula = state.mode === "TS" ? "(T\circ S)(x)=T(S(x))" : "(S\circ T)(x)=S(T(x))";
+        formula = state.mode === "TS" ? "(T\\circ S)(x)=T(S(x))" : "(S\\circ T)(x)=S(T(x))";
         facts = [["当前终点", S.vectorText(out)], ["另一顺序", S.vectorText(other)], ["是否相同", same ? "是（特殊）" : "否"]];
       }
 

@@ -40,13 +40,17 @@
         return content;
       }
 
-      content += S.transformedGrid(plane, state.mode === "N" ? [[0, 1], [0, 0]] : [[state.lambda, 1], [0, state.lambda]], { extent: 2.8, step: 0.6, role: "output" });
-      content += plane.line(v1, "success", 4.2) + plane.vector(v1, "success", "v₁ 特征线");
-      content += plane.vector(v2, "secondary", "v₂ 广义方向");
+      const matrix = state.mode === "N" ? [[0, 1], [0, 0]] : [[state.lambda, 1], [0, state.lambda]];
+      content += `<g clip-path="url(#ch7-s8-right-clip)">${S.transformedGrid(plane, matrix, { extent: 2.8, step: 0.6, role: "output" })}</g>`;
+      content += plane.line(v1, "success", 4.2) + plane.vector(v1, "success");
+      content += plane.vector(v2, "secondary");
+      content += `<text x="${plane.x + 22}" y="${plane.y + plane.height - 32}" class="ch7-story-panel-subtitle">青绿：特征方向</text>`;
+      content += `<text x="${plane.x + 190}" y="${plane.y + plane.height - 32}" class="ch7-story-panel-subtitle">棕色：广义方向</text>`;
 
       if (state.mode === "compare") {
         const image = S.add(S.scale(state.lambda, v2), v1);
-        content += plane.vector(image, "output", "T(v₂)=λv₂+v₁");
+        content += plane.vector(image, "output");
+        content += `<text x="${plane.x + 22}" y="${plane.y + 58}" class="ch7-story-label is-output">T(v₂)=λv₂+v₁</text>`;
         const scaled = S.scale(state.lambda, v2);
         const a = plane.p(scaled);
         const b = plane.p(image);
@@ -54,13 +58,13 @@
       } else if (state.mode === "T") {
         const image1 = S.scale(state.lambda, v1);
         const image2 = S.add(S.scale(state.lambda, v2), v1);
-        content += plane.vector(image1, "primary", "λv₁") + plane.vector(S.scale(state.lambda, v2), "secondary", "λv₂");
-        content += plane.vector(image2, "output", "λv₂+v₁");
+        content += plane.vector(image1, "primary") + plane.vector(S.scale(state.lambda, v2), "secondary");
+        content += plane.vector(image2, "output");
+        content += `<text x="${plane.x + 22}" y="${plane.y + 58}" class="ch7-story-label is-output">T(v₂)=λv₂+v₁</text>`;
         const a = plane.p(S.scale(state.lambda, v2));
         const b = plane.p(image2);
         content += `<line x1="${a[0]}" y1="${a[1]}" x2="${b[0]}" y2="${b[1]}" class="ch7-story-leak"/>`;
       } else {
-        const currentIndex = Math.max(1, Math.min(state.step ? (type === "j3" ? 3 - state.step + 1 : 2 - state.step + 1) : (type === "j3" ? 3 : 2), type === "j3" ? 3 : 2));
         const vectors = type === "j3" ? [[1.15, 0], [0.35, 1.15], [-0.75, 1.45]] : [[1.15, 0], [0.35, 1.15]];
         const startIndex = state.step === 0 ? vectors.length - 1 : Math.max(0, vectors.length - 1 - state.step);
         const current = vectors[startIndex];
@@ -84,7 +88,8 @@
       const height = 620;
       const left = S.createPlane({ x: 45, y: 70, width: 420, height: 385, extent: 3.2 });
       const right = S.createPlane({ x: 535, y: 70, width: 420, height: 385, extent: 3.2 });
-      let content = `<rect x="25" y="45" width="460" height="440" rx="26" class="ch7-story-panel-bg"/><rect x="515" y="45" width="460" height="440" rx="26" class="ch7-story-panel-bg"/>`;
+      let content = `<defs><clipPath id="ch7-s8-right-clip"><rect x="${right.x}" y="${right.y}" width="${right.width}" height="${right.height}" rx="18"/></clipPath></defs>`;
+      content += `<rect x="25" y="45" width="460" height="440" rx="26" class="ch7-story-panel-bg"/><rect x="515" y="45" width="460" height="440" rx="26" class="ch7-story-panel-bg"/>`;
       content += drawPanel(left, "split", "可对角化：两条独立特征线");
       content += drawPanel(right, structure.split ? "split" : structure.value, structure.split ? "当前也是两个 1×1 块" : "Jordan：只剩一条真正特征线");
 

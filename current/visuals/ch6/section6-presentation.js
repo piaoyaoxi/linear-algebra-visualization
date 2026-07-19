@@ -13,7 +13,7 @@
       U().softArrow([0, 0], a, "is-u", "", config) +
       U().softArrow(a, sum, "is-w", "", config) +
       U().softArrow([0, 0], sum, "is-result", "", config);
-    return `<svg class="ch6-sum-union-figure" viewBox="0 0 400 230" role="img" aria-label="先沿青色 u 前进，再沿橙色 w 前进，得到绿色 u+w">${inner}</svg>`;
+    return `<svg class="ch6-sum-union-figure" viewBox="0 0 400 230" role="img" aria-label="先取 u，再从它的终点加上 w，得到 u+w">${inner}</svg>`;
   }
 
   function dimensionBookkeeping() {
@@ -32,7 +32,7 @@
         "02",
         "和空间收集所有可以合成的方向",
         "它不是简单把两个集合并排放在一起",
-        `<div class="ch6-sum-definition"><div>${sumVsUnionFigure()}</div><div>${U().texDisplay("U+W=\\{u+w:u\\in U,\\ w\\in W\\}")}<p>青色段表示先取 ${U().texInline("u\\in U")}，橙色段表示从它的终点再加 ${U().texInline("w\\in W")}；绿色箭头是最终的 ${U().texInline("u+w")}。</p><div class="ch6-warning-note"><strong>${U().texInline("U\\cup W")} 一般不是子空间</strong><p>分别取 u∈U 与 w∈W，u+w 往往离开集合并。</p></div></div></div>`,
+        `<div class="ch6-sum-definition"><div>${sumVsUnionFigure()}</div><div>${U().texDisplay("U+W=\\{u+w:u\\in U,\\ w\\in W\\}")}<p>第一段表示先取 ${U().texInline("u\\in U")}，第二段表示从它的终点再加 ${U().texInline("w\\in W")}；从原点直达终点的箭头就是 ${U().texInline("u+w")}。</p><div class="ch6-warning-note"><strong>${U().texInline("U\\cup W")} 一般不是子空间</strong><p>分别取 u∈U 与 w∈W，u+w 往往离开集合并。</p></div></div></div>`,
       ),
       U().moduleBlock("03", "维数公式是一笔重复方向的账", "dim U 与 dim W 都计算了交空间中的方向", dimensionBookkeeping()),
       U().moduleBlock(
@@ -120,8 +120,8 @@
       host.innerHTML = U().labShell({
         title: "先找公共方向，再做维数账本",
         lead: "切换不同维数情形。画面负责告诉你哪些方向重复，下面的账本负责把这种重复写成维数公式。",
-        focus: info.kind === "r2" ? "先看 U 与 W 是否是同一条直线，再沿青色段和橙色段追到绿色 u+w。" : "先找图中同时属于 U 和 W 的公共方向。",
-        stage: `<div class="ch6-stage-shell">${visual}${info.kind === "r2" || info.kind === "same" ? `<div class="ch6-stage-legend"><span class="is-u">青色：先取 u</span><span class="is-w">橙色：再加 w</span><span class="is-result">绿色：最终 u+w</span></div>` : ""}</div>`,
+        focus: info.kind === "r2" ? "先看 U 与 W 是否是同一条直线，再沿 u、w 两段追到最终的 u+w。" : "先找图中同时属于 U 和 W 的公共方向。",
+        stage: `<div class="ch6-stage-shell">${visual}${info.kind === "r2" || info.kind === "same" ? `<div class="ch6-stage-legend"><span class="is-u">先取 u∈U</span><span class="is-w">再加 w∈W</span><span class="is-result">最终得到 u+w</span></div>` : ""}</div>`,
         controls,
         readout,
         tasks: U().taskBlock(section),

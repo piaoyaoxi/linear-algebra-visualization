@@ -35,6 +35,20 @@ async function assertSeparated(page, firstSelector, secondSelector, label, gap =
   if (!horizontal && !vertical) throw new Error(`${label}: visual boxes overlap`);
 }
 
+async function assertBareInlineMath(page, selector, label) {
+  const offenders = await page.locator(selector).evaluateAll((nodes) => nodes.map((node) => {
+    const style = getComputedStyle(node);
+    return {
+      text: node.textContent?.trim(),
+      background: style.backgroundColor,
+      borderTop: style.borderTopWidth,
+      radius: style.borderRadius,
+      shadow: style.boxShadow,
+    };
+  }).filter((item) => item.background !== "rgba(0, 0, 0, 0)" || item.borderTop !== "0px" || item.radius !== "0px" || item.shadow !== "none"));
+  if (offenders.length) throw new Error(`${label}: inline math still has pill chrome: ${JSON.stringify(offenders.slice(0, 4))}`);
+}
+
 async function dragRange(page, selector, ratio, touch) {
   const range = page.locator(selector);
   await range.scrollIntoViewIfNeeded();
@@ -91,9 +105,14 @@ async function checkLambdaBuild(page, name) {
   if (coloredInactive.length || cellChrome.some((item) => item.border !== "0px")) {
     throw new Error(`${name}/lambda-build: inactive matrix cells still look like nested cards`);
   }
+  await assertBareInlineMath(page, ".ch8-build-equation .tex-inline, .ch8-cause-strip .tex-inline", `${name}/lambda-build`);
+  const initialResult = await page.locator(".ch8-trace-formula strong .tex-inline").boundingBox();
+  if (!initialResult || initialResult.width <= initialResult.height * 1.2) {
+    throw new Error(`${name}/lambda-build: λ−2 collapsed into a vertical formula`);
+  }
   await page.locator('[data-build-cell="12"]').click();
-  const trace = normalize(await page.locator(".ch8-trace-formula").innerText());
-  if (!trace.includes("0−1=−1") && !trace.includes("0-1=-1")) throw new Error(`${name}/lambda-build: selected coordinate trace is wrong`);
+  const explanation = normalize(await page.locator(".ch8-cause-strip p").innerText());
+  if (!explanation.includes("0−1") || !explanation.includes("−1")) throw new Error(`${name}/lambda-build: selected coordinate explanation is wrong`);
   await assertNoPageOverflow(page, `${name}/lambda-build`);
   await page.locator(".ch8-lambda-story").screenshot({ path: path.join(shots, `${name}-lambda-build.png`) });
 }
@@ -117,6 +136,7 @@ async function checkInvariant(page, name) {
   if (await page.locator(".ch8-invariant-chain .ch8-poly-chip").count()) {
     throw new Error(`${name}/invariant: divisibility chain still uses nested chips`);
   }
+  await assertBareInlineMath(page, ".ch8-invariant-reference .tex-inline, .ch8-compression-field .tex-inline, .ch8-invariant-chain .tex-inline", `${name}/invariant`);
   const minorChrome = await page.locator(".ch8-minor-list i").evaluateAll((nodes) => nodes.map((node) => ({
     background: getComputedStyle(node).backgroundColor,
     borderRadius: getComputedStyle(node).borderRadius,

@@ -18,7 +18,7 @@ permissions:
 jobs:
   chromium:
     runs-on: ubuntu-latest
-    timeout-minutes: 20
+    timeout-minutes: 25
     steps:
       - name: Check out branch
         uses: actions/checkout@v4
@@ -27,6 +27,17 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: 22
+
+      - name: Validate Chapter 7 source
+        run: |
+          set -euo pipefail
+          node --check current/visuals/ch7/story-core.js
+          for file in current/visuals/ch7/story-section{1..9}.js; do
+            node --check "$file"
+          done
+          node --check .github/scripts/ch7-browser-check.mjs
+          git diff --check
+          grep -q 'story-section9.js?v=41a' current/learn.html
 
       - name: Install Playwright and Chromium
         run: |

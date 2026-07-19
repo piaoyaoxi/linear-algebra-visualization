@@ -18,7 +18,7 @@ permissions:
 jobs:
   apply:
     runs-on: ubuntu-latest
-    timeout-minutes: 10
+    timeout-minutes: 15
     steps:
       - name: Check out Chapter 7 branch
         uses: actions/checkout@v4
@@ -26,7 +26,7 @@ jobs:
           ref: context/ch7-linear-transformations
           fetch-depth: 0
 
-      - name: Unpack reviewed redesign
+      - name: Repair and unpack reviewed redesign
         shell: bash
         run: |
           set -euo pipefail
@@ -35,6 +35,7 @@ jobs:
           import base64
           import io
           import tarfile
+          import zlib
 
           payload_dir = Path('.github/ch7-story-v2-payload')
           parts = [
@@ -49,18 +50,90 @@ jobs:
           if missing:
               raise SystemExit(f'missing payload parts: {missing}')
 
-          encoded = ''.join(path.read_text() for path in parts)
-          encoded = ''.join(encoded.split())
+          encoded = ''.join(''.join(path.read_text().split()) for path in parts)
           encoded += '=' * (-len(encoded) % 4)
-          archive = base64.b64decode(encoded, validate=False)
-          print(f'payload chars={len(encoded)} archive bytes={len(archive)}')
+          alphabet = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/'
+
+          def decode(text):
+              return base64.b64decode(text, validate=False)
+
+          def valid_archive(archive):
+              try:
+                  with tarfile.open(fileobj=io.BytesIO(archive), mode='r:gz') as tar:
+                      names = tar.getnames()
+                      required = {
+                          'current/visuals/ch7/story-v2.js',
+                          'current/visuals/ch7/story-v2.css',
+                      }
+                      if not required.issubset(set(names)):
+                          return None
+                      for member in tar.getmembers():
+                          name = Path(member.name)
+                          if name.is_absolute() or '..' in name.parts:
+                              return None
+                      return names
+              except Exception:
+                  return None
+
+          archive = decode(encoded)
+          names = valid_archive(archive)
+          repaired = encoded
+
+          if names is None:
+              probe = zlib.decompressobj(16 + zlib.MAX_WBITS)
+              fail_at = None
+              for index, byte in enumerate(archive):
+                  try:
+                      probe.decompress(bytes([byte]))
+                  except zlib.error:
+                      fail_at = index
+                      break
+              if fail_at is None:
+                  fail_at = max(0, len(archive) // 2)
+              approximate = (fail_at // 3) * 4
+              print(f'gzip stream fails near compressed byte {fail_at}; searching near base64 character {approximate}')
+
+              candidates = []
+              left = max(0, approximate - 28)
+              right = min(len(encoded.rstrip('=')), approximate + 29)
+              for position in range(left, right):
+                  original = encoded[position]
+                  for replacement in alphabet:
+                      if replacement == original:
+                          continue
+                      candidate = encoded[:position] + replacement + encoded[position + 1:]
+                      candidate_archive = decode(candidate)
+                      candidate_names = valid_archive(candidate_archive)
+                      if candidate_names is not None:
+                          candidates.append((position, original, replacement, candidate, candidate_archive, candidate_names))
+                          print(f'valid repair found at character {position}: {original!r} -> {replacement!r}')
+                          break
+                  if candidates:
+                      break
+
+              if not candidates:
+                  for position in range(max(0, approximate - 12), min(len(encoded.rstrip('=')) - 1, approximate + 13)):
+                      if encoded[position] == encoded[position + 1]:
+                          continue
+                      candidate = encoded[:position] + encoded[position + 1] + encoded[position] + encoded[position + 2:]
+                      candidate_archive = decode(candidate)
+                      candidate_names = valid_archive(candidate_archive)
+                      if candidate_names is not None:
+                          candidates.append((position, encoded[position:position+2], encoded[position+1] + encoded[position], candidate, candidate_archive, candidate_names))
+                          print(f'valid adjacent swap repair found at character {position}')
+                          break
+
+              if not candidates:
+                  raise SystemExit('unable to repair the reviewed story archive with a local one-character correction')
+
+              _, _, _, repaired, archive, names = candidates[0]
+
+          print('archive members:')
+          for name in names:
+              print(name)
 
           with tarfile.open(fileobj=io.BytesIO(archive), mode='r:gz') as tar:
-              names = tar.getnames()
-              print('archive members:')
-              for name in names:
-                  print(name)
-              tar.extractall('.')
+              tar.extractall('.', filter='data')
           PY
 
       - name: Load the new story layer last
@@ -91,6 +164,7 @@ jobs:
           PY
           rm -rf .github/ch7-story-v2-payload
           rm -f .github/workflows/apply-ch7-story-v2.yml
+          rm -f docs/ch7-story-payload-diagnostic.txt
 
       - name: Validate final source
         shell: bash

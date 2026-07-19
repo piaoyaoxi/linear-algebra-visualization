@@ -99,24 +99,20 @@
   color: color-mix(in srgb, var(--accent-strong) 82%, var(--text));
 }
 
+/* Match Chapters 1, 4 and 5: plain project surfaces, no chapter-specific color wash. */
 .ch6-stage-shell,
-.ch6-cinematic-story,
 .ch6-polynomial-stage,
 .ch6-rgb-stage,
 .ch6-equation-stage,
 .ch6-iso-paths,
 .ch6-r4-stage {
+  background: var(--surface-soft) !important;
   box-shadow: none;
 }
 
-body:not(.dark) .ch6-stage-shell,
-body:not(.dark) .ch6-cinematic-story,
-body:not(.dark) .ch6-polynomial-stage,
-body:not(.dark) .ch6-rgb-stage,
-body:not(.dark) .ch6-equation-stage,
-body:not(.dark) .ch6-iso-paths,
-body:not(.dark) .ch6-r4-stage {
-  background-color: var(--surface-soft);
+.ch6-cinematic-story {
+  background: var(--surface-solid) !important;
+  box-shadow: none;
 }
 
 @media (max-width: 600px) {

@@ -1,6 +1,14 @@
 name: Chapter 6 browser check
 
 on:
+  push:
+    branches:
+      - "content/ch6-linear-spaces"
+    paths:
+      - "current/**"
+      - ".github/scripts/ch6-browser-check.mjs"
+      - ".github/scripts/ch6-browser-review.mjs"
+      - ".github/workflows/ch6-browser-check.yml"
   pull_request:
     paths:
       - "current/**"

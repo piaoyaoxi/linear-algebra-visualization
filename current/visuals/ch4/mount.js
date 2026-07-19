@@ -3,8 +3,8 @@
   const baseRenderLessonPage = window.renderLessonPage;
   if (typeof baseRenderLessonPage !== "function") return;
 
-  window.renderLessonPage = function renderLessonPageWithChapter4Extensions(section) {
-    baseRenderLessonPage(section);
+  window.renderLessonPage = function renderLessonPageWithChapter4Extensions(section, chapter) {
+    baseRenderLessonPage(section, chapter);
     window.mountChapter4Lesson?.(section, document.querySelector("#mainContent"));
   };
 })();

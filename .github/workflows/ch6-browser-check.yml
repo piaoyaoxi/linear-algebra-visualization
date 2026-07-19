@@ -1,26 +1,15 @@
 name: Chapter 6 browser check
 
-# Native-theme review revision 2: source scan + four browser configurations.
 on:
-  push:
-    branches:
-      - "content/ch6-linear-spaces"
-    paths:
-      - "current/**"
-      - ".github/scripts/ch6-browser-check.mjs"
-      - ".github/scripts/ch6-browser-review.mjs"
-      - ".github/scripts/ch6-source-style-check.mjs"
-      - ".github/workflows/ch6-browser-check.yml"
   pull_request:
     paths:
       - "current/**"
-      - ".github/scripts/ch6-browser-check.mjs"
       - ".github/scripts/ch6-browser-review.mjs"
       - ".github/scripts/ch6-source-style-check.mjs"
       - ".github/workflows/ch6-browser-check.yml"
 
 permissions:
-  contents: write
+  contents: read
 
 jobs:
   browser-check:
@@ -50,7 +39,6 @@ jobs:
       - name: Start static site
         run: |
           python3 -m http.server 4173 --directory current > /tmp/ch6-static.log 2>&1 &
-          echo $! > /tmp/ch6-static.pid
           for attempt in {1..20}; do
             if curl --fail --silent http://127.0.0.1:4173/learn.html > /dev/null; then
               exit 0
@@ -60,7 +48,7 @@ jobs:
           cat /tmp/ch6-static.log
           exit 1
 
-      - name: Exercise Chapter 6 and compare project visual language in Chromium
+      - name: Exercise Chapter 6 in real Chromium
         shell: bash
         run: |
           set +e
@@ -75,18 +63,3 @@ jobs:
           name: ch6-browser-screenshots
           path: /tmp/ch6-screenshots
           if-no-files-found: error
-
-      - name: Record browser run id
-        if: always() && github.event_name == 'push'
-        run: |
-          mkdir -p docs
-          {
-            echo "run_id=${GITHUB_RUN_ID}"
-            echo "head_sha=${GITHUB_SHA}"
-            echo "workflow=${GITHUB_WORKFLOW}"
-          } > docs/ch6-latest-run.txt
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add docs/ch6-latest-run.txt
-          git commit -m "chore(ch6): record browser run [skip ci]" || exit 0
-          git push origin HEAD:content/ch6-linear-spaces

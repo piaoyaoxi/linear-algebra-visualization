@@ -1,266 +1,298 @@
 (() => {
-  const { inline, display, clamp, rad, dot, norm, sub, scale, palette, setupCanvas, roundedRect, arrow, grid, axes, world, clear, renderFormal, labShell, range, readingRow, setReadout, setOutput, bindRange, bindButtons, activate, animate } = window.Chapter9Native;
+  const {
+    display, rad, dot, norm, sub, scale, fmt, palette, setupCanvas, repaintCanvas,
+    arrow, grid, axes, world, clear, renderFormal, labHeading, observation, range,
+    setReadout, setOutput, bindRange, bindButtons, activate,
+  } = window.Chapter9Native;
+
+  function metric(label, key) {
+    return `<div><span>${label}</span><strong data-readout="${key}">—</strong></div>`;
+  }
+
+  function conclusion(key) {
+    return `<div class="ch9-conclusion" data-conclusion="${key}"><strong data-conclusion-title></strong><p data-conclusion-copy></p></div>`;
+  }
 
   function innerProductLab(root) {
-    root.innerHTML = labShell({
-      title: "内积与有向投影",
-      description: `固定青绿色向量 ${inline("x")} 的方向，只移动金棕色向量 ${inline("y")}。先判断方向关系，再显示垂线与投影。`,
-      taskTitle: "让夹角依次经过锐角、直角与钝角",
-      task: "注意内积的负号并不是来自向量颜色或坐标正负，而是来自 y 在 x 方向上的影子反向。",
-      controls: `<div class="ch9-toolbar" role="group" aria-label="内积预设"><button class="is-active" type="button" data-ip-preset="acute">锐角</button><button type="button" data-ip-preset="right">直角</button><button type="button" data-ip-preset="obtuse">钝角</button><button type="button" data-ip-preset="parallel">线性相关</button><button type="button" data-ip-preset="zero">零向量</button></div><div class="ch9-steps" style="--ch9-steps:3"><button class="is-active" type="button" data-ip-step="0">01 看夹角</button><button type="button" data-ip-step="1">02 看投影</button><button type="button" data-ip-step="2">03 看内积</button></div><div class="ch9-range-list">${range("angle", "y 的方向", -170, 170, 1, 48, "°")}</div>`,
-      body: `<div class="ch9-lab-grid"><div class="ch9-panel"><div class="ch9-stage"><canvas data-ip-canvas tabindex="0" aria-label="两个向量的夹角与有向投影"></canvas></div><div class="ch9-equation" data-ip-equation></div></div><div class="ch9-panel"><div class="ch9-reading"><h4>当前读数</h4>${readingRow("夹角", "angle")}${readingRow("有向投影", "projection")}${readingRow("内积", "dot")}</div><div class="ch9-result" data-ip-result><span class="ch9-status" data-ip-status></span><h4 data-ip-title></h4><p data-ip-copy></p></div></div></div>`,
-    });
+    root.innerHTML = `<h2>交互实验</h2><section class="ch9-inner-lab" data-ch9-lab data-lab-kind="inner-product">
+      ${labHeading("§1 · 从图形读公式", "一幅图看懂内积的三个几何量", "青绿色向量 x 固定在横轴上；金棕色向量 y 绕原点转动。垂足决定有向投影，投影的正负决定内积的正负。")}
+      ${observation(["先看两向量的夹角属于锐角、直角还是钝角。", "再看 y 在 x 方向上的有向投影落在原点哪一侧。", "最后把投影长度乘以 ‖x‖，得到〈x,y〉。"])}
+      <div class="ch9-inner-body">
+        <div class="ch9-inner-scene">
+          <div class="ch9-stage">
+            <div class="ch9-stage-top"><strong>夹角、垂足与有向投影</strong><span>图形与下方公式使用同一组颜色</span></div>
+            <canvas data-ip-canvas aria-label="内积的夹角、垂足和有向投影几何图"></canvas>
+          </div>
+          <div class="ch9-equation" data-ip-equation></div>
+        </div>
+        <aside class="ch9-inner-side">
+          <div class="ch9-toolbar" role="group" aria-label="内积典型状态">
+            <button type="button" data-ip-preset="acute" class="is-active">锐角</button>
+            <button type="button" data-ip-preset="right">正交</button>
+            <button type="button" data-ip-preset="obtuse">钝角</button>
+            <button type="button" data-ip-preset="zero">零向量</button>
+          </div>
+          <div class="ch9-range-list">${range("ipAngle", "向量 y 的方向", 0, 180, 1, 48, "°")}</div>
+          <div class="ch9-metric-strip">${metric("夹角 θ", "angle")}${metric("有向投影", "projection")}${metric("〈x,y〉", "inner")}</div>
+          ${conclusion("ip")}
+        </aside>
+      </div>
+    </section>`;
+
     const canvas = root.querySelector("[data-ip-canvas]");
-    const state = { angle: 48, length: 2.55, step: 0, reveal: 0 };
-    let redraw = () => {};
-    let stopMotion = () => {};
-    const presets = { acute: [48, 2.55], right: [90, 2.55], obtuse: [132, 2.55], parallel: [0, 2.8], zero: [48, 0] };
-    const [presetButtons, cleanPreset] = bindButtons(root, "[data-ip-preset]", (button) => {
-      const [angle, length] = presets[button.dataset.ipPreset];
-      activate(presetButtons, button.dataset.ipPreset, "ipPreset");
-      stopMotion();
-      state.step = 0;
-      state.reveal = 0;
-      activate(stepButtons, 0, "ipStep");
-      root.querySelector('[data-range="angle"]').value = String(angle);
-      stopMotion = animate(state, { angle, length }, ["angle", "length"], redraw, 480);
-    });
-    const [stepButtons, cleanSteps] = bindButtons(root, "[data-ip-step]", (button) => {
-      const target = Number(button.dataset.ipStep);
-      state.step = target;
-      activate(stepButtons, state.step, "ipStep");
-      stopMotion();
-      stopMotion = animate(state, { reveal: target }, ["reveal"], redraw, 420);
-    });
-    const cleanRange = bindRange(root, "angle", (value) => {
-      stopMotion();
-      state.angle = value;
-      state.length = Math.max(state.length, 2.55);
-      presetButtons.forEach((button) => button.classList.remove("is-active"));
-      redraw();
-    });
-    function paintInner(ctx, width, height, colors) {
+    const state = { angle: 48, yLength: 2.35, preset: "acute" };
+    const presets = { acute: [48, 2.35], right: [90, 2.35], obtuse: [132, 2.35], zero: [48, 0] };
+
+    function paint(ctx, width, height, colors) {
       clear(ctx, width, height);
-      grid(ctx, width, height, colors, Math.max(36, width / 12));
-      const origin = [width * 0.25, height * 0.72];
+      grid(ctx, width, height, colors, Math.max(44, width / 13));
+      const origin = [width * .43, height * .68];
+      const unit = Math.min(width / 8.2, height / 4.7);
       axes(ctx, origin, width, height, colors);
-      const unit = Math.min(width / 8.2, height / 4.3);
-      const x = [3.15, 0];
-      const y = [state.length * Math.cos(rad(state.angle)), state.length * Math.sin(rad(state.angle))];
-      const xEnd = world(x, origin, unit);
-      const yEnd = world(y, origin, unit);
+      const x = [2.8, 0];
+      const y = [state.yLength * Math.cos(rad(state.angle)), state.yLength * Math.sin(rad(state.angle))];
       const projection = y[0];
-      const pEnd = world([projection, 0], origin, unit);
-      arrow(ctx, origin, xEnd, colors.accentStrong, "x", { width: 4.5, labelY: -9 });
-      arrow(ctx, origin, yEnd, colors.coral, "y", { width: 4.5, labelY: -9 });
-      if (state.length > 0.001) {
+      const foot = world([projection, 0], origin, unit);
+      const yPoint = world(y, origin, unit);
+      const xPoint = world(x, origin, unit);
+
+      if (state.yLength > 0) {
         ctx.save();
-        ctx.strokeStyle = colors.accent;
+        ctx.strokeStyle = colors.coral;
+        ctx.globalAlpha = .34;
+        ctx.lineWidth = 9;
+        ctx.lineCap = "round";
+        ctx.beginPath();
+        ctx.moveTo(origin[0], origin[1]);
+        ctx.lineTo(foot[0], foot[1]);
+        ctx.stroke();
+        ctx.globalAlpha = 1;
+        ctx.strokeStyle = colors.muted;
+        ctx.lineWidth = 1.6;
+        ctx.setLineDash([6, 5]);
+        ctx.beginPath();
+        ctx.moveTo(yPoint[0], yPoint[1]);
+        ctx.lineTo(foot[0], foot[1]);
+        ctx.stroke();
+        ctx.setLineDash([]);
+        const sign = projection >= 0 ? 1 : -1;
+        ctx.strokeStyle = colors.muted;
+        ctx.beginPath();
+        ctx.moveTo(foot[0] - sign * 12, foot[1]);
+        ctx.lineTo(foot[0] - sign * 12, foot[1] - 12);
+        ctx.lineTo(foot[0], foot[1] - 12);
+        ctx.stroke();
+        ctx.strokeStyle = colors.accentStrong;
         ctx.lineWidth = 2.2;
         ctx.beginPath();
-        const radius = 38;
-        if (state.angle >= 0) ctx.arc(origin[0], origin[1], radius, 0, -rad(state.angle), true);
-        else ctx.arc(origin[0], origin[1], radius, 0, -rad(state.angle), false);
+        ctx.arc(origin[0], origin[1], unit * .62, -rad(state.angle), 0, state.angle > 180);
         ctx.stroke();
+        ctx.fillStyle = colors.accentStrong;
+        ctx.font = "700 13px ui-sans-serif, system-ui";
+        ctx.fillText("θ", origin[0] + unit * .7 * Math.cos(rad(state.angle / 2)), origin[1] - unit * .7 * Math.sin(rad(state.angle / 2)));
+        ctx.fillStyle = colors.coral;
+        ctx.fillText("projₓ y", (origin[0] + foot[0]) / 2 - 24, origin[1] + 24);
         ctx.restore();
       }
-      const projectionReveal = clamp(state.reveal, 0, 1);
-      const productReveal = clamp(state.reveal - 1, 0, 1);
-      if (projectionReveal > 0.001 && state.length > 0.001) {
+      arrow(ctx, origin, xPoint, colors.accentStrong, "x", { width: 4.2, labelY: -13 });
+      if (state.yLength > 0) arrow(ctx, origin, yPoint, colors.coral, "y", { width: 4.2 });
+      else {
         ctx.save();
-        ctx.globalAlpha = projectionReveal;
-        ctx.setLineDash([6, 5]);
-        ctx.strokeStyle = colors.muted;
-        ctx.lineWidth = 1.8;
+        ctx.fillStyle = colors.coral;
         ctx.beginPath();
-        ctx.moveTo(yEnd[0], yEnd[1]);
-        ctx.lineTo(pEnd[0], pEnd[1]);
-        ctx.stroke();
-        arrow(ctx, origin, pEnd, colors.text, "投影", { width: 2.6, head: 10, wing: 5, labelY: 19 });
-        ctx.strokeStyle = colors.coral;
-        ctx.setLineDash([]);
-        ctx.lineWidth = 1.8;
-        const direction = projection >= 0 ? 1 : -1;
-        ctx.strokeRect(pEnd[0], pEnd[1] - 12, direction * 12, 12);
-        ctx.restore();
-      }
-      if (productReveal > 0.001) {
-        ctx.save();
-        ctx.globalAlpha = productReveal;
-        roundedRect(ctx, width - 225, 24, 190, 76, 12);
-        ctx.fillStyle = colors.paper;
+        ctx.arc(origin[0], origin[1], 6, 0, Math.PI * 2);
         ctx.fill();
-        ctx.strokeStyle = colors.line;
-        ctx.stroke();
-        ctx.fillStyle = colors.muted;
-        ctx.font = "12px ui-sans-serif, system-ui";
-        ctx.fillText("长度 × 有向投影", width - 207, 50);
-        ctx.fillStyle = colors.text;
-        ctx.font = "700 16px ui-monospace, monospace";
-        ctx.fillText(`${fmt(3.15, 2)} × ${fmt(projection, 2)} = ${fmt(3.15 * projection, 2)}`, width - 207, 77);
+        ctx.font = "700 13px ui-sans-serif, system-ui";
+        ctx.fillText("y = 0", origin[0] + 12, origin[1] - 14);
         ctx.restore();
       }
-      const angle = state.length < 0.001 ? NaN : Math.abs(state.angle);
-      const product = 3.15 * projection;
-      setOutput(root, "angle", `${fmt(state.angle, 0)}°`);
-      setReadout(root, "angle", Number.isFinite(angle) ? `${fmt(angle, 0)}°` : "未定义");
-      setReadout(root, "projection", fmt(projection, 3));
-      setReadout(root, "dot", fmt(product, 3));
-      root.querySelector("[data-ip-equation]").innerHTML = state.step < 2 ? display("\\langle x,y\\rangle=\\lVert x\\rVert\\,\\lVert y\\rVert\\cos\\theta") : display(`\\langle x,y\\rangle=${fmt(product, 3)}`);
-      const result = root.querySelector("[data-ip-result]");
-      const status = root.querySelector("[data-ip-status]");
-      if (state.length < 0.001) {
-        result.className = "ch9-result is-warning";
-        status.className = "ch9-status is-warn";
-        status.textContent = "零向量边界";
-        root.querySelector("[data-ip-title]").textContent = "内积为 0，但夹角没有定义";
-        root.querySelector("[data-ip-copy]").textContent = "不能把零向量与其他向量内积为 0 机械解释成一个直角。";
-      } else if (Math.abs(projection) < 0.025) {
-        result.className = "ch9-result is-success";
-        status.className = "ch9-status is-ok";
-        status.textContent = "正交";
-        root.querySelector("[data-ip-title]").textContent = "有向投影恰好为 0";
-        root.querySelector("[data-ip-copy]").textContent = "垂线落在原点，内积同时为 0。";
+
+      const inner = dot(x, y);
+      const signedProjection = state.yLength ? inner / norm(x) : 0;
+      setReadout(root, "angle", state.yLength ? `${fmt(state.angle, 0)}°` : "未定义");
+      setReadout(root, "projection", fmt(signedProjection, 3));
+      setReadout(root, "inner", fmt(inner, 3));
+      root.querySelector("[data-ip-equation]").innerHTML = display(`\\langle x,y\\rangle=\\lVert x\\rVert\\,\\operatorname{proj}^{\\pm}_{x}(y)=${fmt(norm(x), 2)}\\times ${fmt(signedProjection, 2)}=${fmt(inner, 2)}`);
+      const box = root.querySelector('[data-conclusion="ip"]');
+      const title = box.querySelector("[data-conclusion-title]");
+      const copy = box.querySelector("[data-conclusion-copy]");
+      box.classList.toggle("is-warning", state.yLength === 0);
+      if (state.yLength === 0) {
+        title.textContent = "零向量没有方向，夹角不定义";
+        copy.textContent = "内积仍然等于 0；判断正交时必须单独处理这个边界。";
+      } else if (Math.abs(inner) < .04) {
+        title.textContent = "垂足落在原点：x 与 y 正交";
+        copy.textContent = "有向投影为 0，因此内积也为 0。";
+      } else if (inner > 0) {
+        title.textContent = "垂足落在 x 的正向：内积为正";
+        copy.textContent = "锐角让 y 在 x 方向上留下正的有向分量。";
       } else {
-        const positive = product > 0;
-        result.className = positive ? "ch9-result is-success" : "ch9-result is-warning";
-        status.className = positive ? "ch9-status is-ok" : "ch9-status is-warn";
-        status.textContent = positive ? "内积为正" : "内积为负";
-        root.querySelector("[data-ip-title]").textContent = positive ? "影子与 x 同向" : "影子落在 x 的反向";
-        root.querySelector("[data-ip-copy]").textContent = positive ? "两个非零向量形成锐角。" : "两个非零向量形成钝角，负号来自反向投影。";
+        title.textContent = "垂足落在 x 的反向：内积为负";
+        copy.textContent = "钝角让 y 在 x 方向上留下负的有向分量。";
       }
     }
-    const cleanCanvas = setupCanvas(canvas, paintInner);
-    redraw = () => {
-      const rect = canvas.getBoundingClientRect();
-      const dpr = Math.min(window.devicePixelRatio || 1, 2);
-      const ctx = canvas.getContext("2d");
-      canvas.width = Math.round(rect.width * dpr);
-      canvas.height = Math.round(rect.height * dpr);
-      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-      paintInner(ctx, rect.width, rect.height, palette());
-    };
-    return [cleanCanvas, cleanRange, cleanPreset, cleanSteps, () => stopMotion()];
+
+    const cleanupCanvas = setupCanvas(canvas, paint);
+    const repaint = () => repaintCanvas(canvas, paint);
+    const [buttons, cleanupButtons] = bindButtons(root, "[data-ip-preset]", (button) => {
+      state.preset = button.dataset.ipPreset;
+      [state.angle, state.yLength] = presets[state.preset];
+      activate(buttons, state.preset, "ipPreset");
+      const slider = root.querySelector('[data-range="ipAngle"]');
+      slider.value = String(state.angle);
+      slider.disabled = state.yLength === 0;
+      setOutput(root, "ipAngle", `${fmt(state.angle, 0)}°`);
+      repaint();
+    });
+    activate(buttons, state.preset, "ipPreset");
+    const cleanupRange = bindRange(root, "ipAngle", (value) => {
+      state.angle = value;
+      state.yLength = 2.35;
+      state.preset = value === 90 ? "right" : value < 90 ? "acute" : "obtuse";
+      activate(buttons, state.preset, "ipPreset");
+      setOutput(root, "ipAngle", `${fmt(value, 0)}°`);
+      repaint();
+    });
+    return [cleanupCanvas, cleanupButtons, cleanupRange];
   }
 
   function gramSchmidtLab(root) {
-    root.innerHTML = labShell({
-      title: "Gram–Schmidt：减掉旧方向",
-      description: "不是把两个向量直接掰成直角，而是先找出第二个向量中已经由第一方向解释的部分。",
-      taskTitle: "按四步播放，不要跳过投影",
-      task: "灰色投影是要减掉的平行部分，剩下的金棕色余量才是真正的新方向。",
-      controls: `<div class="ch9-toolbar" role="group" aria-label="正交化预设"><button class="is-active" type="button" data-gs-preset="general">一般位置</button><button type="button" data-gs-preset="near">接近相关</button><button type="button" data-gs-preset="dependent">线性相关</button></div><div class="ch9-steps" style="--ch9-steps:4"><button class="is-active" type="button" data-gs-step="0">01 原向量</button><button type="button" data-gs-step="1">02 投影</button><button type="button" data-gs-step="2">03 做减法</button><button type="button" data-gs-step="3">04 单位化</button></div>`,
-      body: `<div class="ch9-lab-grid"><div class="ch9-panel"><div class="ch9-stage"><canvas data-gs-canvas aria-label="Gram-Schmidt 正交化步骤"></canvas></div><div class="ch9-equation" data-gs-equation></div></div><div class="ch9-panel"><div class="ch9-reading"><h4>正交证书</h4>${readingRow("投影系数", "coefficient")}${readingRow("余量长度", "residual")}${readingRow("最终内积", "orthogonality")}</div><div class="ch9-result" data-gs-result><span class="ch9-status" data-gs-status></span><h4 data-gs-title></h4><p data-gs-copy></p></div></div></div>`,
-    });
+    root.innerHTML = `<h2>交互实验</h2><section class="ch9-gs-lab" data-ch9-lab data-lab-kind="gram-schmidt">
+      ${labHeading("§2 · 保持同一个平面", "Gram–Schmidt：减掉旧方向，留下新方向", "舞台始终保留原来的两个向量。每一步只新增一个几何对象，让公式中的投影、减法和单位化都能在图中找到。")}
+      <div class="ch9-gs-body">
+        <div class="ch9-stage">
+          <div class="ch9-stage-top"><strong>同一舞台上的四步正交化</strong><span>青绿：旧方向　金棕：新方向　虚线：被减掉的部分</span></div>
+          <canvas data-gs-canvas aria-label="Gram-Schmidt 投影、减法和单位化步骤图"></canvas>
+        </div>
+        <aside class="ch9-gs-side">
+          <div class="ch9-toolbar" role="group" aria-label="向量组预设">
+            <button type="button" class="is-active" data-gs-preset="general">一般位置</button>
+            <button type="button" data-gs-preset="near">接近相关</button>
+            <button type="button" data-gs-preset="dependent">线性相关</button>
+          </div>
+          <div class="ch9-metric-strip">${metric("投影系数", "coefficient")}${metric("余量长度", "residual")}${metric("〈e₁,e₂〉", "orthogonality")}</div>
+          <div class="ch9-equation" data-gs-equation></div>
+          ${conclusion("gs")}
+        </aside>
+      </div>
+      <div class="ch9-stepper" role="group" aria-label="Gram-Schmidt 四步">
+        <button type="button" class="is-active" data-gs-step="0"><span>01</span>保留第一方向</button>
+        <button type="button" data-gs-step="1"><span>02</span>找出平行投影</button>
+        <button type="button" data-gs-step="2"><span>03</span>减去投影</button>
+        <button type="button" data-gs-step="3"><span>04</span>把余量单位化</button>
+      </div>
+    </section>`;
+
     const canvas = root.querySelector("[data-gs-canvas]");
-    const state = { step: 0, reveal: 0, preset: "general" };
-    const vectors = { general: [[3, 0.65], [2.05, 2.55]], near: [[3, 0.65], [3.05, 0.82]], dependent: [[3, 0.65], [3.6, 0.78]] };
-    let paintNow = () => {};
-    let stopMotion = () => {};
-    const [presetButtons, cleanPreset] = bindButtons(root, "[data-gs-preset]", (button) => {
-      stopMotion();
-      state.preset = button.dataset.gsPreset;
-      state.step = 0;
-      state.reveal = 0;
-      activate(presetButtons, state.preset, "gsPreset");
-      activate(stepButtons, 0, "gsStep");
-      paintNow();
-    });
-    const [stepButtons, cleanStep] = bindButtons(root, "[data-gs-step]", (button) => {
-      const target = Number(button.dataset.gsStep);
-      state.step = target;
-      activate(stepButtons, state.step, "gsStep");
-      stopMotion();
-      stopMotion = animate(state, { reveal: target }, ["reveal"], paintNow, 430);
-    });
+    const vectors = { general: [[2.5, .9], [1.35, 2.55]], near: [[2.5, .9], [2.35, 1.18]], dependent: [[2.5, .9], [1.75, .63]] };
+    const state = { preset: "general", step: 0 };
+
+    function data() {
+      const [v1, v2] = vectors[state.preset];
+      const coefficient = dot(v2, v1) / dot(v1, v1);
+      const projection = scale(coefficient, v1);
+      const residual = sub(v2, projection);
+      const residualNorm = norm(residual);
+      const e1 = scale(1 / norm(v1), v1);
+      const e2 = residualNorm > 1e-6 ? scale(1 / residualNorm, residual) : [0, 0];
+      return { v1, v2, coefficient, projection, residual, residualNorm, e1, e2 };
+    }
+
     function paint(ctx, width, height, colors) {
       clear(ctx, width, height);
-      grid(ctx, width, height, colors, Math.max(38, width / 12));
-      const origin = [width * 0.25, height * 0.76];
+      grid(ctx, width, height, colors, Math.max(44, width / 13));
+      const origin = [width * .42, height * .72];
+      const unit = Math.min(width / 8.2, height / 4.6);
       axes(ctx, origin, width, height, colors);
-      const unit = Math.min(width / 8.2, height / 4.2);
-      const [v1, v2] = vectors[state.preset];
-      const e1 = scale(1 / norm(v1), v1);
-      const coefficient = dot(v2, e1);
-      const projection = scale(coefficient, e1);
-      const residualVector = sub(v2, projection);
-      const residual = norm(residualVector);
-      const e2 = residual > 1e-6 ? scale(1 / residual, residualVector) : null;
-      const v1p = world(v1, origin, unit);
-      const v2p = world(v2, origin, unit);
-      const pp = world(projection, origin, unit);
-      arrow(ctx, origin, v1p, colors.accentStrong, "v₁", { width: 4.5 });
-      arrow(ctx, origin, v2p, colors.coral, "v₂", { width: 4.5 });
-      const projectionReveal = clamp(state.reveal, 0, 1);
-      const residualReveal = clamp(state.reveal - 1, 0, 1);
-      const unitReveal = clamp(state.reveal - 2, 0, 1);
-      if (projectionReveal > 0.001) {
+      const d = data();
+      const v1Point = world(d.v1, origin, unit);
+      const v2Point = world(d.v2, origin, unit);
+      const projectionPoint = world(d.projection, origin, unit);
+      arrow(ctx, origin, v1Point, colors.accentStrong, "v₁", { width: 4.2 });
+      arrow(ctx, origin, v2Point, colors.coral, "v₂", { width: 4.2 });
+      if (state.step >= 1) {
         ctx.save();
-        ctx.globalAlpha = projectionReveal;
-        ctx.setLineDash([6, 5]);
         ctx.strokeStyle = colors.muted;
-        ctx.lineWidth = 1.8;
+        ctx.setLineDash([7, 6]);
+        ctx.lineWidth = 2;
         ctx.beginPath();
-        ctx.moveTo(v2p[0], v2p[1]);
-        ctx.lineTo(pp[0], pp[1]);
+        ctx.moveTo(v2Point[0], v2Point[1]);
+        ctx.lineTo(projectionPoint[0], projectionPoint[1]);
         ctx.stroke();
-        arrow(ctx, origin, pp, colors.muted, "投影", { width: 2.6, head: 10, wing: 5, labelY: 18 });
+        ctx.setLineDash([]);
+        ctx.globalAlpha = .38;
+        arrow(ctx, origin, projectionPoint, colors.muted, "proj₍ᵥ₁₎v₂", { width: 7, labelY: 20 });
         ctx.restore();
       }
-      if (residualReveal > 0.001 && residual > 1e-6) {
+      if (state.step >= 2 && d.residualNorm > 1e-6) {
+        arrow(ctx, projectionPoint, v2Point, colors.coral, "u₂", { width: 4.2, labelX: 10 });
         ctx.save();
-        ctx.globalAlpha = residualReveal;
-        arrow(ctx, pp, v2p, colors.coral, "u₂", { width: 4.2, labelX: 10 });
-        const rp = world(residualVector, origin, unit);
-        arrow(ctx, origin, rp, colors.coral, "u₂", { width: 3, labelY: 19 });
+        ctx.strokeStyle = colors.muted;
+        ctx.setLineDash([5, 5]);
+        const residualAtOrigin = world(d.residual, origin, unit);
+        ctx.beginPath();
+        ctx.moveTo(v2Point[0], v2Point[1]);
+        ctx.lineTo(residualAtOrigin[0], residualAtOrigin[1]);
+        ctx.stroke();
         ctx.restore();
+        arrow(ctx, origin, residualAtOrigin, colors.coral, "u₂", { width: 4.2 });
       }
-      if (unitReveal > 0.001 && e2) {
+      if (state.step >= 3 && d.residualNorm > 1e-6) {
+        arrow(ctx, origin, world(scale(1.45, d.e1), origin, unit), colors.accentStrong, "e₁", { width: 5 });
+        arrow(ctx, origin, world(scale(1.45, d.e2), origin, unit), colors.coral, "e₂", { width: 5 });
+      }
+      if (state.step >= 2 && d.residualNorm <= 1e-6) {
         ctx.save();
-        ctx.globalAlpha = unitReveal;
-        const e1p = world(e1, origin, unit * 1.35);
-        const e2p = world(e2, origin, unit * 1.35);
-        arrow(ctx, origin, e1p, colors.accentStrong, "e₁", { width: 5 });
-        arrow(ctx, origin, e2p, colors.coral, "e₂", { width: 5 });
+        ctx.fillStyle = colors.coral;
+        ctx.font = "700 14px ui-sans-serif, system-ui";
+        ctx.fillText("u₂ = 0：没有新方向", origin[0] + 22, origin[1] - 28);
         ctx.restore();
       }
-      setReadout(root, "coefficient", fmt(coefficient, 3));
-      setReadout(root, "residual", fmt(residual, 4));
-      setReadout(root, "orthogonality", e2 ? fmt(dot(e1, e2), 5) : "—");
-      root.querySelector("[data-gs-equation]").innerHTML = state.step < 1 ? display("e_1=v_1/\\lVert v_1\\rVert") : state.step === 1 ? display("\\operatorname{proj}_{e_1}v_2=\\langle v_2,e_1\\rangle e_1") : state.step === 2 ? display("u_2=v_2-\\operatorname{proj}_{e_1}v_2") : display("e_2=u_2/\\lVert u_2\\rVert");
-      const result = root.querySelector("[data-gs-result]");
-      const status = root.querySelector("[data-gs-status]");
-      if (residual < 0.02) {
-        result.className = "ch9-result is-warning";
-        status.className = "ch9-status is-warn";
-        status.textContent = "零余量";
-        root.querySelector("[data-gs-title]").textContent = "当前向量没有带来新方向";
-        root.querySelector("[data-gs-copy]").textContent = "第二个向量已经属于第一方向的张成空间，算法在单位化前停止。";
-      } else if (state.step === 3) {
-        result.className = "ch9-result is-success";
-        status.className = "ch9-status is-ok";
-        status.textContent = "正交化完成";
-        root.querySelector("[data-gs-title]").textContent = "两条单位方向彼此正交";
-        root.querySelector("[data-gs-copy]").textContent = "新基改变了坐标骨架，但没有改变原向量组张成的平面。";
+
+      setReadout(root, "coefficient", fmt(d.coefficient, 3));
+      setReadout(root, "residual", fmt(d.residualNorm, 3));
+      setReadout(root, "orthogonality", d.residualNorm > 1e-6 ? fmt(dot(d.e1, d.e2), 5) : "无法定义 e₂");
+      const equations = ["u_1=v_1", `\\operatorname{proj}_{v_1}v_2=${fmt(d.coefficient, 2)}v_1`, "u_2=v_2-\\operatorname{proj}_{v_1}v_2", d.residualNorm > 1e-6 ? "e_i=u_i/\\lVert u_i\\rVert" : "u_2=0\\;\\Rightarrow\\;\\text{停止}"];
+      root.querySelector("[data-gs-equation]").innerHTML = display(equations[state.step]);
+      const box = root.querySelector('[data-conclusion="gs"]');
+      const title = box.querySelector("[data-conclusion-title]");
+      const copy = box.querySelector("[data-conclusion-copy]");
+      box.classList.toggle("is-warning", d.residualNorm <= 1e-6);
+      if (d.residualNorm <= 1e-6) {
+        title.textContent = "余量为零，算法在第三步停止";
+        copy.textContent = "v₂ 完全落在旧方向上，这组输入只张成一条直线。";
+      } else if (state.step < 2) {
+        title.textContent = "先识别需要减掉的平行部分";
+        copy.textContent = "投影属于 span(v₁)，减去它不会引入额外方向。";
+      } else if (state.step === 2) {
+        title.textContent = "余量 u₂ 与 v₁ 垂直";
+        copy.textContent = "u₂ 仍位于原来两个向量张成的平面内。";
       } else {
-        result.className = "ch9-result";
-        status.className = "ch9-status is-neutral";
-        status.textContent = `第 ${state.step + 1} 步`;
-        root.querySelector("[data-gs-title]").textContent = "继续观察投影与余量";
-        root.querySelector("[data-gs-copy]").textContent = "每一步只处理一个几何动作。";
+        title.textContent = "标准正交组完成，张成空间保持不变";
+        copy.textContent = "单位化只改变长度，e₁ 与 e₂ 的内积为 0。";
       }
     }
-    const cleanCanvas = setupCanvas(canvas, paint);
-    paintNow = () => {
-      const rect = canvas.getBoundingClientRect();
-      const dpr = Math.min(window.devicePixelRatio || 1, 2);
-      canvas.width = Math.round(rect.width * dpr);
-      canvas.height = Math.round(rect.height * dpr);
-      const ctx = canvas.getContext("2d");
-      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-      paint(ctx, rect.width, rect.height, palette());
-    };
-    return [cleanCanvas, cleanPreset, cleanStep, () => stopMotion()];
+
+    const cleanupCanvas = setupCanvas(canvas, paint);
+    const repaint = () => repaintCanvas(canvas, paint);
+    const [presetButtons, cleanupPresets] = bindButtons(root, "[data-gs-preset]", (button) => {
+      state.preset = button.dataset.gsPreset;
+      state.step = state.preset === "dependent" ? 2 : 0;
+      activate(presetButtons, state.preset, "gsPreset");
+      activate(stepButtons, state.step, "gsStep");
+      const normalize = root.querySelector('[data-gs-step="3"]');
+      normalize.disabled = state.preset === "dependent";
+      repaint();
+    });
+    const [stepButtons, cleanupSteps] = bindButtons(root, "[data-gs-step]", (button) => {
+      if (button.disabled) return;
+      state.step = Number(button.dataset.gsStep);
+      activate(stepButtons, state.step, "gsStep");
+      repaint();
+    });
+    activate(presetButtons, state.preset, "gsPreset");
+    activate(stepButtons, state.step, "gsStep");
+    return [cleanupCanvas, cleanupPresets, cleanupSteps];
   }
 
   window.defineChapter9Renderer?.("inner-product-geometry", { formal: renderFormal, interactive: innerProductLab });

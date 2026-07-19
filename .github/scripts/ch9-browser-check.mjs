@@ -3,7 +3,7 @@ import path from "node:path";
 import { chromium } from "playwright";
 
 // Final gate for the project-native Chapter 9 implementation.
-const base = "http://127.0.0.1:4173/learn.html";
+const base = process.env.CH9_BASE || "http://127.0.0.1:4173/learn.html";
 const shots = "/tmp/ch9-browser-screenshots";
 fs.mkdirSync(shots, { recursive: true });
 
@@ -17,6 +17,17 @@ const sections = [
   "least-squares-distance",
   "unitary-spaces",
 ];
+
+const labKinds = {
+  "inner-product-geometry": "inner-product",
+  "orthonormal-bases": "gram-schmidt",
+  "euclidean-isomorphism": "isometry",
+  "orthogonal-transformations": "orthogonal-transform",
+  "orthogonal-subspaces": "projection",
+  "symmetric-canonical-form": "spectral",
+  "least-squares-distance": "least-squares",
+  "unitary-spaces": "unitary",
+};
 
 function collectErrors(page) {
   const errors = [];
@@ -55,13 +66,14 @@ async function openLesson(page, id, screenshotName = "") {
   await page.goto(`${base}#ch9/${id}`, { waitUntil: "networkidle" });
   await page.locator("[data-ch9-lab]").waitFor({ state: "visible", timeout: 6000 });
   await page.evaluate(() => document.fonts?.ready);
-  await page.waitForTimeout(150);
-  if ((await page.locator(".ch9-module").count()) !== 3) throw new Error(`${id}: expected three formal modules`);
-  const canvasAudit = await page.evaluate(() => [...document.querySelectorAll(".ch9-stage canvas")].map((canvas) => {
+  await page.waitForTimeout(220);
+  const labKind = await page.locator("[data-ch9-lab]").getAttribute("data-lab-kind");
+  if (labKind !== labKinds[id]) throw new Error(`${id}: expected bespoke lab ${labKinds[id]}, got ${labKind}`);
+  const canvasAudit = await page.evaluate(() => [...document.querySelectorAll("[data-ch9-lab] canvas")].map((canvas) => {
     const rect = canvas.getBoundingClientRect();
     return { width: rect.width, height: rect.height, pixelWidth: canvas.width, pixelHeight: canvas.height };
   }));
-  if (!canvasAudit.length || canvasAudit.some((item) => item.width < 250 || item.height < 220 || item.pixelWidth < 250 || item.pixelHeight < 220)) {
+  if (!canvasAudit.length || canvasAudit.some((item) => item.width < 260 || item.height < 280 || item.pixelWidth < 260 || item.pixelHeight < 280)) {
     throw new Error(`${id}: invalid Canvas stage ${JSON.stringify(canvasAudit)}`);
   }
   if (await page.locator(".katex-error").count()) throw new Error(`${id}: KaTeX error`);
@@ -76,51 +88,58 @@ async function openLesson(page, id, screenshotName = "") {
 async function exerciseStates(page) {
   await openLesson(page, sections[0]);
   await page.locator('[data-ip-preset="right"]').click();
-  await waitText(page, "[data-ip-status]", "正交", "§1 right angle");
+  await waitText(page, '[data-conclusion="ip"]', "正交", "§1 right angle");
   await page.locator('[data-ip-preset="zero"]').click();
-  await waitText(page, "[data-ip-status]", "零向量边界", "§1 zero vector");
+  await waitText(page, '[data-conclusion="ip"]', "夹角不定义", "§1 zero vector");
+  if (await page.locator('[data-range="ipAngle"]').isEnabled()) throw new Error("§1: angle slider must be disabled for zero vector");
 
   await openLesson(page, sections[1]);
   await page.locator('[data-gs-preset="dependent"]').click();
-  await waitText(page, "[data-gs-status]", "零余量", "§2 dependent input");
+  await waitText(page, '[data-conclusion="gs"]', "余量为零", "§2 dependent input");
+  if (await page.locator('[data-gs-step="3"]').isEnabled()) throw new Error("§2: normalization must stop at zero residual");
   await page.locator('[data-gs-preset="general"]').click();
   await page.locator('[data-gs-step="3"]').click();
-  await waitText(page, "[data-gs-status]", "正交化完成", "§2 Gram-Schmidt completion");
+  await waitText(page, '[data-conclusion="gs"]', "标准正交组完成", "§2 Gram-Schmidt completion");
 
   await openLesson(page, sections[2]);
   await page.locator('[data-iso-mode="skew"]').click();
-  await waitText(page, "[data-iso-status]", "仅线性同构", "§3 skew basis");
+  await waitText(page, "[data-iso-conclusion]", "普通点积已经读错几何", "§3 skew basis");
   await page.locator('[data-iso-mode="orthonormal"]').click();
-  await waitText(page, "[data-iso-status]", "等距", "§3 orthonormal basis");
+  await waitText(page, "[data-iso-conclusion]", "等距同构", "§3 orthonormal basis");
 
   await openLesson(page, sections[3]);
   await page.locator('[data-ortho-mode="shear"]').click();
-  await waitText(page, "[data-ortho-status]", "发生形变", "§4 shear");
+  await waitText(page, "[data-ortho-conclusion]", "正交条件不成立", "§4 shear");
+  if (!(await page.locator("[data-shape-control]").isVisible())) throw new Error("§4: deformation control is hidden for shear");
   await page.locator('[data-ortho-mode="reflection"]').click();
-  await waitText(page, "[data-ortho-status]", "正交变换", "§4 reflection");
+  await waitText(page, "[data-ortho-conclusion]", "保持全部距离", "§4 reflection");
 
   await openLesson(page, sections[4]);
   await page.locator("[data-proj-best]").click();
-  await waitText(page, "[data-proj-status]", "最近点命中", "§5 projection minimum");
+  await waitText(page, "[data-proj-conclusion]", "曲线最低点", "§5 projection minimum");
 
   await openLesson(page, sections[5]);
   await page.locator('[data-sp-preset="nonsymmetric"]').click();
-  await waitText(page, "[data-sp-status]", "结论关闭", "§6 nonsymmetric gate");
+  await waitText(page, "[data-sp-warning]", "定理闸门关闭", "§6 nonsymmetric gate");
+  if (await page.locator("[data-sp-story]").isVisible()) throw new Error("§6: spectral story must close for nonsymmetric matrix");
   await page.locator('[data-sp-preset="positive"]').click();
-  await page.locator('[data-sp-step="3"]').click();
-  await waitText(page, "[data-sp-status]", "谱分解完成", "§6 spectral completion");
+  await page.locator('[data-sp-step="2"]').click();
+  await waitText(page, "[data-sp-conclusion]", "Q 把主轴送回", "§6 spectral completion");
   await page.locator('[data-sp-preset="repeated"]').click();
-  await waitText(page, "[data-sp-status]", "重特征值", "§6 repeated eigenvalue");
+  await waitText(page, "[data-sp-conclusion]", "重特征值", "§6 repeated eigenvalue");
 
   await openLesson(page, sections[6]);
+  if (await page.locator("[data-ls-normal]").isVisible()) throw new Error("§7: optimum certificate is visible before reveal");
   await page.locator("[data-ls-best]").click();
-  await waitText(page, "[data-ls-status]", "正规方程通过", "§7 least-squares optimum", 3200);
+  await waitText(page, "[data-ls-conclusion]", "正交条件同时满足", "§7 least-squares optimum", 3200);
+  if (!(await page.locator("[data-ls-normal]").isVisible())) throw new Error("§7: optimum certificate did not reveal");
 
   await openLesson(page, sections[7]);
+  await page.locator('[data-u-tab="motion"]').click();
   await page.locator('[data-u-mode="scaled"]').click();
-  await waitText(page, "[data-u-status]", "非酉缩放", "§8 scaled comparison");
+  await waitText(page, "[data-u-conclusion]", "酉条件失败", "§8 scaled comparison");
   await page.locator('[data-u-mode="unitary"]').click();
-  await waitText(page, "[data-u-status]", "酉变换", "§8 unitary state");
+  await waitText(page, "[data-u-conclusion]", "等模圆", "§8 unitary state");
 }
 
 async function runConfiguration(browser, config) {

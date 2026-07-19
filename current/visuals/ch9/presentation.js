@@ -68,6 +68,19 @@
     };
   }
 
+  function repaintCanvas(canvas, paint) {
+    if (!canvas) return;
+    const rect = canvas.getBoundingClientRect();
+    const width = Math.max(280, rect.width || canvas.parentElement?.clientWidth || 640);
+    const height = Math.max(220, rect.height || 320);
+    const dpr = Math.min(window.devicePixelRatio || 1, 2);
+    canvas.width = Math.round(width * dpr);
+    canvas.height = Math.round(height * dpr);
+    const context = canvas.getContext("2d");
+    context.setTransform(dpr, 0, 0, dpr, 0, 0);
+    paint(context, width, height, palette());
+  }
+
   function roundedRect(ctx, x, y, width, height, radius = 10) {
     const r = Math.min(radius, width / 2, height / 2);
     ctx.beginPath();
@@ -152,17 +165,51 @@
     ctx.clearRect(0, 0, width, height);
   }
 
-  function module(index, block) {
-    return `<section class="ch9-module"><div class="ch9-module-heading"><span>${String(index + 1).padStart(2, "0")}</span><div><h3>${block.title}</h3><p>${block.eyebrow}</p></div></div><div class="ch9-formal-body">${block.body}</div></section>`;
+  function formalCard(block, extraClass = "") {
+    return `<article class="ch9-formal-card ${extraClass}"><span>${block.eyebrow}</span><h3>${block.title}</h3><div>${block.body}</div></article>`;
   }
 
   function renderFormal(root, section) {
     if (!root) return;
-    root.innerHTML = `<h2>${section.question}</h2><div class="ch9-foundation"><p class="ch9-lead">${section.intro}</p>${(section.formalBlocks || []).map((block, index) => module(index, block)).join("")}</div>`;
+    const blocks = section.formalBlocks || [];
+    const id = section.id;
+    const headings = {
+      "inner-product-geometry": "内积怎样产生长度、夹角与正交",
+      "orthonormal-bases": "正交化为什么保持原来的张成空间",
+      "euclidean-isomorphism": "可逆与等距之间还差什么",
+      "orthogonal-transformations": "单位圆、矩阵列与 QᵀQ 怎样互相验证",
+      "orthogonal-subspaces": "正交分解怎样推出唯一最近点",
+      "symmetric-canonical-form": "对称性怎样打开正交对角化",
+      "least-squares-distance": "投影条件怎样变成正规方程",
+      "unitary-spaces": "从实正交结构走向复酉结构",
+    };
+    let body = "";
+    if (id === "inner-product-geometry") {
+      body = `<div class="ch9-origin-map">${blocks.map((block, index) => formalCard(block, `is-origin-${index + 1}`)).join("")}<div class="ch9-origin-center"><strong>内积</strong><span>一个数值，四种几何读法</span></div></div>`;
+    } else if (id === "orthonormal-bases") {
+      body = `<div class="ch9-process-strip">${blocks.map((block, index) => `<article><span>0${index + 1}</span><div><h3>${block.title}</h3><p>${block.eyebrow}</p>${block.body}</div></article>`).join("")}</div>`;
+    } else if (id === "euclidean-isomorphism") {
+      body = `<div class="ch9-structure-compare"><div class="ch9-compare-head"><span>只保留线性结构</span><span>同时保留欧氏几何</span></div>${blocks.map((block, index) => formalCard(block, index === 1 ? "is-emphasis" : "")).join("")}</div>`;
+    } else if (id === "orthogonal-transformations") {
+      body = `<div class="ch9-evidence-row">${blocks.map((block, index) => formalCard(block, `is-evidence-${index + 1}`)).join("")}</div>`;
+    } else if (id === "orthogonal-subspaces") {
+      body = `<div class="ch9-proof-flow">${blocks.map((block, index) => `<div class="ch9-proof-step">${formalCard(block)}${index < blocks.length - 1 ? '<span class="ch9-flow-arrow" aria-hidden="true">→</span>' : ""}</div>`).join("")}</div>`;
+    } else if (id === "symmetric-canonical-form") {
+      body = `<div class="ch9-theorem-gate"><div class="ch9-theorem-main">${formalCard(blocks[0])}${formalCard(blocks[1])}</div>${formalCard(blocks[2], "is-gate")}</div>`;
+    } else if (id === "least-squares-distance") {
+      body = `<div class="ch9-algebra-bridge">${blocks.map((block, index) => `<div class="ch9-algebra-step"><span>${["几何", "正交", "方程"][index]}</span>${formalCard(block)}</div>`).join("")}</div>`;
+    } else {
+      body = `<div class="ch9-real-complex-map">${blocks.map((block, index) => formalCard(block, index === 0 ? "is-conjugate" : "")).join("")}</div>`;
+    }
+    root.innerHTML = `<h2>${headings[id] || section.question}</h2><div class="ch9-foundation ch9-foundation-${id}"><p class="ch9-lead">${section.intro}</p>${body}</div>`;
   }
 
-  function labShell({ title, description, taskTitle, task, controls = "", body = "" }) {
-    return `<h2>交互实验</h2><div class="ch9-lab" data-ch9-lab><div class="ch9-lab-head"><h3>${title}</h3><p>${description}</p></div><div class="ch9-task"><span>1</span><div><strong>${taskTitle}</strong><p>${task}</p></div></div>${controls}${body}</div>`;
+  function labHeading(kicker, title, description) {
+    return `<div class="ch9-lab-heading"><span>${kicker}</span><div><h3>${title}</h3><p>${description}</p></div></div>`;
+  }
+
+  function observation(items) {
+    return `<ol class="ch9-observation">${items.map((item, index) => `<li><span>${index + 1}</span><p>${item}</p></li>`).join("")}</ol>`;
   }
 
   function range(name, label, min, max, step, value, suffix = "") {
@@ -227,5 +274,5 @@
     return () => cancelAnimationFrame(raf);
   }
 
-  window.Chapter9Native = { inline, display, clamp, rad, deg, dot, norm, add, sub, scale, matVec, matMul, transpose, determinant, fmt, palette, setupCanvas, roundedRect, arrow, grid, axes, world, clear, renderFormal, labShell, range, readingRow, setReadout, setOutput, bindRange, bindButtons, activate, animate };
+  window.Chapter9Native = { inline, display, clamp, rad, deg, dot, norm, add, sub, scale, matVec, matMul, transpose, determinant, fmt, palette, setupCanvas, repaintCanvas, roundedRect, arrow, grid, axes, world, clear, renderFormal, labHeading, observation, range, readingRow, setReadout, setOutput, bindRange, bindButtons, activate, animate };
 })();

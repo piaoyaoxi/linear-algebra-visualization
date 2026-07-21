@@ -10,6 +10,7 @@
     let factor = 1;
     const ledger = [];
     const history = [];
+    const beforeCanvas = root.querySelector("[data-row-before]");
     const canvas = root.querySelector("[data-row-canvas]");
     let animating = false;
 
@@ -34,6 +35,11 @@
         firstLabel: "第 1 列",
         secondLabel: "第 2 列",
         caption: `当前 det=${M().formatNum(det, 3)} · 图形展示列操作`,
+      });
+      M().drawTransformScene(beforeCanvas, initial, {
+        firstLabel: "初始 C₁",
+        secondLabel: "初始 C₂",
+        caption: `固定参照 · det=${M().formatNum(baseDet, 3)}`,
       });
     }
 
@@ -95,6 +101,7 @@
     return () => {
       controller.abort();
       M().cancelAnim(canvas);
+      M().cancelAnim(beforeCanvas);
     };
   }
 
@@ -131,10 +138,14 @@
       root.innerHTML = `
         <h2>交互实验</h2>
         <div class="ch2-lab">
-          <div class="ch2-lab-head"><h3>列操作观测台 · 倍率账本</h3><p>平行四边形由两列生成，所以画面直接操作列。右侧账本同步验证当前 det=初始 det×累计倍率。</p></div>
+          <div class="ch2-lab-head"><h3>三种列操作 · 对比几何变化</h3><p>平行四边形由两列生成，所以画面直接操作列。右侧同步验证当前 det=初始 det×累计倍率。</p></div>
           <div class="ch2-task"><strong>观察任务</strong><span>依次做交换、倍乘、倍加，再逐步撤销；每一步先预测 det。</span></div>
           <div class="ch2-lab-grid">
-            <div class="ch2-stage"><canvas data-row-canvas aria-label="列操作对有向面积影响的画布"></canvas></div>
+            <div class="ch2-compare-stage">
+              <div><span>变换前 · 固定参照</span><div class="ch2-stage"><canvas data-row-before aria-label="列操作前的有向面积"></canvas></div></div>
+              <b aria-hidden="true">→</b>
+              <div><span>变换后 · 当前状态</span><div class="ch2-stage"><canvas data-row-canvas aria-label="列操作后的有向面积"></canvas></div></div>
+            </div>
             <div class="ch2-side">
               <div class="ch2-note">当前矩阵<br /><strong data-mat></strong></div>
               <div class="ch2-meter is-2">

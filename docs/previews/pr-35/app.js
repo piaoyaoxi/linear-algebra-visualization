@@ -527,6 +527,32 @@ function getChapterOverviewConfig(chapter) {
       ],
     };
   }
+  if (chapter.id === "ch1") {
+    return {
+      coverId: "chapter1",
+      eyebrow: "第一章 · 多项式",
+      title: "从数域到形式对象与分解结构",
+      structureTitle: "一条主线串起十一个小节",
+      panels: [
+        { title: "对象视角", text: "先指定数域，再把多项式看成有位置的系数序列，而不是仅看函数图像。" },
+        { title: "算法视角", text: "用除法阶梯、欧几里得算法与 Bézout 回代，把整除与最大公因式变成可见过程。" },
+        { title: "结构视角", text: "从因式分解、重因式、实复根到多元与对称，把分解与不变量连成主线。" },
+      ],
+    };
+  }
+  if (chapter.id === "ch5") {
+    return {
+      coverId: "chapter5",
+      eyebrow: "第五章 · 二次型",
+      title: "从二次多项式到合同分类与正定判别",
+      structureTitle: "一条主线串起四个小节",
+      panels: [
+        { title: "表达视角", text: "二次齐次多项式与实对称矩阵互相唯一决定，交叉项系数要在对称位置平分。" },
+        { title: "变换视角", text: "非退化替换 x=Cy 对应合同 CᵀAC；配方法与成对初等变换消去交叉项。" },
+        { title: "分类与判别", text: "惯性锁定正、负、零方向数量；顺序主子式给出正定的代数判据。" },
+      ],
+    };
+  }
   return {
     coverId: chapter.id,
     eyebrow: chapter.title,
@@ -877,6 +903,9 @@ function renderLessonCard(section, chapter = null) {
 
 function renderVisualPanel(item) {
   const visual = item?.type ? item : getVisual(item);
+
+  // Presentation modules own slot labs; keep the shell empty.
+  if (visual.type === "slot") return "";
 
   if (visual.type === "transform") {
     return `

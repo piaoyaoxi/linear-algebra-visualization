@@ -36,6 +36,9 @@
 
     function renderMatrix() {
       const table = root.querySelector("[data-cof-table]");
+      const cut = root.querySelector("[data-cut-matrix]");
+      cut.style.setProperty("--cut-row", `${(active.row + 0.5) * 33.333}%`);
+      cut.style.setProperty("--cut-col", `${(active.col + 0.5) * 33.333}%`);
       table.innerHTML = matrix.map((row, rowIndex) => `<tr>${row.map((value, colIndex) => {
         const deleted = rowIndex === active.row || colIndex === active.col;
         const selected = rowIndex === active.row && colIndex === active.col;
@@ -82,7 +85,10 @@
       root.querySelector("[data-mij]").textContent = M().formatNum(selected.minorValue, 3);
       root.querySelector("[data-sign]").textContent = selected.sign > 0 ? "+1" : "−1";
       root.querySelector("[data-cij]").textContent = M().formatNum(selected.value, 3);
-      root.querySelector("[data-minor-matrix]").innerHTML = tex(`\\begin{bmatrix}${selected.minor[0][0]}&${selected.minor[0][1]}\\\\${selected.minor[1][0]}&${selected.minor[1][1]}\\end{bmatrix}`);
+      root.querySelector("[data-minor-table]").innerHTML = selected.minor
+        .map((line) => `<tr>${line.map((value) => `<td>${value}</td>`).join("")}</tr>`)
+        .join("");
+      root.querySelector("[data-cut-label]").textContent = `删去第 ${active.row + 1} 行与第 ${active.col + 1} 列`;
       root.querySelectorAll("[data-board] span").forEach((span, index) => {
         const row = Math.floor(index / 3);
         const col = index % 3;
@@ -143,13 +149,22 @@
       root.innerHTML = `
         <h2>交互实验</h2>
         <div class="ch2-lab">
-          <div class="ch2-lab-head"><h3>余子式展开板 · 路线竞速</h3><p>点击元素查看删行删列；六条路线标出非零余子式数量，并把每个带符号贡献分行显示。</p></div>
+          <div class="ch2-lab-head"><h3>余子式 · 删去一行与一列</h3><p>点击元素后，横线与竖线划去对应行列；剩余元素保持相对位置组成余子矩阵。</p></div>
           <div class="ch2-task"><strong>观察任务</strong><span>比较第 2 行与第 3 列的成本，再任选另一条路线核对相同结果。</span></div>
           <div class="ch2-lab-grid">
-            <div class="ch2-matrix-box">
-              <table class="ch2-matrix-table" data-cof-table aria-label="余子式选择矩阵"></table>
-              <div class="ch2-note">余子矩阵：<strong data-minor-matrix></strong></div>
-              <div class="ch2-checkerboard" data-board aria-label="代数余子式符号棋盘"></div>
+            <div class="ch2-matrix-box ch2-cofactor-visual">
+              <div class="ch2-cut-matrix" data-cut-matrix>
+                <table class="ch2-matrix-table" data-cof-table aria-label="余子式选择矩阵"></table>
+                <i class="ch2-cut-line is-row" aria-hidden="true"></i>
+                <i class="ch2-cut-line is-col" aria-hidden="true"></i>
+              </div>
+              <div class="ch2-cofactor-arrow" aria-hidden="true">→</div>
+              <div class="ch2-minor-result">
+                <span>剩余元素保持相对位置</span>
+                <table class="ch2-matrix-table ch2-minor-table" data-minor-table aria-label="余子矩阵"></table>
+              </div>
+              <strong class="ch2-cut-label" data-cut-label></strong>
+              <div class="ch2-sign-board"><span>位置符号</span><div class="ch2-checkerboard" data-board aria-label="代数余子式符号棋盘"></div></div>
             </div>
             <div class="ch2-side">
               <div class="ch2-meter is-2">

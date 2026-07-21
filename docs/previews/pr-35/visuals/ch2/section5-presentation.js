@@ -10,6 +10,7 @@
     const ledger = [];
     const history = [];
     let busy = false;
+    let focus = { row: 1, col: 0, text: "先利用第 1 行，把 a₂₁ 消成 0。" };
 
     function isUpperTriangular(value) {
       for (let row = 1; row < value.length; row += 1) {
@@ -21,7 +22,7 @@
     }
 
     function snapshot() {
-      history.push({ matrix: M().cloneMat(matrix), factor, ledger: ledger.slice() });
+      history.push({ matrix: M().cloneMat(matrix), factor, ledger: ledger.slice(), focus: { ...focus } });
     }
 
     function setBusy(value) {
@@ -34,7 +35,15 @@
 
     function render({ pulse = false } = {}) {
       const table = root.querySelector("[data-mat-table]");
-      table.innerHTML = matrix.map((row) => `<tr>${row.map((value) => `<td class="${pulse ? "is-updated" : ""}">${M().formatNum(value, 3)}</td>`).join("")}</tr>`).join("");
+      table.innerHTML = matrix.map((row, rowIndex) => `<tr>${row.map((value, colIndex) => {
+        const classes = [
+          pulse && rowIndex === focus.row ? "is-updated" : "",
+          rowIndex === focus.row && colIndex === focus.col ? "is-target" : "",
+          rowIndex === focus.col && colIndex === focus.col ? "is-pivot" : "",
+          rowIndex > colIndex && Math.abs(value) < M().EPS ? "is-zero-entry" : "",
+        ].filter(Boolean).join(" ");
+        return `<td class="${classes}">${M().formatNum(value, 3)}</td>`;
+      }).join("")}</tr>`).join("");
       if (pulse && !M().reducedMotion()) setTimeout(() => table.querySelectorAll("td").forEach((cell) => cell.classList.remove("is-updated")), 420);
       const current = M().determinant(matrix);
       const original = Math.abs(factor) < M().EPS ? NaN : current / factor;
@@ -47,39 +56,43 @@
       status.textContent = triangular ? `已经是上三角：对角线乘积 ${M().formatNum(matrix[0][0] * matrix[1][1] * matrix[2][2], 4)}` : "尚未形成上三角；继续制造主对角线下方的零。";
       status.className = triangular ? "ch2-note is-positive" : "ch2-note";
       root.querySelector("[data-ledger]").innerHTML = ledger.length ? ledger.map((line) => `<li>${line}</li>`).join("") : "<li>起点：累计倍率 1</li>";
+      root.querySelector("[data-current-operation]").textContent = triangular
+        ? "三角化完成：现在只需读取主对角线乘积，并按账本还原原值。"
+        : focus.text;
       root.querySelector("[data-op-undo]").disabled = busy || history.length === 0;
     }
 
-    async function apply(next, multiplier, line, allowBusy = false) {
+    async function apply(next, multiplier, line, nextFocus, allowBusy = false) {
       if (busy && !allowBusy) return;
       snapshot();
       matrix = next;
       factor *= multiplier;
       ledger.push(line);
+      if (nextFocus) focus = nextFocus;
       render({ pulse: true });
       if (!M().reducedMotion()) await new Promise((resolve) => setTimeout(resolve, 260));
     }
 
     const operations = {
-      swap: (allowBusy = false) => apply([matrix[1].slice(), matrix[0].slice(), matrix[2].slice()], -1, "R₁ ↔ R₂　累计倍率 ×(−1)", allowBusy),
+      swap: (allowBusy = false) => apply([matrix[1].slice(), matrix[0].slice(), matrix[2].slice()], -1, "R₁ ↔ R₂　累计倍率 ×(−1)", { row: 1, col: 0, text: "交换改变了定向；继续选择主元并制造第一个零。" }, allowBusy),
       scale: (allowBusy = false) => {
         const next = M().cloneMat(matrix);
         next[1] = next[1].map((value) => value * 2);
-        return apply(next, 2, "R₂ ← 2R₂　累计倍率 ×2", allowBusy);
+        return apply(next, 2, "R₂ ← 2R₂　累计倍率 ×2", { row: 1, col: 0, text: "整行倍乘会缩放行列式；账本已经记下倍率 2。" }, allowBusy);
       },
       eliminateFirst: (allowBusy = false) => {
         const next = M().cloneMat(matrix);
         if (Math.abs(next[0][0]) < M().EPS) return Promise.resolve();
         const coefficient = next[1][0] / next[0][0];
         next[1] = next[1].map((value, col) => value - coefficient * next[0][col]);
-        return apply(next, 1, `R₂ ← R₂−(${M().formatNum(coefficient, 3)})R₁　×1`, allowBusy);
+        return apply(next, 1, `R₂ ← R₂−(${M().formatNum(coefficient, 3)})R₁　×1`, { row: 2, col: 1, text: "第一个零已出现；接着利用新的第 2 行消去 a₃₂。" }, allowBusy);
       },
       eliminateSecond: (allowBusy = false) => {
         const next = M().cloneMat(matrix);
         if (Math.abs(next[1][1]) < M().EPS) return Promise.resolve();
         const coefficient = next[2][1] / next[1][1];
         next[2] = next[2].map((value, col) => value - coefficient * next[1][col]);
-        return apply(next, 1, `R₃ ← R₃−(${M().formatNum(coefficient, 3)})R₂　×1`, allowBusy);
+        return apply(next, 1, `R₃ ← R₃−(${M().formatNum(coefficient, 3)})R₂　×1`, { row: 2, col: 1, text: "第二个零已出现，矩阵已经成为上三角。" }, allowBusy);
       },
     };
 
@@ -92,6 +105,7 @@
       const previous = history.pop();
       matrix = previous.matrix;
       factor = previous.factor;
+      focus = previous.focus;
       ledger.splice(0, ledger.length, ...previous.ledger);
       render({ pulse: true });
     }, { signal });
@@ -101,6 +115,7 @@
       factor = 1;
       ledger.length = 0;
       history.length = 0;
+      focus = { row: 1, col: 0, text: "先利用第 1 行，把 a₂₁ 消成 0。" };
       render({ pulse: true });
     }, { signal });
     root.querySelector("[data-op-demo]").addEventListener("click", async () => {
@@ -152,11 +167,12 @@
       root.innerHTML = `
         <h2>交互实验</h2>
         <div class="ch2-lab">
-          <div class="ch2-lab-head"><h3>行列式策略台 · 造零、撤销与验证</h3><p>矩阵、当前 det、累计倍率和操作历史同步。形成上三角后，系统显示对角线乘积。</p></div>
+          <div class="ch2-lab-head"><h3>造零路线 · 两步到上三角</h3><p>矩阵、当前 det、累计倍率和操作历史同步。形成上三角后，直接读取对角线乘积。</p></div>
           <div class="ch2-task"><strong>观察任务</strong><span>只用两次倍加完成三角化；再尝试交换或倍乘并撤销，核对账本。</span></div>
           <div class="ch2-lab-grid">
             <div class="ch2-matrix-box">
               <table class="ch2-matrix-table is-static" data-mat-table aria-label="三阶计算策略矩阵"></table>
+              <div class="ch2-operation-line"><span>当前目标</span><strong data-current-operation></strong></div>
               <div class="ch2-toolbar">
                 <button type="button" data-op-add>消去 R₂ 第一项</button>
                 <button type="button" data-op-add2>消去 R₃ 第二项</button>

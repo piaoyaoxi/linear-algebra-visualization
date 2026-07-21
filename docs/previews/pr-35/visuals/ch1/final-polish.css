@@ -1,0 +1,19 @@
+/* Final Chapter 1 hierarchy corrections loaded after the shared presentation styles. */
+body #univariate-polynomials-interactive .ch1-result-band [data-out-tex] {
+  color: var(--text) !important;
+  font-size: clamp(18px, 2vw, 22px) !important;
+  font-weight: 650;
+  line-height: 1.5;
+}
+
+body #univariate-polynomials-interactive .ch1-result-band [data-out-tex] .katex,
+body #univariate-polynomials-interactive .ch1-result-band [data-out-tex] .katex span {
+  color: inherit !important;
+  font-size: 1em !important;
+}
+
+body #univariate-polynomials-interactive .ch1-result-band > div:first-child > span:first-child,
+body #univariate-polynomials-interactive .ch1-result-band > div:first-child > small {
+  color: var(--muted);
+  font-size: 12px;
+}

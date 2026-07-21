@@ -29,7 +29,7 @@
       const rect = canvas.getBoundingClientRect();
       const width = Math.max(1, rect.width || 520);
       const height = Math.max(1, rect.height || 340);
-      const points = [[0, 0], [1, 0], [0, 1], [1, 1], [A[0][0], A[1][0]], [A[0][1], A[1][1]], [A[0][0] + A[0][1], A[1][0] + A[1][1]], b];
+      const points = [[0, 0], [1, 0], [0, 1], [1, 1], [A[0][0], A[1][0]], [A[0][1], A[1][1]], [A[0][0] + A[0][1], A[1][0] + A[1][1]], b, [b[0] + A[0][1], b[1] + A[1][1]]];
       const minX = Math.min(...points.map((point) => point[0]), -0.5);
       const maxX = Math.max(...points.map((point) => point[0]), 0.5);
       const minY = Math.min(...points.map((point) => point[1]), -0.5);
@@ -40,18 +40,74 @@
     }
 
     function drawScene(current) {
-      const { A, b } = values(current);
+      const { A, b, D, D1 } = values(current);
       const camera = cameraFor(A, b);
       const view = M().drawTransformScene(canvas, A, {
         firstLabel: "a₁",
         secondLabel: "a₂",
-        caption: "a₁、a₂ 张成基底；绿色箭头为 b",
+        caption: "实线箭头为 b；虚线显示沿 a₂ 方向滑动",
         ...camera,
       });
       const ctx = canvas.getContext("2d");
       const palette = M().getPalette();
       const target = { x: view.origin.x + b[0] * view.scale, y: view.origin.y - b[1] * view.scale };
       M().drawArrow(ctx, view.origin, target, palette.accentStrong, 3.2);
+      const map = (vector) => ({ x: view.origin.x + vector[0] * view.scale, y: view.origin.y - vector[1] * view.scale });
+
+      if (Math.abs(D) > 1e-8) {
+        const x1 = D1 / D;
+        const a2 = [A[0][1], A[1][1]];
+        const base = [x1 * A[0][0], x1 * A[1][0]];
+        const currentArea = [[0, 0], b, [b[0] + a2[0], b[1] + a2[1]], a2].map(map);
+        const slidArea = [[0, 0], base, [base[0] + a2[0], base[1] + a2[1]], a2].map(map);
+        ctx.save();
+        ctx.beginPath();
+        currentArea.forEach((point, index) => index ? ctx.lineTo(point.x, point.y) : ctx.moveTo(point.x, point.y));
+        ctx.closePath();
+        ctx.fillStyle = palette.accent;
+        ctx.globalAlpha = .09;
+        ctx.fill();
+        ctx.globalAlpha = .78;
+        ctx.strokeStyle = palette.accentStrong;
+        ctx.lineWidth = 1.4;
+        ctx.stroke();
+        ctx.beginPath();
+        slidArea.forEach((point, index) => index ? ctx.lineTo(point.x, point.y) : ctx.moveTo(point.x, point.y));
+        ctx.closePath();
+        ctx.setLineDash([5, 5]);
+        ctx.strokeStyle = palette.muted;
+        ctx.stroke();
+        const slid = map(base);
+        ctx.beginPath();
+        ctx.moveTo(target.x, target.y);
+        ctx.lineTo(slid.x, slid.y);
+        ctx.strokeStyle = palette.accentStrong;
+        ctx.lineWidth = 1.4;
+        ctx.stroke();
+        ctx.setLineDash([]);
+        ctx.fillStyle = palette.text;
+        ctx.font = "600 12px system-ui, sans-serif";
+        ctx.fillText("沿 a₂ 方向滑到 x₁a₁", (target.x + slid.x) / 2 + 7, (target.y + slid.y) / 2 - 7);
+        ctx.restore();
+      } else {
+        const direction = Math.hypot(A[0][0], A[1][0]) > 1e-8 ? [A[0][0], A[1][0]] : [A[0][1], A[1][1]];
+        const length = Math.hypot(...direction) || 1;
+        const unit = [direction[0] / length, direction[1] / length];
+        const pA = map([-unit[0] * 8, -unit[1] * 8]);
+        const pB = map([unit[0] * 8, unit[1] * 8]);
+        ctx.save();
+        ctx.setLineDash([6, 5]);
+        ctx.strokeStyle = palette.muted;
+        ctx.lineWidth = 1.5;
+        ctx.beginPath();
+        ctx.moveTo(pA.x, pA.y);
+        ctx.lineTo(pB.x, pB.y);
+        ctx.stroke();
+        ctx.fillStyle = palette.text;
+        ctx.font = "600 12px system-ui, sans-serif";
+        ctx.fillText("列空间", view.origin.x + 10, view.origin.y + 18);
+        ctx.restore();
+      }
       ctx.save();
       ctx.fillStyle = palette.text;
       ctx.font = "600 12px system-ui, sans-serif";
@@ -86,6 +142,7 @@
         solution.className = nearSingular ? "ch2-note is-zero" : "ch2-note is-positive";
         residual.innerHTML = `重构：${tex(`x_1a_1+x_2a_2=(${M().formatNum(reconstructed[0], 3)},${M().formatNum(reconstructed[1], 3)})^T`)}；与 b 的误差 ${M().formatNum(error, 6)}。`;
         residual.className = "ch2-note is-positive";
+        root.querySelector("[data-slide-proof]").innerHTML = `${tex("D_1=\\det(b,a_2)=\\det(x_1a_1,a_2)=x_1D")}：把 b 沿 a₂ 方向滑到 x₁a₁，底边改变但有向面积不变。`;
       } else {
         const classification = M().classifySystem2(A, b);
         solution.innerHTML = classification.kind === "infinite"
@@ -96,6 +153,9 @@
           ? "列组合能够到达 b，但表示不唯一。"
           : "任何列向量组合都无法到达 b。";
         residual.className = classification.kind === "infinite" ? "ch2-note is-zero" : "ch2-note is-negative";
+        root.querySelector("[data-slide-proof]").textContent = classification.kind === "infinite"
+          ? "两列压到同一条列空间直线上，b 也在线上：可以到达，但表示不唯一。"
+          : "两列压到同一条列空间直线上，b 却离开直线：任何列组合都无法到达。";
       }
 
       ["a11", "a12", "a21", "a22", "b1", "b2"].forEach((key) => {
@@ -180,7 +240,7 @@
       root.innerHTML = `
         <h2>交互实验</h2>
         <div class="ch2-lab">
-          <div class="ch2-lab-head"><h3>替换列实验室 · 面积比与奇异边界</h3><p>系数列、b、D、D₁、D₂、替换矩阵与坐标重构同步变化。D=0 时继续判断相容性。</p></div>
+          <div class="ch2-lab-head"><h3>Cramer 法则 · 列空间与面积比</h3><p>系数列、b、D、D₁、D₂ 与坐标重构同步变化。D=0 时改用列空间判断相容性。</p></div>
           <div class="ch2-task"><strong>观察任务</strong><span>先读取唯一解，再比较接近奇异、D=0 相容和 D=0 不相容三种边界。</span></div>
           <div class="ch2-lab-grid">
             <div class="ch2-stage"><canvas data-cramer-canvas aria-label="克拉默法则列向量与常数向量画布"></canvas></div>
@@ -192,10 +252,11 @@
               </div>
               <div class="ch2-note"><strong>A</strong> <span data-a-matrix></span><br /><strong>A₁</strong> <span data-a1-matrix></span><br /><strong>A₂</strong> <span data-a2-matrix></span></div>
               <div data-sol class="ch2-note" aria-live="polite"></div>
+              <div class="ch2-cramer-proof" data-slide-proof></div>
               <div data-residual class="ch2-note" aria-live="polite"></div>
-              <div class="ch2-sliders">
+              <details class="ch2-tuning"><summary>调整 a₁、a₂ 与 b</summary><div class="ch2-sliders">
                 ${["a11", "a12", "a21", "a22", "b1", "b2"].map((key) => `<label><span>${key}</span><input data-k="${key}" type="range" min="-6" max="6" step="0.1" aria-label="${key}" /><span data-v="${key}"></span></label>`).join("")}
-              </div>
+              </div></details>
               <div class="ch2-presets">
                 <button type="button" data-cramer-ex>唯一解示例</button>
                 <button type="button" data-cramer-near>接近奇异</button>

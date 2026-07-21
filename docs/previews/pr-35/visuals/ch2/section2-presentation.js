@@ -16,10 +16,11 @@
     function drawWires() {
       const svg = root.querySelector("[data-wires]");
       const xs = [42, 116, 190, 264];
+      const pair = pairOrder[scannerIndex % pairOrder.length];
       svg.innerHTML = `
         ${xs.map((x, index) => `<text x="${x}" y="18" text-anchor="middle">${index + 1}</text>`).join("")}
         ${xs.map((x, index) => `<text x="${x}" y="146" text-anchor="middle">${index + 1}</text>`).join("")}
-        ${permutation.map((value, index) => `<path d="M ${xs[index]} 28 C ${xs[index]} 70, ${xs[value - 1]} 82, ${xs[value - 1]} 132" data-wire-index="${index}" />`).join("")}
+        ${permutation.map((value, index) => `<path class="${index === pair.i || index === pair.j ? "is-focus" : ""}" d="M ${xs[index]} 28 C ${xs[index]} 70, ${xs[value - 1]} 82, ${xs[value - 1]} 132" data-wire-index="${index}" />`).join("")}
       `;
     }
 
@@ -34,6 +35,7 @@
         const index = Number(button.dataset.index);
         button.classList.toggle("is-scanning", index === pair.i || index === pair.j);
       });
+      drawWires();
     }
 
     function describeParityChange(beforeTau, afterTau, action) {
@@ -179,7 +181,7 @@
       root.innerHTML = `
         <h2>交互实验</h2>
         <div class="ch2-lab">
-          <div class="ch2-lab-head"><h3>排列奇偶实验室</h3><p>点击两张卡片完成一次对换，或拖动一张卡片改变位置。扫描器逐对检查，连线图把逆序显示为交叉。</p></div>
+          <div class="ch2-lab-head"><h3>排列与逆序 · 逐对扫描</h3><p>点击两个数字完成一次对换，或拖动一个数字改变位置。扫描器逐对检查，连线图把逆序显示为交叉。</p></div>
           <div class="ch2-task"><strong>观察任务</strong><span>从 3142 出发，每次做一个相邻交换，直到还原 1234；比较交换步数与初始逆序数。</span></div>
           <div class="ch2-lab-grid">
             <div class="ch2-side">

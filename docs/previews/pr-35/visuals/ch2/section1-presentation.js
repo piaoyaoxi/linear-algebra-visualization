@@ -165,7 +165,7 @@
       root.innerHTML = `
         <h2>交互实验</h2>
         <div class="ch2-lab">
-          <div class="ch2-lab-head"><h3>行列式仪表 · 拖动两列</h3><p>拖动蓝色或橙色箭头端点，也可以使用滑杆与预设。图形、ad−bc、|det| 与状态同步更新。</p></div>
+          <div class="ch2-lab-head"><h3>有向面积 · 拖动两列</h3><p>拖动两根列向量的端点，也可以使用滑杆与预设。图形、ad−bc、|det| 与状态同步更新。</p></div>
           <div class="ch2-task"><strong>观察任务</strong><span>构造明显剪切但 det=1 的图形，再让两列共线并继续拖到 det<0。</span></div>
           <div class="ch2-lab-grid">
             <div class="ch2-stage"><canvas data-ch2-canvas aria-label="可拖动两列向量的有向面积画布"></canvas></div>

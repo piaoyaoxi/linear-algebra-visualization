@@ -68,7 +68,6 @@
       accent: style.getPropertyValue("--accent").trim() || "#0f8f88",
       accentStrong: style.getPropertyValue("--accent-strong").trim() || "#08736e",
       coral: style.getPropertyValue("--coral").trim() || "#d9835f",
-      blue: style.getPropertyValue("--blue").trim() || "#547ec8",
       warning: style.getPropertyValue("--warning").trim() || "#9a6a12",
     };
   }
@@ -192,14 +191,14 @@
 
     ctx.save();
     ctx.fillStyle = palette.soft;
-    ctx.globalAlpha = 0.42;
+    ctx.globalAlpha = 0.24;
     ctx.fillRect(0, 0, width, height);
     ctx.restore();
 
     ctx.save();
     ctx.strokeStyle = palette.line;
     ctx.lineWidth = 1;
-    ctx.globalAlpha = 0.48;
+    ctx.globalAlpha = 0.22;
     const halfX = Math.ceil(width / scale) + 2;
     const halfY = Math.ceil(height / scale) + 2;
     for (let i = -halfX; i <= halfX; i += 1) {
@@ -218,7 +217,7 @@
 
     ctx.save();
     ctx.strokeStyle = palette.muted;
-    ctx.globalAlpha = 0.75;
+    ctx.globalAlpha = 0.62;
     ctx.lineWidth = 1.25;
     ctx.beginPath();
     ctx.moveTo(0, origin.y); ctx.lineTo(width, origin.y);
@@ -257,7 +256,7 @@
     ctx.stroke();
     ctx.restore();
 
-    drawArrow(ctx, p0, p1, palette.blue, 3);
+    drawArrow(ctx, p0, p1, palette.accentStrong, 3);
     drawArrow(ctx, p0, p3, palette.coral, 3);
 
     ctx.save();

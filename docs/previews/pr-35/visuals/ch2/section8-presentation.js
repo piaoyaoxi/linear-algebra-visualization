@@ -210,7 +210,7 @@
       root.innerHTML = `
         <h2>交互实验</h2>
         <div class="ch2-lab">
-          <div class="ch2-lab-head"><h3>子式配对板</h3><p>固定前两行，4×4 中共有六个两列组合。每张卡片显示子式、互补子式、位置符号与最终贡献。</p></div>
+          <div class="ch2-lab-head"><h3>Laplace 展开 · 子式与互补子式</h3><p>固定前两行，4×4 中共有六个两列组合。逐项读取子式、互补子式、位置符号与最终贡献。</p></div>
           <div class="ch2-task"><strong>观察任务</strong><span>浏览六个组合，核对贡献之和与原 4 阶行列式完全一致。</span></div>
           <div class="ch2-lab-grid">
             <div class="ch2-matrix-box"><table class="ch2-matrix-table is-static ch2-laplace-table" data-laplace-table aria-label="四阶 Laplace 子式配对矩阵"></table></div>

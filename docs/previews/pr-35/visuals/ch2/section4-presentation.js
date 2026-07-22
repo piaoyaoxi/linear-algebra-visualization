@@ -78,7 +78,7 @@
     root.querySelector("[data-op-add]").addEventListener("click", () => apply(
       [[matrix[0][0], matrix[0][1] + matrix[0][0]], [matrix[1][0], matrix[1][1] + matrix[1][0]]],
       1,
-      "C₂ ← C₂+C₁　累计倍率 ×1",
+      "剪切：C₂ ← C₂+C₁　累计倍率 ×1",
     ), { signal });
     root.querySelector("[data-op-undo]").addEventListener("click", () => {
       if (animating || !history.length) return;

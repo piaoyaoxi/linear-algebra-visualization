@@ -12,7 +12,7 @@
       navTitle: "定义与基本性质",
       question: "在线性空间中增加什么结构，才能严格讨论长度、夹角、垂直和距离？",
       goal: "从内积出发建立长度、夹角与正交，并把内积的正、零、负和几何方向关系对应起来。",
-      tags: ["内积", "范数", "夹角", "Cauchy–Schwarz"],
+      tags: ["内积", "范数", "夹角", "Cauchy-Schwarz"],
       intro: "线性空间只规定向量怎样相加和数乘，并没有天然的刻度。内积把代数运算与几何测量连接起来：长度、距离、夹角与正交都由同一个结构导出。",
       concepts: [
         { label: "内积", text: `实线性空间上的内积满足双线性、对称与正定，记作 ${t("\\langle x,y\\rangle")}。` },
@@ -23,7 +23,7 @@
       formalBlocks: [
         { eyebrow: "结构入口", title: "内积为线性空间加入度量", body: `对任意 ${t("x,y,z\\in V")} 与 ${t("a,b\\in\\mathbb R")}，内积满足线性、对称和正定三组要求。正定性保证非零向量的长度严格为正。` },
         { eyebrow: "几何解释", title: "内积等于长度乘有向投影", body: `${D("\\langle x,y\\rangle=\\lVert x\\rVert\\,\\lVert y\\rVert\\cos\\theta")}` + "锐角时有向投影与 x 同向，内积为正；直角时投影为 0；钝角时投影反向，内积为负。" },
-        { eyebrow: "核心边界", title: "Cauchy–Schwarz 让夹角公式合法", body: `${D("|\\langle x,y\\rangle|\\le\\lVert x\\rVert\\,\\lVert y\\rVert")}` + `等号成立当且仅当两向量线性相关。零向量与所有向量内积为 0，但夹角不定义。` },
+        { eyebrow: "核心边界", title: "Cauchy-Schwarz 让夹角公式合法", body: `${D("|\\langle x,y\\rangle|\\le\\lVert x\\rVert\\,\\lVert y\\rVert")}` + `等号成立当且仅当两向量线性相关。零向量与所有向量内积为 0，但夹角不定义。` },
       ],
       interactive: { type: "ch9", lab: "inner-product", title: "内积与有向投影", description: "移动橙色向量，观察投影怎样从同向经过零变为反向。", task: "先只判断锐角、直角或钝角，再显示投影和内积公式。", prompts: ["把夹角调到 90°，确认投影和内积同时为 0。", "切换到钝角，说明负号来自哪里。", "选择零向量，检查夹角为何关闭。"] },
       example: { title: "例题：由内积判断几何关系", question: `在 ${t("\\mathbb R^3")} 中，设 ${t("x=(1,2,-1)^T")}，${t("y=(2,-1,0)^T")}。判断两向量的关系。`, steps: [`${t("\\langle x,y\\rangle=1\\cdot2+2\\cdot(-1)+(-1)\\cdot0=0")}。`, "两个向量都非零，因此夹角存在。", `${t("\\cos\\theta=0")}，所以 ${t("x\\perp y")}。`] },
@@ -31,10 +31,10 @@
         { question: "线性空间本身是否天然带有长度？", answer: "不一定，需要额外指定内积或范数。" },
         { question: `${t("\\langle x,y\\rangle<0")} 表示什么？`, answer: "在两向量非零时，夹角是钝角。" },
         { question: "零向量与非零向量的夹角是多少？", answer: "不定义，因为夹角公式分母为 0。" },
-        { question: "Cauchy–Schwarz 何时取等号？", answer: "当且仅当两向量线性相关。" },
+        { question: "Cauchy-Schwarz 何时取等号？", answer: "当且仅当两向量线性相关。" },
       ],
       summary: ["内积统一产生长度、夹角、正交与距离。", "内积正、零、负分别对应锐角、直角、钝角。", "零向量是必须单独处理的边界。"],
-      textbook: { reference, items: ["内积公理", "范数、距离与夹角", "Cauchy–Schwarz 不等式"] },
+      textbook: { reference, items: ["内积公理", "范数、距离与夹角", "Cauchy-Schwarz 不等式"] },
     },
     {
       id: "orthonormal-bases",
@@ -43,8 +43,8 @@
       title: "标准正交基",
       navTitle: "标准正交基",
       question: "怎样把一组斜着的基整理成彼此垂直、长度为 1 的坐标骨架？",
-      goal: "理解标准正交基的坐标公式，并逐步看清 Gram–Schmidt 每一步究竟减掉了什么。",
-      tags: ["正交基", "Gram–Schmidt", "投影", "Parseval"],
+      goal: "理解标准正交基的坐标公式，并逐步看清 Gram-Schmidt 每一步究竟减掉了什么。",
+      tags: ["正交基", "Gram-Schmidt", "投影", "Parseval"],
       intro: "一般基能够表示向量，但坐标通常需要解方程。标准正交基把各方向完全分开，坐标就是沿每个单位方向的投影系数。",
       concepts: [
         { label: "标准正交组", text: `${t("\\langle e_i,e_j\\rangle=\\delta_{ij}")}。` },
@@ -57,8 +57,8 @@
         { eyebrow: "保持结构", title: "减投影不会改变张成空间", body: `${t("v_2=u_2+\\operatorname{proj}_{e_1}v_2")}，所以新旧向量组张成同一个子空间。` },
         { eyebrow: "失败边界", title: "余量为 0 意味着没有新方向", body: `若 ${t("u_2=0")}，则 ${t("v_2")} 已在前面向量的张成空间中，输入组线性相关，不能产生新的标准正交基向量。` },
       ],
-      interactive: { type: "ch9", lab: "gram-schmidt", title: "Gram–Schmidt 步进动画", description: "按原向量、投影、减法、单位化四步观察正交化。", task: "每一步只增加一个对象，先看被减掉的平行部分，再看留下的垂直余量。", prompts: ["走到第三步，确认余量与第一方向垂直。", "切换接近相关，观察余量怎样变短。", "切换线性相关，说明算法在哪里停止。"] },
-      example: { title: "例题：二维 Gram–Schmidt", question: `对 ${t("v_1=(1,1)^T")}，${t("v_2=(1,0)^T")} 执行正交化。`, steps: [`${t("e_1=\\frac1{\\sqrt2}(1,1)^T")}。`, `${t("u_2=v_2-\\langle v_2,e_1\\rangle e_1=\\frac12(1,-1)^T")}。`, `${t("e_2=\\frac1{\\sqrt2}(1,-1)^T")}，且 ${t("\\langle e_1,e_2\\rangle=0")}。`] },
+      interactive: { type: "ch9", lab: "gram-schmidt", title: "Gram-Schmidt 步进动画", description: "按原向量、投影、减法、单位化四步观察正交化。", task: "每一步只增加一个对象，先看被减掉的平行部分，再看留下的垂直余量。", prompts: ["走到第三步，确认余量与第一方向垂直。", "切换接近相关，观察余量怎样变短。", "切换线性相关，说明算法在哪里停止。"] },
+      example: { title: "例题：二维 Gram-Schmidt", question: `对 ${t("v_1=(1,1)^T")}，${t("v_2=(1,0)^T")} 执行正交化。`, steps: [`${t("e_1=\\frac1{\\sqrt2}(1,1)^T")}。`, `${t("u_2=v_2-\\langle v_2,e_1\\rangle e_1=\\frac12(1,-1)^T")}。`, `${t("e_2=\\frac1{\\sqrt2}(1,-1)^T")}，且 ${t("\\langle e_1,e_2\\rangle=0")}。`] },
       quiz: [
         { question: "正交组中的非零向量为什么线性无关？", answer: "对线性关系分别与每个向量取内积，可逐个得到系数为 0。" },
         { question: "正交基与标准正交基差什么？", answer: "后者还要求每个基向量长度为 1。" },
@@ -66,7 +66,7 @@
         { question: "交换输入顺序会怎样？", answer: "基可能改变，但张成空间保持不变。" },
       ],
       summary: ["正交化的本质是减去旧方向上的投影。", "单位化只改变长度，不改变方向。", "线性相关会在零余量处显现。"],
-      textbook: { reference, items: ["正交组与标准正交基", "Gram–Schmidt 正交化", "Parseval 等式"] },
+      textbook: { reference, items: ["正交组与标准正交基", "Gram-Schmidt 正交化", "Parseval 等式"] },
     },
     {
       id: "euclidean-isomorphism",
@@ -139,7 +139,7 @@
       question: "为什么垂足一定是子空间中离给定向量最近的唯一点？",
       goal: "理解正交补、正交分解与投影，并把几何垂足和距离平方最小值连接起来。",
       tags: ["正交补", "投影", "最近点", "正交分解"],
-      intro: "投影把向量唯一拆成子空间内分量和垂直余量。最近点结论不是靠图形猜测，而是由正交分解和勾股恒等式严格保证。",
+      intro: "投影把向量唯一拆成子空间内分量和垂直余量。正交分解和勾股恒等式为最近点结论提供严格保证。",
       concepts: [
         { label: "正交补", text: `${t("W^\\perp=\\{x:\\langle x,w\\rangle=0,\\forall w\\in W\\}")}。` },
         { label: "正交分解", text: `${t("x=p+e")}，其中 ${t("p\\in W")}、${t("e\\in W^\\perp")}。` },
@@ -170,7 +170,7 @@
       question: "为什么实对称矩阵总能找到一组彼此垂直的特征方向？",
       goal: "把 A=QΛQᵀ 理解成旋入特征坐标、独立伸缩、旋回原坐标三次连续动作。",
       tags: ["实对称矩阵", "谱定理", "正交对角化", "主轴"],
-      intro: "实对称矩阵的特殊之处，不只是能够对角化，而是能够用正交坐标完成对角化。不同特征值的方向自动正交，重特征空间内部也能选择标准正交基。",
+      intro: "实对称矩阵能够用正交坐标完成对角化。不同特征值的方向自动正交，重特征空间内部也能选择标准正交基。",
       concepts: [
         { label: "实谱定理", text: `${t("A^T=A\\Rightarrow A=Q\\Lambda Q^T")}。` },
         { label: "特征方向", text: "Q 的列是一组标准正交特征向量。" },
@@ -181,7 +181,7 @@
         { eyebrow: "三步动作", title: "Qᵀ、Λ、Q 分别做什么", body: `${D("x\\xrightarrow{Q^T}\\text{特征坐标}\\xrightarrow{\\Lambda}\\text{独立伸缩}\\xrightarrow{Q}Ax")}` },
         { eyebrow: "结论闸门", title: "非对称矩阵不能直接套用实谱定理", body: "一般矩阵即使可对角化，也未必存在标准正交特征基。必须先检查对称性。" },
       ],
-      interactive: { type: "ch9", lab: "spectral", title: "正交谱分解三步动画", description: "同一个圆先转入特征坐标，再独立伸缩，最后旋回原空间。", task: "按 Qᵀ → Λ → Q 的顺序播放，不要只看最终椭圆。", prompts: ["在第二步确认主轴已经对准坐标轴。", "切换一正一负的特征值，观察定向变化。", "切换非对称对照，说明为什么结论关闭。"] },
+      interactive: { type: "ch9", lab: "spectral", title: "正交谱分解三步动画", description: "同一个圆先转入特征坐标，再独立伸缩，最后旋回原空间。", task: "按 Qᵀ → Λ → Q 的顺序观察三幅连续场景。", prompts: ["在第二步确认主轴已经对准坐标轴。", "切换一正一负的特征值，观察定向变化。", "切换非对称对照，说明为什么结论关闭。"] },
       example: { title: "例题：寻找正交特征方向", question: `对 ${t("A=\\begin{bmatrix}2&1\\\\1&2\\end{bmatrix}")} 作正交对角化。`, steps: [`特征值为 ${t("3")} 与 ${t("1")}。`, `可取标准正交特征向量 ${t("q_1=\\frac1{\\sqrt2}(1,1)^T")}、${t("q_2=\\frac1{\\sqrt2}(1,-1)^T")}。`, `${t("Q^TAQ=\\operatorname{diag}(3,1)")}。`] },
       quiz: [
         { question: "实对称矩阵的特征值是否一定为实数？", answer: "是。" },

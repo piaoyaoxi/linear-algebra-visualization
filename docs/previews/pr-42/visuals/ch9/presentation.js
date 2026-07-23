@@ -1,85 +1,272 @@
 (() => {
-  const I = (s) => (window.texInline ? window.texInline(s) : s);
-  const D = (s) => (window.texDisplay ? window.texDisplay(s) : s);
-  const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
-  const rad = (d) => (d * Math.PI) / 180;
+  const inline = (source) => (window.texInline ? window.texInline(source) : source);
+  const display = (source) => (window.texDisplay ? window.texDisplay(source) : source);
+  const clamp = (value, min, max) => Math.max(min, Math.min(max, value));
+  const rad = (degrees) => (degrees * Math.PI) / 180;
+  const deg = (radians) => (radians * 180) / Math.PI;
   const dot = (a, b) => a[0] * b[0] + a[1] * b[1];
   const norm = (v) => Math.hypot(v[0], v[1]);
   const add = (a, b) => [a[0] + b[0], a[1] + b[1]];
   const sub = (a, b) => [a[0] - b[0], a[1] - b[1]];
-  const mul = (k, v) => [k * v[0], k * v[1]];
-  const mv = (m, v) => [m[0] * v[0] + m[1] * v[1], m[2] * v[0] + m[3] * v[1]];
-  const mm = (a, b) => [a[0]*b[0]+a[1]*b[2], a[0]*b[1]+a[1]*b[3], a[2]*b[0]+a[3]*b[2], a[2]*b[1]+a[3]*b[3]];
-  const tr = (m) => [m[0],m[2],m[1],m[3]];
-  const det = (m) => m[0]*m[3]-m[1]*m[2];
-  const fmt = (v, n=2) => Number.isFinite(v) ? (Math.abs(v)<.5*10**-n ? "0" : v.toFixed(n).replace(/\.0+$/,"").replace(/(\.\d*?)0+$/,"$1")) : "—";
+  const scale = (k, v) => [k * v[0], k * v[1]];
+  const matVec = (m, v) => [m[0] * v[0] + m[1] * v[1], m[2] * v[0] + m[3] * v[1]];
+  const matMul = (a, b) => [
+    a[0] * b[0] + a[1] * b[2],
+    a[0] * b[1] + a[1] * b[3],
+    a[2] * b[0] + a[3] * b[2],
+    a[2] * b[1] + a[3] * b[3],
+  ];
+  const transpose = (m) => [m[0], m[2], m[1], m[3]];
+  const determinant = (m) => m[0] * m[3] - m[1] * m[2];
+  const fmt = (value, digits = 2) => {
+    if (!Number.isFinite(value)) return "未显示";
+    if (Math.abs(value) < 0.5 * 10 ** -digits) return "0";
+    return value.toFixed(digits).replace(/\.0+$/, "").replace(/(\.\d*?)0+$/, "$1");
+  };
 
-  function colors(){
-    const s=getComputedStyle(document.body), g=(k,f)=>s.getPropertyValue(k).trim()||f;
-    return {paper:g("--surface-solid","#fff"),soft:g("--surface-soft","#e8f5f0"),text:g("--text","#071512"),muted:g("--muted","#5f6965"),line:g("--line","rgba(21,52,45,.12)"),line2:g("--line-strong","rgba(21,52,45,.2)"),accent:g("--accent-strong","#006f65"),accent2:g("--accent","#078b7e"),coral:g("--coral","#d69a48")};
-  }
-  function world(v,o,u){return[o[0]+v[0]*u,o[1]-v[1]*u]}
-  function grid(ctx,w,h,c,step=Math.max(36,w/12)){ctx.save();ctx.strokeStyle=c.line;ctx.lineWidth=1;for(let x=step;x<w;x+=step){ctx.beginPath();ctx.moveTo(x,0);ctx.lineTo(x,h);ctx.stroke()}for(let y=step;y<h;y+=step){ctx.beginPath();ctx.moveTo(0,y);ctx.lineTo(w,y);ctx.stroke()}ctx.restore()}
-  function axes(ctx,o,w,h,c){ctx.save();ctx.strokeStyle=c.line2;ctx.lineWidth=1.3;ctx.beginPath();ctx.moveTo(16,o[1]);ctx.lineTo(w-16,o[1]);ctx.moveTo(o[0],h-16);ctx.lineTo(o[0],16);ctx.stroke();ctx.restore()}
-  function arrow(ctx,a,b,color,label="",width=4){const dx=b[0]-a[0],dy=b[1]-a[1],L=Math.hypot(dx,dy);if(L<2)return;const ux=dx/L,uy=dy/L,H=Math.min(13,L*.24),W=6;ctx.save();ctx.strokeStyle=color;ctx.fillStyle=color;ctx.lineWidth=width;ctx.lineCap="round";ctx.beginPath();ctx.moveTo(...a);ctx.lineTo(b[0]-ux*H,b[1]-uy*H);ctx.stroke();ctx.beginPath();ctx.moveTo(...b);ctx.lineTo(b[0]-ux*H-uy*W,b[1]-uy*H+ux*W);ctx.lineTo(b[0]-ux*H+uy*W,b[1]-uy*H-ux*W);ctx.closePath();ctx.fill();if(label){ctx.font="700 13px ui-sans-serif,system-ui";ctx.fillText(label,b[0]+8,b[1]-8)}ctx.restore()}
-  function rounded(ctx,x,y,w,h,r=10){ctx.beginPath();ctx.roundRect(x,y,w,h,r)}
-  function painter(canvas,draw){let last=[640,320];const paint=()=>{const r=canvas.getBoundingClientRect(),w=Math.max(280,r.width||last[0]),h=Math.max(220,r.height||last[1]),d=Math.min(devicePixelRatio||1,2),ctx=canvas.getContext("2d");last=[w,h];canvas.width=Math.round(w*d);canvas.height=Math.round(h*d);ctx.setTransform(d,0,0,d,0,0);ctx.clearRect(0,0,w,h);draw(ctx,w,h,colors())};const ro=new ResizeObserver(paint);ro.observe(canvas);const mo=new MutationObserver(paint);mo.observe(document.body,{attributes:true,attributeFilter:["class"]});paint();return{paint,cleanup:()=>{ro.disconnect();mo.disconnect()}}}
-  function module(i,b){return`<section class="ch9-module"><div class="ch9-module-heading"><span>${String(i+1).padStart(2,"0")}</span><div><h3>${b.title}</h3><p>${b.eyebrow}</p></div></div><div class="ch9-formal-body">${b.body}</div></section>`}
-  function formal(root,section){if(root)root.innerHTML=`<h2>${section.question}</h2><div class="ch9-foundation"><p class="ch9-lead">${section.intro}</p>${(section.formalBlocks||[]).map(module).join("")}</div>`}
-  function lab({title,desc,task,controls,body}){return`<h2>交互实验</h2><div class="ch9-lab" data-ch9-lab><div class="ch9-lab-head"><h3>${title}</h3><p>${desc}</p></div><div class="ch9-task"><span>1</span><div><strong>${task[0]}</strong><p>${task[1]}</p></div></div>${controls||""}${body}</div>`}
-  const rr=(label,key)=>`<div class="ch9-reading-row"><span>${label}</span><strong data-r="${key}">—</strong></div>`;
-  const range=(label,key,min,max,step,value,suffix="")=>`<label class="ch9-range"><span>${label}</span><input type="range" data-range="${key}" min="${min}" max="${max}" step="${step}" value="${value}"><output data-out="${key}">${value}${suffix}</output></label>`;
-  function set(root,key,v){root.querySelectorAll(`[data-r="${key}"]`).forEach(n=>n.textContent=v)}
-  function out(root,key,v){const n=root.querySelector(`[data-out="${key}"]`);if(n)n.textContent=v}
-  function ranges(root,state,paint,map){const cs=[];Object.entries(map).forEach(([key,format])=>{const n=root.querySelector(`[data-range="${key}"]`),h=()=>{state[key]=Number(n.value);out(root,key,format(state[key]));paint()};n.addEventListener("input",h);cs.push(()=>n.removeEventListener("input",h))});return()=>cs.forEach(f=>f())}
-  function buttons(root,selector,state,key,paint,extra=()=>{}){const list=[...root.querySelectorAll(selector)],cs=[];list.forEach(b=>{const h=()=>{state[key]=b.dataset[key];list.forEach(x=>x.classList.toggle("is-active",x===b));extra(b);paint()};b.addEventListener("click",h);cs.push(()=>b.removeEventListener("click",h))});return()=>cs.forEach(f=>f())}
-  function verdict(root,key,ok,status,title,copy){const box=root.querySelector(`[data-${key}-result]`),badge=root.querySelector(`[data-${key}-status]`);box.className=`ch9-result ${ok?"is-success":"is-warning"}`;badge.className=`ch9-status ${ok?"is-ok":"is-warn"}`;badge.textContent=status;root.querySelector(`[data-${key}-title]`).textContent=title;root.querySelector(`[data-${key}-copy]`).textContent=copy}
-  function animate(state,target,keys,paint,duration=600){if(matchMedia("(prefers-reduced-motion: reduce)").matches){Object.assign(state,target);paint();return()=>{}}const start=Object.fromEntries(keys.map(k=>[k,state[k]])),t0=performance.now();let raf=0;const f=now=>{const t=clamp((now-t0)/duration,0,1),e=1-(1-t)**3;keys.forEach(k=>state[k]=start[k]+(target[k]-start[k])*e);paint();if(t<1)raf=requestAnimationFrame(f)};raf=requestAnimationFrame(f);return()=>cancelAnimationFrame(raf)}
-
-  function inner(root){
-    root.innerHTML=lab({title:"内积与有向投影",desc:`固定青绿色向量 ${I("x")}，只改变金棕色向量 ${I("y")} 的方向。`,task:["让夹角依次经过锐角、直角和钝角","先判断方向关系，再显示垂线与投影；负号来自反向影子。"],controls:`<div class="ch9-toolbar"><button class="is-active" data-ip="acute">锐角</button><button data-ip="right">直角</button><button data-ip="obtuse">钝角</button><button data-ip="parallel">线性相关</button><button data-ip="zero">零向量</button></div><div class="ch9-steps"><button class="is-active" data-step="0">01 夹角</button><button data-step="1">02 投影</button><button data-step="2">03 内积</button></div><div class="ch9-range-list">${range("y 的方向","angle",-170,170,1,48,"°")}</div>`,body:`<div class="ch9-lab-grid"><div class="ch9-panel"><div class="ch9-stage"><canvas data-canvas aria-label="内积与有向投影"></canvas></div><div class="ch9-equation" data-eq></div></div><div class="ch9-panel"><div class="ch9-reading"><h4>当前读数</h4>${rr("夹角","angle")}${rr("有向投影","projection")}${rr("内积","dot")}</div><div class="ch9-result" data-ip-result><span class="ch9-status" data-ip-status></span><h4 data-ip-title></h4><p data-ip-copy></p></div></div></div>`});
-    const state={angle:48,length:2.55,step:"0"},canvas=root.querySelector("canvas");let P=()=>{};const draw=(ctx,w,h,c)=>{grid(ctx,w,h,c);const o=[w*.25,h*.72],u=Math.min(w/8.2,h/4.3),x=[3.15,0],y=[state.length*Math.cos(rad(state.angle)),state.length*Math.sin(rad(state.angle))],xe=world(x,o,u),ye=world(y,o,u),pr=y[0],pe=world([pr,0],o,u),prod=3.15*pr;axes(ctx,o,w,h,c);arrow(ctx,o,xe,c.accent,"x",4.5);arrow(ctx,o,ye,c.coral,"y",4.5);if(state.step!=="0"&&state.length>.001){ctx.save();ctx.strokeStyle=c.muted;ctx.setLineDash([6,5]);ctx.beginPath();ctx.moveTo(...ye);ctx.lineTo(...pe);ctx.stroke();ctx.restore();arrow(ctx,o,pe,c.text,"投影",2.3)}if(state.step==="2"){ctx.save();rounded(ctx,w-220,22,185,72);ctx.fillStyle=c.paper;ctx.fill();ctx.strokeStyle=c.line;ctx.stroke();ctx.fillStyle=c.muted;ctx.font="12px system-ui";ctx.fillText("长度 × 有向投影",w-202,47);ctx.fillStyle=c.text;ctx.font="700 15px ui-monospace";ctx.fillText(`${fmt(3.15)} × ${fmt(pr)} = ${fmt(prod)}`,w-202,74);ctx.restore()}set(root,"angle",state.length?`${fmt(Math.abs(state.angle),0)}°`:"未定义");set(root,"projection",fmt(pr,3));set(root,"dot",fmt(prod,3));root.querySelector("[data-eq]").innerHTML=D(state.step==="2"?`\\langle x,y\\rangle=${fmt(prod,3)}`:"\\langle x,y\\rangle=\\lVert x\\rVert\\,\\lVert y\\rVert\\cos\\theta");if(!state.length)verdict(root,"ip",false,"零向量边界","内积为 0，但夹角未定义","不能把零向量机械解释成直角。");else if(Math.abs(pr)<.025)verdict(root,"ip",true,"正交","有向投影恰好为 0","垂线落在原点，内积同时为 0。");else verdict(root,"ip",prod>0,prod>0?"内积为正":"内积为负",prod>0?"影子与 x 同向":"影子落在 x 的反向",prod>0?"两个非零向量形成锐角。":"两个非零向量形成钝角。")};const pc=painter(canvas,draw);P=pc.paint;const presets={acute:[48,2.55],right:[90,2.55],obtuse:[132,2.55],parallel:[0,2.8],zero:[48,0]};const cleanIp=buttons(root,"[data-ip]",state,"ip",P,b=>{[state.angle,state.length]=presets[b.dataset.ip];root.querySelector('[data-range="angle"]').value=state.angle;out(root,"angle",`${state.angle}°`)});const cleanStep=buttons(root,"[data-step]",state,"step",P);const cleanRange=ranges(root,state,P,{angle:v=>`${fmt(v,0)}°`});return[pc.cleanup,cleanIp,cleanStep,cleanRange]
-  }
-
-  function gram(root){
-    root.innerHTML=lab({title:"Gram–Schmidt：减掉旧方向",desc:"灰色投影是要减掉的平行部分，金棕色余量才是真正的新方向。",task:["按四步播放，不要直接跳到单位化","每一步只增加一个对象，线性相关会在零余量处明确停止。"],controls:`<div class="ch9-toolbar"><button class="is-active" data-preset="general">一般位置</button><button data-preset="near">接近相关</button><button data-preset="dependent">线性相关</button></div><div class="ch9-steps" style="--ch9-steps:4"><button class="is-active" data-step="0">01 原向量</button><button data-step="1">02 投影</button><button data-step="2">03 做减法</button><button data-step="3">04 单位化</button></div>`,body:`<div class="ch9-lab-grid"><div class="ch9-panel"><div class="ch9-stage"><canvas aria-label="Gram-Schmidt 步骤"></canvas></div><div class="ch9-equation" data-eq></div></div><div class="ch9-panel"><div class="ch9-reading"><h4>正交证书</h4>${rr("投影系数","coef")}${rr("余量长度","residual")}${rr("最终内积","orth")}</div><div class="ch9-result" data-gs-result><span class="ch9-status" data-gs-status></span><h4 data-gs-title></h4><p data-gs-copy></p></div></div></div>`});
-    const state={preset:"general",step:"0"},V={general:[[3,.65],[2.05,2.55]],near:[[3,.65],[3.05,.82]],dependent:[[3,.65],[3.6,.78]]},canvas=root.querySelector("canvas");let P=()=>{};const draw=(ctx,w,h,c)=>{grid(ctx,w,h,c);const o=[w*.25,h*.76],u=Math.min(w/8.2,h/4.2),[v1,v2]=V[state.preset],e1=mul(1/norm(v1),v1),coef=dot(v2,e1),proj=mul(coef,e1),rv=sub(v2,proj),r=norm(rv),e2=r>1e-6?mul(1/r,rv):null,v1p=world(v1,o,u),v2p=world(v2,o,u),pp=world(proj,o,u);axes(ctx,o,w,h,c);arrow(ctx,o,v1p,c.accent,"v₁",4.5);arrow(ctx,o,v2p,c.coral,"v₂",4.5);if(state.step!=="0"){ctx.save();ctx.setLineDash([6,5]);ctx.strokeStyle=c.muted;ctx.beginPath();ctx.moveTo(...v2p);ctx.lineTo(...pp);ctx.stroke();ctx.restore();arrow(ctx,o,pp,c.muted,"投影",2.3)}if(Number(state.step)>=2&&r>.001){arrow(ctx,pp,v2p,c.coral,"u₂",3.8);arrow(ctx,o,world(rv,o,u),c.coral,"u₂",2.8)}if(state.step==="3"&&e2){arrow(ctx,o,world(e1,o,u*1.35),c.accent,"e₁",4.8);arrow(ctx,o,world(e2,o,u*1.35),c.coral,"e₂",4.8)}set(root,"coef",fmt(coef,3));set(root,"residual",fmt(r,4));set(root,"orth",e2?fmt(dot(e1,e2),5):"—");root.querySelector("[data-eq]").innerHTML=D(["e_1=v_1/\\lVert v_1\\rVert","\\operatorname{proj}_{e_1}v_2=\\langle v_2,e_1\\rangle e_1","u_2=v_2-\\operatorname{proj}_{e_1}v_2","e_2=u_2/\\lVert u_2\\rVert"][Number(state.step)]);if(r<.02)verdict(root,"gs",false,"零余量","当前向量没有带来新方向","第二个向量已经属于第一方向的张成空间。");else if(state.step==="3")verdict(root,"gs",true,"正交化完成","两条单位方向彼此正交","坐标骨架改变，张成空间不变。");else{const box=root.querySelector("[data-gs-result]"),badge=root.querySelector("[data-gs-status]");box.className="ch9-result";badge.className="ch9-status is-neutral";badge.textContent=`第 ${Number(state.step)+1} 步`;root.querySelector("[data-gs-title]").textContent="继续观察投影与余量";root.querySelector("[data-gs-copy]").textContent="不要跳过平行部分的识别。"}};const pc=painter(canvas,draw);P=pc.paint;return[pc.cleanup,buttons(root,"[data-preset]",state,"preset",P),buttons(root,"[data-step]",state,"step",P)]
+  function palette() {
+    const style = getComputedStyle(document.body);
+    const token = (name, fallback) => style.getPropertyValue(name).trim() || fallback;
+    return {
+      bg: token("--surface-soft", "#e8f5f0"),
+      paper: token("--surface-solid", "#fff"),
+      text: token("--text", "#071512"),
+      muted: token("--muted", "#5f6965"),
+      faint: token("--faint", "#87908c"),
+      line: token("--line", "rgba(21,52,45,.12)"),
+      strongLine: token("--line-strong", "rgba(21,52,45,.2)"),
+      accent: token("--accent", "#078b7e"),
+      accentStrong: token("--accent-strong", "#006f65"),
+      coral: token("--coral", "#d69a48"),
+      blue: token("--blue", "#335eea"),
+    };
   }
 
-  function iso(root){
-    root.innerHTML=lab({title:"坐标是否保留几何",desc:"左边是真实空间，右边是坐标空间；同一个向量只更换读坐标的基。",task:["比较两边是否落在同半径圆上","斜基坐标仍唯一，但普通坐标长度不再等于真实长度。"],controls:`<div class="ch9-toolbar"><button class="is-active" data-mode="orthonormal">标准正交基</button><button data-mode="reflected">镜像标准正交基</button><button data-mode="skew">一般斜基</button></div>${range("第一基方向","angle",-120,120,1,28,"°")}`,body:`<div class="ch9-lab-grid"><div class="ch9-panel"><div class="ch9-stage"><canvas aria-label="真实空间和坐标空间比较"></canvas></div></div><div class="ch9-panel"><div class="ch9-reading"><h4>长度比较</h4>${rr("原向量长度","xn")}${rr("坐标列长度","cn")}${rr("长度误差","error")}</div><div class="ch9-result" data-iso-result><span class="ch9-status" data-iso-status></span><h4 data-iso-title></h4><p data-iso-copy></p></div></div></div>`});
-    const state={mode:"orthonormal",angle:28},x=[2.2,1.45],canvas=root.querySelector("canvas");let P=()=>{};const draw=(ctx,w,h,c)=>{const a=rad(state.angle),e1=[Math.cos(a),Math.sin(a)],n=[-Math.sin(a),Math.cos(a)],e2=state.mode==="skew"?add(n,mul(.72,e1)):state.mode==="reflected"?mul(-1,n):n,B=[e1[0],e2[0],e1[1],e2[1]],d=det(B),inv=[B[3]/d,-B[1]/d,-B[2]/d,B[0]/d],coord=mv(inv,x),left=[w*.25,h*.6],right=[w*.75,h*.6],u=Math.min(w/8.8,h/4.8),r=norm(x)*u;ctx.save();ctx.strokeStyle=c.line;ctx.beginPath();ctx.moveTo(w/2,20);ctx.lineTo(w/2,h-20);ctx.stroke();ctx.fillStyle=c.muted;ctx.font="700 12px system-ui";ctx.fillText("真实空间 V",22,28);ctx.fillText("坐标空间 R²",w/2+22,28);ctx.restore();[left,right].forEach(o=>axes(ctx,o,w,h,c));ctx.save();ctx.strokeStyle=c.line2;ctx.setLineDash([6,5]);[left,right].forEach(o=>{ctx.beginPath();ctx.arc(o[0],o[1],r,0,Math.PI*2);ctx.stroke()});ctx.restore();arrow(ctx,left,world(e1,left,u),c.accent,"b₁",3);arrow(ctx,left,world(e2,left,u),c.coral,"b₂",3);arrow(ctx,left,world(x,left,u),c.text,"x",4.3);arrow(ctx,right,world(coord,right,u),c.text,"[x]ᵦ",4.3);const xn=norm(x),cn=norm(coord),er=Math.abs(xn-cn),ok=state.mode!=="skew";set(root,"xn",fmt(xn,3));set(root,"cn",fmt(cn,3));set(root,"error",fmt(er,4));verdict(root,"iso",ok,ok?(state.mode==="reflected"?"等距 · 翻转":"等距"):"仅线性同构",ok?"两边落在同半径圆上":"坐标唯一，但已经不等距",ok?"标准正交坐标完整保留长度。":`坐标长度与真实长度相差 ${fmt(er,3)}。`)};const pc=painter(canvas,draw);P=pc.paint;return[pc.cleanup,buttons(root,"[data-mode]",state,"mode",P),ranges(root,state,P,{angle:v=>`${fmt(v,0)}°`})]
+  function setupCanvas(canvas, paint, height = 320) {
+    if (!canvas) return () => {};
+    const context = canvas.getContext("2d");
+    let width = 0;
+    let currentHeight = height;
+    const resize = () => {
+      const rect = canvas.getBoundingClientRect();
+      width = Math.max(280, rect.width || canvas.parentElement?.clientWidth || 640);
+      currentHeight = Math.max(220, rect.height || height);
+      const dpr = Math.min(window.devicePixelRatio || 1, 2);
+      canvas.width = Math.round(width * dpr);
+      canvas.height = Math.round(currentHeight * dpr);
+      context.setTransform(dpr, 0, 0, dpr, 0, 0);
+      paint(context, width, currentHeight, palette());
+    };
+    const observer = new ResizeObserver(resize);
+    observer.observe(canvas);
+    const themeObserver = new MutationObserver(resize);
+    themeObserver.observe(document.body, { attributes: true, attributeFilter: ["class"] });
+    resize();
+    return () => {
+      observer.disconnect();
+      themeObserver.disconnect();
+    };
   }
 
-  function transform(mode,angle,amount){const c=Math.cos(rad(angle)),s=Math.sin(rad(angle));return mode==="rotation"?[c,-s,s,c]:mode==="reflection"?[c,s,s,-c]:mode==="stretch"?[1+amount*.65,0,0,1-amount*.42]:[1,amount,0,1]}
-  function ortho(root){
-    root.innerHTML=lab({title:"单位圆形变检验",desc:"虚线是原单位圆，实线是当前像；所有颜色来自项目现有主题。",task:["先看圆，再看 QᵀQ","旋转与镜像不变形，伸缩与剪切会改变长度或夹角。"],controls:`<div class="ch9-toolbar"><button class="is-active" data-mode="rotation">旋转</button><button data-mode="reflection">镜像</button><button data-mode="stretch">伸缩</button><button data-mode="shear">剪切</button></div><div class="ch9-range-list">${range("变换进度","progress",0,1,.01,1)}${range("方向","angle",-180,180,1,35,"°")}${range("形变强度","amount",-1.2,1.2,.05,.7)}</div>`,body:`<div class="ch9-lab-grid"><div class="ch9-panel"><div class="ch9-stage"><canvas aria-label="正交变换单位圆检验"></canvas></div><div class="ch9-equation" data-eq></div></div><div class="ch9-panel"><div class="ch9-reading"><h4>矩阵证书</h4>${rr("det Q","det")}${rr("两列内积","cdot")}${rr("QᵀQ 与 I 的误差","error")}</div><div class="ch9-result" data-ortho-result><span class="ch9-status" data-ortho-status></span><h4 data-ortho-title></h4><p data-ortho-copy></p></div></div></div>`});
-    const state={mode:"rotation",progress:1,angle:35,amount:.7},canvas=root.querySelector("canvas");let P=()=>{};const draw=(ctx,w,h,c)=>{grid(ctx,w,h,c);const o=[w*.42,h*.58],u=Math.min(w/6.8,h/3.4),T=transform(state.mode,state.angle,state.amount),p=state.progress,m=[1+(T[0]-1)*p,T[1]*p,T[2]*p,1+(T[3]-1)*p];axes(ctx,o,w,h,c);ctx.save();ctx.strokeStyle=c.line2;ctx.setLineDash([6,5]);ctx.beginPath();ctx.arc(o[0],o[1],u,0,Math.PI*2);ctx.stroke();ctx.setLineDash([]);ctx.strokeStyle=c.accent;ctx.lineWidth=3;ctx.beginPath();for(let i=0;i<=160;i++){const a=Math.PI*2*i/160,q=world(mv(m,[Math.cos(a),Math.sin(a)]),o,u);i?ctx.lineTo(...q):ctx.moveTo(...q)}ctx.closePath();ctx.stroke();ctx.restore();const q1=mv(m,[1,0]),q2=mv(m,[0,1]);arrow(ctx,o,world(q1,o,u),c.accent,"Qe₁",3.3);arrow(ctx,o,world(q2,o,u),c.coral,"Qe₂",3.3);const G=mm(tr(m),m),er=Math.max(Math.abs(G[0]-1),Math.abs(G[1]),Math.abs(G[2]),Math.abs(G[3]-1)),ok=er<.015;set(root,"det",fmt(det(m),3));set(root,"cdot",fmt(dot(q1,q2),5));set(root,"error",fmt(er,5));root.querySelector("[data-eq]").innerHTML=D(ok?"Q^TQ=I":"Q^TQ\\ne I");verdict(root,"ortho",ok,ok?"正交变换":"发生形变",ok?(det(m)<0?"长度保持，定向翻转":"长度和定向都保持"):"单位圆已经不再是圆",ok?"矩阵两列长度为 1 且彼此正交。":"至少一批方向的长度或夹角发生改变。")};const pc=painter(canvas,draw);P=pc.paint;return[pc.cleanup,buttons(root,"[data-mode]",state,"mode",P),ranges(root,state,P,{progress:v=>fmt(v,2),angle:v=>`${fmt(v,0)}°`,amount:v=>fmt(v,2)})]
+  function repaintCanvas(canvas, paint) {
+    if (!canvas) return;
+    const rect = canvas.getBoundingClientRect();
+    const width = Math.max(280, rect.width || canvas.parentElement?.clientWidth || 640);
+    const height = Math.max(220, rect.height || 320);
+    const dpr = Math.min(window.devicePixelRatio || 1, 2);
+    canvas.width = Math.round(width * dpr);
+    canvas.height = Math.round(height * dpr);
+    const context = canvas.getContext("2d");
+    context.setTransform(dpr, 0, 0, dpr, 0, 0);
+    paint(context, width, height, palette());
   }
 
-  function projection(root){
-    root.innerHTML=lab({title:"垂足与距离最低点",desc:"左侧做正交分解，右侧记录子空间中所有候选点的距离平方。",task:["移动候选点，找到唯一最低点","垂足和曲线最低点由同一个投影系数生成。"],controls:`<div class="ch9-toolbar"><button class="ch9-action is-primary" data-best>移到垂足</button><button data-place="perp">让 x 位于 W⊥</button><button data-place="general">恢复一般位置</button></div><div class="ch9-range-list">${range("子空间方向","angle",-70,70,1,28,"°")}${range("候选参数 t","candidate",-4,4,.05,.4)}</div>`,body:`<div class="ch9-lab-grid is-even"><div class="ch9-panel"><div class="ch9-stage"><canvas data-geometry aria-label="向量到子空间的投影"></canvas></div><div class="ch9-reading"><h4>几何分解</h4>${rr("最短距离","best")}${rr("当前距离","current")}</div></div><div class="ch9-panel"><div class="ch9-stage"><canvas data-curve aria-label="距离平方曲线"></canvas></div><div class="ch9-result" data-proj-result><span class="ch9-status" data-proj-status></span><h4 data-proj-title></h4><p data-proj-copy></p></div></div></div>`});
-    const state={angle:28,candidate:.4,x:[2.3,2.45]},g=root.querySelector("[data-geometry]"),q=root.querySelector("[data-curve]");let Pg=()=>{},Pq=()=>{},stop=()=>{};const data=()=>{const u=[Math.cos(rad(state.angle)),Math.sin(rad(state.angle))],coef=dot(state.x,u),p=mul(coef,u),e=sub(state.x,p);return{u,coef,p,e,w:mul(state.candidate,u)}};const drawG=(ctx,w,h,c)=>{grid(ctx,w,h,c,Math.max(38,w/10));const o=[w*.32,h*.72],u0=Math.min(w/7.5,h/4.2),d=data(),a=world(mul(-4.5,d.u),o,u0),b=world(mul(4.5,d.u),o,u0),xp=world(state.x,o,u0),pp=world(d.p,o,u0),wp=world(d.w,o,u0);axes(ctx,o,w,h,c);ctx.strokeStyle=c.accent;ctx.lineWidth=3;ctx.beginPath();ctx.moveTo(...a);ctx.lineTo(...b);ctx.stroke();arrow(ctx,o,xp,c.text,"x",4.2);arrow(ctx,o,pp,c.accent,"p",3.7);arrow(ctx,pp,xp,c.coral,"e",3.3);ctx.save();ctx.strokeStyle=c.muted;ctx.setLineDash([6,5]);ctx.beginPath();ctx.moveTo(...wp);ctx.lineTo(...xp);ctx.stroke();ctx.restore();ctx.fillStyle=c.text;ctx.beginPath();ctx.arc(wp[0],wp[1],5,0,Math.PI*2);ctx.fill()};const drawQ=(ctx,w,h,c)=>{const d=data(),min=dot(d.e,d.e),L=48,R=w-28,T=26,B=h-48;ctx.strokeStyle=c.line2;ctx.beginPath();ctx.moveTo(L,B);ctx.lineTo(R,B);ctx.moveTo(L,B);ctx.lineTo(L,T);ctx.stroke();ctx.strokeStyle=c.accent;ctx.lineWidth=3;ctx.beginPath();for(let i=0;i<=140;i++){const t=-4+8*i/140,v=min+(t-d.coef)**2,x=L+(t+4)/8*(R-L),y=B-Math.min(v/20,1)*(B-T);i?ctx.lineTo(x,y):ctx.moveTo(x,y)}ctx.stroke();const point=(t,v)=>[L+(t+4)/8*(R-L),B-Math.min(v/20,1)*(B-T)],bp=point(d.coef,min),cur2=min+(state.candidate-d.coef)**2,cp=point(state.candidate,cur2);ctx.fillStyle=c.accent;ctx.beginPath();ctx.arc(...bp,6,0,Math.PI*2);ctx.fill();ctx.fillStyle=c.text;ctx.beginPath();ctx.arc(...cp,5,0,Math.PI*2);ctx.fill();const hit=Math.abs(state.candidate-d.coef)<.015;set(root,"best",fmt(norm(d.e),3));set(root,"current",fmt(Math.sqrt(cur2),3));verdict(root,"proj",hit,hit?"最近点命中":"仍是候选点",hit?"垂足与最低点对齐":"候选点还可以继续靠近",hit?"多出的距离平方为 0。":`当前多出 ${fmt((state.candidate-d.coef)**2,3)} 的距离平方。`)};const cg=painter(g,drawG),cq=painter(q,drawQ);Pg=cg.paint;Pq=cq.paint;const paint=()=>{Pg();Pq()};const cleanR=ranges(root,state,paint,{angle:v=>`${fmt(v,0)}°`,candidate:v=>fmt(v,2)});const cleanPlace=buttons(root,"[data-place]",state,"place",paint,b=>{state.x=b.dataset.place==="perp"?[-1.18,2.2]:[2.3,2.45]});const best=root.querySelector("[data-best]"),bh=()=>{const d=data();stop();stop=animate(state,{candidate:d.coef},["candidate"],()=>{root.querySelector('[data-range="candidate"]').value=state.candidate;out(root,"candidate",fmt(state.candidate,2));paint()})};best.addEventListener("click",bh);return[cg.cleanup,cq.cleanup,cleanR,cleanPlace,()=>{best.removeEventListener("click",bh);stop()}]
+  function roundedRect(ctx, x, y, width, height, radius = 10) {
+    const r = Math.min(radius, width / 2, height / 2);
+    ctx.beginPath();
+    ctx.moveTo(x + r, y);
+    ctx.arcTo(x + width, y, x + width, y + height, r);
+    ctx.arcTo(x + width, y + height, x, y + height, r);
+    ctx.arcTo(x, y + height, x, y, r);
+    ctx.arcTo(x, y, x + width, y, r);
+    ctx.closePath();
   }
 
-  const rot=a=>[Math.cos(a),-Math.sin(a),Math.sin(a),Math.cos(a)];
-  function spectral(root){
-    root.innerHTML=lab({title:"正交谱分解的三步动作",desc:"先转入特征坐标，再沿两个坐标轴独立伸缩，最后旋回原空间。",task:["按 Qᵀ → Λ → Q 的顺序播放","不要跳过坐标旋转，只看最终椭圆。"],controls:`<div class="ch9-toolbar"><button class="is-active" data-preset="positive">正定</button><button data-preset="indefinite">一正一负</button><button data-preset="repeated">重特征值</button><button data-preset="nonsymmetric">非对称对照</button></div><div class="ch9-steps" style="--ch9-steps:4"><button class="is-active" data-step="0">I</button><button data-step="1">Qᵀ</button><button data-step="2">ΛQᵀ</button><button data-step="3">QΛQᵀ</button></div>`,body:`<div class="ch9-lab-grid"><div class="ch9-panel"><div class="ch9-stage"><canvas aria-label="实对称矩阵谱分解"></canvas></div><div class="ch9-equation" data-eq></div></div><div class="ch9-panel"><div class="ch9-reading"><h4>当前结构</h4>${rr("λ₁ / λ₂","lambda")}${rr("A−Aᵀ 的误差","sym")}${rr("当前阶段","stage")}</div><div class="ch9-result" data-sp-result><span class="ch9-status" data-sp-status></span><h4 data-sp-title></h4><p data-sp-copy></p></div></div></div>`});
-    const state={preset:"positive",step:"0"},S={positive:{a:30,l1:2.4,l2:.9,as:0},indefinite:{a:24,l1:2.1,l2:-1.1,as:0},repeated:{a:0,l1:1.55,l2:1.55,as:0},nonsymmetric:{a:26,l1:2.1,l2:.9,as:.65}},canvas=root.querySelector("canvas");let P=()=>{};const draw=(ctx,w,h,c)=>{grid(ctx,w,h,c);const o=[w*.42,h*.58],u=Math.min(w/7,h/3.8),s=S[state.preset],Q=rot(rad(s.a)),L=[s.l1,0,0,s.l2],A0=mm(mm(Q,L),tr(Q)),A=[A0[0],A0[1]+s.as,A0[2],A0[3]],ok=Math.abs(A[1]-A[2])<1e-8,T=ok?[[1,0,0,1],tr(Q),mm(L,tr(Q)),A0][Number(state.step)]:A;axes(ctx,o,w,h,c);ctx.strokeStyle=ok?c.accent:c.coral;ctx.lineWidth=3;ctx.beginPath();for(let i=0;i<=180;i++){const a=Math.PI*2*i/180,p=world(mv(T,[Math.cos(a),Math.sin(a)]),o,u);i?ctx.lineTo(...p):ctx.moveTo(...p)}ctx.closePath();ctx.stroke();if(ok&&(state.step==="0"||state.step==="3")){arrow(ctx,o,world([Q[0],Q[2]],o,u*1.25),c.accent,"q₁",3.3);arrow(ctx,o,world([Q[1],Q[3]],o,u*1.25),c.coral,"q₂",3.3)}set(root,"lambda",`${fmt(s.l1)} / ${fmt(s.l2)}`);set(root,"sym",fmt(Math.abs(A[1]-A[2]),4));set(root,"stage",ok?["原坐标","转入特征坐标","独立伸缩","旋回原坐标"][Number(state.step)]:"谱路径关闭");root.querySelector("[data-eq]").innerHTML=D(ok?["x","Q^Tx","\\Lambda Q^Tx","Q\\Lambda Q^Tx=Ax"][Number(state.step)]:"A^T\\ne A");if(!ok)verdict(root,"sp",false,"结论关闭","矩阵不对称","不能直接宣称存在实标准正交特征基。");else if(Math.abs(s.l1-s.l2)<.01)verdict(root,"sp",true,"重特征值","图形各向同性","特征方向不唯一，但仍能选择标准正交基。");else if(state.step==="3")verdict(root,"sp",true,"谱分解完成","三步复合与 A 一致","主轴方向和独立伸缩量已经全部可见。");else{const box=root.querySelector("[data-sp-result]"),badge=root.querySelector("[data-sp-status]");box.className="ch9-result";badge.className="ch9-status is-neutral";badge.textContent=`第 ${Number(state.step)+1} 幅`;root.querySelector("[data-sp-title]").textContent="继续沿三步路径观察";root.querySelector("[data-sp-copy]").textContent="当前只完成了部分坐标动作。"}};const pc=painter(canvas,draw);P=pc.paint;const cp=buttons(root,"[data-preset]",state,"preset",P,()=>{state.step="0";root.querySelectorAll("[data-step]").forEach((b,i)=>b.classList.toggle("is-active",i===0))});const cs=buttons(root,"[data-step]",state,"step",P,()=>{if(state.preset==="nonsymmetric")state.step="0"});return[pc.cleanup,cp,cs]
+  function arrow(ctx, from, to, color, label = "", options = {}) {
+    const dx = to[0] - from[0];
+    const dy = to[1] - from[1];
+    const length = Math.hypot(dx, dy);
+    if (length < 1) return;
+    const ux = dx / length;
+    const uy = dy / length;
+    const head = Math.min(options.head || 13, length * 0.28);
+    const wing = options.wing || 6;
+    ctx.save();
+    ctx.strokeStyle = color;
+    ctx.fillStyle = color;
+    ctx.lineWidth = options.width || 4;
+    ctx.lineCap = "round";
+    ctx.lineJoin = "round";
+    ctx.beginPath();
+    ctx.moveTo(from[0], from[1]);
+    ctx.lineTo(to[0] - ux * head, to[1] - uy * head);
+    ctx.stroke();
+    ctx.beginPath();
+    ctx.moveTo(to[0], to[1]);
+    ctx.lineTo(to[0] - ux * head - uy * wing, to[1] - uy * head + ux * wing);
+    ctx.lineTo(to[0] - ux * head + uy * wing, to[1] - uy * head - ux * wing);
+    ctx.closePath();
+    ctx.fill();
+    if (label) {
+      ctx.font = "700 13px ui-sans-serif, system-ui, sans-serif";
+      ctx.textBaseline = "middle";
+      ctx.fillText(label, to[0] + (options.labelX ?? 9), to[1] + (options.labelY ?? -10));
+    }
+    ctx.restore();
   }
 
-  function regress(points){const n=points.length,sx=points.reduce((s,p)=>s+p[0],0),sy=points.reduce((s,p)=>s+p[1],0),sxx=points.reduce((s,p)=>s+p[0]**2,0),sxy=points.reduce((s,p)=>s+p[0]*p[1],0),d=n*sxx-sx*sx,m=(n*sxy-sx*sy)/d,c=(sy-m*sx)/n;return{slope:m,intercept:c}}
-  function residual(points,m,c){const r=points.map(([x,y])=>y-(m*x+c));return{r,sse:r.reduce((s,v)=>s+v*v,0),sum:r.reduce((s,v)=>s+v,0),weighted:r.reduce((s,v,i)=>s+points[i][0]*v,0)}}
-  function least(root){
-    root.innerHTML=lab({title:"残差怎样把直线推向最佳位置",desc:"青绿色虚线是最优位置，深色实线是当前候选，金棕色竖线表示残差。",task:["先手动降低 SSE，再播放到最佳解","最佳解由两条正规方程同时归零确定。"],controls:`<div class="ch9-range-list">${range("斜率 m","slope",-1,2.2,.02,.55)}${range("截距 c","intercept",-.5,4,.02,2)}</div><button class="ch9-action is-primary" data-best>连续移动到最小二乘解</button>`,body:`<div class="ch9-lab-grid"><div class="ch9-panel"><div class="ch9-stage"><canvas aria-label="最小二乘直线和残差"></canvas></div></div><div class="ch9-panel"><div class="ch9-reading"><h4>残差证书</h4>${rr("SSE","sse")}${rr("Σrᵢ","sum")}${rr("Σxᵢrᵢ","weighted")}</div><div class="ch9-result" data-ls-result><span class="ch9-status" data-ls-status></span><h4 data-ls-title></h4><p data-ls-copy></p></div></div></div>`});
-    const pts=[[-2,.8],[-1,1.35],[0,2.15],[1,3.25],[2,4.45]],state={slope:.55,intercept:2},canvas=root.querySelector("canvas");let P=()=>{},stop=()=>{};const draw=(ctx,w,h,c)=>{grid(ctx,w,h,c);const L=50,R=w-28,T=26,B=h-42,sx=x=>L+(x+2.6)/5.2*(R-L),sy=y=>B-(y+.5)/6.3*(B-T),best=regress(pts),line=(m,b,color,dashed=false,W=3)=>{ctx.save();if(dashed)ctx.setLineDash([7,6]);ctx.strokeStyle=color;ctx.lineWidth=W;ctx.beginPath();ctx.moveTo(sx(-2.6),sy(m*-2.6+b));ctx.lineTo(sx(2.6),sy(m*2.6+b));ctx.stroke();ctx.restore()};ctx.strokeStyle=c.line2;ctx.beginPath();ctx.moveTo(L,B);ctx.lineTo(R,B);ctx.moveTo(sx(0),B);ctx.lineTo(sx(0),T);ctx.stroke();line(best.slope,best.intercept,c.accent,true,2.5);line(state.slope,state.intercept,c.text,false,3.1);pts.forEach(([x,y])=>{const fit=state.slope*x+state.intercept;ctx.strokeStyle=c.coral;ctx.lineWidth=2.4;ctx.beginPath();ctx.moveTo(sx(x),sy(y));ctx.lineTo(sx(x),sy(fit));ctx.stroke();ctx.fillStyle=c.text;ctx.beginPath();ctx.arc(sx(x),sy(y),4.5,0,Math.PI*2);ctx.fill()});const d=residual(pts,state.slope,state.intercept),gap=Math.hypot(state.slope-best.slope,state.intercept-best.intercept),ok=gap<.003;set(root,"sse",fmt(d.sse,4));set(root,"sum",fmt(d.sum,5));set(root,"weighted",fmt(d.weighted,5));verdict(root,"ls",ok,ok?"正规方程通过":"候选直线",ok?"两条残差和同时归零":"还可以继续降低 SSE",ok?"残差同时垂直于常数列和横坐标列。":"调节斜率和截距，观察残差重新平衡。")};const pc=painter(canvas,draw);P=pc.paint;const cr=ranges(root,state,P,{slope:v=>fmt(v,2),intercept:v=>fmt(v,2)}),best=root.querySelector("[data-best]"),bh=()=>{stop();stop=animate(state,regress(pts),["slope","intercept"],()=>{for(const k of["slope","intercept"]){root.querySelector(`[data-range="${k}"]`).value=state[k];out(root,k,fmt(state[k],2))}P()},720)};best.addEventListener("click",bh);return[pc.cleanup,cr,()=>{best.removeEventListener("click",bh);stop()}]
+  function grid(ctx, width, height, colors, step = 42) {
+    ctx.save();
+    ctx.strokeStyle = colors.line;
+    ctx.lineWidth = 1;
+    for (let x = step; x < width; x += step) {
+      ctx.beginPath();
+      ctx.moveTo(x, 0);
+      ctx.lineTo(x, height);
+      ctx.stroke();
+    }
+    for (let y = step; y < height; y += step) {
+      ctx.beginPath();
+      ctx.moveTo(0, y);
+      ctx.lineTo(width, y);
+      ctx.stroke();
+    }
+    ctx.restore();
   }
 
-  function unitary(root){
-    root.innerHTML=lab({title:"共轭与等模旋转",desc:`青绿色 ${I("z")} 与金棕色 ${I("\\bar z")} 关于实轴镜像，深色 ${I("Uz")} 检验模长。`,task:["先看共轭，再比较 Uz 是否离开等模圆","纯相位只改方向；加入缩放后，几何圆和酉证书同时失败。"],controls:`<div class="ch9-toolbar"><button class="is-active" data-mode="unitary">纯相位</button><button data-mode="scaled">相位 + 缩放</button></div><div class="ch9-range-list">${range("z 的相位","zAngle",-180,180,1,42,"°")}${range("U 的相位","phase",-180,180,1,70,"°")}${range("缩放 ρ","rho",.5,1.7,.05,1.3)}</div>`,body:`<div class="ch9-lab-grid"><div class="ch9-panel"><div class="ch9-stage"><canvas aria-label="复平面的共轭和酉变换"></canvas></div><div class="ch9-equation" data-eq></div></div><div class="ch9-panel"><div class="ch9-reading"><h4>酉证书</h4>${rr("z̄z","self")}${rr("|z| / |Uz|","norms")}${rr("U*U−1","error")}</div><div class="ch9-result" data-u-result><span class="ch9-status" data-u-status></span><h4 data-u-title></h4><p data-u-copy></p></div></div></div>`});
-    const state={mode:"unitary",zAngle:42,phase:70,rho:1.3},length=2.1,canvas=root.querySelector("canvas");let P=()=>{};const polar=(r,a)=>[r*Math.cos(rad(a)),r*Math.sin(rad(a))];const draw=(ctx,w,h,c)=>{grid(ctx,w,h,c);const o=[w*.46,h*.55],u=Math.min(w/7.3,h/3.8),z=polar(length,state.zAngle),zb=[z[0],-z[1]],rho=state.mode==="unitary"?1:state.rho,uz=polar(length*rho,state.zAngle+state.phase);axes(ctx,o,w,h,c);ctx.save();ctx.strokeStyle=c.line2;ctx.setLineDash([6,5]);ctx.beginPath();ctx.arc(o[0],o[1],length*u,0,Math.PI*2);ctx.stroke();ctx.restore();arrow(ctx,o,world(z,o,u),c.accent,"z",4.1);arrow(ctx,o,world(zb,o,u),c.coral,"z̄",3.4);arrow(ctx,o,world(uz,o,u),c.text,"Uz",4.1);const er=Math.abs(rho*rho-1),ok=state.mode==="unitary";set(root,"self",fmt(length*length,3));set(root,"norms",`${fmt(length,3)} / ${fmt(length*rho,3)}`);set(root,"error",fmt(er,4));root.querySelector("[data-eq]").innerHTML=D(ok?"U^*U=I":"U^*U\\ne I");verdict(root,"u",ok,ok?"酉变换":"非酉缩放",ok?"Uz 留在同一等模圆上":"Uz 已离开原等模圆",ok?"相位改变，模长和复内积保持。":"缩放因子使模长发生改变。")};const pc=painter(canvas,draw);P=pc.paint;return[pc.cleanup,buttons(root,"[data-mode]",state,"mode",P),ranges(root,state,P,{zAngle:v=>`${fmt(v,0)}°`,phase:v=>`${fmt(v,0)}°`,rho:v=>fmt(v,2)})]
+  function axes(ctx, origin, width, height, colors) {
+    ctx.save();
+    ctx.strokeStyle = colors.strongLine;
+    ctx.lineWidth = 1.4;
+    ctx.beginPath();
+    ctx.moveTo(20, origin[1]);
+    ctx.lineTo(width - 20, origin[1]);
+    ctx.moveTo(origin[0], height - 18);
+    ctx.lineTo(origin[0], 18);
+    ctx.stroke();
+    ctx.restore();
   }
 
-  const renderers={"inner-product-geometry":inner,"orthonormal-bases":gram,"euclidean-isomorphism":iso,"orthogonal-transformations":ortho,"orthogonal-subspaces":projection,"symmetric-canonical-form":spectral,"least-squares-distance":least,"unitary-spaces":unitary};
-  Object.entries(renderers).forEach(([id,interactive])=>window.defineChapter9Renderer?.(id,{formal,interactive}));
+  function world(v, origin, unit) {
+    return [origin[0] + v[0] * unit, origin[1] - v[1] * unit];
+  }
+
+  function clear(ctx, width, height) {
+    ctx.clearRect(0, 0, width, height);
+  }
+
+  function renderFormal(root, section) {
+    if (!root) return;
+    const blocks = section.formalBlocks || [];
+    const id = section.id;
+    const headings = {
+      "inner-product-geometry": "内积怎样产生长度、夹角与正交",
+      "orthonormal-bases": "正交化为什么保持原来的张成空间",
+      "euclidean-isomorphism": "可逆与等距之间还差什么",
+      "orthogonal-transformations": "单位圆、矩阵列与 QᵀQ 怎样互相验证",
+      "orthogonal-subspaces": "正交分解怎样推出唯一最近点",
+      "symmetric-canonical-form": "对称性怎样打开正交对角化",
+      "least-squares-distance": "投影条件怎样变成正规方程",
+      "unitary-spaces": "从实正交结构走向复酉结构",
+    };
+    const labels = {
+      "inner-product-geometry": ["定义", "几何读法", "边界"],
+      "orthonormal-bases": ["保留", "减去", "单位化"],
+      "euclidean-isomorphism": ["线性", "等距", "判别"],
+      "orthogonal-transformations": ["图形", "矩阵列", "等式"],
+      "orthogonal-subspaces": ["分解", "勾股", "最近点"],
+      "symmetric-canonical-form": ["假设", "分解", "边界"],
+      "least-squares-distance": ["投影", "正交", "方程"],
+      "unitary-spaces": ["共轭", "酉变换", "类比"],
+    }[id] || ["起点", "推导", "结论"];
+    const rows = blocks.map((block, index) => `
+      <article class="ch9-theory-row">
+        <span>${labels[index] || `步骤 ${index + 1}`}</span>
+        <div><h3>${block.title}</h3><small>${block.eyebrow}</small>${block.body}</div>
+      </article>`).join("");
+    const body = `<div class="ch9-theory-sequence">${rows}</div>`;
+    root.innerHTML = `<h2>${headings[id] || section.question}</h2><div class="ch9-foundation ch9-foundation-${id}"><p class="ch9-lead">${section.intro}</p>${body}</div>`;
+  }
+
+  function experimentHeader(title, description) {
+    return `<header class="ch9-experiment-header"><h3>${title}</h3><p>${description}</p></header>`;
+  }
+
+  function taskBlock(items) {
+    return `<div class="ch9-task"><strong>操作任务</strong><ol>${items.map((item) => `<li>${item}</li>`).join("")}</ol></div>`;
+  }
+
+  function range(name, label, min, max, step, value, suffix = "") {
+    return `<label class="ch9-range"><span>${label}</span><input type="range" min="${min}" max="${max}" step="${step}" value="${value}" data-range="${name}"><output data-output="${name}">${value}${suffix}</output></label>`;
+  }
+
+  function readingRow(label, key, value = "待观察") {
+    return `<div class="ch9-reading-row"><span>${label}</span><strong data-readout="${key}">${value}</strong></div>`;
+  }
+
+  function setReadout(root, key, value) {
+    root.querySelectorAll(`[data-readout="${key}"]`).forEach((node) => { node.textContent = value; });
+  }
+
+  function setOutput(root, key, value) {
+    const node = root.querySelector(`[data-output="${key}"]`);
+    if (node) node.textContent = value;
+  }
+
+  function bindRange(root, key, callback) {
+    const input = root.querySelector(`[data-range="${key}"]`);
+    const handler = () => callback(Number(input.value));
+    input?.addEventListener("input", handler);
+    return () => input?.removeEventListener("input", handler);
+  }
+
+  function bindButtons(root, selector, callback) {
+    const buttons = [...root.querySelectorAll(selector)];
+    const cleanups = buttons.map((button) => {
+      const handler = () => callback(button);
+      button.addEventListener("click", handler);
+      return () => button.removeEventListener("click", handler);
+    });
+    return [buttons, () => cleanups.forEach((cleanup) => cleanup())];
+  }
+
+  function activate(buttons, current, dataKey) {
+    buttons.forEach((button) => {
+      const active = button.dataset[dataKey] === String(current);
+      button.classList.toggle("is-active", active);
+      button.setAttribute("aria-pressed", String(active));
+    });
+  }
+
+  function animate(state, target, keys, draw, duration = 520) {
+    if (window.matchMedia?.("(prefers-reduced-motion: reduce)")?.matches) {
+      Object.assign(state, target);
+      draw();
+      return () => {};
+    }
+    const start = Object.fromEntries(keys.map((key) => [key, state[key]]));
+    const started = performance.now();
+    let raf = 0;
+    const frame = (now) => {
+      const t = clamp((now - started) / duration, 0, 1);
+      const eased = 1 - (1 - t) ** 3;
+      keys.forEach((key) => { state[key] = start[key] + (target[key] - start[key]) * eased; });
+      draw();
+      if (t < 1) raf = requestAnimationFrame(frame);
+    };
+    raf = requestAnimationFrame(frame);
+    return () => cancelAnimationFrame(raf);
+  }
+
+  window.Chapter9Native = { inline, display, clamp, rad, deg, dot, norm, add, sub, scale, matVec, matMul, transpose, determinant, fmt, palette, setupCanvas, repaintCanvas, roundedRect, arrow, grid, axes, world, clear, renderFormal, experimentHeader, taskBlock, range, readingRow, setReadout, setOutput, bindRange, bindButtons, activate, animate };
 })();

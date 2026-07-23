@@ -120,6 +120,7 @@
       root.querySelector("[data-proj-equation]").innerHTML = display(`\\lVert x-w\\rVert^2=\\underbrace{${fmt(minimum, 2)}}_{\\lVert e\\rVert^2}+\\underbrace{${fmt(extra, 2)}}_{\\lVert p-w\\rVert^2}`);
       const hit = extra < .001;
       const box = root.querySelector("[data-proj-conclusion]");
+      box.dataset.projExtra = fmt(extra, 6);
       box.classList.toggle("is-warning", !hit);
       root.querySelector("[data-proj-title]").textContent = hit ? "同一个 t 同时命中垂足和曲线最低点" : `当前距离平方比最小值多 ${fmt(extra, 2)}`;
       root.querySelector("[data-proj-copy]").textContent = hit ? "附加项 ‖p−w‖² 等于 0，所以 p 是唯一最近点。" : "继续沿 W 移动金棕色候选点，直到它与青绿色投影点重合。";

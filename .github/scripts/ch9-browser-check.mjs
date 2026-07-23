@@ -124,8 +124,8 @@ async function exerciseStates(page) {
   await openLesson(page, sections[4]);
   await page.locator("[data-proj-best]").click();
   await waitText(page, "[data-proj-conclusion]", "曲线最低点", "§5 projection minimum");
-  const projectionExtra = await page.locator("[data-proj-equation]").innerText();
-  if (!projectionExtra.includes("+ 0")) throw new Error(`§5: projection animation did not end exactly at the minimum: ${projectionExtra}`);
+  const projectionExtra = Number(await page.locator("[data-proj-conclusion]").getAttribute("data-proj-extra"));
+  if (projectionExtra !== 0) throw new Error(`§5: projection animation did not end exactly at the minimum: ${projectionExtra}`);
 
   await openLesson(page, sections[5]);
   await page.locator('[data-sp-preset="nonsymmetric"]').click();

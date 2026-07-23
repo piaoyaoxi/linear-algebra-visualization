@@ -14,40 +14,33 @@
   line-height: 1.85;
 }
 
-.ch9-formal-card {
-  min-width: 0;
-  padding: 22px;
+.ch9-theory-sequence {
+  overflow: hidden;
   border: 1px solid var(--line);
   border-radius: calc(var(--radius) + 1px);
   background: var(--surface-solid);
-  box-shadow: var(--shadow-soft);
 }
 
-.ch9-formal-card > span,
-.ch9-lab-heading > span {
-  display: block;
-  margin-bottom: 7px;
+.ch9-theory-row {
+  display: grid;
+  grid-template-columns: 104px minmax(0, 1fr);
+  gap: 22px;
+  padding: 20px 22px;
+}
+
+.ch9-theory-row + .ch9-theory-row { border-top: 1px solid var(--line); }
+
+.ch9-theory-row > span {
   color: var(--accent-strong);
   font-size: 12px;
   font-weight: 820;
   letter-spacing: .04em;
 }
 
-.ch9-formal-card h3,
-.ch9-lab-heading h3 {
-  margin: 0 0 8px;
-  font-size: clamp(19px, 2vw, 23px);
-  line-height: 1.35;
-}
-
-.ch9-formal-card p,
-.ch9-formal-card div,
-.ch9-lab-heading p {
-  margin: 0;
-  color: var(--muted);
-  font-size: 14px;
-  line-height: 1.78;
-}
+.ch9-theory-row h3 { margin: 0 0 4px; font-size: 19px; line-height: 1.4; }
+.ch9-theory-row small { display: block; margin-bottom: 7px; color: var(--muted); font-weight: 720; }
+.ch9-theory-row p,
+.ch9-theory-row div { margin: 0; color: var(--muted); font-size: 14px; line-height: 1.78; }
 
 .ch9-origin-map {
   position: relative;
@@ -141,47 +134,26 @@
   box-shadow: var(--shadow-soft);
 }
 
-.ch9-lab-heading {
-  display: grid;
-  grid-template-columns: 140px minmax(0, 1fr);
-  gap: 18px;
-  align-items: start;
+.ch9-experiment-header {
   padding: 24px 26px 20px;
   border-bottom: 1px solid var(--line);
 }
 
-.ch9-observation {
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 10px;
-  margin: 0;
-  padding: 0;
-  list-style: none;
-}
+.ch9-experiment-header h3 { margin: 0 0 7px; font-size: clamp(20px, 2.1vw, 25px); line-height: 1.35; }
+.ch9-experiment-header p { max-width: 820px; margin: 0; color: var(--muted); font-size: 14px; line-height: 1.75; }
 
-.ch9-observation li {
+.ch9-task {
   display: grid;
-  grid-template-columns: 30px minmax(0, 1fr);
-  gap: 9px;
-  align-items: center;
-  padding: 12px 14px;
+  grid-template-columns: 104px minmax(0, 1fr);
+  gap: 18px;
+  margin: 0 24px 24px;
+  padding: 16px 18px;
   border: 1px solid var(--line);
-  border-radius: 12px;
+  border-radius: 13px;
   background: var(--surface-soft);
 }
-
-.ch9-observation li > span {
-  display: grid;
-  width: 28px;
-  height: 28px;
-  place-items: center;
-  border-radius: 50%;
-  background: var(--accent);
-  color: #fff;
-  font-size: 12px;
-  font-weight: 850;
-}
-.ch9-observation p { margin: 0; color: var(--muted); font-size: 12px; line-height: 1.55; }
+.ch9-task strong { color: var(--accent-strong); font-size: 13px; }
+.ch9-task ol { display: grid; gap: 6px; margin: 0; padding-left: 20px; color: var(--muted); font-size: 13px; line-height: 1.6; }
 
 .ch9-toolbar { display: flex; flex-wrap: wrap; gap: 9px; }
 .ch9-toolbar button,
@@ -252,7 +224,6 @@
 .ch9-inner-body { display: grid; grid-template-columns: minmax(0, 1.5fr) minmax(270px, .65fr); gap: 16px; padding: 20px 24px 24px; }
 .ch9-inner-scene { display: grid; gap: 12px; }
 .ch9-inner-side { display: grid; align-content: start; gap: 12px; }
-.ch9-inner-lab .ch9-observation { padding: 16px 24px 0; }
 
 /* §2: controls are a timeline below one persistent stage. */
 .ch9-gs-lab { gap: 0; }
@@ -266,12 +237,7 @@
 .ch9-iso-lab { gap: 0; }
 .ch9-iso-controls { display: grid; grid-template-columns: 1fr minmax(280px, .7fr); gap: 14px; padding: 16px 24px; border-bottom: 1px solid var(--line); background: var(--surface-soft); }
 .ch9-iso-scene { padding: 20px 24px 12px; }
-.ch9-iso-stage { display: grid; grid-template-columns: 1fr 88px 1fr; align-items: stretch; }
-.ch9-iso-pane { position: relative; min-width: 0; }
-.ch9-iso-pane canvas { min-height: 360px; }
-.ch9-map-bridge { display: grid; align-content: center; justify-items: center; gap: 6px; color: var(--accent-strong); font-weight: 820; }
-.ch9-map-bridge i { width: 64px; height: 1px; background: var(--accent); position: relative; }
-.ch9-map-bridge i::after { position: absolute; top: -5px; right: 0; border-width: 5px 0 5px 8px; border-style: solid; border-color: transparent transparent transparent var(--accent); content: ""; }
+.ch9-iso-scene canvas { min-height: 420px; }
 .ch9-iso-footer { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; padding: 0 24px 24px; }
 
 /* §4: geometry and the three equivalent certificates share one row. */
@@ -293,17 +259,13 @@
 .ch9-proj-panel header { padding: 11px 14px; border-bottom: 1px solid var(--line); background: var(--surface-soft); font-size: 13px; font-weight: 780; }
 .ch9-proj-panel canvas { display: block; width: 100%; min-height: 340px; }
 .ch9-proj-footer { display: grid; grid-template-columns: 1.2fr .8fr; gap: 12px; padding: 0 24px 24px; }
+.ch9-view-switch { display: none; }
 
 /* §6: three panels reveal the factorization instead of one overlaid tooltip. */
 .ch9-spectral-lab { gap: 0; }
 .ch9-spectral-controls { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 12px; padding: 16px 24px; border-bottom: 1px solid var(--line); }
-.ch9-spectral-story { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; padding: 20px 24px 12px; }
-.ch9-spectral-frame { overflow: hidden; border: 1px solid var(--line); border-radius: 14px; background: var(--surface-solid); }
-.ch9-spectral-frame.is-current { border-color: var(--accent); box-shadow: 0 0 0 2px color-mix(in srgb, var(--accent) 12%, transparent); }
-.ch9-spectral-frame header { padding: 11px 13px; border-bottom: 1px solid var(--line); background: var(--surface-soft); }
-.ch9-spectral-frame header strong { display: block; font-size: 13px; }
-.ch9-spectral-frame header span { color: var(--muted); font-size: 11px; }
-.ch9-spectral-frame canvas { display: block; width: 100%; min-height: 250px; }
+.ch9-spectral-story { padding: 20px 24px 12px; }
+.ch9-spectral-story canvas { min-height: 400px; }
 .ch9-spectral-footer { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; padding: 0 24px 24px; }
 .ch9-theorem-warning { padding: 18px; border: 1px solid var(--coral); border-radius: 13px; background: var(--surface-solid); }
 
@@ -312,6 +274,11 @@
 .ch9-ls-body { display: grid; grid-template-columns: minmax(0, 1.45fr) minmax(280px, .65fr); gap: 16px; padding: 20px 24px 24px; }
 .ch9-ls-side { display: grid; align-content: start; gap: 12px; }
 .ch9-ls-side .ch9-action { width: 100%; }
+.ch9-ls-readings { display: grid; grid-template-columns: 1.35fr 1fr 1fr; overflow: hidden; border: 1px solid var(--line); border-radius: 12px; }
+.ch9-ls-readings > div { min-width: 0; padding: 11px 12px; }
+.ch9-ls-readings > div + div { border-left: 1px solid var(--line); }
+.ch9-ls-readings span { display: block; color: var(--muted); font-size: 10px; }
+.ch9-ls-readings strong { color: var(--accent-strong); font-size: 14px; }
 .ch9-normal-equations { display: grid; gap: 7px; padding: 14px; border: 1px solid var(--line); border-radius: 12px; background: var(--surface-soft); }
 .ch9-normal-equations > div { display: flex; justify-content: space-between; gap: 12px; font-size: 13px; }
 
@@ -342,14 +309,11 @@ body.dark .ch9-formal-card { box-shadow: none; }
   .ch9-ortho-body,
   .ch9-ls-body,
   .ch9-unitary-body { grid-template-columns: 1fr; }
-  .ch9-spectral-story { grid-template-columns: 1fr; }
-  .ch9-spectral-frame canvas { min-height: 300px; }
 }
 
 @media (max-width: 720px) {
-  .ch9-lab-heading { grid-template-columns: 1fr; gap: 3px; padding: 19px 18px 16px; }
-  .ch9-observation { grid-template-columns: 1fr; }
-  .ch9-inner-lab .ch9-observation { padding: 14px 18px 0; }
+  .ch9-experiment-header { padding: 19px 18px 16px; }
+  .ch9-task { grid-template-columns: 1fr; gap: 7px; margin: 0 18px 18px; padding: 14px 15px; }
   .ch9-inner-body,
   .ch9-gs-body,
   .ch9-ortho-body,
@@ -359,34 +323,44 @@ body.dark .ch9-formal-card { box-shadow: none; }
   .ch9-ortho-controls,
   .ch9-proj-controls { grid-template-columns: 1fr; padding: 14px 18px; }
   .ch9-iso-scene { padding: 16px 18px 10px; }
-  .ch9-iso-stage { grid-template-columns: 1fr; gap: 8px; }
-  .ch9-map-bridge { min-height: 52px; }
-  .ch9-map-bridge i { transform: rotate(90deg); }
-  .ch9-iso-pane canvas { min-height: 300px; }
+  .ch9-iso-scene canvas { min-height: 680px; }
   .ch9-iso-footer,
   .ch9-proj-footer,
   .ch9-spectral-footer { grid-template-columns: 1fr; padding: 0 18px 18px; }
-  .ch9-proj-linked { grid-template-columns: 1fr; margin: 16px 18px 10px; }
-  .ch9-proj-panel + .ch9-proj-panel { border-top: 1px solid var(--line); border-left: 0; }
+  .ch9-view-switch { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; padding: 14px 18px 0; }
+  .ch9-view-switch button { min-height: 40px; border: 1px solid var(--line); border-radius: 10px; background: var(--surface-solid); color: var(--text); font: inherit; font-size: 13px; font-weight: 760; }
+  .ch9-view-switch button.is-active { border-color: var(--accent); background: var(--accent); color: #fff; }
+  .ch9-proj-linked { grid-template-columns: 1fr; margin: 10px 18px; }
+  .ch9-proj-panel { display: none; }
+  .ch9-proj-panel.is-current { display: block; }
+  .ch9-proj-panel + .ch9-proj-panel { border-left: 0; }
   .ch9-proj-panel canvas { min-height: 300px; }
   .ch9-spectral-controls { padding: 14px 18px; }
   .ch9-spectral-story { padding: 16px 18px 10px; }
+  .ch9-spectral-story canvas { min-height: 330px; }
+  .ch9-spectral-controls .ch9-toolbar:last-child { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); width: 100%; }
+  .ch9-spectral-controls .ch9-toolbar:last-child button { min-width: 0; padding-inline: 8px; }
   .ch9-unitary-tabs { grid-template-columns: 1fr; padding: 14px 18px; }
   .ch9-stepper { grid-template-columns: 1fr 1fr; padding: 0 18px 18px; }
   .ch9-stage canvas { min-height: 300px; }
-  .ch9-metric-strip { grid-template-columns: 1fr; }
-  .ch9-metric-strip > div + div { border-top: 1px solid var(--line); border-left: 0; }
+  .ch9-iso-scene .ch9-stage canvas { min-height: 560px; }
+  .ch9-metric-strip { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .ch9-metric-strip > div { min-width: 0; padding: 10px 9px; }
+  .ch9-metric-strip > div + div { border-left: 1px solid var(--line); }
+  .ch9-metric-strip strong { font-size: 14px; overflow-wrap: anywhere; }
   .ch9-range { grid-template-columns: 105px minmax(90px, 1fr) 50px; }
   .ch9-structure-compare,
   .ch9-theorem-main { grid-template-columns: 1fr; }
   .ch9-compare-head { grid-template-columns: 1fr; }
   .ch9-structure-compare .ch9-formal-card:nth-of-type(3) { grid-column: auto; }
+  .ch9-theory-row { grid-template-columns: 1fr; gap: 5px; padding: 17px 18px; }
 }
 
 @media (max-width: 430px) {
   .ch9-formal-card { padding: 18px; }
   .ch9-origin-center { min-width: 205px; }
   .ch9-toolbar button { flex: 1 1 112px; }
+  .ch9-spectral-controls .ch9-toolbar:last-child button { flex: 1 1 0; }
   .ch9-range { grid-template-columns: 1fr auto; }
   .ch9-range input { grid-column: 1 / -1; grid-row: 2; }
   .ch9-range output { grid-column: 2; grid-row: 1; }

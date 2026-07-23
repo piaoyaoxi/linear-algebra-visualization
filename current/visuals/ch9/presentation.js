@@ -19,7 +19,7 @@
   const transpose = (m) => [m[0], m[2], m[1], m[3]];
   const determinant = (m) => m[0] * m[3] - m[1] * m[2];
   const fmt = (value, digits = 2) => {
-    if (!Number.isFinite(value)) return "—";
+    if (!Number.isFinite(value)) return "未显示";
     if (Math.abs(value) < 0.5 * 10 ** -digits) return "0";
     return value.toFixed(digits).replace(/\.0+$/, "").replace(/(\.\d*?)0+$/, "$1");
   };
@@ -165,10 +165,6 @@
     ctx.clearRect(0, 0, width, height);
   }
 
-  function formalCard(block, extraClass = "") {
-    return `<article class="ch9-formal-card ${extraClass}"><span>${block.eyebrow}</span><h3>${block.title}</h3><div>${block.body}</div></article>`;
-  }
-
   function renderFormal(root, section) {
     if (!root) return;
     const blocks = section.formalBlocks || [];
@@ -183,40 +179,38 @@
       "least-squares-distance": "投影条件怎样变成正规方程",
       "unitary-spaces": "从实正交结构走向复酉结构",
     };
-    let body = "";
-    if (id === "inner-product-geometry") {
-      body = `<div class="ch9-origin-map">${blocks.map((block, index) => formalCard(block, `is-origin-${index + 1}`)).join("")}<div class="ch9-origin-center"><strong>内积</strong><span>一个数值，四种几何读法</span></div></div>`;
-    } else if (id === "orthonormal-bases") {
-      body = `<div class="ch9-process-strip">${blocks.map((block, index) => `<article><span>0${index + 1}</span><div><h3>${block.title}</h3><p>${block.eyebrow}</p>${block.body}</div></article>`).join("")}</div>`;
-    } else if (id === "euclidean-isomorphism") {
-      body = `<div class="ch9-structure-compare"><div class="ch9-compare-head"><span>只保留线性结构</span><span>同时保留欧氏几何</span></div>${blocks.map((block, index) => formalCard(block, index === 1 ? "is-emphasis" : "")).join("")}</div>`;
-    } else if (id === "orthogonal-transformations") {
-      body = `<div class="ch9-evidence-row">${blocks.map((block, index) => formalCard(block, `is-evidence-${index + 1}`)).join("")}</div>`;
-    } else if (id === "orthogonal-subspaces") {
-      body = `<div class="ch9-proof-flow">${blocks.map((block, index) => `<div class="ch9-proof-step">${formalCard(block)}${index < blocks.length - 1 ? '<span class="ch9-flow-arrow" aria-hidden="true">→</span>' : ""}</div>`).join("")}</div>`;
-    } else if (id === "symmetric-canonical-form") {
-      body = `<div class="ch9-theorem-gate"><div class="ch9-theorem-main">${formalCard(blocks[0])}${formalCard(blocks[1])}</div>${formalCard(blocks[2], "is-gate")}</div>`;
-    } else if (id === "least-squares-distance") {
-      body = `<div class="ch9-algebra-bridge">${blocks.map((block, index) => `<div class="ch9-algebra-step"><span>${["几何", "正交", "方程"][index]}</span>${formalCard(block)}</div>`).join("")}</div>`;
-    } else {
-      body = `<div class="ch9-real-complex-map">${blocks.map((block, index) => formalCard(block, index === 0 ? "is-conjugate" : "")).join("")}</div>`;
-    }
+    const labels = {
+      "inner-product-geometry": ["定义", "几何读法", "边界"],
+      "orthonormal-bases": ["保留", "减去", "单位化"],
+      "euclidean-isomorphism": ["线性", "等距", "判别"],
+      "orthogonal-transformations": ["图形", "矩阵列", "等式"],
+      "orthogonal-subspaces": ["分解", "勾股", "最近点"],
+      "symmetric-canonical-form": ["假设", "分解", "边界"],
+      "least-squares-distance": ["投影", "正交", "方程"],
+      "unitary-spaces": ["共轭", "酉变换", "类比"],
+    }[id] || ["起点", "推导", "结论"];
+    const rows = blocks.map((block, index) => `
+      <article class="ch9-theory-row">
+        <span>${labels[index] || `步骤 ${index + 1}`}</span>
+        <div><h3>${block.title}</h3><small>${block.eyebrow}</small>${block.body}</div>
+      </article>`).join("");
+    const body = `<div class="ch9-theory-sequence">${rows}</div>`;
     root.innerHTML = `<h2>${headings[id] || section.question}</h2><div class="ch9-foundation ch9-foundation-${id}"><p class="ch9-lead">${section.intro}</p>${body}</div>`;
   }
 
-  function labHeading(kicker, title, description) {
-    return `<div class="ch9-lab-heading"><span>${kicker}</span><div><h3>${title}</h3><p>${description}</p></div></div>`;
+  function experimentHeader(title, description) {
+    return `<header class="ch9-experiment-header"><h3>${title}</h3><p>${description}</p></header>`;
   }
 
-  function observation(items) {
-    return `<ol class="ch9-observation">${items.map((item, index) => `<li><span>${index + 1}</span><p>${item}</p></li>`).join("")}</ol>`;
+  function taskBlock(items) {
+    return `<div class="ch9-task"><strong>操作任务</strong><ol>${items.map((item) => `<li>${item}</li>`).join("")}</ol></div>`;
   }
 
   function range(name, label, min, max, step, value, suffix = "") {
     return `<label class="ch9-range"><span>${label}</span><input type="range" min="${min}" max="${max}" step="${step}" value="${value}" data-range="${name}"><output data-output="${name}">${value}${suffix}</output></label>`;
   }
 
-  function readingRow(label, key, value = "—") {
+  function readingRow(label, key, value = "待观察") {
     return `<div class="ch9-reading-row"><span>${label}</span><strong data-readout="${key}">${value}</strong></div>`;
   }
 
@@ -274,5 +268,5 @@
     return () => cancelAnimationFrame(raf);
   }
 
-  window.Chapter9Native = { inline, display, clamp, rad, deg, dot, norm, add, sub, scale, matVec, matMul, transpose, determinant, fmt, palette, setupCanvas, repaintCanvas, roundedRect, arrow, grid, axes, world, clear, renderFormal, labHeading, observation, range, readingRow, setReadout, setOutput, bindRange, bindButtons, activate, animate };
+  window.Chapter9Native = { inline, display, clamp, rad, deg, dot, norm, add, sub, scale, matVec, matMul, transpose, determinant, fmt, palette, setupCanvas, repaintCanvas, roundedRect, arrow, grid, axes, world, clear, renderFormal, experimentHeader, taskBlock, range, readingRow, setReadout, setOutput, bindRange, bindButtons, activate, animate };
 })();

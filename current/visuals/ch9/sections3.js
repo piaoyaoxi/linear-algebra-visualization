@@ -2,24 +2,29 @@
   const {
     display, rad, dot, norm, sub, scale, matVec, matMul, transpose, fmt,
     setupCanvas, repaintCanvas, arrow, grid, axes, world, clear, renderFormal,
-    labHeading, range, bindRange, bindButtons, activate, setOutput, animate,
+    experimentHeader, taskBlock, range, bindRange, bindButtons, activate, setOutput, animate,
   } = window.Chapter9Native;
 
   function projectionLab(root) {
     root.innerHTML = `<h2>交互实验</h2><section class="ch9-proj-lab" data-ch9-lab data-lab-kind="projection">
-      ${labHeading("§5 · 同一个参数，两种证据", "垂足为什么是唯一最近点", "左图中的候选点 w 与右图中的金棕色点使用同一个参数 t。沿 W 移动 w，右侧就在完整记录距离平方。")}
+      ${experimentHeader("垂足为什么是唯一最近点", "几何图中的候选点 w 和距离图中的当前点共用参数 t。移动一次，同时观察空间里的距离和函数值。")}
       <div class="ch9-proj-controls">
         <div class="ch9-toolbar"><button type="button" class="ch9-action is-primary" data-proj-best>把 w 移到垂足</button><button type="button" data-proj-perp>让 x 位于 W⊥</button><button type="button" data-proj-reset>恢复一般位置</button></div>
         <div class="ch9-range-list">${range("lineAngle", "子空间 W 的方向", -65, 65, 1, 28, "°")}${range("candidate", "候选点参数 t", -4, 4, .05, .4)}</div>
       </div>
+      <div class="ch9-view-switch" role="group" aria-label="手机端选择观察图">
+        <button type="button" class="is-active" data-proj-view="geometry">看几何分解</button>
+        <button type="button" data-proj-view="curve">看距离曲线</button>
+      </div>
       <div class="ch9-proj-linked">
-        <div class="ch9-proj-panel"><header>几何图：x = p + e</header><canvas data-proj-geometry aria-label="向量到直线子空间的正交分解"></canvas></div>
-        <div class="ch9-proj-panel"><header>距离图：f(t) = ‖x − tu‖²</header><canvas data-proj-curve aria-label="候选点到向量的距离平方曲线"></canvas></div>
+        <div class="ch9-proj-panel is-current" data-proj-panel="geometry"><header>几何图：x = p + e</header><canvas data-proj-geometry aria-label="向量到直线子空间的正交分解"></canvas></div>
+        <div class="ch9-proj-panel" data-proj-panel="curve"><header>距离图：f(t) = ‖x − tu‖²</header><canvas data-proj-curve aria-label="候选点到向量的距离平方曲线"></canvas></div>
       </div>
       <div class="ch9-proj-footer">
         <div class="ch9-equation" data-proj-equation></div>
         <div class="ch9-conclusion" data-proj-conclusion><strong data-proj-title></strong><p data-proj-copy></p></div>
       </div>
+      ${taskBlock(["移动候选点 t，比较 w 与 p 重合前后的距离变化。", "点击“把 w 移到垂足”，核对几何重合与曲线最低点是否同时发生。", "让 x 位于 W 的正交补，解释为什么此时投影 p 是零向量。"])}
     </section>`;
 
     const geometry = root.querySelector("[data-proj-geometry]");
@@ -83,7 +88,10 @@
       ctx.fillStyle = colors.muted; ctx.font = "12px ui-sans-serif, system-ui";
       ctx.fillText("t", right - 8, bottom + 24); ctx.fillText("距离²", left - 16, top - 9);
       const tToX = (t) => left + (t + 4) / 8 * (right - left);
-      const maxValue = Math.max(16, minimum + 16);
+      const maxValue = minimum + Math.max(
+        (-4 - d.coefficient) ** 2,
+        (4 - d.coefficient) ** 2,
+      ) * 1.08;
       const vToY = (value) => bottom - Math.min(value / maxValue, 1) * (bottom - top);
       ctx.strokeStyle = colors.accentStrong; ctx.lineWidth = 3;
       ctx.beginPath();
@@ -102,8 +110,10 @@
       ctx.fillStyle = colors.accentStrong; ctx.beginPath(); ctx.arc(bx, by, 6, 0, Math.PI * 2); ctx.fill();
       ctx.fillStyle = colors.coral; ctx.beginPath(); ctx.arc(cx, cy, 6, 0, Math.PI * 2); ctx.fill();
       ctx.font = "700 12px ui-sans-serif, system-ui";
-      ctx.fillStyle = colors.accentStrong; ctx.fillText("最低点 p", bx + 8, by - 9);
-      ctx.fillStyle = colors.coral; ctx.fillText("当前 w", cx + 8, cy + 17);
+      const bestLabelX = Math.min(right - 58, Math.max(left + 4, bx + 8));
+      const currentLabelX = Math.min(right - 52, Math.max(left + 4, cx + 8));
+      ctx.fillStyle = colors.accentStrong; ctx.fillText("最低点 p", bestLabelX, by - 9);
+      ctx.fillStyle = colors.coral; ctx.fillText("当前 w", currentLabelX, cy + 17);
       ctx.restore();
 
       const extra = (state.candidate - d.coefficient) ** 2;
@@ -111,7 +121,7 @@
       const hit = extra < .001;
       const box = root.querySelector("[data-proj-conclusion]");
       box.classList.toggle("is-warning", !hit);
-      root.querySelector("[data-proj-title]").textContent = hit ? "同一个 t 同时命中垂足和曲线最低点" : `当前距离还多出 ${fmt(extra, 2)} 的平方`;
+      root.querySelector("[data-proj-title]").textContent = hit ? "同一个 t 同时命中垂足和曲线最低点" : `当前距离平方比最小值多 ${fmt(extra, 2)}`;
       root.querySelector("[data-proj-copy]").textContent = hit ? "附加项 ‖p−w‖² 等于 0，所以 p 是唯一最近点。" : "继续沿 W 移动金棕色候选点，直到它与青绿色投影点重合。";
     }
 
@@ -122,6 +132,15 @@
       bindRange(root, "lineAngle", (value) => { state.angle = value; setOutput(root, "lineAngle", `${fmt(value, 0)}°`); repaint(); }),
       bindRange(root, "candidate", (value) => { state.candidate = value; setOutput(root, "candidate", fmt(value, 2)); repaint(); }),
     ];
+    const [viewButtons, cleanViews] = bindButtons(root, "[data-proj-view]", (button) => {
+      const view = button.dataset.projView;
+      activate(viewButtons, view, "projView");
+      root.querySelectorAll("[data-proj-panel]").forEach((panel) => {
+        panel.classList.toggle("is-current", panel.dataset.projPanel === view);
+      });
+      repaint();
+    });
+    activate(viewButtons, "geometry", "projView");
     const best = root.querySelector("[data-proj-best]");
     const perpendicular = root.querySelector("[data-proj-perp]");
     const reset = root.querySelector("[data-proj-reset]");
@@ -135,32 +154,31 @@
     const perpendicularHandler = () => { const a = rad(state.angle); state.x = scale(2.65, [-Math.sin(a), Math.cos(a)]); state.candidate = 0; root.querySelector('[data-range="candidate"]').value = "0"; setOutput(root, "candidate", "0"); repaint(); };
     const resetHandler = () => { state.x = [2.3, 2.45]; state.candidate = .4; root.querySelector('[data-range="candidate"]').value = ".4"; setOutput(root, "candidate", "0.4"); repaint(); };
     best.addEventListener("click", bestHandler); perpendicular.addEventListener("click", perpendicularHandler); reset.addEventListener("click", resetHandler);
-    return [cleanGeometry, cleanCurve, ...cleanRanges, () => { stop(); best.removeEventListener("click", bestHandler); perpendicular.removeEventListener("click", perpendicularHandler); reset.removeEventListener("click", resetHandler); }];
+    return [cleanGeometry, cleanCurve, ...cleanRanges, cleanViews, () => { stop(); best.removeEventListener("click", bestHandler); perpendicular.removeEventListener("click", perpendicularHandler); reset.removeEventListener("click", resetHandler); }];
   }
 
   function rotation(angle) { const c = Math.cos(angle), s = Math.sin(angle); return [c, -s, s, c]; }
 
   function spectralLab(root) {
     root.innerHTML = `<h2>交互实验</h2><section class="ch9-spectral-lab" data-ch9-lab data-lab-kind="spectral">
-      ${labHeading("§6 · 三幅连续场景", "把 A = QΛQᵀ 拆成三次可见动作", "每一幅都保留上一幅的数学含义：先改用特征坐标，再沿两个坐标轴独立伸缩，最后回到原坐标。")}
+      ${experimentHeader("把 A = QΛQᵀ 拆成三次可见动作", "同一幅图按顺序执行 Qᵀ、Λ 和 Q。每一步只改变当前需要观察的对象，避免同时比较三幅孤立图。")}
       <div class="ch9-spectral-controls">
         <div class="ch9-toolbar" role="group" aria-label="谱分解矩阵类型"><button type="button" class="is-active" data-sp-preset="positive">正定对称</button><button type="button" data-sp-preset="indefinite">一正一负</button><button type="button" data-sp-preset="repeated">重特征值</button><button type="button" data-sp-preset="nonsymmetric">非对称矩阵</button></div>
         <div class="ch9-toolbar" role="group" aria-label="谱分解观察步骤"><button type="button" class="is-active" data-sp-step="0">1　Qᵀ</button><button type="button" data-sp-step="1">2　Λ</button><button type="button" data-sp-step="2">3　Q</button></div>
       </div>
       <div class="ch9-spectral-story" data-sp-story>
-        <div class="ch9-spectral-frame is-current" data-sp-frame="0"><header><strong>① 转入特征坐标</strong><span>Qᵀ：特征方向对准坐标轴</span></header><canvas data-sp-canvas="0" aria-label="转入特征坐标"></canvas></div>
-        <div class="ch9-spectral-frame" data-sp-frame="1"><header><strong>② 沿坐标轴独立伸缩</strong><span>Λ：两个方向互不混合</span></header><canvas data-sp-canvas="1" aria-label="特征坐标中的独立伸缩"></canvas></div>
-        <div class="ch9-spectral-frame" data-sp-frame="2"><header><strong>③ 旋回原坐标</strong><span>Q：椭圆主轴成为 q₁、q₂</span></header><canvas data-sp-canvas="2" aria-label="旋回原坐标后的对称变换"></canvas></div>
+        <div class="ch9-stage"><div class="ch9-stage-top"><strong data-sp-stage-title>① 转入特征坐标</strong><span data-sp-stage-copy>Qᵀ：特征方向对准坐标轴</span></div><canvas data-sp-canvas aria-label="实对称矩阵谱分解的连续三步图"></canvas></div>
       </div>
       <div class="ch9-theorem-warning" data-sp-warning hidden><strong>定理闸门关闭：Aᵀ ≠ A</strong><p>一般矩阵不能直接写成 QΛQᵀ。这里先停止动画，避免把实谱定理套到不满足假设的对象上。</p></div>
       <div class="ch9-spectral-footer"><div class="ch9-equation" data-sp-equation></div><div class="ch9-conclusion" data-sp-conclusion><strong data-sp-title></strong><p data-sp-copy></p></div></div>
+      ${taskBlock(["按 Qᵀ、Λ、Q 的顺序观察坐标轴、圆和椭圆如何变化。", "切换到一正一负，观察负特征值怎样翻转一个方向。", "切换到非对称矩阵，再返回正定对称，确认定理条件和图形都正确恢复。"])}
     </section>`;
 
-    const canvases = [0, 1, 2].map((index) => root.querySelector(`[data-sp-canvas="${index}"]`));
+    const canvas = root.querySelector("[data-sp-canvas]");
     const state = { preset: "positive", step: 0 };
     const presets = { positive: { angle: 30, l1: 2.2, l2: .85 }, indefinite: { angle: 24, l1: 2.0, l2: -1.05 }, repeated: { angle: 0, l1: 1.45, l2: 1.45 } };
 
-    function paintFrame(index, ctx, width, height, colors) {
+    function paint(ctx, width, height, colors) {
       clear(ctx, width, height);
       grid(ctx, width, height, colors, Math.max(38, width / 8));
       const origin = [width * .5, height * .56];
@@ -169,10 +187,10 @@
       const p = presets[state.preset] || presets.positive;
       const q = rotation(rad(p.angle));
       const lambda = [p.l1, 0, 0, p.l2];
-      const transform = index === 0 ? [1, 0, 0, 1] : index === 1 ? lambda : matMul(matMul(q, lambda), transpose(q));
+      const transform = state.step === 0 ? [1, 0, 0, 1] : state.step === 1 ? lambda : matMul(matMul(q, lambda), transpose(q));
       ctx.save();
-      ctx.strokeStyle = index === 0 ? colors.strongLine : colors.accentStrong;
-      ctx.lineWidth = index === 0 ? 2 : 3;
+      ctx.strokeStyle = state.step === 0 ? colors.strongLine : colors.accentStrong;
+      ctx.lineWidth = state.step === 0 ? 2 : 3;
       ctx.beginPath();
       for (let i = 0; i <= 180; i += 1) {
         const a = Math.PI * 2 * i / 180;
@@ -180,7 +198,7 @@
         if (!i) ctx.moveTo(point[0], point[1]); else ctx.lineTo(point[0], point[1]);
       }
       ctx.closePath(); ctx.stroke(); ctx.restore();
-      if (index === 0) {
+      if (state.step === 0) {
         ctx.save();
         ctx.strokeStyle = colors.muted;
         ctx.setLineDash([5, 5]);
@@ -193,7 +211,7 @@
         ctx.restore();
         arrow(ctx, origin, world([1.35, 0], origin, unit), colors.accentStrong, "Qᵀq₁=e₁", { width: 3.3, labelY: -13 });
         arrow(ctx, origin, world([0, 1.35], origin, unit), colors.coral, "Qᵀq₂=e₂", { width: 3.3 });
-      } else if (index === 2) {
+      } else if (state.step === 2) {
         arrow(ctx, origin, world(scale(1.28, [q[0], q[2]]), origin, unit), colors.accentStrong, "q₁", { width: 3.3 });
         arrow(ctx, origin, world(scale(1.28, [q[1], q[3]]), origin, unit), colors.coral, "q₂", { width: 3.3 });
       } else {
@@ -202,25 +220,28 @@
       }
     }
 
-    const paintFunctions = canvases.map((_, index) => (ctx, width, height, colors) => paintFrame(index, ctx, width, height, colors));
-    const cleanCanvases = canvases.map((canvas, index) => setupCanvas(canvas, paintFunctions[index]));
-    const repaint = () => canvases.forEach((canvas, index) => repaintCanvas(canvas, paintFunctions[index]));
+    const cleanCanvas = setupCanvas(canvas, paint, 400);
+    const repaint = () => repaintCanvas(canvas, paint);
 
     function update() {
       const nonsymmetric = state.preset === "nonsymmetric";
       root.querySelector("[data-sp-story]").hidden = nonsymmetric;
       root.querySelector("[data-sp-warning]").hidden = !nonsymmetric;
       root.querySelectorAll("[data-sp-step]").forEach((button) => { button.disabled = nonsymmetric; });
-      root.querySelectorAll("[data-sp-frame]").forEach((frame) => frame.classList.toggle("is-current", Number(frame.dataset.spFrame) === state.step));
       if (nonsymmetric) {
         root.querySelector("[data-sp-equation]").innerHTML = display("A^T\\ne A\\;\\Longrightarrow\\;\\text{不能直接使用实谱定理}");
         root.querySelector("[data-sp-conclusion]").classList.add("is-warning");
         root.querySelector("[data-sp-title]").textContent = "先检查对称性，再谈正交对角化";
         root.querySelector("[data-sp-copy]").textContent = "非对称矩阵可能有实特征值，也未必拥有标准正交特征基。";
+        repaint();
         return;
       }
       const p = presets[state.preset];
-      const equations = ["x\\xmapsto{Q^T}Q^Tx", "Q^Tx\\xmapsto{\\Lambda}\\Lambda Q^Tx", "\\Lambda Q^Tx\\xmapsto{Q}Q\\Lambda Q^Tx=Ax"];
+      const equations = ["x'=Q^Tx", "y=\\Lambda x'", "Ax=Qy=Q\\Lambda Q^Tx"];
+      const stageTitles = ["① 转入特征坐标", "② 沿坐标轴独立伸缩", "③ 旋回原坐标"];
+      const stageCopies = ["Qᵀ：特征方向对准坐标轴", "Λ：两个方向互不混合", "Q：椭圆主轴回到 q₁、q₂"];
+      root.querySelector("[data-sp-stage-title]").textContent = stageTitles[state.step];
+      root.querySelector("[data-sp-stage-copy]").textContent = stageCopies[state.step];
       root.querySelector("[data-sp-equation]").innerHTML = display(equations[state.step]);
       root.querySelector("[data-sp-conclusion]").classList.remove("is-warning");
       if (state.preset === "repeated") {
@@ -238,7 +259,7 @@
     activate(presetButtons, state.preset, "spPreset");
     activate(stepButtons, state.step, "spStep");
     update();
-    return [...cleanCanvases, cleanPresets, cleanSteps];
+    return [cleanCanvas, cleanPresets, cleanSteps];
   }
 
   window.defineChapter9Renderer?.("orthogonal-subspaces", { formal: renderFormal, interactive: projectionLab });

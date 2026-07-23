@@ -1,12 +1,12 @@
 (() => {
   const {
     display, rad, dot, norm, sub, scale, fmt, palette, setupCanvas, repaintCanvas,
-    arrow, grid, axes, world, clear, renderFormal, labHeading, observation, range,
+    arrow, grid, axes, world, clear, renderFormal, experimentHeader, taskBlock, range,
     setReadout, setOutput, bindRange, bindButtons, activate,
   } = window.Chapter9Native;
 
   function metric(label, key) {
-    return `<div><span>${label}</span><strong data-readout="${key}">—</strong></div>`;
+    return `<div><span data-metric-label="${key}">${label}</span><strong data-readout="${key}">待观察</strong></div>`;
   }
 
   function conclusion(key) {
@@ -15,8 +15,7 @@
 
   function innerProductLab(root) {
     root.innerHTML = `<h2>交互实验</h2><section class="ch9-inner-lab" data-ch9-lab data-lab-kind="inner-product">
-      ${labHeading("§1 · 从图形读公式", "一幅图看懂内积的三个几何量", "青绿色向量 x 固定在横轴上；金棕色向量 y 绕原点转动。垂足决定有向投影，投影的正负决定内积的正负。")}
-      ${observation(["先看两向量的夹角属于锐角、直角还是钝角。", "再看 y 在 x 方向上的有向投影落在原点哪一侧。", "最后把投影长度乘以 ‖x‖，得到〈x,y〉。"])}
+      ${experimentHeader("从夹角到内积", "固定向量 x，改变 y 的方向。图中的夹角、垂足、投影和公式始终对应同一组向量。")}
       <div class="ch9-inner-body">
         <div class="ch9-inner-scene">
           <div class="ch9-stage">
@@ -37,6 +36,7 @@
           ${conclusion("ip")}
         </aside>
       </div>
+      ${taskBlock(["先在锐角、直角和钝角之间切换，观察垂足落在原点哪一侧。", "拖动 y 的方向，找出内积从正数变成负数的准确位置。", "切换到零向量，说明为什么夹角不定义而内积仍等于 0。"])}
     </section>`;
 
     const canvas = root.querySelector("[data-ip-canvas]");
@@ -158,7 +158,7 @@
 
   function gramSchmidtLab(root) {
     root.innerHTML = `<h2>交互实验</h2><section class="ch9-gs-lab" data-ch9-lab data-lab-kind="gram-schmidt">
-      ${labHeading("§2 · 保持同一个平面", "Gram–Schmidt：减掉旧方向，留下新方向", "舞台始终保留原来的两个向量。每一步只新增一个几何对象，让公式中的投影、减法和单位化都能在图中找到。")}
+      ${experimentHeader("Gram-Schmidt：减掉旧方向，留下新方向", "四个步骤共用一幅图。当前步骤只显示已经定义的向量和数值，不提前给出后面的结论。")}
       <div class="ch9-gs-body">
         <div class="ch9-stage">
           <div class="ch9-stage-top"><strong>同一舞台上的四步正交化</strong><span>青绿：旧方向　金棕：新方向　虚线：被减掉的部分</span></div>
@@ -181,6 +181,7 @@
         <button type="button" data-gs-step="2"><span>03</span>减去投影</button>
         <button type="button" data-gs-step="3"><span>04</span>把余量单位化</button>
       </div>
+      ${taskBlock(["依次完成四步，并在图中指出被减掉的平行部分。", "切换到接近相关，观察余量为什么很短。", "切换到线性相关，说明算法为什么必须停在第三步。"])}
     </section>`;
 
     const canvas = root.querySelector("[data-gs-canvas]");
@@ -249,9 +250,19 @@
         ctx.restore();
       }
 
-      setReadout(root, "coefficient", fmt(d.coefficient, 3));
-      setReadout(root, "residual", fmt(d.residualNorm, 3));
-      setReadout(root, "orthogonality", d.residualNorm > 1e-6 ? fmt(dot(d.e1, d.e2), 5) : "无法定义 e₂");
+      setReadout(root, "coefficient", state.step >= 1 ? fmt(d.coefficient, 3) : "待计算");
+      setReadout(root, "residual", state.step >= 2 ? fmt(d.residualNorm, 3) : "待计算");
+      const orthogonality = root.querySelector('[data-metric-label="orthogonality"]');
+      if (state.step === 2) {
+        orthogonality.textContent = "〈v₁,u₂〉";
+        setReadout(root, "orthogonality", d.residualNorm > 1e-6 ? fmt(dot(d.v1, d.residual), 5) : "u₂ = 0");
+      } else if (state.step >= 3) {
+        orthogonality.textContent = "〈e₁,e₂〉";
+        setReadout(root, "orthogonality", d.residualNorm > 1e-6 ? fmt(dot(d.e1, d.e2), 5) : "e₂ 不存在");
+      } else {
+        orthogonality.textContent = "正交检验";
+        setReadout(root, "orthogonality", "尚未进行");
+      }
       const equations = ["u_1=v_1", `\\operatorname{proj}_{v_1}v_2=${fmt(d.coefficient, 2)}v_1`, "u_2=v_2-\\operatorname{proj}_{v_1}v_2", d.residualNorm > 1e-6 ? "e_i=u_i/\\lVert u_i\\rVert" : "u_2=0\\;\\Rightarrow\\;\\text{停止}"];
       root.querySelector("[data-gs-equation]").innerHTML = display(equations[state.step]);
       const box = root.querySelector('[data-conclusion="gs"]');

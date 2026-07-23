@@ -1,7 +1,7 @@
 (() => {
   const {
     display, rad, fmt, setupCanvas, repaintCanvas, arrow, grid, axes, world, clear,
-    renderFormal, labHeading, observation, range, bindRange, bindButtons, activate,
+    renderFormal, experimentHeader, taskBlock, range, bindRange, bindButtons, activate,
     setOutput, animate,
   } = window.Chapter9Native;
 
@@ -28,18 +28,18 @@
 
   function leastSquaresLab(root) {
     root.innerHTML = `<h2>交互实验</h2><section class="ch9-ls-lab" data-ch9-lab data-lab-kind="least-squares">
-      ${labHeading("§7 · 先尝试，再揭示", "用残差把候选直线推向最小二乘解", "先只看自己的候选直线和五条残差。调节斜率、截距降低 SSE；需要核对时再揭示最优位置和正规方程。")}
-      ${observation(["先调截距，让正负残差大致平衡。", "再调斜率，让左右两端的残差不再偏向一侧。", "揭示答案后，检查两条残差和是否同时归零。"])}
+      ${experimentHeader("用残差把候选直线推向最小二乘解", "调节斜率和截距，观察残差棒与两条正交条件怎样一起变化。最优直线默认隐藏，先让图形给出方向。")}
       <div class="ch9-ls-body">
         <div class="ch9-stage"><div class="ch9-stage-top"><strong>候选直线与有向残差</strong><span data-ls-legend>最优位置暂时隐藏</span></div><canvas data-ls-canvas aria-label="可调候选直线、数据点和有向残差"></canvas></div>
         <aside class="ch9-ls-side">
           <div class="ch9-range-list">${range("slope", "斜率 m", -1, 2.2, .02, .55)}${range("intercept", "截距 c", -.5, 4, .02, 2)}</div>
-          <div class="ch9-metric-strip"><div><span>误差平方和 SSE</span><strong data-ls-sse></strong></div><div><span>Σrᵢ</span><strong data-ls-sum></strong></div><div><span>Σxᵢrᵢ</span><strong data-ls-weighted></strong></div></div>
+          <div class="ch9-ls-readings"><div><span>误差平方和 SSE</span><strong data-ls-sse></strong></div><div><span>Σrᵢ</span><strong data-ls-sum></strong></div><div><span>Σxᵢrᵢ</span><strong data-ls-weighted></strong></div></div>
           <button type="button" class="ch9-action is-primary" data-ls-best>揭示并移动到最小二乘解</button>
           <div class="ch9-normal-equations" data-ls-normal hidden><strong>最佳解的正交证书</strong><div><span>与常数列正交</span><b>Σrᵢ = 0</b></div><div><span>与横坐标列正交</span><b>Σxᵢrᵢ = 0</b></div></div>
           <div class="ch9-conclusion" data-ls-conclusion><strong data-ls-title></strong><p data-ls-copy></p></div>
         </aside>
       </div>
+      ${taskBlock(["先只调截距，让正负残差大致平衡。", "再调斜率，减少左右两端残差的系统偏向。", "揭示最优解，核对 Σrᵢ 和 Σxᵢrᵢ 是否同时等于 0。"])}
     </section>`;
 
     const canvas = root.querySelector("[data-ls-canvas]");
@@ -115,7 +115,7 @@
 
   function unitaryLab(root) {
     root.innerHTML = `<h2>交互实验</h2><section class="ch9-unitary-lab" data-ch9-lab data-lab-kind="unitary">
-      ${labHeading("＊§8 · 两个问题分开看", "共轭保证正定，单位复数保证等模", "第一步只研究 z 与自身的内积；第二步再研究乘以复数 U 后模长是否保持。这样共轭和酉变换不会挤在同一幅图里。")}
+      ${experimentHeader("共轭保证正定，单位复数保证等模", "实验分成两个独立问题。第一步只看共轭如何消去相位，第二步再看复数乘法什么时候保持模长。")}
       <div class="ch9-unitary-tabs" role="group" aria-label="酉空间实验步骤"><button type="button" class="ch9-action is-primary" aria-pressed="true" data-u-tab="conjugate">A　为什么需要共轭</button><button type="button" class="ch9-action" aria-pressed="false" data-u-tab="motion">B　什么是酉变换</button></div>
       <div class="ch9-unitary-body">
         <div class="ch9-stage"><div class="ch9-stage-top"><strong data-u-stage-title>共轭把相位变成相反数</strong><span data-u-stage-copy>z 与 z̄ 关于实轴镜像</span></div><canvas data-u-canvas aria-label="复平面上的共轭乘积与酉变换"></canvas></div>
@@ -123,11 +123,12 @@
           <div data-u-conjugate-controls class="ch9-range-list">${range("zAngle", "z 的相位", -165, 165, 1, 42, "°")}</div>
           <div data-u-motion-controls hidden><div class="ch9-toolbar" role="group" aria-label="复数乘法类型"><button type="button" class="is-active" data-u-mode="unitary">单位复数</button><button type="button" data-u-mode="scaled">加入缩放反例</button></div><div class="ch9-range-list">${range("phase", "U 的相位", -180, 180, 1, 70, "°")}${range("rho", "缩放 ρ", .6, 1.6, .05, 1.3)}</div></div>
           <div class="ch9-equation" data-u-equation></div>
-          <div class="ch9-metric-strip"><div><span>z̄z</span><strong data-u-self></strong></div><div><span>|z|</span><strong data-u-z-norm></strong></div><div><span>|Uz|</span><strong data-u-uz-norm></strong></div></div>
+          <div class="ch9-metric-strip"><div data-u-self-metric><span>z̄z</span><strong data-u-self></strong></div><div><span>|z|</span><strong data-u-z-norm></strong></div><div data-u-uz-metric hidden><span>|Uz|</span><strong data-u-uz-norm></strong></div></div>
           <div class="ch9-conclusion" data-u-conclusion><strong data-u-title></strong><p data-u-copy></p></div>
           <div class="ch9-dictionary"><div>实空间</div><div>复空间</div><div>转置 Aᵀ</div><div>共轭转置 A*</div><div>正交 QᵀQ=I</div><div>酉 U*U=I</div></div>
         </aside>
       </div>
+      ${taskBlock(["在问题 A 中改变 z 的相位，确认 z̄z 始终落在非负实轴。", "切换到问题 B，让单位复数改变相位，观察 |Uz| 是否变化。", "加入缩放反例，指出酉条件失效的几何证据。"])}
     </section>`;
 
     const canvas = root.querySelector("[data-u-canvas]");
@@ -137,7 +138,7 @@
     function paint(ctx, width, height, colors) {
       clear(ctx, width, height);
       grid(ctx, width, height, colors, Math.max(44, width / 14));
-      const origin = [width * .4, height * .57];
+      const origin = [width < 520 ? width * .36 : width * .4, height * .57];
       const unit = Math.min(width / 8, height / 4.4);
       axes(ctx, origin, width, height, colors);
       const z = polar(state.length, state.zAngle);
@@ -149,10 +150,16 @@
         ctx.strokeStyle = colors.muted; ctx.setLineDash([5, 5]);
         const zp = world(z, origin, unit), cp = world(conjugate, origin, unit);
         ctx.beginPath(); ctx.moveTo(zp[0], zp[1]); ctx.lineTo(cp[0], cp[1]); ctx.stroke(); ctx.setLineDash([]);
-        const productOrigin = [width * .76, origin[1]];
-        ctx.strokeStyle = colors.strongLine; ctx.beginPath(); ctx.moveTo(productOrigin[0] - 60, productOrigin[1]); ctx.lineTo(width - 24, productOrigin[1]); ctx.stroke();
-        arrow(ctx, productOrigin, [Math.min(width - 34, productOrigin[0] + state.length ** 2 * unit * .36), productOrigin[1]], colors.accentStrong, "z̄z = |z|²", { width: 4 });
-        ctx.fillStyle = colors.muted; ctx.font = "12px ui-sans-serif, system-ui"; ctx.fillText("乘积落在非负实轴", productOrigin[0] - 16, productOrigin[1] + 31);
+        const productY = height - 36;
+        ctx.strokeStyle = colors.strongLine;
+        ctx.beginPath();
+        ctx.moveTo(28, productY);
+        ctx.lineTo(width - 28, productY);
+        ctx.stroke();
+        ctx.fillStyle = colors.accentStrong;
+        ctx.font = "700 12px ui-sans-serif, system-ui";
+        ctx.textAlign = "center";
+        ctx.fillText("z̄z = |z|² 落在非负实轴", width / 2, productY - 10);
         ctx.restore();
         root.querySelector("[data-u-equation]").innerHTML = display(`\\bar z z=${fmt(state.length, 2)}^2=${fmt(state.length ** 2, 2)}\\ge 0`);
         root.querySelector("[data-u-title]").textContent = "共轭消去相位，留下模长平方";
@@ -175,7 +182,7 @@
       const rho = state.tab === "motion" && state.mode === "scaled" ? state.rho : 1;
       root.querySelector("[data-u-self]").textContent = fmt(state.length ** 2, 3);
       root.querySelector("[data-u-z-norm]").textContent = fmt(state.length, 3);
-      root.querySelector("[data-u-uz-norm]").textContent = state.tab === "motion" ? fmt(state.length * rho, 3) : "—";
+      root.querySelector("[data-u-uz-norm]").textContent = fmt(state.length * rho, 3);
     }
 
     const cleanupCanvas = setupCanvas(canvas, paint);
@@ -185,6 +192,8 @@
       tabButtons.forEach((item) => { const active = item === button; item.classList.toggle("is-primary", active); item.setAttribute("aria-pressed", String(active)); });
       root.querySelector("[data-u-conjugate-controls]").hidden = state.tab !== "conjugate";
       root.querySelector("[data-u-motion-controls]").hidden = state.tab !== "motion";
+      root.querySelector("[data-u-self-metric]").hidden = state.tab !== "conjugate";
+      root.querySelector("[data-u-uz-metric]").hidden = state.tab !== "motion";
       root.querySelector("[data-u-stage-title]").textContent = state.tab === "conjugate" ? "共轭把相位变成相反数" : "单位复数乘法沿等模圆转动";
       root.querySelector("[data-u-stage-copy]").textContent = state.tab === "conjugate" ? "z 与 z̄ 关于实轴镜像" : "比较 z 与 Uz 是否落在同一个圆上";
       repaint();

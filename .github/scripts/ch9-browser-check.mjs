@@ -69,10 +69,12 @@ async function openLesson(page, id, screenshotName = "") {
   await page.waitForTimeout(220);
   const labKind = await page.locator("[data-ch9-lab]").getAttribute("data-lab-kind");
   if (labKind !== labKinds[id]) throw new Error(`${id}: expected bespoke lab ${labKinds[id]}, got ${labKind}`);
-  const canvasAudit = await page.evaluate(() => [...document.querySelectorAll("[data-ch9-lab] canvas")].map((canvas) => {
-    const rect = canvas.getBoundingClientRect();
-    return { width: rect.width, height: rect.height, pixelWidth: canvas.width, pixelHeight: canvas.height };
-  }));
+  const canvasAudit = await page.evaluate(() => [...document.querySelectorAll("[data-ch9-lab] canvas")]
+    .filter((canvas) => canvas.getBoundingClientRect().width > 0)
+    .map((canvas) => {
+      const rect = canvas.getBoundingClientRect();
+      return { width: rect.width, height: rect.height, pixelWidth: canvas.width, pixelHeight: canvas.height };
+    }));
   if (!canvasAudit.length || canvasAudit.some((item) => item.width < 260 || item.height < 280 || item.pixelWidth < 260 || item.pixelHeight < 280)) {
     throw new Error(`${id}: invalid Canvas stage ${JSON.stringify(canvasAudit)}`);
   }
@@ -94,6 +96,9 @@ async function exerciseStates(page) {
   if (await page.locator('[data-range="ipAngle"]').isEnabled()) throw new Error("§1: angle slider must be disabled for zero vector");
 
   await openLesson(page, sections[1]);
+  if ((await page.locator('[data-readout="orthogonality"]').innerText()) !== "尚未进行") {
+    throw new Error("§2: orthogonality is shown before the required vectors exist");
+  }
   await page.locator('[data-gs-preset="dependent"]').click();
   await waitText(page, '[data-conclusion="gs"]', "余量为零", "§2 dependent input");
   if (await page.locator('[data-gs-step="3"]').isEnabled()) throw new Error("§2: normalization must stop at zero residual");
@@ -113,16 +118,21 @@ async function exerciseStates(page) {
   if (!(await page.locator("[data-shape-control]").isVisible())) throw new Error("§4: deformation control is hidden for shear");
   await page.locator('[data-ortho-mode="reflection"]').click();
   await waitText(page, "[data-ortho-conclusion]", "保持全部距离", "§4 reflection");
+  await page.locator('[data-ortho-mode="rotation"]').click();
+  await waitText(page, "[data-ortho-conclusion]", "旋转保持定向", "§4 counterexample recovery");
 
   await openLesson(page, sections[4]);
   await page.locator("[data-proj-best]").click();
   await waitText(page, "[data-proj-conclusion]", "曲线最低点", "§5 projection minimum");
+  const projectionExtra = await page.locator("[data-proj-equation]").innerText();
+  if (!projectionExtra.includes("+ 0")) throw new Error(`§5: projection animation did not end exactly at the minimum: ${projectionExtra}`);
 
   await openLesson(page, sections[5]);
   await page.locator('[data-sp-preset="nonsymmetric"]').click();
   await waitText(page, "[data-sp-warning]", "定理闸门关闭", "§6 nonsymmetric gate");
   if (await page.locator("[data-sp-story]").isVisible()) throw new Error("§6: spectral story must close for nonsymmetric matrix");
   await page.locator('[data-sp-preset="positive"]').click();
+  if (!(await page.locator("[data-sp-story]").isVisible())) throw new Error("§6: spectral story did not recover after returning to a symmetric matrix");
   await page.locator('[data-sp-step="2"]').click();
   await waitText(page, "[data-sp-conclusion]", "Q 把主轴送回", "§6 spectral completion");
   await page.locator('[data-sp-preset="repeated"]').click();

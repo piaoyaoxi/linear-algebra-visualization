@@ -64,10 +64,10 @@
         onSettle: (value) => this.settleSearch(value),
       });
       this.searchResultsMotion = new ReversibleSpring({
-        openFrequency: reduced ? 50 : 14.8,
-        closeFrequency: reduced ? 52 : 15.6,
-        openDamping: reduced ? 1 : 0.78,
-        closeDamping: reduced ? 1 : 0.82,
+        openFrequency: reduced ? 50 : 10.8,
+        closeFrequency: reduced ? 52 : 11.6,
+        openDamping: reduced ? 1 : 0.9,
+        closeDamping: reduced ? 1 : 0.92,
         onUpdate: (value, raw, target) => this.renderSearchResultsMotion(value, raw, target),
         onSettle: (value) => this.settleSearchResults(value),
       });

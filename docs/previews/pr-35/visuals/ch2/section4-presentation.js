@@ -140,13 +140,13 @@
         <div class="ch2-lab">
           <div class="ch2-lab-head"><h3>三种列操作 · 对比几何变化</h3><p>平行四边形由两列生成，所以画面直接操作列。右侧同步验证当前 det=初始 det×累计倍率。</p></div>
           <div class="ch2-task"><strong>观察任务</strong><span>依次做交换、倍乘、倍加，再逐步撤销；每一步先预测 det。</span></div>
-          <div class="ch2-lab-grid">
+          <div class="ch2-operation-layout">
             <div class="ch2-compare-stage">
               <div><span>变换前 · 固定参照</span><div class="ch2-stage"><canvas data-row-before aria-label="列操作前的有向面积"></canvas></div></div>
               <b aria-hidden="true">→</b>
               <div><span>变换后 · 当前状态</span><div class="ch2-stage"><canvas data-row-canvas aria-label="列操作后的有向面积"></canvas></div></div>
             </div>
-            <div class="ch2-side">
+            <div class="ch2-operation-summary">
               <div class="ch2-note">当前矩阵<br /><strong data-mat></strong></div>
               <div class="ch2-meter is-2">
                 <div class="ch2-meter-card"><strong>当前 det</strong><span data-cur-det></span></div>
@@ -155,13 +155,13 @@
                 <div class="ch2-meter-card"><strong>初始×倍率</strong><span data-check></span></div>
               </div>
               <div class="ch2-ledger"><strong>操作账本</strong><ol data-ledger></ol></div>
-              <div class="ch2-toolbar">
-                <button type="button" data-op-swap>交换 C₁、C₂</button>
-                <button type="button" data-op-scale>C₁ ×1.5</button>
-                <button type="button" data-op-add>C₂ ← C₂+C₁</button>
-                <button type="button" data-op-undo>撤销</button>
-                <button type="button" data-op-reset>重置</button>
-              </div>
+            </div>
+            <div class="ch2-toolbar ch2-wide-controls">
+              <button type="button" data-op-swap>交换 C₁、C₂</button>
+              <button type="button" data-op-scale>C₁ ×1.5</button>
+              <button type="button" data-op-add>C₂ ← C₂+C₁</button>
+              <button type="button" data-op-undo>撤销</button>
+              <button type="button" data-op-reset>重置</button>
             </div>
           </div>
         </div>`;

@@ -242,9 +242,10 @@
         <div class="ch2-lab">
           <div class="ch2-lab-head"><h3>Cramer 法则 · 列空间与面积比</h3><p>系数列、b、D、D₁、D₂ 与坐标重构同步变化。D=0 时改用列空间判断相容性。</p></div>
           <div class="ch2-task"><strong>观察任务</strong><span>先读取唯一解，再比较接近奇异、D=0 相容和 D=0 不相容三种边界。</span></div>
-          <div class="ch2-lab-grid">
-            <div class="ch2-stage"><canvas data-cramer-canvas aria-label="克拉默法则列向量与常数向量画布"></canvas></div>
-            <div class="ch2-side">
+          <div class="ch2-cramer-layout">
+            <div class="ch2-cramer-main">
+              <div class="ch2-stage"><canvas data-cramer-canvas aria-label="克拉默法则列向量与常数向量画布"></canvas></div>
+              <div class="ch2-side">
               <div class="ch2-meter">
                 <div class="ch2-meter-card" data-d-card><strong>D</strong><span data-d></span></div>
                 <div class="ch2-meter-card"><strong>D₁</strong><span data-d1></span></div>
@@ -252,8 +253,13 @@
               </div>
               <div class="ch2-note"><strong>A</strong> <span data-a-matrix></span><br /><strong>A₁</strong> <span data-a1-matrix></span><br /><strong>A₂</strong> <span data-a2-matrix></span></div>
               <div data-sol class="ch2-note" aria-live="polite"></div>
+              </div>
+            </div>
+            <div class="ch2-cramer-explanation">
               <div class="ch2-cramer-proof" data-slide-proof></div>
               <div data-residual class="ch2-note" aria-live="polite"></div>
+            </div>
+            <div class="ch2-cramer-controls">
               <details class="ch2-tuning"><summary>调整 a₁、a₂ 与 b</summary><div class="ch2-sliders">
                 ${["a11", "a12", "a21", "a22", "b1", "b2"].map((key) => `<label><span>${key}</span><input data-k="${key}" type="range" min="-6" max="6" step="0.1" aria-label="${key}" /><span data-v="${key}"></span></label>`).join("")}
               </div></details>

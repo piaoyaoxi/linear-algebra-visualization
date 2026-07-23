@@ -167,7 +167,7 @@
         <div class="ch2-lab">
           <div class="ch2-lab-head"><h3>有向面积 · 拖动两列</h3><p>拖动两根列向量的端点，也可以使用滑杆与预设。图形、ad−bc、|det| 与状态同步更新。</p></div>
           <div class="ch2-task"><strong>观察任务</strong><span>构造明显剪切但 det=1 的图形，再让两列共线并继续拖到 det<0。</span></div>
-          <div class="ch2-lab-grid">
+          <div class="ch2-lab-grid ch2-area-layout">
             <div class="ch2-stage"><canvas data-ch2-canvas aria-label="可拖动两列向量的有向面积画布"></canvas></div>
             <div class="ch2-side">
               <div class="ch2-meter">
@@ -180,15 +180,15 @@
               <div class="ch2-sliders">
                 ${["a", "b", "c", "d"].map((key) => `<label><span>${key}</span><input data-key="${key}" type="range" min="-2.5" max="2.5" step="0.05" aria-label="矩阵元素 ${key}" /><span data-val="${key}">0</span></label>`).join("")}
               </div>
-              <div class="ch2-presets">
-                <button type="button" data-preset="identity">单位</button>
-                <button type="button" data-preset="scale2">面积 ×2</button>
-                <button type="button" data-preset="shear">剪切 det=1</button>
-                <button type="button" data-preset="mirror">镜像</button>
-                <button type="button" data-preset="collinear">共线</button>
-                <button type="button" data-preset="negative2">det=−2</button>
-              </div>
             </div>
+          </div>
+          <div class="ch2-presets ch2-wide-controls">
+            <button type="button" data-preset="identity">单位</button>
+            <button type="button" data-preset="scale2">面积 ×2</button>
+            <button type="button" data-preset="shear">剪切 det=1</button>
+            <button type="button" data-preset="mirror">镜像</button>
+            <button type="button" data-preset="collinear">共线</button>
+            <button type="button" data-preset="negative2">det=−2</button>
           </div>
         </div>`;
       return mountDetMeter(root);

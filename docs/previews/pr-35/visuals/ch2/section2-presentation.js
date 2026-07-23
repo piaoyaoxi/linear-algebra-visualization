@@ -183,18 +183,11 @@
         <div class="ch2-lab">
           <div class="ch2-lab-head"><h3>排列与逆序 · 逐对扫描</h3><p>点击两个数字完成一次对换，或拖动一个数字改变位置。扫描器逐对检查，连线图把逆序显示为交叉。</p></div>
           <div class="ch2-task"><strong>观察任务</strong><span>从 3142 出发，每次做一个相邻交换，直到还原 1234；比较交换步数与初始逆序数。</span></div>
-          <div class="ch2-lab-grid">
-            <div class="ch2-side">
+          <div class="ch2-lab-grid ch2-permutation-layout">
+            <div class="ch2-side ch2-permutation-scene">
               <div class="ch2-note">当前排列：<strong data-perm-text></strong></div>
               <div class="ch2-perm-row" data-perm-list></div>
               <svg class="ch2-wires" data-wires viewBox="0 0 306 160" role="img" aria-label="排列连线图，交叉表示逆序"></svg>
-              <div class="ch2-presets">
-                <button type="button" data-perm-preset="id">恒等 1234</button>
-                <button type="button" data-perm-preset="adjacent">一次相邻交换</button>
-                <button type="button" data-perm-preset="reverse">完全逆序</button>
-                <button type="button" data-perm-preset="cycle">循环 2341</button>
-                <button type="button" data-perm-preset="example">例题 3142</button>
-              </div>
             </div>
             <div class="ch2-side">
               <div class="ch2-meter">
@@ -210,6 +203,13 @@
                 <button type="button" data-adj-step>相邻交换一步</button>
               </div>
             </div>
+          </div>
+          <div class="ch2-presets ch2-wide-controls">
+            <button type="button" data-perm-preset="id">恒等 1234</button>
+            <button type="button" data-perm-preset="adjacent">一次相邻交换</button>
+            <button type="button" data-perm-preset="reverse">完全逆序</button>
+            <button type="button" data-perm-preset="cycle">循环 2341</button>
+            <button type="button" data-perm-preset="example">例题 3142</button>
           </div>
         </div>`;
       return mountPermutationLab(root);

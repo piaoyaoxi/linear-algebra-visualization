@@ -151,7 +151,7 @@
         <div class="ch2-lab">
           <div class="ch2-lab-head"><h3>余子式 · 删去一行与一列</h3><p>点击元素后，横线与竖线划去对应行列；剩余元素保持相对位置组成余子矩阵。</p></div>
           <div class="ch2-task"><strong>观察任务</strong><span>比较第 2 行与第 3 列的成本，再任选另一条路线核对相同结果。</span></div>
-          <div class="ch2-lab-grid">
+          <div class="ch2-lab-grid ch2-cofactor-top">
             <div class="ch2-matrix-box ch2-cofactor-visual">
               <div class="ch2-cut-matrix" data-cut-matrix>
                 <table class="ch2-matrix-table" data-cof-table aria-label="余子式选择矩阵"></table>
@@ -173,9 +173,12 @@
                 <div class="ch2-meter-card"><strong>位置符号</strong><span data-sign></span></div>
                 <div class="ch2-meter-card" data-cij-card><strong>Cij</strong><span data-cij></span></div>
               </div>
-              <div class="ch2-presets ch2-route-list" data-route-list></div>
-              <div class="ch2-note"><strong data-route-title></strong> · <span data-cost></span><br /><span data-expand></span><br />展开和 = <strong data-true></strong><br /><span data-omitted></span></div>
+              <div class="ch2-note">先在左侧任选元素，读取“余子矩阵 → 余子式 → 代数余子式”的对应关系。</div>
             </div>
+          </div>
+          <div class="ch2-route-explorer">
+            <div class="ch2-presets ch2-route-list" data-route-list></div>
+            <div class="ch2-note"><strong data-route-title></strong> · <span data-cost></span><br /><span data-expand></span><br />展开和 = <strong data-true></strong><br /><span data-omitted></span></div>
           </div>
         </div>`;
       return mountCofactor(root);

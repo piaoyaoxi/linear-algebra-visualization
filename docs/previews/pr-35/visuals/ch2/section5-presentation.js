@@ -169,7 +169,7 @@
         <div class="ch2-lab">
           <div class="ch2-lab-head"><h3>造零路线 · 两步到上三角</h3><p>矩阵、当前 det、累计倍率和操作历史同步。形成上三角后，直接读取对角线乘积。</p></div>
           <div class="ch2-task"><strong>观察任务</strong><span>只用两次倍加完成三角化；再尝试交换或倍乘并撤销，核对账本。</span></div>
-          <div class="ch2-lab-grid">
+          <div class="ch2-lab-grid ch2-elimination-layout">
             <div class="ch2-matrix-box">
               <table class="ch2-matrix-table is-static" data-mat-table aria-label="三阶计算策略矩阵"></table>
               <div class="ch2-operation-line"><span>当前目标</span><strong data-current-operation></strong></div>

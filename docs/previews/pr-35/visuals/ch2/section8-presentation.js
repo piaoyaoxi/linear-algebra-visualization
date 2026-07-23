@@ -212,19 +212,21 @@
         <div class="ch2-lab">
           <div class="ch2-lab-head"><h3>Laplace 展开 · 子式与互补子式</h3><p>固定前两行，4×4 中共有六个两列组合。逐项读取子式、互补子式、位置符号与最终贡献。</p></div>
           <div class="ch2-task"><strong>观察任务</strong><span>浏览六个组合，核对贡献之和与原 4 阶行列式完全一致。</span></div>
-          <div class="ch2-lab-grid">
-            <div class="ch2-matrix-box"><table class="ch2-matrix-table is-static ch2-laplace-table" data-laplace-table aria-label="四阶 Laplace 子式配对矩阵"></table></div>
-            <div class="ch2-side">
-              <div class="ch2-pair-list" data-pair-list></div>
+          <div class="ch2-laplace-layout">
+            <div class="ch2-pair-list" data-pair-list></div>
+            <div class="ch2-laplace-main">
+              <div class="ch2-matrix-box"><table class="ch2-matrix-table is-static ch2-laplace-table" data-laplace-table aria-label="四阶 Laplace 子式配对矩阵"></table></div>
               <div class="ch2-note"><strong>所选子矩阵</strong> <span data-pair-minor-matrix></span><br /><strong>互补子矩阵</strong> <span data-pair-complement-matrix></span></div>
-              <div class="ch2-meter is-2">
+            </div>
+            <div class="ch2-meter ch2-laplace-meter">
                 <div class="ch2-meter-card"><strong>所选列</strong><span data-pair-cols></span></div>
                 <div class="ch2-meter-card"><strong>互补列</strong><span data-pair-comp></span></div>
                 <div class="ch2-meter-card"><strong>子式</strong><span data-pair-minor></span></div>
                 <div class="ch2-meter-card"><strong>位置符号</strong><span data-pair-sign></span></div>
                 <div class="ch2-meter-card"><strong>互补子式</strong><span data-pair-complement></span></div>
                 <div class="ch2-meter-card"><strong>本项贡献</strong><span data-pair-term></span></div>
-              </div>
+            </div>
+            <div class="ch2-laplace-footer">
               <div class="ch2-note" data-pair-explain></div>
               <div class="ch2-note">六项和：<strong data-pair-sum></strong>　原 det：<strong data-pair-det></strong></div>
             </div>

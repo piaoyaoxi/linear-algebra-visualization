@@ -205,19 +205,21 @@
                 <table class="ch2-matrix-table ch2-term-matrix" data-repeat-table aria-hidden="true"></table>
               </div>
             </div>
-            <p class="ch2-term-caption" data-repeat-caption></p>
-            <div class="ch2-term-flow" aria-live="polite">
-              <span>排列 <strong data-perm-out>未完成</strong></span>
-              <i>→</i><span>符号 <strong data-sign-out>—</strong></span>
-              <i>→</i><span>乘积 <strong data-term-out>—</strong></span>
-              <i>→</i><span data-zero-out>—</span>
+            <div class="ch2-term-reading">
+              <p class="ch2-term-caption" data-repeat-caption></p>
+              <div class="ch2-term-flow" aria-live="polite">
+                <span>排列 <strong data-perm-out>未完成</strong></span>
+                <i>→</i><span>符号 <strong data-sign-out>—</strong></span>
+                <i>→</i><span>乘积 <strong data-term-out>—</strong></span>
+                <i>→</i><span data-zero-out>—</span>
+              </div>
+              <div class="ch2-note" data-select-msg aria-live="polite">继续选择：每行每列恰好一个。</div>
+              <div class="ch2-toolbar">
+                <button type="button" data-select-reset>清空</button>
+                <button type="button" data-select-231>播放排列 231</button>
+                <button type="button" data-triangle-toggle>观察上三角矩阵</button>
+              </div>
             </div>
-            <div class="ch2-toolbar">
-              <button type="button" data-select-reset>清空</button>
-              <button type="button" data-select-231>播放排列 231</button>
-              <button type="button" data-triangle-toggle>观察上三角矩阵</button>
-            </div>
-            <div class="ch2-note" data-select-msg aria-live="polite">继续选择：每行每列恰好一个。</div>
             <div class="ch2-term-index"><strong>六条合法路径</strong><div data-six-terms></div></div>
           </div>
         </div>`;

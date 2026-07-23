@@ -10,6 +10,8 @@
       intro: "把一次行倍加同时画在直线与增广矩阵上：约束的写法改变，但可逆操作前后的共同解完全相同。",
       aria: "行变换前后两组直线共享同一交点",
       controls: "steps",
+      precisionTitle: "用增广矩阵完成消元",
+      precisionNote: "逐步做行变换，并核对主元、阶梯形和解的类型",
       labels: ["原方程组", "执行行倍加", "读出阶梯形"],
       caption: [
         "两条直线共同通过的点，就是方程组的解。",
@@ -23,6 +25,8 @@
       intro: "沿用第四章的坐标系与细箭头：αu 和 βv 是两段位移，从原点到最终终点的箭头才是 αu+βv。",
       aria: "两个向量缩放后首尾相接形成线性组合",
       controls: "vector",
+      precisionTitle: "用完整坐标计算线性组合",
+      precisionNote: "改变维数和坐标，核对每一个分量怎样参与运算",
       caption: "拖动系数时，三根箭头始终保持首尾相接；坐标只是同一几何位移的记录。",
     },
     "linear-dependence": {
@@ -31,6 +35,8 @@
       intro: "依次加入三个向量：先得到一条直线，再由第二个独立方向铺开平面；第三个向量若已在这个平面中，span 不再增长。",
       aria: "一个向量张成直线，第二个向量扩成平面，第三个向量不增加维数",
       controls: "steps",
+      precisionTitle: "用线性关系判断相关",
+      precisionNote: "拖动向量，并用非平凡零组合解释哪个向量冗余",
       labels: ["加入 v₁", "再加入 v₂", "检验 v₃"],
       caption: [
         "span(v₁) 是穿过原点的一条直线，维数为 1。",
@@ -39,12 +45,14 @@
       ],
     },
     "matrix-rank": {
-      kicker: "矩阵的秩 · 输出空间的维数",
-      title: "看整张网格被压到几维",
-      intro: "让第二个输出方向连续靠近第一个方向。面积逐渐缩小；当两个方向共线时，二维网格坍缩为一条直线，秩从 2 降为 1。",
+      kicker: "矩阵的秩 · 先看二维例子",
+      title: "二维网格会变成平面、直线或点",
+      intro: "这里先用 2×2 矩阵观察秩 2、1、0：面积逐渐缩小，两个输出方向共线时网格坍缩成直线。3×3 矩阵将在下面用真正的三维视图表示。",
       aria: "矩阵把二维网格连续压缩为直线或点",
       controls: "rank",
-      caption: "秩不是非零元素个数，而是变换后仍然保留下来的独立方向数。",
+      precisionTitle: "用完整矩阵判断秩",
+      precisionNote: "二维看面积，三维看体积或平面，再用 RREF 和非零子式核对",
+      caption: "秩等于变换后仍然保留的独立方向数；数矩阵中的非零元素不能直接得到秩。",
     },
     solvability: {
       kicker: "有解判别 · 目标是否可达",
@@ -52,6 +60,8 @@
       intro: "A 的列向量只能生成绿色直线。b 落在线上时可写成列向量的线性组合；离开直线后，多出的垂直分量无法由 A 产生。",
       aria: "目标向量与列空间的距离决定方程组是否有解",
       controls: "solvability",
+      precisionTitle: "用增广矩阵判断有没有解",
+      precisionNote: "移动目标 b，并比较 rank(A) 与 rank([A|b])",
       caption: "虚线是 b 到列空间的投影；短的残差段越长，目标离可达区域越远。",
     },
     "solution-structure": {
@@ -60,6 +70,8 @@
       intro: "左侧画输入空间中的仿射解线，右侧画固定输出 b。参数 s 改变输入 x=x₀+sη，但 Aη=0，所以所有这些点都映到同一目标。",
       aria: "仿射解线上的所有输入都映射到同一个目标向量",
       controls: "solution",
+      precisionTitle: "用 RREF 写出全部解",
+      precisionNote: "分出特解、零空间基与自由参数，并逐项验证",
       caption: "特解 x₀ 决定解集的位置，零空间方向 η 决定解集可以延伸的方向。",
     },
     "binary-higher-degree": {
@@ -68,9 +80,11 @@
       intro: "从圆与直线的真实交点出发，把二维交点投影到 x 轴，得到结式的一元候选；最后再回到两条原曲线核验。",
       aria: "圆与直线的交点被投影成一元候选并回代验证",
       controls: "steps",
+      precisionTitle: "按步骤完成结式消元",
+      precisionNote: "整理系数、构造 Sylvester 矩阵、求候选并回代",
       labels: ["看曲线交点", "投影到 x 轴", "解结式", "回代确认"],
       caption: [
-        "原问题是两条曲线的公共点，而不是一串孤立的代数符号。",
+        "原问题是寻找两条曲线的公共点；后续代数步骤都在追踪这些公共点。",
         "消去 y 后，每个真实交点只留下一个可能的横坐标。",
         "结式 R(x)=2x²−1 的根给出 x=±√2/2；它们仍只是候选。",
         "为每个候选求 y，并同时代回两条原方程；两式都为零才是真解。",
@@ -343,18 +357,18 @@
     ctx.strokeStyle = p.accentStrong;
     ctx.lineWidth = 2.2;
     ctx.beginPath();
-    ctx.arc(frame.cx, frame.cy, frame.scale * 2, 0, Math.PI * 2);
+    ctx.arc(frame.cx, frame.cy, frame.scale, 0, Math.PI * 2);
     ctx.stroke();
     ctx.restore();
     M().drawLineEquation(ctx, frame, 1, -1, 0, p.coral, 2.2);
-    const r = Math.SQRT2;
+    const r = Math.SQRT1_2;
     const points = [[r, r], [-r, -r]];
     points.forEach((point, index) => {
       M().drawPoint(ctx, frame, point, TARGET, `P${index + 1}`, 4.2);
       if (state.step >= 1) lineWorld(ctx, frame, point, [point[0], 0], p.muted, 1.2, [5, 5]);
       if (state.step >= 1) M().drawPoint(ctx, frame, [point[0], 0], p.coral, "", 3.3);
     });
-    if (state.step >= 2) labelPx(ctx, "R(x)=2x²−4", sized.width - 15, 24, p.accentStrong, "right");
+    if (state.step >= 2) labelPx(ctx, "R(x)=2x²−1", sized.width - 15, 24, p.accentStrong, "right");
     if (state.step >= 3) labelPx(ctx, "✓ 两个候选均通过原方程", sized.width - 15, sized.height - 18, p.accentStrong, "right");
   }
 
@@ -391,10 +405,10 @@
       return ["一整条仿射解集", "x₀ 是一个已知特解；橙色位移 sη 落在零空间中。移动滑杆只改变输入位置，不改变右侧输出。", String.raw`x=x_0+${format(state.s)}\eta`, "因为 Aη=0，所以 A(x₀+sη)=b 对任意 s 都成立。"];
     }
     return [
-        ["先看原问题", "联立方程的解是圆 x²+y²=4 与直线 y=x 的公共点。几何对象先于消元过程。", String.raw`\begin{cases}x^2+y^2=4\\y=x\end{cases}`, "图上可见两个交点，但严格求解仍需代数步骤。"],
+        ["先看原问题", "联立方程的解是单位圆 x²+y²=1 与直线 y=x 的公共点。几何对象先于消元过程。", String.raw`\begin{cases}x^2+y^2=1\\y=x\end{cases}`, "图上可见两个交点，但严格求解仍需代数步骤。"],
       ["把交点投影成候选", "消去 y 相当于只保留每个交点的横坐标；虚线把二维公共点投影到 x 轴。", String.raw`\exists y:\ f(x,y)=g(x,y)=0`, "投影会丢掉 y 信息，因此得到的只是候选横坐标。"],
-      ["结式生成一元条件", "把两式关于 y 的公共根条件编码成结式，得到只含 x 的多项式。", String.raw`R(x)=2x^2-4`, "R(x)=0 给出 x=±√2，但还没有重新确认 y。"],
-      ["回到原方程核验", "由 y=x 恢复纵坐标，再把两个候选点代回圆方程；两式都为零。", String.raw`\begin{aligned}(x,y)&=(\sqrt2,\sqrt2)\\&=(-\sqrt2,-\sqrt2)\end{aligned}`, "消元负责缩小候选集，回代负责确认真正的公共解。"],
+      ["结式生成一元条件", "把两式关于 y 的公共根条件编码成结式，得到只含 x 的多项式。", String.raw`R(x)=2x^2-1`, "R(x)=0 给出 x=±√2/2，但还没有重新确认 y。"],
+      ["回到原方程核验", "由 y=x 恢复纵坐标，再把两个候选点代回圆方程；两式都为零。", String.raw`\begin{aligned}(x,y)&=(\frac{\sqrt2}{2},\frac{\sqrt2}{2})\\&=(-\frac{\sqrt2}{2},-\frac{\sqrt2}{2})\end{aligned}`, "消元负责缩小候选集，回代负责确认真正的公共解。"],
     ][state.step];
   }
 
@@ -432,14 +446,14 @@
     const details = document.createElement("details");
     details.className = "ch3-precision";
     const summary = document.createElement("summary");
-    summary.innerHTML = `<span><strong>继续做精确实验</strong><small>展开矩阵、RREF、完整坐标与数值验证</small></span><i aria-hidden="true">＋</i>`;
+    summary.innerHTML = `<span><strong>${esc(config.precisionTitle)}</strong><small>${esc(config.precisionNote)}</small></span><i aria-hidden="true">＋</i>`;
     lab.replaceWith(details);
     details.append(summary, lab);
     const formal = root.querySelector(`#${CSS.escape(section.id)}-formal`);
     if (formal) formal.before(sectionNode);
     else interactive.prepend(sectionNode);
     const heading = interactive.querySelector(":scope > h2");
-    if (heading) heading.textContent = "精确实验";
+    if (heading) heading.textContent = "进一步计算";
 
     const controls = sectionNode.querySelector("[data-geo-controls]");
     const canvas = sectionNode.querySelector("[data-geo-canvas]");

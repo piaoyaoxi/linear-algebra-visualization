@@ -47,7 +47,7 @@ defineChapter3Section("n-vector-space", {
   },
   interactive: {
     type: "slot",
-    title: "实验：高维坐标混合器",
+    title: "实验：用完整坐标计算线性组合",
     description: "选择维数，调节两个向量及系数 α、β；坐标列、标准基分解、分量条与二维投影同步显示线性组合。",
     task: "把维数调到 4，令 α=2、β=−1，只改变第三个坐标，观察完整坐标变化而二维投影保持不变。",
     prompts: [

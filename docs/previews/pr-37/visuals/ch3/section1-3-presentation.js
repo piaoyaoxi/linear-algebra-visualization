@@ -61,7 +61,7 @@
     root.innerHTML = `
       <h2>交互实验</h2>
       <div class="ch3-lab" data-ch3-lab="elimination">
-        <div class="ch3-lab-head"><span class="ch3-lab-kicker">目标 · 用可逆操作逐步暴露主元</span><h3>消元控制台</h3><p>不要只盯着最后答案。每次操作后同时观察方程、增广矩阵和几何解集：外观在变，解集不变。</p></div><div class="ch3-mission"><strong>操作任务</strong><span>先选“需要换行”，用一次换行建立第一个主元，再清除主元下方元素。</span><span class="ch3-mission-result">看结论：主元结构决定解的类型</span></div>
+        <div class="ch3-lab-head"><span class="ch3-lab-kicker">目标 · 用可逆操作逐步找到主元</span><h3>一步一步完成消元</h3><p>每做一次行变换，就同时观察方程、增广矩阵和几何解集：方程写法在改变，共同解保持不变。</p></div><div class="ch3-mission"><strong>你来试一试</strong><span>先选“需要换行”，交换两行建立第一个主元，再清除主元下方元素。</span><span class="ch3-mission-result">观察：主元和自由列决定解的类型</span></div>
         <div class="ch3-presets" aria-label="方程组预设">
           <button type="button" class="is-active" data-preset="unique2">唯一解</button>
           <button type="button" data-preset="parallel2">平行无解</button>
@@ -294,14 +294,14 @@
       <h2>交互实验</h2>
       <div class="ch3-lab ch3-lab--vector" data-ch3-lab="vector-space">
         <div class="ch3-lab-head">
-<span class="ch3-lab-kicker">向量不是端点，而是从起点到终点的有向位移</span>
+<span class="ch3-lab-kicker">向量表示从起点到终点的有向位移</span>
 <h3>把线性组合走一遍</h3>
 <p>先沿着 αu 走，再从它的终点沿 βv 走；最终从原点指向终点的箭头，就是 w=αu+βv。</p>
         </div>
         <div class="ch3-mission" aria-label="实验任务">
-<strong>操作任务</strong>
+<strong>你来试一试</strong>
 <span>改变 α、β 或任意坐标，观察“首尾相接”的两段位移怎样合成为 w。</span>
-<span class="ch3-mission-result">看结论：每一个坐标都独立相加</span>
+<span class="ch3-mission-result">观察：每一个坐标都按同一组系数相加</span>
         </div>
         <div class="ch3-control-row ch3-scenario-row">
 <label>空间维数 n <input type="range" min="1" max="8" step="1" value="3" data-n /></label>
@@ -480,7 +480,7 @@
     if (!root) return;
     root.innerHTML = formalShell(
       "定理与概念",
-      "相关性必须由精确关系式证明。图形可以提示共线、共面或冗余，但最终证书是一个不全为零的系数向量。",
+      "图形可以提示共线、共面或冗余；严格判断来自一个不全为零的系数向量，它使线性组合恰好等于零。",
       module(
         "01",
         "非平凡零组合",
@@ -505,7 +505,7 @@
     root.innerHTML = `
       <h2>交互实验</h2>
       <div class="ch3-lab" data-ch3-lab="dependence">
-        <div class="ch3-lab-head"><span class="ch3-lab-kicker">目标 · 判断新向量有没有带来新方向</span><h3>冗余探测器</h3><p>拖动真正的向量箭头，让 v₃ 进入或离开已有张成。图形给直觉，右侧非平凡零组合才是严格证书。</p></div><div class="ch3-mission"><strong>操作任务</strong><span>选择“第三个是和”，再取消保留 v₂，比较秩与张成是否改变。</span><span class="ch3-mission-result">看结论：删掉冗余向量，张成不变</span></div>
+        <div class="ch3-lab-head"><span class="ch3-lab-kicker">目标 · 判断新向量有没有带来新方向</span><h3>新向量会不会增加维数</h3><p>拖动向量箭头，让 v₃ 进入或离开已有张成。先看张成是否扩大，再用右侧的非平凡线性关系作严格判断。</p></div><div class="ch3-mission"><strong>你来试一试</strong><span>选择“第三个是和”，观察 v₃ 如何由 v₁、v₂ 合成；再取消保留 v₃，比较张成维数。</span><span class="ch3-mission-result">观察：删掉冗余向量，张成不变</span></div>
         <div class="ch3-presets">
           <button type="button" class="is-active" data-preset="basis">二维基</button>
           <button type="button" data-preset="proportional">比例向量</button>
@@ -522,7 +522,7 @@
               <div class="ch3-meter-card"><strong>张成维数</strong><span data-span>—</span></div>
             </div>
             <div class="ch3-panel"><h4>当前向量</h4><div data-vectors></div></div>
-            <div class="ch3-panel"><h4>关系证书</h4><div data-certificate></div></div>
+            <div class="ch3-panel"><h4>非平凡线性关系</h4><div data-certificate></div></div>
             <div class="ch3-panel"><h4>加入顺序</h4><div data-independence></div></div>
           </div>
         </div>

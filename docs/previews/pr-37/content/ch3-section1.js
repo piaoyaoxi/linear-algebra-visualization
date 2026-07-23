@@ -53,7 +53,7 @@ defineChapter3Section("elimination", {
   },
   interactive: {
     type: "slot",
-    title: "实验：消元控制台",
+    title: "实验：一步一步完成消元",
     description: "选择行、操作类型与有理数因子，真实执行可撤销的行变换；方程、矩阵、几何图和秩信号始终同步。",
     task: "先在“唯一解”预设中手动完成一次倍加，再用“下一步建议”走到阶梯形；随后切换到平行与重合预设，对比矛盾行和自由变量。",
     prompts: [

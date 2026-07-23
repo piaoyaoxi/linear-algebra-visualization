@@ -3,11 +3,11 @@ defineChapter3Section("linear-dependence", {
   textbookSection: "线性相关性",
   title: "线性相关性",
   navTitle: "线性相关性",
-  question: "一组向量中，哪些向量真正扩展了可到达的方向？怎样给出一个可以核验的“冗余证书”？",
+  question: "一组向量中，哪些向量真正扩展了可到达的方向？怎样写出向量之间可以直接检验的线性关系？",
   goal: `准确理解线性相关与线性无关；把关系式 ${texInline(String.raw`c_1v_1+\cdots+c_pv_p=0`)} 与齐次方程 ${texInline(String.raw`Ac=0`)} 联系起来；会用加入顺序、删除测试和极大无关组识别冗余。`,
   tags: ["非平凡关系", "线性无关", "张成", "删除测试", "极大无关组"],
   intro:
-    "相关性不是在问向量看起来是否接近，而是在问是否存在一组不全为零的精确系数，使它们抵消为零。这样的系数就是冗余证书：它明确指出某个向量如何由其余向量表示。",
+    "相关性关注是否存在一组不全为零的精确系数，使这些向量的线性组合等于零。这个关系式会直接指出：哪个向量能够由其余向量表示，因此没有增加新的方向。",
   videoPlan: {
     title: "方向何时停止增长",
     duration: "约 2 分钟",
@@ -47,8 +47,8 @@ defineChapter3Section("linear-dependence", {
   },
   interactive: {
     type: "slot",
-    title: "实验：冗余探测器",
-    description: "拖动二维向量端点，实时计算精确秩、张成维数和整数关系证书；可逐个加入或删除向量而不改变原编号。",
+    title: "实验：新向量会不会增加维数",
+    description: "拖动二维向量端点，观察张成从直线扩展到平面；当新向量落在已有张成中时，用一个非平凡线性关系说明它为什么没有增加维数。",
     task: "先放置两个不共线向量，再加入第三个向量并拖到它们的和；读出关系式，随后删除任意一个向量比较张成是否改变。",
     prompts: [
       "把两个向量拖成严格共线，观察秩何时精确下降。",
@@ -58,7 +58,7 @@ defineChapter3Section("linear-dependence", {
     ],
   },
   example: {
-    title: "例题：给出相关证书与极大无关组",
+    title: "例题：写出线性关系并找极大无关组",
     question: `设 ${texInline(String.raw`v_1=(1,0,1)^T`)}，${texInline(String.raw`v_2=(0,1,1)^T`)}，${texInline(String.raw`v_3=(1,1,2)^T`)}，${texInline(String.raw`v_4=(1,-1,0)^T`)}。判断向量组是否相关，并找出一个极大无关组。`,
     choices: [
       {
@@ -92,7 +92,7 @@ defineChapter3Section("linear-dependence", {
     "下一节把极大无关组的共同长度定义为矩阵或向量组的秩。",
   ],
   exercises: [
-    "构造三个二维向量，并写出一个整数系数关系证书。",
+    "构造三个二维向量，并写出一个整数系数的非平凡线性关系。",
     "给出两个不同的极大无关组，验证它们长度相同且张成相同。",
   ],
 });

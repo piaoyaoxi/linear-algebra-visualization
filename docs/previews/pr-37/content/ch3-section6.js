@@ -47,7 +47,7 @@ defineChapter3Section("solution-structure", {
   },
   interactive: {
     type: "slot",
-    title: "实验：解族生成器",
+    title: "实验：特解加零空间得到全部解",
     description: "从 RREF 自动拆出特解和零空间基；调节参数生成具体解，并同时验证 Ax=b 与 A(x−x₀)=0。",
     task: "选择一个自由变量的预设，沿参数滑块移动；再把特解替换成解集中的另一个点，确认整条解集不变。",
     prompts: [
@@ -84,7 +84,7 @@ defineChapter3Section("solution-structure", {
     { question: "自由变量个数如何计算？", answer: "未知量个数 n 减去 rank(A)。" },
     { question: "齐次解集与非齐次解集的几何区别是什么？", answer: "齐次解集是过原点的线性子空间；非齐次解集是它的平移，通常不过原点。" },
     { question: "更换特解会改变解集吗？", answer: "不会。两个特解之差属于零空间，只会改变参数原点。" },
-    { question: "有解且 nullity(A)=0 时有多少个解？", answer: "唯一解，因为没有非零齐次方向可移动。" },
+    { question: "有解且零空间维数为 0 时有多少个解？", answer: "唯一解，因为没有非零齐次方向可移动。" },
   ],
   summary: [
     "自由变量生成零空间方向，主元变量随之被确定。",

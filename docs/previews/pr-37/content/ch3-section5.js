@@ -47,8 +47,8 @@ defineChapter3Section("solvability", {
   },
   interactive: {
     type: "slot",
-    title: "实验：可达性闸门",
-    description: "直接拖动二维目标 b 或用坐标滑块调节它；列空间、增广矩阵、RREF、秩比较和解的数量分类实时同步。",
+    title: "实验：判断 Ax=b 是否有解",
+    description: "直接拖动二维目标 b 或用坐标滑块调节它；观察 b 是否落在列空间中，再用增广矩阵、RREF 和秩比较核对。",
     task: "选择秩 1 的矩阵，把 b 从列空间直线上拖到线外，再拖回原点；观察有解、无解与齐次情形的变化。",
     prompts: [
       "在满秩 2×2 预设中任意拖动 b，确认所有二维目标都可达。",

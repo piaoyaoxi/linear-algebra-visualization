@@ -47,7 +47,7 @@ defineChapter3Section("binary-higher-degree", {
   },
   interactive: {
     type: "slot",
-    title: "实验：结式消元台",
+    title: "实验：从曲线交点到一元方程",
     description: "在相交、相切与无实交点三个预设中，逐步显示系数表、Sylvester 矩阵、结式、候选根和回代验证。",
     task: "先处理单位圆与直线 x=y，消去 x；再切换到抛物线与切线，观察结式出现重根并与相切几何对应。",
     prompts: [

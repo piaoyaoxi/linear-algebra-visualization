@@ -31,7 +31,7 @@ body.dark .topbar-search {
 }
 
 .topbar-search::after {
-  opacity: calc(1 - 0.78 * var(--search-surface-merge, 0));
+  opacity: calc(1 - var(--search-surface-merge, 0));
 }
 
 .search-capsule-stage {
@@ -320,7 +320,7 @@ body.dark .search-modal-panel {
   pointer-events: none;
   visibility: hidden;
   transform: translateY(-66px);
-  transform-origin: 50% 34px;
+  transform-origin: 50% 28px;
   will-change: clip-path, opacity, transform;
   box-shadow:
     0 30px 72px rgb(32 50 44 / calc(0.16 * (1 - var(--search-surface-merge, 0)))),
@@ -334,10 +334,6 @@ body.dark .search-results-panel {
 }
 
 .search-results-panel::after {
-  opacity: calc(1 - 0.78 * var(--search-surface-merge, 0));
-}
-
-.search-results-panel::before {
   opacity: calc(1 - var(--search-surface-merge, 0));
 }
 
@@ -345,19 +341,18 @@ body.dark .search-results-panel {
   position: relative;
   z-index: 2;
   min-height: 0;
-  overflow: hidden;
+  overflow: visible;
 }
 
 .search-results-merge-field {
   position: absolute;
   top: 0;
   left: 0;
-  z-index: 4;
+  z-index: 2;
   width: 100%;
-  height: 138px;
+  height: 86px;
   overflow: hidden;
   color: color-mix(in srgb, var(--liquid-fill-strong) 88%, var(--liquid-highlight));
-  filter: drop-shadow(0 7px 13px color-mix(in srgb, var(--text) 8%, transparent));
   opacity: 0;
   pointer-events: none;
   will-change: opacity;
@@ -373,7 +368,6 @@ body.dark .search-results-panel {
 
 body.dark .search-results-merge-field {
   color: color-mix(in srgb, var(--liquid-fill-strong) 92%, var(--liquid-highlight));
-  filter: drop-shadow(0 8px 15px rgba(0, 0, 0, 0.22));
 }
 
 .search-modal-body {

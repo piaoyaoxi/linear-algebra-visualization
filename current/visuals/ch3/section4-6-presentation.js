@@ -27,11 +27,11 @@
       ) +
         module(
           "02",
-          "两类证书",
-          "算法告诉你答案，子式告诉你为什么至少这么大",
+          "用两条路确定同一个秩",
+          "主元给出准确数值，非零子式说明秩至少有多大",
           cards([
-            ["主元", "RREF 证书", "主元个数直接给出秩；主元列号指向原矩阵的一组独立列。"],
-            ["子式", "非零行列式证书", "一个 r×r 子矩阵行列式非零，证明至少有 r 个独立方向。"],
+            ["消元", "在 RREF 中数主元", "主元个数就是秩；主元列号指向原矩阵的一组独立列。"],
+            ["子式", "找到非零行列式", "一个 r×r 子矩阵行列式非零，说明至少有 r 个独立方向。"],
             ["上界", "更高阶全部为零", "尺寸上界或消元主元数证明秩不可能更大。"],
           ]),
         ),
@@ -43,30 +43,29 @@
     root.innerHTML = `
       <h2>交互实验</h2>
       <div class="ch3-lab" data-ch3-lab="rank">
-        <div class="ch3-lab-head"><span class="ch3-lab-kicker">目标 · 用三种证书读出同一个秩</span><h3>秩证书工作台</h3><p>先看列向量张成，再对照 RREF 主元与非零子式。二维画布只是投影，最终秩始终由完整矩阵精确计算。</p></div><div class="ch3-mission"><strong>操作任务</strong><span>选择“投影陷阱”：画面看似共线，但完整三维列仍然无关。</span><span class="ch3-mission-result">看结论：投影不能代替秩判定</span></div>
+        <div class="ch3-lab-head"><span class="ch3-lab-kicker">目标 · 先看输出空间，再用主元核对</span><h3>矩阵到底保留了几个方向</h3><p>二维矩阵显示面积、直线或点；三维矩阵显示体积、平面或直线。图形和 rank(A) 始终描述同一个输出空间。</p></div><div class="ch3-mission"><strong>你来试一试</strong><span>依次比较“3×3 · rank 3”和“3×3 · rank 2”：观察有体积的三维输出怎样塌成一个平面。</span><span class="ch3-mission-result">观察：3×3 是矩阵尺寸，rank 才是独立方向数</span></div>
         <div class="ch3-presets">
-          <button type="button" class="is-active" data-preset="full2">满秩 2×2</button>
-          <button type="button" data-preset="rankOne">秩 1</button>
-          <button type="button" data-preset="full3">满秩 3×3</button>
-          <button type="button" data-preset="rankTwo3">秩 2 的 3×3</button>
-          <button type="button" data-preset="projectionTrap">投影陷阱</button>
+          <button type="button" class="is-active" data-preset="full2">2×2 · rank 2</button>
+          <button type="button" data-preset="rankOne">2×2 · rank 1</button>
+          <button type="button" data-preset="full3">3×3 · rank 3</button>
+          <button type="button" data-preset="rankTwo3">3×3 · rank 2</button>
         </div>
         <div class="ch3-lab-grid">
-          <div class="ch3-stage"><canvas data-canvas aria-label="矩阵列向量投影视图"></canvas></div>
+          <div class="ch3-stage"><canvas data-canvas aria-label="矩阵列向量张成的二维或三维输出空间"></canvas></div>
           <div class="ch3-side">
             <div class="ch3-meter is-4">
               <div class="ch3-meter-card" data-rank-card><strong>rank(A)</strong><span data-rank>—</span></div>
               <div class="ch3-meter-card"><strong>尺寸</strong><span data-size>—</span></div>
               <div class="ch3-meter-card"><strong>主元列</strong><span data-pivots>—</span></div>
-              <div class="ch3-meter-card"><strong>上界</strong><span data-bound>—</span></div>
+              <div class="ch3-meter-card"><strong>输出空间</strong><span data-image-kind>—</span></div>
             </div>
-            <div class="ch3-panel"><h4>编辑矩阵</h4><div class="ch3-matrix-editor" data-editor></div></div>
+            <div class="ch3-panel"><h4>矩阵 A</h4><div class="ch3-matrix-editor" data-editor></div></div>
             <div class="ch3-toolbar"><button type="button" data-row-add>R₂←R₂+R₁</button><button type="button" data-undo>撤销</button><button type="button" data-reset>重置预设</button></div>
           </div>
         </div>
         <div class="ch3-lab-grid">
-          <div class="ch3-panel"><h4>RREF</h4><div data-rref></div></div>
-          <div class="ch3-panel"><h4>原矩阵独立列</h4><div data-independent></div></div>
+          <div class="ch3-panel"><h4>化简后的矩阵 RREF</h4><div data-rref></div></div>
+          <div class="ch3-panel"><h4>原矩阵中的独立列</h4><div data-independent></div></div>
         </div>
         <div class="viz-callout" data-certificate></div>
         <p class="ch3-feedback" data-note aria-live="polite"></p>
@@ -77,8 +76,7 @@
       full2: [[1, 0], [0, 1]],
       rankOne: [[1, 2], [2, 4]],
       full3: [[1, 0, 1], [0, 1, 1], [1, 1, 0]],
-      rankTwo3: [[1, 2, 3], [2, 4, 6], [0, 1, 1]],
-      projectionTrap: [[1, 2], [0, 0], [0, 1]],
+      rankTwo3: [[1, 0, 1], [0, 1, 1], [1, 1, 2]],
     };
     const state = { key: "full2", initial: null, A: null, history: [] };
     const canvas = root.querySelector("[data-canvas]");
@@ -118,21 +116,170 @@
       }));
     }
 
+    function add3(a, b) {
+      return [a[0] + b[0], a[1] + b[1], a[2] + b[2]];
+    }
+
+    function scale3(vector, factor) {
+      return vector.map((value) => value * factor);
+    }
+
+    function draw2D(sized, columns, rank) {
+      const frame = M().drawAxes(sized.ctx, sized.width, sized.height, 46);
+      const colors = [frame.p.accent, frame.p.coral, frame.p.blue, frame.p.muted];
+      M().drawSpan(sized.ctx, frame, columns, frame.p.accent);
+      columns.forEach((column, index) => M().drawArrow(sized.ctx, frame, column, colors[index % colors.length], `c${index + 1}`, 2.4));
+      sized.ctx.save();
+      sized.ctx.fillStyle = frame.p.muted;
+      sized.ctx.font = "650 12px ui-sans-serif, system-ui";
+      sized.ctx.fillText(`A: ℝ² → ℝ² · 输出空间是${rank === 2 ? "整个平面" : rank === 1 ? "一条直线" : "原点"}`, 14, 22);
+      sized.ctx.restore();
+    }
+
+    function draw3D(sized, columns, rank, pivots) {
+      const { ctx, width, height } = sized;
+      const p = M().palette();
+      const cx = width * 0.5;
+      const cy = height * 0.56;
+      const pointsForScale = [[0, 0, 0], ...columns];
+      if (rank === 3) {
+        pointsForScale.push(
+          add3(columns[0], columns[1]),
+          add3(columns[0], columns[2]),
+          add3(columns[1], columns[2]),
+          add3(add3(columns[0], columns[1]), columns[2]),
+        );
+      }
+      const maxMagnitude = Math.max(2.4, ...pointsForScale.flatMap((point) => point.map(Math.abs)));
+      const scaleMultiplier = rank === 3 ? 3.15 : 2.2;
+      const scale = Math.min(width * 0.14, height * 0.24) / maxMagnitude * scaleMultiplier;
+      const project = ([x, y, z]) => [
+        cx + scale * 0.86 * (x - y),
+        cy + scale * (0.4 * x + 0.4 * y - z),
+      ];
+      const line = (a, b, color, lineWidth = 1.2, dash = []) => {
+        const A = project(a);
+        const B = project(b);
+        ctx.save();
+        ctx.strokeStyle = color;
+        ctx.lineWidth = lineWidth;
+        ctx.setLineDash(dash);
+        ctx.beginPath();
+        ctx.moveTo(A[0], A[1]);
+        ctx.lineTo(B[0], B[1]);
+        ctx.stroke();
+        ctx.restore();
+      };
+      const polygon = (vertices, color, alpha) => {
+        ctx.save();
+        ctx.beginPath();
+        vertices.map(project).forEach((point, index) => {
+          if (!index) ctx.moveTo(point[0], point[1]);
+          else ctx.lineTo(point[0], point[1]);
+        });
+        ctx.closePath();
+        ctx.globalAlpha = alpha;
+        ctx.fillStyle = color;
+        ctx.fill();
+        ctx.globalAlpha = 0.7;
+        ctx.strokeStyle = color;
+        ctx.lineWidth = 1;
+        ctx.stroke();
+        ctx.restore();
+      };
+      const arrow = (vector, color, label) => {
+        const O = project([0, 0, 0]);
+        const V = project(vector);
+        const angle = Math.atan2(V[1] - O[1], V[0] - O[0]);
+        line([0, 0, 0], vector, color, 2.3);
+        ctx.save();
+        ctx.translate(V[0], V[1]);
+        ctx.rotate(angle);
+        ctx.fillStyle = color;
+        ctx.beginPath();
+        ctx.moveTo(0, 0);
+        ctx.lineTo(-9, -4.2);
+        ctx.lineTo(-9, 4.2);
+        ctx.closePath();
+        ctx.fill();
+        ctx.restore();
+        ctx.save();
+        ctx.fillStyle = color;
+        ctx.font = "750 12px ui-sans-serif, system-ui";
+        ctx.fillText(label, V[0] + 7, V[1] - 7);
+        ctx.restore();
+      };
+
+      const axes = [
+        { vector: [2.5, 0, 0], label: "x₁" },
+        { vector: [0, 2.5, 0], label: "x₂" },
+        { vector: [0, 0, 2.5], label: "x₃" },
+      ];
+      axes.forEach(({ vector, label }) => {
+        line(scale3(vector, -0.72), vector, p.line, 1);
+        const endpoint = project(vector);
+        ctx.save();
+        ctx.fillStyle = p.muted;
+        ctx.font = "650 11px ui-sans-serif, system-ui";
+        ctx.fillText(label, endpoint[0] + 4, endpoint[1] - 4);
+        ctx.restore();
+      });
+
+      if (rank === 3) {
+        const [c1, c2, c3] = columns;
+        polygon([[0, 0, 0], c1, add3(c1, c2), c2], p.accent, 0.10);
+        polygon([[0, 0, 0], c1, add3(c1, c3), c3], p.coral, 0.08);
+        polygon([[0, 0, 0], c2, add3(c2, c3), c3], p.blue, 0.07);
+        const vertices = [
+          [0, 0, 0], c1, c2, c3,
+          add3(c1, c2), add3(c1, c3), add3(c2, c3),
+          add3(add3(c1, c2), c3),
+        ];
+        const edges = [[0,1],[0,2],[0,3],[1,4],[1,5],[2,4],[2,6],[3,5],[3,6],[4,7],[5,7],[6,7]];
+        edges.forEach(([a, b]) => line(vertices[a], vertices[b], p.accentStrong, 1.15));
+      } else if (rank === 2) {
+        const d1 = columns[pivots[0]];
+        const d2 = columns[pivots[1]];
+        polygon([
+          add3(scale3(d1, -1.35), scale3(d2, -1.35)),
+          add3(scale3(d1, 1.35), scale3(d2, -1.35)),
+          add3(scale3(d1, 1.35), scale3(d2, 1.35)),
+          add3(scale3(d1, -1.35), scale3(d2, 1.35)),
+        ], p.accent, 0.11);
+      } else if (rank === 1) {
+        const direction = columns[pivots[0]];
+        line(scale3(direction, -2.6), scale3(direction, 2.6), p.accent, 3);
+      } else {
+        const O = project([0, 0, 0]);
+        ctx.save();
+        ctx.fillStyle = p.accentStrong;
+        ctx.beginPath();
+        ctx.arc(O[0], O[1], 5, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.restore();
+      }
+
+      const colors = [p.accentStrong, p.coral, p.blue];
+      columns.forEach((column, index) => arrow(column, colors[index % colors.length], `c${index + 1}`));
+      ctx.save();
+      ctx.fillStyle = p.muted;
+      ctx.font = "650 12px ui-sans-serif, system-ui";
+      ctx.fillText(`A: ℝ³ → ℝ³ · 输出空间是${rank === 3 ? "三维体" : rank === 2 ? "二维平面" : rank === 1 ? "一条直线" : "原点"}`, 14, 22);
+      ctx.font = "560 11px ui-sans-serif, system-ui";
+      ctx.fillText("三维等角视图：x₁、x₂、x₃ 三个坐标都参与绘制", 14, 40);
+      ctx.restore();
+    }
+
     function draw() {
       const sized = M().sizeCanvas(canvas);
       if (!sized) return;
-      const frame = M().drawAxes(sized.ctx, sized.width, sized.height, 46);
       const numeric = M().matToNumbers(state.A);
       if (numeric.length < 2) return;
       const columns = numeric[0].map((_, column) => numeric.map((row) => row[column]));
-      M().drawSpan(sized.ctx, frame, columns.map((column) => column.slice(0, 2)), frame.p.accent);
-      const colors = [frame.p.accent, frame.p.coral, frame.p.blue, frame.p.muted];
-      columns.forEach((column, index) => M().drawArrow(sized.ctx, frame, [column[0], column[1]], colors[index % colors.length], `c${index + 1}`));
-      if (numeric.length > 2) {
-        sized.ctx.fillStyle = frame.p.muted;
-        sized.ctx.font = "600 12px ui-sans-serif, system-ui";
-        sized.ctx.fillText("仅显示每列的前两坐标；秩按完整矩阵计算", 14, 22);
-      }
+      const reduced = M().rref(state.A, state.A[0].length);
+      const rank = reduced.pivots.length;
+      if (numeric.length === 3) draw3D(sized, columns, rank, reduced.pivots);
+      else draw2D(sized, columns.map((column) => column.slice(0, 2)), rank);
     }
 
     function render(rebuild = false) {
@@ -141,9 +288,10 @@
       const reduced = M().rref(state.A, state.A[0].length);
       const independent = reduced.pivots;
       const certificate = M().findRankCertificate(state.A);
+      const imageKind = rank === 0 ? "原点" : rank === 1 ? "直线" : rank === 2 ? "平面" : "三维体";
       root.querySelector("[data-rank]").textContent = String(rank);
       root.querySelector("[data-size]").textContent = `${state.A.length}×${state.A[0].length}`;
-      root.querySelector("[data-bound]").textContent = `≤ ${Math.min(state.A.length, state.A[0].length)}`;
+      root.querySelector("[data-image-kind]").textContent = imageKind;
       root.querySelector("[data-pivots]").textContent = independent.length ? independent.map((i) => i + 1).join(",") : "无";
       root.querySelector("[data-rref]").innerHTML = M().htmlMatrix(reduced.matrix);
       root.querySelector("[data-independent]").innerHTML = independent.length
@@ -152,14 +300,14 @@
       if (certificate.rank) {
         const rows = certificate.rows.map((i) => i + 1).join(",");
         const columns = certificate.columns.map((i) => i + 1).join(",");
-        root.querySelector("[data-certificate]").innerHTML = `取第 ${rows} 行、第 ${columns} 列组成的 ${certificate.rank} 阶子式，其行列式为 ${tex(M().latexF(certificate.det))}，因此 rank(A) 至少为 ${certificate.rank}；主元数给出同样的上界。`;
+        root.querySelector("[data-certificate]").innerHTML = `取第 ${rows} 行、第 ${columns} 列组成的 ${certificate.rank} 阶子式，其行列式为 ${tex(M().latexF(certificate.det))}，所以 rank(A) 至少为 ${certificate.rank}；RREF 中恰有 ${rank} 个主元，所以 rank(A)=${rank}。`;
       } else {
         root.querySelector("[data-certificate]").textContent = "所有元素均为零，rank(A)=0。";
       }
       root.querySelector("[data-undo]").disabled = state.history.length <= 1;
-      root.querySelector("[data-note]").textContent = state.key === "projectionTrap"
-        ? "投影中两列共线，但完整三维列 (1,0,0)ᵀ 与 (2,0,1)ᵀ 线性无关；不要用投影替代完整判定。"
-        : "行操作可能改变具体子式位置与列图形，但不会改变秩。";
+      root.querySelector("[data-note]").textContent = state.A.length === 3
+        ? `3×3 表示输入和输出都用 3 个坐标描述；当前列空间是${imageKind}，因此 rank(A)=${rank}。`
+        : `2×2 表示输入和输出都在二维坐标中；当前列空间是${imageKind}，因此 rank(A)=${rank}。`;
       M().pulse(root.querySelector("[data-rank-card]"));
       draw();
     }
@@ -216,7 +364,7 @@
     root.innerHTML = `
       <h2>交互实验</h2>
       <div class="ch3-lab" data-ch3-lab="solvability">
-        <div class="ch3-lab-head"><span class="ch3-lab-kicker">目标 · 判断目标向量 b 是否落在列空间中</span><h3>可达性闸门</h3><p>拖动向量 b 穿过列空间边界。几何上的“能否到达”和增广矩阵是否产生新主元，是同一件事。</p></div><div class="ch3-mission"><strong>操作任务</strong><span>在“秩 1 · 在线”和“秩 1 · 线外”之间切换，再拖动 b 回到带状列空间。</span><span class="ch3-mission-result">看结论：rank(A)=rank([A|b])</span></div>
+        <div class="ch3-lab-head"><span class="ch3-lab-kicker">目标 · 判断目标向量 b 是否落在列空间中</span><h3>这个目标 b 能不能由 A 的列生成</h3><p>拖动向量 b 进入或离开列空间。几何上的“能否由列向量组合得到”和增广矩阵是否产生新主元，是同一件事。</p></div><div class="ch3-mission"><strong>你来试一试</strong><span>在“秩 1 · 在线”和“秩 1 · 线外”之间切换，再把 b 拖回绿色列空间直线。</span><span class="ch3-mission-result">观察：有解当且仅当 rank(A)=rank([A|b])</span></div>
         <div class="ch3-presets">
           <button type="button" data-preset="full">满秩平面</button>
           <button type="button" class="is-active" data-preset="line">秩 1 · 在线</button>
@@ -250,8 +398,8 @@
     const scope = M().createScope(root);
     const presets = {
       full: { A: [[1, 0], [0, 1]], b: [1.2, 0.8] },
-      line: { A: [[1, 2], [2, 4]], b: [1, 2] },
-      miss: { A: [[1, 2], [2, 4]], b: [1, 3] },
+      line: { A: [[1, 2], [1, 2]], b: [1.4, 1.4] },
+      miss: { A: [[1, 2], [1, 2]], b: [1, 2] },
       zero: { A: [[0, 0], [0, 0]], b: [0, 0] },
     };
     const state = { key: "line", A: null, b: [1, 2] };
@@ -285,7 +433,7 @@
       if (rank === 1) {
         sized.ctx.fillStyle = frame.p.muted;
         sized.ctx.font = "600 12px ui-sans-serif, system-ui";
-        sized.ctx.fillText("虚线/带状方向表示列空间；拖动 b 穿过边界", 14, 22);
+        sized.ctx.fillText("绿色直线是 Col(A)；拖动 b 观察它是否落在线上", 14, 22);
       }
     }
     function render() {
@@ -348,7 +496,7 @@
           "自由度与维数",
           "每个非主元列贡献一个独立参数",
           cards([
-            ["nullity", "n−rank(A)", "零空间基向量个数，也是自由变量个数。"],
+            ["零空间", "维数 = n−rank(A)", "零空间基向量个数，也是自由变量个数。"],
             ["齐次", "过原点的子空间", "特解为 0，全部解就是零空间本身。"],
             ["非齐次", "仿射平移", "通常不过原点，但方向结构与零空间完全相同。"],
           ]),
@@ -364,12 +512,12 @@
         <div class="ch3-lab-head">
 <span class="ch3-lab-kicker">目标 · 把“特解 + 零空间”变成看得见的位移</span>
 <h3>沿着零空间生成全部解</h3>
-<p>蓝色箭头 x 是当前解；青色箭头 x₀ 是一个特解；从 x₀ 出发的橙色箭头是零空间方向。改变参数，只会沿这些方向移动。</p>
+<p>从原点指向 x₀ 的箭头表示一个特解；从 x₀ 出发的 η 表示零空间方向；从原点指向 x 的箭头表示当前解。改变参数，只会沿 η 的方向移动。</p>
         </div>
         <div class="ch3-mission">
-<strong>操作任务</strong>
+<strong>你来试一试</strong>
 <span>选择“一条解直线”，拖动参数 s₁，观察 x−x₀ 始终平行 η₁。</span>
-<span class="ch3-mission-result">看结论：解集 = x₀ + Ker(A)</span>
+<span class="ch3-mission-result">观察：全部解 = 一个特解 + 全部齐次解</span>
         </div>
         <div class="ch3-presets ch3-solution-presets">
 <button type="button" data-preset="unique">唯一解</button>
@@ -401,7 +549,7 @@
   <div class="ch3-meter ch3-solution-summary">
     <div class="ch3-meter-card"><strong>解类型</strong><span data-type>—</span></div>
     <div class="ch3-meter-card"><strong>rank(A)</strong><span data-rank>—</span></div>
-    <div class="ch3-meter-card"><strong>nullity</strong><span data-nullity>—</span></div>
+    <div class="ch3-meter-card"><strong>零空间维数</strong><span data-nullity>—</span></div>
     <div class="ch3-meter-card"><strong>自由变量</strong><span data-free>—</span></div>
   </div>
   <details class="ch3-details ch3-rref-details">
@@ -434,11 +582,13 @@
     };
     const state = { key: "line", aug: null, parameters: [], shift: 0 };
     const canvas = root.querySelector("[data-canvas]");
+    const addVector3 = (a, b) => [a[0] + b[0], a[1] + b[1], a[2] + b[2]];
+    const scaleVector3 = (vector, factor) => vector.map((value) => value * factor);
 
     function load(key) {
       state.key = key;
       state.aug = M().matFromNumbers(presets[key]);
-      state.parameters = [];
+      state.parameters = key === "plane" ? [1.2, -0.9] : key === "line" || key === "homogeneous" ? [0.8] : [];
       state.shift = 0;
       rebuildParameters();
       render();
@@ -486,18 +636,128 @@
     function familyLatex(payload) {
       if (!payload.part.ok) return String.raw`\varnothing`;
       if (!payload.nullspace.basis.length) return String.raw`x=x_0`;
-      const terms = payload.nullspace.basis.map((_, index) => `s_${index + 1}\eta_${index + 1}`).join("+");
+      const terms = payload.nullspace.basis.map((_, index) => String.raw`s_${index + 1}\eta_${index + 1}`).join("+");
       return `x=x_0+${terms}`;
+    }
+
+    function draw3DSolution(sized, payload, current) {
+      const { ctx, width, height } = sized;
+      const p = M().palette();
+      const x0 = payload.x0.map(M().toNumber);
+      const x = current.map(M().toNumber);
+      const directions = payload.nullspace.basis.map((basis) => basis.map(M().toNumber));
+      const planeExtent = 1.55;
+      const corners = [
+        addVector3(addVector3(x0, scaleVector3(directions[0], -planeExtent)), scaleVector3(directions[1], -planeExtent)),
+        addVector3(addVector3(x0, scaleVector3(directions[0], planeExtent)), scaleVector3(directions[1], -planeExtent)),
+        addVector3(addVector3(x0, scaleVector3(directions[0], planeExtent)), scaleVector3(directions[1], planeExtent)),
+        addVector3(addVector3(x0, scaleVector3(directions[0], -planeExtent)), scaleVector3(directions[1], planeExtent)),
+      ];
+      const allPoints = [[0, 0, 0], x0, x, ...corners];
+      const maxMagnitude = Math.max(2.8, ...allPoints.flatMap((point) => point.map(Math.abs)));
+      const scale = Math.min(width * 0.18, height * 0.3) / maxMagnitude * 2.4;
+      const cx = width * 0.5;
+      const cy = height * 0.58;
+      const project = ([a, b, c]) => [
+        cx + scale * 0.86 * (a - b),
+        cy + scale * (0.4 * a + 0.4 * b - c),
+      ];
+      const line = (from, to, color, lineWidth = 1.2, dash = []) => {
+        const A = project(from);
+        const B = project(to);
+        ctx.save();
+        ctx.strokeStyle = color;
+        ctx.lineWidth = lineWidth;
+        ctx.setLineDash(dash);
+        ctx.beginPath();
+        ctx.moveTo(A[0], A[1]);
+        ctx.lineTo(B[0], B[1]);
+        ctx.stroke();
+        ctx.restore();
+      };
+      const arrow = (from, to, color, label, lineWidth = 2.6) => {
+        const A = project(from);
+        const B = project(to);
+        const angle = Math.atan2(B[1] - A[1], B[0] - A[0]);
+        line(from, to, color, lineWidth);
+        ctx.save();
+        ctx.translate(B[0], B[1]);
+        ctx.rotate(angle);
+        ctx.fillStyle = color;
+        ctx.beginPath();
+        ctx.moveTo(0, 0);
+        ctx.lineTo(-9, -4.2);
+        ctx.lineTo(-9, 4.2);
+        ctx.closePath();
+        ctx.fill();
+        ctx.restore();
+        ctx.save();
+        ctx.fillStyle = color;
+        ctx.font = "750 12px ui-sans-serif, system-ui";
+        ctx.fillText(label, B[0] + 7, B[1] - 7);
+        ctx.restore();
+      };
+
+      [
+        { vector: [3.1, 0, 0], label: "x₁" },
+        { vector: [0, 3.1, 0], label: "x₂" },
+        { vector: [0, 0, 3.1], label: "x₃" },
+      ].forEach(({ vector, label }) => {
+        line(scaleVector3(vector, -0.58), vector, p.line, 1);
+        const endpoint = project(vector);
+        ctx.save();
+        ctx.fillStyle = p.muted;
+        ctx.font = "650 11px ui-sans-serif, system-ui";
+        ctx.fillText(label, endpoint[0] + 4, endpoint[1] - 4);
+        ctx.restore();
+      });
+
+      ctx.save();
+      ctx.beginPath();
+      corners.map(project).forEach((point, index) => {
+        if (!index) ctx.moveTo(point[0], point[1]);
+        else ctx.lineTo(point[0], point[1]);
+      });
+      ctx.closePath();
+      ctx.fillStyle = p.accent;
+      ctx.globalAlpha = 0.1;
+      ctx.fill();
+      ctx.globalAlpha = 0.62;
+      ctx.strokeStyle = p.accentStrong;
+      ctx.lineWidth = 1.2;
+      ctx.stroke();
+      ctx.restore();
+
+      arrow([0, 0, 0], x0, p.accentStrong, "x₀", 2.8);
+      directions.forEach((direction, index) => {
+        arrow(x0, addVector3(x0, scaleVector3(direction, 1.08)), p.coral, `η${index + 1}`, 2.4);
+      });
+      arrow([0, 0, 0], x, p.blue, "x", 3.2);
+      if (x.some((value, index) => Math.abs(value - x0[index]) > 1e-8)) {
+        line(x0, x, p.blue, 1.7, [5, 5]);
+      }
+
+      ctx.save();
+      ctx.fillStyle = p.muted;
+      ctx.font = "650 12px ui-sans-serif, system-ui";
+      ctx.fillText("三个未知量的解集：ℝ³ 中的仿射平面", 14, 22);
+      ctx.font = "560 11px ui-sans-serif, system-ui";
+      ctx.fillText("η₁、η₂ 张成零空间；把它平移到 x₀ 就得到 Ax=b 的全部解", 14, 40);
+      ctx.restore();
     }
 
     function draw(payload, current) {
       const sized = M().sizeCanvas(canvas);
       if (!sized) return;
+      if (payload.part.ok && payload.info.n === 3 && payload.nullspace.basis.length >= 2) {
+        draw3DSolution(sized, payload, current);
+        return;
+      }
       const frame = M().drawAxes(sized.ctx, sized.width, sized.height, 54);
       sized.ctx.save();
       sized.ctx.fillStyle = frame.p.muted;
       sized.ctx.font = "650 12px ui-sans-serif, system-ui";
-      sized.ctx.fillText(payload.info.n > 2 ? "前两坐标投影 · 方向关系仍按完整向量计算" : "二维解空间", 14, 22);
+      sized.ctx.fillText("二维解空间", 14, 22);
       sized.ctx.restore();
 
       if (!payload.part.ok) {
@@ -588,7 +848,7 @@ x0p[1] + a * d1[1] + b * d2[1],
 ? "参数只改变零空间位移；A 会把这些位移全部压到 0。"
 : "没有零空间方向，所以特解就是唯一解。"
         : "没有特解，通解集合为空。";
-      root.querySelector("[data-geometry-note]").textContent = payload.info.n > 2 ? `前两坐标投影 · 完整维数 n=${payload.info.n}` : "二维完整视图";
+      root.querySelector("[data-geometry-note]").textContent = payload.info.n === 3 ? "三维完整视图" : "二维完整视图";
       root.querySelector("[data-x0]").innerHTML = payload.part.ok ? `${tex(String.raw`x_0=`)}${M().htmlVector(payload.x0)}` : "不存在";
       root.querySelector("[data-basis]").innerHTML = payload.part.ok && payload.nullspace.basis.length
         ? payload.nullspace.basis.map((basis, index) => `<div>${tex(String.raw`\eta_{${index + 1}}=`)}${M().htmlVector(basis)}</div>`).join("")
@@ -608,7 +868,7 @@ x0p[1] + a * d1[1] + b * d2[1],
         root.querySelector("[data-verify-null]").innerHTML = `<span class="ch3-check ${nullOk ? "is-ok" : "is-bad"}">${nullOk ? "✓" : "!"}</span><div><strong>${tex(String.raw`A(x-x_0)=0`)}</strong><p>${nullOk ? "验证通过：从 x₀ 到 x 的位移完全落在零空间中。" : "验证失败"}</p></div>`;
         root.querySelector("[data-note]").textContent = state.shift
 ? "你换了一个特解，参数原点随之改变；但整条（或整个平面）解集没有移动。"
-: payload.nullspace.basis.length ? "拖动参数：蓝色 x 会移动，青色 x₀ 与橙色零空间方向共同解释它为何始终满足 Ax=b。" : "没有自由参数，因此当前系统只有一个解。";
+: payload.nullspace.basis.length ? "拖动参数：x 会沿 η 移动；x₀ 与零空间方向共同解释它为何始终满足 Ax=b。" : "没有自由参数，因此当前系统只有一个解。";
       } else {
         root.querySelector("[data-verify-axb]").innerHTML = `<span class="ch3-check is-bad">×</span><div><strong>没有 Ax=b 的解</strong><p>RREF 的矛盾行阻止了特解出现。</p></div>`;
         root.querySelector("[data-verify-null]").innerHTML = `<span class="ch3-check is-muted">—</span><div><strong>结构公式不适用</strong><p>只有系统有解时，才能写成 x₀+Ker(A)。</p></div>`;

@@ -61,12 +61,12 @@
     root.innerHTML = `
       <h2>交互实验</h2>
       <div class="ch3-lab" data-ch3-lab="elimination">
-        <div class="ch3-lab-head"><span class="ch3-lab-kicker">目标 · 用可逆操作逐步找到主元</span><h3>一步一步完成消元</h3><p>每做一次行变换，就同时观察方程、增广矩阵和几何解集：方程写法在改变，共同解保持不变。</p></div><div class="ch3-mission"><strong>你来试一试</strong><span>先选“需要换行”，交换两行建立第一个主元，再清除主元下方元素。</span><span class="ch3-mission-result">观察：主元和自由列决定解的类型</span></div>
+        <div class="ch3-lab-head"><span class="ch3-lab-kicker">目标 · 用可逆操作逐步找到主元</span><h3>一步一步完成消元</h3><p>每做一次行变换，就同时观察方程、增广矩阵和几何解集：方程写法在改变，共同解保持不变。</p></div><div class="ch3-mission"><strong>你来试一试</strong><span>当前例子第一行没有 x 项。先交换两行建立第一个主元，再继续化到简化阶梯形。</span><span class="ch3-mission-result">观察：主元和自由列决定解的类型</span></div>
         <div class="ch3-presets" aria-label="方程组预设">
-          <button type="button" class="is-active" data-preset="unique2">唯一解</button>
+          <button type="button" data-preset="unique2">唯一解</button>
           <button type="button" data-preset="parallel2">平行无解</button>
           <button type="button" data-preset="sameLine2">重合无穷多解</button>
-          <button type="button" data-preset="swapPivot">需要换行</button>
+          <button type="button" class="is-active" data-preset="swapPivot">需要换行</button>
           <button type="button" data-preset="upper3">三元上三角</button>
         </div>
         <div class="ch3-lab-grid">
@@ -105,13 +105,13 @@
         <p class="ch3-feedback" data-feedback aria-live="polite"></p>
         <div class="ch3-lab-grid">
           <div class="ch3-panel"><h4>主元列</h4><div data-pivots></div></div>
-          <div class="ch3-panel"><h4>操作账本</h4><ol class="ch3-history" data-history></ol></div>
+          <div class="ch3-panel"><h4>已经做过的步骤</h4><ol class="ch3-history" data-history></ol></div>
         </div>
       </div>`;
 
     const scope = M().createScope(root);
     const presets = M().PRESETS.systems;
-    const state = { key: "unique2", initial: null, aug: null, history: [], changed: [] };
+    const state = { key: "swapPivot", initial: null, aug: null, history: [], changed: [] };
     const canvas = root.querySelector("[data-canvas]");
 
     function setFeedback(message, bad = false) {
@@ -141,6 +141,12 @@
       state.history = [];
       snapshot(`载入：${preset.label}`);
       rebuildRowOptions();
+      if (key === "swapPivot") {
+        root.querySelector("[data-op-type]").value = "swap";
+        root.querySelector("[data-target]").value = "0";
+        root.querySelector("[data-source]").value = "1";
+        updateOperationFields();
+      }
       setFeedback("选择一种可逆行操作，或查看下一步建议。");
       render();
     }
@@ -259,7 +265,7 @@
     scope.listen(root.querySelector("[data-reset]"), "click", () => loadPreset(state.key));
     scope.resize(draw);
     updateOperationFields();
-    loadPreset("unique2");
+    loadPreset("swapPivot");
     return scope.cleanup;
   }
 
@@ -507,9 +513,9 @@
       <div class="ch3-lab" data-ch3-lab="dependence">
         <div class="ch3-lab-head"><span class="ch3-lab-kicker">目标 · 判断新向量有没有带来新方向</span><h3>新向量会不会增加维数</h3><p>拖动向量箭头，让 v₃ 进入或离开已有张成。先看张成是否扩大，再用右侧的非平凡线性关系作严格判断。</p></div><div class="ch3-mission"><strong>你来试一试</strong><span>选择“第三个是和”，观察 v₃ 如何由 v₁、v₂ 合成；再取消保留 v₃，比较张成维数。</span><span class="ch3-mission-result">观察：删掉冗余向量，张成不变</span></div>
         <div class="ch3-presets">
-          <button type="button" class="is-active" data-preset="basis">二维基</button>
+          <button type="button" data-preset="basis">二维基</button>
           <button type="button" data-preset="proportional">比例向量</button>
-          <button type="button" data-preset="three">第三个是和</button>
+          <button type="button" class="is-active" data-preset="three">第三个是和</button>
           <button type="button" data-preset="near">近共线</button>
           <button type="button" data-preset="zero">含零向量</button>
         </div>
@@ -538,7 +544,7 @@
       near: [[1, 0.25], [1.05, 0.3]],
       zero: [[1.1, 0.4], [0, 0]],
     };
-    const state = { key: "basis", vectors: [], enabled: [] };
+    const state = { key: "three", vectors: [], enabled: [] };
 
     function load(key) {
       state.key = key;
@@ -637,7 +643,7 @@
       render();
     }, render, 20);
     scope.resize(draw);
-    load("basis");
+    load("three");
     return scope.cleanup;
   }
 

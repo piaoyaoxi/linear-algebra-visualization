@@ -45,9 +45,9 @@
       <div class="ch3-lab" data-ch3-lab="rank">
         <div class="ch3-lab-head"><span class="ch3-lab-kicker">目标 · 先看输出空间，再用主元核对</span><h3>矩阵到底保留了几个方向</h3><p>二维矩阵显示面积、直线或点；三维矩阵显示体积、平面或直线。图形和 rank(A) 始终描述同一个输出空间。</p></div><div class="ch3-mission"><strong>你来试一试</strong><span>依次比较“3×3 · rank 3”和“3×3 · rank 2”：观察有体积的三维输出怎样塌成一个平面。</span><span class="ch3-mission-result">观察：3×3 是矩阵尺寸，rank 才是独立方向数</span></div>
         <div class="ch3-presets">
-          <button type="button" class="is-active" data-preset="full2">2×2 · rank 2</button>
+          <button type="button" data-preset="full2">2×2 · rank 2</button>
           <button type="button" data-preset="rankOne">2×2 · rank 1</button>
-          <button type="button" data-preset="full3">3×3 · rank 3</button>
+          <button type="button" class="is-active" data-preset="full3">3×3 · rank 3</button>
           <button type="button" data-preset="rankTwo3">3×3 · rank 2</button>
         </div>
         <div class="ch3-lab-grid">
@@ -330,7 +330,7 @@
     });
     scope.listen(root.querySelector("[data-reset]"), "click", () => load(state.key));
     scope.resize(draw);
-    load("full2");
+    load("full3");
     return scope.cleanup;
   }
 
@@ -352,8 +352,8 @@
           "判有无解和判解的数量分两步完成",
           cards([
             ["无解", "增广秩更大", "b 增加了一个系数列不能生成的新方向。"],
-            ["唯一", "有解且 rank=n", "没有自由变量，零空间只有 0。"],
-            ["无穷", "有解且 rank<n", "至少一个自由变量生成齐次方向。"],
+            ["唯一", "有解且 rank(A)=n", "没有自由变量，零空间只有 0。"],
+            ["无穷", "有解且 rank(A)&lt;n", "至少一个自由变量生成齐次方向。"],
           ]),
         ),
     );
@@ -821,14 +821,14 @@ x0p[1] + a * d1[1] + b * d2[1],
       }
 
       directions.forEach((direction, index) => {
-        const endpoint = [x0p[0] + 0.72 * direction[0], x0p[1] + 0.72 * direction[1]];
-        M().drawArrowBetween(sized.ctx, frame, x0p, endpoint, frame.p.coral, `η${index + 1}`, 2.7, { alpha: 0.9, labelT: 0.62, labelOffset: 12 });
+        const endpoint = [x0p[0] + 0.54 * direction[0], x0p[1] + 0.54 * direction[1]];
+        M().drawArrowBetween(sized.ctx, frame, x0p, endpoint, frame.p.coral, `η${index + 1}`, 2.5, { alpha: 0.9, labelT: 0.46, labelOffset: 14 });
       });
 
       if (Math.hypot(xp[0] - x0p[0], xp[1] - x0p[1]) > 1e-8) {
         M().drawArrowBetween(sized.ctx, frame, x0p, xp, frame.p.blue, "", 2.2, { dashed: true, alpha: 0.72 });
       }
-      M().drawArrowBetween(sized.ctx, frame, [0, 0], xp, frame.p.blue, "x", 3.8, { tailDot: true });
+      M().drawArrowBetween(sized.ctx, frame, [0, 0], xp, frame.p.blue, "x", 3.2, { tailDot: true, labelOffset: -14 });
     }
 
     function render() {

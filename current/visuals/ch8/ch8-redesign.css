@@ -1471,6 +1471,7 @@ body[data-route="ch8"] .ch8-foundation-formula .tex-display {
 }
 
 .root-split-line {
+  fill: none;
   stroke: var(--coral);
   stroke-width: 2;
   stroke-dasharray: 5 6;

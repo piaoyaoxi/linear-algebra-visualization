@@ -191,6 +191,8 @@ async function checkElementary(page, name) {
   if (layerCounts.some((count, index) => count !== (index % 2) + 1)) {
     throw new Error(`${name}/elementary: factor height does not match its exponent: ${layerCounts.join(",")}`);
   }
+  const blackSvgFills = await page.locator(".ch8-factor-plane svg *").evaluateAll((nodes) => nodes.filter((node) => getComputedStyle(node).fill === "rgb(0, 0, 0)").length);
+  if (blackSvgFills) throw new Error(`${name}/elementary: SVG contains ${blackSvgFills} default black fills`);
   await page.locator(".ch8-elementary-cinema").screenshot({ path: path.join(shots, `${name}-elementary.png`) });
 }
 

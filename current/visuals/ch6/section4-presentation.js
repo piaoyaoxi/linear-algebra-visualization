@@ -63,6 +63,14 @@
 
   const interpolateMatrix = (from, to, t) => from.map((row, i) => row.map((value, j) => value + (to[i][j] - value) * t));
 
+  function basisLabel(vector, label, progress, side = 1) {
+    const anchor = U().point(U().scale(vector, progress));
+    const length = Math.hypot(vector[0], vector[1]) || 1;
+    const offsetX = (-vector[1] / length) * 15 * side;
+    const offsetY = (-vector[0] / length) * 15 * side;
+    return `<text class="ch6-basis-tip-label" x="${(anchor[0] + offsetX).toFixed(2)}" y="${(anchor[1] + offsetY).toFixed(2)}" text-anchor="middle" dominant-baseline="central">${label}</text>`;
+  }
+
   function renderInteractive(root, section) {
     const I = [[1, 0], [0, 1]];
     const passiveTargets = {
@@ -122,8 +130,10 @@
         inner += basisGrid(matrix, "is-w-grid");
         const w1 = [matrix[0][0], matrix[1][0]];
         const w2 = [matrix[0][1], matrix[1][1]];
-        inner += U().softArrow([0, 0], w1, "is-w", "w₁");
-        inner += U().softArrow([0, 0], w2, "is-w2", "w₂");
+        inner += U().softArrow([0, 0], w1, "is-w");
+        inner += U().softArrow([0, 0], w2, "is-w2");
+        inner += basisLabel(w1, "w₁", 0.62, 1);
+        inner += basisLabel(w2, "w₂", 0.58, -1);
         inner += U().softArrow([0, 0], vector, "is-target", "v（固定）");
       } else {
         inner += U().softArrow([0, 0], vector, "is-target-soft", "输入 v");

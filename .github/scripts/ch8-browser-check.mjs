@@ -2,7 +2,7 @@ import fs from "node:fs";
 import path from "node:path";
 import { chromium } from "playwright";
 
-const base = "http://127.0.0.1:4173/learn.html";
+const base = process.env.CH8_BASE || "http://127.0.0.1:4173/learn.html";
 const sections = [
   "lambda-matrix",
   "smith-form",
@@ -42,10 +42,19 @@ async function textIncludes(locator, value) {
   return (await locator.innerText()).includes(value);
 }
 
+async function normalizedTextIncludes(locator, value) {
+  return (await locator.innerText()).replace(/\s+/g, "").includes(value.replace(/\s+/g, ""));
+}
+
 async function openLesson(page, id, shotName = "") {
   await page.goto(`${base}#ch8/${id}`, { waitUntil: "networkidle" });
   await page.locator(`[data-ch8-lab] .ch8-lab`).waitFor({ state: "visible" });
   await page.evaluate(() => document.fonts?.ready);
+  const shouldCollapse = await page.evaluate(() => innerWidth > 920 && !document.body.classList.contains("sidebar-collapsed"));
+  if (shouldCollapse) {
+    await page.locator("#sidebarToggle").click();
+    await page.waitForTimeout(220);
+  }
 
   for (const selector of [
     ".ch8-question",
@@ -171,6 +180,7 @@ async function verifySlider(page, configName) {
 
 async function exerciseChapter(page, name) {
   await page.goto(`${base}#ch8`, { waitUntil: "networkidle" });
+  await page.locator(".ch8-lesson-list .ch8-lesson-row").first().waitFor({ state: "visible" });
   if ((await page.locator(".ch8-lesson-list .ch8-lesson-row").count()) !== 7) throw new Error("Chapter 8 overview does not contain seven lesson routes");
   const route = page.locator(".ch8-route-line");
   if (!(await textIncludes(route, "构造")) || !(await textIncludes(route, "压缩")) || !(await textIncludes(route, "分类")) || !(await textIncludes(route, "重建"))) {
@@ -225,7 +235,7 @@ async function exerciseChapter(page, name) {
   await page.locator("[data-chain-next]").click();
   await page.locator("[data-chain-next]").click();
   await page.locator('[data-growth-k="3"]').click();
-  if (!(await textIncludes(page.locator(".ch8-growth-readout"), "=5"))) throw new Error("§6 kernel growth ν3 is wrong");
+  if (!(await normalizedTextIncludes(page.locator(".ch8-growth-readout"), "=5"))) throw new Error("§6 kernel growth ν3 is wrong");
   await page.locator("[data-show-blocks]").click();
   const jordanText = await page.locator(".ch8-jordan-output").innerText();
   if (!jordanText.includes("3") || !jordanText.includes("2")) throw new Error("§6 did not construct 3- and 2-blocks");
@@ -250,6 +260,7 @@ try {
     { name: "desktop-light", viewport: { width: 1440, height: 1000 }, colorScheme: "light", reducedMotion: "no-preference", hasTouch: false },
     { name: "desktop-dark", viewport: { width: 1440, height: 1000 }, colorScheme: "dark", reducedMotion: "no-preference", hasTouch: false },
     { name: "mobile-light", viewport: { width: 390, height: 844 }, colorScheme: "light", reducedMotion: "no-preference", hasTouch: true },
+    { name: "mobile-dark", viewport: { width: 390, height: 844 }, colorScheme: "dark", reducedMotion: "no-preference", hasTouch: true },
     { name: "mobile-reduced", viewport: { width: 390, height: 844 }, colorScheme: "light", reducedMotion: "reduce", hasTouch: true },
   ]) {
     const context = await browser.newContext({

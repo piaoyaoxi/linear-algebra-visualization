@@ -2,7 +2,7 @@ import fs from "node:fs";
 import path from "node:path";
 import { chromium } from "playwright";
 
-const base = "http://127.0.0.1:4173/learn.html";
+const base = process.env.CH8_BASE || "http://127.0.0.1:4173/learn.html";
 const shots = "/tmp/ch8-screenshots/cinematic";
 fs.mkdirSync(shots, { recursive: true });
 
@@ -14,6 +14,11 @@ async function open(page, id) {
   await page.goto(`${base}#ch8/${id}`, { waitUntil: "networkidle" });
   await page.locator("[data-ch8-lab] .ch8-lab").waitFor({ state: "visible" });
   await page.evaluate(() => document.fonts?.ready);
+  const shouldCollapse = await page.evaluate(() => innerWidth > 920 && !document.body.classList.contains("sidebar-collapsed"));
+  if (shouldCollapse) {
+    await page.locator("#sidebarToggle").click();
+    await page.waitForTimeout(220);
+  }
   if (await page.locator(".katex-error").count()) throw new Error(`${id}: KaTeX error`);
 }
 
@@ -182,6 +187,10 @@ async function checkElementary(page, name) {
   if (opacity < 0.8) throw new Error(`${name}/elementary: complex roots did not become visible`);
   const text = normalize(await page.locator(".ch8-family-columns").innerText());
   if (!text.includes("λ−i") || !text.includes("λ+i")) throw new Error(`${name}/elementary: split families missing`);
+  const layerCounts = await page.locator(".ch8-factor-thread").evaluateAll((nodes) => nodes.map((node) => node.querySelectorAll("i").length));
+  if (layerCounts.some((count, index) => count !== (index % 2) + 1)) {
+    throw new Error(`${name}/elementary: factor height does not match its exponent: ${layerCounts.join(",")}`);
+  }
   await page.locator(".ch8-elementary-cinema").screenshot({ path: path.join(shots, `${name}-elementary.png`) });
 }
 
@@ -214,6 +223,7 @@ try {
     { name: "desktop-light", viewport: { width: 1440, height: 1000 }, colorScheme: "light", touch: false },
     { name: "desktop-dark", viewport: { width: 1440, height: 1000 }, colorScheme: "dark", touch: false },
     { name: "mobile-light", viewport: { width: 390, height: 844 }, colorScheme: "light", touch: true },
+    { name: "mobile-dark", viewport: { width: 390, height: 844 }, colorScheme: "dark", touch: true },
   ]) {
     const context = await browser.newContext({ viewport: config.viewport, colorScheme: config.colorScheme, hasTouch: config.touch, isMobile: config.touch });
     if (config.colorScheme === "dark") await context.addInitScript(() => localStorage.setItem("la-visual-theme", "dark"));

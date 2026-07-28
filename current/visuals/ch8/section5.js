@@ -8,7 +8,8 @@
   };
 
   function powerStack(label, power, family) {
-    return `<div class="ch8-factor-thread is-${family}" style="--power:${power}"><span>${I(label)}</span><i></i><i></i><small>幂次 ${power}</small></div>`;
+    const layers = Array.from({ length: power }, () => "<i></i>").join("");
+    return `<div class="ch8-factor-thread is-${family}" style="--power:${power}"><span>${I(label)}</span>${layers}<small>幂次 ${power}</small></div>`;
   }
 
   function mount(host) {

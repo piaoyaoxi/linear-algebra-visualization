@@ -89,9 +89,10 @@
     if (!section.observe) return "";
     return `
       <section class="section-band lesson-page-section ch8-observe" id="${section.id}-observe">
-        <div class="section-kicker">观察顺序</div>
-        <h2>${section.observe.title}</h2>
-        <p>${section.observe.lead}</p>
+        <div class="ch8-observe-heading">
+          <span class="ch8-section-number" aria-hidden="true">01</span>
+          <div><div class="section-kicker">观察顺序</div><h2>${section.observe.title}</h2><p>${section.observe.lead}</p></div>
+        </div>
         <ol>${section.observe.cues.map((cue) => `<li>${cue}</li>`).join("")}</ol>
       </section>`;
   }
@@ -101,8 +102,12 @@
     return `
       <section class="section-band lesson-page-section ch8-interactive-section" id="${section.id}-interactive">
         <div class="ch8-lab-intro">
+          <span class="ch8-section-number" aria-hidden="true">02</span>
           <div><div class="section-kicker">核心实验</div><h2>${section.interactive.title}</h2><p>${section.interactive.description}</p></div>
-          <aside><span>要回答</span><strong>${section.interactive.mission}</strong></aside>
+        </div>
+        <div class="ch8-mission">
+          <span>实验结束前回答</span>
+          <p>${section.interactive.mission}</p>
         </div>
         <div class="ch8-lab-host" data-ch8-lab="${section.interactive.kind}" data-section-id="${section.id}"></div>
         <ol class="ch8-experiment-roadmap" aria-label="实验步骤">
@@ -169,7 +174,11 @@
       <section class="lesson-cover ch8-cover" id="${section.id}">
         <div class="lesson-cover-copy"><div class="breadcrumb">第八章 λ-矩阵 <span>/</span> ${section.title}</div><h1>${section.title}</h1><p>${section.goal}</p><div class="meta-row">${(section.tags || []).map((tag) => `<span class="tag">${tag}</span>`).join("")}</div></div>
       </section>
-      <section class="section-band lesson-page-section ch8-question" id="${section.id}-question"><div class="section-kicker">本节问题</div><h2>${section.question}</h2><p class="lead">${section.intro}</p></section>
+      <section class="section-band lesson-page-section ch8-question" id="${section.id}-question">
+        <div class="section-kicker">本节问题</div>
+        <h2>${section.question}</h2>
+        <p class="lead">${section.intro}</p>
+      </section>
       ${renderObserve(section)}${renderInteraction(section)}${renderFoundation(section)}${renderExample(section)}${renderSelfTest(section)}
       <section class="section-band lesson-page-section ch8-summary" id="${section.id}-summary"><div class="section-kicker">小结</div><h2>三句话收束</h2><ol>${(section.summary || []).map((item) => `<li>${item}</li>`).join("")}</ol><button class="button mark-button" type="button" data-complete="${section.id}">标记掌握</button></section>
       ${renderNeighbors(section, chapter)}`;

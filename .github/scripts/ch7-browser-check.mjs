@@ -143,7 +143,7 @@ await dragRange(page, '[data-key="alpha"]', 0.2);
 await dragRange(page, '[data-key="beta"]', 0.8);
 await page.locator('[data-mode="basis"]').click();
 await page.locator('[data-basis="2"]').click();
-assert.match(await page.locator(".ch7-conclusion").innerText(), /对角矩阵/);
+assert.match(await page.locator(".ch7-conclusion").innerText(), /对角记录/);
 
 await gotoLesson(routes[3]);
 const angle = page.locator('[data-key="angle"]');

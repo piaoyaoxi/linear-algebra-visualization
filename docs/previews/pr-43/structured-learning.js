@@ -159,6 +159,10 @@
 
   function renderStructuredLesson(chapter, section) {
     const renderer = window.getStructuredChapterRenderer?.(chapter.id);
+    if (!renderer && typeof window.renderLessonPage === "function") {
+      window.renderLessonPage(section, chapter);
+      return;
+    }
     const navigation = renderNeighborNavigation(chapter, section);
     els.main.innerHTML =
       renderer?.renderLesson?.(chapter, section, navigation) || renderFallbackLesson(chapter, section);

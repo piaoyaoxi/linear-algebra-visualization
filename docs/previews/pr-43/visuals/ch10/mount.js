@@ -24,8 +24,8 @@
           <p>${chapter.summary}</p>
           <div class="meta-row">
             <span class="tag accent">${sections.length} 个小节</span>
-            <span class="tag">4 个主交互</span>
-            <span class="tag">4 个分步例题</span>
+            <span class="tag">测量与配对</span>
+            <span class="tag">从几何进入定义</span>
           </div>
         </div>
         ${chapterChainVisual()}
@@ -52,17 +52,6 @@
       </section>`;
   }
 
-  function lessonGlyph(sectionId) {
-    const labels = {
-      "linear-functional": ["f", "V → F"],
-      "dual-space": ["V*", "functions"],
-      "bilinear-form": ["B", "V × W → F"],
-      "symplectic-space": ["ω", "alternating"],
-    };
-    const [symbol, caption] = labels[sectionId] || ["10", "chapter"];
-    return `<div class="ch10-lesson-glyph" aria-hidden="true"><span>${symbol}</span><small>${caption}</small></div>`;
-  }
-
   function renderLesson(chapter, section, navigation) {
     const renderer = window.getChapter10Renderer(section.id);
     if (!renderer) throw new Error(`Missing Chapter 10 renderer for ${section.id}`);
@@ -75,7 +64,6 @@
           <p>${section.goal}</p>
           <div class="meta-row">${section.tags.map((tag) => `<span class="tag">${tag}</span>`).join("")}</div>
         </div>
-        ${lessonGlyph(section.id)}
       </section>
 
       <section class="section-band lesson-page-section" id="${section.id}-question">
@@ -91,9 +79,7 @@
 
       <section class="section-band lesson-page-section ch10-interactive-section" id="${section.id}-interactive">
         <h2>交互实验</h2>
-        ${ui.renderObservationHeader(section.interactive)}
         <div data-ch10-interactive="${section.id}">${renderer.renderInteractive(section)}</div>
-        ${ui.renderTaskList(section.interactive.tasks)}
       </section>
 
       <section class="section-band lesson-page-section ch10-formal-section" id="${section.id}-formal">
@@ -121,7 +107,6 @@
     addCleanup(renderer?.mountIntuition?.(section, root));
     addCleanup(renderer?.mountInteractive?.(section, root));
     addCleanup(renderer?.mountFormal?.(section, root));
-    addCleanup(window.Chapter10Cinematic?.mount?.(section, root));
     ui.bindExample(root, section.example);
     activeTeardown = () => {
       cleanups.reverse().forEach((cleanup) => cleanup());

@@ -17,16 +17,16 @@
     ];
     const state = { preset: 0, mode: "line", angle: 20 };
     const shell = S.createLab(section, lesson, {
-      layout: "subspace-samples",
-      title: "怎样验证整个 W 都被 T 保持？",
-      description: "一支向量留在 W 中还不够。把 W 上多个样本同时送入 T，若所有像都没有垂直于 W 的泄漏，才有 T(W)⊆W。",
-      task: "拖动候选直线改变方向，观察五个样本的像是否全部留在线内，并对照右侧矩阵左下角的泄漏系数。",
+      layout: "eigen-pair",
+      title: "把整条 W 送入 T 后，得到的 T(W) 还与 W 是同一条直线吗？",
+      description: "不再用五个点代替整个子空间。金色是候选 W，珊瑚是整条像子空间 T(W)，两条直线的夹角就是是否泄漏的证据。",
+      task: "抓住 W 上的圆环旋转候选子空间。让金色 W 与珊瑚 T(W) 重合，再观察左下角泄漏系数是否同时归零。",
     });
-    shell.toolbar.innerHTML = `${S.buttonGroup("变换", presets.map((item, index) => ({ value: index, label: item.name })), state.preset, "preset")}${S.buttonGroup("子空间", modes, state.mode, "mode")}`;
+    shell.toolbar.innerHTML = `${S.buttonGroup("选择变换", presets.map((item, index) => ({ value: index, label: item.name })), state.preset, "preset")}${S.buttonGroup("候选子空间", modes, state.mode, "mode")}`;
+    const binder = S.eventBinder();
     const cleanupRange = S.mountRanges(shell.controls, [
       { label: "候选方向 θ", key: "angle", min: 0, max: 179, step: 1, suffix: "°", digits: 0 },
     ], state, () => draw());
-    const binder = S.eventBinder();
 
     const syncAngle = () => {
       const input = shell.controls.querySelector('[data-key="angle"]');
@@ -35,10 +35,22 @@
       if (output) output.textContent = `${state.angle}°`;
     };
 
+    const band = (plane, direction, role) => {
+      const unit = S.normalize(direction);
+      const normal = [-unit[1], unit[0]];
+      const points = [
+        S.add(S.scale(-4.4, unit), S.scale(0.11, normal)),
+        S.add(S.scale(4.4, unit), S.scale(0.11, normal)),
+        S.add(S.scale(4.4, unit), S.scale(-0.11, normal)),
+        S.add(S.scale(-4.4, unit), S.scale(-0.11, normal)),
+      ];
+      return `<polygon points="${points.map((point) => plane.p(point).join(",")).join(" ")}" class="ch7-band-${role}"/>`;
+    };
+
     const draw = () => {
       shell.controls.hidden = state.mode !== "line";
       const A = presets[state.preset].A;
-      const plane = S.createPlane({ x: 38, y: 62, width: 690, height: 455, extent: 3.4 });
+      const plane = S.createPlane({ x: 38, y: 64, width: 764, height: 500, extent: 3.5 });
       let content = `${plane.grid()}${plane.axes()}`;
       let tone = "pass";
       let title = "";
@@ -47,67 +59,65 @@
       let facts = [];
 
       if (state.mode === "whole") {
-        content += `<rect x="${plane.x + 12}" y="${plane.y + 12}" width="${plane.width - 24}" height="${plane.height - 24}" rx="12" class="ch7-band-primary" opacity="0.72"/>
-          <text x="${plane.cx}" y="${plane.cy}" text-anchor="middle" class="ch7-svg-title">W=V，所有输出仍属于 V</text>`;
-        title = "整个空间 V 对任何线性算子都不变";
-        text = "这是平凡不变子空间。真正有结构信息的是中间维数的子空间。";
+        content += `<rect x="${plane.x + 10}" y="${plane.y + 10}" width="${plane.width - 20}" height="${plane.height - 20}" rx="18" class="ch7-band-primary" opacity="0.58"/>
+          <text x="${plane.cx}" y="${plane.cy - 8}" text-anchor="middle" class="ch7-svg-title">W=V</text>
+          <text x="${plane.cx}" y="${plane.cy + 28}" text-anchor="middle" class="ch7-svg-caption">T 的每个输出仍然属于整个空间 V</text>`;
+        title = "整个空间对任何线性算子都不变";
+        text = "这是平凡不变子空间。真正携带结构信息的是中间维数的子空间。";
         formula = "T(V)\\subseteq V";
         facts = [["类型", "平凡不变子空间"]];
       } else if (state.mode === "zero") {
-        content += plane.cross([0, 0], "primary", 10, "T(0)=0");
+        content += `<circle cx="${plane.cx}" cy="${plane.cy}" r="12" fill="var(--surface-solid)" stroke="var(--accent-strong)" stroke-width="3"/>
+          <text x="${plane.cx + 24}" y="${plane.cy - 18}" class="ch7-svg-label is-primary">W={0}</text>
+          <text x="${plane.cx + 24}" y="${plane.cy + 18}" class="ch7-svg-caption">线性保证 T(0)=0</text>`;
         title = "零子空间也始终不变";
-        text = "线性变换固定零向量，所以 {0} 永远被保持。";
+        text = "这里只有一个向量，线性变换把它固定在零向量。";
         formula = "T(\\{0\\})=\\{0\\}";
         facts = [["类型", "平凡不变子空间"]];
       } else {
         const theta = state.angle * Math.PI / 180;
         const direction = [Math.cos(theta), Math.sin(theta)];
         const imageDirection = S.matVec(A, direction);
-        const residual = S.norm(imageDirection) < 1e-8 ? 0 : Math.abs(S.cross2(direction, imageDirection)) / S.norm(imageDirection);
-        const invariant = residual < 0.02;
+        const imageNorm = S.norm(imageDirection);
+        const signed = imageNorm < 1e-8 ? 0 : Math.atan2(S.cross2(direction, imageDirection), Math.abs(S.dot(direction, imageDirection)));
+        const angleGap = Math.abs(signed) * 180 / Math.PI;
         const normal = [-direction[1], direction[0]];
-        content += `<polygon points="${[
-          S.add(S.scale(-3.3, direction), S.scale(0.16, normal)),
-          S.add(S.scale(3.3, direction), S.scale(0.16, normal)),
-          S.add(S.scale(3.3, direction), S.scale(-0.16, normal)),
-          S.add(S.scale(-3.3, direction), S.scale(-0.16, normal)),
-        ].map((point) => plane.p(point).join(",")).join(" ")}" class="ch7-band-primary"/>`;
-        content += plane.line(direction, "primary", 4.6) + plane.hitLine(S.scale(3.3, direction), "angle", S.scale(-3.3, direction));
-        [-2, -1, 0.7, 1.45, 2.2].forEach((t, index) => {
-          const w = S.scale(t, direction);
-          const Tw = S.matVec(A, w);
-          const a = plane.p(w);
-          const b = plane.p(Tw);
-          content += plane.point(w, "primary", 4.4);
-          content += `<path d="M${a[0]} ${a[1]}Q${(a[0] + b[0]) / 2 + 8} ${(a[1] + b[1]) / 2 - 12},${b[0]} ${b[1]}" class="ch7-trace" opacity="${0.42 + index * 0.09}"/>`;
-          content += plane.cross(Tw, invariant ? "primary" : "secondary", 5);
-        });
-        if (!invariant) {
-          const probe = S.scale(1.45, direction);
-          const image = S.matVec(A, probe);
-          const projection = S.scale(S.dot(image, direction), direction);
-          const a = plane.p(projection);
-          const b = plane.p(image);
-          content += `<line x1="${a[0]}" y1="${a[1]}" x2="${b[0]}" y2="${b[1]}" class="ch7-leak"/>
-            <text x="${(a[0] + b[0]) / 2 + 8}" y="${(a[1] + b[1]) / 2 - 8}" class="ch7-svg-label is-secondary">泄漏</text>`;
-        }
-        const complement = normal;
-        const P = [[direction[0], complement[0]], [direction[1], complement[1]]];
+        const P = [[direction[0], normal[0]], [direction[1], normal[1]]];
         const B = S.matMul(S.matMul(S.inv2(P), A), P);
-        content += `<text x="774" y="100" class="ch7-svg-caption">适应基下的矩阵</text>
-          <path d="M794 142H780V314H794M926 142H940V314H926" class="ch7-helper"/>
-          <text x="820" y="188" text-anchor="middle" class="ch7-matrix-text">${S.fmt(B[0][0])}</text><text x="900" y="188" text-anchor="middle" class="ch7-matrix-text">${S.fmt(B[0][1])}</text>
-          <rect x="795" y="232" width="50" height="58" rx="8" class="ch7-matrix-column ${invariant ? "is-primary" : "is-secondary"}"/>
-          <text x="820" y="268" text-anchor="middle" class="ch7-matrix-text">${S.fmt(B[1][0], 3)}</text><text x="900" y="268" text-anchor="middle" class="ch7-matrix-text">${S.fmt(B[1][1])}</text>
-          <text x="778" y="350" class="ch7-svg-caption">左下角表示从 W 泄漏到补空间的分量。</text>`;
+        const geometricLeak = Math.abs(S.cross2(direction, imageDirection));
+        const matrixLeak = Math.abs(B[1][0]);
+        const invariant = imageNorm < 1e-8 || geometricLeak < 0.025;
+        content += band(plane, direction, "guide");
+        content += plane.line(direction, "guide", 4.6);
+        if (imageNorm > 1e-8) {
+          content += band(plane, imageDirection, invariant ? "primary" : "secondary");
+          content += plane.line(imageDirection, invariant ? "primary" : "secondary", 4.6);
+        }
+        content += plane.handle(S.scale(1.9, direction), "angle", "旋转候选子空间 W");
+        content += plane.hitLine(S.scale(3.35, direction), "angle", S.scale(-3.35, direction));
+        content += `<text x="58" y="92" class="ch7-svg-label is-guide">W</text>
+          <text x="58" y="120" class="ch7-svg-label is-${invariant ? "primary" : "secondary"}">${invariant ? "T(W)=W" : "T(W)"}</text>`;
+
+        if (!invariant) {
+          const radius = 68;
+          const start = [plane.cx + radius * Math.cos(theta), plane.cy - radius * Math.sin(theta)];
+          const endAngle = theta + signed;
+          const end = [plane.cx + radius * Math.cos(endAngle), plane.cy - radius * Math.sin(endAngle)];
+          content += `<path d="M${start[0]} ${start[1]}A${radius} ${radius} 0 0 ${signed > 0 ? 0 : 1} ${end[0]} ${end[1]}" class="ch7-angle-arc"/>
+            <text x="${plane.cx + 106}" y="${plane.cy - 76}" class="ch7-svg-label is-secondary">子空间夹角 ${S.fmt(angleGap, 1)}°</text>`;
+        } else {
+          content += `<text x="${plane.cx + 78}" y="${plane.cy - 62}" class="ch7-svg-label is-primary">整条像仍在线内</text>`;
+        }
+
         tone = invariant ? "pass" : "fail";
-        title = invariant ? "五个样本的像全部留在 W 中" : "样本的像出现垂直于 W 的泄漏";
-        text = invariant ? "这里不要求向量逐点固定，只要求 W 中所有向量的像仍属于 W。" : "泄漏系数非零，说明整个像 T(W) 已经离开 W。";
+        title = invariant ? "整条 T(W) 与 W 重合" : "T(W) 整体旋转离开了 W";
+        text = invariant ? "这里不要求每个向量保持不动，只要求所有像仍属于 W。" : "子空间夹角非零，适应基下的左下角泄漏系数也非零。";
         formula = invariant ? "T(W)\\subseteq W" : "T(W)\\not\\subseteq W";
-        facts = [["方向误差", S.fmt(residual, 4)], ["矩阵左下角", S.fmt(B[1][0], 4)], ["是否不变", invariant ? "是" : "否"]];
+        facts = [["子空间夹角", `${S.fmt(angleGap, 2)}°`], ["左下角系数", S.fmt(B[1][0], 4)], ["是否不变", invariant ? "是" : "否"]];
+        shell.root.dataset.invariantPass = String(Math.abs(geometricLeak - matrixLeak) < 1e-7);
       }
 
-      shell.stage.innerHTML = S.svg(content, { width: 980, height: 555, label: "用多个样本检查整个子空间是否在变换下保持" });
+      shell.stage.innerHTML = S.svg(content, { width: 840, height: 600, label: "旋转整个候选子空间并比较 W 与 T(W) 是否重合" });
       shell.result.innerHTML = S.conclusion({ tone, title, text, formula, facts });
     };
 
@@ -137,8 +147,8 @@
       const svg = shell.stage.querySelector("svg");
       if (!svg) return;
       const rect = svg.getBoundingClientRect();
-      const plane = S.createPlane({ x: 38, y: 62, width: 690, height: 455, extent: 3.4 });
-      const vector = plane.v([((clientX - rect.left) / rect.width) * 980, ((clientY - rect.top) / rect.height) * 555]);
+      const plane = S.createPlane({ x: 38, y: 64, width: 764, height: 500, extent: 3.5 });
+      const vector = plane.v([((clientX - rect.left) / rect.width) * 840, ((clientY - rect.top) / rect.height) * 600]);
       let angle = Math.atan2(vector[1], vector[0]) * 180 / Math.PI;
       angle = ((angle % 180) + 180) % 180;
       state.angle = Math.round(angle);
@@ -147,7 +157,10 @@
     });
 
     draw();
-    return () => { cleanupRange(); binder.cleanup(); };
+    return () => {
+      cleanupRange();
+      binder.cleanup();
+    };
   }
 
   S.register("invariant-subspaces", render);

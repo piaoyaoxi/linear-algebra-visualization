@@ -11,22 +11,22 @@
       { name: "折叠", kind: "absolute" },
     ];
     const tests = [
-      { value: "add", label: "检验加法" },
-      { value: "scale", label: "检验数乘" },
-      { value: "origin", label: "检查原点" },
+      { value: "add", label: "加法路径" },
+      { value: "scale", label: "数乘路径" },
+      { value: "origin", label: "原点快检" },
     ];
     const state = { preset: 0, test: "add", u: [1.15, 0.55], v: [-0.55, 1.1], alpha: -1.4 };
     const shell = S.createLab(section, lesson, {
       layout: "two-paths",
-      title: "两条计算路径会不会到达同一点？",
-      description: "线性不是一种外观。它要求先组合再变换，与先变换再组合，在每次实验中都得到相同结果。",
-      task: "选择一种变换和一种检验，直接拖动图中向量的箭身，观察输出端的两个十字是否始终重合。",
+      title: "先组合再变换，与先变换再组合，会到达同一点吗？",
+      description: "线性由两条计算路径是否闭合来判断。图中不显示真假仪表，只让两个终点自己给出答案。",
+      task: "拖动输入平面里的圆环手柄。观察输出平面两条路径的终点是否始终重合。",
     });
-    shell.toolbar.innerHTML = `${S.buttonGroup("变换", presets.map((item, index) => ({ value: index, label: item.name })), state.preset, "preset")}${S.buttonGroup("检验", tests, state.test, "test")}`;
+    shell.toolbar.innerHTML = `${S.buttonGroup("选择变换", presets.map((item, index) => ({ value: index, label: item.name })), state.preset, "preset")}${S.buttonGroup("选择检验", tests, state.test, "test")}`;
+    const binder = S.eventBinder();
     const cleanupRange = S.mountRanges(shell.controls, [
       { label: "标量 α", key: "alpha", min: -2, max: 2, step: 0.05 },
     ], state, () => draw());
-    const binder = S.eventBinder();
 
     const apply = (vector) => {
       const preset = presets[state.preset];
@@ -35,15 +35,19 @@
       return S.matVec(preset.A, vector);
     };
 
+    const pathLabel = (x, y, text, role) => `<g><rect x="${x}" y="${y - 18}" width="${Math.max(78, text.length * 12 + 18)}" height="28" rx="14" class="ch7-stage-chip"/><text x="${x + 10}" y="${y + 1}" class="ch7-svg-label is-${role}">${text}</text></g>`;
+
     const draw = () => {
       shell.controls.hidden = state.test !== "scale";
-      const left = S.createPlane({ x: 40, y: 100, width: 390, height: 360, extent: 2.7 });
-      const right = S.createPlane({ x: 550, y: 100, width: 390, height: 360, extent: 3.1 });
+      const left = S.createPlane({ x: 36, y: 100, width: 350, height: 380, extent: 2.7 });
+      const right = S.createPlane({ x: 454, y: 100, width: 350, height: 380, extent: 3.1 });
       let content = `${left.grid()}${left.axes()}${right.grid()}${right.axes()}
-        <text x="40" y="58" class="ch7-svg-title">输入空间</text>
-        <text x="550" y="58" class="ch7-svg-title">输出空间</text>
-        <path d="M455 280H525" class="ch7-helper"/>
-        <text x="490" y="265" text-anchor="middle" class="ch7-svg-title">T</text>`;
+        <text x="36" y="48" class="ch7-svg-title">输入：先在这里组合</text>
+        <text x="36" y="73" class="ch7-svg-caption">拖动圆环，改变检验向量</text>
+        <text x="454" y="48" class="ch7-svg-title">输出：比较两条路径</text>
+        <text x="454" y="73" class="ch7-svg-caption">同一点表示本次检验通过</text>
+        <path d="M404 290H436" class="ch7-helper"/>
+        <text x="420" y="278" text-anchor="middle" class="ch7-svg-title">T</text>`;
       let tone = "neutral";
       let title = "";
       let text = "";
@@ -53,13 +57,17 @@
       if (state.test === "origin") {
         const image = apply([0, 0]);
         const error = S.norm(image);
-        content += left.cross([0, 0], "primary", 7, "0") + right.cross(image, error < 1e-7 ? "primary" : "danger", 7, "T(0)");
-        content += `<text x="60" y="505" class="ch7-svg-caption">原点不是向量端点，这里用十字标记位置。</text>`;
+        content += left.point([0, 0], "guide", 6, "0");
+        content += right.point(image, error < 1e-7 ? "primary" : "secondary", 7, "T(0)");
+        if (error >= 1e-7) {
+          content += right.vector(image, "secondary");
+          content += `<text x="476" y="520" class="ch7-svg-caption">原点被送离原点，一次检验已经得到反例。</text>`;
+        }
         tone = error < 1e-7 ? "pass" : "fail";
-        title = error < 1e-7 ? "原点仍然回到原点" : "平移把原点送到了别处";
-        text = error < 1e-7 ? "这是必要条件。继续检查加法和数乘，才能确认线性。" : "一次原点检查已经足以否定线性。";
+        title = error < 1e-7 ? "原点仍然回到原点" : "原点被送到了别处";
+        text = error < 1e-7 ? "这是线性的必要条件，还要继续检查加法和数乘。" : "线性变换必须把零向量送到零向量。";
         formula = "T(0)=0";
-        facts = [["T(0)", S.vectorText(image)]];
+        facts = [["当前 T(0)", S.vectorText(image)]];
       } else if (state.test === "add") {
         const sum = S.add(state.u, state.v);
         const Tu = apply(state.u);
@@ -67,75 +75,64 @@
         const direct = apply(sum);
         const split = S.add(Tu, Tv);
         const error = S.norm(S.sub(direct, split));
-        const p0 = left.p([0, 0]);
-        const pu = left.p(state.u);
-        const pv = left.p(state.v);
-        const ps = left.p(sum);
+        const origin = left.p([0, 0]);
+        const uTip = left.p(state.u);
+        const vTip = left.p(state.v);
+        const sumTip = left.p(sum);
         const r0 = right.p([0, 0]);
         const rTu = right.p(Tu);
+        const rDirect = right.p(direct);
         const rSplit = right.p(split);
-        content += `<polygon points="${p0.join(",")} ${pu.join(",")} ${ps.join(",")} ${pv.join(",")}" class="ch7-band-primary" opacity="0.52"/>`;
-        content += left.vector(state.u, "primary") + left.vector(state.v, "secondary") + left.vector(sum, "guide");
-        content += `<text x="${pu[0] + 10}" y="${pu[1] + 20}" class="ch7-svg-label is-primary">u</text>
-          <text x="${pv[0] - 20}" y="${pv[1] - 12}" class="ch7-svg-label is-secondary">v</text>
-          <text x="${ps[0] + 10}" y="${ps[1] - 12}" class="ch7-svg-label is-guide">u+v</text>`;
-        content += left.hitLine(state.u, "u") + left.hitLine(state.v, "v");
+
+        content += `<polygon points="${origin.join(",")} ${uTip.join(",")} ${sumTip.join(",")} ${vTip.join(",")}" class="ch7-band-guide"/>`;
+        content += left.vector(state.u, "primary") + left.vector(state.v, "secondary");
+        content += S.arrowPath(uTip[0], uTip[1], sumTip[0], sumTip[1], "is-secondary");
+        content += S.arrowPath(vTip[0], vTip[1], sumTip[0], sumTip[1], "is-primary");
+        content += left.handle(state.u, "u", "拖动 u") + left.handle(state.v, "v", "拖动 v");
+        content += `<text x="${uTip[0] + 14}" y="${uTip[1] + 25}" class="ch7-svg-label is-primary">u</text>
+          <text x="${vTip[0] - 24}" y="${vTip[1] - 17}" class="ch7-svg-label is-secondary">v</text>
+          <text x="${sumTip[0] + 10}" y="${sumTip[1] - 14}" class="ch7-svg-label is-guide">u+v</text>`;
+
+        content += S.arrowPath(r0[0], r0[1], rDirect[0], rDirect[1], "is-guide");
         content += S.arrowPath(r0[0], r0[1], rTu[0], rTu[1], "is-primary");
         content += S.arrowPath(rTu[0], rTu[1], rSplit[0], rSplit[1], "is-secondary");
-        content += right.vector(direct, "guide");
-        const directPoint = right.p(direct);
-        const splitPoint = right.p(split);
-        if (error < 0.012) {
-          content += right.cross(direct, "primary", 8);
-          content += `<text x="${directPoint[0] + 13}" y="${directPoint[1] - 13}" class="ch7-svg-label is-guide">T(u+v)</text>
-            <text x="${directPoint[0] + 13}" y="${directPoint[1] + 20}" class="ch7-svg-label is-primary">T(u)+T(v)</text>`;
-        } else {
-          content += right.cross(direct, "guide", 7) + right.cross(split, "danger", 7);
-          content += `<text x="${directPoint[0] + 12}" y="${directPoint[1] - 12}" class="ch7-svg-label is-guide">T(u+v)</text>
-            <text x="${splitPoint[0] + 12}" y="${splitPoint[1] + 20}" class="ch7-svg-label is-danger">T(u)+T(v)</text>`;
-          const a = right.p(direct);
-          const b = right.p(split);
-          content += `<line x1="${a[0]}" y1="${a[1]}" x2="${b[0]}" y2="${b[1]}" class="ch7-leak"/>`;
+        content += pathLabel(470, 516, "金色：T(u+v)", "guide") + pathLabel(625, 516, "青绿+珊瑚：T(u)+T(v)", "primary");
+        if (error >= 0.012) {
+          content += `<line x1="${rDirect[0]}" y1="${rDirect[1]}" x2="${rSplit[0]}" y2="${rSplit[1]}" class="ch7-leak"/>
+            <text x="${(rDirect[0] + rSplit[0]) / 2 + 9}" y="${(rDirect[1] + rSplit[1]) / 2 - 9}" class="ch7-svg-label is-secondary">缺口</text>`;
         }
         tone = error < 0.012 ? "pass" : "fail";
-        title = error < 0.012 ? "两条路径始终落在同一个十字上" : "两个终点之间出现了可见缺口";
-        text = error < 0.012 ? "拖动 u、v 时，先相加和先变换的结果持续重合。" : "当前输入已经给出加法不保持的反例。";
+        title = error < 0.012 ? "两条路径闭合在同一个终点" : "两条路径之间出现缺口";
+        text = error < 0.012 ? "继续拖动时，直接路径和分开路径保持重合。" : "当前 u、v 已经构成不保持加法的反例。";
         formula = "T(u+v)=T(u)+T(v)";
-        facts = [["路径误差", S.fmt(error, 4)], ["直接路径", S.vectorText(direct)], ["分开路径", S.vectorText(split)]];
+        facts = [["终点距离", S.fmt(error, 4)]];
       } else {
         const scaled = S.scale(state.alpha, state.u);
         const direct = apply(scaled);
         const split = S.scale(state.alpha, apply(state.u));
         const error = S.norm(S.sub(direct, split));
-        const uPoint = left.p(state.u);
-        const scaledPoint = left.p(scaled);
-        const directPoint = right.p(direct);
-        const splitPoint = right.p(split);
-        content += left.vector(state.u, "primary") + left.vector(scaled, "guide") + left.hitLine(state.u, "u");
-        content += `<text x="${uPoint[0] + 10}" y="${uPoint[1] + 20}" class="ch7-svg-label is-primary">u</text>
-          <text x="${scaledPoint[0] + 10}" y="${scaledPoint[1] - 12}" class="ch7-svg-label is-guide">αu</text>`;
+        const uTip = left.p(state.u);
+        const scaledTip = left.p(scaled);
+        const directTip = right.p(direct);
+        const splitTip = right.p(split);
+        content += left.line(state.u, "muted", 3.7, "is-dashed");
+        content += left.vector(state.u, "primary") + left.vector(scaled, "guide");
+        content += left.handle(state.u, "u", "拖动 u");
+        content += `<text x="${uTip[0] + 12}" y="${uTip[1] + 23}" class="ch7-svg-label is-primary">u</text>
+          <text x="${scaledTip[0] + 12}" y="${scaledTip[1] - 13}" class="ch7-svg-label is-guide">αu</text>`;
         content += right.vector(direct, "guide") + right.vector(split, "primary");
-        if (error < 0.012) {
-          content += right.cross(direct, "primary", 8);
-          content += `<text x="${directPoint[0] + 13}" y="${directPoint[1] - 13}" class="ch7-svg-label is-guide">T(αu)</text>
-            <text x="${directPoint[0] + 13}" y="${directPoint[1] + 20}" class="ch7-svg-label is-primary">αT(u)</text>`;
-        }
-        else {
-          content += right.cross(direct, "guide", 7) + right.cross(split, "danger", 7);
-          content += `<text x="${directPoint[0] + 12}" y="${directPoint[1] - 12}" class="ch7-svg-label is-guide">T(αu)</text>
-            <text x="${splitPoint[0] + 12}" y="${splitPoint[1] + 20}" class="ch7-svg-label is-danger">αT(u)</text>`;
-          const a = right.p(direct);
-          const b = right.p(split);
-          content += `<line x1="${a[0]}" y1="${a[1]}" x2="${b[0]}" y2="${b[1]}" class="ch7-leak"/>`;
+        content += pathLabel(470, 516, "金色：T(αu)", "guide") + pathLabel(625, 516, "青绿：αT(u)", "primary");
+        if (error >= 0.012) {
+          content += `<line x1="${directTip[0]}" y1="${directTip[1]}" x2="${splitTip[0]}" y2="${splitTip[1]}" class="ch7-leak"/>`;
         }
         tone = error < 0.012 ? "pass" : "fail";
-        title = error < 0.012 ? "缩放可以穿过 T" : "负数缩放暴露了不一致";
-        text = error < 0.012 ? "改变 α 时，两个输出仍落在同一点。" : "折叠映射不能保持负标量乘法。";
+        title = error < 0.012 ? "数乘的两条路径保持闭合" : "负数缩放暴露了不一致";
+        text = error < 0.012 ? "改变 α 或 u，两个终点仍然重合。" : "折叠映射不能保持负标量乘法。";
         formula = "T(\\alpha u)=\\alpha T(u)";
-        facts = [["α", S.fmt(state.alpha)], ["路径误差", S.fmt(error, 4)]];
+        facts = [["α", S.fmt(state.alpha)], ["终点距离", S.fmt(error, 4)]];
       }
 
-      shell.stage.innerHTML = S.svg(content, { width: 980, height: 530, label: "线性变换的两条计算路径比较" });
+      shell.stage.innerHTML = S.svg(content, { width: 840, height: 560, label: "拖动输入向量，比较线性条件中的两条计算路径" });
       shell.result.innerHTML = S.conclusion({ tone, title, text, formula, facts });
     };
 
@@ -160,18 +157,21 @@
       const svg = shell.stage.querySelector("svg");
       if (!svg) return;
       const rect = svg.getBoundingClientRect();
-      const left = S.createPlane({ x: 40, y: 100, width: 390, height: 360, extent: 2.7 });
-      const value = left.v([((clientX - rect.left) / rect.width) * 980, ((clientY - rect.top) / rect.height) * 530]).map((n) => S.clamp(n, -2.25, 2.25));
+      const left = S.createPlane({ x: 36, y: 100, width: 350, height: 380, extent: 2.7 });
+      const value = left.v([((clientX - rect.left) / rect.width) * 840, ((clientY - rect.top) / rect.height) * 560]).map((number) => S.clamp(number, -2.15, 2.15));
       const key = event.target?.closest?.("[data-drag]")?.dataset.drag || shell.stage.dataset.dragKey || "u";
       shell.stage.dataset.dragKey = key;
       state[key] = value;
       draw();
     });
-
     binder.on(window, "mouseup", () => { delete shell.stage.dataset.dragKey; });
     binder.on(window, "pointerup", () => { delete shell.stage.dataset.dragKey; });
+
     draw();
-    return () => { cleanupRange(); binder.cleanup(); };
+    return () => {
+      cleanupRange();
+      binder.cleanup();
+    };
   }
 
   S.register("linear-map-definition", render);

@@ -78,19 +78,22 @@ async function gotoLesson(route, { screenshot = false } = {}) {
     const toolbar = document.querySelector(".ch7-lab-toolbar");
     const svg = document.querySelector(".ch7-svg");
     const stage = document.querySelector(".ch7-lab-stage");
+    const rail = document.querySelector(".ch7-lab-rail");
     return {
       overflow: document.documentElement.scrollWidth - document.documentElement.clientWidth,
       taskTop: task?.getBoundingClientRect().top ?? Infinity,
       toolbarTop: toolbar?.getBoundingClientRect().top ?? Infinity,
       svgWidth: svg?.getBoundingClientRect().width ?? 0,
       stageWidth: stage?.getBoundingClientRect().width ?? 0,
+      railWidth: rail?.getBoundingClientRect().width ?? 0,
       questionSize: head ? parseFloat(getComputedStyle(head.querySelector("h3")).fontSize) : 0,
     };
   });
   assert.ok(geometry.overflow <= 1, `${route}: desktop overflow ${geometry.overflow}px`);
   assert.ok(geometry.taskTop < geometry.toolbarTop, `${route}: operation must precede controls`);
   assert.ok(geometry.questionSize >= 26, `${route}: experiment question is visually weak`);
-  assert.ok(geometry.svgWidth > 700, `${route}: geometry does not dominate desktop stage`);
+  assert.ok(geometry.svgWidth > 520, `${route}: geometry is too small on desktop`);
+  assert.ok(geometry.stageWidth > geometry.railWidth * 1.55, `${route}: controls dominate the mathematical stage`);
   assert.ok(Math.abs(geometry.svgWidth - geometry.stageWidth) <= 2, `${route}: SVG does not fill stage`);
 
   const arrows = await page.locator(".ch7-vector").evaluateAll((items) => items.map((item) => ({
@@ -113,7 +116,7 @@ assert.equal(await page.locator(".lesson-card").count(), 9, "chapter overview mu
 await gotoLesson(routes[0]);
 await page.locator('[data-preset="2"]').click();
 await page.locator('[data-test="origin"]').click();
-assert.match(await page.locator(".ch7-conclusion").innerText(), /平移把原点送到了别处/);
+assert.match(await page.locator(".ch7-conclusion").innerText(), /原点被送到了别处/);
 await page.locator('[data-test="add"]').click();
 assert.match(await page.locator(".ch7-conclusion").innerText(), /缺口/);
 assert.ok((await page.locator(".ch7-leak").count()) > 0, "§1: counterexample gap missing");
@@ -128,17 +131,18 @@ assert.match(await page.locator(".ch7-conclusion").innerText(), /两条支路/);
 await page.locator('[data-preset="1"]').click();
 await page.locator('[data-mode="inverse"]').click();
 assert.match(await page.locator(".ch7-conclusion").innerText(), /无法唯一撤销/);
-await page.locator('[data-mode="TU"]').click();
+await page.locator('[data-mode="compose"]').click();
 await dragRange(page, '[data-key="progress"]', 0.76);
+await page.locator('[data-preset="2"]').click();
+assert.match(await page.locator(".ch7-conclusion").innerText(), /可以交换/);
 
 await gotoLesson(routes[2]);
-await page.locator('[data-stage="col2"]').click();
-assert.match(await page.locator(".ch7-conclusion").innerText(), /第二列/);
-await page.locator('[data-stage="rebuild"]').click();
+assert.equal(await page.locator(".ch7-drag-handle").count(), 2, "§3: two draggable matrix columns missing");
+await page.locator('[data-mode="rebuild"]').click();
 await dragRange(page, '[data-key="alpha"]', 0.2);
 await dragRange(page, '[data-key="beta"]', 0.8);
+await page.locator('[data-mode="basis"]').click();
 await page.locator('[data-basis="2"]').click();
-await page.locator('[data-stage="basis"]').click();
 assert.match(await page.locator(".ch7-conclusion").innerText(), /对角矩阵/);
 
 await gotoLesson(routes[3]);
@@ -160,46 +164,66 @@ await page.locator('[data-preset="3"]').click();
 assert.match(await page.locator(".ch7-conclusion").innerText(), /没有特征方向/);
 
 await gotoLesson(routes[4]);
-await page.locator('[data-phase="1"]').click();
-assert.match(await page.locator(".ch7-conclusion").innerText(), /彼此不混合/);
-await page.locator('[data-phase="2"]').click();
-assert.match(await page.locator(".ch7-conclusion").innerText(), /得到 Ax/);
+await dragRange(page, '[data-key="progress"]', 0.42);
+assert.match(await page.locator(".ch7-conclusion").innerText(), /独立伸缩/);
+await dragRange(page, '[data-key="progress"]', 0.98);
+assert.match(await page.locator(".ch7-conclusion").innerText(), /重新合成为 Ax/);
 await page.locator('[data-preset="2"]').click();
-assert.match(await page.locator(".ch7-conclusion").innerText(), /不能建立特征基/);
+assert.match(await page.locator(".ch7-conclusion").innerText(), /右侧坐标系无法建立/);
 
 await gotoLesson(routes[5]);
+const projectionFiber = await page.evaluate(() => {
+  const fiber = document.querySelector(".ch7-line.is-secondary");
+  const handle = document.querySelector(".ch7-drag-ring");
+  return {
+    x1: Number(fiber?.getAttribute("x1")),
+    x2: Number(fiber?.getAttribute("x2")),
+    handleX: Number(handle?.getAttribute("cx")),
+  };
+});
+assert.ok(Math.abs(projectionFiber.x1 - projectionFiber.handleX) < 0.01, "§6: affine fiber misses current input");
+assert.ok(Math.abs(projectionFiber.x2 - projectionFiber.handleX) < 0.01, "§6: affine fiber is not parallel to the kernel");
 const fiberTitle = await page.locator(".ch7-conclusion-copy strong").innerText();
 await dragRange(page, '[data-key="fiber"]', 0.8);
 assert.equal(await page.locator(".ch7-conclusion-copy strong").innerText(), fiberTitle, "§6: kernel motion changed output conclusion");
+assert.equal(await page.locator(".ch7-lab").getAttribute("data-fiber-pass"), "true", "§6: affine fiber does not map to a common image");
 await page.locator('[data-preset="0"]').click();
 assert.match(await page.locator(".ch7-conclusion").innerText(), /没有非零方向被抹去/);
 await page.locator('[data-preset="3"]').click();
 assert.match(await page.locator(".ch7-conclusion").innerText(), /所有输入都汇聚到原点/);
 
 await gotoLesson(routes[6]);
-await dragRange(page, '[data-key="angle"]', 0.78);
-assert.equal(await page.locator(".ch7-matrix-column").count(), 1, "§7: only the leakage matrix cell should be highlighted");
+assert.equal(await page.locator(".ch7-point").count(), 0, "§7: point samples returned instead of the whole subspace");
+await dragRange(page, '[data-key="angle"]', 45 / 179);
+assert.equal(await page.locator(".ch7-lab").getAttribute("data-invariant-pass"), "true", "§7: geometric and matrix invariance tests disagree");
 await page.locator('[data-mode="whole"]').click();
-assert.match(await page.locator(".ch7-conclusion").innerText(), /整个空间 V/);
+assert.match(await page.locator(".ch7-conclusion").innerText(), /整个空间对任何线性算子都不变/);
 await page.locator('[data-mode="zero"]').click();
 assert.match(await page.locator(".ch7-conclusion").innerText(), /零子空间/);
 
 await gotoLesson(routes[7]);
-assert.match(await page.locator(".ch7-conclusion").innerText(), /共同缩放之外还多出一段/);
+assert.equal(await page.locator("[data-chain-actions]").isVisible(), false, "§8: chain controls leaked into the opening scene");
+assert.match(await page.locator(".ch7-conclusion").innerText(), /第二个方向总会多出/);
 await page.locator('[data-structure="2"]').click();
-await page.locator('[data-mode="N"]').click();
+await page.locator('[data-phase="chain"]').click();
+assert.equal(await page.locator("[data-chain-actions]").isVisible(), true, "§8: chain controls did not appear in the chain scene");
 for (let index = 0; index < 3; index += 1) await page.locator("[data-next]").click();
-assert.match(await page.locator(".ch7-conclusion").innerText(), /最终归零/);
+assert.match(await page.locator(".ch7-conclusion").innerText(), /沿链到达 0/);
 await page.locator("[data-reset]").click();
+await page.locator('[data-phase="separate"]').click();
 await dragRange(page, '[data-key="lambda"]', 0.2);
 
 await gotoLesson(routes[8]);
-assert.match(await page.locator(".ch7-conclusion").innerText(), /仍有基方向留下残量/);
+await dragRange(page, '[data-key="term"]', 1);
+assert.match(await page.locator(".ch7-conclusion").innerText(), /至少一个基方向仍有残量/);
 await page.locator('[data-candidate="1"]').click();
+await dragRange(page, '[data-key="term"]', 1);
 assert.match(await page.locator(".ch7-conclusion").innerText(), /次数已经最低/);
 await page.locator('[data-preset="1"]').click();
 await page.locator('[data-candidate="1"]').click();
-assert.match(await page.locator(".ch7-conclusion").innerText(), /关系还可以更短/);
+await dragRange(page, '[data-key="term"]', 1);
+assert.match(await page.locator(".ch7-conclusion").innerText(), /关系还不是最短/);
+assert.equal(await page.locator(".ch7-lab").getAttribute("data-annihilator-pass"), "true", "§9: whole-space annihilation check disagrees with matrix norm");
 assert.equal(await page.locator(".ch7-point").count(), 0, "§9: zero residuals must not be fake points away from origin");
 
 for (const route of routes) {

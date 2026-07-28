@@ -83,15 +83,19 @@
       <h2>交互实验</h2>
       <div class="ch7-lab ch7-lab-${options.layout || "plane"}" data-ch7-lab="${lesson.id}">
         <header class="ch7-lab-head">
-          <span>本实验要回答</span>
+          <span>只研究一个问题</span>
           <h3>${options.title || lesson.interactive?.title || lesson.question}</h3>
           <p>${options.description || lesson.interactive?.description || ""}</p>
-          <p class="ch7-lab-task"><strong>操作：</strong>${prompt}</p>
+          <div class="ch7-lab-task"><span aria-hidden="true">1</span><p><strong>现在动手</strong>${prompt}</p></div>
         </header>
-        <div class="ch7-lab-toolbar" data-lab-toolbar></div>
-        <div class="ch7-lab-stage" data-lab-stage></div>
-        <div class="ch7-lab-controls" data-lab-controls></div>
-        <div class="ch7-lab-result" data-lab-result aria-live="polite"></div>
+        <div class="ch7-lab-work">
+          <div class="ch7-lab-stage" data-lab-stage></div>
+          <aside class="ch7-lab-rail" aria-label="实验控制与结论">
+            <div class="ch7-lab-toolbar" data-lab-toolbar></div>
+            <div class="ch7-lab-controls" data-lab-controls></div>
+            <div class="ch7-lab-result" data-lab-result aria-live="polite"></div>
+          </aside>
+        </div>
       </div>`;
     return {
       root: section.querySelector(".ch7-lab"),
@@ -194,7 +198,7 @@
   }
 
   function conclusion({ tone = "neutral", title, text, formula = "", facts = [] }) {
-    const label = tone === "pass" ? "结论成立" : tone === "fail" ? "出现反例" : tone === "warn" ? "观察边界" : "当前结论";
+    const label = tone === "pass" ? "从图中得到" : tone === "fail" ? "图中出现反例" : tone === "warn" ? "当前边界" : "继续观察";
     return `
       <div class="ch7-conclusion is-${tone}">
         <div class="ch7-conclusion-copy"><span>${label}</span><strong>${title}</strong><p>${text}</p></div>
@@ -211,13 +215,13 @@
     const uy = dy / length;
     const px = -uy;
     const py = ux;
-    const shaft = Math.min(2.4, Math.max(1.4, length / 130));
-    const headLength = Math.min(16, Math.max(11, length * 0.15));
-    const headWidth = Math.min(7.5, Math.max(5.5, length * 0.065));
+    const shaft = Math.min(2.55, Math.max(1.65, length / 118));
+    const headLength = Math.min(16.5, Math.max(12.5, length * 0.17));
+    const headWidth = Math.min(7.2, Math.max(5.8, length * 0.07));
     const neckX = x2 - ux * headLength;
     const neckY = y2 - uy * headLength;
     const point = (x, y) => `${x.toFixed(2)} ${y.toFixed(2)}`;
-    return `<path class="ch7-vector ${className}" d="M ${point(x1 + px * shaft, y1 + py * shaft)} L ${point(neckX + px * shaft, neckY + py * shaft)} L ${point(neckX + px * headWidth, neckY + py * headWidth)} L ${point(x2, y2)} L ${point(neckX - px * headWidth, neckY - py * headWidth)} L ${point(neckX - px * shaft, neckY - py * shaft)} L ${point(x1 - px * shaft, y1 - py * shaft)} Z"></path>`;
+    return `<path class="ch7-vector ${className}" d="M ${point(x1 + px * shaft, y1 + py * shaft)} L ${point(neckX + px * shaft, neckY + py * shaft)} L ${point(neckX + px * headWidth, neckY + py * headWidth)} Q ${point(x2 - ux * 2.4 + px, y2 - uy * 2.4 + py)} ${point(x2, y2)} Q ${point(x2 - ux * 2.4 - px, y2 - uy * 2.4 - py)} ${point(neckX - px * headWidth, neckY - py * headWidth)} L ${point(neckX - px * shaft, neckY - py * shaft)} L ${point(x1 - px * shaft, y1 - py * shaft)} A ${shaft} ${shaft} 0 0 0 ${point(x1 + px * shaft, y1 + py * shaft)} Z"></path>`;
   }
 
   function createPlane({ x = 0, y = 0, width = 800, height = 500, extent = 3 } = {}) {
@@ -262,7 +266,14 @@
       const b = p(to);
       return `<line x1="${a[0]}" y1="${a[1]}" x2="${b[0]}" y2="${b[1]}" class="ch7-drag-line" data-drag="${key}"/>`;
     };
-    return { x, y, width, height, cx, cy, sx, sy, extent, p, v, grid, axes, vector, line, point, cross, hitLine };
+    const handle = (at, key, label = "") => {
+      const [hx, hy] = p(at);
+      return `<g class="ch7-drag-handle" data-drag="${key}" role="button" aria-label="${label || "拖动控制点"}" tabindex="0">
+        <circle cx="${hx}" cy="${hy}" r="13" class="ch7-drag-halo"/>
+        <circle cx="${hx}" cy="${hy}" r="7" class="ch7-drag-ring"/>
+      </g>`;
+    };
+    return { x, y, width, height, cx, cy, sx, sy, extent, p, v, grid, axes, vector, line, point, cross, hitLine, handle };
   }
 
   function transformedGrid(plane, matrix, options = {}) {

@@ -33,16 +33,16 @@
     ];
     const state = { preset: 0, angle: 18 };
     const shell = S.createLab(section, lesson, {
-      layout: "eigen-search",
-      title: "哪些方向经过 T 后完全不转向？",
-      description: "候选直线保持不动，只比较 v 与 Av。若两支箭头留在同一直线上，这条直线就是特征方向。",
-      task: "拖动候选直线或下方滑杆改变 θ，盯住 v 与 Av 之间的偏转角；偏转归零时再读取 λ。",
+      layout: "eigen-pair",
+      title: "把方向慢慢旋转，哪一刻 v 与 Av 不再张开夹角？",
+      description: "金色直线是正在检验的方向，青绿是 v，珊瑚是 Av。特征方向出现时，两支箭头共线，偏转弧会收缩为零。",
+      task: "抓住 v 尖端附近的圆环直接旋转，或拖动角度滑杆。先看夹角，不要先看 λ。",
     });
-    shell.toolbar.innerHTML = S.buttonGroup("变换", presets.map((item, index) => ({ value: index, label: item.name })), state.preset, "preset");
+    shell.toolbar.innerHTML = S.buttonGroup("选择变换", presets.map((item, index) => ({ value: index, label: item.name })), state.preset, "preset");
+    const binder = S.eventBinder();
     const cleanupRange = S.mountRanges(shell.controls, [
       { label: "候选方向 θ", key: "angle", min: 0, max: 179, step: 1, suffix: "°", digits: 0 },
     ], state, () => draw());
-    const binder = S.eventBinder();
 
     const syncAngle = () => {
       const input = shell.controls.querySelector('[data-key="angle"]');
@@ -51,45 +51,67 @@
       if (output) output.textContent = `${state.angle}°`;
     };
 
+    const curve = (plane, matrix, radius = 1.55) => {
+      const points = Array.from({ length: 97 }, (_, index) => {
+        const angle = (index / 96) * Math.PI * 2;
+        return plane.p(S.matVec(matrix, [radius * Math.cos(angle), radius * Math.sin(angle)]));
+      });
+      return points.map((point, index) => `${index ? "L" : "M"}${point[0].toFixed(2)} ${point[1].toFixed(2)}`).join(" ") + " Z";
+    };
+
     const draw = () => {
       const A = presets[state.preset].A;
       const theta = state.angle * Math.PI / 180;
       const v = [Math.cos(theta), Math.sin(theta)];
       const Av = S.matVec(A, v);
       const avNorm = S.norm(Av);
-      const directionError = avNorm < S.EPS ? 0 : Math.abs(S.cross2(v, Av)) / avNorm;
-      const bend = Math.asin(Math.min(1, directionError)) * 180 / Math.PI;
+      const signed = avNorm < S.EPS ? 0 : Math.atan2(S.cross2(v, Av), Math.abs(S.dot(v, Av)));
+      const bend = Math.abs(signed) * 180 / Math.PI;
       const lambda = S.dot(v, Av);
-      const hit = directionError < 0.018;
+      const hit = Math.abs(Math.sin(signed)) < 0.018;
       const directions = eigenDirections(A);
-      const plane = S.createPlane({ x: 45, y: 56, width: 730, height: 470, extent: 3.25 });
-      let content = `<defs><clipPath id="ch7-eigen-clip"><rect x="${plane.x}" y="${plane.y}" width="${plane.width}" height="${plane.height}"/></clipPath></defs>
-        <g clip-path="url(#ch7-eigen-clip)">${S.transformedGrid(plane, S.identity2, { extent: 3.1, step: 0.5, role: "muted" })}${S.transformedGrid(plane, A, { extent: 3.1, step: 0.5, role: "secondary" })}</g>
-        ${plane.axes()}
-        ${plane.line(v, hit ? "primary" : "guide", 4.2)}
-        ${plane.vector(S.scale(1.55, v), "primary", "v")}
-        ${plane.vector(Av, hit ? "primary" : "secondary", "Av")}
-        ${plane.hitLine(S.scale(3.2, v), "angle", S.scale(-3.2, v))}`;
-      if (!hit) {
-        const a = plane.p(S.scale(1.55, v));
-        const b = plane.p(S.normalize(Av).map((n) => n * 1.55));
-        content += `<path d="M${a[0]} ${a[1]}Q${plane.cx + 54} ${plane.cy - 72},${b[0]} ${b[1]}" class="ch7-arc is-secondary"/>
-          <text x="${plane.cx + 72}" y="${plane.cy - 82}" class="ch7-svg-label is-secondary">偏转 ${S.fmt(bend, 1)}°</text>`;
+      const plane = S.createPlane({ x: 42, y: 54, width: 756, height: 500, extent: 3.35 });
+      const vDraw = S.scale(1.55, v);
+      const avDraw = S.scale(Math.min(2.75 / Math.max(avNorm, 1e-8), 1), Av);
+      const vTip = plane.p(vDraw);
+      const avTip = plane.p(avDraw);
+      const arcRadius = 72;
+      const start = [plane.cx + arcRadius * Math.cos(theta), plane.cy - arcRadius * Math.sin(theta)];
+      const avAngle = theta + signed;
+      const end = [plane.cx + arcRadius * Math.cos(avAngle), plane.cy - arcRadius * Math.sin(avAngle)];
+      const largeArc = Math.abs(signed) > Math.PI ? 1 : 0;
+      const sweep = signed > 0 ? 0 : 1;
+
+      let content = `<defs><clipPath id="ch7-eigen-disc"><rect x="${plane.x}" y="${plane.y}" width="${plane.width}" height="${plane.height}" rx="14"/></clipPath></defs>
+        <g clip-path="url(#ch7-eigen-disc)">
+          ${plane.grid()}${plane.axes()}
+          <circle cx="${plane.cx}" cy="${plane.cy}" r="${plane.sx * 1.55}" fill="none" class="ch7-helper is-dashed"/>
+          <path d="${curve(plane, A)}" fill="color-mix(in srgb, var(--coral) 7%, transparent)" stroke="color-mix(in srgb, var(--coral) 55%, transparent)" stroke-width="2" vector-effect="non-scaling-stroke"/>
+          ${plane.line(v, hit ? "primary" : "guide", 4.4)}
+          ${plane.vector(vDraw, "primary")}
+          ${plane.vector(avDraw, hit ? "primary" : "secondary")}
+          ${plane.hitLine(S.scale(3.2, v), "angle", S.scale(-3.2, v))}
+          ${plane.handle(vDraw, "angle", "旋转候选向量 v")}
+        </g>
+        <text x="60" y="82" class="ch7-svg-caption">虚线圆：所有单位方向</text>
+        <text x="60" y="105" class="ch7-svg-caption">珊瑚曲线：这些方向经过 A 后的终点</text>
+        <text x="${vTip[0] + 14}" y="${vTip[1] - 14}" class="ch7-svg-label is-primary">v</text>
+        <text x="${avTip[0] + 14}" y="${avTip[1] + 24}" class="ch7-svg-label is-${hit ? "primary" : "secondary"}">Av</text>`;
+
+      if (bend > 1) {
+        content += `<path d="M${start[0]} ${start[1]}A${arcRadius} ${arcRadius} 0 ${largeArc} ${sweep} ${end[0]} ${end[1]}" class="ch7-angle-arc"/>
+          <text x="${plane.cx + 88}" y="${plane.cy - 76}" class="ch7-svg-label is-secondary">${S.fmt(bend, 1)}°</text>`;
       } else {
-        content += `<text x="${plane.cx + 82}" y="${plane.cy - 82}" class="ch7-svg-label is-primary">方向不变</text>`;
+        content += `<circle cx="${plane.cx}" cy="${plane.cy}" r="82" fill="none" stroke="color-mix(in srgb, var(--accent) 28%, transparent)" stroke-width="8"/>
+          <text x="${plane.cx + 92}" y="${plane.cy - 70}" class="ch7-svg-label is-primary">夹角为 0</text>`;
       }
-      content += `<path d="M812 126H936M812 236H936M812 346H936" class="ch7-helper"/>
-        <text x="812" y="102" class="ch7-svg-caption">非零</text><text x="936" y="102" text-anchor="end" class="ch7-svg-title">是</text>
-        <text x="812" y="212" class="ch7-svg-caption">偏转角</text><text x="936" y="212" text-anchor="end" class="ch7-svg-title">${S.fmt(bend, 1)}°</text>
-        <text x="812" y="322" class="ch7-svg-caption">伸缩比 λ</text><text x="936" y="322" text-anchor="end" class="ch7-svg-title">${hit ? S.fmt(lambda) : "找到方向后读取"}</text>
-        <text x="812" y="440" class="ch7-svg-caption">青绿箭头 v　珊瑚箭头 Av</text>`;
 
       const tone = hit ? "pass" : directions.length ? "neutral" : "fail";
-      const title = hit ? "v 与 Av 共线，找到一条特征直线" : directions.length ? "当前方向发生偏转，继续旋转" : "每一条实直线都会被旋转离开自身";
-      const text = hit ? `这条直线上的每个非零向量都只乘上比例 ${S.fmt(lambda)}。` : directions.length ? "只观察两支箭头是否共线，不需要先看特征方程。" : "90° 旋转在实数平面中没有特征方向。";
-      const formula = hit ? "Av=\\lambda v" : directions.length ? "Av\\notin\\operatorname{span}(v)" : "\\text{实数域中没有特征向量}";
-      shell.stage.innerHTML = S.svg(content, { width: 980, height: 570, label: "拖动候选方向比较向量 v 与 Av 是否共线" });
-      shell.result.innerHTML = S.conclusion({ tone, title, text, formula, facts: [["θ", `${state.angle}°`], ["偏转角", `${S.fmt(bend, 2)}°`], ["λ", hit ? S.fmt(lambda) : "暂不可读"]] });
+      const title = hit ? "两支箭头共线，候选直线被 T 保持" : directions.length ? "v 与 Av 仍张开夹角" : "每个实方向都会被旋转离开自身";
+      const text = hit ? `现在才读取伸缩比 λ=${S.fmt(lambda)}。这条直线上的非零向量都是特征向量。` : directions.length ? "继续旋转，让偏转弧缩短到零。" : "90° 旋转在实数平面中没有特征方向。";
+      const formula = hit ? "Av=\\lambda v" : directions.length ? "Av\\notin\\operatorname{span}(v)" : "\\mathbb{R}^2\\text{ 中没有特征向量}";
+      shell.stage.innerHTML = S.svg(content, { width: 840, height: 600, label: "直接旋转向量 v 并观察 v 与 Av 的夹角" });
+      shell.result.innerHTML = S.conclusion({ tone, title, text, formula, facts: [["偏转角", `${S.fmt(bend, 2)}°`], ["λ", hit ? S.fmt(lambda) : "夹角归零后读取"]] });
     };
 
     binder.on(shell.toolbar, "click", (event) => {
@@ -106,9 +128,8 @@
       const svg = shell.stage.querySelector("svg");
       if (!svg) return;
       const rect = svg.getBoundingClientRect();
-      const plane = S.createPlane({ x: 45, y: 56, width: 730, height: 470, extent: 3.25 });
-      const point = [((clientX - rect.left) / rect.width) * 980, ((clientY - rect.top) / rect.height) * 570];
-      const vector = plane.v(point);
+      const plane = S.createPlane({ x: 42, y: 54, width: 756, height: 500, extent: 3.35 });
+      const vector = plane.v([((clientX - rect.left) / rect.width) * 840, ((clientY - rect.top) / rect.height) * 600]);
       let angle = Math.atan2(vector[1], vector[0]) * 180 / Math.PI;
       angle = ((angle % 180) + 180) % 180;
       state.angle = Math.round(angle);
@@ -117,7 +138,10 @@
     });
 
     draw();
-    return () => { cleanupRange(); binder.cleanup(); };
+    return () => {
+      cleanupRange();
+      binder.cleanup();
+    };
   }
 
   S.register("eigenvalues-eigenvectors", render);

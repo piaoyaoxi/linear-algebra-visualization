@@ -14,5 +14,8 @@ try {
   const text = error?.stack || String(error);
   await writeFile(`${evidence}/failure.txt`, `${text}\n`, "utf8");
   console.error(text);
-  process.exitCode = 1;
+  // A failed assertion can leave Playwright's Chromium child alive. Exit
+  // explicitly so CI reports the real failure and proceeds to upload evidence
+  // instead of waiting for the workflow timeout.
+  process.exit(1);
 }

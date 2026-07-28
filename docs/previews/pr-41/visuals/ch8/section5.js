@@ -8,7 +8,8 @@
   };
 
   function powerStack(label, power, family) {
-    return `<div class="ch8-factor-thread is-${family}" style="--power:${power}"><span>${I(label)}</span><i></i><i></i><small>幂次 ${power}</small></div>`;
+    const layers = Array.from({ length: power }, () => "<i></i>").join("");
+    return `<div class="ch8-factor-thread is-${family}" style="--power:${power}"><span>${I(label)}</span>${layers}<small>幂次 ${power}</small></div>`;
   }
 
   function mount(host) {
@@ -38,19 +39,26 @@
 
           ${mode === "split" ? `
             <section class="ch8-factor-plane ${complex ? "is-complex" : "is-real"}">
-              <svg viewBox="0 0 900 430" role="img" aria-label="不同底域下 λ²+1 的根与不可约因子变化">
-                <defs><marker id="ch8-factor-arrow" markerWidth="10" markerHeight="10" refX="8" refY="5" orient="auto"><path d="M0 0L10 5L0 10Z"></path></marker></defs>
-                <path class="factor-axis" d="M90 230H820M430 375V55"></path>
-                <text x="805" y="214">Re</text><text x="447" y="72">Im</text>
-                <circle class="root root-one" cx="650" cy="230" r="10"></circle><text x="668" y="224">1</text>
-                <circle class="root root-plus ${complex ? "is-visible" : "is-ghost"}" cx="430" cy="115" r="10"></circle><text class="root-label ${complex ? "is-visible" : "is-ghost"}" x="452" y="120">i</text>
-                <circle class="root root-minus ${complex ? "is-visible" : "is-ghost"}" cx="430" cy="345" r="10"></circle><text class="root-label ${complex ? "is-visible" : "is-ghost"}" x="452" y="350">−i</text>
-                <path class="irreducible-loop ${complex ? "is-split" : ""}" d="M350 95C285 145 285 315 350 365C410 410 510 410 570 365C635 315 635 145 570 95C510 50 410 50 350 95Z"></path>
-                <text class="irreducible-label" x="330" y="405">${complex ? "一个二次族分裂为两个线性族" : "λ²+1：底域内不可约，作为一个整体"}</text>
-                <path class="factor-thread-line thread-one" d="M650 242C650 300 705 310 735 350"></path>
-                <path class="factor-thread-line thread-plus ${complex ? "is-visible" : "is-ghost"}" d="M430 127C430 270 530 300 585 350"></path>
-                <path class="factor-thread-line thread-minus ${complex ? "is-visible" : "is-ghost"}" d="M430 333C430 310 475 300 515 350"></path>
-              </svg>
+              ${complex ? `
+                <svg viewBox="0 0 520 330" role="img" aria-label="复平面中 λ²+1 的两个根 i 和负 i">
+                  <path class="factor-grid" d="M80 70H450M80 130H450M80 190H450M80 250H450M140 35V290M200 35V290M260 35V290M320 35V290M380 35V290"></path>
+                  <path class="factor-axis" d="M70 190H465M260 300V25"></path>
+                  <text x="446" y="177">Re</text><text x="274" y="42">Im</text>
+                  <path class="factor-tick" d="M380 185V195"></path><text class="factor-tick-label" x="374" y="214">1</text>
+                  <circle class="root root-plus is-visible" cx="260" cy="80" r="9"></circle><text class="root-label is-visible" x="278" y="86">i</text>
+                  <circle class="root root-minus is-visible" cx="260" cy="300" r="9"></circle><text class="root-label is-visible" x="278" y="305">−i</text>
+                  <path class="root-split-line" d="M260 92V288"></path>
+                  <text class="irreducible-label" x="90" y="320">λ²+1=(λ−i)(λ+i)</text>
+                </svg>` : `
+                <svg viewBox="0 0 520 330" role="img" aria-label="实数轴上 λ²+1 始终大于零，因此没有实根">
+                  <path class="factor-grid" d="M80 70H450M80 130H450M80 190H450M80 250H450M140 35V290M200 35V290M260 35V290M320 35V290M380 35V290"></path>
+                  <path class="factor-axis" d="M70 250H465M260 300V25"></path>
+                  <path class="factor-parabola" d="M100 42C165 182 214 202 260 202C306 202 355 182 420 42"></path>
+                  <circle class="factor-minimum" cx="260" cy="202" r="8"></circle>
+                  <text x="274" y="205">1</text><text x="442" y="238">λ</text>
+                  <circle class="root-plus is-ghost" cx="260" cy="120" r="1"></circle>
+                  <text class="irreducible-label" x="104" y="320">λ²+1&gt;0，没有实根</text>
+                </svg>`}
 
               <div class="ch8-family-columns">
                 <article class="is-linear"><span>线性因子族</span><strong>${I("\\lambda-1")}</strong><div>${powerStack("\\lambda-1", 1, "teal")}${powerStack("(\\lambda-1)^2", 2, "teal")}</div></article>

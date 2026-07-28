@@ -47,16 +47,13 @@
 
           <header class="ch8-cinema-head">
             <div><span>对象不动 · 坐标网格连续倾斜</span><h3>拖动换基参数，观察矩阵怎样随坐标语言改变</h3></div>
-            <p>蓝色几何对象和线性变换始终固定。只有基向量、坐标网格和矩阵记录在变化。</p>
+            <p>实线几何对象和线性变换始终固定。只有基向量、坐标网格和矩阵记录在变化。</p>
           </header>
 
           <section class="ch8-basis-stage ch8-coordinate-rooms">
-            <svg data-basis-svg viewBox="0 0 900 500" role="img" aria-label="同一线性变换在连续变化的基下保持几何对象不变">
-              <defs>
-                <marker id="ch8-basis-arrow" markerWidth="10" markerHeight="10" refX="8" refY="5" orient="auto"><path d="M0 0L10 5L0 10Z"></path></marker>
-              </defs>
+            <svg data-basis-svg viewBox="40 20 520 460" role="img" aria-label="同一线性变换在连续变化的基下保持几何对象不变">
               <g class="basis-grid"><path data-grid-a></path><path data-grid-b></path></g>
-              <path class="basis-axis" d="M70 360H830M245 462V48"></path>
+              <path class="basis-axis" d="M70 360H540M245 462V48"></path>
               <polygon class="basis-input-shape" points="245,360 345,360 345,260 245,260"></polygon>
               <polygon class="basis-output-shape" points="245,360 445,360 445,260 245,260"></polygon>
               <path class="basis-map-arrow" d="M350 232C392 200 430 204 470 232"></path>
@@ -70,7 +67,6 @@
               <path class="basis-two" data-basis-two></path>
               <text data-basis-one-label x="354" y="382">e₁</text>
               <text data-basis-two-label></text>
-              <g class="basis-fixed-note"><rect x="590" y="72" width="250" height="96" rx="18"></rect><text x="618" y="108">固定的几何事实</text><text x="618" y="140">沿第一特征方向放大 2 倍</text></g>
             </svg>
 
             <aside class="ch8-basis-readout">
@@ -146,7 +142,7 @@
         explanation.textContent = basisT < 0.02
           ? "网格是正交的，矩阵记录为对角形。"
           : basisT > 0.98
-            ? "网格已经倾斜，矩阵出现非零上三角项，但蓝色几何对象完全没有动。"
+            ? "网格已经倾斜，矩阵出现非零上三角项，但实线几何对象完全没有动。"
             : "网格正在倾斜；矩阵中的非对角项连续增加，只是在记录坐标语言的变化。";
         conclusion.innerHTML = conclusionMarkup(
           "相似的几何意义",
@@ -156,46 +152,7 @@
         markExperimentStep(host, basisT < 0.05 ? 0 : basisT < 0.95 ? 1 : 2);
       }
 
-      function setFromClientX(clientX) {
-        const rect = range.getBoundingClientRect();
-        const ratio = Math.max(0, Math.min(1, (clientX - rect.left) / rect.width));
-        basisT = Number(ratio.toFixed(2));
-        update();
-      }
-
       on(range, "input", (event) => { basisT = Number(event.currentTarget.value); update(); });
-      on(range, "pointerdown", (event) => {
-        event.preventDefault();
-        range.classList.add("is-dragging");
-        range.setPointerCapture?.(event.pointerId);
-        setFromClientX(event.clientX);
-      });
-      on(range, "pointermove", (event) => {
-        if (!range.hasPointerCapture?.(event.pointerId)) return;
-        event.preventDefault();
-        setFromClientX(event.clientX);
-      });
-      const finishPointer = (event) => {
-        if (range.hasPointerCapture?.(event.pointerId)) range.releasePointerCapture?.(event.pointerId);
-        range.classList.remove("is-dragging");
-      };
-      on(range, "pointerup", finishPointer);
-      on(range, "pointercancel", finishPointer);
-      on(range, "touchstart", (event) => {
-        if (!event.touches.length) return;
-        event.preventDefault();
-        range.classList.add("is-dragging");
-        setFromClientX(event.touches[0].clientX);
-      }, { passive: false });
-      on(range, "touchmove", (event) => {
-        if (!event.touches.length) return;
-        event.preventDefault();
-        setFromClientX(event.touches[0].clientX);
-      }, { passive: false });
-      const finishTouch = () => range.classList.remove("is-dragging");
-      on(range, "touchend", finishTouch, { passive: true });
-      on(range, "touchcancel", finishTouch, { passive: true });
-
       host.querySelectorAll("[data-basis-snap]").forEach((button) => on(button, "click", () => { basisT = Number(button.dataset.basisSnap); update(); }));
       host.querySelectorAll("[data-sim-mode]").forEach((button) => on(button, "click", () => {
         mode = button.dataset.simMode;

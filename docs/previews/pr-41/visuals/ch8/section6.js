@@ -46,32 +46,27 @@
           </div>
 
           <section class="ch8-jordan-field">
-            <svg viewBox="0 0 900 560" role="img" aria-label="两条广义特征向量链及核空间逐层增长">
-              <defs><marker id="ch8-jordan-arrow" markerWidth="10" markerHeight="10" refX="8" refY="5" orient="auto"><path d="M0 0L10 5L0 10Z"></path></marker></defs>
-              <rect class="kernel-band k3 ${activeK === 3 ? "is-active" : ""}" x="135" y="55" width="630" height="440" rx="64"></rect>
-              <rect class="kernel-band k2 ${activeK === 2 ? "is-active" : ""}" x="170" y="185" width="560" height="310" rx="58"></rect>
-              <rect class="kernel-band k1 ${activeK === 1 ? "is-active" : ""}" x="205" y="315" width="490" height="180" rx="52"></rect>
-              <text class="kernel-label" x="162" y="92">ker N³</text>
-              <text class="kernel-label" x="197" y="222">ker N²</text>
-              <text class="kernel-label" x="232" y="352">ker N</text>
-
-              ${edge(310, 375, 310, 245, 2, built)}
-              ${edge(310, 245, 310, 115, 3, built)}
-              ${edge(590, 375, 590, 245, 2, built)}
-              ${node("v₁", 310, 410, 1, built)}
-              ${node("v₂", 310, 280, 2, built)}
-              ${node("v₃", 310, 150, 3, built)}
-              ${node("w₁", 590, 410, 1, built)}
-              ${node("w₂", 590, 280, 2, built)}
-
-              <text class="chain-title" x="282" y="530">链 A · 长度 3</text>
-              <text class="chain-title" x="562" y="530">链 B · 长度 2</text>
-              <text class="chain-map" x="336" y="337">N</text>
-              <text class="chain-map" x="336" y="207">N</text>
-              <text class="chain-map" x="616" y="337">N</text>
-              <text class="chain-zero" x="292" y="475">N(v₁)=0</text>
-              <text class="chain-zero" x="572" y="475">N(w₁)=0</text>
-            </svg>
+            <div class="ch8-chain-table" role="img" aria-label="两条广义特征向量链进入逐层增长的核空间">
+              <div class="ch8-chain-head"><span>核空间层</span><b>链 A</b><b>链 B</b></div>
+              <div class="ch8-chain-row ${activeK === 3 ? "is-active" : ""}">
+                <span>${I("\\ker N^3")}</span>
+                <div class="jordan-node ${built >= 3 ? "is-visible" : "is-ghost"}"><b>v₃</b><small>${I("Nv_3=v_2")}</small></div>
+                <i aria-hidden="true">∅</i>
+              </div>
+              <div class="ch8-chain-arrow-row" aria-hidden="true"><span></span><i>N ↓</i><i>N ↓</i></div>
+              <div class="ch8-chain-row ${activeK === 2 ? "is-active" : ""}">
+                <span>${I("\\ker N^2")}</span>
+                <div class="jordan-node ${built >= 2 ? "is-visible" : "is-ghost"}"><b>v₂</b><small>${I("Nv_2=v_1")}</small></div>
+                <div class="jordan-node ${built >= 2 ? "is-visible" : "is-ghost"}"><b>w₂</b><small>${I("Nw_2=w_1")}</small></div>
+              </div>
+              <div class="ch8-chain-arrow-row" aria-hidden="true"><span></span><i>N ↓</i><i>N ↓</i></div>
+              <div class="ch8-chain-row ${activeK === 1 ? "is-active" : ""}">
+                <span>${I("\\ker N")}</span>
+                <div class="jordan-node is-visible"><b>v₁</b><small>${I("Nv_1=0")}</small></div>
+                <div class="jordan-node is-visible"><b>w₁</b><small>${I("Nw_1=0")}</small></div>
+              </div>
+              <div class="ch8-chain-foot"><span></span><b>长度 3</b><b>长度 2</b></div>
+            </div>
 
             <aside class="ch8-growth-meter">
               <span>选择观察层数 k</span>

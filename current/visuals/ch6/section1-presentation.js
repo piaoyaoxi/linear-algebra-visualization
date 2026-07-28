@@ -55,14 +55,14 @@
     const height = 380;
     const panelY = 34;
     const panelHeight = 312;
-    const panelWidth = 220;
-    const leftPanelX = 38;
+    const panelWidth = 244;
+    const leftPanelX = 24;
     const rightPanelX = width - leftPanelX - panelWidth;
     const leftCenter = leftPanelX + panelWidth / 2;
     const rightCenter = rightPanelX + panelWidth / 2;
-    const nodeWidth = 80;
-    const nodeHeight = 38;
-    const yAt = (index, count) => 124 + (190 / Math.max(1, count - 1)) * index;
+    const nodeWidth = 104;
+    const nodeHeight = 48;
+    const yAt = (index, count) => 134 + (170 / Math.max(1, count - 1)) * index;
     const markerId = `map-arrow-${config.n}-${config.m}-${config.map.join("-")}`.replace(/[^a-zA-Z0-9-]/g, "");
 
     let svg = `<svg class="ch6-map-workbench" viewBox="0 0 ${width} ${height}" role="img" aria-label="${U().escapeHtml(config.label)}">
@@ -73,12 +73,12 @@
       </defs>
       <rect class="ch6-map-panel" x="${leftPanelX}" y="${panelY}" width="${panelWidth}" height="${panelHeight}" rx="18"></rect>
       <rect class="ch6-map-panel" x="${rightPanelX}" y="${panelY}" width="${panelWidth}" height="${panelHeight}" rx="18"></rect>
-      <line class="ch6-map-panel-rule" x1="${leftPanelX + 18}" y1="98" x2="${leftPanelX + panelWidth - 18}" y2="98"></line>
-      <line class="ch6-map-panel-rule" x1="${rightPanelX + 18}" y1="98" x2="${rightPanelX + panelWidth - 18}" y2="98"></line>
-      <text class="ch6-map-set-title" x="${leftPanelX + 22}" y="64">定义域 X</text>
-      <text class="ch6-map-set-subtitle" x="${leftPanelX + 22}" y="84">${config.n} 个输入</text>
-      <text class="ch6-map-set-title" x="${rightPanelX + 22}" y="64">陪域 Y</text>
-      <text class="ch6-map-set-subtitle" x="${rightPanelX + 22}" y="84">${config.m} 个输出</text>
+      <line class="ch6-map-panel-rule" x1="${leftPanelX + 18}" y1="108" x2="${leftPanelX + panelWidth - 18}" y2="108"></line>
+      <line class="ch6-map-panel-rule" x1="${rightPanelX + 18}" y1="108" x2="${rightPanelX + panelWidth - 18}" y2="108"></line>
+      <text class="ch6-map-set-title" x="${leftPanelX + 22}" y="60">定义域 X</text>
+      <text class="ch6-map-set-subtitle" x="${leftPanelX + 22}" y="88">${config.n} 个输入</text>
+      <text class="ch6-map-set-title" x="${rightPanelX + 22}" y="60">陪域 Y</text>
+      <text class="ch6-map-set-subtitle" x="${rightPanelX + 22}" y="88">${config.m} 个输出</text>
       <text class="ch6-map-guide" x="${width / 2}" y="62">每个输入沿一条箭头到达输出</text>`;
 
     for (let i = 0; i < config.n; i += 1) {

@@ -100,7 +100,7 @@
     return inv ? matVec(inv, vector) : null;
   }
 
-  const plane = { width: 640, height: 360, origin: [320, 190], scale: 82 };
+  const plane = { width: 640, height: 360, origin: [320, 194], scale: 108 };
   const point = (vector, config = plane) => [config.origin[0] + vector[0] * config.scale, config.origin[1] - vector[1] * config.scale];
 
   function vectorLabel(label, x, y, tipX, tipY, className, config) {
@@ -123,9 +123,9 @@
     const uy = dy / length;
     const px = -uy;
     const py = ux;
-    const half = Math.min(3.2, Math.max(2.15, length * 0.018));
-    const head = Math.min(18, Math.max(13, length * 0.15));
-    const headHalf = Math.min(8, Math.max(6.1, length * 0.055));
+    const half = Math.min(4.2, Math.max(3, length * 0.02));
+    const head = Math.min(21, Math.max(15, length * 0.16));
+    const headHalf = Math.min(10, Math.max(7.4, length * 0.06));
     const neckX = x2 - ux * head;
     const neckY = y2 - uy * head;
     const f = (n) => n.toFixed(2);
@@ -143,10 +143,10 @@
     ].join(" ");
     const body = `<path class="ch6-arrow ${className}" d="${d}"></path>`;
     if (!label) return body;
-    const labelAt = length < 90 ? 0.78 : 0.7;
+    const labelAt = length < 90 ? 0.86 : 0.8;
     const warm = /is-w(?:2|-soft)?|is-g2|is-g3|is-bad|is-target/.test(className);
     const side = warm ? -1 : 1;
-    const gap = Math.min(25, Math.max(16, length * 0.065)) * side;
+    const gap = Math.min(28, Math.max(18, length * 0.07)) * side;
     const labelX = x1 + dx * labelAt + px * gap;
     const labelY = y1 + dy * labelAt + py * gap;
     return `${body}${vectorLabel(label, labelX, labelY, x2, y2, className, config)}`;

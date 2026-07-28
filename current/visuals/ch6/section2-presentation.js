@@ -62,7 +62,7 @@
       const controls = U().segmented([["r2", "整个 ℝ²"], ["line", "过原点直线"], ["affine", "不过原点直线"], ["quadrant", "第一象限"], ["rgb", "RGB 立方体"], ["p1", "常数项为 1"]], "space-case", key);
       const [zero, add, scale] = candidate.gates;
       const readout = `<div class="ch6-gate-stack">${U().gate("1. 含零向量", "space-zero")}${U().gate("2. 加法封闭", "space-add")}${U().gate("3. 任意数乘封闭", "space-scale")}</div><div class="ch6-current-story"><span>当前候选</span><h4>${candidate.label}</h4><p>${candidate.witness}</p></div><div class="ch6-conclusion-box ${zero && add && scale ? "is-ok" : "is-bad"}"><span>结论</span><strong>${candidate.conclusion}</strong></div><p class="ch6-proof-warning">画面中的失败状态给出一个明确反例；通过状态表示该候选在数学上确实满足相应条件，不是只凭一次试验。</p>`;
-      host.innerHTML = U().labShell({ title: "用最短反例检查候选集合", lead: "不要随机试很多数。按固定顺序检查零向量、加法和任意数乘；任何一道出现反例，候选集合立即出局。", focus: "先找离开候选集合的对象，再回答它违反了哪一条规则。", stage: `<div class="ch6-stage-shell">${candidateVisual(candidate)}</div>`, controls, readout, tasks: U().taskBlock(section), className: "ch6-closure-lab" });
+      host.innerHTML = U().labShell({ title: "用最短反例检查候选集合", lead: "不要随机试很多数。按固定顺序检查零向量、加法和任意数乘；任何一道出现反例，候选集合立即出局。", focus: "先找离开候选集合的对象，再回答它违反了哪一条规则。", stage: `<div class="ch6-stage-shell"><div class="ch6-stage-caption"><strong>${candidate.conclusion}</strong><span>${candidate.witness}</span></div>${candidateVisual(candidate)}</div>`, controls, readout, tasks: U().taskBlock(section), className: "ch6-closure-lab" });
       U().updateGate(host, "space-zero", zero, zero ? "0 属于集合" : "0 不属于集合");
       U().updateGate(host, "space-add", add, add ? "任意两元素之和仍在集合" : "存在加法反例");
       U().updateGate(host, "space-scale", scale, scale ? "任意标量数乘仍在集合" : "存在数乘反例");

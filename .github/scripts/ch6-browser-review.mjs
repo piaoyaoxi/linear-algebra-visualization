@@ -1,9 +1,14 @@
 import fs from "node:fs";
+import { createRequire } from "node:module";
 import path from "node:path";
-import { chromium } from "playwright";
+import { fileURLToPath } from "node:url";
 
-const base = process.env.CH6_BASE_URL || "http://127.0.0.1:4173/learn.html";
+const require = createRequire(import.meta.url);
+const { chromium } = require("playwright");
+
+const base = (typeof process !== "undefined" && process.env?.CH6_BASE_URL) || "http://127.0.0.1:4173/learn.html";
 const shots = "/tmp/ch6-screenshots";
+const repoRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..");
 const sections = [
   "sets-maps",
   "vector-space-definition",
@@ -39,7 +44,7 @@ function assertSourceDesignSystem() {
   ];
   const problems = [];
   for (const file of files) {
-    const source = fs.readFileSync(file, "utf8").toLowerCase();
+    const source = fs.readFileSync(path.join(repoRoot, file), "utf8").toLowerCase();
     for (const token of forbidden) {
       if (source.includes(token.toLowerCase())) problems.push(`${file}: ${token}`);
     }
@@ -61,6 +66,8 @@ async function assertPageGeometry(page, id) {
     const documentOverflow = document.documentElement.scrollWidth - document.documentElement.clientWidth;
     const lab = document.querySelector(".ch6-guided-lab");
     const stage = lab?.querySelector(".ch6-lab-stage");
+    const stageCaption = lab?.querySelector(".ch6-stage-caption");
+    const stageGraphic = lab?.querySelector(".ch6-stage-shell > svg, .ch6-stage-shell > .ch6-rgb-stage, .ch6-stage-shell > .ch6-polynomial-stage");
     const readout = lab?.querySelector(".ch6-lab-readout");
     const controls = lab?.querySelector(".ch6-lab-controls");
     if (!lab || !stage || !readout) return { documentOverflow, missing: true };
@@ -69,6 +76,8 @@ async function assertPageGeometry(page, id) {
     const stageRect = stage.getBoundingClientRect();
     const readoutRect = readout.getBoundingClientRect();
     const controlsRect = controls?.getBoundingClientRect();
+    const captionRect = stageCaption?.getBoundingClientRect();
+    const graphicRect = stageGraphic?.getBoundingClientRect();
     const innerWidth = labRect.width - parseFloat(style.paddingLeft) - parseFloat(style.paddingRight);
     return {
       documentOverflow,
@@ -77,6 +86,7 @@ async function assertPageGeometry(page, id) {
       verticalOrder:
         stageRect.bottom <= (controlsRect?.top ?? readoutRect.top) + 1 &&
         (!controlsRect || controlsRect.bottom <= readoutRect.top + 1),
+      captionOverlapsGraphic: Boolean(captionRect && graphicRect && captionRect.bottom > graphicRect.top + 1),
       legacySplit: lab.querySelectorAll(".ch6-lab-layout, .ch6-lab-main").length,
     };
   });
@@ -84,6 +94,7 @@ async function assertPageGeometry(page, id) {
   if (geometry.documentOverflow > 1) throw new Error(`${id}: page overflow ${geometry.documentOverflow}px`);
   if (geometry.stageRatio < 0.94) throw new Error(`${id}: main visual only uses ${geometry.stageRatio.toFixed(2)} of the content width`);
   if (!geometry.verticalOrder) throw new Error(`${id}: controls, visual and result are not in one reading axis`);
+  if (geometry.captionOverlapsGraphic) throw new Error(`${id}: stage explanation overlaps the mathematical graphic`);
   if (geometry.legacySplit) throw new Error(`${id}: old split dashboard is still present`);
 }
 
@@ -263,10 +274,13 @@ async function reviewInteractions(page, configName, colorScheme) {
   if (!(await hasText(page.locator("[data-sub-zero]"), "0∉U"))) throw new Error("§5 affine set was accepted");
 
   await openLesson(page, "intersection-sum", configName, colorScheme);
-  await page.locator('[data-sum-case="planes"]').click();
-  const ledger = await page.locator(".ch6-dimension-ledger strong").allInnerTexts();
-  if (ledger.join(",") !== "2,2,1,3") throw new Error(`§6 dimension ledger wrong: ${ledger.join(",")}`);
-  await assertVectors(page, "§6 plane state");
+  await page.locator('[data-sum-preset="same"]').click();
+  let ledger = await page.locator(".ch6-dimension-ledger strong").allInnerTexts();
+  if (ledger.join(",") !== "1,1,1,1") throw new Error(`§6 coincident-line ledger wrong: ${ledger.join(",")}`);
+  await page.locator('[data-sum-preset="open"]').click();
+  ledger = await page.locator(".ch6-dimension-ledger strong").allInnerTexts();
+  if (ledger.join(",") !== "1,1,0,2") throw new Error(`§6 independent-line ledger wrong: ${ledger.join(",")}`);
+  await assertVectors(page, "§6 angle state");
 
   await openLesson(page, "direct-sum", configName, colorScheme);
   await page.locator('[data-direct-case="overlap"]').click();
@@ -277,17 +291,20 @@ async function reviewInteractions(page, configName, colorScheme) {
   await openLesson(page, "isomorphism", configName, colorScheme);
   await page.locator('[data-iso-mode="square"]').click();
   if (!(await hasText(page.locator("[data-iso-linear]"), "运算保持失败"))) throw new Error("§8 nonlinear rule passed linearity");
-  if (!(await page.locator("[data-iso-paths]").isVisible())) throw new Error("§8 two calculation paths missing");
+  if (!(await page.locator(".ch6-iso-bridge").isVisible())) throw new Error("§8 polynomial-to-coordinate visual bridge missing");
+  if ((await page.locator(".ch6-coefficient-sliders input").count()) !== 3) throw new Error("§8 coefficient controls missing");
 }
 
 assertSourceDesignSystem();
 
-const browser = await chromium.launch();
+const localChrome = "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome";
+const browser = await chromium.launch(fs.existsSync(localChrome) ? { executablePath: localChrome } : {});
 try {
   for (const config of [
     { name: "desktop-light", viewport: { width: 1440, height: 1000 }, colorScheme: "light", reducedMotion: "no-preference" },
     { name: "desktop-dark", viewport: { width: 1440, height: 1000 }, colorScheme: "dark", reducedMotion: "no-preference" },
     { name: "mobile-light", viewport: { width: 390, height: 844 }, colorScheme: "light", reducedMotion: "no-preference" },
+    { name: "mobile-dark", viewport: { width: 390, height: 844 }, colorScheme: "dark", reducedMotion: "no-preference" },
     { name: "mobile-reduced", viewport: { width: 390, height: 844 }, colorScheme: "light", reducedMotion: "reduce" },
   ]) {
     const context = await browser.newContext({ viewport: config.viewport, colorScheme: config.colorScheme, reducedMotion: config.reducedMotion });

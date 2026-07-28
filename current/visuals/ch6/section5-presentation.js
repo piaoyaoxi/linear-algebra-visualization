@@ -17,7 +17,8 @@
       const offset = [shift / 2, -shift / 2];
       const ox = U().plane.origin[0];
       const oy = U().plane.origin[1];
-      const inner = U().planeGrid() + U().line([1, 1], Math.abs(shift) < 1e-8 ? "is-u" : "is-bad-line", `x−y=${U().formatNumber(shift, 1)}`, offset) + `<path class="ch6-origin-cross" d="M ${ox - 6} ${oy} H ${ox + 6} M ${ox} ${oy - 6} V ${oy + 6}"></path><text class="ch6-plane-label is-target" x="${ox + 15}" y="${oy - 12}">零向量</text>`;
+      const displacement = Math.abs(shift) < 1e-8 ? "" : U().softArrow([0, 0], offset, "is-bad", `离原点 ${U().formatNumber(Math.abs(shift) / Math.sqrt(2), 2)}`);
+      const inner = U().planeGrid() + U().line([1, 1], Math.abs(shift) < 1e-8 ? "is-u" : "is-bad-line", `x−y=${U().formatNumber(shift, 1)}`, offset) + displacement + `<path class="ch6-origin-cross" d="M ${ox - 6} ${oy} H ${ox + 6} M ${ox} ${oy - 6} V ${oy + 6}"></path><text class="ch6-plane-label is-target" x="${ox + 15}" y="${oy - 12}">零向量</text>`;
       return U().planeSvg(inner, "直线平移与子空间判定");
     }
     if (caseInfo.kind === "quadrant") {
@@ -70,7 +71,7 @@
         title: "先过原点，再检查线性组合",
         lead: "直线、平面和多项式集合都可能只差一个常数项，却从子空间变成仿射集合。按三步过滤，不靠外形猜。",
         focus: key === "line" ? "先看零向量是否落在直线上；离开原点就立即失败。" : "先找失败的公式或箭头，它给出一个可以直接写进证明的反例。",
-        stage: `<div class="ch6-stage-shell">${visualFor(info, shift)}</div>`,
+        stage: `<div class="ch6-stage-shell"><div class="ch6-stage-caption">${key === "line" ? Math.abs(shift) < 1e-8 ? "<strong>直线经过零向量</strong><span>此时方程齐次，整条直线是一维子空间。</span>" : "<strong>平移使零向量离开集合</strong><span>方向没有变，但线性结构已经失效。</span>" : `<strong>${info.label}</strong><span>${state.story}</span>`}</div>${visualFor(info, shift)}</div>`,
         controls,
         readout,
         tasks: U().taskBlock(section),

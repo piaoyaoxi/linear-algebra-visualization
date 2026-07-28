@@ -2,7 +2,7 @@
   const U = () => window.Ch6UI;
 
   const miniConfig = { ...U().plane, width: 280, height: 190, origin: [118, 125], scale: 62 };
-  const mainConfig = { ...U().plane, width: 640, height: 380, origin: [300, 238], scale: 92 };
+  const mainConfig = { ...U().plane, width: 640, height: 380, origin: [286, 244], scale: 110 };
 
   function defs() {
     return "";
@@ -19,7 +19,7 @@
   function lattice(v1, v2, config) {
     let lines = "";
     const p = (v) => U().point(v, config);
-    for (let k = -4; k <= 4; k += 1) {
+    for (let k = -3; k <= 3; k += 1) {
       const a1 = p(U().add(U().scale(v1, -5), U().scale(v2, k)));
       const a2 = p(U().add(U().scale(v1, 5), U().scale(v2, k)));
       const b1 = p(U().add(U().scale(v2, -5), U().scale(v1, k)));
@@ -33,15 +33,15 @@
     const det = v2 ? Math.abs(U().cross(v1, v2)) : 0;
     let inner = defs() + U().planeGrid(miniConfig);
     if (kind === "line") inner += U().line(v1, "is-u", "span", [0, 0], miniConfig);
-    if (kind === "plane") inner += lattice(v1, v2, miniConfig) + parallelogram(v1, v2, miniConfig, "is-visible");
+    if (kind === "plane") inner += `<rect class="ch6-plane-field" x="8" y="8" width="264" height="174" rx="16"></rect>` + parallelogram(v1, v2, miniConfig, "is-visible");
     inner += U().softArrow([0, 0], v1, "is-u", "v₁", miniConfig);
     if (v2) inner += U().softArrow([0, 0], v2, "is-w", "v₂", miniConfig);
     return `<article class="ch6-span-frame"><span>${title}</span><svg viewBox="0 0 ${miniConfig.width} ${miniConfig.height}" role="img" aria-label="${caption}">${inner}</svg><div><strong>${caption}</strong><small>${kind === "line" ? "det = 0 · 维数仍为 1" : `|det(v₁,v₂)| = ${U().formatNumber(det, 2)} · 维数升为 2`}</small></div></article>`;
   }
 
   function spanProgression() {
-    const v1 = [1.55, 0.35];
-    return `<div class="ch6-cinematic-story ch6-span-cinema"><span class="ch6-cinematic-kicker">方向是否真的增加</span><h4 class="ch6-cinematic-title">面积从 0 变为非 0，正是维数从 1 升到 2 的几何信号</h4><div class="ch6-span-frames">${miniFrame(v1, null, "只有 v₁", "所有倍数只铺成一条直线", "line")}${miniFrame(v1, [1.15, 0.26], "加入共线 v₂", "箭头更多了，但没有新方向", "line")}${miniFrame(v1, [-0.15, 1.25], "加入独立 v₂", "平行四边形有面积，两个方向张成平面", "plane")}</div></div>`;
+    const v1 = [1.65, 0.5];
+    return `<div class="ch6-cinematic-story ch6-span-cinema"><span class="ch6-cinematic-kicker">方向是否真的增加</span><h4 class="ch6-cinematic-title">面积从 0 变为非 0，正是维数从 1 升到 2 的几何信号</h4><div class="ch6-span-frames">${miniFrame(v1, null, "只有 v₁", "所有倍数只铺成一条直线", "line")}${miniFrame(v1, [1.155, 0.35], "加入共线 v₂", "箭头更多了，但没有新方向", "line")}${miniFrame(v1, [-0.15, 1.25], "加入独立 v₂", "平行四边形有面积，两个方向张成平面", "plane")}</div></div>`;
   }
 
   function renderFormal(root) {
@@ -60,7 +60,7 @@
 
     if (mode === "structure") {
       if (independent) {
-        inner += `<rect class="ch6-plane-field" x="10" y="10" width="620" height="360" rx="22"></rect>${lattice(v1, v2, mainConfig)}${parallelogram(v1, v2, mainConfig, "is-visible")}`;
+        inner += `<rect class="ch6-plane-field" x="10" y="10" width="620" height="360" rx="22"></rect>${parallelogram(v1, v2, mainConfig, "is-visible")}`;
       } else {
         inner += U().line(v1, "is-u", "当前张成一条直线", [0, 0], mainConfig);
       }
@@ -87,7 +87,7 @@
   function renderInteractive(root, section) {
     let mode = "structure";
     const v1 = [1.55, 0.35];
-    let v2 = [1.05, 0.24];
+    let v2 = [1.209, 0.273];
     let showRedundant = false;
     let target = [1.25, 1.15];
     let animationFrame = null;
@@ -132,7 +132,7 @@
         title: mode === "structure" ? "拖动 v₂：看面积怎样决定维数" : "沿两个基方向走到目标向量",
         lead: mode === "structure" ? "不要数箭头。拖动第二个方向，观察平行四边形面积从 0 变为非 0，张成空间也会从直线扩展为平面。" : "固定一组独立基，改变目标向量。两段路径就是它的两个坐标分量。",
         focus: mode === "structure" ? "先看半透明平行四边形是否有面积；面积为 0 时，两个箭头只是同一方向。" : "先看目标 v，再沿 b₁、b₂ 两段路径追到它的终点。",
-        stage: `<div class="ch6-stage-shell">${sceneSvg(v1, v2, showRedundant, target, mode)}</div>`,
+        stage: `<div class="ch6-stage-shell"><div class="ch6-stage-caption">${mode === "structure" ? independent ? "<strong>出现新的方向</strong><span>平行四边形有面积，张成范围从直线扩展为平面。</span>" : "<strong>仍是同一个方向</strong><span>平行四边形塌成线段，v₂ 没有增加维数。</span>" : `<strong>沿基方向读坐标</strong><span>${coordinates ? `${U().formatNumber(coordinates[0])}b₁ + ${U().formatNumber(coordinates[1])}b₂ 恰好到达 v。` : "先让两个方向成为一组基。"}</span>`}</div>${sceneSvg(v1, v2, showRedundant, target, mode)}</div>`,
         controls,
         readout,
         tasks: U().taskBlock(section),
@@ -143,14 +143,14 @@
 
       host.querySelectorAll("[data-basis-mode]").forEach((button) => button.addEventListener("click", () => {
         mode = button.dataset.basisMode;
-        if (mode === "coordinates" && !independent) v2 = [-0.15, 1.25];
+        if (mode === "coordinates" && !independent) v2 = [-0.1, 1.35];
         render();
       }));
       host.querySelectorAll("[data-basis-preset]").forEach((button) => button.addEventListener("click", () => {
         const preset = button.dataset.basisPreset;
-        if (preset === "collinear") animateV2([1.05, 0.237]);
-        if (preset === "near") animateV2([1.05, 0.38]);
-        if (preset === "independent") animateV2([-0.15, 1.25]);
+        if (preset === "collinear") animateV2([1.209, 0.273]);
+        if (preset === "near") animateV2([1.12, 0.56]);
+        if (preset === "independent") animateV2([-0.1, 1.35]);
       }));
       host.querySelector("[data-v2-angle]")?.addEventListener("input", (event) => {
         const a = Number(event.target.value);

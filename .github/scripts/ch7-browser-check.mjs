@@ -259,10 +259,13 @@ for (const route of routes) {
     overflow: document.documentElement.scrollWidth - document.documentElement.clientWidth,
     stageWidth: document.querySelector(".ch7-lab-stage")?.getBoundingClientRect().width ?? 0,
     svgWidth: document.querySelector(".ch7-svg")?.getBoundingClientRect().width ?? 0,
+    formulaOverflow: [...document.querySelectorAll(".ch7-formal-equation .tex-display")]
+      .filter((formula) => formula.scrollWidth > formula.clientWidth + 1).length,
     nowrapControls: [...document.querySelectorAll(".ch7-choice-row")].filter((row) => row.scrollWidth > row.clientWidth + 1).length,
     transition: getComputedStyle(document.querySelector(".ch7-choice-row button")).transitionDuration,
   }));
   assert.ok(geometry.overflow <= 1, `${route}: mobile overflow ${geometry.overflow}px`);
+  assert.equal(geometry.formulaOverflow, 0, `${route}: formal equation is clipped on mobile`);
   assert.equal(geometry.nowrapControls, 0, `${route}: mobile controls are clipped`);
   assert.ok(Math.abs(geometry.svgWidth - geometry.stageWidth) <= 2, `${route}: mobile SVG does not fill stage`);
   assert.equal(geometry.transition, "0s", `${route}: reduced motion not honored`);

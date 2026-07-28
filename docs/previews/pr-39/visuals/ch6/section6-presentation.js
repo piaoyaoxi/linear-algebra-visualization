@@ -13,7 +13,7 @@
       U().softArrow([0, 0], a, "is-u", "", config) +
       U().softArrow(a, sum, "is-w", "", config) +
       U().softArrow([0, 0], sum, "is-result", "", config);
-    return `<svg class="ch6-sum-union-figure" viewBox="0 0 400 230" role="img" aria-label="先沿青色 u 前进，再沿橙色 w 前进，得到绿色 u+w">${inner}</svg>`;
+    return `<svg class="ch6-sum-union-figure" viewBox="0 0 400 230" role="img" aria-label="先取 u，再从它的终点加上 w，得到 u+w">${inner}</svg>`;
   }
 
   function dimensionBookkeeping() {
@@ -32,7 +32,7 @@
         "02",
         "和空间收集所有可以合成的方向",
         "它不是简单把两个集合并排放在一起",
-        `<div class="ch6-sum-definition"><div>${sumVsUnionFigure()}</div><div>${U().texDisplay("U+W=\\{u+w:u\\in U,\\ w\\in W\\}")}<p>青色段表示先取 ${U().texInline("u\\in U")}，橙色段表示从它的终点再加 ${U().texInline("w\\in W")}；绿色箭头是最终的 ${U().texInline("u+w")}。</p><div class="ch6-warning-note"><strong>${U().texInline("U\\cup W")} 一般不是子空间</strong><p>分别取 u∈U 与 w∈W，u+w 往往离开集合并。</p></div></div></div>`,
+        `<div class="ch6-sum-definition"><div>${sumVsUnionFigure()}</div><div>${U().texDisplay("U+W=\\{u+w:u\\in U,\\ w\\in W\\}")}<p>第一段表示先取 ${U().texInline("u\\in U")}，第二段表示从它的终点再加 ${U().texInline("w\\in W")}；从原点直达终点的箭头就是 ${U().texInline("u+w")}。</p><div class="ch6-warning-note"><strong>${U().texInline("U\\cup W")} 一般不是子空间</strong><p>分别取 u∈U 与 w∈W，u+w 往往离开集合并。</p></div></div></div>`,
       ),
       U().moduleBlock("03", "维数公式是一笔重复方向的账", "dim U 与 dim W 都计算了交空间中的方向", dimensionBookkeeping()),
       U().moduleBlock(
@@ -56,88 +56,81 @@
     );
   }
 
-  function r2Visual(same, angleU, angleW) {
+  function angleVisual(angleU, angleW) {
     const u = [Math.cos(angleU), Math.sin(angleU)];
-    const w = same ? u : [Math.cos(angleW), Math.sin(angleW)];
+    const w = [Math.cos(angleW), Math.sin(angleW)];
+    const delta = Math.atan2(Math.sin(angleW - angleU), Math.cos(angleW - angleU));
+    const separated = Math.abs(delta) > 0.002;
+    const openness = Math.min(1, Math.abs(Math.sin(delta)) * 2.2);
+    const origin = U().point([0, 0]);
+    const a = U().point(U().scale(u, 1.25));
+    const b = U().point(U().scale(w, 1.25));
+    const c = U().point(U().add(U().scale(u, 1.25), U().scale(w, 1.25)));
     let inner = U().planeGrid();
-    if (same) {
-      const uPart = U().scale(u, 1.35);
-      const sum = U().scale(u, 0.72);
-      inner += U().line(u, "is-overlap", "U=W");
-      inner += U().softArrow([0, 0], uPart, "is-u", "");
-      inner += U().softArrow(uPart, sum, "is-w", "");
-      inner += U().softArrow([0, 0], sum, "is-result", "");
-    } else {
-      const uPart = U().scale(u, 1.35);
-      const sum = U().add(uPart, U().scale(w, 1.05));
-      inner += `<rect class="ch6-plane-fill" x="14" y="14" width="612" height="332" rx="20"></rect>`;
-      inner += U().line(u, "is-u", "U");
-      inner += U().line(w, "is-w", "W");
-      inner += U().softArrow([0, 0], uPart, "is-u", "");
-      inner += U().softArrow(uPart, sum, "is-w", "");
-      inner += U().softArrow([0, 0], sum, "is-result", "");
-    }
-    return U().planeSvg(inner, same ? "同一条直线中的 u 与 w 合成" : "两条不同直线中的 u 与 w 合成");
-  }
 
-  function r3Visual(kind) {
-    if (kind === "contained") {
-      return `<svg class="ch6-space-3d" viewBox="0 0 640 360" role="img" aria-label="直线 U 包含于平面 W"><polygon class="ch6-plane-polygon is-w" points="120,260 310,90 540,150 350,320"></polygon><line class="ch6-space-line is-u" x1="170" y1="270" x2="475" y2="135"></line><text x="458" y="126" class="ch6-space-label is-u">U=U∩W</text><text x="510" y="190" class="ch6-space-label is-w">W=U+W</text><circle cx="320" cy="205" r="5" class="ch6-space-origin"></circle></svg>`;
+    if (separated) {
+      inner += `<rect class="ch6-plane-fill ch6-sum-field" x="14" y="14" width="612" height="332" rx="18" style="opacity:${(0.12 + openness * 0.68).toFixed(3)}"></rect>`;
+      inner += `<polygon class="ch6-sum-cell" points="${origin.join(",")} ${a.join(",")} ${c.join(",")} ${b.join(",")}" style="opacity:${Math.max(0.1, openness).toFixed(3)}"></polygon>`;
     }
-    return `<svg class="ch6-space-3d" viewBox="0 0 640 360" role="img" aria-label="两个平面相交于一条直线"><polygon class="ch6-plane-polygon is-u" points="80,245 280,75 535,135 335,305"></polygon><polygon class="ch6-plane-polygon is-w" points="165,80 510,235 430,325 85,170"></polygon><line class="ch6-space-line is-overlap" x1="150" y1="140" x2="470" y2="275"></line><text x="520" y="132" class="ch6-space-label is-u">U</text><text x="450" y="315" class="ch6-space-label is-w">W</text><text x="345" y="228" class="ch6-space-label is-overlap">公共直线 U∩W</text></svg>`;
-  }
 
-  function r4Visual() {
-    return `<div class="ch6-r4-stage"><div class="ch6-r4-axis-group is-u"><span>U</span><strong>e₁, e₂</strong><p>前两个坐标方向</p></div><div class="ch6-r4-plus">+</div><div class="ch6-r4-axis-group is-w"><span>W</span><strong>e₃, e₄</strong><p>后两个坐标方向</p></div><div class="ch6-r4-equals">=</div><div class="ch6-r4-axis-group is-result"><span>U+W</span><strong>ℝ⁴</strong><p>四个独立方向</p></div></div>`;
+    inner += U().line(u, separated ? "is-u" : "is-overlap", separated ? "U" : "U=W");
+    if (separated) inner += U().line(w, "is-w", "W");
+    const uTip = U().scale(u, 1.22);
+    inner += U().softArrow([0, 0], uTip, "is-u", "");
+    const uMid = U().point(U().scale(uTip, 0.58));
+    inner += `<text class="ch6-component-label" x="${uMid[0] + 8}" y="${uMid[1] - 10}">u∈U</text>`;
+    if (separated) {
+      const wTip = U().scale(w, 1.22);
+      inner += U().softArrow([0, 0], wTip, "is-w", "");
+      const wMid = U().point(U().scale(wTip, 0.58));
+      inner += `<text class="ch6-component-label" x="${wMid[0] + 8}" y="${wMid[1] - 10}">w∈W</text>`;
+    }
+    inner += `<path class="ch6-origin-cross" d="M ${origin[0] - 6} ${origin[1]} H ${origin[0] + 6} M ${origin[0]} ${origin[1] - 6} V ${origin[1] + 6}"></path>`;
+
+    return {
+      separated,
+      delta,
+      openness,
+      svg: U().planeSvg(inner, "连续改变两条子空间直线的夹角，观察交空间与和空间"),
+    };
   }
 
   function renderInteractive(root, section) {
-    const cases = {
-      distinct: { label: "ℝ² 中两条不同直线", du: 1, dw: 1, di: 0, ds: 2, intersection: "只有零向量", sum: "整个 ℝ²", kind: "r2" },
-      same: { label: "ℝ² 中同一条直线", du: 1, dw: 1, di: 1, ds: 1, intersection: "整条直线", sum: "仍是同一条直线", kind: "same" },
-      contained: { label: "ℝ³ 中 U⊂W", du: 1, dw: 2, di: 1, ds: 2, intersection: "U", sum: "W", kind: "contained" },
-      planes: { label: "ℝ³ 中两个不同平面", du: 2, dw: 2, di: 1, ds: 3, intersection: "一条公共直线", sum: "整个 ℝ³", kind: "planes" },
-      r4: { label: "ℝ⁴ 中两个互补二维子空间", du: 2, dw: 2, di: 0, ds: 4, intersection: "只有零向量", sum: "整个 ℝ⁴", kind: "r4" },
-    };
-    let key = "distinct";
-    let angleU = 0.25;
-    let angleW = 1.15;
+    const angleU = 0.18;
+    let angleW = 0.92;
     root.innerHTML = `<div data-ch6-sum-lab></div>`;
     const host = root.querySelector("[data-ch6-sum-lab]");
 
     function render() {
-      const info = cases[key];
-      let visual;
-      if (info.kind === "r2") visual = r2Visual(false, angleU, angleW);
-      else if (info.kind === "same") visual = r2Visual(true, angleU, angleW);
-      else if (info.kind === "contained" || info.kind === "planes") visual = r3Visual(info.kind);
-      else visual = r4Visual();
-
-      const controls = `${U().segmented([["distinct", "两条不同直线"], ["same", "同一条直线"], ["contained", "直线包含于平面"], ["planes", "两个平面"], ["r4", "ℝ⁴ 互补子空间"]], "sum-case", key)}${info.kind === "r2" ? `<div class="ch6-coordinate-sliders"><label>U 的方向 <output>${Math.round(angleU * 180 / Math.PI)}°</output><input type="range" min="-1.2" max="1.2" step="0.02" value="${angleU}" data-angle-u></label><label>W 的方向 <output>${Math.round(angleW * 180 / Math.PI)}°</output><input type="range" min="-1.2" max="1.4" step="0.02" value="${angleW}" data-angle-w></label></div>` : ""}`;
-      const ledger = `<div class="ch6-dimension-ledger"><div><span>dim U</span><strong>${info.du}</strong></div><b>+</b><div><span>dim W</span><strong>${info.dw}</strong></div><b>−</b><div><span>重复方向 dim(U∩W)</span><strong>${info.di}</strong></div><b>=</b><div class="is-result"><span>dim(U+W)</span><strong>${info.ds}</strong></div></div>`;
-      const readout = `${ledger}<div class="ch6-current-story"><span>当前情形</span><h4>${info.label}</h4><p>交空间：${info.intersection}；和空间：${info.sum}。</p></div><div class="ch6-formula-readout">${U().texDisplay(`\\dim(U+W)=${info.du}+${info.dw}-${info.di}=${info.ds}`)}</div><div class="ch6-reading-note"><strong>为什么要减</strong><p>交空间中的公共方向已经在 dim U 和 dim W 中各算过一次，合并时必须去掉一次重复。</p></div>`;
+      const visual = angleVisual(angleU, angleW);
+      const intersectionDim = visual.separated ? 0 : 1;
+      const sumDim = visual.separated ? 2 : 1;
+      const degrees = Math.abs(visual.delta * 180 / Math.PI);
+      const controls = `${U().segmented([["same", "让两条直线重合"], ["near", "只差 8°"], ["open", "分开 42°"]], "sum-preset", visual.separated ? "" : "same")}<div class="ch6-progress-control"><label>W 相对 U 的夹角 <output>${U().formatNumber(degrees, 1)}°</output><input type="range" min="-1.15" max="1.15" step="0.002" value="${visual.delta}" data-angle-gap></label><p>把夹角连续拖到 0，观察“公共方向”和“合成范围”同时发生什么变化。</p></div>`;
+      const caption = visual.separated
+        ? `<strong>两条方向不同</strong><span>交空间只有零向量；使用两边方向可以铺满平面。</span>`
+        : `<strong>两条方向完全重合</strong><span>整条直线都是公共部分；合起来仍只有这一条直线。</span>`;
+      const ledger = `<div class="ch6-dimension-ledger"><div><span>dim U</span><strong>1</strong></div><b>+</b><div><span>dim W</span><strong>1</strong></div><b>−</b><div><span>dim(U∩W)</span><strong>${intersectionDim}</strong></div><b>=</b><div class="is-result"><span>dim(U+W)</span><strong>${sumDim}</strong></div></div>`;
+      const readout = `${ledger}<div class="ch6-structure-pair"><article><span>交空间 U∩W</span><strong>${visual.separated ? "{0}" : "U=W"}</strong><p>${visual.separated ? "两条不同直线只共享零向量。" : "每个方向都同时属于 U 与 W。"}</p></article><article><span>和空间 U+W</span><strong>${visual.separated ? "ℝ²" : "U"}</strong><p>${visual.separated ? "两个独立方向可以合成任意平面向量。" : "没有增加新的方向。"}</p></article></div><div class="ch6-formula-readout">${U().texDisplay(`\\dim(U+W)=1+1-${intersectionDim}=${sumDim}`)}</div>`;
 
       host.innerHTML = U().labShell({
-        title: "先找公共方向，再做维数账本",
-        lead: "切换不同维数情形。画面负责告诉你哪些方向重复，下面的账本负责把这种重复写成维数公式。",
-        focus: info.kind === "r2" ? "先看 U 与 W 是否是同一条直线，再沿青色段和橙色段追到绿色 u+w。" : "先找图中同时属于 U 和 W 的公共方向。",
-        stage: `<div class="ch6-stage-shell">${visual}${info.kind === "r2" || info.kind === "same" ? `<div class="ch6-stage-legend"><span class="is-u">青色：先取 u</span><span class="is-w">橙色：再加 w</span><span class="is-result">绿色：最终 u+w</span></div>` : ""}</div>`,
+        title: "连续改变夹角，观察交与和怎样联动",
+        lead: "固定 U，只转动 W。两条直线逐渐靠拢时，先看公共部分，再看两个方向合起来还能铺到哪里。",
+        focus: "先看两条直线是否完全重合，再看淡色平行四边形是否还有面积。",
+        stage: `<div class="ch6-stage-shell"><div class="ch6-stage-caption">${caption}</div>${visual.svg}</div>`,
         controls,
         readout,
         tasks: U().taskBlock(section),
         className: "ch6-sum-lab",
       });
 
-      host.querySelectorAll("[data-sum-case]").forEach((button) => button.addEventListener("click", () => {
-        key = button.dataset.sumCase;
+      host.querySelectorAll("[data-sum-preset]").forEach((button) => button.addEventListener("click", () => {
+        const preset = button.dataset.sumPreset;
+        angleW = angleU + (preset === "same" ? 0 : preset === "near" ? 8 * Math.PI / 180 : 42 * Math.PI / 180);
         render();
       }));
-      host.querySelector("[data-angle-u]")?.addEventListener("input", (event) => {
-        angleU = Number(event.target.value);
-        render();
-      });
-      host.querySelector("[data-angle-w]")?.addEventListener("input", (event) => {
-        angleW = Number(event.target.value);
+      host.querySelector("[data-angle-gap]")?.addEventListener("input", (event) => {
+        angleW = angleU + Number(event.target.value);
         render();
       });
     }

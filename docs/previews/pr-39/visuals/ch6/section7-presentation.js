@@ -26,11 +26,26 @@
     let key = "oblique";
     let target = [1.45, 1.05];
     let t = 0;
+    let angleGap = 0.72;
     root.innerHTML = `<div data-ch6-direct-lab></div>`;
     const host = root.querySelector("[data-ch6-direct-lab]");
 
     function render() {
-      const info = cases[key];
+      let info = cases[key];
+      if (key === "oblique") {
+        const baseAngle = Math.atan2(info.u[1], info.u[0]);
+        const directionW = [Math.cos(baseAngle + angleGap), Math.sin(baseAngle + angleGap)];
+        const independent = Math.abs(Math.sin(angleGap)) > 0.002;
+        info = {
+          ...info,
+          w: directionW,
+          cover: independent,
+          zero: independent,
+          note: independent
+            ? "两条方向不同，目标向量有且只有一组分解。夹角越小，两个分量越长。"
+            : "两条方向完全重合。它们既不能覆盖整个平面，也共享一条非零公共方向。",
+        };
+      }
       const vector = target.slice();
       let uPart = [0, 0];
       let wPart = [0, 0];
@@ -41,8 +56,10 @@
         const coefficients = U().solve(info.u, info.w, vector);
         exists = Boolean(coefficients);
         unique = exists;
-        uPart = U().scale(info.u, coefficients[0]);
-        wPart = U().scale(info.w, coefficients[1]);
+        if (coefficients) {
+          uPart = U().scale(info.u, coefficients[0]);
+          wPart = U().scale(info.w, coefficients[1]);
+        }
       } else if (info.kind === "plane-overlap") {
         const z = info.w;
         wPart = U().scale(z, t);
@@ -69,19 +86,31 @@
       }
       if (exists) {
         inner += U().softArrow([0, 0], uPart, "is-u", "");
-        inner += U().softArrow(uPart, vector, "is-w", "");
+        const uMid = U().point(U().scale(uPart, 0.56));
+        inner += `<text class="ch6-component-label" x="${uMid[0] + 8}" y="${uMid[1] + 18}">u 分量</text>`;
+        inner += U().softArrow(uPart, vector, "is-w");
+        const wStart = U().point(uPart);
+        const wEnd = U().point(vector);
+        inner += `<text class="ch6-component-label" x="${(wStart[0] + wEnd[0]) / 2 + 12}" y="${(wStart[1] + wEnd[1]) / 2 - 13}">w 分量</text>`;
       }
-      inner += U().softArrow([0, 0], vector, exists ? "is-target" : "is-bad", "目标 v");
+      inner += U().softArrow([0, 0], vector, exists ? "is-target" : "is-bad", "");
+      const vectorTip = U().point(vector);
+      inner += `<text class="ch6-component-label" x="${vectorTip[0] + 12}" y="${vectorTip[1] - 14}">目标 v</text>`;
 
-      const controls = `${U().segmented([["oblique", "非正交直和"], ["orthogonal", "正交直和"], ["overlap", "覆盖但不唯一"], ["incomplete", "零交但未覆盖"]], "direct-case", key)}${info.kind === "plane-overlap" ? `<div class="ch6-progress-control"><label>把多少公共方向放进 W 分量：t <output>${U().formatNumber(t, 1)}</output><input type="range" min="-1.5" max="1.5" step="0.1" value="${t}" data-direct-t></label><p>w=t z，u=v−t z。拖动后两个分量改变，但总和始终等于 v。</p></div>` : `<div class="ch6-coordinate-sliders"><label>目标 v 横坐标 <output>${U().formatNumber(target[0], 1)}</output><input type="range" min="-2.2" max="2.2" step="0.1" value="${target[0]}" data-direct-vx></label><label>目标 v 纵坐标 <output>${U().formatNumber(target[1], 1)}</output><input type="range" min="-1.8" max="1.8" step="0.1" value="${target[1]}" data-direct-vy></label></div>`}`;
+      const secondaryControls = info.kind === "plane-overlap"
+        ? `<div class="ch6-progress-control"><label>把多少公共方向放进 W 分量：t <output>${U().formatNumber(t, 1)}</output><input type="range" min="-1.5" max="1.5" step="0.1" value="${t}" data-direct-t></label><p>w=t z，u=v−t z。拖动后两个分量改变，但总和始终等于 v。</p></div>`
+        : key === "oblique"
+          ? `<div class="ch6-progress-control"><label>U 与 W 的夹角 <output>${U().formatNumber(Math.abs(angleGap * 180 / Math.PI), 1)}°</output><input type="range" min="-1.15" max="1.15" step="0.002" value="${angleGap}" data-direct-angle></label><p>连续拖向 0°。目标 v 保持不动，观察分量怎样拉长，直到分解失效。</p></div>`
+          : `<div class="ch6-coordinate-sliders"><label>目标 v 横坐标 <output>${U().formatNumber(target[0], 1)}</output><input type="range" min="-2.2" max="2.2" step="0.1" value="${target[0]}" data-direct-vx></label><label>目标 v 纵坐标 <output>${U().formatNumber(target[1], 1)}</output><input type="range" min="-1.8" max="1.8" step="0.1" value="${target[1]}" data-direct-vy></label></div>`;
+      const controls = `${U().segmented([["oblique", "连续改变两条方向"], ["orthogonal", "正交特例"], ["overlap", "共享方向：分解不唯一"], ["incomplete", "只有一条方向"]], "direct-case", key)}${secondaryControls}`;
       const final = info.cover && info.zero;
-      const readout = `<div class="ch6-gate-stack">${U().gate("1. 覆盖目标空间 V=U+W", "direct-cover")}${U().gate("2. 没有公共非零方向", "direct-zero")}${U().gate("当前目标 v 有分解", "direct-exists")}${U().gate("当前分解唯一", "direct-unique")}</div><div class="ch6-current-story"><span>当前情形</span><h4>${info.label}</h4><p>${info.note}</p></div><div class="ch6-component-reader"><div><span>青色 u 分量</span><strong>${exists ? U().formatVector(uPart) : "—"}</strong></div><div><span>橙色 w 分量</span><strong>${exists ? U().formatVector(wPart) : "—"}</strong></div><div><span>u+w</span><strong>${exists ? U().formatVector(U().add(uPart, wPart)) : "无法表示当前 v"}</strong></div></div><div class="ch6-conclusion-box ${final ? "is-ok" : "is-bad"}"><span>能否写 ⊕</span><strong>${final ? "可以：V=U⊕W" : "不可以：至少一道全局闸门失败"}</strong></div>`;
+      const readout = `<div class="ch6-gate-stack">${U().gate("1. 覆盖目标空间 V=U+W", "direct-cover")}${U().gate("2. 没有公共非零方向", "direct-zero")}${U().gate("当前目标 v 有分解", "direct-exists")}${U().gate("当前分解唯一", "direct-unique")}</div><div class="ch6-current-story"><span>当前情形</span><h4>${info.label}</h4><p>${info.note}</p></div><div class="ch6-component-reader"><div><span>u∈U 的分量</span><strong>${exists ? U().formatVector(uPart) : "—"}</strong></div><div><span>w∈W 的分量</span><strong>${exists ? U().formatVector(wPart) : "—"}</strong></div><div><span>u+w</span><strong>${exists ? U().formatVector(U().add(uPart, wPart)) : "无法表示当前 v"}</strong></div></div><div class="ch6-conclusion-box ${final ? "is-ok" : "is-bad"}"><span>能否写 ⊕</span><strong>${final ? "可以：V=U⊕W" : "不可以：至少一道全局闸门失败"}</strong></div>`;
 
       host.innerHTML = U().labShell({
         title: "把“存在”和“唯一”分成两道闸门",
         lead: "先判断 U+W 是否覆盖整个目标空间，再判断 U 与 W 是否共享非零方向。当前一个 v 的表现不能替代全局条件。",
-        focus: info.kind === "plane-overlap" ? "拖动 t：白色目标 v 不动，但青色第一段与橙色第二段不断改变，这就是非唯一。" : "先看背景是否覆盖整个平面，再看两条方向是否重合。",
-        stage: `<div class="ch6-stage-shell">${U().planeSvg(inner, info.label)}${exists ? `<div class="ch6-stage-legend"><span class="is-u">青色：u 分量</span><span class="is-w">橙色：w 分量</span><span class="is-target">白色：固定目标 v</span></div>` : ""}</div>`,
+        focus: info.kind === "plane-overlap" ? "拖动 t：目标 v 不动，但 u 分量与 w 分量不断改变，这就是非唯一。" : "先看背景是否覆盖整个平面，再看两条方向是否重合。",
+        stage: `<div class="ch6-stage-shell"><div class="ch6-stage-caption">${exists ? unique ? "<strong>当前分解存在且唯一</strong><span>两段分量首尾相接，终点固定在目标 v。</span>" : "<strong>目标不动，分量可以搬运</strong><span>改变 t 时 u 与 w 同时变化，总和始终保持为 v。</span>" : "<strong>当前目标无法分解</strong><span>可用方向没有覆盖 v 所在的位置。</span>"}</div>${U().planeSvg(inner, info.label)}</div>`,
         controls,
         readout,
         tasks: U().taskBlock(section),
@@ -101,6 +130,10 @@
       }));
       host.querySelector("[data-direct-t]")?.addEventListener("input", (event) => {
         t = Number(event.target.value);
+        render();
+      });
+      host.querySelector("[data-direct-angle]")?.addEventListener("input", (event) => {
+        angleGap = Number(event.target.value);
         render();
       });
       host.querySelector("[data-direct-vx]")?.addEventListener("input", (event) => {

@@ -50,49 +50,70 @@
     );
   }
 
-  function renderMapSvg(config, selectedOutput) {
-    const width = 640;
-    const height = 360;
-    const leftX = 150;
-    const rightX = 490;
-    const yAt = (index, count) => 72 + (216 / Math.max(1, count - 1)) * index;
+  function renderMapSvg(config, selectedInput, selectedOutput) {
+    const width = 720;
+    const height = 380;
+    const panelY = 34;
+    const panelHeight = 312;
+    const panelWidth = 244;
+    const leftPanelX = 24;
+    const rightPanelX = width - leftPanelX - panelWidth;
+    const leftCenter = leftPanelX + panelWidth / 2;
+    const rightCenter = rightPanelX + panelWidth / 2;
+    const nodeWidth = 104;
+    const nodeHeight = 48;
+    const yAt = (index, count) => 134 + (170 / Math.max(1, count - 1)) * index;
     const markerId = `map-arrow-${config.n}-${config.m}-${config.map.join("-")}`.replace(/[^a-zA-Z0-9-]/g, "");
-    let svg = `<svg class="ch6-map-workbench" viewBox="0 0 ${width} ${height}" role="img" aria-label="${U().escapeHtml(config.label)}"><defs><marker id="${markerId}" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="6" markerHeight="6" orient="auto"><path class="ch6-map-arrowhead" d="M0,0 L8,4 L0,8 Z"></path></marker></defs><ellipse class="ch6-map-set" cx="${leftX}" cy="180" rx="92" ry="150"></ellipse><ellipse class="ch6-map-set" cx="${rightX}" cy="180" rx="92" ry="150"></ellipse><text class="ch6-map-set-label" x="${leftX}" y="43">定义域 X · ${config.n} 个输入</text><text class="ch6-map-set-label" x="${rightX}" y="43">陪域 Y · ${config.m} 个输出</text>`;
+
+    let svg = `<svg class="ch6-map-workbench" viewBox="0 0 ${width} ${height}" role="img" aria-label="${U().escapeHtml(config.label)}">
+      <defs>
+        <marker id="${markerId}" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="6" markerHeight="6" orient="auto">
+          <path class="ch6-map-arrowhead" d="M0,0 L8,4 L0,8 Z"></path>
+        </marker>
+      </defs>
+      <rect class="ch6-map-panel" x="${leftPanelX}" y="${panelY}" width="${panelWidth}" height="${panelHeight}" rx="18"></rect>
+      <rect class="ch6-map-panel" x="${rightPanelX}" y="${panelY}" width="${panelWidth}" height="${panelHeight}" rx="18"></rect>
+      <line class="ch6-map-panel-rule" x1="${leftPanelX + 18}" y1="108" x2="${leftPanelX + panelWidth - 18}" y2="108"></line>
+      <line class="ch6-map-panel-rule" x1="${rightPanelX + 18}" y1="108" x2="${rightPanelX + panelWidth - 18}" y2="108"></line>
+      <text class="ch6-map-set-title" x="${leftPanelX + 22}" y="60">定义域 X</text>
+      <text class="ch6-map-set-subtitle" x="${leftPanelX + 22}" y="88">${config.n} 个输入</text>
+      <text class="ch6-map-set-title" x="${rightPanelX + 22}" y="60">陪域 Y</text>
+      <text class="ch6-map-set-subtitle" x="${rightPanelX + 22}" y="88">${config.m} 个输出</text>
+      <text class="ch6-map-guide" x="${width / 2}" y="62">每个输入沿一条箭头到达输出</text>`;
 
     for (let i = 0; i < config.n; i += 1) {
       const y = yAt(i, config.n);
-      svg += `<circle class="ch6-map-point is-input" cx="${leftX}" cy="${y}" r="17"></circle><text class="ch6-map-point-text" x="${leftX}" y="${y + 5}">${i + 1}</text>`;
+      const nodeX = leftCenter - nodeWidth / 2;
+      svg += `<rect class="ch6-map-node is-input ${i === selectedInput ? "is-selected" : ""}" data-map-input-node="${i}" role="button" tabindex="0" aria-label="选择输入 ${i + 1}" x="${nodeX}" y="${y - nodeHeight / 2}" width="${nodeWidth}" height="${nodeHeight}" rx="8"></rect><text class="ch6-map-node-text" x="${leftCenter}" y="${y}">${i + 1}</text>`;
       const target = config.map[i];
       if (target >= 0) {
         const targetY = yAt(target, config.m);
-        svg += `<path class="ch6-map-curve" marker-end="url(#${markerId})" d="M ${leftX + 20} ${y} C 260 ${y}, 380 ${targetY}, ${rightX - 22} ${targetY}"></path>`;
+        svg += `<path class="ch6-map-curve" marker-end="url(#${markerId})" d="M ${leftCenter + nodeWidth / 2 + 5} ${y} C 310 ${y}, 410 ${targetY}, ${rightCenter - nodeWidth / 2 - 8} ${targetY}"></path>`;
       } else {
-        svg += `<path class="ch6-map-curve is-missing" d="M ${leftX + 20} ${y} C 250 ${y}, 300 ${y}, 340 ${y}"></path><text class="ch6-map-question" x="356" y="${y + 5}">尚未指定</text>`;
+        svg += `<path class="ch6-map-curve is-missing" d="M ${leftCenter + nodeWidth / 2 + 5} ${y} C 295 ${y}, 332 ${y}, 360 ${y}"></path><text class="ch6-map-missing-label" x="374" y="${y + 4}">尚未指定</text>`;
       }
     }
 
     for (let j = 0; j < config.m; j += 1) {
       const y = yAt(j, config.m);
       const hits = config.map.filter((target) => target === j).length;
-      svg += `<circle class="ch6-map-point is-output ${j === selectedOutput ? "is-selected" : ""} ${hits === 0 ? "is-unhit" : ""}" cx="${rightX}" cy="${y}" r="17"></circle><text class="ch6-map-point-text" x="${rightX}" y="${y + 5}">${String.fromCharCode(97 + j)}</text>${hits > 1 ? `<text class="ch6-map-hit-count" x="${rightX + 28}" y="${y + 5}">被 ${hits} 个输入命中</text>` : hits === 0 ? `<text class="ch6-map-hit-count" x="${rightX + 28}" y="${y + 5}">空缺</text>` : ""}`;
+      const nodeX = rightCenter - nodeWidth / 2;
+      svg += `<rect class="ch6-map-node is-output ${j === selectedOutput ? "is-selected" : ""} ${hits === 0 ? "is-unhit" : ""}" data-map-output-node="${j}" role="button" tabindex="0" aria-label="把输入 ${selectedInput + 1} 映到 ${String.fromCharCode(97 + j)}" x="${nodeX}" y="${y - nodeHeight / 2}" width="${nodeWidth}" height="${nodeHeight}" rx="8"></rect><text class="ch6-map-node-text" x="${rightCenter}" y="${y}">${String.fromCharCode(97 + j)}</text>`;
+      if (hits > 1) svg += `<text class="ch6-map-node-note" x="${rightCenter + nodeWidth / 2 + 12}" y="${y + 4}">${hits} 个原像</text>`;
+      if (hits === 0) svg += `<text class="ch6-map-node-note" x="${rightCenter + nodeWidth / 2 + 12}" y="${y + 4}">未命中</text>`;
     }
+
     return `${svg}</svg>`;
   }
 
   function renderInteractive(root, section) {
-    const presets = {
-      incomplete: { label: "尚未构成映射", n: 3, m: 3, map: [0, -1, 2] },
-      injective: { label: "单射但非满射", n: 3, m: 4, map: [0, 1, 2] },
-      surjective: { label: "满射但非单射", n: 4, m: 3, map: [0, 1, 2, 0] },
-      bijective: { label: "双射", n: 3, m: 3, map: [1, 2, 0] },
-    };
-    let mode = "incomplete";
+    const config = { label: "自己构造对应关系", n: 3, m: 3, map: [0, 1, 2] };
+    let selectedInput = 0;
     let selectedOutput = 0;
     root.innerHTML = `<div data-ch6-map-lab></div>`;
     const host = root.querySelector("[data-ch6-map-lab]");
 
     function render() {
-      const config = presets[mode];
       const legal = config.map.every((target) => target >= 0 && target < config.m);
       const image = [...new Set(config.map.filter((target) => target >= 0))];
       const injective = legal && new Set(config.map).size === config.n;
@@ -100,7 +121,7 @@
       const bijective = injective && surjective;
       const preimage = config.map.map((target, index) => (target === selectedOutput ? index + 1 : null)).filter(Boolean);
       const reason = !legal
-        ? "输入 2 还没有输出。映射规则尚未完成，后面的单射、满射和逆映射都暂不判定。"
+        ? "还有输入没有指定输出。先完成整条规则，再判断单射和满射。"
         : bijective
           ? "每个输入沿箭头到达不同输出，右侧也没有空缺，所以可以唯一倒退。"
           : injective
@@ -108,19 +129,15 @@
             : surjective
               ? "a、b、c 全部被命中，但输入 1 与 4 同时落到 a，发生碰撞。"
               : "既有输入碰撞，也有输出遗漏。";
-      const controls = U().segmented(
-        [["incomplete", "先检查合法性"], ["injective", "单射非满射"], ["surjective", "满射非单射"], ["bijective", "双射与逆映射"]],
-        "map-mode",
-        mode,
-      );
+      const controls = `<div class="ch6-map-builder-copy"><strong>当前选择输入 ${selectedInput + 1}</strong><span>先点左侧输入，再点右侧输出；箭头会立即改接。</span></div>${U().segmented([["identity", "恢复一一对应"], ["collision", "制造一次碰撞"], ["incomplete", "暂时删去一条箭头"]], "map-reset", "")}`;
       const gates = `<div class="ch6-gate-stack">${U().gate("1. 规则完整", "map-legal")}${U().gate("2. 输入不碰撞", "map-injective")}${U().gate("3. 输出无遗漏", "map-surjective")}${U().gate("4. 可以唯一倒退", "map-inverse")}</div>`;
-      const readout = `${gates}<div class="ch6-current-story"><span>当前情形</span><h4>${config.label}</h4><p>${reason}</p></div><div class="ch6-preimage-reader"><label>从哪个输出向左倒查原像<select data-map-output>${Array.from({ length: config.m }, (_, index) => `<option value="${index}" ${index === selectedOutput ? "selected" : ""}>${String.fromCharCode(97 + index)}</option>`).join("")}</select></label><div>${String.fromCharCode(97 + selectedOutput)} 的原像：<strong>${preimage.length ? `{${preimage.join(", ")}}` : "∅"}</strong></div><div>值域：<strong>{${image.map((index) => String.fromCharCode(97 + index)).join(", ")}}</strong></div></div>`;
+      const readout = `${gates}<div class="ch6-current-story"><span>从图中读结论</span><h4>${bijective ? "这是一一对应" : legal ? injective ? "没有碰撞，但有遗漏" : surjective ? "没有遗漏，但有碰撞" : "同时存在碰撞和遗漏" : "规则还没完成"}</h4><p>${reason}</p><div class="ch6-preimage-reader"><div>${String.fromCharCode(97 + selectedOutput)} 的原像：<strong>${preimage.length ? `{${preimage.join(", ")}}` : "∅"}</strong></div><div>值域：<strong>{${image.map((index) => String.fromCharCode(97 + index)).join(", ")}}</strong></div></div></div>`;
 
       host.innerHTML = U().labShell({
-        title: "沿箭头完成四步检查",
-        lead: "按钮只负责切换案例。真正要学会的是固定顺序：先完成规则，再看输入碰撞，再看输出空缺，最后判断是否能倒退。",
-        focus: "从左侧每个输入开始，沿箭头走到右侧；不要先盯着绿色勾。",
-        stage: `<div class="ch6-stage-shell">${renderMapSvg(config, selectedOutput)}</div>`,
+        title: "亲手接线，判断它是什么映射",
+        lead: "映射不是四张结论卡。改变一条对应关系，输入侧的碰撞、输出侧的遗漏和能否反向恢复会一起变化。",
+        focus: "选中左侧一个输入，再点右侧输出；看一条箭头改变后，哪一道检查随之改变。",
+        stage: `<div class="ch6-stage-shell">${renderMapSvg(config, selectedInput, selectedOutput)}</div>`,
         controls,
         readout,
         tasks: U().taskBlock(section),
@@ -131,16 +148,33 @@
       U().updateGate(host, "map-injective", injective, !legal ? "先完成映射规则" : injective ? "不同输入没有碰撞" : "至少两个输入同像");
       U().updateGate(host, "map-surjective", surjective, !legal ? "先完成映射规则" : surjective ? "陪域全部被命中" : "陪域存在空缺");
       U().updateGate(host, "map-inverse", bijective, bijective ? "可唯一倒退" : "必须同时单射且满射");
-      host.querySelectorAll("[data-map-mode]").forEach((button) => button.addEventListener("click", () => {
-        mode = button.dataset.mapMode;
-        selectedOutput = 0;
+      const bindSvgAction = (node, action) => {
+        node.addEventListener("click", action);
+        node.addEventListener("keydown", (event) => {
+          if (event.key !== "Enter" && event.key !== " ") return;
+          event.preventDefault();
+          action();
+        });
+      };
+      host.querySelectorAll("[data-map-input-node]").forEach((node) => bindSvgAction(node, () => {
+        selectedInput = Number(node.dataset.mapInputNode);
+        selectedOutput = Math.max(0, config.map[selectedInput]);
         render();
       }));
-      host.querySelector("[data-map-output]").addEventListener("change", (event) => {
-        selectedOutput = Number(event.target.value);
+      host.querySelectorAll("[data-map-output-node]").forEach((node) => bindSvgAction(node, () => {
+        selectedOutput = Number(node.dataset.mapOutputNode);
+        config.map[selectedInput] = selectedOutput;
         render();
-      });
+      }));
+      host.querySelectorAll("[data-map-reset]").forEach((button) => button.addEventListener("click", () => {
+        const mode = button.dataset.mapReset;
+        config.map = mode === "identity" ? [0, 1, 2] : mode === "collision" ? [0, 0, 2] : [0, -1, 2];
+        selectedInput = mode === "incomplete" ? 1 : 0;
+        selectedOutput = Math.max(0, config.map[selectedInput]);
+        render();
+      }));
     }
+
     render();
   }
 

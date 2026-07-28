@@ -12,67 +12,111 @@
     root.innerHTML = U().formalShell("同构：识别不同外表背后的同一线性结构", "同构不是“看起来相像”，也不是“元素类型相同”。它要求一座可逆的线性桥，让两边的运算完全同步。", modules, "本章到这里形成闭环：先用基把空间坐标化，再用同构说明所有 n 维空间在纯线性结构上都可以与 Kⁿ 对应。");
   }
 
-  const addVectors = (a, b) => a.map((value, index) => value + b[index]);
-  const scaleVector = (vector, scalar) => vector.map((value) => scalar * value);
-  const nearlyEqual = (a, b) => a.length === b.length && a.every((value, index) => Math.abs(value - b[index]) < 1e-8);
-
-  function polynomialText(coefficients) {
-    const [a, b, c] = coefficients;
+  function polynomialText([a, b, c]) {
     const signed = (value, symbol) => `${value < 0 ? "−" : "+"} ${U().formatNumber(Math.abs(value), 1)}${symbol}`;
     return `${U().formatNumber(a, 1)} ${signed(b, "x")} ${signed(c, "x²")}`;
   }
 
+  function bridgeSvg(coefficients, mode) {
+    const [a, b, c] = coefficients;
+    const output = mode === "projection" ? [a, b, 0] : mode === "square" ? [a, b, c * c] : coefficients.slice();
+    const mobile = window.matchMedia("(max-width: 680px)").matches;
+    const graph = mobile
+      ? { left: 34, top: 52, width: 292, height: 150, axisX: 180, axisY: 142, sx: 112, sy: 34 }
+      : { left: 42, top: 58, width: 282, height: 238, axisX: 183, axisY: 184, sx: 112, sy: 46 };
+    const value = (x) => a + b * x + c * x * x;
+    const curve = Array.from({ length: 61 }, (_, index) => {
+      const x = -1.18 + index * (2.36 / 60);
+      const px = graph.axisX + x * graph.sx;
+      const py = Math.max(graph.top + 8, Math.min(graph.top + graph.height - 8, graph.axisY - value(x) * graph.sy));
+      return `${index ? "L" : "M"} ${px.toFixed(2)} ${py.toFixed(2)}`;
+    }).join(" ");
+    const origin = mobile ? [180, 405] : [578, 214];
+    const project = ([x, y, z]) => mobile
+      ? [origin[0] + x * 38 - y * 28, origin[1] + x * 14 + y * 17 - z * 36]
+      : [origin[0] + x * 42 - y * 31, origin[1] + x * 17 + y * 20 - z * 50];
+    const originalPoint = project(coefficients);
+    const outputPoint = project(output);
+    const axes = [
+      { end: project([1.8, 0, 0]), label: "a", dx: 7, dy: 8 },
+      { end: project([0, 1.8, 0]), label: "b", dx: -13, dy: 8 },
+      { end: project([0, 0, 1.8]), label: "c", dx: 7, dy: -2 },
+    ];
+    const rule = mode === "coordinate"
+      ? "T(p)=(a,b,c)"
+      : mode === "projection"
+        ? "T(p)=(a,b)"
+        : "T(p)=(a,b,c²)";
+    const targetLabel = mode === "projection" ? "坐标平面 ℝ²" : "坐标空间 ℝ³";
+    const correspondence = mode === "coordinate"
+      ? `<path class="ch6-iso-link" d="M ${originalPoint[0]} ${originalPoint[1]} L ${outputPoint[0]} ${outputPoint[1]}"></path>`
+      : `<path class="ch6-iso-link" d="M ${originalPoint[0]} ${originalPoint[1]} L ${outputPoint[0]} ${outputPoint[1]}"></path><circle class="ch6-iso-original-point" cx="${originalPoint[0]}" cy="${originalPoint[1]}" r="7"></circle>`;
+
+    const viewBox = mobile ? "0 0 360 520" : "0 0 760 350";
+    const panels = mobile
+      ? `<rect class="ch6-iso-panel" x="16" y="22" width="328" height="202" rx="8"></rect>
+         <rect class="ch6-iso-panel" x="16" y="288" width="328" height="210" rx="8"></rect>
+         <text class="ch6-iso-panel-title" x="34" y="45">多项式空间 P₂</text>
+         <text class="ch6-iso-panel-title" x="34" y="314">${targetLabel}</text>`
+      : `<rect class="ch6-iso-panel" x="24" y="34" width="318" height="286" rx="8"></rect>
+         <rect class="ch6-iso-panel" x="418" y="34" width="318" height="286" rx="8"></rect>
+         <text class="ch6-iso-panel-title" x="42" y="56">多项式空间 P₂</text>
+         <text class="ch6-iso-panel-title" x="438" y="56">${targetLabel}</text>`;
+    const ruleBridge = mobile
+      ? `<g class="ch6-iso-rule"><line x1="180" y1="238" x2="180" y2="274"></line><path d="M 180 274 L 174 264 L 186 264 Z"></path><text x="180" y="254">${rule}</text></g>`
+      : `<g class="ch6-iso-rule"><line x1="358" y1="176" x2="402" y2="176"></line><path d="M 402 176 L 392 170 L 392 182 Z"></path><text x="380" y="158">${rule}</text></g>`;
+    const polynomialLabelY = mobile ? 214 : 302;
+    const outputLabelX = mobile ? 180 : Math.min(684, outputPoint[0] + 12);
+    const outputLabelY = mobile ? 484 : Math.max(76, outputPoint[1] - 12);
+
+    return `<svg class="ch6-iso-bridge ${mobile ? "is-mobile" : ""}" viewBox="${viewBox}" role="img" aria-label="多项式与坐标空间之间的结构桥">
+      ${panels}
+      <line class="ch6-iso-axis" x1="${graph.left}" y1="${graph.axisY}" x2="${graph.left + graph.width}" y2="${graph.axisY}"></line>
+      <line class="ch6-iso-axis" x1="${graph.axisX}" y1="${graph.top}" x2="${graph.axisX}" y2="${graph.top + graph.height}"></line>
+      <path class="ch6-polynomial-curve" d="${curve}"></path>
+      <text class="ch6-polynomial-label" x="${mobile ? 34 : 52}" y="${polynomialLabelY}">p(x)=${U().escapeHtml(polynomialText(coefficients))}</text>
+      ${ruleBridge}
+      ${axes.map((axis) => `<line class="ch6-iso-axis" x1="${origin[0]}" y1="${origin[1]}" x2="${axis.end[0]}" y2="${axis.end[1]}"></line><text class="ch6-iso-axis-label" x="${axis.end[0] + axis.dx}" y="${axis.end[1] + axis.dy}">${axis.label}</text>`).join("")}
+      ${correspondence}
+      <circle class="ch6-iso-output-point" cx="${outputPoint[0]}" cy="${outputPoint[1]}" r="7"></circle>
+      <text class="ch6-iso-output-label" x="${outputLabelX}" y="${outputLabelY}" text-anchor="${mobile ? "middle" : "start"}">(${output.map((n) => U().formatNumber(n, 1)).join(", ")})</text>
+    </svg>`;
+  }
+
   function renderInteractive(root, section) {
-    const f = [1, -0.5, 0.8];
-    const g = [-0.4, 1.1, -0.6];
-    let alpha = 1.2;
-    let beta = -0.7;
+    let coefficients = [0.6, -0.7, 0.8];
     let mode = "coordinate";
-    let basis = "standard";
     root.innerHTML = `<div data-ch6-iso-lab></div>`;
     const host = root.querySelector("[data-ch6-iso-lab]");
 
-    function coordinates(vector) {
-      if (basis === "standard") return vector.slice();
-      const [a, b, c] = vector;
-      return [a - b, b, c];
-    }
-
-    function apply(vector) {
-      const coords = coordinates(vector);
-      if (mode === "projection") return coords.slice(0, 2);
-      if (mode === "square") return [coords[0], coords[1], coords[2] ** 2];
-      return coords;
-    }
-
     function render() {
-      const h = addVectors(scaleVector(f, alpha), scaleVector(g, beta));
-      const tf = apply(f);
-      const tg = apply(g);
-      const left = apply(h);
-      const right = addVectors(scaleVector(tf, alpha), scaleVector(tg, beta));
-      const linear = nearlyEqual(left, right);
+      const [a, b, c] = coefficients;
+      const output = mode === "projection" ? [a, b] : mode === "square" ? [a, b, c * c] : coefficients.slice();
+      const linear = mode !== "square";
       const injective = mode === "coordinate";
       const surjective = mode !== "square";
       const isomorphism = linear && injective && surjective;
       const targetSpace = mode === "projection" ? "ℝ²" : "ℝ³";
       const ruleName = mode === "coordinate" ? "坐标映射" : mode === "projection" ? "投影到前两坐标" : "第三坐标平方";
       const description = mode === "coordinate"
-        ? `选定基 ${basis === "standard" ? "(1,x,x²)" : "(1,1+x,x²)"} 后，三个坐标完整保存多项式。`
+        ? "曲线外形会变，但三个系数被完整送到右侧坐标点，因此可以逐项恢复原多项式。"
         : mode === "projection"
-          ? "丢掉第三坐标后，x² 系数不同的多项式会得到同一输出。它仍然线性且满射到 ℝ²，但不是单射。"
-          : "把第三坐标平方会破坏线性；c 与 −c 也得到同一输出，而且负的第三坐标无法被命中。";
-
-      const controls = `${U().segmented([["coordinate", "坐标同构"], ["projection", "丢掉 x² 系数"], ["square", "末坐标平方"]], "iso-mode", mode)}${mode === "coordinate" ? U().segmented([["standard", "基 (1,x,x²)"], ["shifted", "基 (1,1+x,x²)"]], "iso-basis", basis) : ""}<div class="ch6-coordinate-sliders"><label>α <output>${U().formatNumber(alpha, 1)}</output><input type="range" min="-2" max="2" step="0.1" value="${alpha}" data-iso-alpha></label><label>β <output>${U().formatNumber(beta, 1)}</output><input type="range" min="-2" max="2" step="0.1" value="${beta}" data-iso-beta></label></div>`;
-
-      const stage = `<div class="ch6-stage-shell"><div class="ch6-iso-paths" data-iso-paths><article class="ch6-iso-path"><span>路径 A：先组合，再应用 T</span><div class="ch6-iso-path-flow"><article><small>h=αf+βg</small><strong>${polynomialText(h)}</strong></article><b>→ T →</b><article><small>T(h)</small><strong>${U().formatVector(left)}</strong></article></div><div class="ch6-iso-path-result">结果 A = ${U().formatVector(left)}</div></article><article class="ch6-iso-path"><span>路径 B：先应用 T，再组合</span><div class="ch6-iso-path-flow"><article><small>αT(f)+βT(g)</small><strong>${U().formatVector(right)}</strong></article><b>→ 合并 →</b><article><small>右侧结果</small><strong>${U().formatVector(right)}</strong></article></div><div class="ch6-iso-path-result">结果 B = ${U().formatVector(right)}</div></article></div><div class="ch6-iso-compare-verdict ${linear ? "is-ok" : "is-bad"}">${linear ? "两条路径一致：这一组计算没有破坏线性" : "两条路径不一致：线性条件失败"}</div></div>`;
-
-      const readout = `<div class="ch6-gate-stack">${U().gate("1. 保持加法与数乘", "iso-linear")}${U().gate("2. 单射：不丢失信息", "iso-injective")}${U().gate(`3. 满射到 ${targetSpace}`, "iso-surjective")}</div><div class="ch6-current-story"><span>当前规则</span><h4>${ruleName}</h4><p>${description}</p></div><div class="ch6-conclusion-box ${isomorphism ? "is-ok" : "is-bad"}"><span>最终结论</span><strong>${isomorphism ? "三道检查全部通过，是线性同构" : "至少一道检查失败，不是线性同构"}</strong></div>${isomorphism ? `<div class="ch6-inverse-readout"><span>可以反向恢复</span>${U().texDisplay(basis === "standard" ? "(a,b,c)^T\\mapsto a+bx+cx^2" : "(r,s,t)^T\\mapsto(r+s)+sx+tx^2")}</div>` : ""}`;
+          ? "右侧只保留 a、b，所有只在 x² 系数上不同的多项式都会落到同一个点。"
+          : "第三坐标被折到非负半轴，c 与 −c 得到同一输出，同时数乘关系被破坏。";
+      const caption = `<strong>${ruleName}</strong><span>${description}</span>`;
+      const controls = `${U().segmented([["coordinate", "完整坐标桥"], ["projection", "丢掉 x² 系数"], ["square", "把 c 变成 c²"]], "iso-mode", mode)}<div class="ch6-coefficient-sliders"><label>常数项 a <output>${U().formatNumber(a, 1)}</output><input type="range" min="-1.5" max="1.5" step="0.05" value="${a}" data-iso-coefficient="0"></label><label>x 系数 b <output>${U().formatNumber(b, 1)}</output><input type="range" min="-1.5" max="1.5" step="0.05" value="${b}" data-iso-coefficient="1"></label><label>x² 系数 c <output>${U().formatNumber(c, 1)}</output><input type="range" min="-1.3" max="1.3" step="0.05" value="${c}" data-iso-coefficient="2"></label></div>`;
+      const witness = mode === "coordinate"
+        ? `${U().texDisplay("T(a+bx+cx^2)=(a,b,c)^T")}<p>三个系数都保留，逆映射可逐项恢复。</p>`
+        : mode === "projection"
+          ? `${U().texDisplay("T(a+bx+cx^2)=(a,b)^T")}<p>${U().texInline("x^2")} 与 ${U().texInline("2x^2")} 都被送到 ${U().texInline("(0,0)^T")}。</p>`
+          : `${U().texDisplay("T(2x^2)=(0,0,4)^T\\neq2T(x^2)")}<p>一个固定反例已经足够否定线性。</p>`;
+      const stage = `<div class="ch6-stage-shell"><div class="ch6-stage-caption">${caption}</div>${bridgeSvg(coefficients, mode)}</div>`;
+      const readout = `<div class="ch6-gate-stack">${U().gate("1. 保持线性运算", "iso-linear")}${U().gate("2. 单射：输入可唯一恢复", "iso-injective")}${U().gate(`3. 满射到 ${targetSpace}`, "iso-surjective")}</div><div class="ch6-current-story"><span>从画面读结构</span><h4>p(x)=${polynomialText(coefficients)}</h4><p>当前输出为 ${U().formatVector(output)}。${description}</p></div><div class="ch6-iso-witness">${witness}</div><div class="ch6-conclusion-box ${isomorphism ? "is-ok" : "is-bad"}"><span>最终结论</span><strong>${isomorphism ? "线性、单射、满射全部成立：这是同构" : "至少一道结构条件失败：这不是同构"}</strong></div>`;
 
       host.innerHTML = U().labShell({
-        title: "先比较两条计算路径，再检查是否双射",
-        lead: "线性不是一句标签。把同一个输入沿两条路径计算，结果必须一致；随后还要分别确认单射和满射。",
-        focus: "先比较主画面中的“结果 A”和“结果 B”，不要先看下面的最终结论。",
+        title: "让多项式曲线与坐标点同步变化",
+        lead: "拖动三个系数。左侧曲线改变，右侧点同步移动；再改变映射规则，观察哪一部分结构被完整保留、压扁或折叠。",
+        focus: "先拖动 c：完整坐标桥会保留上下方向；投影会压到平面；平方会把正负两侧折到同一边。",
         stage,
         controls,
         readout,
@@ -86,18 +130,10 @@
         mode = button.dataset.isoMode;
         render();
       }));
-      host.querySelectorAll("[data-iso-basis]").forEach((button) => button.addEventListener("click", () => {
-        basis = button.dataset.isoBasis;
+      host.querySelectorAll("[data-iso-coefficient]").forEach((input) => input.addEventListener("input", (event) => {
+        coefficients[Number(event.target.dataset.isoCoefficient)] = Number(event.target.value);
         render();
       }));
-      host.querySelector("[data-iso-alpha]").addEventListener("input", (event) => {
-        alpha = Number(event.target.value);
-        render();
-      });
-      host.querySelector("[data-iso-beta]").addEventListener("input", (event) => {
-        beta = Number(event.target.value);
-        render();
-      });
     }
     render();
   }

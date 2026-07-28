@@ -176,6 +176,9 @@
 .ch9-toolbar button.is-active,
 .ch9-stepper button.is-active,
 .ch9-action.is-primary { border-color: var(--accent); background: var(--accent); color: #fff; }
+.ch9-toolbar button.is-active:hover,
+.ch9-stepper button.is-active:hover,
+.ch9-action.is-primary:hover { color: #fff; }
 .ch9-toolbar button:focus-visible,
 .ch9-stepper button:focus-visible,
 .ch9-action:focus-visible,

@@ -118,7 +118,7 @@
 
       const extra = (state.candidate - d.coefficient) ** 2;
       root.querySelector("[data-proj-equation]").innerHTML = display(`\\lVert x-w\\rVert^2=\\underbrace{${fmt(minimum, 2)}}_{\\lVert e\\rVert^2}+\\underbrace{${fmt(extra, 2)}}_{\\lVert p-w\\rVert^2}`);
-      const hit = extra < .001;
+      const hit = extra < 1e-10;
       const box = root.querySelector("[data-proj-conclusion]");
       box.dataset.projExtra = fmt(extra, 6);
       box.classList.toggle("is-warning", !hit);

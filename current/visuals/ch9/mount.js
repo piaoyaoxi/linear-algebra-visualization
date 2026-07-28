@@ -6,7 +6,7 @@
   function loadScript(name) {
     return new Promise((resolve, reject) => {
       const script = document.createElement("script");
-      script.src = new URL(`./${name}?v=ch9-native7`, scriptUrl).href;
+      script.src = new URL(`./${name}?v=ch9-native8`, scriptUrl).href;
       script.async = false;
       script.onload = resolve;
       script.onerror = () => reject(new Error(`Unable to load Chapter 9 module: ${name}`));

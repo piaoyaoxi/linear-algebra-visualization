@@ -1,7 +1,6 @@
-/* Chapter 7 visual language.
- *
- * No chapter-local palette is introduced here. Every color comes from the
- * project's existing paper, ink, teal, coral and gold theme tokens.
+/* Chapter 7 follows the site's paper-and-ink visual language.
+ * Teal is the current object, coral is a comparison or deviation, and gold is
+ * the object being tested. No chapter-local palette is introduced.
  */
 
 .ch7-formal,
@@ -9,18 +8,17 @@
   --ch7-primary: var(--accent-strong);
   --ch7-secondary: var(--coral);
   --ch7-guide: var(--gold);
-  --ch7-danger: var(--coral);
   --ch7-grid: color-mix(in srgb, var(--line-strong) 34%, transparent);
-  --ch7-axis: color-mix(in srgb, var(--muted) 62%, var(--line-strong));
+  --ch7-axis: color-mix(in srgb, var(--muted) 58%, var(--line-strong));
 }
 
 .ch7-formal {
   display: grid;
-  gap: 24px;
+  gap: 26px;
 }
 
 .ch7-formal-lead {
-  max-width: 74ch;
+  max-width: 72ch;
   margin: 0;
   color: var(--muted);
   font-size: 16px;
@@ -30,24 +28,23 @@
 .ch7-formal-equation {
   display: grid;
   place-items: center;
-  min-height: 112px;
+  min-height: 98px;
   padding: 20px;
-  border: 1px solid color-mix(in srgb, var(--accent) 26%, var(--line));
-  border-radius: var(--radius);
-  background: color-mix(in srgb, var(--accent-soft) 56%, var(--surface-solid));
+  border-top: 1px solid var(--line);
+  border-bottom: 1px solid var(--line);
+  background: color-mix(in srgb, var(--accent-soft) 34%, transparent);
 }
 
 .ch7-formal-equation .tex-display {
   max-width: 100%;
   margin: 0;
   overflow-x: auto;
-  font-size: clamp(0.92rem, 1.8vw, 1.08rem);
+  font-size: clamp(0.94rem, 1.8vw, 1.1rem);
 }
 
 .ch7-concept-list {
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 0 28px;
+  max-width: 86ch;
   margin: 0;
   padding: 0;
   list-style: none;
@@ -56,9 +53,8 @@
 
 .ch7-concept-list li {
   display: grid;
-  grid-template-columns: 38px minmax(0, 1fr);
-  gap: 12px;
-  align-items: start;
+  grid-template-columns: 42px minmax(0, 1fr);
+  gap: 14px;
   padding: 20px 0;
   border-bottom: 1px solid var(--line);
 }
@@ -66,9 +62,9 @@
 .ch7-concept-list li > span {
   display: grid;
   place-items: center;
-  width: 32px;
-  height: 32px;
-  border: 1px solid color-mix(in srgb, var(--accent) 32%, var(--line));
+  width: 34px;
+  height: 34px;
+  border: 1px solid color-mix(in srgb, var(--accent) 34%, var(--line));
   border-radius: 50%;
   background: var(--accent-soft);
   color: var(--accent-strong);
@@ -102,24 +98,25 @@
 }
 
 .ch7-boundary-note {
-  padding: 16px 18px;
-  border-left: 4px solid var(--gold);
-  border-radius: 0 var(--radius) var(--radius) 0;
+  max-width: 86ch;
+  padding: 15px 18px;
+  border-left: 3px solid var(--gold);
   background: color-mix(in srgb, var(--gold) 7%, var(--surface-soft));
 }
 
 .ch7-lab {
   display: grid;
-  gap: 16px;
-  padding: 20px;
+  gap: 20px;
+  padding: 22px;
   border: 1px solid var(--line);
   border-radius: var(--radius);
   background: var(--surface-solid);
+  box-shadow: var(--shadow-soft);
 }
 
 .ch7-lab-head {
   display: grid;
-  gap: 7px;
+  gap: 8px;
   max-width: 76ch;
 }
 
@@ -129,12 +126,12 @@
   color: var(--accent-strong);
   font-size: 12px;
   font-weight: 800;
-  letter-spacing: 0.055em;
+  letter-spacing: 0.05em;
 }
 
 .ch7-lab-head h3 {
   margin: 0;
-  font-size: clamp(23px, 2.8vw, 31px);
+  font-size: clamp(23px, 2.6vw, 30px);
   line-height: 1.28;
   letter-spacing: -0.015em;
 }
@@ -142,55 +139,106 @@
 .ch7-lab-head > p {
   margin: 0;
   color: var(--muted);
-  line-height: 1.75;
+  line-height: 1.72;
 }
 
 .ch7-lab-task {
-  margin-top: 3px !important;
-  padding: 11px 14px;
-  border-left: 3px solid var(--accent);
-  background: var(--surface-soft);
-  color: var(--text) !important;
+  display: grid;
+  grid-template-columns: 34px minmax(0, 1fr);
+  gap: 11px;
+  align-items: start;
+  margin-top: 4px;
+  padding: 13px 15px;
+  border-top: 1px solid var(--line);
+  border-bottom: 1px solid var(--line);
+  background: color-mix(in srgb, var(--surface-soft) 74%, transparent);
+}
+
+.ch7-lab-task > span {
+  display: grid;
+  place-items: center;
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  background: var(--accent);
+  color: var(--surface-solid);
+  font-size: 13px;
+  font-weight: 850;
+}
+
+.ch7-lab-task p {
+  display: grid;
+  gap: 3px;
+  margin: 0;
+  color: var(--text);
+  font-size: 15px;
+  line-height: 1.65;
+}
+
+.ch7-lab-task strong {
+  font-size: 13px;
+}
+
+.ch7-lab-work {
+  display: grid;
+  grid-template-columns: minmax(0, 1.65fr) minmax(250px, 0.72fr);
+  gap: 16px;
+  align-items: stretch;
+}
+
+.ch7-lab-stage {
+  min-width: 0;
+  overflow: hidden;
+  border: 1px solid var(--line);
+  border-radius: calc(var(--radius) - 2px);
+  background: var(--surface-solid);
+}
+
+.ch7-lab-rail {
+  display: grid;
+  align-content: start;
+  gap: 14px;
+  min-width: 0;
+  padding: 16px;
+  border: 1px solid var(--line);
+  border-radius: calc(var(--radius) - 2px);
+  background: color-mix(in srgb, var(--surface-soft) 68%, var(--surface-solid));
 }
 
 .ch7-lab-toolbar {
   display: grid;
-  gap: 10px;
-  padding-top: 2px;
+  gap: 13px;
 }
 
 .ch7-control-group {
-  display: flex;
-  gap: 12px;
-  align-items: flex-start;
+  display: grid;
+  gap: 7px;
 }
 
 .ch7-control-label {
-  flex: 0 0 58px;
-  padding-top: 11px;
+  color: var(--muted);
 }
 
 .ch7-choice-row {
   display: flex;
   flex-wrap: wrap;
-  gap: 8px;
-  min-width: 0;
+  gap: 7px;
 }
 
 .ch7-choice-row button,
 .ch7-action,
 .ch7-polynomial-choice {
-  min-height: 40px;
-  padding: 0 14px;
+  min-height: 37px;
+  padding: 0 12px;
   border: 1px solid var(--line);
   border-radius: 999px;
   background: var(--surface-solid);
   color: var(--muted);
   font: inherit;
-  font-size: 14px;
+  font-size: 13px;
   font-weight: 720;
   cursor: pointer;
-  transition: border-color 160ms ease, background 160ms ease, color 160ms ease, transform 120ms ease;
+  transition: border-color 150ms ease, background 150ms ease, color 150ms ease, transform 120ms ease;
 }
 
 .ch7-choice-row button:hover,
@@ -209,7 +257,7 @@
 .ch7-choice-row button.is-active,
 .ch7-action.is-active,
 .ch7-polynomial-choice.is-active {
-  border-color: color-mix(in srgb, var(--accent) 62%, var(--line));
+  border-color: color-mix(in srgb, var(--accent) 58%, var(--line));
   background: var(--accent-soft);
   color: var(--accent-strong);
 }
@@ -217,234 +265,39 @@
 .ch7-choice-row button:focus-visible,
 .ch7-action:focus-visible,
 .ch7-polynomial-choice:focus-visible,
-.ch7-range input:focus-visible {
+.ch7-range input:focus-visible,
+.ch7-drag-handle:focus-visible {
   outline: 3px solid color-mix(in srgb, var(--accent) 28%, transparent);
   outline-offset: 2px;
 }
 
-.ch7-lab-stage {
-  min-width: 0;
-  overflow: hidden;
-  border: 1px solid color-mix(in srgb, var(--accent) 16%, var(--line));
-  border-radius: var(--radius);
-  background:
-    radial-gradient(ellipse 68% 54% at 34% 44%, color-mix(in srgb, var(--accent) 6%, transparent), transparent 75%),
-    linear-gradient(168deg, color-mix(in srgb, var(--surface-soft) 74%, var(--surface-solid)), var(--surface-solid));
-}
-
-.ch7-svg {
-  display: block;
-  width: 100%;
-  height: auto;
-  min-height: 390px;
-  overflow: hidden;
-  user-select: none;
-}
-
-.ch7-grid,
-.ch7-axis,
-.ch7-line,
-.ch7-cross,
-.ch7-warp-grid,
-.ch7-helper,
-.ch7-trace,
-.ch7-leak,
-.ch7-shape-outline,
-.ch7-chain-arrow,
-.ch7-arc {
-  fill: none;
-  vector-effect: non-scaling-stroke;
-}
-
-.ch7-grid {
-  stroke: var(--ch7-grid);
-  stroke-width: 1;
-}
-
-.ch7-axis {
-  stroke: var(--ch7-axis);
-  stroke-width: 1.2;
-}
-
-.ch7-warp-grid {
-  stroke-width: 1.05;
-  opacity: 0.42;
-}
-
-.ch7-warp-grid.is-primary { stroke: color-mix(in srgb, var(--accent) 40%, transparent); }
-.ch7-warp-grid.is-secondary { stroke: color-mix(in srgb, var(--coral) 32%, transparent); }
-.ch7-warp-grid.is-muted { stroke: color-mix(in srgb, var(--muted) 28%, transparent); }
-
-.ch7-vector {
-  fill: currentColor;
-  stroke: currentColor;
-  stroke-width: 0.45;
-  stroke-linecap: round;
-  stroke-linejoin: round;
-  vector-effect: non-scaling-stroke;
-}
-
-.ch7-vector.is-primary,
-.ch7-line.is-primary,
-.ch7-svg-label.is-primary,
-.ch7-point.is-primary,
-.ch7-cross.is-primary { color: var(--ch7-primary); stroke: var(--ch7-primary); fill: var(--ch7-primary); }
-
-.ch7-vector.is-secondary,
-.ch7-line.is-secondary,
-.ch7-svg-label.is-secondary,
-.ch7-point.is-secondary,
-.ch7-cross.is-secondary { color: var(--ch7-secondary); stroke: var(--ch7-secondary); fill: var(--ch7-secondary); }
-
-.ch7-vector.is-guide,
-.ch7-line.is-guide,
-.ch7-svg-label.is-guide,
-.ch7-point.is-guide,
-.ch7-cross.is-guide { color: var(--ch7-guide); stroke: var(--ch7-guide); fill: var(--ch7-guide); }
-
-.ch7-vector.is-danger,
-.ch7-line.is-danger,
-.ch7-svg-label.is-danger,
-.ch7-point.is-danger,
-.ch7-cross.is-danger { color: var(--ch7-danger); stroke: var(--ch7-danger); fill: var(--ch7-danger); }
-
-.ch7-vector.is-muted,
-.ch7-line.is-muted,
-.ch7-svg-label.is-muted,
-.ch7-point.is-muted,
-.ch7-cross.is-muted { color: var(--muted); stroke: var(--muted); fill: var(--muted); opacity: 0.46; }
-
-.ch7-line {
-  stroke-width: 3.2;
-  stroke-linecap: round;
-}
-
-.ch7-line.is-dashed,
-.ch7-helper.is-dashed {
-  stroke-dasharray: 7 7;
-}
-
-.ch7-cross {
-  stroke-width: 3;
-  stroke-linecap: round;
-}
-
-.ch7-point {
-  stroke: var(--surface-solid);
-  stroke-width: 2;
-  vector-effect: non-scaling-stroke;
-}
-
-.ch7-drag-line {
-  fill: none;
-  stroke: transparent;
-  stroke-width: 24;
-  pointer-events: stroke;
-  cursor: grab;
-  touch-action: none;
-}
-
-.ch7-drag-line:active { cursor: grabbing; }
-
-.ch7-svg-label,
-.ch7-svg-title,
-.ch7-svg-caption,
-.ch7-matrix-text,
-.ch7-chain-text {
-  font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
-  paint-order: stroke;
-  stroke: color-mix(in srgb, var(--surface-solid) 92%, transparent);
-  stroke-width: 1.15px;
-  stroke-linejoin: round;
-}
-
-.ch7-svg-label {
-  font-size: 14px;
-  font-weight: 780;
-}
-
-.ch7-svg-title {
-  fill: var(--text);
-  font-size: 16px;
-  font-weight: 800;
-}
-
-.ch7-svg-caption {
-  fill: var(--muted);
-  font-size: 12px;
-  font-weight: 650;
-}
-
-.ch7-helper {
-  stroke: color-mix(in srgb, var(--muted) 56%, transparent);
-  stroke-width: 1.35;
-}
-
-.ch7-trace {
-  stroke: color-mix(in srgb, var(--accent) 54%, transparent);
-  stroke-width: 1.8;
-  stroke-dasharray: 5 7;
-}
-
-.ch7-leak {
-  stroke: var(--coral);
-  stroke-width: 3;
-  stroke-linecap: round;
-}
-
-.ch7-shape {
-  fill: color-mix(in srgb, var(--accent) 8%, transparent);
-  stroke: var(--accent-strong);
-  stroke-width: 2.4;
-  stroke-linejoin: round;
-  vector-effect: non-scaling-stroke;
-}
-
-.ch7-shape.is-secondary {
-  fill: color-mix(in srgb, var(--coral) 8%, transparent);
-  stroke: var(--coral);
-}
-
-.ch7-shape.is-muted {
-  fill: color-mix(in srgb, var(--muted) 6%, transparent);
-  stroke: color-mix(in srgb, var(--muted) 54%, transparent);
-}
-
-.ch7-panel {
-  fill: color-mix(in srgb, var(--surface-solid) 94%, var(--accent) 6%);
-  stroke: var(--line);
-  stroke-width: 1;
-}
-
-.ch7-band-primary { fill: color-mix(in srgb, var(--accent) 12%, transparent); }
-.ch7-band-secondary { fill: color-mix(in srgb, var(--coral) 11%, transparent); }
-.ch7-band-guide { fill: color-mix(in srgb, var(--gold) 11%, transparent); }
-
 .ch7-lab-controls:empty,
-.ch7-lab-toolbar:empty { display: none; }
+.ch7-lab-toolbar:empty {
+  display: none;
+}
+
+.ch7-lab [hidden] {
+  display: none !important;
+}
 
 .ch7-range-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-  gap: 18px;
-  padding: 16px 18px;
-  border: 1px solid var(--line);
-  border-radius: var(--radius);
-  background: var(--surface-soft);
+  gap: 14px;
+  padding-top: 14px;
+  border-top: 1px solid var(--line);
 }
 
 .ch7-range {
   display: grid;
-  gap: 10px;
-  min-width: 0;
+  gap: 9px;
 }
 
 .ch7-range > span {
   display: flex;
   justify-content: space-between;
-  gap: 12px;
+  gap: 10px;
   color: var(--muted);
-  font-size: 14px;
+  font-size: 13px;
   font-weight: 720;
 }
 
@@ -505,53 +358,311 @@
 
 .ch7-conclusion {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(200px, auto);
-  gap: 16px 24px;
-  align-items: center;
-  padding: 18px 20px;
-  border-left: 4px solid var(--accent);
-  border-radius: 0 var(--radius) var(--radius) 0;
-  background: var(--surface-soft);
+  gap: 10px;
+  padding-top: 14px;
+  border-top: 2px solid var(--accent);
 }
 
-.ch7-conclusion.is-fail { border-left-color: var(--coral); }
-.ch7-conclusion.is-warn { border-left-color: var(--gold); }
+.ch7-conclusion.is-fail {
+  border-top-color: var(--coral);
+}
+
+.ch7-conclusion.is-warn {
+  border-top-color: var(--gold);
+}
 
 .ch7-conclusion-copy strong {
   display: block;
-  margin: 5px 0 4px;
-  font-size: 20px;
+  margin: 4px 0;
+  font-size: 18px;
+  line-height: 1.4;
 }
 
 .ch7-conclusion-copy p {
   margin: 0;
   color: var(--muted);
-  line-height: 1.7;
+  font-size: 13px;
+  line-height: 1.65;
+}
+
+.ch7-conclusion-formula {
+  overflow-x: auto;
+  padding: 9px 10px;
+  border-radius: 10px;
+  background: var(--surface-solid);
 }
 
 .ch7-conclusion-formula .tex-display {
   margin: 0;
-  overflow-x: auto;
-  font-size: 0.98rem;
+  font-size: 0.86rem;
 }
 
 .ch7-conclusion dl {
-  grid-column: 1 / -1;
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px 18px;
+  display: grid;
+  gap: 7px;
   margin: 0;
-  padding-top: 12px;
+  padding-top: 10px;
   border-top: 1px solid var(--line);
 }
 
 .ch7-conclusion dl div {
   display: flex;
-  gap: 7px;
+  justify-content: space-between;
+  gap: 10px;
+  font-size: 12px;
 }
 
-.ch7-conclusion dt { color: var(--muted); }
-.ch7-conclusion dd { margin: 0; color: var(--text); font-weight: 760; }
+.ch7-conclusion dt {
+  color: var(--muted);
+}
+
+.ch7-conclusion dd {
+  margin: 0;
+  color: var(--text);
+  font-weight: 760;
+  text-align: right;
+}
+
+.ch7-svg {
+  display: block;
+  width: 100%;
+  height: auto;
+  min-height: 470px;
+  overflow: hidden;
+  user-select: none;
+}
+
+.ch7-grid,
+.ch7-axis,
+.ch7-line,
+.ch7-cross,
+.ch7-warp-grid,
+.ch7-helper,
+.ch7-trace,
+.ch7-leak,
+.ch7-angle-arc {
+  fill: none;
+  vector-effect: non-scaling-stroke;
+}
+
+.ch7-grid {
+  stroke: var(--ch7-grid);
+  stroke-width: 1;
+}
+
+.ch7-axis {
+  stroke: var(--ch7-axis);
+  stroke-width: 1.2;
+}
+
+.ch7-warp-grid {
+  stroke-width: 1.1;
+  opacity: 0.46;
+}
+
+.ch7-warp-grid.is-primary {
+  stroke: color-mix(in srgb, var(--accent) 52%, transparent);
+}
+
+.ch7-warp-grid.is-secondary {
+  stroke: color-mix(in srgb, var(--coral) 46%, transparent);
+}
+
+.ch7-warp-grid.is-muted {
+  stroke: color-mix(in srgb, var(--muted) 30%, transparent);
+}
+
+.ch7-vector {
+  fill: currentColor;
+  stroke: currentColor;
+  stroke-width: 0.4;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  vector-effect: non-scaling-stroke;
+}
+
+.ch7-vector.is-primary,
+.ch7-line.is-primary,
+.ch7-svg-label.is-primary,
+.ch7-point.is-primary,
+.ch7-cross.is-primary {
+  color: var(--ch7-primary);
+  stroke: var(--ch7-primary);
+  fill: var(--ch7-primary);
+}
+
+.ch7-vector.is-secondary,
+.ch7-line.is-secondary,
+.ch7-svg-label.is-secondary,
+.ch7-point.is-secondary,
+.ch7-cross.is-secondary {
+  color: var(--ch7-secondary);
+  stroke: var(--ch7-secondary);
+  fill: var(--ch7-secondary);
+}
+
+.ch7-vector.is-guide,
+.ch7-line.is-guide,
+.ch7-svg-label.is-guide,
+.ch7-point.is-guide,
+.ch7-cross.is-guide {
+  color: var(--ch7-guide);
+  stroke: var(--ch7-guide);
+  fill: var(--ch7-guide);
+}
+
+.ch7-vector.is-danger,
+.ch7-line.is-danger,
+.ch7-svg-label.is-danger,
+.ch7-point.is-danger,
+.ch7-cross.is-danger {
+  color: var(--coral);
+  stroke: var(--coral);
+  fill: var(--coral);
+}
+
+.ch7-vector.is-muted,
+.ch7-line.is-muted,
+.ch7-svg-label.is-muted,
+.ch7-point.is-muted,
+.ch7-cross.is-muted {
+  color: var(--muted);
+  stroke: var(--muted);
+  fill: var(--muted);
+  opacity: 0.48;
+}
+
+.ch7-line {
+  stroke-width: 3.2;
+  stroke-linecap: round;
+}
+
+.ch7-line.is-dashed,
+.ch7-helper.is-dashed {
+  stroke-dasharray: 7 7;
+}
+
+.ch7-cross {
+  stroke-width: 3;
+  stroke-linecap: round;
+}
+
+.ch7-point {
+  stroke: var(--surface-solid);
+  stroke-width: 2;
+  vector-effect: non-scaling-stroke;
+}
+
+.ch7-drag-line {
+  fill: none;
+  stroke: transparent;
+  stroke-width: 28;
+  pointer-events: stroke;
+  cursor: grab;
+  touch-action: none;
+}
+
+.ch7-drag-line:active {
+  cursor: grabbing;
+}
+
+.ch7-drag-handle {
+  cursor: grab;
+  touch-action: none;
+}
+
+.ch7-drag-handle:active {
+  cursor: grabbing;
+}
+
+.ch7-drag-halo {
+  fill: color-mix(in srgb, var(--surface-solid) 60%, transparent);
+  stroke: color-mix(in srgb, var(--accent) 20%, transparent);
+  stroke-width: 1;
+}
+
+.ch7-drag-ring {
+  fill: var(--surface-solid);
+  stroke: var(--accent-strong);
+  stroke-width: 3;
+  vector-effect: non-scaling-stroke;
+}
+
+.ch7-svg-label,
+.ch7-svg-title,
+.ch7-svg-caption,
+.ch7-matrix-text,
+.ch7-chain-text {
+  font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+  paint-order: stroke;
+  stroke: color-mix(in srgb, var(--surface-solid) 94%, transparent);
+  stroke-width: 1.1px;
+  stroke-linejoin: round;
+}
+
+.ch7-svg-label {
+  font-size: 14px;
+  font-weight: 780;
+}
+
+.ch7-svg-title {
+  fill: var(--text);
+  font-size: 16px;
+  font-weight: 800;
+}
+
+.ch7-svg-caption {
+  fill: var(--muted);
+  font-size: 12px;
+  font-weight: 650;
+}
+
+.ch7-helper {
+  stroke: color-mix(in srgb, var(--muted) 56%, transparent);
+  stroke-width: 1.35;
+}
+
+.ch7-trace {
+  stroke: color-mix(in srgb, var(--accent) 58%, transparent);
+  stroke-width: 1.8;
+  stroke-dasharray: 5 7;
+}
+
+.ch7-leak {
+  stroke: var(--coral);
+  stroke-width: 3;
+  stroke-linecap: round;
+}
+
+.ch7-shape {
+  fill: color-mix(in srgb, var(--accent) 9%, transparent);
+  stroke: var(--accent-strong);
+  stroke-width: 2.4;
+  stroke-linejoin: round;
+  vector-effect: non-scaling-stroke;
+}
+
+.ch7-shape.is-secondary {
+  fill: color-mix(in srgb, var(--coral) 9%, transparent);
+  stroke: var(--coral);
+}
+
+.ch7-shape.is-muted {
+  fill: color-mix(in srgb, var(--muted) 5%, transparent);
+  stroke: color-mix(in srgb, var(--muted) 50%, transparent);
+}
+
+.ch7-band-primary {
+  fill: color-mix(in srgb, var(--accent) 12%, transparent);
+}
+
+.ch7-band-secondary {
+  fill: color-mix(in srgb, var(--coral) 11%, transparent);
+}
+
+.ch7-band-guide {
+  fill: color-mix(in srgb, var(--gold) 11%, transparent);
+}
 
 .ch7-matrix-frame {
   fill: color-mix(in srgb, var(--surface-solid) 90%, var(--accent-soft));
@@ -565,9 +676,21 @@
   stroke-width: 1.2;
 }
 
-.ch7-matrix-column.is-primary { fill: color-mix(in srgb, var(--accent) 10%, transparent); stroke: var(--accent); }
-.ch7-matrix-column.is-secondary { fill: color-mix(in srgb, var(--coral) 9%, transparent); stroke: var(--coral); }
-.ch7-matrix-text { fill: var(--text); font-size: 18px; font-weight: 760; }
+.ch7-matrix-column.is-primary {
+  fill: color-mix(in srgb, var(--accent) 10%, transparent);
+  stroke: var(--accent);
+}
+
+.ch7-matrix-column.is-secondary {
+  fill: color-mix(in srgb, var(--coral) 9%, transparent);
+  stroke: var(--coral);
+}
+
+.ch7-matrix-text {
+  fill: var(--text);
+  font-size: 18px;
+  font-weight: 760;
+}
 
 .ch7-chain-node {
   fill: var(--surface-solid);
@@ -575,80 +698,175 @@
   stroke-width: 1.4;
 }
 
-.ch7-chain-node.is-active { fill: var(--accent-soft); stroke: var(--accent); stroke-width: 2.4; }
-.ch7-chain-node.is-zero { fill: var(--surface-soft); stroke: var(--accent); }
-.ch7-chain-text { fill: var(--text); font-size: 14px; font-weight: 780; }
-.ch7-chain-arrow { stroke: var(--accent-strong); stroke-width: 2.2; }
+.ch7-chain-node.is-active {
+  fill: var(--accent-soft);
+  stroke: var(--accent);
+  stroke-width: 2.4;
+}
+
+.ch7-chain-node.is-zero {
+  fill: var(--surface-soft);
+  stroke: var(--accent);
+}
+
+.ch7-chain-text {
+  fill: var(--text);
+  font-size: 14px;
+  font-weight: 780;
+}
+
+.ch7-chain-link {
+  opacity: 0.78;
+}
 
 .ch7-action:disabled {
   opacity: 0.42;
   cursor: not-allowed;
 }
 
-@media (max-width: 900px) {
-  .ch7-concept-list,
-  .ch7-reading-notes,
-  .ch7-conclusion {
+/* Section-specific compositions. */
+.ch7-lab-two-paths .ch7-lab-work,
+.ch7-lab-fiber-map .ch7-lab-work,
+.ch7-lab-eigen-pair .ch7-lab-work {
+  grid-template-columns: minmax(0, 1.8fr) minmax(245px, 0.68fr);
+}
+
+.ch7-lab-motion-track .ch7-lab-work,
+.ch7-lab-jordan-story .ch7-lab-work,
+.ch7-lab-annihilator-terms .ch7-lab-work {
+  grid-template-columns: minmax(0, 1.7fr) minmax(250px, 0.72fr);
+}
+
+.ch7-lab-coordinate-pair .ch7-lab-work {
+  grid-template-columns: minmax(0, 1.9fr) minmax(245px, 0.64fr);
+}
+
+.ch7-lane-label {
+  fill: var(--text);
+  font-size: 15px;
+  font-weight: 800;
+}
+
+.ch7-lane-note {
+  fill: var(--muted);
+  font-size: 12px;
+  font-weight: 650;
+}
+
+.ch7-stage-chip {
+  fill: var(--surface-solid);
+  stroke: var(--line);
+  stroke-width: 1;
+}
+
+.ch7-angle-arc {
+  stroke: var(--coral);
+  stroke-width: 2.6;
+  stroke-linecap: round;
+}
+
+.ch7-angle-arc.is-hit {
+  stroke: var(--accent-strong);
+}
+
+@media (max-width: 980px) {
+  .ch7-lab-work,
+  .ch7-lab-two-paths .ch7-lab-work,
+  .ch7-lab-fiber-map .ch7-lab-work,
+  .ch7-lab-eigen-pair .ch7-lab-work,
+  .ch7-lab-motion-track .ch7-lab-work,
+  .ch7-lab-jordan-story .ch7-lab-work,
+  .ch7-lab-annihilator-terms .ch7-lab-work,
+  .ch7-lab-coordinate-pair .ch7-lab-work {
     grid-template-columns: 1fr;
   }
 
-  .ch7-conclusion-formula { justify-self: start; }
+  .ch7-lab-rail {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    align-items: start;
+  }
 
-  .ch7-svg { min-height: 350px; }
+  .ch7-lab-result {
+    grid-column: 1 / -1;
+  }
 }
 
-@media (max-width: 620px) {
+@media (max-width: 720px) {
+  .ch7-reading-notes {
+    grid-template-columns: 1fr;
+  }
+
   .ch7-lab {
-    gap: 14px;
+    gap: 16px;
+    padding: 14px;
+    box-shadow: none;
+  }
+
+  .ch7-lab-head h3 {
+    font-size: 22px;
+  }
+
+  .ch7-lab-task {
+    grid-template-columns: 30px minmax(0, 1fr);
+    padding: 12px;
+  }
+
+  .ch7-lab-rail {
+    grid-template-columns: 1fr;
     padding: 14px;
   }
 
-  .ch7-lab-head h3 { font-size: 23px; }
-
-  .ch7-control-group {
-    display: grid;
-    gap: 7px;
-  }
-
-  .ch7-control-label {
-    padding-top: 0;
-  }
-
-  .ch7-choice-row {
-    flex-wrap: wrap;
-    max-width: 100%;
-    overflow: visible;
-    padding-bottom: 0;
-  }
-
-  .ch7-choice-row button,
-  .ch7-action,
-  .ch7-polynomial-choice {
-    flex: 0 0 auto;
-    min-height: 38px;
-    padding: 0 12px;
-    font-size: 13px;
+  .ch7-lab-result {
+    grid-column: auto;
   }
 
   .ch7-svg {
     min-height: 0;
   }
 
-  .ch7-range-grid,
-  .ch7-conclusion {
-    padding: 14px;
+  .ch7-choice-row button,
+  .ch7-action,
+  .ch7-polynomial-choice {
+    min-height: 38px;
+    padding: 0 11px;
+    font-size: 12px;
   }
 
-  .ch7-conclusion dl {
-    display: grid;
-    grid-template-columns: 1fr;
+  .ch7-svg-label {
+    font-size: 20px;
+    stroke-width: 1px;
   }
 
-  .ch7-svg-label { font-size: 22px; stroke-width: 1.1px; }
-  .ch7-svg-title { font-size: 24px; }
-  .ch7-svg-caption { font-size: 18px; }
-  .ch7-matrix-text { font-size: 24px; }
-  .ch7-chain-text { font-size: 21px; }
+  .ch7-svg-title,
+  .ch7-lane-label {
+    font-size: 22px;
+  }
+
+  .ch7-svg-caption,
+  .ch7-lane-note {
+    font-size: 17px;
+  }
+
+  .ch7-matrix-text {
+    font-size: 24px;
+  }
+
+  .ch7-chain-text {
+    font-size: 20px;
+  }
+
+  .ch7-lab-motion-track .ch7-lane-label {
+    font-size: 26px;
+  }
+
+  .ch7-lab-motion-track .ch7-lane-note,
+  .ch7-lab-eigen-pair .ch7-svg-caption {
+    font-size: 20px;
+  }
+
+  .ch7-lab-annihilator-terms .ch7-svg-caption {
+    font-size: 22px;
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {

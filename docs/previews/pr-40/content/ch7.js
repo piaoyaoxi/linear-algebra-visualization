@@ -462,7 +462,7 @@ registerAlgebraChapter({
       },
       interactive: {
         type: "ch7-kernel-image",
-        title: "核—值域实验室",
+        title: "核与值域实验室",
         description: "在输入空间追踪被压成零的方向，在输出空间同时显示列向量张成的可达范围。",
         task: "切换满秩、投影、秩一压缩和零变换。拖动输入 x，比较同一陪域中“允许到达”和“实际到达”的区别。",
         prompts: [

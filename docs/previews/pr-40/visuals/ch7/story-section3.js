@@ -4,128 +4,152 @@
 
   function render(section, lesson) {
     if (!section) return;
-    const A = [[2, 1], [1, 2]];
+    const modes = [
+      { value: "columns", label: "拖动两列" },
+      { value: "rebuild", label: "重建 T(x)" },
+      { value: "basis", label: "同一变换换基" },
+    ];
     const bases = [
       { name: "标准基", P: [[1, 0], [0, 1]], symbol: "E" },
       { name: "斜基", P: [[1, 1], [0, 1]], symbol: "B" },
       { name: "特征基", P: [[1, 1], [1, -1]], symbol: "V" },
     ];
-    const stages = [
-      { value: "col1", label: "记录第一列" },
-      { value: "col2", label: "记录第二列" },
-      { value: "rebuild", label: "重建任意输入" },
-      { value: "basis", label: "比较换基" },
-    ];
-    const state = { basis: 0, stage: "col1", alpha: 1.1, beta: 0.7 };
+    const state = { mode: "columns", basis: 0, col1: [2, 1], col2: [1, 2], alpha: 1.1, beta: 0.7 };
     const shell = S.createLab(section, lesson, {
       layout: "matrix-columns",
-      title: "矩阵的两列究竟从哪里来？",
-      description: "先把一根基向量送入 T，再把它的像写成坐标。第二根基向量重复同样动作，两列便完整记录了变换。",
-      task: "依次记录第一列和第二列，再拖动 α、β，检验任意输入的像能否只由这两列重建。",
+      title: "为什么二维矩阵的两列，正好就是两根基向量的像？",
+      description: "整张变换网格由两根列向量撑开。矩阵不是旁边的一张数字表，它和网格中的两根箭头是同一个信息。",
+      task: "先拖动青绿、珊瑚圆环，观察整张网格和矩阵两列同步变化；再用同一组系数重建 T(x)。",
     });
-    shell.toolbar.innerHTML = `${S.buttonGroup("基", bases.map((item, index) => ({ value: index, label: item.name })), state.basis, "basis")}${S.buttonGroup("观察", stages, state.stage, "stage")}`;
-    const cleanupRange = S.mountRanges(shell.controls, [
-      { label: "坐标 α", key: "alpha", min: -2, max: 2, step: 0.05 },
-      { label: "坐标 β", key: "beta", min: -2, max: 2, step: 0.05 },
-    ], state, () => draw());
+    shell.toolbar.innerHTML = `${S.buttonGroup("观察", modes, state.mode, "mode")}<div data-basis-choice hidden>${S.buttonGroup("选基", bases.map((item, index) => ({ value: index, label: item.name })), state.basis, "basis")}</div>`;
     const binder = S.eventBinder();
+    const cleanupRange = S.mountRanges(shell.controls, [
+      { label: "输入坐标 α", key: "alpha", min: -2, max: 2, step: 0.05 },
+      { label: "输入坐标 β", key: "beta", min: -2, max: 2, step: 0.05 },
+    ], state, () => draw());
 
-    const drawMatrix = (col1, col2, active) => `
-      <rect x="748" y="128" width="188" height="270" rx="12" class="ch7-matrix-frame"/>
-      <text x="842" y="164" text-anchor="middle" class="ch7-svg-title">[T]${bases[state.basis].symbol}</text>
-      <path d="M782 196H770V342H782M902 196H914V342H902" class="ch7-helper"/>
-      <rect x="790" y="205" width="48" height="126" rx="8" class="ch7-matrix-column ${active === 1 ? "is-primary" : ""}"/>
-      <rect x="850" y="205" width="48" height="126" rx="8" class="ch7-matrix-column ${active === 2 ? "is-secondary" : ""}"/>
-      <text x="814" y="247" text-anchor="middle" class="ch7-matrix-text">${S.fmt(col1[0])}</text>
-      <text x="814" y="302" text-anchor="middle" class="ch7-matrix-text">${S.fmt(col1[1])}</text>
-      <text x="874" y="247" text-anchor="middle" class="ch7-matrix-text">${S.fmt(col2[0])}</text>
-      <text x="874" y="302" text-anchor="middle" class="ch7-matrix-text">${S.fmt(col2[1])}</text>
-      <text x="814" y="368" text-anchor="middle" class="ch7-svg-label is-primary">第 1 列</text>
-      <text x="874" y="368" text-anchor="middle" class="ch7-svg-label is-secondary">第 2 列</text>`;
+    const matrixFromColumns = () => [[state.col1[0], state.col2[0]], [state.col1[1], state.col2[1]]];
+    const matrixPanel = (matrix, symbol, active = "") => `
+      <rect x="638" y="126" width="170" height="292" rx="14" class="ch7-matrix-frame"/>
+      <text x="723" y="164" text-anchor="middle" class="ch7-svg-title">[T]${symbol}</text>
+      <path d="M675 201H662V333H675M771 201H784V333H771" class="ch7-helper"/>
+      <rect x="683" y="211" width="38" height="111" rx="8" class="ch7-matrix-column ${active === "col1" ? "is-primary" : ""}"/>
+      <rect x="733" y="211" width="38" height="111" rx="8" class="ch7-matrix-column ${active === "col2" ? "is-secondary" : ""}"/>
+      <text x="702" y="250" text-anchor="middle" class="ch7-matrix-text">${S.fmt(matrix[0][0])}</text>
+      <text x="702" y="299" text-anchor="middle" class="ch7-matrix-text">${S.fmt(matrix[1][0])}</text>
+      <text x="752" y="250" text-anchor="middle" class="ch7-matrix-text">${S.fmt(matrix[0][1])}</text>
+      <text x="752" y="299" text-anchor="middle" class="ch7-matrix-text">${S.fmt(matrix[1][1])}</text>
+      <text x="702" y="357" text-anchor="middle" class="ch7-svg-label is-primary">T(b₁)</text>
+      <text x="752" y="385" text-anchor="middle" class="ch7-svg-label is-secondary">T(b₂)</text>`;
 
     const draw = () => {
-      shell.controls.hidden = !["rebuild", "basis"].includes(state.stage);
+      const A = matrixFromColumns();
       const basis = bases[state.basis];
       const P = basis.P;
       const Pinv = S.inv2(P);
-      const matrix = S.matMul(S.matMul(Pinv, A), P);
+      const recorded = S.matMul(S.matMul(Pinv, A), P);
+      const plane = S.createPlane({ x: 32, y: 66, width: 574, height: 470, extent: 4.1 });
       const b1 = [P[0][0], P[1][0]];
       const b2 = [P[0][1], P[1][1]];
-      const Tb1 = S.matVec(A, b1);
-      const Tb2 = S.matVec(A, b2);
-      const col1 = S.matVec(Pinv, Tb1);
-      const col2 = S.matVec(Pinv, Tb2);
       const x = S.add(S.scale(state.alpha, b1), S.scale(state.beta, b2));
       const Tx = S.matVec(A, x);
-      const plane = S.createPlane({ x: 40, y: 72, width: 660, height: 430, extent: 4.1 });
-      let content = `${plane.grid()}${plane.axes()}${drawMatrix(col1, col2, state.stage === "col1" ? 1 : state.stage === "col2" ? 2 : 0)}`;
-      let tone = "neutral";
+      const basisChoice = shell.toolbar.querySelector("[data-basis-choice]");
+      if (basisChoice) basisChoice.hidden = state.mode !== "basis";
+      shell.controls.hidden = state.mode === "columns";
+
+      let content = `<defs><clipPath id="ch7-s3-grid"><rect x="${plane.x}" y="${plane.y}" width="${plane.width}" height="${plane.height}"/></clipPath></defs>
+        <g clip-path="url(#ch7-s3-grid)">${S.transformedGrid(plane, A, { extent: 3.7, step: 0.5, role: "primary" })}</g>
+        ${plane.axes()}
+        <text x="32" y="38" class="ch7-svg-title">两根列向量撑开整张输出网格</text>`;
+      let tone = "pass";
       let title = "";
       let text = "";
       let formula = "";
       let facts = [];
 
-      if (state.stage === "col1") {
-        content += plane.vector(b1, "muted", "b₁") + plane.vector(Tb1, "primary", "T(b₁)");
-        const tip = plane.p(Tb1);
-        content += `<path d="M${tip[0] + 14} ${tip[1]}C700 ${tip[1]},716 250,790 250" class="ch7-trace"/>`;
-        title = "T(b₁) 的坐标直接进入第一列";
-        text = "这一列只回答一个问题：第一根基向量经过 T 后，沿两根基向量各走多少。";
-        formula = "T(b_1)=a_{11}b_1+a_{21}b_2";
-        facts = [["第一列", S.vectorText(col1)]];
-      } else if (state.stage === "col2") {
-        content += plane.vector(b2, "muted", "b₂") + plane.vector(Tb2, "secondary", "T(b₂)");
-        const tip = plane.p(Tb2);
-        content += `<path d="M${tip[0] + 14} ${tip[1]}C700 ${tip[1]},716 292,850 292" class="ch7-trace"/>`;
-        title = "T(b₂) 的坐标进入第二列";
-        text = "两列都确定以后，线性性保证每个输入的像都已经确定。";
-        formula = "T(b_2)=a_{12}b_1+a_{22}b_2";
-        facts = [["第二列", S.vectorText(col2)]];
-      } else if (state.stage === "rebuild") {
-        const aTb1 = S.scale(state.alpha, Tb1);
-        content += plane.vector(b1, "primary", "b₁") + plane.vector(b2, "secondary", "b₂");
-        content += plane.vector(x, "guide", "x") + plane.vector(Tx, "primary", "T(x)");
-        content += S.arrowPath(plane.cx, plane.cy, ...plane.p(aTb1), "is-primary");
-        content += S.arrowPath(...plane.p(aTb1), ...plane.p(Tx), "is-secondary");
-        content += `<text x="66" y="486" class="ch7-svg-caption">输入系数原样复制到两列的线性组合中。</text>`;
-        tone = "pass";
-        title = "任意输入只是用同一组系数重组两列";
-        text = "α、β 改变时，输出始终由 αT(b₁)+βT(b₂) 得到。";
-        formula = "T(\\alpha b_1+\\beta b_2)=\\alpha T(b_1)+\\beta T(b_2)";
-        facts = [["输入坐标", `(${S.fmt(state.alpha)}, ${S.fmt(state.beta)})`], ["T(x)", S.vectorText(Tx)]];
+      if (state.mode === "columns") {
+        content += plane.vector(state.col1, "primary") + plane.vector(state.col2, "secondary");
+        content += plane.handle(state.col1, "col1", "拖动第一列") + plane.handle(state.col2, "col2", "拖动第二列");
+        const c1 = plane.p(state.col1);
+        const c2 = plane.p(state.col2);
+        content += `<text x="${c1[0] + 14}" y="${c1[1] - 14}" class="ch7-svg-label is-primary">T(e₁)</text>
+          <text x="${c2[0] + 14}" y="${c2[1] + 25}" class="ch7-svg-label is-secondary">T(e₂)</text>
+          ${matrixPanel(A, "E", "")}`;
+        title = "箭头坐标与矩阵两列同步改变";
+        text = "知道 T(e₁) 和 T(e₂)，就知道了整张网格如何变化。";
+        formula = "A=\\begin{bmatrix}\\vert&\\vert\\\\T(e_1)&T(e_2)\\\\\\vert&\\vert\\end{bmatrix}";
+        facts = [["第一列", S.vectorText(state.col1)], ["第二列", S.vectorText(state.col2)]];
+      } else if (state.mode === "rebuild") {
+        const firstPart = S.scale(state.alpha, state.col1);
+        content += plane.vector(state.col1, "muted") + plane.vector(state.col2, "muted");
+        content += plane.vector(x, "guide", "x");
+        content += S.arrowPath(plane.cx, plane.cy, ...plane.p(firstPart), "is-primary");
+        content += S.arrowPath(...plane.p(firstPart), ...plane.p(Tx), "is-secondary");
+        content += plane.vector(Tx, "primary");
+        const firstTip = plane.p(firstPart);
+        const txTip = plane.p(Tx);
+        content += `<text x="${firstTip[0] + 12}" y="${firstTip[1] - 12}" class="ch7-svg-label is-primary">α·第1列</text>
+          <text x="${txTip[0] + 12}" y="${txTip[1] - 12}" class="ch7-svg-label is-primary">T(x)</text>
+          ${matrixPanel(A, "E", "")}`;
+        title = "输入的同一组系数直接重组两列";
+        text = "不必逐点重新定义 T，线性性已经把任意输入的像确定下来。";
+        formula = "T(\\alpha e_1+\\beta e_2)=\\alpha T(e_1)+\\beta T(e_2)";
+        facts = [["输入坐标", `(${S.fmt(state.alpha)}, ${S.fmt(state.beta)})`], ["输出", S.vectorText(Tx)]];
       } else {
-        content = `${S.transformedGrid(plane, P, { extent: 3.2, step: 0.5, role: "primary" })}${plane.axes()}${drawMatrix(col1, col2, 0)}`;
-        content += plane.vector(b1, "primary", "b₁") + plane.vector(b2, "secondary", "b₂") + plane.vector(x, "guide", "同一个 x") + plane.vector(Tx, "primary", "同一个 T(x)");
-        const diagonal = Math.abs(matrix[0][1]) < 1e-7 && Math.abs(matrix[1][0]) < 1e-7;
+        content = `<defs><clipPath id="ch7-s3-grid"><rect x="${plane.x}" y="${plane.y}" width="${plane.width}" height="${plane.height}"/></clipPath></defs>
+          <g clip-path="url(#ch7-s3-grid)">${S.transformedGrid(plane, P, { extent: 3.6, step: 0.5, role: "muted" })}${S.transformedGrid(plane, A, { extent: 3.6, step: 0.5, role: "primary" })}</g>
+          ${plane.axes()}${plane.line(b1, "primary", 4.3)}${plane.line(b2, "secondary", 4.3)}
+          ${plane.vector(x, "guide", "同一个 x")}${plane.vector(Tx, "primary", "同一个 T(x)")}
+          <text x="32" y="38" class="ch7-svg-title">真实向量不动，坐标记录随基改变</text>
+          ${matrixPanel(recorded, basis.symbol, "")}`;
+        const diagonal = Math.abs(recorded[0][1]) < 1e-7 && Math.abs(recorded[1][0]) < 1e-7;
         tone = diagonal ? "pass" : "neutral";
-        title = diagonal ? "特征基让两列分别落在两条坐标轴上" : "换基只改变坐标记录，不改变真实向量";
-        text = diagonal ? "两个分量不再相互混合，所以矩阵成为对角矩阵。" : "网格和矩阵数字发生变化，x 与 T(x) 在真实空间中的位置保持不变。";
+        title = diagonal ? "特征基让矩阵成为对角记录" : "换基没有改变真实空间中的 x 与 T(x)";
+        text = diagonal ? "两根基向量各自沿自身方向伸缩，两个分量不再混合。" : "变化的是坐标网格和矩阵数字，不是线性变换本身。";
         formula = "[T]_B=P^{-1}AP";
-        facts = [["当前基", basis.name], ["矩阵", `[[${S.fmt(matrix[0][0])}, ${S.fmt(matrix[0][1])}], [${S.fmt(matrix[1][0])}, ${S.fmt(matrix[1][1])}]]`]];
+        facts = [["当前基", basis.name], ["记录", `[[${S.fmt(recorded[0][0])}, ${S.fmt(recorded[0][1])}], [${S.fmt(recorded[1][0])}, ${S.fmt(recorded[1][1])}]]`]];
       }
 
-      shell.stage.innerHTML = S.svg(content, { width: 980, height: 550, label: "基向量的像直接生成矩阵两列" });
+      shell.stage.innerHTML = S.svg(content, { width: 840, height: 570, label: "拖动两根列向量并观察输出网格与矩阵同步改变" });
       shell.result.innerHTML = S.conclusion({ tone, title, text, formula, facts });
     };
 
     binder.on(shell.toolbar, "click", (event) => {
+      const mode = event.target.closest("[data-mode]");
+      if (mode) {
+        state.mode = mode.dataset.mode;
+        S.setActive(shell.toolbar, "[data-mode]", mode);
+        draw();
+        return;
+      }
       const basis = event.target.closest("[data-basis]");
       if (basis) {
         state.basis = Number(basis.dataset.basis);
         S.setActive(shell.toolbar, "[data-basis]", basis);
         draw();
-        return;
-      }
-      const stage = event.target.closest("[data-stage]");
-      if (stage) {
-        state.stage = stage.dataset.stage;
-        S.setActive(shell.toolbar, "[data-stage]", stage);
-        draw();
       }
     });
 
+    S.bindDrag(binder, shell.stage, "[data-drag]", (clientX, clientY, event) => {
+      if (state.mode !== "columns") return;
+      const svg = shell.stage.querySelector("svg");
+      if (!svg) return;
+      const rect = svg.getBoundingClientRect();
+      const plane = S.createPlane({ x: 32, y: 66, width: 574, height: 470, extent: 4.1 });
+      const value = plane.v([((clientX - rect.left) / rect.width) * 840, ((clientY - rect.top) / rect.height) * 570]).map((number) => S.clamp(number, -3.5, 3.5));
+      const key = event.target?.closest?.("[data-drag]")?.dataset.drag || shell.stage.dataset.dragKey || "col1";
+      shell.stage.dataset.dragKey = key;
+      state[key] = value;
+      draw();
+    });
+    binder.on(window, "mouseup", () => { delete shell.stage.dataset.dragKey; });
+    binder.on(window, "pointerup", () => { delete shell.stage.dataset.dragKey; });
+
     draw();
-    return () => { cleanupRange(); binder.cleanup(); };
+    return () => {
+      cleanupRange();
+      binder.cleanup();
+    };
   }
 
   S.register("matrix-of-linear-map", render);

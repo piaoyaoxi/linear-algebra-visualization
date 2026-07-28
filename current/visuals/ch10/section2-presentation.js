@@ -11,10 +11,33 @@
   const dualRows = inverse2(basisMatrix);
 
   function renderIntuition() {
-    return `<div class="ch10-intuition-list">
-      <article><span>01</span><strong>向量 x 是被测对象</strong><p>x 可以相加和缩放；它属于原空间 V。</p></article>
-      <article><span>02</span><strong>函数 f 是测量规则</strong><p>它表现为一组平行读取层，而不是原空间里的另一支箭头。</p></article>
-      <article><span>03</span><strong>两者相遇得到 f(x)</strong><p>一个向量槽与一个函数槽共同输出标量。</p></article>
+    return `<div class="ch10-intuition-visual">
+      <figure>
+        <svg viewBox="0 0 640 250" role="img" aria-label="向量与对偶读取规则是两类不同对象">
+          <g transform="translate(28 20)">
+            <path class="ch10-static-axis" d="M42 184H272M82 214V24"></path>
+            <line class="ch10-static-vector" x1="82" y1="184" x2="224" y2="72"></line>
+            <circle class="ch10-static-point" cx="224" cy="72" r="5"></circle>
+            <text x="232" y="66">向量 x</text>
+            <text class="ch10-static-caption" x="82" y="230">被测对象：可以相加、缩放</text>
+          </g>
+          <path class="ch10-static-pairing" d="M308 125H350"></path>
+          <text class="ch10-static-pairing-label" x="329" y="112">读取</text>
+          <g transform="translate(350 20)">
+            <path class="ch10-static-levels" d="M18 206L172 34M64 216L218 44M110 216L264 44"></path>
+            <path class="ch10-static-kernel" d="M18 160L138 26"></path>
+            <text x="150" y="30">测量规则 f</text>
+            <text class="is-kernel" x="22" y="148">f = 0</text>
+            <text class="ch10-static-caption" x="36" y="230">读取器：用平行层给出标量</text>
+          </g>
+        </svg>
+        <figcaption>协向量不画成另一支箭头；它由核、平行读取层和对向量的读数来呈现。</figcaption>
+      </figure>
+      <div class="ch10-intuition-copy">
+        <p><strong>x 属于 V</strong><span>它是被测量的向量。</span></p>
+        <p><strong>f 属于 V*</strong><span>它是一条线性测量规则。</span></p>
+        <p><strong>f(x) 属于 F</strong><span>两类对象配对后只留下一个数。</span></p>
+      </div>
     </div>`;
   }
 
@@ -34,7 +57,7 @@
       </div>
       <div class="ch10-core-layout">
         <div class="ch10-plot-column">
-          <div class="ch10-plot-shell">
+          <div class="ch10-plot-shell ch10-dual-plot">
             <svg viewBox="0 0 100 100" data-dual-svg role="img" aria-label="斜基、对偶基读取层和可拖动向量 x"></svg>
           </div>
           <div class="ch10-action-bar" aria-label="对偶基验证动作">
@@ -54,9 +77,9 @@
             <div class="ch10-readout-formula" data-dual-reader-formula></div>
             <p class="ch10-readout-copy" data-dual-reader-copy></p>
           </div>
-          <div class="ch10-readout-block">
-            <span class="ch10-readout-label">不要混淆</span>
-            <p class="ch10-readout-copy">斜基向量画成箭头；对偶基元素只通过<strong>读取层、核和数值</strong>呈现。</p>
+          <div class="ch10-readout-block ch10-readout-conclusion">
+            <span class="ch10-readout-label">这一帧说明</span>
+            <p class="ch10-readout-copy" data-dual-conclusion></p>
           </div>
         </aside>
       </div>
@@ -107,13 +130,27 @@
       const selected = rows[state.reader];
       const selectedValue = coordinates[state.reader];
       const levels = [-2, -1, 1, 2].map((level) => implicitLineSvg(selected[0], selected[1], level, "ch10-level-line")).join("");
-      svg.innerHTML = `${markerDefs}<g class="ch10-grid">${gridPaths()}</g>${levels}${implicitLineSvg(selected[0], selected[1], 0, "ch10-kernel-line", `ker v${state.reader === 0 ? "¹" : "²"}`)}${implicitLineSvg(selected[0], selected[1], selectedValue, "ch10-current-level")}${vectorSvg(basis[0], "v₁", "measure", { handleRadius: 0 })}${vectorSvg(basis[1], "v₂", "measure", { handleRadius: 0 })}${vectorSvg(state.vector, "x", "x", { ariaLabel: "拖动被读取的向量 x" })}`;
+      const obliqueGrid = Array.from({ length: 9 }, (_, index) => index - 4).map((value) => {
+        const row1Line = implicitLineSvg(row2[0], row2[1], value, "ch10-oblique-grid");
+        const row2Line = implicitLineSvg(row1[0], row1[1], value, "ch10-oblique-grid");
+        return value === 0 ? "" : `${row1Line}${row2Line}`;
+      }).join("");
+      const c1End = add(scale(coordinates[0], basis[0]), scale(coordinates[1], basis[1]));
+      const c1Only = scale(coordinates[0], basis[0]);
+      const p0 = ui.toSvgPoint([0, 0]);
+      const p1 = ui.toSvgPoint(c1Only);
+      const p2 = ui.toSvgPoint(c1End);
+      const decomposition = `<path class="ch10-decomposition" d="M${p0.join(" ")}L${p1.join(" ")}L${p2.join(" ")}"></path>`;
+      svg.innerHTML = `${markerDefs}${obliqueGrid}${levels}${implicitLineSvg(selected[0], selected[1], 0, "ch10-kernel-line")}${implicitLineSvg(selected[0], selected[1], selectedValue, "ch10-current-level")}${decomposition}${vectorSvg(basis[0], "v₁", "measure", { handleRadius: 0 })}${vectorSvg(basis[1], "v₂", "measure", { handleRadius: 0 })}${vectorSvg(state.vector, "x", "x", { ariaLabel: "拖动被读取的向量 x" })}<text class="ch10-line-label is-kernel" x="11" y="87">v${state.reader === 0 ? "¹" : "²"} = 0</text><text class="ch10-line-label is-current" x="72" y="23">读数 ${format(selectedValue)}</text>`;
       q(lab, "[data-dual-coordinates]").textContent = `(${format(coordinates[0])}, ${format(coordinates[1])})`;
       q(lab, "[data-dual-rebuild]").innerHTML = mathInline(`x=${format(coordinates[0])}v_1${coordinates[1] < 0 ? "" : "+"}${format(coordinates[1])}v_2`);
       q(lab, "[data-dual-reader-formula]").innerHTML = mathInline(`v^{${state.reader + 1}}(x)=${format(selectedValue)}`);
       q(lab, "[data-dual-reader-copy]").innerHTML = state.reader === 0
         ? `v¹ 的核沿 v₂ 方向，因此 ${mathInline("v^1(v_2)=0")}。`
         : `v² 的核沿 v₁ 方向，因此 ${mathInline("v^2(v_1)=0")}。`;
+      q(lab, "[data-dual-conclusion]").textContent = state.reader === 0
+        ? "高亮层只读取 v₁ 方向的份量；沿 v₂ 移动，读数不变。"
+        : "高亮层只读取 v₂ 方向的份量；沿 v₁ 移动，读数不变。";
       const actionCopy = {
         v1: ["v¹(v₁)=1，v²(v₁)=0", "第一支基向量的坐标被准确读成 (1,0)。"],
         v2: ["v¹(v₂)=0，v²(v₂)=1", "第二支基向量的坐标被准确读成 (0,1)。"],

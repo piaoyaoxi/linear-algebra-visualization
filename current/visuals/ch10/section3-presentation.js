@@ -9,10 +9,31 @@
   const matrix = [2, 1, -1, 3];
 
   function renderIntuition() {
-    return `<div class="ch10-intuition-list">
-      <article><span>01</span><strong>两个输入槽</strong><p>${mathInline("B(x,y)")} 同时接收 x 和 y，但只输出一个标量。</p></article>
-      <article><span>02</span><strong>先固定 y</strong><p>此时 ${mathInline("x\\mapsto B(x,y)")} 是关于 x 的线性函数。</p></article>
-      <article><span>03</span><strong>再交换角色</strong><p>固定 x 后，${mathInline("y\\mapsto B(x,y)")} 也必须是线性函数。</p></article>
+    return `<div class="ch10-intuition-visual">
+      <figure>
+        <svg viewBox="0 0 640 250" role="img" aria-label="固定双线性函数的一项后得到线性函数">
+          <g class="ch10-static-slot" transform="translate(34 70)">
+            <rect x="0" y="0" width="126" height="76"></rect><text x="63" y="31">活动输入 x</text><text class="ch10-static-caption" x="63" y="55">可以移动</text>
+          </g>
+          <text class="ch10-static-symbol" x="182" y="116">,</text>
+          <g class="ch10-static-slot is-fixed" transform="translate(210 70)">
+            <rect x="0" y="0" width="126" height="76"></rect><text x="63" y="31">固定输入 y</text><text class="ch10-static-caption" x="63" y="55">保持不动</text>
+          </g>
+          <path class="ch10-static-pairing" d="M356 108H406"></path>
+          <g transform="translate(420 33)">
+            <path class="ch10-static-levels" d="M0 166L130 26M38 180L168 40M76 180L206 40"></path>
+            <path class="ch10-static-kernel" d="M0 118L88 22"></path>
+            <text x="92" y="20">x ↦ B(x,y)</text>
+            <text class="ch10-static-caption" x="18" y="205">关于 x 的线性读取层</text>
+          </g>
+        </svg>
+        <figcaption>固定右槽以后，右槽不再是“第二个活动对象”，而是决定左槽读取方向的参数。</figcaption>
+      </figure>
+      <div class="ch10-intuition-copy">
+        <p><strong>固定 y</strong><span>得到读取器 Ay。</span></p>
+        <p><strong>移动 x</strong><span>用 xᵀ 读取 Ay，输出 B(x,y)。</span></p>
+        <p><strong>交换角色</strong><span>固定 x 后同样得到关于 y 的线性函数。</span></p>
+      </div>
     </div>`;
   }
 
@@ -32,12 +53,6 @@
       </div>
       <div class="ch10-core-layout">
         <div class="ch10-plot-column">
-          <div class="ch10-slot-row" aria-label="双线性函数的两个输入槽与输出">
-            <div class="ch10-slot"><span>左槽 x</span><strong data-bilinear-x></strong></div>
-            <i class="ch10-slot-arrow">×</i>
-            <div class="ch10-slot"><span>右槽 y</span><strong data-bilinear-y></strong></div>
-            <i class="ch10-slot-arrow">→ B(x,y)</i>
-          </div>
           <div class="ch10-plot-shell">
             <svg viewBox="0 0 100 100" data-bilinear-svg role="img" aria-label="固定一个输入后得到的线性函数等值层"></svg>
           </div>
@@ -58,10 +73,10 @@
             <div class="ch10-readout-formula" data-bilinear-reader></div>
             <p class="ch10-readout-copy" data-bilinear-reader-copy></p>
           </div>
-          <div class="ch10-readout-block">
-            <span class="ch10-readout-label">配对矩阵</span>
-            <div class="ch10-readout-formula">${mathInline("A=\\begin{bmatrix}2&1\\\\-1&3\\end{bmatrix}")}</div>
-            <p class="ch10-readout-copy">矩阵记录 ${mathInline("B(e_i,e_j)")}，它不是中间机器。</p>
+          <div class="ch10-readout-block ch10-readout-conclusion">
+            <span class="ch10-readout-label">两个输入</span>
+            <p class="ch10-readout-copy"><span data-bilinear-x></span> 与 <span data-bilinear-y></span></p>
+            <p class="ch10-readout-copy" data-bilinear-conclusion></p>
           </div>
         </aside>
       </div>
@@ -114,7 +129,9 @@
       const activeRole = state.mode === "right" ? "x" : "y";
       const activeLabel = activeRole;
       const levels = [-6, -3, 3, 6].map((level) => implicitLineSvg(reader[0], reader[1], level, "ch10-level-line")).join("");
-      svg.innerHTML = `${markerDefs}<g class="ch10-grid">${gridPaths()}</g>${levels}${implicitLineSvg(reader[0], reader[1], 0, "ch10-kernel-line")}${implicitLineSvg(reader[0], reader[1], value, "ch10-current-level")}${vectorSvg(active, activeLabel, activeRole, { ariaLabel: `拖动活动输入 ${activeLabel}` })}`;
+      const readerLength = Math.hypot(reader[0], reader[1]) || 1;
+      const readerVisual = scale(2.2 / readerLength, reader);
+      svg.innerHTML = `${markerDefs}<g class="ch10-grid">${gridPaths()}</g>${levels}${implicitLineSvg(reader[0], reader[1], 0, "ch10-kernel-line")}${implicitLineSvg(reader[0], reader[1], value, "ch10-current-level")}${vectorSvg(readerVisual, state.mode === "right" ? "Ay" : "Aᵀx", "measure", { handleRadius: 0 })}${vectorSvg(active, activeLabel, activeRole, { ariaLabel: `拖动活动输入 ${activeLabel}` })}<text class="ch10-line-label is-kernel" x="11" y="87">读数 0</text><text class="ch10-line-label is-current" x="72" y="23">B = ${format(value)}</text>`;
       q(lab, "[data-bilinear-x]").textContent = `(${format(state.x[0])}, ${format(state.x[1])})`;
       q(lab, "[data-bilinear-y]").textContent = `(${format(state.y[0])}, ${format(state.y[1])})`;
       q(lab, "[data-bilinear-value]").textContent = format(value);
@@ -126,6 +143,9 @@
         q(lab, "[data-bilinear-reader]").innerHTML = mathInline(`A^Tx=(${format(reader[0])},${format(reader[1])})^T`);
         q(lab, "[data-bilinear-reader-copy]").innerHTML = `固定 x 后，${mathInline("y\\mapsto (A^Tx)^Ty")} 是另一组线性读取层。`;
       }
+      q(lab, "[data-bilinear-conclusion]").textContent = state.mode === "right"
+        ? "y 决定 Ay 与整组读取层；拖动 x 只改变它落在哪一层。"
+        : "x 决定 Aᵀx 与整组读取层；拖动 y 只改变它落在哪一层。";
       const messages = {
         drag: ["固定一槽，另一槽就是线性函数", "拖动活动输入时，等值层与配对值同步变化。"],
         level: ["位置改变，配对值保持", "活动输入沿当前等值层移动，读取器没有改变。"],

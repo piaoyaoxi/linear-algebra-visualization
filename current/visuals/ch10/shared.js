@@ -107,7 +107,6 @@
   function renderModuleHeading(number, title, text, id) {
     return `
       <div class="ch10-module-heading">
-        <span>${number}</span>
         <div><h3${id ? ` id="${id}"` : ""}>${title}</h3>${text ? `<p>${text}</p>` : ""}</div>
       </div>`;
   }

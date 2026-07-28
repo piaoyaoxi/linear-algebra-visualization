@@ -10,16 +10,41 @@
     return x[0] * y[1] - x[1] * y[0];
   }
 
-  function polygon(x, y, className) {
-    const points = [[0, 0], x, add(x, y), y].map((point) => toSvgPoint(point).join(",")).join(" ");
+  function polygon(x, y, className, range = 3) {
+    const points = [[0, 0], x, add(x, y), y].map((point) => toSvgPoint(point, range).join(",")).join(" ");
     return `<polygon class="${className}" points="${points}"></polygon>`;
   }
 
   function renderIntuition() {
-    return `<div class="ch10-intuition-list">
-      <article><span>01</span><strong>方向决定正负</strong><p>x 到 y 为逆时针时，${mathInline("\\omega(x,y)>0")}。</p></article>
-      <article><span>02</span><strong>交换后符号反转</strong><p>${mathInline("\\omega(y,x)=-\\omega(x,y)")}，面积绝对值不变。</p></article>
-      <article><span>03</span><strong>共线时面积为 0</strong><p>平行四边形压成一条线，但这不等于整个形式退化。</p></article>
+    return `<div class="ch10-intuition-visual">
+      <figure>
+        <svg viewBox="0 0 640 250" role="img" aria-label="交换两个向量后有向面积改变符号">
+          <g transform="translate(42 30)">
+            <path class="ch10-static-axis" d="M22 174H250M52 204V16"></path>
+            <polygon class="ch10-static-area" points="52,174 202,132 146,40 -4,82"></polygon>
+            <line class="ch10-static-vector" x1="52" y1="174" x2="202" y2="132"></line>
+            <line class="ch10-static-second-vector" x1="52" y1="174" x2="-4" y2="82"></line>
+            <text x="210" y="132">x</text><text x="2" y="74">y</text>
+            <text class="ch10-static-sign" x="80" y="112">+4.62</text>
+          </g>
+          <path class="ch10-static-pairing" d="M306 125H346"></path>
+          <text class="ch10-static-pairing-label" x="326" y="110">交换</text>
+          <g transform="translate(350 30)">
+            <path class="ch10-static-axis" d="M22 174H250M52 204V16"></path>
+            <polygon class="ch10-static-area is-negative" points="52,174 -4,82 146,40 202,132"></polygon>
+            <line class="ch10-static-vector" x1="52" y1="174" x2="-4" y2="82"></line>
+            <line class="ch10-static-second-vector" x1="52" y1="174" x2="202" y2="132"></line>
+            <text x="2" y="74">y</text><text x="210" y="132">x</text>
+            <text class="ch10-static-sign is-negative" x="80" y="112">−4.62</text>
+          </g>
+        </svg>
+        <figcaption>无向面积相同，但输入顺序记录了方向；交换两个输入，辛配对变号。</figcaption>
+      </figure>
+      <div class="ch10-intuition-copy">
+        <p><strong>逆时针次序</strong><span>有向面积为正。</span></p>
+        <p><strong>交换输入</strong><span>形状不变，符号反转。</span></p>
+        <p><strong>两向量共线</strong><span>平行四边形压平，读数为 0。</span></p>
+      </div>
     </div>`;
   }
 
@@ -54,11 +79,11 @@
             <div class="ch10-readout-formula" data-symplectic-formula></div>
           </div>
           <div class="ch10-readout-block">
-            <span class="ch10-readout-label">与原始状态比较</span>
+            <span class="ch10-readout-label">与原图比较</span>
             <p class="ch10-readout-copy" data-symplectic-compare></p>
           </div>
-          <div class="ch10-readout-block">
-            <span class="ch10-readout-label">当前结论</span>
+          <div class="ch10-readout-block ch10-readout-conclusion">
+            <span class="ch10-readout-label">这一帧说明</span>
             <p class="ch10-readout-copy" data-symplectic-conclusion></p>
           </div>
         </aside>
@@ -110,7 +135,7 @@
       if (mode === "swap") return [[...state.baseY], [...state.baseX]];
       if (mode === "collinear") return [[...state.baseX], scale(0.75, state.baseX)];
       if (mode === "shear") return [[...state.baseX], add(state.baseY, state.baseX)];
-      if (mode === "uniform") return [scale(1.35, state.baseX), scale(1.35, state.baseY)];
+      if (mode === "uniform") return [scale(1.1, state.baseX), scale(1.1, state.baseY)];
       return [[...state.baseX], [...state.baseY]];
     };
 
@@ -119,12 +144,12 @@
       const y = state.displayY;
       const original = pairing(state.baseX, state.baseY);
       const value = pairing(x, y);
-      const ghost = state.mode !== "original" && state.mode !== "swap"
+      const ghost = state.mode !== "original"
         ? polygon(state.baseX, state.baseY, "ch10-ghost-shape")
         : "";
       const areaClass = `ch10-area-shape${nearZero(value, 0.001) ? " is-zero" : value < 0 ? " is-negative" : ""}`;
       const interactive = state.mode === "original";
-      svg.innerHTML = `${markerDefs}<g class="ch10-grid">${gridPaths()}</g>${ghost}${polygon(x, y, areaClass)}${vectorSvg(x, "x", "x", { handleRadius: interactive ? 2.5 : 0, ariaLabel: "拖动向量 x" })}${vectorSvg(y, "y", "y", { handleRadius: interactive ? 2.5 : 0, ariaLabel: "拖动向量 y" })}`;
+      svg.innerHTML = `${markerDefs}<g class="ch10-grid">${gridPaths(3)}</g>${ghost}${polygon(x, y, areaClass)}${vectorSvg(x, "x", "x", { range: 3, handleRadius: interactive ? 2.5 : 0, ariaLabel: "拖动向量 x" })}${vectorSvg(y, "y", "y", { range: 3, handleRadius: interactive ? 2.5 : 0, ariaLabel: "拖动向量 y" })}<text class="ch10-area-value${value < 0 ? " is-negative" : ""}" x="50" y="17">${nearZero(value) ? "面积 = 0" : `有向面积 = ${format(value)}`}</text>`;
       let modeData = {
         original: {
           formula: `\\omega(x,y)=\\det[x\\;y]=${format(value)}`,
@@ -151,7 +176,7 @@
           status: ["剪切保持有向面积", "因为 ω(x,y+x)=ω(x,y)+ω(x,x)，而 ω(x,x)=0。"],
         },
         uniform: {
-          formula: `\\omega(1.35x,1.35y)=1.35^2\\omega(x,y)=${format(value)}`,
+          formula: `\\omega(1.1x,1.1y)=1.1^2\\omega(x,y)=${format(value)}`,
           compare: `原面积 ${format(original)} 被放大为 ${format(value)}。`,
           conclusion: "均匀缩放一般不满足 SᵀJS=J，因此不是辛变换。",
           status: ["形状相似不等于结构保持", "两个方向同时放大，面积按平方倍数改变。"],
@@ -181,7 +206,7 @@
       state.mode = "original";
       state.transitioning = false;
       draw();
-    });
+    }, { range: 3 });
     bindSvgDrag(svg, "y", () => [...state.baseY], (vector) => {
       cancelAnimation();
       state.baseY = vector;
@@ -190,7 +215,7 @@
       state.mode = "original";
       state.transitioning = false;
       draw();
-    });
+    }, { range: 3 });
     qa(lab, "[data-symplectic-mode]").forEach((button) => button.addEventListener("click", () => {
       const mode = button.dataset.symplecticMode;
       const [targetX, targetY] = vectorsForMode(mode);

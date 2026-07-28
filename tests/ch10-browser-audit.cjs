@@ -73,6 +73,14 @@ async function inspectLayout(page, label, lesson) {
       cinematicCount: document.querySelectorAll("[data-ch10-cinema], .ch10-cinema").length,
       svgFilterCount: document.querySelectorAll(".ch10-core-lab svg filter").length,
       moduleCount: document.querySelectorAll(".ch10-formal-flow .ch10-module").length,
+      intuitionVisualCount: document.querySelectorAll(".ch10-intuition-visual").length,
+      legacyIntuitionCount: document.querySelectorAll(".ch10-intuition-list").length,
+      numberedModuleBadges: document.querySelectorAll(".ch10-module-heading > span").length,
+      brokenInlineMath: [...document.querySelectorAll(".ch10-intuition-section .tex")]
+        .filter((node) => {
+          const box = node.getBoundingClientRect();
+          return box.height > 60 || box.width < 8;
+        }).length,
       formalButtonCount: document.querySelectorAll(".ch10-formal-flow button").length,
       emptyMounts: [...document.querySelectorAll("[data-ch10-interactive], [data-ch10-formal]")]
         .filter((node) => !node.textContent.trim() && !node.querySelector("svg")).length,
@@ -89,10 +97,15 @@ async function inspectLayout(page, label, lesson) {
     assert(state.coreSvgCount === 1, `${label}: expected exactly one core SVG, found ${state.coreSvgCount}`);
     assert(state.cinematicCount === 0, `${label}: cinematic shell is still present`);
     assert(state.svgFilterCount === 0, `${label}: SVG glow/filter is present`);
+    assert(state.intuitionVisualCount === 1, `${label}: expected one visual intuition figure`);
+    assert(state.legacyIntuitionCount === 0, `${label}: legacy numbered intuition cards are still present`);
+    assert(state.numberedModuleBadges === 0, `${label}: numbered formal badges are still present`);
+    assert(state.brokenInlineMath === 0, `${label}: inline math has collapsed into a vertical stack`);
     assert(state.moduleCount >= 2 && state.moduleCount <= 3, `${label}: formal module count is ${state.moduleCount}`);
     assert(state.formalButtonCount === 0, `${label}: secondary formal interactions compete with the core interaction`);
     assert(state.emptyMounts === 0, `${label}: empty renderer mount found`);
-    const undersized = state.visibleButtons.filter((button) => button.width < 36 || button.height < 36);
+    const minimumHeight = label.includes("mobile") ? 44 : 36;
+    const undersized = state.visibleButtons.filter((button) => button.width < 36 || button.height < minimumHeight);
     assert(undersized.length === 0, `${label}: undersized controls ${JSON.stringify(undersized)}`);
   }
 }
@@ -185,7 +198,7 @@ async function auditInteractions(browser) {
   assert(Math.abs(numeric(await page.locator("[data-symplectic-value]").textContent()) - 4.62) < 0.01, "§4 shear changed the pairing");
   await page.getByRole("tab", { name: "均匀缩放" }).click();
   await page.waitForTimeout(380);
-  assert(Math.abs(numeric(await page.locator("[data-symplectic-value]").textContent()) - 8.42) < 0.01, "§4 uniform scaling value is wrong");
+  assert(Math.abs(numeric(await page.locator("[data-symplectic-value]").textContent()) - 5.59) < 0.01, "§4 uniform scaling value is wrong");
 
   verifyErrors();
   results.push({ label: "interaction-audit", status: "passed" });
@@ -198,7 +211,7 @@ async function auditReducedMotion(browser) {
   await page.goto(`${baseURL}#ch10/symplectic-space`, { waitUntil: "networkidle" });
   await page.getByRole("tab", { name: "均匀缩放" }).click();
   await page.waitForTimeout(60);
-  assert(Math.abs(numeric(await page.locator("[data-symplectic-value]").textContent()) - 8.42) < 0.01, "reduced motion did not settle immediately");
+  assert(Math.abs(numeric(await page.locator("[data-symplectic-value]").textContent()) - 5.59) < 0.01, "reduced motion did not settle immediately");
   results.push({ label: "reduced-motion", status: "passed" });
   await context.close();
 }
@@ -235,7 +248,10 @@ async function auditRegressions(browser) {
 }
 
 (async () => {
-  const browser = await chromium.launch({ headless: true });
+  const browser = await chromium.launch({
+    headless: true,
+    ...(process.env.CHROMIUM_EXECUTABLE_PATH ? { executablePath: process.env.CHROMIUM_EXECUTABLE_PATH } : {}),
+  });
   try {
     for (const audit of [auditVisualMatrix, auditInteractions, auditReducedMotion, auditRegressions]) {
       try {

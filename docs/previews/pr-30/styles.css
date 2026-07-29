@@ -641,6 +641,17 @@ body.dark .sidebar-foot {
   background: rgba(255, 255, 255, 0.14);
 }
 
+body:not(.dark) .guide-hero .button.ghost {
+  border-color: color-mix(in srgb, var(--accent) 34%, var(--line));
+  background: color-mix(in srgb, var(--surface-solid) 78%, transparent);
+  color: var(--accent-strong);
+}
+
+body:not(.dark) .guide-hero .button.ghost:hover {
+  border-color: color-mix(in srgb, var(--accent) 54%, var(--line));
+  background: var(--accent-soft);
+}
+
 .hero-visual {
   display: grid;
   align-content: center;
@@ -1188,7 +1199,7 @@ body.dark .vector-plane {
   overflow: hidden;
 }
 
-.block-grid span {
+.block-grid > span {
   min-height: 92px;
   display: grid;
   place-items: center;
@@ -1199,11 +1210,11 @@ body.dark .vector-plane {
   font-weight: 780;
 }
 
-.block-grid span:nth-child(2n) {
+.block-grid > span:nth-child(2n) {
   border-right: 0;
 }
 
-.block-grid span:nth-last-child(-n + 2) {
+.block-grid > span:nth-last-child(-n + 2) {
   border-bottom: 0;
 }
 

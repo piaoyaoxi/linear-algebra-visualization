@@ -329,31 +329,42 @@
       const p = clamp(progress);
       const resultsHeight = this.searchGeometry?.resultsHeight || searchResultsPanel.offsetHeight || 344;
       const panelWidth = this.searchGeometry?.panelWidth || this.elements.searchPanel.offsetWidth || 590;
-      const motionProgress = clamp(raw / 0.84);
-      const geometry = referenceMorphGeometry(motionProgress);
-      const travelProgress = Math.pow(smootherstep(motionProgress), 1.55);
-      const resultTopY = lerp(0, 66, travelProgress);
+      /*
+       * Keep the upper search capsule completely stationary.  The lower
+       * surface has three independent phases:
+       *   1. a capsule is emitted from behind the fixed upper capsule;
+       *   2. that capsule reaches the final 10px gap;
+       *   3. only then does it grow downward and reveal its content.
+       *
+       * Reversing the same phase map guarantees that clearing a query first
+       * hides the content, then contracts the panel, and finally absorbs the
+       * lower capsule without a geometry or opacity jump.
+       */
+      const detachProgress = smootherstep(range(p, 0.02, 0.58));
+      const geometry = referenceMorphGeometry(detachProgress);
+      const resultTopY = geometry.y;
       const translateY = resultTopY - 66;
-      const expandProgress = smootherstep(range(p, 0.5, 0.99));
+      const expandProgress = smootherstep(range(p, 0.58, 0.92));
       const visibleHeight = lerp(56, resultsHeight, expandProgress);
       const clippedBottom = Math.max(0, resultsHeight - visibleHeight);
+      const clippedTop = Math.max(0, 56 - resultTopY);
       const visualRadius = lerp(28, 23, expandProgress);
-      const bodyProgress = smootherstep(range(p, 0.52, 0.99));
+      const bodyProgress = smootherstep(range(p, 0.86, 0.995));
 
       searchResultsPanel.style.visibility = p > 0.001 ? "visible" : "hidden";
       searchResultsPanel.style.opacity = p > 0.001 ? "1" : "0";
-      searchResultsPanel.style.clipPath = `inset(0 0 ${px(clippedBottom)}px 0 round ${px(visualRadius)}px)`;
+      searchResultsPanel.style.clipPath =
+        `inset(${px(clippedTop)}px 0 ${px(clippedBottom)}px 0 round ${px(visualRadius)}px)`;
       searchResultsPanel.style.transform = `translateY(${px(translateY)}px)`;
       searchBody.style.opacity = bodyProgress.toFixed(4);
       searchBody.style.transform = `translateY(${px(lerp(7, 0, bodyProgress))}px)`;
 
-      const fusionEnter = smootherstep(range(p, 0.01, 0.35));
-      const fusionRelease = 1 - smootherstep(range(p, 0.55, 0.9));
+      const fusionEnter = smootherstep(range(detachProgress, 0.01, 0.16));
+      const fusionRelease = 1 - smootherstep(range(detachProgress, 0.58, 0.96));
       const unifiedMerge = fusionEnter * fusionRelease;
       searchResultsPanel.style.setProperty("--search-surface-merge", unifiedMerge.toFixed(4));
-      searchResultsPanel.style.setProperty("--search-unified-merge", unifiedMerge.toFixed(4));
-      this.elements.searchOpen.style.setProperty("--search-surface-merge", unifiedMerge.toFixed(4));
-      this.elements.searchOpen.style.setProperty("--search-unified-merge", unifiedMerge.toFixed(4));
+      searchResultsPanel.style.setProperty("--search-edge-opacity", (1 - unifiedMerge).toFixed(4));
+      this.elements.searchOpen.style.setProperty("--search-edge-opacity", (1 - unifiedMerge * 0.76).toFixed(4));
 
       this.searchLiquidBlobs ||= {
         top: searchMergeField.querySelector(".search-liquid-top-blob"),
@@ -365,7 +376,7 @@
         "d",
         resultsMorphPath(0, resultTopY, panelWidth, 56, geometry.bow),
       );
-      searchMergeField.style.opacity = unifiedMerge.toFixed(4);
+      searchMergeField.style.opacity = (unifiedMerge * 0.82).toFixed(4);
 
       const interactive = p > 0.94 && target === 1 && this.elements.searchModal.dataset.phase === "open";
       if (interactive !== this.searchResultsInteractive) {

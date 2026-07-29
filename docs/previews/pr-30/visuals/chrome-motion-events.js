@@ -18,7 +18,6 @@
         "searchBackdrop",
         "searchPanel",
         "searchBar",
-        "searchMergeField",
         "searchResultsPanel",
         "searchBody",
         "searchInput",

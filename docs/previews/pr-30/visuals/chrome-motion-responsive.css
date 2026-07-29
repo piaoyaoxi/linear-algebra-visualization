@@ -131,5 +131,19 @@
   .language-check {
     transition-duration: 1ms !important;
   }
+}
 
+/* Preserve compact desktop teaching controls while giving fingers a reliable
+   target on touch-first devices. Range tracks keep their visual thickness;
+   only the interactive hit box grows. */
+@media (pointer: coarse) {
+  .content button,
+  .content select,
+  .content input:not([type="checkbox"]):not([type="radio"]):not([type="hidden"]) {
+    min-height: 44px !important;
+  }
+
+  .content input[type="range"] {
+    height: 44px !important;
+  }
 }

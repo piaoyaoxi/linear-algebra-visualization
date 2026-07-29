@@ -102,11 +102,9 @@
 
   .topbar-search,
   body.dark .topbar-search {
-    justify-content: center;
-  }
-
-  .topbar-search-text {
-    display: none;
+    gap: 7px;
+    justify-content: flex-start;
+    padding-inline: 11px;
   }
 }
 

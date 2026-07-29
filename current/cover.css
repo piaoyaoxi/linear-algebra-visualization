@@ -15,8 +15,8 @@ a { color: inherit; text-decoration: none; }
 .cover-top { position: absolute; top: 0; left: 0; right: 0; z-index: 3; display: flex; align-items: center; justify-content: space-between; padding: 22px 28px; }
 .cover-brand { display: inline-flex; align-items: center; gap: 10px; color: rgba(238,246,241,.9); font-size: 15px; font-weight: 760; letter-spacing: .02em; }
 .cover-brand-mark { display: grid; place-items: center; width: 30px; height: 30px; border: 1px solid rgba(95,227,211,.4); border-radius: 9px; background: rgba(95,227,211,.1); color: #5fe3d3; font-size: 13px; font-weight: 800; }
-.cover-top-link { color: rgba(222,236,229,.6); font-size: 13px; font-weight: 700; transition: color 160ms ease; }
-.cover-top-link:hover { color: #8fe8db; }
+.cover-top-link { display: inline-flex; align-items: center; min-height: 44px; padding: 0 12px; margin: -12px; border-radius: 12px; color: rgba(222,236,229,.6); font-size: 13px; font-weight: 700; transition: color 160ms ease,background-color 160ms ease; }
+.cover-top-link:hover { background: rgba(95,227,211,.08); color: #8fe8db; }
 .cover-center { position: relative; z-index: 2; max-width: 660px; text-align: center; }
 .cover-eyebrow { display: inline-block; padding: 7px 15px; border: 1px solid rgba(95,227,211,.28); border-radius: 999px; background: rgba(9,20,17,.55); color: #8fe8db; font-size: 13px; font-weight: 720; letter-spacing: .08em; backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px); }
 .cover-title { display: grid; justify-items: center; margin: 24px 0 0; color: #f4faf6; font-family: "Songti SC","STSong","Noto Serif CJK SC",Georgia,serif; font-size: clamp(46px,9vw,92px); font-weight: 900; line-height: 1.04; letter-spacing: .01em; }

@@ -38,67 +38,12 @@
     if (cursor < text.length) element.append(document.createTextNode(text.slice(cursor)));
   };
 
-  const topMorphPath = (x, y, width, height, bow) => {
-    const radius = height / 2;
-    const right = x + width;
-    const bottom = y + height;
-    const straightSpan = Math.max(0, width - radius * 2);
-    const curveInset = straightSpan * 0.22;
-    const curveStart = right - radius - curveInset;
-    const curveEnd = x + radius + curveInset;
-    const curveWidth = Math.max(0, curveStart - curveEnd);
-    const curveDepth = bow * 4 / 3;
-    return [
-      `M ${x + radius} ${y}`,
-      `H ${right - radius}`,
-      `A ${radius} ${radius} 0 0 1 ${right - radius} ${bottom}`,
-      `H ${curveStart}`,
-      `C ${curveStart - curveWidth / 3} ${bottom + curveDepth}, ${curveEnd + curveWidth / 3} ${bottom + curveDepth}, ${curveEnd} ${bottom}`,
-      `H ${x + radius}`,
-      `A ${radius} ${radius} 0 0 1 ${x + radius} ${y}`,
-      "Z",
-    ].join(" ");
-  };
-
-  const resultsMorphPath = (x, y, width, height, bow) => {
-    const radius = Math.min(height / 2, width / 2);
-    const right = x + width;
-    const bottom = y + height;
-    const straightSpan = Math.max(0, width - radius * 2);
-    const curveInset = straightSpan * 0.22;
-    const curveStart = x + radius + curveInset;
-    const curveEnd = right - radius - curveInset;
-    const curveWidth = Math.max(0, curveEnd - curveStart);
-    const curveDepth = bow * 4 / 3;
-    return [
-      `M ${x + radius} ${y}`,
-      `H ${curveStart}`,
-      `C ${curveStart + curveWidth / 3} ${y - curveDepth}, ${curveEnd - curveWidth / 3} ${y - curveDepth}, ${curveEnd} ${y}`,
-      `H ${right - radius}`,
-      `A ${radius} ${radius} 0 0 1 ${right} ${y + radius}`,
-      `V ${bottom - radius}`,
-      `A ${radius} ${radius} 0 0 1 ${right - radius} ${bottom}`,
-      `H ${x + radius}`,
-      `A ${radius} ${radius} 0 0 1 ${x} ${bottom - radius}`,
-      `V ${y + radius}`,
-      `A ${radius} ${radius} 0 0 1 ${x + radius} ${y}`,
-      "Z",
-    ].join(" ");
-  };
-
-  const referenceMorphGeometry = (progress) => {
+  const referenceMorphY = (progress) => {
     const gap = lerp(REFERENCE_CLOSED_GAP, REFERENCE_OPEN_GAP, progress);
     const extension = Math.max(0, REFERENCE_TOP_HEIGHT + gap * REFERENCE_GAP_SCALE);
     const absorption = smoothstep(range(extension, 18, 38));
     const shoulder = 8 * Math.exp(-Math.pow((gap + 27) / 6, 2));
-    const y = ((extension * absorption + shoulder) / REFERENCE_OPEN_TRAVEL) * 66;
-    const pull = Math.max(0, gap - REFERENCE_OPEN_GAP);
-    return {
-      gap,
-      y,
-      bow: Math.min(6, pull * 0.95),
-      mergeMask: 1 - smoothstep(range(gap, -44, -24)),
-    };
+    return ((extension * absorption + shoulder) / REFERENCE_OPEN_TRAVEL) * 66;
   };
 
   Object.assign(ChromeMotionController.prototype, {
@@ -194,10 +139,9 @@
     },
 
     measureSearch() {
-      const { searchCapsule, searchBar, searchPanel, searchResultsPanel } = this.elements;
+      const { searchCapsule, searchBar, searchResultsPanel } = this.elements;
       const sourceHost = searchCapsule.parentElement;
       const hostRect = sourceHost?.getBoundingClientRect();
-      const panelRect = searchPanel.getBoundingClientRect();
       const sourceWidth = hostRect?.width || searchCapsule.offsetWidth || 1;
       const sourceHeight = parseFloat(getComputedStyle(document.documentElement).getPropertyValue("--chrome-control-size")) || 44;
       const sourceLeft = hostRect?.left ?? searchCapsule.offsetLeft;
@@ -210,7 +154,6 @@
           height: sourceHeight,
         },
         end: searchBar.getBoundingClientRect(),
-        panelWidth: panelRect.width,
         resultsHeight: searchResultsPanel.getBoundingClientRect().height || 344,
       };
     },
@@ -281,6 +224,8 @@
       searchOpen.style.removeProperty("--liquid-pointer-x");
       searchOpen.style.removeProperty("--liquid-pointer-y");
       searchOpen.style.removeProperty("--search-closed-content-opacity");
+      searchOpen.style.removeProperty("--search-surface-merge");
+      searchOpen.style.removeProperty("--search-edge-opacity");
       searchOpen.classList.add("is-interactive");
       searchOpen.removeAttribute("tabindex");
       searchCapsuleOpen.classList.remove("is-interactive");
@@ -325,58 +270,56 @@
     },
 
     renderSearchResultsMotion(progress, raw, target) {
-      const { searchResultsPanel, searchBody, searchMergeField } = this.elements;
+      const { searchResultsPanel, searchBody } = this.elements;
       const p = clamp(progress);
       const resultsHeight = this.searchGeometry?.resultsHeight || searchResultsPanel.offsetHeight || 344;
-      const panelWidth = this.searchGeometry?.panelWidth || this.elements.searchPanel.offsetWidth || 590;
       /*
-       * Keep the upper search capsule completely stationary.  The lower
-       * surface has three independent phases:
-       *   1. a capsule is emitted from behind the fixed upper capsule;
-       *   2. that capsule reaches the final 10px gap;
-       *   3. only then does it grow downward and reveal its content.
+       * The upper search capsule never moves.  Match the supplied reference
+       * by letting the lower surface grow while it is still fused to the
+       * capsule, then separating it only after it is already recognisably the
+       * results panel.  If separation finishes first, an independent 56px
+       * pill appears between the two states and reads as a second block.
        *
-       * Reversing the same phase map guarantees that clearing a query first
-       * hides the content, then contracts the panel, and finally absorbs the
-       * lower capsule without a geometry or opacity jump.
-       */
-      const detachProgress = smootherstep(range(p, 0.02, 0.58));
-      const geometry = referenceMorphGeometry(detachProgress);
-      const resultTopY = geometry.y;
+       * The same coupled path runs in reverse: content fades, the large panel
+       * rejoins the capsule, and only then is the remaining lower material
+       * absorbed.  No display or opacity state changes at the join point.
+      */
+      const detachProgress = smootherstep(range(p, 0.08, 0.76));
+      const resultTopY = referenceMorphY(detachProgress);
       const translateY = resultTopY - 66;
-      const expandProgress = smootherstep(range(p, 0.58, 0.92));
+      const expandProgress = smootherstep(range(p, 0.02, 0.62));
       const visibleHeight = lerp(56, resultsHeight, expandProgress);
       const clippedBottom = Math.max(0, resultsHeight - visibleHeight);
       const clippedTop = Math.max(0, 56 - resultTopY);
       const visualRadius = lerp(28, 23, expandProgress);
-      const bodyProgress = smootherstep(range(p, 0.86, 0.995));
+      const topRadiusProgress = smootherstep(range(resultTopY, 42, 66));
+      const topRadius = visualRadius * topRadiusProgress;
+      const bodyProgress = smootherstep(range(p, 0.68, 0.96));
 
       searchResultsPanel.style.visibility = p > 0.001 ? "visible" : "hidden";
       searchResultsPanel.style.opacity = p > 0.001 ? "1" : "0";
       searchResultsPanel.style.clipPath =
-        `inset(${px(clippedTop)}px 0 ${px(clippedBottom)}px 0 round ${px(visualRadius)}px)`;
+        `inset(${px(clippedTop)}px 0 ${px(clippedBottom)}px 0 round ` +
+        `${px(topRadius)}px ${px(topRadius)}px ${px(visualRadius)}px ${px(visualRadius)}px)`;
       searchResultsPanel.style.transform = `translateY(${px(translateY)}px)`;
       searchBody.style.opacity = bodyProgress.toFixed(4);
       searchBody.style.transform = `translateY(${px(lerp(7, 0, bodyProgress))}px)`;
 
-      const fusionEnter = smootherstep(range(detachProgress, 0.01, 0.16));
-      const fusionRelease = 1 - smootherstep(range(detachProgress, 0.58, 0.96));
-      const unifiedMerge = fusionEnter * fusionRelease;
-      searchResultsPanel.style.setProperty("--search-surface-merge", unifiedMerge.toFixed(4));
-      searchResultsPanel.style.setProperty("--search-edge-opacity", (1 - unifiedMerge).toFixed(4));
-      this.elements.searchOpen.style.setProperty("--search-edge-opacity", (1 - unifiedMerge * 0.76).toFixed(4));
-
-      this.searchLiquidBlobs ||= {
-        top: searchMergeField.querySelector(".search-liquid-top-blob"),
-        results: searchMergeField.querySelector(".search-liquid-results-blob"),
-      };
-      searchMergeField.setAttribute("viewBox", `0 0 ${px(panelWidth)} 132`);
-      this.searchLiquidBlobs.top?.setAttribute("d", topMorphPath(0, 0, panelWidth, 56, geometry.bow));
-      this.searchLiquidBlobs.results?.setAttribute(
-        "d",
-        resultsMorphPath(0, resultTopY, panelWidth, 56, geometry.bow),
+      const surfacePresence = smootherstep(range(p, 0.015, 0.1));
+      const surfaceContact = 1 - smootherstep(range(detachProgress, 0.52, 0.96));
+      const surfaceMerge = surfacePresence * surfaceContact;
+      searchResultsPanel.style.setProperty("--search-surface-merge", surfaceMerge.toFixed(4));
+      searchResultsPanel.style.setProperty("--search-edge-opacity", (1 - surfaceMerge).toFixed(4));
+      searchResultsPanel.style.setProperty(
+        "--search-panel-strong-weight",
+        `${((1 - surfaceMerge) * 100).toFixed(2)}%`,
       );
-      searchMergeField.style.opacity = (unifiedMerge * 0.82).toFixed(4);
+      searchResultsPanel.style.setProperty(
+        "--search-panel-control-weight",
+        `${(surfaceMerge * 100).toFixed(2)}%`,
+      );
+      this.elements.searchOpen.style.setProperty("--search-surface-merge", surfaceMerge.toFixed(4));
+      this.elements.searchOpen.style.setProperty("--search-edge-opacity", (1 - surfaceMerge * 0.76).toFixed(4));
 
       const interactive = p > 0.94 && target === 1 && this.elements.searchModal.dataset.phase === "open";
       if (interactive !== this.searchResultsInteractive) {

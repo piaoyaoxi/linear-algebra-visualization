@@ -25,6 +25,7 @@
         searchBackdrop: document.querySelector("#searchModal .search-modal-backdrop"),
         searchPanel: document.querySelector("#searchModal .search-modal-panel"),
         searchBar: document.querySelector("#searchModal .search-modal-bar-anchor"),
+        searchMergeField: document.querySelector("#searchModal .search-results-merge-field"),
         searchResultsPanel: document.querySelector("#searchModal .search-results-panel"),
         searchBody: document.querySelector("#searchModal .search-modal-body"),
         searchInput: document.querySelector("#searchModalInput"),

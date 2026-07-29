@@ -300,6 +300,25 @@
       >
         <h2 class="visually-hidden" id="searchModalTitle">搜索课程内容</h2>
         <div class="search-modal-bar-anchor" aria-hidden="true"></div>
+        <svg class="search-results-merge-field" aria-hidden="true" preserveAspectRatio="none">
+          <defs>
+            <filter id="searchLiquidFusion" x="-12%" y="-32%" width="124%" height="164%" color-interpolation-filters="sRGB">
+              <feGaussianBlur in="SourceGraphic" stdDeviation="5 8" result="searchFusionBlur" />
+              <feColorMatrix
+                in="searchFusionBlur"
+                type="matrix"
+                values="0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 24 -16.3"
+                result="searchFusionAlpha"
+              />
+              <feFlood class="search-liquid-flood" result="searchFusionColor" />
+              <feComposite in="searchFusionColor" in2="searchFusionAlpha" operator="in" />
+            </filter>
+          </defs>
+          <g filter="url(#searchLiquidFusion)">
+            <path class="search-liquid-blob search-liquid-results-blob" />
+            <path class="search-liquid-blob search-liquid-top-blob" />
+          </g>
+        </svg>
         <div class="search-results-viewport">
           <div class="search-results-panel liquid-panel" aria-hidden="true" inert>
             <div class="search-modal-body" id="searchModalDescription" aria-live="polite"></div>

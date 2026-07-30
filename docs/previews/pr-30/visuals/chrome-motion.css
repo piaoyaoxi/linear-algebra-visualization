@@ -38,18 +38,18 @@
 body.dark {
   --glass-control-frost: 8px;
   --glass-panel-frost: 19px;
-  --liquid-fill: rgba(17, 29, 26, 0.5);
-  --liquid-fill-strong: rgba(12, 23, 20, 0.8);
-  --liquid-sidebar-fill: rgba(10, 20, 18, 0.88);
-  --liquid-border: rgba(255, 255, 255, 0.32);
-  --liquid-border-low: rgba(255, 255, 255, 0.11);
-  --liquid-highlight: rgba(255, 255, 255, 0.7);
-  --liquid-shadow: 0 18px 42px rgba(0, 0, 0, 0.38), 0 3px 10px rgba(0, 0, 0, 0.24);
-  --liquid-shadow-deep: 0 32px 82px rgba(0, 0, 0, 0.52), 0 5px 18px rgba(0, 0, 0, 0.3);
-  --liquid-cyan: rgba(87, 224, 214, 0.2);
-  --liquid-warm: rgba(255, 214, 132, 0.16);
-  --liquid-control-fallback: blur(var(--glass-control-frost)) saturate(128%) contrast(104%);
-  --liquid-panel-fallback: blur(var(--glass-panel-frost)) saturate(126%) contrast(104%);
+  --liquid-fill: rgba(23, 31, 26, 0.58);
+  --liquid-fill-strong: rgba(20, 28, 23, 0.85);
+  --liquid-sidebar-fill: rgba(16, 23, 19, 0.93);
+  --liquid-border: rgba(255, 255, 255, 0.24);
+  --liquid-border-low: rgba(255, 255, 255, 0.09);
+  --liquid-highlight: rgba(255, 255, 255, 0.64);
+  --liquid-shadow: 0 18px 42px rgba(0, 0, 0, 0.42), 0 3px 10px rgba(0, 0, 0, 0.26);
+  --liquid-shadow-deep: 0 32px 82px rgba(0, 0, 0, 0.56), 0 5px 18px rgba(0, 0, 0, 0.32);
+  --liquid-cyan: rgba(174, 198, 182, 0.13);
+  --liquid-warm: rgba(226, 211, 184, 0.08);
+  --liquid-control-fallback: blur(var(--glass-control-frost)) saturate(112%) contrast(104%);
+  --liquid-panel-fallback: blur(var(--glass-panel-frost)) saturate(110%) contrast(104%);
 }
 
 /* Inline SVG definitions are hidden layout infrastructure; their two lens

@@ -35,6 +35,17 @@
   backdrop-filter: none;
 }
 
+body.dark .icon-button::before,
+body.dark .topbar-search::before {
+  -webkit-backdrop-filter: url("#liquidGlassControl") blur(var(--glass-control-frost)) saturate(112%) contrast(104%);
+  backdrop-filter: url("#liquidGlassControl") blur(var(--glass-control-frost)) saturate(112%) contrast(104%);
+}
+
+body.dark .liquid-panel::before {
+  -webkit-backdrop-filter: url("#liquidGlassPanel") blur(var(--glass-panel-frost)) saturate(110%) contrast(104%);
+  backdrop-filter: url("#liquidGlassPanel") blur(var(--glass-panel-frost)) saturate(110%) contrast(104%);
+}
+
 /* Preserve a readable material when a browser accepts backdrop-filter but not
    SVG URL filters. Unsupported URL declarations are ignored and these explicit
    fallbacks take over without creating an empty or opaque surface. */

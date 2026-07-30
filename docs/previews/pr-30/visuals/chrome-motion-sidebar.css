@@ -147,7 +147,7 @@ body.sidebar-open .drawer-backdrop {
   position: fixed;
   inset: 0;
   z-index: 43;
-  background: color-mix(in srgb, var(--bg) 12%, rgba(4, 8, 7, 0.26));
+  background: color-mix(in srgb, var(--bg) 12%, rgba(4, 4, 4, 0.3));
   -webkit-backdrop-filter: blur(2px) saturate(112%);
   backdrop-filter: blur(2px) saturate(112%);
   opacity: 0;

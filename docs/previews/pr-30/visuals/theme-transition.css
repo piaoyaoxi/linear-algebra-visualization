@@ -77,11 +77,11 @@ body.theme-transitioning::before {
 
 .theme-transition[data-mode="luna"] {
   --theme-tx-from: #f4f1e8;
-  --theme-tx-to: #101714;
+  --theme-tx-to: #0c110e;
 }
 
 .theme-transition[data-mode="sol"] {
-  --theme-tx-from: #101714;
+  --theme-tx-from: #0c110e;
   --theme-tx-to: #f4f1e8;
 }
 

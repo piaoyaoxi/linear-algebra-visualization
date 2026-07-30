@@ -128,13 +128,13 @@ function drawCoverFrame(canvas, matrix) {
   };
 
   for (let i = -extent; i <= extent; i += 1) {
-    line(point(-extent, i), point(extent, i), "rgba(214,236,228,1)", 1, 0.05);
-    line(point(i, -extent), point(i, extent), "rgba(214,236,228,1)", 1, 0.05);
+    line(point(-extent, i), point(extent, i), "rgba(218,226,220,1)", 1, 0.045);
+    line(point(i, -extent), point(i, extent), "rgba(218,226,220,1)", 1, 0.045);
   }
   for (let i = -extent; i <= extent; i += 1) {
     const isAxis = i === 0;
-    line(point(-extent, i, true), point(extent, i, true), "rgba(95,227,211,1)", isAxis ? 1.6 : 1, isAxis ? 0.5 : 0.15);
-    line(point(i, -extent, true), point(i, extent, true), "rgba(232,195,117,1)", isAxis ? 1.6 : 1, isAxis ? 0.42 : 0.12);
+    line(point(-extent, i, true), point(extent, i, true), "rgba(127,158,137,1)", isAxis ? 1.6 : 1, isAxis ? 0.48 : 0.13);
+    line(point(i, -extent, true), point(i, extent, true), "rgba(166,147,109,1)", isAxis ? 1.6 : 1, isAxis ? 0.34 : 0.09);
   }
 
   const square = [point(0, 0, true), point(1, 0, true), point(1, 1, true), point(0, 1, true)];
@@ -143,15 +143,15 @@ function drawCoverFrame(canvas, matrix) {
   ctx.moveTo(square[0].x, square[0].y);
   square.slice(1).forEach((p) => ctx.lineTo(p.x, p.y));
   ctx.closePath();
-  ctx.fillStyle = "rgba(95,227,211,.07)";
-  ctx.strokeStyle = "rgba(95,227,211,.4)";
+  ctx.fillStyle = "rgba(127,158,137,.065)";
+  ctx.strokeStyle = "rgba(127,158,137,.36)";
   ctx.lineWidth = 1.2;
   ctx.fill();
   ctx.stroke();
   ctx.restore();
 
   ctx.save();
-  ctx.fillStyle = "rgba(150,226,210,.2)";
+  ctx.fillStyle = "rgba(127,158,137,.16)";
   for (let i = -4; i <= 4; i += 1) {
     for (let j = -4; j <= 4; j += 1) {
       if (i === 0 && j === 0) continue;
@@ -164,14 +164,14 @@ function drawCoverFrame(canvas, matrix) {
   ctx.restore();
 
   ctx.save();
-  ctx.shadowColor = "rgba(95,227,211,.6)";
+  ctx.shadowColor = "rgba(127,158,137,.44)";
   ctx.shadowBlur = 16;
-  drawArrow(ctx, origin, point(1, 0, true), "#5fe3d3", "e₁");
-  ctx.shadowColor = "rgba(232,195,117,.55)";
-  drawArrow(ctx, origin, point(0, 1, true), "#e8c375", "e₂");
+  drawArrow(ctx, origin, point(1, 0, true), "#a9bdaf", "e₁");
+  ctx.shadowColor = "rgba(166,147,109,.4)";
+  drawArrow(ctx, origin, point(0, 1, true), "#b29d77", "e₂");
   ctx.restore();
 
-  ctx.fillStyle = "rgba(240,250,246,.9)";
+  ctx.fillStyle = "rgba(237,241,236,.9)";
   ctx.beginPath();
   ctx.arc(origin.x, origin.y, 3.4, 0, Math.PI * 2);
   ctx.fill();

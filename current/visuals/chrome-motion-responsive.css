@@ -1,0 +1,149 @@
+/* --------------------------------------------------------------------------
+   Responsive
+   -------------------------------------------------------------------------- */
+
+@media (max-width: 1080px) {
+  :root {
+    --chrome-search-width: min(390px, calc(100vw - 300px));
+  }
+}
+
+@media (max-width: 920px) {
+  :root {
+    --chrome-top: 10px;
+    --chrome-side: 12px;
+    --chrome-search-width: min(430px, calc(100vw - 142px));
+    --chrome-sidebar-width: min(84vw, 318px);
+  }
+
+  .topbar-right {
+    gap: 6px;
+  }
+
+  .search-modal-panel,
+  body.dark .search-modal-panel {
+    top: clamp(78px, 11vh, 108px);
+    height: min(430px, calc(100dvh - 132px));
+  }
+
+  body.sidebar-layer-active {
+    overflow: hidden;
+  }
+}
+
+@media (max-width: 620px) {
+  :root {
+    --chrome-control-size: 42px;
+    --chrome-control-radius: 14px;
+    --chrome-search-width: auto;
+  }
+
+  .topbar-center {
+    right: calc(var(--chrome-control-size) + var(--chrome-control-size) + 13px);
+    left: calc(var(--chrome-control-size) + 8px);
+    width: auto;
+    transform: none;
+    transition: opacity 180ms ease, transform 220ms var(--chrome-ease-morph);
+  }
+
+  body.language-layer-active .topbar-center {
+    opacity: 0;
+    transform: translateY(-5px) scale(0.985);
+    pointer-events: none;
+  }
+
+  .topbar-search,
+  body.dark .topbar-search {
+    gap: 8px;
+    padding: 0 13px;
+    font-size: 13px;
+  }
+
+  .topbar-search svg {
+    width: 17px;
+    height: 17px;
+  }
+
+  .search-modal-panel,
+  body.dark .search-modal-panel {
+    top: 72px;
+    width: calc(100vw - 20px);
+    height: min(440px, calc(100dvh - 92px));
+  }
+
+  .search-results-panel {
+    --search-results-radius: 21px;
+  }
+
+  .search-modal-body {
+    padding: 14px;
+  }
+
+  .language-menu,
+  body.dark .language-menu {
+    padding: 7px;
+  }
+
+  .language-option {
+    min-height: 39px;
+    padding-inline: 9px;
+  }
+}
+
+@media (max-width: 390px) {
+  :root {
+    --chrome-side: 9px;
+    --chrome-search-width: auto;
+  }
+
+  .topbar-right {
+    gap: 5px;
+  }
+
+  .topbar-search,
+  body.dark .topbar-search {
+    gap: 7px;
+    justify-content: flex-start;
+    padding-inline: 11px;
+  }
+}
+
+@media (prefers-contrast: more) {
+  :root {
+    --liquid-border: color-mix(in srgb, #fff 82%, var(--line-strong));
+    --liquid-border-low: color-mix(in srgb, var(--line-strong) 82%, transparent);
+  }
+
+  .icon-button::after,
+  .topbar-search::after,
+  .liquid-panel::after {
+    box-shadow:
+      inset 0 1.4px 0 color-mix(in srgb, var(--liquid-highlight) 88%, transparent),
+      inset 0 -1px 0 var(--liquid-border-low);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .icon-button,
+  .topbar-search,
+  .search-close-button,
+  .search-result-link,
+  .language-check {
+    transition-duration: 1ms !important;
+  }
+}
+
+/* Preserve compact desktop teaching controls while giving fingers a reliable
+   target on touch-first devices. Range tracks keep their visual thickness;
+   only the interactive hit box grows. */
+@media (pointer: coarse) {
+  .content button,
+  .content select,
+  .content input:not([type="checkbox"]):not([type="radio"]):not([type="hidden"]) {
+    min-height: 44px !important;
+  }
+
+  .content input[type="range"] {
+    height: 44px !important;
+  }
+}

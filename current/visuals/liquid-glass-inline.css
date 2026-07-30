@@ -1,0 +1,61 @@
+/*
+ * Inline SVG optical pass.
+ *
+ * The base styles keep a plain blur fallback and an external SVG reference.
+ * This later sheet prefers the inline filters in learn.html. Only ::before
+ * samples the backdrop. The edge layer is deliberately paint-only so controls
+ * always read as one continuous piece of glass.
+ */
+
+:root {
+  --glass-edge-width: 1px;
+}
+
+.icon-button::before,
+.topbar-search::before {
+  -webkit-backdrop-filter: url("#liquidGlassControl") blur(var(--glass-control-frost)) saturate(134%) contrast(102%);
+  backdrop-filter: url("#liquidGlassControl") blur(var(--glass-control-frost)) saturate(134%) contrast(102%);
+}
+
+.icon-button::after,
+.topbar-search::after {
+  padding: var(--glass-edge-width);
+  -webkit-backdrop-filter: none;
+  backdrop-filter: none;
+}
+
+.liquid-panel::before {
+  -webkit-backdrop-filter: url("#liquidGlassPanel") blur(var(--glass-panel-frost)) saturate(130%) contrast(102%);
+  backdrop-filter: url("#liquidGlassPanel") blur(var(--glass-panel-frost)) saturate(130%) contrast(102%);
+}
+
+.liquid-panel::after {
+  padding: var(--glass-edge-width);
+  -webkit-backdrop-filter: none;
+  backdrop-filter: none;
+}
+
+body.dark .icon-button::before,
+body.dark .topbar-search::before {
+  -webkit-backdrop-filter: url("#liquidGlassControl") blur(var(--glass-control-frost)) saturate(112%) contrast(104%);
+  backdrop-filter: url("#liquidGlassControl") blur(var(--glass-control-frost)) saturate(112%) contrast(104%);
+}
+
+body.dark .liquid-panel::before {
+  -webkit-backdrop-filter: url("#liquidGlassPanel") blur(var(--glass-panel-frost)) saturate(110%) contrast(104%);
+  backdrop-filter: url("#liquidGlassPanel") blur(var(--glass-panel-frost)) saturate(110%) contrast(104%);
+}
+
+/* Preserve a readable material when a browser accepts backdrop-filter but not
+   SVG URL filters. Unsupported URL declarations are ignored and these explicit
+   fallbacks take over without creating an empty or opaque surface. */
+:root[data-liquid-optics="fallback"] .icon-button::before,
+:root[data-liquid-optics="fallback"] .topbar-search::before {
+  -webkit-backdrop-filter: var(--liquid-control-fallback);
+  backdrop-filter: var(--liquid-control-fallback);
+}
+
+:root[data-liquid-optics="fallback"] .liquid-panel::before {
+  -webkit-backdrop-filter: var(--liquid-panel-fallback);
+  backdrop-filter: var(--liquid-panel-fallback);
+}

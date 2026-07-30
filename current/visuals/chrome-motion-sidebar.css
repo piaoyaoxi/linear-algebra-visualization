@@ -1,0 +1,156 @@
+/* --------------------------------------------------------------------------
+   Sidebar: a composited transform over the same continuous panel material
+   -------------------------------------------------------------------------- */
+
+body.chrome-motion-ready .sidebar,
+body.chrome-motion-ready.sidebar-collapsed .sidebar,
+body.chrome-motion-ready:not(.sidebar-collapsed) .sidebar,
+body.chrome-motion-ready.sidebar-open .sidebar {
+  position: fixed;
+  top: var(--chrome-top);
+  left: var(--chrome-side);
+  z-index: 48;
+  display: block !important;
+  width: var(--chrome-sidebar-width);
+  height: calc(100dvh - var(--chrome-top) - 14px);
+  min-height: 0;
+  padding: 0;
+  overflow: visible;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+  -webkit-backdrop-filter: none;
+  backdrop-filter: none;
+  opacity: 1;
+  visibility: visible;
+  pointer-events: none;
+  transform: translate3d(calc(-100% - 42px), 0, 0);
+  transition: none;
+  will-change: transform, opacity;
+}
+
+body.chrome-motion-ready .sidebar[data-phase="open"],
+body.chrome-motion-ready .sidebar[data-phase="opening"],
+body.chrome-motion-ready .sidebar[data-phase="closing"] {
+  visibility: visible;
+}
+
+body.chrome-motion-ready .sidebar[data-phase="open"] {
+  pointer-events: auto;
+}
+
+.sidebar-surface,
+body.dark .sidebar-surface {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  height: 100%;
+  min-height: 0;
+  overflow: hidden;
+  border-radius: var(--chrome-sidebar-radius);
+  transform: translateZ(0);
+}
+
+.sidebar-surface::before,
+body.dark .sidebar-surface::before {
+  background-color: var(--liquid-sidebar-fill);
+}
+
+.sidebar-header {
+  position: relative;
+  z-index: 3;
+  display: grid;
+  grid-template-columns: 57px minmax(0, 1fr);
+  align-items: center;
+  min-height: 58px;
+  padding: 0 10px 0 0;
+  border-bottom: 1px solid color-mix(in srgb, var(--line-strong) 40%, transparent);
+}
+
+.sidebar-toggle-slot {
+  width: 57px;
+  height: 100%;
+}
+
+.sidebar-header .sidebar-brand,
+body.dark .sidebar-header .sidebar-brand {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 58px;
+  margin: 0;
+  padding: 12px 16px 12px 5px;
+  border: 0;
+  color: var(--accent-strong);
+  opacity: 1;
+  will-change: opacity, transform;
+}
+
+.sidebar-header .sidebar-brand::after {
+  inset: 14px 16px 14px 5px;
+}
+
+.sidebar-header .sidebar-brand-mark {
+  width: min(100%, 194px);
+  max-height: 30px;
+}
+
+.sidebar .sidebar-scroll {
+  position: relative;
+  z-index: 3;
+  flex: 1 1 auto;
+  min-height: 0;
+  padding: 12px 13px 16px;
+  overflow: auto;
+  overscroll-behavior: contain;
+  scrollbar-width: thin;
+  scrollbar-color: color-mix(in srgb, var(--accent) 20%, transparent) transparent;
+  will-change: opacity, transform;
+}
+
+.sidebar .chapter-nav {
+  gap: 6px;
+}
+
+#sidebarToggle {
+  z-index: 58;
+}
+
+#sidebarToggle::before,
+#sidebarToggle::after {
+  transition: opacity 170ms ease;
+}
+
+body.sidebar-panel-active #sidebarToggle {
+  box-shadow: none;
+}
+
+body.sidebar-panel-active #sidebarToggle::before,
+body.sidebar-panel-active #sidebarToggle::after {
+  opacity: 0;
+}
+
+#sidebarToggle .menu-line {
+  transform-box: fill-box;
+  transform-origin: center;
+  will-change: transform;
+}
+
+/* The previous implementation animated a full-viewport filtered clip-path on
+   every frame. Apart from producing a second glass surface, that forced large
+   repaints. The drawer now moves as one composited panel. */
+.drawer-backdrop,
+body.sidebar-open .drawer-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 43;
+  background: color-mix(in srgb, var(--bg) 12%, rgba(4, 4, 4, 0.3));
+  -webkit-backdrop-filter: blur(2px) saturate(112%);
+  backdrop-filter: blur(2px) saturate(112%);
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+}

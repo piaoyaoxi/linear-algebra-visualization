@@ -79,9 +79,7 @@ const els = {
   nav: document.querySelector("#chapterNav"),
   main: document.querySelector("#mainContent"),
   toc: document.querySelector("#pageToc"),
-  sidebarToggle: document.querySelector("#sidebarToggle"),
   themeToggle: document.querySelector("#themeToggle"),
-  drawerBackdrop: document.querySelector("#drawerBackdrop"),
 };
 
 const SUN_ICON = `
@@ -208,8 +206,8 @@ function init() {
   const savedTheme = localStorage.getItem("la-visual-theme");
   if (savedTheme === "dark") document.body.classList.add("dark");
 
-  const collapsed = localStorage.getItem("la-visual-sidebar") === "collapsed";
-  if (collapsed) document.body.classList.add("sidebar-collapsed");
+  const sidebarPreference = localStorage.getItem("la-visual-sidebar");
+  if (sidebarPreference !== "open") document.body.classList.add("sidebar-collapsed");
 
   updateThemeIcon();
   renderNav();
@@ -228,21 +226,7 @@ function init() {
 function bindChrome() {
   window.addEventListener("resize", () => drawTransformCanvas(), { passive: true });
 
-  els.sidebarToggle.addEventListener("click", () => {
-    if (window.matchMedia("(max-width: 920px)").matches) {
-      document.body.classList.toggle("sidebar-open");
-      return;
-    }
-    document.body.classList.toggle("sidebar-collapsed");
-    localStorage.setItem(
-      "la-visual-sidebar",
-      document.body.classList.contains("sidebar-collapsed") ? "collapsed" : "open",
-    );
-  });
-
-  els.drawerBackdrop.addEventListener("click", () => {
-    document.body.classList.remove("sidebar-open");
-  });
+  window.chromeMotion = window.createChromeMotionController?.() || null;
 
   els.themeToggle.addEventListener("click", () => {
     document.body.classList.toggle("dark");
@@ -251,37 +235,6 @@ function bindChrome() {
     drawTransformCanvas();
   });
 
-  bindSearchModal();
-}
-
-function bindSearchModal() {
-  const openBtn = document.querySelector("#searchOpen");
-  const modal = document.querySelector("#searchModal");
-  const input = document.querySelector("#searchModalInput");
-  if (!openBtn || !modal) return;
-
-  function openSearch() {
-    modal.hidden = false;
-    document.body.classList.add("search-modal-open");
-    queueMicrotask(() => input?.focus());
-  }
-
-  function closeSearch() {
-    modal.hidden = true;
-    document.body.classList.remove("search-modal-open");
-    openBtn.focus();
-  }
-
-  openBtn.addEventListener("click", openSearch);
-  modal.querySelectorAll("[data-search-close]").forEach((el) => {
-    el.addEventListener("click", closeSearch);
-  });
-  document.addEventListener("keydown", (event) => {
-    if (event.key === "Escape" && !modal.hidden) {
-      event.preventDefault();
-      closeSearch();
-    }
-  });
 }
 
 function updateThemeIcon() {
@@ -401,7 +354,7 @@ function renderRoute() {
   updateDocumentTitle(chapter);
   updateNavActive();
   buildPageToc();
-  document.body.classList.remove("sidebar-open");
+  window.chromeMotion?.closeForRouteChange();
 
   window.requestAnimationFrame(() => {
     setupInteractiveBlocks();

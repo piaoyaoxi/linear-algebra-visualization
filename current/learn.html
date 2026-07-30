@@ -8,19 +8,19 @@
     <link rel="preload" as="image" href="./assets/theme/luna-alpha.webp?v=21h" />
     <link rel="preload" as="image" href="./assets/theme/sol-alpha.webp?v=21h" />
     <link rel="stylesheet" href="./vendor/katex/katex.min.css" />
-    <link rel="stylesheet" href="./styles.css?v=21k" />
+    <link rel="stylesheet" href="./styles.css?v=21m" />
     <link rel="stylesheet" href="./learn-layout.css?v=21i" />
     <link rel="stylesheet" href="./search-modal-a11y.css" />
-    <link rel="stylesheet" href="./guide.css?v=21i" />
-    <link rel="stylesheet" href="./visuals/lesson-presentation.css" />
+    <link rel="stylesheet" href="./guide.css?v=21k" />
+    <link rel="stylesheet" href="./visuals/lesson-presentation.css?v=dark2" />
     <link rel="stylesheet" href="./visuals/example-challenge.css" />
     <link rel="stylesheet" href="./visuals/ch4/section1-presentation.css?v=21i" />
     <link rel="stylesheet" href="./visuals/ch4/section2-presentation.css?v=21i" />
     <link rel="stylesheet" href="./visuals/ch4/section2-continuous.css?v=21i" />
-    <link rel="stylesheet" href="./visuals/ch4/core-presentation.css" />
+    <link rel="stylesheet" href="./visuals/ch4/core-presentation.css?v=dark2" />
     <link rel="stylesheet" href="./visuals/ch4/section3-presentation.css?v=22a" />
     <link rel="stylesheet" href="./visuals/ch4/section4-presentation.css?v=32a" />
-    <link rel="stylesheet" href="./visuals/ch4/block-presentation.css" />
+    <link rel="stylesheet" href="./visuals/ch4/block-presentation.css?v=dark2" />
     <link rel="stylesheet" href="./visuals/ch1/core-presentation.css?v=ch1d" />
     <link rel="stylesheet" href="./visuals/ch1/final-polish.css?v=ch1-polish1" />
     <link rel="stylesheet" href="./visuals/ch1/motion-upgrade.css?v=ch1-motion1" />
@@ -36,11 +36,25 @@
     <link rel="stylesheet" href="./visuals/ch5/geometry-orbit.css?v=ch5g2" />
     <link rel="stylesheet" href="./visuals/ch5/geometry-orbit-fit.css?v=ch5g3" />
     <link rel="stylesheet" href="./visuals/page-toc-rail.css?v=21i" />
-    <link rel="stylesheet" href="./visuals/theme-transition.css?v=21i" />
+    <link rel="stylesheet" href="./visuals/theme-transition.css?v=21k" />
+    <link rel="stylesheet" href="./visuals/chrome-motion.css?v=30r" />
+    <link rel="stylesheet" href="./visuals/chrome-motion-search.css?v=30v" />
+    <link rel="stylesheet" href="./visuals/chrome-motion-language.css?v=30p" />
+    <link rel="stylesheet" href="./visuals/chrome-motion-sidebar.css?v=30k" />
+    <link rel="stylesheet" href="./visuals/liquid-glass-inline.css?v=30p" />
+    <link rel="stylesheet" href="./visuals/chrome-motion-responsive.css?v=30n" />
     <script defer src="./vendor/katex/katex.min.js"></script>
-    <script defer src="./app.js?v=ch1-ch5"></script>
-    <script defer src="./visuals/theme-transition.js?v=21i"></script>
-    <script defer src="./search-modal-state.js"></script>
+    <script defer src="./visuals/chrome-motion-optics.js?v=30i"></script>
+    <script defer src="./visuals/chrome-motion-runtime.js?v=30i"></script>
+    <script defer src="./visuals/chrome-motion-controller.js?v=30t"></script>
+    <script defer src="./visuals/chrome-motion-events.js?v=30o"></script>
+    <script defer src="./visuals/chrome-motion-lifecycle.js?v=30o"></script>
+    <script defer src="./visuals/chrome-motion-search.js?v=30t"></script>
+    <script defer src="./visuals/chrome-motion-language.js?v=30p"></script>
+    <script defer src="./visuals/chrome-motion-sidebar.js?v=30i"></script>
+    <script defer src="./visuals/chrome-motion.js?v=30i"></script>
+    <script defer src="./app.js?v=30p-ch1-ch5"></script>
+    <script defer src="./visuals/theme-transition.js?v=21k"></script>
     <script defer src="./content/ch1-registry.js"></script>
     <script defer src="./content/ch1-section1.js"></script>
     <script defer src="./content/ch1-section2.js"></script>
@@ -110,44 +124,134 @@
     <script defer src="./content/ch8.js"></script>
     <script defer src="./content/ch9.js"></script>
     <script defer src="./content/ch10.js"></script>
-    <script defer src="./learn-entry.js?v=ch1-ch5"></script>
+    <script defer src="./visuals/search-index.js?v=30o"></script>
+    <script defer src="./learn-entry.js?v=30p-ch1-ch5"></script>
     <script defer src="./learn-placeholder.js"></script>
     <script defer src="./guide-nav.js"></script>
     <script defer src="./visuals/page-toc-rail.js?v=21i"></script>
   </head>
   <body>
+    <svg class="liquid-filter-defs" width="0" height="0" aria-hidden="true" focusable="false">
+      <defs>
+        <image
+          id="liquidLensXSource"
+          width="256"
+          height="128"
+          preserveAspectRatio="none"
+          href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyNTYiIGhlaWdodD0iMTI4IiB2aWV3Qm94PSIwIDAgMjU2IDEyOCIgcHJlc2VydmVBc3BlY3RSYXRpbz0ibm9uZSI+CjxkZWZzPjxsaW5lYXJHcmFkaWVudCBpZD0iZyIgeDE9IjAiIHkxPSIwIiB4Mj0iMSIgeTI9IjAiPgo8c3RvcCBvZmZzZXQ9IjAiIHN0b3AtY29sb3I9InJnYigxOCwxMjgsMTI4KSIvPgo8c3RvcCBvZmZzZXQ9Ii4xNiIgc3RvcC1jb2xvcj0icmdiKDYyLDEyOCwxMjgpIi8+CjxzdG9wIG9mZnNldD0iLjM4IiBzdG9wLWNvbG9yPSJyZ2IoMTE2LDEyOCwxMjgpIi8+CjxzdG9wIG9mZnNldD0iLjQ3IiBzdG9wLWNvbG9yPSJyZ2IoMTI2LDEyOCwxMjgpIi8+CjxzdG9wIG9mZnNldD0iLjUzIiBzdG9wLWNvbG9yPSJyZ2IoMTMwLDEyOCwxMjgpIi8+CjxzdG9wIG9mZnNldD0iLjYyIiBzdG9wLWNvbG9yPSJyZ2IoMTQwLDEyOCwxMjgpIi8+CjxzdG9wIG9mZnNldD0iLjg0IiBzdG9wLWNvbG9yPSJyZ2IoMTk0LDEyOCwxMjgpIi8+CjxzdG9wIG9mZnNldD0iMSIgc3RvcC1jb2xvcj0icmdiKDIzOCwxMjgsMTI4KSIvPgo8L2xpbmVhckdyYWRpZW50PjwvZGVmcz48cmVjdCB3aWR0aD0iMjU2IiBoZWlnaHQ9IjEyOCIgZmlsbD0idXJsKCNnKSIvPjwvc3ZnPg=="
+        />
+        <image
+          id="liquidLensYSource"
+          width="256"
+          height="128"
+          preserveAspectRatio="none"
+          href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyNTYiIGhlaWdodD0iMTI4IiB2aWV3Qm94PSIwIDAgMjU2IDEyOCIgcHJlc2VydmVBc3BlY3RSYXRpbz0ibm9uZSI+CjxkZWZzPjxsaW5lYXJHcmFkaWVudCBpZD0iZyIgeDE9IjAiIHkxPSIwIiB4Mj0iMCIgeTI9IjEiPgo8c3RvcCBvZmZzZXQ9IjAiIHN0b3AtY29sb3I9InJnYigxMjgsMjIsMTI4KSIvPgo8c3RvcCBvZmZzZXQ9Ii4xNiIgc3RvcC1jb2xvcj0icmdiKDEyOCw2OCwxMjgpIi8+CjxzdG9wIG9mZnNldD0iLjM4IiBzdG9wLWNvbG9yPSJyZ2IoMTI4LDExOCwxMjgpIi8+CjxzdG9wIG9mZnNldD0iLjQ3IiBzdG9wLWNvbG9yPSJyZ2IoMTI4LDEyNiwxMjgpIi8+CjxzdG9wIG9mZnNldD0iLjUzIiBzdG9wLWNvbG9yPSJyZ2IoMTI4LDEzMCwxMjgpIi8+CjxzdG9wIG9mZnNldD0iLjYyIiBzdG9wLWNvbG9yPSJyZ2IoMTI4LDEzOCwxMjgpIi8+CjxzdG9wIG9mZnNldD0iLjg0IiBzdG9wLWNvbG9yPSJyZ2IoMTI4LDE4OCwxMjgpIi8+CjxzdG9wIG9mZnNldD0iMSIgc3RvcC1jb2xvcj0icmdiKDEyOCwyMzQsMTI4KSIvPgo8L2xpbmVhckdyYWRpZW50PjwvZGVmcz48cmVjdCB3aWR0aD0iMjU2IiBoZWlnaHQ9IjEyOCIgZmlsbD0idXJsKCNnKSIvPjwvc3ZnPg=="
+        />
+
+        <filter id="liquidGlassControl" x="-12%" y="-24%" width="124%" height="148%" color-interpolation-filters="sRGB">
+          <feImage href="#liquidLensXSource" x="0" y="0" width="100%" height="100%" preserveAspectRatio="none" result="lensX" />
+          <feImage href="#liquidLensYSource" x="0" y="0" width="100%" height="100%" preserveAspectRatio="none" result="lensY" />
+          <feComposite in="lensX" in2="lensY" operator="arithmetic" k1="0" k2="1" k3="1" k4="-0.5" result="lensField" />
+          <feTurbulence type="fractalNoise" baseFrequency="0.011 0.058" numOctaves="2" seed="19" stitchTiles="stitch" result="microNoise" />
+          <feColorMatrix in="microNoise" values="0.12 0 0 0 0.44  0 0.12 0 0 0.44  0 0 0.04 0 0.48  0 0 0 1 0" result="microField" />
+          <feComposite in="lensField" in2="microField" operator="arithmetic" k1="0" k2="0.94" k3="0.06" k4="0" result="displacementField" />
+          <feDisplacementMap in="SourceGraphic" in2="displacementField" scale="-30" xChannelSelector="R" yChannelSelector="G" />
+        </filter>
+
+        <filter id="liquidGlassPanel" x="-10%" y="-14%" width="120%" height="128%" color-interpolation-filters="sRGB">
+          <feImage href="#liquidLensXSource" x="0" y="0" width="100%" height="100%" preserveAspectRatio="none" result="lensX" />
+          <feImage href="#liquidLensYSource" x="0" y="0" width="100%" height="100%" preserveAspectRatio="none" result="lensY" />
+          <feComposite in="lensX" in2="lensY" operator="arithmetic" k1="0" k2="1" k3="1" k4="-0.5" result="lensField" />
+          <feTurbulence type="fractalNoise" baseFrequency="0.008 0.036" numOctaves="2" seed="23" stitchTiles="stitch" result="microNoise" />
+          <feColorMatrix in="microNoise" values="0.10 0 0 0 0.45  0 0.10 0 0 0.45  0 0 0.03 0 0.485  0 0 0 1 0" result="microField" />
+          <feComposite in="lensField" in2="microField" operator="arithmetic" k1="0" k2="0.96" k3="0.04" k4="0" result="displacementField" />
+          <feDisplacementMap in="SourceGraphic" in2="displacementField" scale="-44" xChannelSelector="R" yChannelSelector="G" />
+        </filter>
+
+      </defs>
+    </svg>
+
     <header class="topbar">
-      <button class="icon-button" id="sidebarToggle" type="button" aria-label="切换目录" title="切换目录">
+      <button
+        class="icon-button liquid-control"
+        id="sidebarToggle"
+        type="button"
+        aria-label="打开章节目录"
+        aria-controls="sidebar"
+        aria-expanded="false"
+        title="章节目录"
+      >
         <svg viewBox="0 0 24 24" aria-hidden="true">
-          <path d="M5 7h14" />
-          <path d="M5 12h14" />
-          <path d="M5 17h14" />
+          <path class="menu-line menu-line-top" d="M5.25 7.25h13.5" />
+          <path class="menu-line menu-line-mid" d="M5.25 12h13.5" />
+          <path class="menu-line menu-line-bottom" d="M5.25 16.75h13.5" />
         </svg>
       </button>
       <div class="topbar-center">
-        <button
-          class="topbar-search"
-          id="searchOpen"
-          type="button"
-          aria-haspopup="dialog"
-          aria-controls="searchModal"
-          aria-expanded="false"
-        >
-          <svg viewBox="0 0 24 24" aria-hidden="true">
-            <circle cx="11" cy="11" r="6.5" />
-            <path d="m16.2 16.2 4.3 4.3" />
-          </svg>
-          <span class="topbar-search-text">搜索</span>
-        </button>
+        <div class="search-capsule-stage" id="searchCapsule">
+          <button
+            class="topbar-search liquid-control is-interactive"
+            id="searchOpen"
+            type="button"
+            aria-haspopup="dialog"
+            aria-controls="searchModal"
+            aria-expanded="false"
+            aria-label="搜索课程内容"
+          >
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+              <circle cx="11" cy="11" r="6.5" />
+              <path d="m16.2 16.2 4.3 4.3" />
+            </svg>
+            <span class="topbar-search-text">搜索</span>
+          </button>
+          <div class="search-capsule-open" aria-hidden="true">
+            <svg class="search-modal-icon" viewBox="0 0 24 24" aria-hidden="true">
+              <circle cx="11" cy="11" r="6.5" />
+              <path d="m16.2 16.2 4.3 4.3" />
+            </svg>
+            <input
+              id="searchModalInput"
+              type="search"
+              aria-label="搜索课程内容"
+              placeholder="搜索章节、概念或关键词"
+              autocomplete="off"
+              enterkeyhint="search"
+              tabindex="-1"
+            />
+            <button class="search-close-button" id="searchCloseButton" type="button" data-search-close aria-label="关闭搜索" title="关闭搜索" tabindex="-1">
+              <svg viewBox="0 0 20 20" aria-hidden="true"><path d="m5.25 5.25 9.5 9.5M14.75 5.25l-9.5 9.5" /></svg>
+            </button>
+          </div>
+        </div>
       </div>
       <div class="topbar-right">
-        <button class="icon-button lang-button" id="langToggle" type="button" aria-label="切换显示语言" title="切换语言">
-          <span class="lang-button-mark" aria-hidden="true">
-            <span class="lang-zh">文</span>
-            <span class="lang-en">A</span>
-          </span>
-        </button>
-        <button class="icon-button" id="themeToggle" type="button" aria-label="切换明暗外观" title="切换明暗外观">
+        <div class="language-control" id="languageControl" data-phase="closed">
+          <div class="language-menu liquid-panel" id="languageMenu" role="menu" aria-label="界面语言" aria-hidden="true" inert>
+            <div class="language-menu-heading" aria-hidden="true">界面语言</div>
+            <button class="language-option" type="button" role="menuitemradio" data-lang="zh-CN" aria-checked="true" tabindex="-1">
+              <span class="language-check" aria-hidden="true">
+                <svg viewBox="0 0 16 16"><path d="m3.2 8.2 2.8 2.7 6.7-6.5" /></svg>
+              </span>
+              <span>简体中文</span>
+            </button>
+          </div>
+          <button
+            class="icon-button liquid-control language-trigger"
+            id="langToggle"
+            type="button"
+            aria-label="查看界面语言：简体中文"
+            aria-controls="languageMenu"
+            aria-haspopup="menu"
+            aria-expanded="false"
+            title="界面语言"
+          >
+            <svg class="language-globe" viewBox="0 0 24 24" aria-hidden="true">
+              <circle cx="12" cy="12" r="8.15" />
+              <path class="globe-detail" d="M3.85 12h16.3M12 3.85c2.15 2.2 3.3 4.9 3.3 8.15S14.15 17.95 12 20.15M12 3.85C9.85 6.05 8.7 8.75 8.7 12s1.15 5.95 3.3 8.15" />
+            </svg>
+          </button>
+        </div>
+        <button class="icon-button liquid-control" id="themeToggle" type="button" aria-label="切换明暗外观" title="切换明暗外观">
           <svg viewBox="0 0 24 24" aria-hidden="true">
             <circle cx="12" cy="12" r="4" />
             <path d="M12 3.2v1.8" />
@@ -164,12 +268,17 @@
     </header>
 
     <div class="app-layout">
-      <aside class="sidebar" id="sidebar">
-        <div class="sidebar-scroll">
-          <a class="sidebar-brand" href="./index.html" aria-label="Linear Algebra，返回封面" title="返回封面">
-            <img class="sidebar-brand-mark" src="./assets/brand/linear-algebra.png" alt="Linear Algebra" draggable="false" />
-          </a>
-          <nav class="chapter-nav" id="chapterNav" aria-label="章节目录"></nav>
+      <aside class="sidebar" id="sidebar" aria-label="章节目录" aria-hidden="true" inert data-phase="closed">
+        <div class="sidebar-surface liquid-panel">
+          <div class="sidebar-header">
+            <div class="sidebar-toggle-slot" aria-hidden="true"></div>
+            <a class="sidebar-brand" href="./index.html" aria-label="Linear Algebra，返回封面" title="返回封面">
+              <img class="sidebar-brand-mark" src="./assets/brand/linear-algebra.png" alt="Linear Algebra" draggable="false" />
+            </a>
+          </div>
+          <div class="sidebar-scroll">
+            <nav class="chapter-nav" id="chapterNav" aria-label="章节目录"></nav>
+          </div>
         </div>
       </aside>
 
@@ -177,33 +286,44 @@
     </div>
 
     <aside class="page-toc" id="pageToc" aria-label="当前页目录"></aside>
-    <div class="drawer-backdrop" id="drawerBackdrop"></div>
+    <div class="drawer-backdrop" id="drawerBackdrop" aria-hidden="true"></div>
 
-    <div class="search-modal" id="searchModal" hidden>
-      <div class="search-modal-backdrop" data-search-close tabindex="-1"></div>
+    <div class="search-modal" id="searchModal" hidden data-phase="closed">
+      <div class="search-modal-backdrop" data-search-close tabindex="-1" aria-hidden="true"></div>
       <div
         class="search-modal-panel"
         role="dialog"
         aria-modal="true"
         aria-labelledby="searchModalTitle"
         aria-describedby="searchModalDescription"
+        aria-owns="searchCapsule"
       >
         <h2 class="visually-hidden" id="searchModalTitle">搜索课程内容</h2>
-        <div class="search-modal-bar">
-          <svg viewBox="0 0 24 24" aria-hidden="true">
-            <circle cx="11" cy="11" r="6.5" />
-            <path d="m16.2 16.2 4.3 4.3" />
-          </svg>
-          <input
-            id="searchModalInput"
-            type="search"
-            aria-label="搜索课程内容"
-            placeholder="搜索"
-            autocomplete="off"
-            enterkeyhint="search"
-          />
+        <div class="search-modal-bar-anchor" aria-hidden="true"></div>
+        <svg class="search-results-merge-field" aria-hidden="true" preserveAspectRatio="none">
+          <defs>
+            <filter id="searchLiquidFusion" x="-12%" y="-32%" width="124%" height="164%" color-interpolation-filters="sRGB">
+              <feGaussianBlur in="SourceGraphic" stdDeviation="5 8" result="searchFusionBlur" />
+              <feColorMatrix
+                in="searchFusionBlur"
+                type="matrix"
+                values="0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 24 -16.3"
+                result="searchFusionAlpha"
+              />
+              <feFlood class="search-liquid-flood" result="searchFusionColor" />
+              <feComposite in="searchFusionColor" in2="searchFusionAlpha" operator="in" />
+            </filter>
+          </defs>
+          <g filter="url(#searchLiquidFusion)">
+            <path class="search-liquid-blob search-liquid-results-blob" />
+            <path class="search-liquid-blob search-liquid-top-blob" />
+          </g>
+        </svg>
+        <div class="search-results-viewport">
+          <div class="search-results-panel liquid-panel" aria-hidden="true" inert>
+            <div class="search-modal-body" id="searchModalDescription" aria-live="polite"></div>
+          </div>
         </div>
-        <div class="search-modal-body" id="searchModalDescription">输入章节名称、概念或关键词。</div>
       </div>
     </div>
   </body>

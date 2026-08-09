@@ -47,6 +47,80 @@
   color: var(--accent-strong);
 }
 
+.ch2-prediction {
+  display: grid;
+  grid-template-columns: minmax(180px, 0.9fr) minmax(260px, 1.1fr);
+  gap: 10px 16px;
+  align-items: center;
+  padding: 14px;
+  border: 1px solid color-mix(in srgb, var(--accent) 24%, var(--line));
+  border-radius: var(--radius);
+  background: color-mix(in srgb, var(--surface-solid) 91%, var(--accent-soft));
+}
+
+.ch2-prediction-copy {
+  display: grid;
+  gap: 4px;
+}
+
+.ch2-prediction-copy span {
+  color: var(--accent-strong);
+  font-size: 11px;
+  font-weight: 850;
+  letter-spacing: 0.08em;
+}
+
+.ch2-prediction-copy strong {
+  font-size: 14px;
+  line-height: 1.55;
+}
+
+.ch2-prediction-options {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  justify-content: flex-end;
+}
+
+.ch2-prediction-options button {
+  min-height: 34px;
+  padding: 7px 11px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: var(--surface-solid);
+  color: var(--text);
+  cursor: pointer;
+  font: inherit;
+  font-size: 12px;
+  font-weight: 720;
+  transition: border-color 160ms ease, background 160ms ease, color 160ms ease, transform 160ms ease;
+}
+
+.ch2-prediction-options button:hover,
+.ch2-prediction-options button:focus-visible {
+  border-color: color-mix(in srgb, var(--accent) 56%, var(--line));
+  transform: translateY(-1px);
+}
+
+.ch2-prediction-options button.is-selected {
+  border-color: var(--accent);
+  background: var(--accent-soft);
+  color: var(--accent-strong);
+}
+
+.ch2-prediction > p {
+  grid-column: 1 / -1;
+  margin: 0;
+  color: var(--muted);
+  font-size: 12px;
+  line-height: 1.55;
+}
+
+.ch2-prediction[data-state="correct"] > p {
+  color: var(--accent-strong);
+  font-weight: 700;
+}
+
 .ch2-lab-grid {
   display: grid;
   grid-template-columns: minmax(0, 1.38fr) minmax(250px, 0.62fr);
@@ -1266,6 +1340,18 @@ body.dark .ch2-matrix-box {
   .ch2-task {
     display: grid;
     gap: 4px;
+  }
+
+  .ch2-prediction {
+    grid-template-columns: 1fr;
+  }
+
+  .ch2-prediction-options {
+    justify-content: flex-start;
+  }
+
+  .ch2-prediction > p {
+    grid-column: 1;
   }
 
   .ch2-stage,

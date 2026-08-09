@@ -278,12 +278,14 @@ _dev/research/3b1b_eola_chapter10.py
 - 统一例题组件位于 `current/visuals/example-challenge.js` 与 `current/visuals/example-challenge.css`；没有选择项的例题自动使用逐步展开模式。
 - 例题公式继续使用本地 KaTeX；手机端粒子数量已降低，并支持 `prefers-reduced-motion`。
 
-## 第二章状态（2026-07-17）
+## 第二章状态（2026-08-10）
 
-- 已从 main 建立 `content/ch2-determinants`。
-- 课程引擎支持多章结构化小节（ch2 + ch4）。
-- 第二章 §1—§8 内容、例题、自测与核心交互已接入 `learn.html`。
-- 精选参考 PDF 仅作内部研究，不进入公开站点路径。
+- §1—§8 已完成教材驱动的内容重构，以“单位归一、分别线性、交替性唯一确定行列式”为论证主线。
+- 每节均形成“主问题—正式讲解—先预测再实验—逐步例题—4 道自测—承上启下”的教学闭环。
+- 正式讲解统一由 `current/content/ch2-section*.js` 提供，视觉层只负责呈现与交互，避免两套正文漂移。
+- §6 明确从 Leibniz 求和分组推出余子式展开；§7 区分 `D=0` 的两种分支；§8 分开呈现广义 Laplace 展开与乘法规则。
+- `docs/ch2-teaching-blueprint.md` 记录教材分工、八节问题链与验收标准；精选参考 PDF 仍仅作内部研究，不进入公开站点路径。
+- 章节浏览器验收覆盖 8 节挂载、数学状态、预测交互、正式论证、桌面/手机布局、明暗主题与 reduced-motion。
 
 ## 下一步
 

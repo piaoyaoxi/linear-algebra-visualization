@@ -1,9 +1,10 @@
 (() => {
-  const { M, tex, formalShell, module, proofSteps, misconception } = window.Ch2PresentationUtils;
+  const { M, formalFromSection, labIntro, mountPrediction } = window.Ch2PresentationUtils;
 
-  function mountPermutationLab(root) {
+  function mountPermutationLab(root, section) {
     const controller = new AbortController();
     const { signal } = controller;
+    mountPrediction(root, section, signal);
     let permutation = [3, 1, 4, 2];
     let selected = -1;
     let scannerIndex = 0;
@@ -57,7 +58,7 @@
       root.querySelector("[data-perm-text]").textContent = permutation.join(" ");
       root.querySelector("[data-action]").textContent = lastAction;
       root.querySelector("[data-inv-list]").innerHTML = inversions.length
-        ? inversions.map(({ a, b }) => `<span>(${a},${b})</span>`).join("")
+        ? inversions.map(({ i, j, a, b }) => `<span>(${i + 1},${j + 1})：${a}&gt;${b}</span>`).join("")
         : "<span>无逆序对</span>";
       drawWires();
 
@@ -153,36 +154,16 @@
   }
 
   defineChapter2Renderer("permutations", {
-    formal(formal) {
+    formal(formal, section) {
       if (!formal) return;
-      formal.innerHTML = formalShell(
-        "符号来自排列的奇偶性",
-        "行列式的乘积项都采用每行每列各一次的取法。列指标形成排列，而排列中的交叉数量决定正负号。",
-        module("01", "逆序数与排列符号", "先逐对比较，再压缩为一个符号。", `
-          <div class="ch2-def-stack">
-            <article class="ch2-def"><span class="kicker">逆序</span><strong>${tex("i<j,\\;\\sigma(i)>\\sigma(j)")}</strong><p>位置靠前的数反而更大时，这一对形成逆序。</p></article>
-            <article class="ch2-def"><span class="kicker">逆序数</span><strong>${tex("\\tau(\\sigma)")}</strong><p>全部逆序对的数量；连线图中的每个交叉对应一个逆序。</p></article>
-            <article class="ch2-def"><span class="kicker">符号</span><strong>${tex("\\operatorname{sgn}(\\sigma)=(-1)^{\\tau(\\sigma)}")}</strong><p>偶排列取 +1，奇排列取 −1。</p></article>
-          </div>
-        `) + module("02", "相邻交换为什么翻转奇偶性", "只改变一对相邻元素的相对顺序。", proofSteps([
-          "相邻元素之外的每个数，与这两个元素形成的逆序总数保持不变。",
-          "被交换的两个相邻元素彼此之间的顺序恰好翻转一次。",
-          "因此逆序数恰好改变 1，排列奇偶性翻转。",
-          "任意对换可以分解为奇数次相邻交换，所以任意对换也翻转奇偶性。",
-        ]) + misconception([
-          "逆序数统计所有位置对，不等于最大元素或元素之和。",
-          "一次对换一定翻转符号，但逆序数不一定只改变 1。",
-          "拖动一张卡片跨越 d 个位置等价于 d 次相邻交换；它与‘交换两张卡片’不是同一种操作。",
-        ])),
-      );
+      formal.innerHTML = formalFromSection(section);
     },
-    interactive(root) {
+    interactive(root, section) {
       if (!root) return;
       root.innerHTML = `
         <h2>交互实验</h2>
         <div class="ch2-lab">
-          <div class="ch2-lab-head"><h3>排列与逆序 · 逐对扫描</h3><p>点击两个数字完成一次对换，或拖动一个数字改变位置。扫描器逐对检查，连线图把逆序显示为交叉。</p></div>
-          <div class="ch2-task"><strong>观察任务</strong><span>从 3142 出发，每次做一个相邻交换，直到还原 1234；比较交换步数与初始逆序数。</span></div>
+          ${labIntro(section, "排列与逆序 · 逐对扫描", "扫描器逐对检查，连线图把逆序显示为交叉。")}
           <div class="ch2-lab-grid ch2-permutation-layout">
             <div class="ch2-side ch2-permutation-scene">
               <div class="ch2-note">当前排列：<strong data-perm-text></strong></div>
@@ -196,7 +177,7 @@
                 <div class="ch2-meter-card"><strong>sgn</strong><span data-sgn></span></div>
               </div>
               <div class="ch2-note" data-action aria-live="polite"></div>
-              <div class="ch2-note"><strong>全部逆序对</strong><div class="ch2-inversion-list" data-inv-list></div></div>
+              <div class="ch2-note"><strong>全部逆序位置对</strong><div class="ch2-inversion-list" data-inv-list></div></div>
               <div class="ch2-note"><strong data-scan-pair></strong><br /><span data-scan-result></span></div>
               <div class="ch2-toolbar">
                 <button type="button" data-scan-next>扫描下一对</button>
@@ -212,7 +193,7 @@
             <button type="button" data-perm-preset="example">例题 3142</button>
           </div>
         </div>`;
-      return mountPermutationLab(root);
+      return mountPermutationLab(root, section);
     },
   });
 })();

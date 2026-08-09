@@ -1,9 +1,10 @@
 (() => {
-  const { M, tex, display, aEntry, formalShell, module, proofSteps, misconception } = window.Ch2PresentationUtils;
+  const { M, tex, aEntry, formalFromSection, labIntro, mountPrediction } = window.Ch2PresentationUtils;
 
-  function mountCofactor(root) {
+  function mountCofactor(root, section) {
     const controller = new AbortController();
     const { signal } = controller;
+    mountPrediction(root, section, signal);
     const matrix = [[1, 2, 0], [0, 3, 0], [4, 5, 6]];
     let active = { row: 1, col: 1 };
     let route = { type: "row", index: 1 };
@@ -116,41 +117,16 @@
   }
 
   defineChapter2Renderer("cofactor-expansion", {
-    formal(formal) {
+    formal(formal, section) {
       if (!formal) return;
-      formal.innerHTML = formalShell(
-        "从删行删列到按行列展开",
-        "三个对象要严格区分：余子矩阵是矩阵，余子式是它的行列式，代数余子式再加入位置符号。",
-        module("01", "代数余子式", "位置符号把每条低阶路径接回原排列符号。", `
-          <div class="ch2-def-stack">
-            <article class="ch2-def"><span class="kicker">余子矩阵</span><strong>删去第 i 行与第 j 列</strong><p>得到一个 (n−1) 阶矩阵。</p></article>
-            <article class="ch2-def"><span class="kicker">余子式</span><strong>${tex("M_{ij}")}</strong><p>对余子矩阵取行列式，结果是标量。</p></article>
-            <article class="ch2-def"><span class="kicker">代数余子式</span><strong>${tex("C_{ij}=(-1)^{i+j}M_{ij}")}</strong><p>棋盘符号由 i+j 的奇偶决定。</p></article>
-          </div>
-        `) + module("02", "展开公式与路线选择", "结果固定，计算量由所选方向决定。", `
-          <div class="ch2-def-stack">
-            <article class="ch2-def"><span class="kicker">按第 i 行</span><strong>${display("\\det(A)=\\sum_{j=1}^{n}a_{ij}C_{ij}")}</strong><p>第 i 行中的每个元素与对应代数余子式配对。</p></article>
-            <article class="ch2-def"><span class="kicker">按第 j 列</span><strong>${display("\\det(A)=\\sum_{i=1}^{n}a_{ij}C_{ij}")}</strong><p>优先选择零多的方向，减少需要计算的低阶行列式。</p></article>
-          </div>
-        `) + module("03", "交叉恒等式为什么等于零", "把一行复制到另一行，再沿被替换行展开。", proofSteps([
-          `固定两行 r≠s，考虑和 ${tex("\\sum_j a_{rj}C_{sj}")}。`,
-          "构造一个新行列式：把原矩阵第 s 行替换成第 r 行，其余行保持不变。",
-          `沿新矩阵第 s 行展开，得到的正是 ${tex("\\sum_j a_{rj}C_{sj}")}。`,
-          "新矩阵的第 r、s 行相同，所以其行列式为 0，交叉和也等于 0。",
-        ]) + misconception([
-          "棋盘符号帮助记忆，定义仍是 (−1)^(i+j)。",
-          "一行中出现零只会消去相应项，不会自动使整个行列式为零。",
-          "展开式中的负贡献应作为独立带符号项读取，不能把‘+ −’当作新的运算规则。",
-        ])),
-      );
+      formal.innerHTML = formalFromSection(section);
     },
-    interactive(root) {
+    interactive(root, section) {
       if (!root) return;
       root.innerHTML = `
         <h2>交互实验</h2>
         <div class="ch2-lab">
-          <div class="ch2-lab-head"><h3>余子式 · 删去一行与一列</h3><p>点击元素后，横线与竖线划去对应行列；剩余元素保持相对位置组成余子矩阵。</p></div>
-          <div class="ch2-task"><strong>观察任务</strong><span>比较第 2 行与第 3 列的成本，再任选另一条路线核对相同结果。</span></div>
+          ${labIntro(section, "余子式 · 删去一行与一列", "点击元素后，横线与竖线划去对应行列。")}
           <div class="ch2-lab-grid ch2-cofactor-top">
             <div class="ch2-matrix-box ch2-cofactor-visual">
               <div class="ch2-cut-matrix" data-cut-matrix>
@@ -181,7 +157,7 @@
             <div class="ch2-note"><strong data-route-title></strong> · <span data-cost></span><br /><span data-expand></span><br />展开和 = <strong data-true></strong><br /><span data-omitted></span></div>
           </div>
         </div>`;
-      return mountCofactor(root);
+      return mountCofactor(root, section);
     },
   });
 })();

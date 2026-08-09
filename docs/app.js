@@ -514,6 +514,19 @@ function getChapterOverviewConfig(chapter) {
       ],
     };
   }
+  if (chapter.id === "ch2") {
+    return {
+      coverId: "chapter2",
+      eyebrow: "第二章 · 行列式",
+      title: "有向面积、符号与塌缩",
+      structureTitle: "一条主线串起八个小节",
+      panels: [
+        { title: "几何视角", text: "用有向面积与体积理解倍率、方向保持与维度塌缩。" },
+        { title: "符号视角", text: "由排列奇偶性给出每一项的正负号，再写出 n 阶定义。" },
+        { title: "计算视角", text: "用性质、化简、展开和克拉默法则把定义落到可算的结构。" },
+      ],
+    };
+  }
   if (chapter.id === "ch1") {
     return {
       coverId: "chapter1",

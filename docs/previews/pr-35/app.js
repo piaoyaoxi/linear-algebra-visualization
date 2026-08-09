@@ -553,6 +553,19 @@ function getChapterOverviewConfig(chapter) {
       ],
     };
   }
+  if (chapter.id === "ch6") {
+    return {
+      coverId: "chapter6",
+      eyebrow: "第六章 · 线性空间",
+      title: "从集合映射到空间结构与同构",
+      structureTitle: "一条主线串起八个小节",
+      panels: [
+        { title: "语言视角", text: "先建立集合与映射，再把加法、数乘抽象成线性空间的共同结构。" },
+        { title: "骨架视角", text: "用基、维数与坐标描述空间；换基时对象不动，变的是表示。" },
+        { title: "分解视角", text: "子空间、交与和、直和与同构，把“空间如何拼装与对应”串成主线。" },
+      ],
+    };
+  }
   return {
     coverId: chapter.id,
     eyebrow: chapter.title,

@@ -383,5 +383,5 @@
   }
 
   window.defineChapter4LessonEnhancer?.(enhanceExample);
-  window.defineChapter1LessonEnhancer?.(enhanceExample);
+  window.defineChapter7LessonEnhancer?.(enhanceExample);
 })();

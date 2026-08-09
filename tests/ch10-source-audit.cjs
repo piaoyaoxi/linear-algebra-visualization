@@ -2,7 +2,12 @@ const fs = require("node:fs");
 const path = require("node:path");
 
 const roots = [
-  "current/content",
+  "current/content/ch10-registry.js",
+  "current/content/ch10-section1.js",
+  "current/content/ch10-section2.js",
+  "current/content/ch10-section3.js",
+  "current/content/ch10-section4.js",
+  "current/content/ch10.js",
   "current/visuals/ch10",
   "current/structured-learning.js",
 ];

@@ -9,7 +9,7 @@
     <link rel="preload" as="image" href="./assets/theme/sol-alpha.webp?v=21h" />
     <link rel="stylesheet" href="./vendor/katex/katex.min.css" />
     <link rel="stylesheet" href="./styles.css?v=21k" />
-    <link rel="stylesheet" href="./learn-layout.css?v=21i" />
+    <link rel="stylesheet" href="./learn-layout.css?v=41a" />
     <link rel="stylesheet" href="./search-modal-a11y.css" />
     <link rel="stylesheet" href="./guide.css?v=21i" />
     <link rel="stylesheet" href="./visuals/lesson-presentation.css" />
@@ -37,8 +37,10 @@
     <link rel="stylesheet" href="./visuals/ch5/geometry-upgrade.css?v=ch5g1" />
     <link rel="stylesheet" href="./visuals/ch5/geometry-orbit.css?v=ch5g2" />
     <link rel="stylesheet" href="./visuals/ch5/geometry-orbit-fit.css?v=ch5g3" />
+    <link rel="stylesheet" href="./visuals/ch7/story.css?v=43h" />
     <link rel="stylesheet" href="./visuals/ch8/ch8-redesign.css?v=41zf" />
     <link rel="stylesheet" href="./visuals/ch6/chapter-presentation.css?v=ch6-teaching-rebuild-20260728b" />
+    <link rel="stylesheet" href="./visuals/ch9/common.css?v=ch9-native8" />
     <link rel="stylesheet" href="./visuals/ch10/base.css?v=10l" />
     <link rel="stylesheet" href="./visuals/ch10/section1-presentation.css?v=10l" />
     <link rel="stylesheet" href="./visuals/ch10/section2-presentation.css?v=10l" />
@@ -47,7 +49,7 @@
     <link rel="stylesheet" href="./visuals/page-toc-rail.css?v=21i" />
     <link rel="stylesheet" href="./visuals/theme-transition.css?v=21i" />
     <script defer src="./vendor/katex/katex.min.js"></script>
-    <script defer src="./app.js?v=ch1-ch5-ch6-ch8"></script>
+    <script defer src="./app.js?v=ch1-ch5-ch6-ch7-ch8"></script>
     <script defer src="./visuals/theme-transition.js?v=21i"></script>
     <script defer src="./search-modal-state.js"></script>
     <script defer src="./content/ch1-registry.js"></script>
@@ -99,8 +101,9 @@
     <script defer src="./visuals/ch4/registry.js"></script>
     <script defer src="./visuals/ch3/registry.js?v=ch3h"></script>
     <script defer src="./visuals/ch1/registry.js"></script>
+    <script defer src="./visuals/ch7/registry.js?v=43h"></script>
     <script defer src="./visuals/lesson-presentation.js"></script>
-    <script defer src="./visuals/example-challenge.js"></script>
+    <script defer src="./visuals/example-challenge.js?v=41a"></script>
     <script defer src="./visuals/ch4/section1-presentation.js"></script>
     <script defer src="./visuals/ch4/section2-presentation.js?v=19e"></script>
     <script defer src="./visuals/ch4/section2-continuous.js?v=21i"></script>
@@ -153,9 +156,23 @@
     <script defer src="./visuals/ch6/section7-presentation.js?v=ch6-teaching-rebuild-20260728b"></script>
     <script defer src="./visuals/ch6/section8-presentation.js?v=ch6-teaching-rebuild-20260728b"></script>
     <script defer src="./visuals/ch6/mount.js?v=ch6-teaching-rebuild-20260728b"></script>
-    <script defer src="./content/ch7.js"></script>
+    <script defer src="./content/ch7.js?v=43h"></script>
+    <script defer src="./visuals/ch7/story-core.js?v=43h"></script>
+    <script defer src="./visuals/ch7/story-section1.js?v=43h"></script>
+    <script defer src="./visuals/ch7/story-section2.js?v=43h"></script>
+    <script defer src="./visuals/ch7/story-section3.js?v=43h"></script>
+    <script defer src="./visuals/ch7/story-section4.js?v=43h"></script>
+    <script defer src="./visuals/ch7/story-section5.js?v=43h"></script>
+    <script defer src="./visuals/ch7/story-section6.js?v=43h"></script>
+    <script defer src="./visuals/ch7/story-section7.js?v=43h"></script>
+    <script defer src="./visuals/ch7/story-section8.js?v=43h"></script>
+    <script defer src="./visuals/ch7/story-section9.js?v=43h"></script>
+    <script defer src="./visuals/ch7/mount.js?v=43h"></script>
     <script defer src="./content/ch8.js?v=41r"></script>
-    <script defer src="./content/ch9.js"></script>
+    <script defer src="./content/ch9.js?v=ch9-native8"></script>
+    <script defer src="./visuals/ch9/registry.js?v=ch9-native8"></script>
+    <script defer src="./visuals/ch9/presentation.js?v=ch9-native8"></script>
+    <script defer src="./visuals/ch9/mount.js?v=ch9-native8"></script>
     <script defer src="./content/ch10-registry.js?v=10l"></script>
     <script defer src="./content/ch10-section1.js?v=10l"></script>
     <script defer src="./content/ch10-section2.js?v=10l"></script>
@@ -178,7 +195,7 @@
     <script defer src="./visuals/ch8/section5.js?v=41ze"></script>
     <script defer src="./visuals/ch8/section6.js?v=41r"></script>
     <script defer src="./visuals/ch8/section7.js?v=41r"></script>
-    <script defer src="./learn-entry.js?v=ch1-ch5-ch6-ch8"></script>
+    <script defer src="./learn-entry.js?v=ch1-ch5-ch6-ch7-ch8"></script>
     <script defer src="./learn-placeholder.js"></script>
     <script defer src="./structured-learning.js?v=10f"></script>
     <script defer src="./ch8-entry.js?v=41w"></script>
@@ -188,20 +205,47 @@
   <body>
     <header class="topbar">
       <button class="icon-button" id="sidebarToggle" type="button" aria-label="切换目录" title="切换目录">
-        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 7h14" /><path d="M5 12h14" /><path d="M5 17h14" /></svg>
+        <svg viewBox="0 0 24 24" aria-hidden="true">
+          <path d="M5 7h14" />
+          <path d="M5 12h14" />
+          <path d="M5 17h14" />
+        </svg>
       </button>
       <div class="topbar-center">
-        <button class="topbar-search" id="searchOpen" type="button" aria-haspopup="dialog" aria-controls="searchModal" aria-expanded="false">
-          <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="6.5" /><path d="m16.2 16.2 4.3 4.3" /></svg>
+        <button
+          class="topbar-search"
+          id="searchOpen"
+          type="button"
+          aria-haspopup="dialog"
+          aria-controls="searchModal"
+          aria-expanded="false"
+        >
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <circle cx="11" cy="11" r="6.5" />
+            <path d="m16.2 16.2 4.3 4.3" />
+          </svg>
           <span class="topbar-search-text">搜索</span>
         </button>
       </div>
       <div class="topbar-right">
         <button class="icon-button lang-button" id="langToggle" type="button" aria-label="切换显示语言" title="切换语言">
-          <span class="lang-button-mark" aria-hidden="true"><span class="lang-zh">文</span><span class="lang-en">A</span></span>
+          <span class="lang-button-mark" aria-hidden="true">
+            <span class="lang-zh">文</span>
+            <span class="lang-en">A</span>
+          </span>
         </button>
         <button class="icon-button" id="themeToggle" type="button" aria-label="切换明暗外观" title="切换明暗外观">
-          <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="4" /><path d="M12 3.2v1.8" /><path d="M12 19v1.8" /><path d="M3.2 12h1.8" /><path d="M19 12h1.8" /><path d="m5.4 5.4 1.3 1.3" /><path d="m17.3 17.3 1.3 1.3" /><path d="m17.3 6.7 1.3-1.3" /><path d="m5.4 18.6 1.3-1.3" /></svg>
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <circle cx="12" cy="12" r="4" />
+            <path d="M12 3.2v1.8" />
+            <path d="M12 19v1.8" />
+            <path d="M3.2 12h1.8" />
+            <path d="M19 12h1.8" />
+            <path d="m5.4 5.4 1.3 1.3" />
+            <path d="m17.3 17.3 1.3 1.3" />
+            <path d="m17.3 6.7 1.3-1.3" />
+            <path d="m5.4 18.6 1.3-1.3" />
+          </svg>
         </button>
       </div>
     </header>

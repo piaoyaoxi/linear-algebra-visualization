@@ -1,0 +1,71 @@
+name: Chapter 8 browser check
+
+on:
+  pull_request:
+    paths:
+      - "current/**"
+      - ".github/scripts/ch8-browser-check.mjs"
+      - ".github/scripts/ch8-cinematic-check.mjs"
+      - ".github/workflows/ch8-browser-check.yml"
+  push:
+    branches:
+      - context/ch8-lambda-matrices
+    paths:
+      - "current/**"
+      - ".github/scripts/ch8-browser-check.mjs"
+      - ".github/scripts/ch8-cinematic-check.mjs"
+      - ".github/workflows/ch8-browser-check.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  browser-check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 18
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - name: Install Playwright
+        run: |
+          npm install --no-save playwright@1.52.0
+          npx playwright install --with-deps chromium
+      - name: Start static site
+        run: |
+          python3 -m http.server 4173 --directory current > /tmp/ch8-static.log 2>&1 &
+          for attempt in {1..20}; do
+            if curl --fail --silent http://127.0.0.1:4173/learn.html > /dev/null; then exit 0; fi
+            sleep 1
+          done
+          cat /tmp/ch8-static.log
+          exit 1
+      - name: Exercise Chapter 8 in Chromium
+        run: |
+          mkdir -p /tmp/ch8-screenshots
+          python3 - <<'PY'
+          from pathlib import Path
+          path = Path('.github/scripts/ch8-browser-check.mjs')
+          text = path.read_text()
+          old = '''async function textIncludes(locator, value) {
+            return (await locator.innerText()).includes(value);
+          }'''
+          new = '''async function textIncludes(locator, value) {
+            const normalize = (text) => String(text).replace(/\s+/g, "").toLowerCase();
+            return normalize(await locator.innerText()).includes(normalize(value));
+          }'''
+          if old not in text:
+            raise SystemExit('textIncludes helper not found')
+          path.write_text(text.replace(old, new))
+          PY
+          set -o pipefail
+          node .github/scripts/ch8-browser-check.mjs 2>&1 | tee /tmp/ch8-screenshots/browser-check.log
+          node .github/scripts/ch8-cinematic-check.mjs 2>&1 | tee /tmp/ch8-screenshots/cinematic-check.log
+      - name: Upload browser screenshots
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: ch8-browser-screenshots
+          path: /tmp/ch8-screenshots
+          if-no-files-found: error

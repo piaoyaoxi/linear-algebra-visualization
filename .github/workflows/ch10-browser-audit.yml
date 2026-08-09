@@ -1,0 +1,122 @@
+name: Chapter 10 browser audit
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened, ready_for_review]
+    paths:
+      - "current/**"
+      - "tests/ch10-browser-audit.cjs"
+      - "tests/ch10-source-audit.cjs"
+      - ".github/workflows/ch10-browser-audit.yml"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ch10-browser-audit-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Check out pull request
+        uses: actions/checkout@v4
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+
+      - name: Check JavaScript syntax
+        run: |
+          set -euo pipefail
+          node --check current/content/ch10-registry.js
+          node --check current/content/ch10-section1.js
+          node --check current/content/ch10-section2.js
+          node --check current/content/ch10-section3.js
+          node --check current/content/ch10-section4.js
+          node --check current/content/ch10.js
+          node --check current/structured-learning.js
+          node --check current/visuals/structured-chapter-registry.js
+          node --check current/visuals/ch10/registry.js
+          node --check current/visuals/ch10/shared.js
+          node --check current/visuals/ch10/section1-presentation.js
+          node --check current/visuals/ch10/section2-presentation.js
+          node --check current/visuals/ch10/section3-presentation.js
+          node --check current/visuals/ch10/section4-presentation.js
+          node --check current/visuals/ch10/mount.js
+          node --check tests/ch10-browser-audit.cjs
+          node --check tests/ch10-source-audit.cjs
+
+      - name: Audit source escapes and capture diagnostics
+        run: |
+          mkdir -p artifacts/ch10-browser-audit/source
+          node tests/ch10-source-audit.cjs > artifacts/ch10-browser-audit/source-audit.json
+          cp --parents \
+            current/content/ch10-registry.js \
+            current/content/ch10-section1.js \
+            current/content/ch10-section2.js \
+            current/content/ch10-section3.js \
+            current/content/ch10-section4.js \
+            current/content/ch10.js \
+            current/structured-learning.js \
+            current/learn.html \
+            current/visuals/structured-chapter-registry.js \
+            current/visuals/ch10/registry.js \
+            current/visuals/ch10/shared.js \
+            current/visuals/ch10/section1-presentation.js \
+            current/visuals/ch10/section2-presentation.js \
+            current/visuals/ch10/section3-presentation.js \
+            current/visuals/ch10/section4-presentation.js \
+            current/visuals/ch10/mount.js \
+            current/visuals/ch10/base.css \
+            current/visuals/ch10/section1-presentation.css \
+            current/visuals/ch10/section2-presentation.css \
+            current/visuals/ch10/section3-presentation.css \
+            current/visuals/ch10/section4-presentation.css \
+            tests/ch10-browser-audit.cjs \
+            tests/ch10-source-audit.cjs \
+            artifacts/ch10-browser-audit/source/
+
+      - name: Install Chromium audit runtime
+        run: |
+          mkdir -p /tmp/ch10-audit
+          cd /tmp/ch10-audit
+          npm init -y
+          npm install playwright@1.55.0
+          ./node_modules/.bin/playwright install --with-deps chromium
+
+      - name: Start local learning site
+        run: |
+          python3 -m http.server 4173 --directory current > /tmp/ch10-server.log 2>&1 &
+          echo $! > /tmp/ch10-server.pid
+          for attempt in {1..30}; do
+            if curl --fail --silent http://127.0.0.1:4173/learn.html > /dev/null; then
+              exit 0
+            fi
+            sleep 1
+          done
+          cat /tmp/ch10-server.log
+          exit 1
+
+      - name: Audit Chapter 10 in Chromium
+        env:
+          NODE_PATH: /tmp/ch10-audit/node_modules
+          AUDIT_BASE_URL: http://127.0.0.1:4173/learn.html
+          AUDIT_OUTPUT_DIR: artifacts/ch10-browser-audit
+        run: node tests/ch10-browser-audit.cjs
+
+      - name: Print local server log
+        if: always()
+        run: cat /tmp/ch10-server.log || true
+
+      - name: Upload browser audit
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: ch10-browser-audit-${{ github.event.pull_request.number }}
+          path: artifacts/ch10-browser-audit
+          if-no-files-found: warn
+          retention-days: 14

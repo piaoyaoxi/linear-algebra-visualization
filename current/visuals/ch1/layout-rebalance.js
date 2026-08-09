@@ -15,6 +15,10 @@
     { i: 1, j: 0, c: 1, plain: "x", math: "x" },
     { i: 0, j: 0, c: -1, plain: "−1", math: "-1" },
   ];
+  const multiplierTerms = [
+    { i: 1, j: 0, c: 1, math: "x" },
+    { i: 0, j: 1, c: -1, math: "-y" },
+  ];
 
   function termAt(i, j) {
     return baseTerms.find((term) => term.i === i && term.j === j) || null;
@@ -43,6 +47,7 @@
       selected: { i: 2, j: 1 },
       first: { i: 2, j: 1 },
       second: { i: 1, j: 0 },
+      target: { i: 3, j: 1 },
     };
     const canvas = root.querySelector("canvas");
     let lattice = null;
@@ -100,6 +105,21 @@
         <span>当前乘积</span>
         <strong>${tex(`${monomial(state.first)}\\cdot{}${monomial(state.second)}=${monomial(sum)}`)}</strong>
         <p>${tex(`(${state.first.i},${state.first.j})+(${state.second.i},${state.second.j})=(${sum.i},${sum.j})`)}，结果落在高亮格点。</p>`;
+
+      const contributions = [];
+      baseTerms.forEach((left) => {
+        multiplierTerms.forEach((right) => {
+          if (left.i + right.i !== state.target.i || left.j + right.j !== state.target.j) return;
+          contributions.push({ left, right, value: left.c * right.c });
+        });
+      });
+      const total = contributions.reduce((sumValue, item) => sumValue + item.value, 0);
+      root.querySelector("[data-target-expression]").innerHTML = tex(`[${monomial(state.target)}]\\,f(x,y)(x-y)`);
+      root.querySelector("[data-coefficient-ledger]").innerHTML = contributions.length
+        ? contributions.map((item) => `<tr><td>${tex(item.left.math)}</td><td>${tex(item.right.math)}</td><td>${item.value}</td></tr>`).join("")
+        : `<tr><td colspan="3">没有指数和落到这个格点，系数为 0。</td></tr>`;
+      root.querySelector("[data-target-coefficient]").textContent = String(total);
+      setActive("[data-target]", JSON.stringify(state.target), "target");
     }
 
     function renderLayers() {
@@ -147,6 +167,11 @@
     }));
     root.querySelectorAll("[data-second]").forEach((button) => listen(button, "click", () => {
       state.second = JSON.parse(button.dataset.second);
+      state.mode = "multiply";
+      render();
+    }));
+    root.querySelectorAll("[data-target]").forEach((button) => listen(button, "click", () => {
+      state.target = JSON.parse(button.dataset.target);
       state.mode = "multiply";
       render();
     }));
@@ -201,9 +226,9 @@
 
           <section class="ch1-multivariate-module" data-multiply-module hidden>
             <header class="ch1-multivariate-module-head">
-              <span>MONOMIAL PRODUCT</span>
-              <h4>用两个指数向量合成乘积格点</h4>
-              <p>先选第一项和第二项，再回到主图观察两个向量怎样相加到结果位置。</p>
+              <span>MONOMIAL PRODUCT &amp; COEFFICIENT CONVOLUTION</span>
+              <h4>先合成一个乘积格点，再汇总多项式乘积的全部来源</h4>
+              <p>上半部分解释一个指数和；下半部分固定 f(x,y)(x−y) 的目标格点，收集所有到达它的系数贡献。</p>
             </header>
             <div class="ch1-multivariate-product-grid">
               <div class="ch1-multivariate-product-controls">
@@ -223,6 +248,24 @@
                 </div>
               </div>
               <div class="ch1-multivariate-product-result" data-product-result></div>
+            </div>
+            <div class="ch1-coefficient-aggregation">
+              <div class="ch1-multivariate-module-head">
+                <span>COEFFICIENT LEDGER</span>
+                <h4>目标系数的完整来源</h4>
+                <p>选择结果地址 γ；只有满足 α+β=γ 的项对会进入账本。</p>
+              </div>
+              <div class="ch1-controls" role="group" aria-label="选择乘积中的目标指数">
+                <button type="button" class="is-active" data-target='{"i":3,"j":1}' aria-pressed="true">γ=(3,1)</button>
+                <button type="button" data-target='{"i":2,"j":2}' aria-pressed="false">γ=(2,2)</button>
+                <button type="button" data-target='{"i":1,"j":3}' aria-pressed="false">γ=(1,3)</button>
+                <button type="button" data-target='{"i":4,"j":0}' aria-pressed="false">γ=(4,0)</button>
+              </div>
+              <div class="ch1-equation-grid">
+                <div><span>正在计算</span><strong data-target-expression></strong></div>
+                <div><span>聚合后系数</span><strong data-target-coefficient></strong></div>
+              </div>
+              <div class="ch1-table-wrap"><table class="ch1-table"><thead><tr><th>f 中的项</th><th>x−y 中的项</th><th>系数贡献</th></tr></thead><tbody data-coefficient-ledger></tbody></table></div>
             </div>
           </section>
         </div>

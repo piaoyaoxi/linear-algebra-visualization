@@ -12,12 +12,27 @@
     const definitions = (f.definitions || []).map((item) => `<article class="definition-row"><strong>${item.title}</strong><p>${item.text}</p></article>`).join("");
     const cards = (f.cards || []).map((item) => `<article class="lesson-card"><span class="lesson-card-kicker">${item.kicker}</span><h3>${item.title}</h3><p>${item.text}</p></article>`).join("");
     const pitfalls = (f.pitfalls || []).length ? `<div class="ch1-pitfalls"><strong>常见误区</strong><ul>${f.pitfalls.map((item) => `<li>${item}</li>`).join("")}</ul></div>` : "";
+    const theorem = f.theorem ? `<section class="ch1-theorem-block">
+      <div class="ch1-theorem-label">${f.theorem.label || "核心结论"}</div>
+      <h3>${f.theorem.title}</h3>
+      <div class="ch1-theorem-statement">${f.theorem.statement}</div>
+    </section>` : "";
+    const proof = f.proof?.steps?.length ? `<section class="ch1-proof-spine">
+      <header><span>${f.proof.label || "证明主线"}</span><h3>${f.proof.title}</h3>${f.proof.intro ? `<p>${f.proof.intro}</p>` : ""}</header>
+      <ol>${f.proof.steps.map((step, index) => `<li><span>${index + 1}</span><div><strong>${step.title}</strong><p>${step.text}</p></div></li>`).join("")}</ol>
+    </section>` : "";
+    const bridge = f.bridge ? `<section class="ch1-experiment-bridge"><span>从实验回到理论</span><strong>${f.bridge.title}</strong><p>${f.bridge.text}</p></section>` : "";
+    const boundary = f.boundary ? `<section class="ch1-boundary-case"><span>${f.boundary.label || "边界与反例"}</span><strong>${f.boundary.title}</strong><p>${f.boundary.text}</p></section>` : "";
     el.innerHTML = `<h2>${f.title || "定理与概念"}</h2>
       <div class="lesson-formal-layout ch1-formal">
         <p class="lesson-formal-intro">${f.intro || section.intro || ""}</p>
         ${f.equation ? `<div class="operation-map"><div class="operation-map-main">${display(f.equation)}</div><dl class="lesson-meta-list">${map}</dl></div>` : ""}
-        <div class="definition-stack">${definitions}</div>
-        <div class="lesson-card-grid">${cards}</div>
+        ${bridge}
+        ${theorem}
+        ${proof}
+        ${definitions ? `<div class="definition-stack">${definitions}</div>` : ""}
+        ${cards ? `<div class="lesson-card-grid">${cards}</div>` : ""}
+        ${boundary}
         ${pitfalls}
         ${f.note ? `<div class="lesson-reading-note"><strong>这一节的核心</strong><p>${f.note}</p></div>` : ""}
       </div>`;
@@ -49,16 +64,16 @@
   // §1 — number field lens
   function mountNumberFields(root) {
     const domains = {
-      Z: { name: "整数集 ℤ", field: false, form: "n∈ℤ", gates: [true, true, true, false], witness: "1÷2=1/2 不属于 ℤ。", detail: "整数对加、减、乘封闭，但缺少一般非零元素的乘法逆元。" },
+      Z: { name: "整数集 ℤ", field: false, form: "n∈ℤ", gates: [true, true, true, false], witness: "1÷2=1/2 不属于 ℤ。", detail: "整数含 0、1，对加法逆元和乘法封闭；一般非零整数没有整数逆元。" },
       Q: { name: "有理数域 ℚ", field: true, form: "p/q, q≠0", gates: [true, true, true, true], witness: "两个有理数四则运算后仍为有理数。", detail: "这是包含 1 的最小数域，也是有理系数多项式的舞台。" },
       Q2: { name: "二次域 ℚ(√2)", field: true, form: "a+b√2", gates: [true, true, true, true], witness: "1/(a+b√2)=(a−b√2)/(a²−2b²)。", detail: "分母非零时 a²−2b²≠0，求逆结果仍为 u+v√2。" },
       R: { name: "实数域 ℝ", field: true, form: "实数", gates: [true, true, true, true], witness: "实数对四则运算封闭（除数非零）。", detail: "允许 √2 等实数系数，但仍不允许 i。" },
       C: { name: "复数域 ℂ", field: true, form: "a+bi", gates: [true, true, true, true], witness: "非零 a+bi 的逆为 (a−bi)/(a²+b²)。", detail: "代数基本定理保证非常数复系数多项式至少有一个复根。" },
-      P: { name: "正实数集 ℝ₊", field: false, form: "x>0", gates: [true, false, true, true], witness: "1−2=−1 不属于 ℝ₊，且 0 不在集合中。", detail: "乘除封闭并不足够；加法逆元和 0 也不可缺少。" },
+      P: { name: "正实数集 ℝ₊", field: false, form: "x>0", gates: [false, false, true, true], witness: "0 不属于 ℝ₊，且 1−2=−1 也离开集合。", detail: "乘法与非零除法虽封闭，零元和加法逆元仍然缺失。" },
     };
     const polys = [
       { formula: "x^2-2", coeff: { Z: true, Q: true, Q2: true, R: true, C: true, P: false }, factor: { Q: "不可约", Q2: "可分解", R: "可分解", C: "可分解" } },
-      { formula: "x^2-\\sqrt2", coeff: { Z: false, Q: false, Q2: true, R: true, C: true, P: false }, factor: { Q2: "可分解", R: "可分解", C: "可分解" } },
+      { formula: "x^2-\\sqrt2", coeff: { Z: false, Q: false, Q2: true, R: true, C: true, P: false }, factor: { Q2: "不可约", R: "可分解", C: "可分解" } },
       { formula: "x^2+1", coeff: { Z: true, Q: true, Q2: true, R: true, C: true, P: false }, factor: { Q: "不可约", Q2: "不可约", R: "不可约", C: "可分解" } },
       { formula: "x^2-i", coeff: { Z: false, Q: false, Q2: false, R: false, C: true, P: false }, factor: { C: "可分解" } },
     ];
@@ -72,7 +87,7 @@
       const status = root.querySelector("[data-field-status]");
       status.className = `ch1-status ${d.field ? "is-ok" : "is-bad"}`;
       status.textContent = d.field ? "通过全部数域条件" : "不是数域";
-      root.querySelector("[data-gates]").innerHTML = ["加法", "减法", "乘法", "非零除法"].map((label, i) => `<div class="ch1-gate ${d.gates[i] ? "is-ok" : "is-bad"}"><strong>${label}</strong><span>${d.gates[i] ? "封闭" : "失败"}</span></div>`).join("");
+      root.querySelector("[data-gates]").innerHTML = ["0 与 1", "加法与相反数", "乘法", "非零求逆"].map((label, i) => `<div class="ch1-gate ${d.gates[i] ? "is-ok" : "is-bad"}"><strong>${label}</strong><span>${d.gates[i] ? "通过" : "失败"}</span></div>`).join("");
       root.querySelector("[data-poly-table]").innerHTML = polys.map((p) => {
         const legal = p.coeff[current];
         const factor = legal && p.factor[current] ? p.factor[current] : legal ? "本节不判定" : "无意义";

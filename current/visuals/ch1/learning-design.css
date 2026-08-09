@@ -577,6 +577,73 @@
   }
 }
 
+.ch1-panel-head {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 14px 24px;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.ch1-panel-head span {
+  color: var(--accent-strong);
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.09em;
+}
+
+.ch1-panel-head h4 {
+  margin: 5px 0 0;
+  font-size: 20px;
+}
+
+.ch1-primitive-workbench,
+.ch1-vieta-workbench,
+.ch1-coefficient-aggregation {
+  display: grid;
+  gap: 16px;
+}
+
+.ch1-coefficient-aggregation {
+  margin-top: 20px;
+  padding-top: 20px;
+  border-top: 1px solid var(--line);
+}
+
+.ch1-vieta-workbench {
+  margin-top: 18px;
+}
+
+.ch1-vieta-grid {
+  display: grid;
+  grid-template-columns: minmax(230px, 0.75fr) minmax(0, 1.25fr);
+  gap: 16px;
+  align-items: start;
+}
+
+.ch1-vieta-workbench .ch1-node-grid {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.ch1-vieta-workbench .ch1-node-grid label {
+  display: grid;
+  gap: 7px;
+  color: var(--muted);
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.ch1-vieta-workbench .ch1-node-grid input {
+  width: 100%;
+}
+
+@media (max-width: 760px) {
+  .ch1-vieta-grid,
+  .ch1-vieta-workbench .ch1-node-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
 @media (max-width: 480px) {
   .ch1-guided-lab {
     padding: 13px;
@@ -626,5 +693,224 @@
   .ch1-guided-lab *::before,
   .ch1-guided-lab *::after {
     scroll-behavior: auto !important;
+  }
+}
+
+/* Chapter-level reading map: five units instead of an undifferentiated card wall. */
+.chapter-unit-list {
+  display: grid;
+  gap: 30px;
+}
+
+.chapter-unit {
+  display: grid;
+  gap: 16px;
+  padding-top: 22px;
+  border-top: 1px solid var(--line);
+}
+
+.chapter-unit:first-child {
+  padding-top: 0;
+  border-top: 0;
+}
+
+.chapter-unit-head {
+  display: grid;
+  grid-template-columns: 54px minmax(0, 1fr);
+  gap: 16px;
+  align-items: start;
+}
+
+.chapter-unit-head > span {
+  color: var(--accent-strong);
+  font: 720 30px/1 Georgia, "Times New Roman", serif;
+  letter-spacing: -0.04em;
+}
+
+.chapter-unit-head h3 {
+  margin: 3px 0 6px;
+  font-size: clamp(20px, 2.2vw, 27px);
+}
+
+.chapter-unit-head p {
+  max-width: 72ch;
+  margin: 0;
+  color: var(--muted);
+  line-height: 1.75;
+}
+
+/* Formal reading sequence: observed phenomenon -> theorem -> proof -> boundary. */
+.ch1-experiment-bridge,
+.ch1-boundary-case {
+  display: grid;
+  grid-template-columns: 155px minmax(0, 1fr);
+  gap: 8px 18px;
+  padding: 18px 20px;
+  border-left: 3px solid var(--accent);
+  background: var(--surface-soft);
+}
+
+.ch1-experiment-bridge > span,
+.ch1-boundary-case > span {
+  grid-row: 1 / span 2;
+  color: var(--accent-strong);
+  font-size: 13px;
+  font-weight: 780;
+  letter-spacing: 0.04em;
+}
+
+.ch1-experiment-bridge > strong,
+.ch1-boundary-case > strong {
+  color: var(--text);
+  font-size: 17px;
+}
+
+.ch1-experiment-bridge > p,
+.ch1-boundary-case > p {
+  margin: 0;
+  color: var(--muted);
+  line-height: 1.8;
+}
+
+.ch1-boundary-case {
+  border-left-color: var(--coral, #c66f52);
+}
+
+.ch1-boundary-case > span {
+  color: var(--coral, #a9573c);
+}
+
+.ch1-theorem-block {
+  position: relative;
+  padding: 24px 26px 22px;
+  overflow: hidden;
+  border: 1px solid color-mix(in srgb, var(--accent) 34%, var(--line));
+  border-radius: var(--radius);
+  background: var(--surface-solid);
+}
+
+.ch1-theorem-block::before {
+  position: absolute;
+  inset: 0 auto 0 0;
+  width: 5px;
+  background: var(--accent);
+  content: "";
+}
+
+.ch1-theorem-label {
+  margin-bottom: 7px;
+  color: var(--accent-strong);
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.ch1-theorem-block h3 {
+  margin: 0 0 10px;
+  font-size: clamp(20px, 2.4vw, 28px);
+}
+
+.ch1-theorem-statement {
+  color: var(--text);
+  font-size: 16px;
+  line-height: 1.9;
+}
+
+.ch1-proof-spine {
+  display: grid;
+  grid-template-columns: minmax(190px, 0.72fr) minmax(0, 1.6fr);
+  gap: 24px;
+  padding: 22px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: var(--surface-solid);
+}
+
+.ch1-proof-spine header > span {
+  color: var(--accent-strong);
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+}
+
+.ch1-proof-spine header h3 {
+  margin: 8px 0 10px;
+  font-size: 21px;
+}
+
+.ch1-proof-spine header p {
+  margin: 0;
+  color: var(--muted);
+  line-height: 1.75;
+}
+
+.ch1-proof-spine ol {
+  display: grid;
+  gap: 0;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.ch1-proof-spine li {
+  display: grid;
+  grid-template-columns: 30px minmax(0, 1fr);
+  gap: 12px;
+  padding: 0 0 16px;
+}
+
+.ch1-proof-spine li:last-child {
+  padding-bottom: 0;
+}
+
+.ch1-proof-spine li > span {
+  display: grid;
+  width: 28px;
+  height: 28px;
+  place-items: center;
+  border: 1px solid color-mix(in srgb, var(--accent) 35%, var(--line));
+  border-radius: 50%;
+  color: var(--accent-strong);
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.ch1-proof-spine li strong {
+  display: block;
+  margin-bottom: 4px;
+  color: var(--text);
+}
+
+.ch1-proof-spine li p {
+  margin: 0;
+  color: var(--muted);
+  line-height: 1.75;
+}
+
+@media (max-width: 760px) {
+  .chapter-unit-head,
+  .ch1-proof-spine,
+  .ch1-experiment-bridge,
+  .ch1-boundary-case {
+    grid-template-columns: 1fr;
+  }
+
+  .chapter-unit-head {
+    gap: 6px;
+  }
+
+  .chapter-unit-head > span {
+    font-size: 23px;
+  }
+
+  .ch1-experiment-bridge > span,
+  .ch1-boundary-case > span {
+    grid-row: auto;
+  }
+
+  .ch1-theorem-block,
+  .ch1-proof-spine {
+    padding: 18px;
   }
 }

@@ -18,17 +18,23 @@
     if (!root) return;
     root.innerHTML = formalShell(
       "定理与方法",
-      "秩把四种看似不同的计数统一起来：独立列数、独立行数、主元数和最高阶非零子式的阶数。",
+      "秩先定义为极大无关组的长度。可逆行变换保持列关系与行空间，RREF 的主元因而同时计数独立列和独立行。",
       module(
         "01",
-        "行秩等于列秩",
-        "独立输出方向与独立约束数量必然一致",
-        `<div class="ch3-theorem-row"><div>${texD(String.raw`\operatorname{rank}(A)=\dim\operatorname{Col}(A)=\dim\operatorname{Row}(A)`)}</div><p>消元把行空间整理成非零阶梯行，同时保持列之间的关系。由此，主元数量同时读出行秩与列秩。</p></div>`,
+        "从极大无关组定义秩",
+        "向量个数可以含冗余，秩只数无冗余的生成骨架",
+        `<div class="ch3-theorem-row"><div>${texD(String.raw`\operatorname{rank}(v_1,\ldots,v_p)=\#\{\text{任一极大无关组}\}`)}</div><p>不同极大无关组可以选择不同向量，但长度相同。矩阵的列秩与行秩分别把这一定义用于列向量组和行向量组。</p></div>`,
       ) +
         module(
           "02",
-          "用两条路确定同一个秩",
-          "主元给出准确数值，非零子式说明秩至少有多大",
+          "行秩为什么等于列秩",
+          "RREF 把两个计数连接到同一个主元数",
+          `<div class="ch3-theorem-row"><div>${texD(String.raw`R=EA,\ E\text{ 可逆}\quad\Longrightarrow\quad Ac=0\Longleftrightarrow Rc=0`)}</div><p>行变换保持列关系，也保持行空间。RREF 的非零行彼此独立；其主元列彼此独立，其他列由主元列生成，所以行秩与列秩都等于主元数 r。</p></div>`,
+        ) +
+        module(
+          "03",
+          "给秩寻找计算证书",
+          "主元给出准确数值，非零子式给出可直接核验的下界",
           cards([
             ["消元", "在 RREF 中数主元", "主元个数就是秩；主元列号指向原矩阵的一组独立列。"],
             ["子式", "找到非零行列式", "一个 r×r 子矩阵行列式非零，说明至少有 r 个独立方向。"],
@@ -43,12 +49,13 @@
     root.innerHTML = `
       <h2>交互实验</h2>
       <div class="ch3-lab" data-ch3-lab="rank">
-        <div class="ch3-lab-head"><span class="ch3-lab-kicker">目标 · 先看输出空间，再用主元核对</span><h3>矩阵到底保留了几个方向</h3><p>二维矩阵显示面积、直线或点；三维矩阵显示体积、平面或直线。图形和 rank(A) 始终描述同一个输出空间。</p></div><div class="ch3-mission"><strong>你来试一试</strong><span>依次比较“3×3 · rank 3”和“3×3 · rank 2”：观察有体积的三维输出怎样塌成一个平面。</span><span class="ch3-mission-result">观察：3×3 是矩阵尺寸，rank 才是独立方向数</span></div>
+        <div class="ch3-lab-head"><span class="ch3-lab-kicker">目标 · 让图形、主元和子式给出同一个秩</span><h3>矩阵到底保留了几个独立方向</h3><p>低维图形显示列张成的维数；RREF、原矩阵主元列和非零子式负责给出严格证书。</p></div><div class="ch3-mission"><strong>你来试一试</strong><span>先比较 rank 3 与 rank 2 的三维输出，再打开“贯穿例 · 3×4 rank 2”，找出两条列关系和两个主元。</span><span class="ch3-mission-result">观察：矩阵尺寸记录坐标数，rank 记录独立方向数</span></div>
         <div class="ch3-presets">
           <button type="button" data-preset="full2">2×2 · rank 2</button>
           <button type="button" data-preset="rankOne">2×2 · rank 1</button>
-          <button type="button" class="is-active" data-preset="full3">3×3 · rank 3</button>
+          <button type="button" data-preset="full3">3×3 · rank 3</button>
           <button type="button" data-preset="rankTwo3">3×3 · rank 2</button>
+          <button type="button" class="is-active" data-preset="anchor">贯穿例 · 3×4 rank 2</button>
         </div>
         <div class="ch3-lab-grid">
           <div class="ch3-stage"><canvas data-canvas aria-label="矩阵列向量张成的二维或三维输出空间"></canvas></div>
@@ -77,6 +84,7 @@
       rankOne: [[1, 2], [2, 4]],
       full3: [[1, 0, 1], [0, 1, 1], [1, 1, 0]],
       rankTwo3: [[1, 0, 1], [0, 1, 1], [1, 1, 2]],
+      anchor: [[1, 0, 1, 1], [0, 1, 1, -1], [1, 1, 2, 0]],
     };
     const state = { key: "full2", initial: null, A: null, history: [] };
     const canvas = root.querySelector("[data-canvas]");
@@ -264,7 +272,7 @@
       ctx.save();
       ctx.fillStyle = p.muted;
       ctx.font = "650 12px ui-sans-serif, system-ui";
-      ctx.fillText(`A: ℝ³ → ℝ³ · 输出空间是${rank === 3 ? "三维体" : rank === 2 ? "二维平面" : rank === 1 ? "一条直线" : "原点"}`, 14, 22);
+      ctx.fillText(`A: ℝ${columns.length} → ℝ³ · 列张成是${rank === 3 ? "三维空间" : rank === 2 ? "二维平面" : rank === 1 ? "一条直线" : "原点"}`, 14, 22);
       ctx.font = "560 11px ui-sans-serif, system-ui";
       ctx.fillText("三维等角视图：x₁、x₂、x₃ 三个坐标都参与绘制", 14, 40);
       ctx.restore();
@@ -306,7 +314,7 @@
       }
       root.querySelector("[data-undo]").disabled = state.history.length <= 1;
       root.querySelector("[data-note]").textContent = state.A.length === 3
-        ? `3×3 表示输入和输出都用 3 个坐标描述；当前列空间是${imageKind}，因此 rank(A)=${rank}。`
+        ? `${state.A.length}×${state.A[0].length} 表示输入有 ${state.A[0].length} 个系数、输出有 ${state.A.length} 个坐标；当前列张成是${imageKind}，因此 rank(A)=${rank}。`
         : `2×2 表示输入和输出都在二维坐标中；当前列空间是${imageKind}，因此 rank(A)=${rank}。`;
       M().pulse(root.querySelector("[data-rank-card]"));
       draw();
@@ -330,7 +338,7 @@
     });
     scope.listen(root.querySelector("[data-reset]"), "click", () => load(state.key));
     scope.resize(draw);
-    load("full3");
+    load("anchor");
     return scope.cleanup;
   }
 
@@ -339,17 +347,23 @@
     if (!root) return;
     root.innerHTML = formalShell(
       "定理与判别",
-      "右端 b 不是附加说明，而是目标输出。把它加入系数列后，若独立方向数量增加，就说明 A 的列无法到达它。",
+      "右端 b 是待生成的目标。列组合、列张成、增广秩与矛盾行依次把同一个可达性问题翻译成几何、结构和计算语言。",
       module(
         "01",
-        "Rouché–Capelli 定理",
-        "有解恰好等价于增广列没有创造新主元",
-        `<div class="ch3-theorem-row"><div>${texD(String.raw`Ax=b\quad\Longleftrightarrow\quad\operatorname{rank}(A)=\operatorname{rank}([A\mid b])`)}</div><p>消元中的矛盾行与列空间中的“b 在外面”是同一事实的两种表达。</p></div>`,
+        "从列组合到秩判别",
+        "增广列没有增加张成，目标才可达",
+        `<div class="ch3-theorem-row"><div>${texD(String.raw`Ax=b\Longleftrightarrow b\in\operatorname{span}(a_1,\ldots,a_n)\Longleftrightarrow\operatorname{rank}(A)=\operatorname{rank}([A\mid b])`)}</div><p>x 提供列组合系数。加入 b 后秩不变，恰好说明 b 已在原列张成中。</p></div>`,
       ) +
         module(
           "02",
-          "有解之后再数自由度",
-          "判有无解和判解的数量分两步完成",
+          "RREF 中的同一结论",
+          "矛盾行就是右端列独有的新主元",
+          `<div class="ch3-theorem-row"><div>${texD(String.raw`[0\ \cdots\ 0\mid c],\ c\neq0\quad\Longleftrightarrow\quad\operatorname{rank}([A\mid b])>\operatorname{rank}(A)`)}</div><p>因此几何上的“b 在列张成外”和消元中的“0=c”完全等价。</p></div>`,
+        ) +
+        module(
+          "03",
+          "有解以后再判断数量",
+          "可达性与自由度分两步完成",
           cards([
             ["无解", "增广秩更大", "b 增加了一个系数列不能生成的新方向。"],
             ["唯一", "有解且 rank(A)=n", "没有自由变量，零空间只有 0。"],
@@ -484,17 +498,23 @@
     if (!root) return;
     root.innerHTML = formalShell(
       "定理与结构",
-      "非齐次解集不是随意散落的一组点。选定一个特解后，任意其他解都由零空间中的方向到达。",
+      "选定一个特解后，其他解与它的差全部落入零空间；反过来，零空间中的每个位移都生成一个新解。这两个方向共同确定完整解集。",
       module(
         "01",
-        "特解加零空间",
-        "差值落入核，核的平移给出全部解",
-        `<div class="ch3-theorem-row"><div>${texD(String.raw`Ax=b,\ Ax_0=b\quad\Longrightarrow\quad x=x_0+x_h,\;x_h\in\operatorname{Ker}(A)`)}</div><p>反过来，任何 x₀+x_h 都满足 A(x₀+x_h)=b。两个方向合在一起就证明了通解公式。</p></div>`,
+        "完整解定理",
+        "先证明每个解都在公式中，再证明公式中的每个向量都是解",
+        `<div class="ch3-theorem-row"><div>${texD(String.raw`\{x:Ax=b\}=x_0+\operatorname{Ker}(A)`)}</div><p>若 Ax=b，则 A(x−x₀)=0；若 Ax_h=0，则 A(x₀+x_h)=b。两个包含关系都成立，公式才给出了不多不少的全部解。</p></div>`,
       ) +
         module(
           "02",
-          "自由度与维数",
-          "每个非主元列贡献一个独立参数",
+          "RREF 同时给出位置与方向",
+          "先把自由变量全取 0 得到特解，再逐个激活自由变量",
+          `<div class="ch3-theorem-row"><div>${texD(String.raw`x=x_0+s_1\eta_1+\cdots+s_k\eta_k`)}</div><p>x₀ 由非齐次列决定；η₁,…,ηₖ 是齐次方程的基础解系。改变参数只会沿零空间方向移动。</p></div>`,
+        ) +
+        module(
+          "03",
+          "自由度与几何结构",
+          "零空间决定方向维数，特解决定平移位置",
           cards([
             ["零空间", "维数 = n−rank(A)", "零空间基向量个数，也是自由变量个数。"],
             ["齐次", "过原点的子空间", "特解为 0，全部解就是零空间本身。"],
@@ -516,13 +536,14 @@
         </div>
         <div class="ch3-mission">
 <strong>你来试一试</strong>
-<span>选择“一条解直线”，拖动参数 s₁，观察 x−x₀ 始终平行 η₁。</span>
-<span class="ch3-mission-result">观察：全部解 = 一个特解 + 全部齐次解</span>
+<span>选择“贯穿例 · F⁴ 二参数解集”，分别拖动 s₁、s₂，并逐项核对 Ax=b 与 A(x−x₀)=0。</span>
+<span class="ch3-mission-result">观察：特解决定位置，零空间基决定全部移动方向</span>
         </div>
         <div class="ch3-presets ch3-solution-presets">
 <button type="button" data-preset="unique">唯一解</button>
-<button type="button" class="is-active" data-preset="line">一条解直线</button>
+<button type="button" data-preset="line">一条解直线</button>
 <button type="button" data-preset="plane">一个解平面</button>
+<button type="button" class="is-active" data-preset="anchor">贯穿例 · F⁴ 二参数解集</button>
 <button type="button" data-preset="homogeneous">齐次子空间</button>
 <button type="button" data-preset="none">无解</button>
         </div>
@@ -577,6 +598,7 @@
       unique: [[1, 1, 3], [1, 2, 4]],
       line: [[1, 1, 2], [2, 2, 4]],
       plane: [[1, 1, 1, 2], [2, 2, 2, 4]],
+      anchor: [[1, 0, 1, 1, 1], [0, 1, 1, -1, 2], [1, 1, 2, 0, 3]],
       homogeneous: [[1, 1, 0], [2, 2, 0]],
       none: [[1, 1, 2], [2, 2, 5]],
     };
@@ -588,7 +610,7 @@
     function load(key) {
       state.key = key;
       state.aug = M().matFromNumbers(presets[key]);
-      state.parameters = key === "plane" ? [1.2, -0.9] : key === "line" || key === "homogeneous" ? [0.8] : [];
+      state.parameters = key === "plane" || key === "anchor" ? [1.2, -0.9] : key === "line" || key === "homogeneous" ? [0.8] : [];
       state.shift = 0;
       rebuildParameters();
       render();
@@ -757,7 +779,7 @@
       sized.ctx.save();
       sized.ctx.fillStyle = frame.p.muted;
       sized.ctx.font = "650 12px ui-sans-serif, system-ui";
-      sized.ctx.fillText("二维解空间", 14, 22);
+      sized.ctx.fillText(payload.info.n > 2 ? `前两坐标投影 · 完整解属于 F^${payload.info.n}` : "二维完整视图", 14, 22);
       sized.ctx.restore();
 
       if (!payload.part.ok) {
@@ -848,7 +870,9 @@ x0p[1] + a * d1[1] + b * d2[1],
 ? "参数只改变零空间位移；A 会把这些位移全部压到 0。"
 : "没有零空间方向，所以特解就是唯一解。"
         : "没有特解，通解集合为空。";
-      root.querySelector("[data-geometry-note]").textContent = payload.info.n === 3 ? "三维完整视图" : "二维完整视图";
+      root.querySelector("[data-geometry-note]").textContent = payload.info.n === 3
+        ? "三维完整视图"
+        : payload.info.n > 3 ? `F^${payload.info.n} 完整坐标 · 前两坐标投影` : "二维完整视图";
       root.querySelector("[data-x0]").innerHTML = payload.part.ok ? `${tex(String.raw`x_0=`)}${M().htmlVector(payload.x0)}` : "不存在";
       root.querySelector("[data-basis]").innerHTML = payload.part.ok && payload.nullspace.basis.length
         ? payload.nullspace.basis.map((basis, index) => `<div>${tex(String.raw`\eta_{${index + 1}}=`)}${M().htmlVector(basis)}</div>`).join("")
@@ -884,7 +908,7 @@ x0p[1] + a * d1[1] + b * d2[1],
     }));
     scope.listen(root.querySelector("[data-shift]"), "click", () => { state.shift = state.shift ? 0 : 1; render(); });
     scope.resize(() => { const payload = data(); draw(payload, currentVector(payload)); });
-    load("line");
+    load("anchor");
     return scope.cleanup;
   }
 

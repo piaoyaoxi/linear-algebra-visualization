@@ -218,13 +218,13 @@
       .join("");
   }
 
-  function renderFormal(formal) {
+  function renderFormal(formal, section) {
     if (!formal || formal.dataset.sectionOneReady === "true") return;
 
     formal.innerHTML = `
       <h2>从数字表到有位置的结构</h2>
       <div class="section-one-foundation">
-        <p class="section-one-lead">先读清矩阵的行列结构，再理解这些数字怎样来自图像、方程组和方向变化。位置一旦改变，矩阵表达的关系也随之改变。</p>
+        <p class="section-one-lead">先读清矩阵的行列结构，再追踪输入坐标怎样成为各列的组合权重。位置决定角色，列组合把数字表升级为可以计算的关系。</p>
 
         <section class="section-one-module" aria-labelledby="matrix-source-title">
           <div class="module-heading">
@@ -319,11 +319,28 @@
           </div>
         </section>
 
+        <section class="section-one-module" aria-labelledby="column-combination-title">
+          <div class="module-heading">
+            <span>06</span>
+            <div>
+              <h3 id="column-combination-title">列组合：输入坐标就是各列的权重</h3>
+              <p>这一条等式连接下标计算、方程组和后面的矩阵乘法。</p>
+            </div>
+          </div>
+          <div class="s2-property-grid">
+            <article><span>按列写矩阵</span>${mathDisplay("A=[a_1\\ \\cdots\\ a_n]")}<p>第 j 列收集第 j 个输入坐标对全部输出的贡献。</p></article>
+            <article><span>组合各列</span>${mathDisplay("Ax=x_1a_1+\\cdots+x_na_n")}<p>同一个向量乘法可以逐行计算，也可以先理解为列的线性组合。</p></article>
+            <article><span>标准输入</span>${mathDisplay("Ae_j=a_j")}<p>只打开第 j 个输入坐标，就直接读出矩阵的第 j 列。</p></article>
+            <article><span>长方形同样成立</span>${mathDisplay("A\\in\\mathbb{R}^{m\\times n}:\\ \\mathbb{R}^n\\to\\mathbb{R}^m")}<p>二维网格只是可见模型，列组合适用于任意 m×n 矩阵。</p></article>
+          </div>
+        </section>
+
         <div class="column-reading-note">
           <strong>接下来：先看列</strong>
           <p>在二维变换中，第一列记录 ${mathInline("Ae_1")}，第二列记录 ${mathInline("Ae_2")}。下面的实验让两个基本方向带动整张网格。</p>
         </div>
       </div>
+      ${window.renderChapter4SourcePanel?.(section) || ""}
     `;
 
     bindAnatomy(formal);
@@ -443,10 +460,11 @@
     if (!panel || !canvasWrap || !controls) return;
 
     const presets = [
-      ["identity", "单位矩阵", [1, 0, 0, 1]],
-      ["stretch", "拉伸", [1.7, 0, 0, 0.75]],
-      ["shear", "剪切", [1, 0.8, 0, 1]],
-      ["projection", "共线", [1, 1, 0, 0]],
+     ["identity", "单位矩阵", [1, 0, 0, 1]],
+     ["stretch", "拉伸", [1.7, 0, 0, 0.75]],
+     ["shear", "剪切", [1, 0.8, 0, 1]],
+      ["mirror", "镜像", [-1, 0, 0, 1]],
+     ["projection", "共线", [1, 1, 0, 0]],
       ["zero", "零矩阵", [0, 0, 0, 0]],
     ];
 

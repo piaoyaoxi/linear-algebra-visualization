@@ -278,6 +278,13 @@ _dev/research/3b1b_eola_chapter10.py
 - 统一例题组件位于 `current/visuals/example-challenge.js` 与 `current/visuals/example-challenge.css`；没有选择项的例题自动使用逐步展开模式。
 - 例题公式继续使用本地 KaTeX；手机端粒子数量已降低，并支持 `prefers-reduced-motion`。
 
+## 第二章状态（2026-07-17）
+
+- 已从 main 建立 `content/ch2-determinants`。
+- 课程引擎支持多章结构化小节（ch2 + ch4）。
+- 第二章 §1—§8 内容、例题、自测与核心交互已接入 `learn.html`。
+- 精选参考 PDF 仅作内部研究，不进入公开站点路径。
+
 ## 下一步
 
 - 内容线：将已完成并通过浏览器验收的 §5—§7 作为一个短期任务 PR 提交到 `main`。

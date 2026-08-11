@@ -1,0 +1,65 @@
+name: Chapter 6 browser check
+
+on:
+  pull_request:
+    paths:
+      - "current/**"
+      - ".github/scripts/ch6-browser-review.mjs"
+      - ".github/scripts/ch6-source-style-check.mjs"
+      - ".github/workflows/ch6-browser-check.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  browser-check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Reject off-brand Chapter 6 source styles
+        shell: bash
+        run: |
+          mkdir -p /tmp/ch6-screenshots
+          set +e
+          node .github/scripts/ch6-source-style-check.mjs 2>&1 | tee /tmp/ch6-screenshots/source-style-report.txt
+          status=${PIPESTATUS[0]}
+          exit "$status"
+
+      - name: Install Playwright
+        run: |
+          npm install --no-save playwright@1.52.0
+          npx playwright install --with-deps chromium
+
+      - name: Start static site
+        run: |
+          python3 -m http.server 4173 --directory current > /tmp/ch6-static.log 2>&1 &
+          for attempt in {1..20}; do
+            if curl --fail --silent http://127.0.0.1:4173/learn.html > /dev/null; then
+              exit 0
+            fi
+            sleep 1
+          done
+          cat /tmp/ch6-static.log
+          exit 1
+
+      - name: Exercise Chapter 6 in real Chromium
+        shell: bash
+        run: |
+          set +e
+          node .github/scripts/ch6-browser-review.mjs 2>&1 | tee /tmp/ch6-screenshots/browser-check.log
+          status=${PIPESTATUS[0]}
+          exit "$status"
+
+      - name: Upload browser screenshots
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: ch6-browser-screenshots
+          path: /tmp/ch6-screenshots
+          if-no-files-found: error

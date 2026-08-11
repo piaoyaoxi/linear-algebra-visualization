@@ -1,0 +1,162 @@
+name: Chapter 2 browser check
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - content/ch2-determinants
+    paths:
+      - "current/content/ch2*.js"
+      - "current/visuals/ch2/**"
+      - "current/learn.html"
+      - "tests/ch2*.spec.js"
+      - ".github/workflows/ch2-browser-check.yml"
+  pull_request:
+    types: [opened, synchronize, reopened, ready_for_review]
+    paths:
+      - "current/content/ch2*.js"
+      - "current/visuals/ch2/**"
+      - "current/learn.html"
+      - "tests/ch2*.spec.js"
+      - ".github/workflows/ch2-browser-check.yml"
+
+permissions:
+  contents: read
+  statuses: write
+
+concurrency:
+  group: ch2-browser-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  syntax:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Check out Chapter 2 source
+        uses: actions/checkout@v4
+
+      - name: Check JavaScript syntax
+        run: |
+          set -uo pipefail
+          : > /tmp/ch2-syntax.log
+          failed=0
+          for file in current/content/ch2*.js current/visuals/ch2/*.js tests/ch2*.spec.js; do
+            echo "checking $file" | tee -a /tmp/ch2-syntax.log
+            if ! node --check "$file" >> /tmp/ch2-syntax.log 2>&1; then
+              echo "FAILED: $file" | tee -a /tmp/ch2-syntax.log
+              failed=1
+              break
+            fi
+          done
+          cat /tmp/ch2-syntax.log
+          exit "$failed"
+
+      - name: Publish syntax success
+        if: success()
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          curl --fail-with-body -sS -X POST \
+            -H "Authorization: Bearer $GH_TOKEN" \
+            -H "Accept: application/vnd.github+json" \
+            "https://api.github.com/repos/$GITHUB_REPOSITORY/statuses/$GITHUB_SHA" \
+            -d "{\"state\":\"success\",\"context\":\"ch2/syntax\",\"description\":\"Chapter 2 JavaScript syntax passed\",\"target_url\":\"$GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID\"}"
+
+      - name: Publish syntax failure
+        if: failure()
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          curl --fail-with-body -sS -X POST \
+            -H "Authorization: Bearer $GH_TOKEN" \
+            -H "Accept: application/vnd.github+json" \
+            "https://api.github.com/repos/$GITHUB_REPOSITORY/statuses/$GITHUB_SHA" \
+            -d "{\"state\":\"failure\",\"context\":\"ch2/syntax\",\"description\":\"Chapter 2 JavaScript syntax failed\",\"target_url\":\"$GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID\"}"
+
+      - name: Upload syntax diagnostics
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: ch2-syntax-failure
+          path: /tmp/ch2-syntax.log
+          retention-days: 7
+
+  chromium:
+    needs: syntax
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - name: Check out Chapter 2 source
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
+
+      - name: Install Playwright
+        run: |
+          npm install --no-save @playwright/test@1.55.0
+          npx playwright install --with-deps chromium
+
+      - name: Run Chapter 2 in Chromium
+        env:
+          PLAYWRIGHT_JSON_OUTPUT_FILE: test-results/ch2-results.json
+        run: |
+          set -euo pipefail
+          mkdir -p test-results
+          python3 -m http.server 4173 --directory current > /tmp/ch2-http.log 2>&1 &
+          server_pid=$!
+          trap 'kill "$server_pid" 2>/dev/null || true' EXIT
+          for attempt in {1..30}; do
+            if curl --fail --silent http://127.0.0.1:4173/learn.html > /dev/null; then
+              break
+            fi
+            sleep 1
+          done
+          curl --fail http://127.0.0.1:4173/learn.html > /dev/null
+          npx playwright test tests/ch2*.spec.js --browser=chromium --reporter=line,json
+
+      - name: Publish Chromium success
+        if: success()
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          curl --fail-with-body -sS -X POST \
+            -H "Authorization: Bearer $GH_TOKEN" \
+            -H "Accept: application/vnd.github+json" \
+            "https://api.github.com/repos/$GITHUB_REPOSITORY/statuses/$GITHUB_SHA" \
+            -d "{\"state\":\"success\",\"context\":\"ch2/chromium\",\"description\":\"Chapter 2 Chromium checks passed\",\"target_url\":\"$GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID\"}"
+
+      - name: Publish Chromium failure
+        if: failure()
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          curl --fail-with-body -sS -X POST \
+            -H "Authorization: Bearer $GH_TOKEN" \
+            -H "Accept: application/vnd.github+json" \
+            "https://api.github.com/repos/$GITHUB_REPOSITORY/statuses/$GITHUB_SHA" \
+            -d "{\"state\":\"failure\",\"context\":\"ch2/chromium\",\"description\":\"Chapter 2 Chromium checks failed\",\"target_url\":\"$GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID\"}"
+
+      - name: Upload Chapter 2 browser screenshots
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: ch2-browser-screenshots
+          path: test-results/ch2-screenshots
+          if-no-files-found: ignore
+          retention-days: 7
+
+      - name: Upload browser failure artifacts
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: ch2-browser-failure
+          path: |
+            test-results
+            playwright-report
+            /tmp/ch2-http.log
+          if-no-files-found: ignore
+          retention-days: 7

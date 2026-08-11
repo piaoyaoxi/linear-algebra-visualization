@@ -50,7 +50,7 @@
     return `<div class="number-matrix-wrap">${label ? `<strong>${label}</strong>` : ""}<div class="number-matrix">${cells}</div></div>`;
   }
 
-  function renderSection6Formal(formal) {
+  function renderSection6Formal(formal, section) {
     if (!formal) return;
     formal.innerHTML = `
       <h2>核心讲解</h2>
@@ -74,7 +74,13 @@
           <span>不变量</span>
           <p>三类初等操作都可逆，因此矩阵的秩和方程组的解集保持不变；行列式会按操作类型发生可追踪的变化。</p>
         </div>
-      </div>`;
+        <div class="script-panel elementary-inverse-panel">
+          <h3>为什么增广矩阵会产生 A⁻¹</h3>
+          <p>若 ${inline("E_k\\cdots E_1A=I")}，则 ${inline("E_k\\cdots E_1=A^{-1}")}。同一串左乘同时作用于 I，会把右半部分变成这串初等矩阵的乘积：</p>
+          ${display("[A\\mid I]\\longrightarrow[I\\mid E_k\\cdots E_1]=[I\\mid A^{-1}]")}
+        </div>
+      </div>
+      ${window.renderChapter4SourcePanel?.(section) || ""}`;
   }
 
   function operationStage(operationKey, step) {

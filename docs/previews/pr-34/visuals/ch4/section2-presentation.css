@@ -381,6 +381,10 @@
   background: var(--line);
 }
 
+#matrix-operations-formal .s2-column-rule-grid {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
 #matrix-operations-formal .s2-property-grid article {
   min-width: 0;
   padding: 17px 14px;

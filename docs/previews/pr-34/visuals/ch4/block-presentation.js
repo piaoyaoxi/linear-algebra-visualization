@@ -30,7 +30,7 @@
     });
   }
 
-  function renderSection5Formal(formal) {
+  function renderSection5Formal(formal, section) {
     if (!formal) return;
     formal.innerHTML = `
       <h2>核心讲解</h2>
@@ -54,7 +54,8 @@
           <span>阅读规则</span>
           <p>先读结果块下标，再找对应块行和块列，最后逐项检查尺寸。这个顺序能避免同时盯住全部块。</p>
         </div>
-      </div>`;
+      </div>
+      ${window.renderChapter4SourcePanel?.(section) || ""}`;
   }
 
   const CUT_VALUES = [
@@ -106,39 +107,39 @@
 
   const PRODUCT_TARGETS = {
     "11": {
-      title: "C₁₁ · 2 × 1",
-      row: ["A11", "A12"], col: ["B11", "B21"], result: "C11",
-      formula: "C_{11}=A_{11}B_{11}+A_{12}B_{21}",
-      dimensions: "(2\\times2)(2\\times1)+(2\\times2)(2\\times1)\\to2\\times1",
+     title: "C₁₁ · 2 × 1",
+     row: ["A11", "A12"], col: ["B11", "B21"], result: "C11",
+     formula: "C_{11}=A_{11}B_{11}+A_{12}B_{21}",
+      dimensions: "(2\\times2)(2\\times1)+(2\\times1)(1\\times1)\\to2\\times1",
       note: "第一块行与第一块列配对。两个乘积都得到 2×1，才能继续相加。",
     },
     "12": {
-      title: "C₁₂ · 2 × 2",
-      row: ["A11", "A12"], col: ["B12", "B22"], result: "C12",
-      formula: "C_{12}=A_{11}B_{12}+A_{12}B_{22}",
-      dimensions: "(2\\times2)(2\\times2)+(2\\times2)(2\\times2)\\to2\\times2",
+     title: "C₁₂ · 2 × 2",
+     row: ["A11", "A12"], col: ["B12", "B22"], result: "C12",
+     formula: "C_{12}=A_{11}B_{12}+A_{12}B_{22}",
+      dimensions: "(2\\times2)(2\\times2)+(2\\times1)(1\\times2)\\to2\\times2",
       note: "第一块行与第二块列配对。输出位置只决定块行与块列，不改变乘法顺序。",
     },
     "21": {
-      title: "C₂₁ · 1 × 1",
-      row: ["A21", "A22"], col: ["B11", "B21"], result: "C21",
-      formula: "C_{21}=A_{21}B_{11}+A_{22}B_{21}",
-      dimensions: "(1\\times2)(2\\times1)+(1\\times2)(2\\times1)\\to1\\times1",
+     title: "C₂₁ · 1 × 1",
+     row: ["A21", "A22"], col: ["B11", "B21"], result: "C21",
+     formula: "C_{21}=A_{21}B_{11}+A_{22}B_{21}",
+      dimensions: "(1\\times2)(2\\times1)+(1\\times1)(1\\times1)\\to1\\times1",
       note: "第二块行与第一块列配对，块的形状随外侧尺寸变成 1×1。",
     },
     "22": {
-      title: "C₂₂ · 1 × 2",
-      row: ["A21", "A22"], col: ["B12", "B22"], result: "C22",
-      formula: "C_{22}=A_{21}B_{12}+A_{22}B_{22}",
-      dimensions: "(1\\times2)(2\\times2)+(1\\times2)(2\\times2)\\to1\\times2",
+     title: "C₂₂ · 1 × 2",
+     row: ["A21", "A22"], col: ["B12", "B22"], result: "C22",
+     formula: "C_{22}=A_{21}B_{12}+A_{22}B_{22}",
+      dimensions: "(1\\times2)(2\\times2)+(1\\times1)(1\\times2)\\to1\\times2",
       note: "第二块行与第二块列配对；外侧的 1 和 2 决定结果块尺寸。",
     },
   };
 
-  const BLOCK_LAYOUTS = {
-    A: { cols: "1fr 1fr", rows: "2fr 1fr", cells: [["A11", "A₁₁", "2 × 2"], ["A12", "A₁₂", "2 × 2"], ["A21", "A₂₁", "1 × 2"], ["A22", "A₂₂", "1 × 2"]] },
-    B: { cols: "1fr 2fr", rows: "1fr 1fr", cells: [["B11", "B₁₁", "2 × 1"], ["B12", "B₁₂", "2 × 2"], ["B21", "B₂₁", "2 × 1"], ["B22", "B₂₂", "2 × 2"]] },
-    C: { cols: "1fr 2fr", rows: "2fr 1fr", cells: [["C11", "C₁₁", "2 × 1"], ["C12", "C₁₂", "2 × 2"], ["C21", "C₂₁", "1 × 1"], ["C22", "C₂₂", "1 × 2"]] },
+ const BLOCK_LAYOUTS = {
+    A: { cols: "2fr 1fr", rows: "2fr 1fr", cells: [["A11", "A₁₁", "2 × 2"], ["A12", "A₁₂", "2 × 1"], ["A21", "A₂₁", "1 × 2"], ["A22", "A₂₂", "1 × 1"]] },
+    B: { cols: "1fr 2fr", rows: "2fr 1fr", cells: [["B11", "B₁₁", "2 × 1"], ["B12", "B₁₂", "2 × 2"], ["B21", "B₂₁", "1 × 1"], ["B22", "B₂₂", "1 × 2"]] },
+   C: { cols: "1fr 2fr", rows: "2fr 1fr", cells: [["C11", "C₁₁", "2 × 1"], ["C12", "C₁₂", "2 × 2"], ["C21", "C₂₁", "1 × 1"], ["C22", "C₂₂", "1 × 2"]] },
   };
 
   function proportionalBlockMatrix(name, sourceKeys = [], resultKey = "") {
@@ -268,31 +269,32 @@
     }));
   }
 
-  function renderSection7Formal(formal) {
+  function renderSection7Formal(formal, section) {
     if (!formal) return;
     formal.innerHTML = `
       <h2>核心讲解</h2>
       <div class="matrix-lesson-formal elimination-formal">
         <header class="matrix-formal-hero">
           <div>
-            <span class="matrix-formal-kicker">从标量倍数升级到矩阵块</span>
-            <h3>块行操作的第一关是尺寸</h3>
-            <p>普通行倍加的逻辑不变。新的要求是：矩阵块 M 必须把第一块行变成第二块行的高度。</p>
+            <span class="matrix-formal-kicker">从块主元走向有效系统</span>
+            <h3>Schur 补来自一次块高斯消元</h3>
+            <p>A 可逆时，用 CA⁻¹ 倍的第一块行消去左下块 C；右下块与右端会同步更新。</p>
           </div>
-          <div class="matrix-formal-equation">${display("R_2\\leftarrow R_2-MR_1")}</div>
+          <div class="matrix-formal-equation">${display("R_2\\leftarrow R_2-CA^{-1}R_1")}</div>
         </header>
         <div class="matrix-concept-grid matrix-concept-grid-five">
-          ${conceptCard(1, "交换块行", "交换具有相同列分组的两条块方程。")}
-          ${conceptCard(2, "可逆倍乘", "用可逆矩阵左乘一条块行，保证操作能够撤销。")}
-          ${conceptCard(3, "块行倍加", "M 的尺寸由目标块行高度和来源块行高度共同决定。")}
-          ${conceptCard(4, "构造块 E", "把相同操作施加到分块单位矩阵，再左乘原系统。")}
-          ${conceptCard(5, "同步右端", "操作作用于整条方程，系数块和右端必须同时更新。")}
+          ${conceptCard(1, "块主元", "A 必须是可逆方块，才能形成 A⁻¹ 并承担消元主元。")}
+          ${conceptCard(2, "尺寸乘子", "若 A 为 p×p、C 为 q×p，则 CA⁻¹ 仍为 q×p，恰好连接两条块行。")}
+          ${conceptCard(3, "消去 C", `${inline("C-CA^{-1}A=0")}，左下耦合块被完整消除。`)}
+          ${conceptCard(4, "Schur 补", `${inline("S=D-CA^{-1}B")} 是消去 x 后 y 面对的有效系数。`)}
+          ${conceptCard(5, "同步右端", `${inline("g-CA^{-1}f")} 来自同一个块行操作，随后先解 Sy 再回代 x。`)}
         </div>
         <div class="matrix-formal-rule">
-          <span>消元抓手</span>
-          <p>${inline("C")} 与 ${inline("-C")} 的抵消来自矩阵乘法；${inline("g-Cf")} 来自同一行操作对右端的同步作用。</p>
+          <span>完整块三角化</span>
+          <p>${inline("\\begin{bmatrix}I&0\\\\-CA^{-1}&I\\end{bmatrix}\\begin{bmatrix}A&B\\\\C&D\\end{bmatrix}=\\begin{bmatrix}A&B\\\\0&S\\end{bmatrix}")}；同一矩阵同时作用于右端。</p>
         </div>
-      </div>`;
+      </div>
+      ${window.renderChapter4SourcePanel?.(section) || ""}`;
   }
 
   const BLOCK_OPERATIONS = {
@@ -325,38 +327,38 @@
   const ELIMINATION_STEPS = [
     {
       label: "01 / 04 · 识别耦合",
-      title: "左下块 C 把 x 带进第二条块方程",
-      coefficient: "\\begin{pmatrix}I_p&0\\\\\\color{#d46b4f}{C}&I_q\\end{pmatrix}",
+      title: "先把系统读成两条块方程",
+      coefficient: "\\begin{pmatrix}A&B\\\\\\color{#d46b4f}{C}&D\\end{pmatrix}\\begin{pmatrix}x\\\\y\\end{pmatrix}",
       rhs: "\\begin{pmatrix}f\\\\g\\end{pmatrix}",
-      rule: "x=f,\\qquad Cx+y=g",
-      caption: "目标是消去 C，让第二条方程不再含 x。",
+      rule: "Ax+By=f,\\qquad Cx+Dy=g",
+      caption: "假设 A 可逆。目标不是把所有块都变成单位块，而是用第一条块方程消去第二条中的 x。",
       state: "coupled",
     },
     {
       label: "02 / 04 · 构造块初等矩阵",
-      title: "把同一操作施加到分块单位矩阵",
-      coefficient: "E=\\begin{pmatrix}I_p&0\\\\\\color{#447f78}{-C}&I_q\\end{pmatrix}",
-      rhs: "R_2\\leftarrow R_2-CR_1",
-      rule: "C\\in\\mathbb{R}^{q\\times p}",
-      caption: "C 的尺寸 q×p 正好把第一块行高度 p 转成第二块行高度 q。",
+      title: "选择恰好能消去 C 的块行倍数",
+      coefficient: "E=\\begin{pmatrix}I_p&0\\\\\\color{#447f78}{-CA^{-1}}&I_q\\end{pmatrix}",
+      rhs: "R_2\\leftarrow R_2-CA^{-1}R_1",
+      rule: "CA^{-1}\\in\\mathbb{R}^{q\\times p}",
+      caption: "因为 (CA^{-1})A=C，这个乘数既通过尺寸闸门，又能精确抵消左下块。",
       state: "operator",
     },
     {
       label: "03 / 04 · 左乘并抵消",
-      title: "C 与 −C 在左下位置相遇",
-      coefficient: "\\begin{pmatrix}I_p&0\\\\-C&I_q\\end{pmatrix}\\begin{pmatrix}I_p&0\\\\C&I_q\\end{pmatrix}=\\begin{pmatrix}I_p&0\\\\0&I_q\\end{pmatrix}",
-      rhs: "\\begin{pmatrix}I_p&0\\\\-C&I_q\\end{pmatrix}\\begin{pmatrix}f\\\\g\\end{pmatrix}=\\begin{pmatrix}f\\\\g-Cf\\end{pmatrix}",
-      rule: "-CI_p+I_qC=0",
-      caption: "行操作作用于整个增广系统，因此右端同步出现 g−Cf。",
+      title: "左下块归零，右下块变成 Schur 补",
+      coefficient: "E\\begin{pmatrix}A&B\\\\C&D\\end{pmatrix}=\\begin{pmatrix}A&B\\\\0&D-CA^{-1}B\\end{pmatrix}",
+      rhs: "E\\begin{pmatrix}f\\\\g\\end{pmatrix}=\\begin{pmatrix}f\\\\g-CA^{-1}f\\end{pmatrix}",
+      rule: "S=D-CA^{-1}B",
+      caption: "同一次块行操作必须作用于整个增广系统；S 正是消去 x 后留给 y 的有效系数。",
       state: "cancelled",
     },
     {
       label: "04 / 04 · 按块读出解",
-      title: "耦合消失，两个变量组可以依次读取",
-      coefficient: "\\begin{pmatrix}I_p&0\\\\0&I_q\\end{pmatrix}\\begin{pmatrix}x\\\\y\\end{pmatrix}=\\begin{pmatrix}f\\\\g-Cf\\end{pmatrix}",
-      rhs: "x=f,\\qquad y=g-Cf",
-      rule: "E^{-1}=\\begin{pmatrix}I_p&0\\\\C&I_q\\end{pmatrix}",
-      caption: "这次消元不要求 C 可逆；恢复耦合时只需执行反向块行倍加。",
+      title: "先解缩小后的 y 方程，再回到第一块行",
+      coefficient: "Sy=g-CA^{-1}f",
+      rhs: "x=A^{-1}(f-By)",
+      rule: "\\det\\begin{pmatrix}A&B\\\\C&D\\end{pmatrix}=\\det(A)\\det(S)",
+      caption: "若 S 也可逆，系统便能按 y→x 的顺序求解；行列式分解来自同一个块三角化结果。",
       state: "solved",
     },
   ];
@@ -367,9 +369,9 @@
     const solved = state === "solved";
     return `
       <div class="coupling-diagram is-${state}">
-        <div class="subsystem-node"><small>第一变量组</small><strong>x</strong><span>x = f</span></div>
-        <div class="coupling-arrow${coupled ? " is-live" : ""}"><span>${operator ? "−C" : coupled ? "C" : "C + (−C) = 0"}</span><i></i></div>
-        <div class="subsystem-node"><small>第二变量组</small><strong>y</strong><span>${solved ? "y = g − Cf" : "Cx + y = g"}</span></div>
+        <div class="subsystem-node"><small>第一块方程</small><strong>x</strong><span>${solved ? "x = A⁻¹(f − By)" : "Ax + By = f"}</span></div>
+        <div class="coupling-arrow${coupled ? " is-live" : ""}"><span>${operator ? "−CA⁻¹" : coupled ? "C" : "C − CA⁻¹A = 0"}</span><i></i></div>
+        <div class="subsystem-node"><small>第二块方程</small><strong>y</strong><span>${solved ? "Sy = g − CA⁻¹f" : "Cx + Dy = g"}</span></div>
       </div>`;
   }
 
@@ -425,7 +427,7 @@
           <div class="block-operation-view" data-block-operation-view>${operationView("add")}</div>
         </section>
         <section class="matrix-workbench-panel" data-workbench-panel="elimination" hidden>
-          <div class="workbench-question"><span>观察任务</span><strong>追踪 C 与 −C 的来源，并确认右端为什么同时变成 g−Cf。</strong></div>
+          <div class="workbench-question"><span>观察任务</span><strong>追踪乘数 CA⁻¹ 如何消去 C，并找出 Schur 补 S 与新右端同时从哪里产生。</strong></div>
           <div class="block-elimination-view" data-elimination-view>${eliminationView(0)}</div>
           <div class="matrix-step-controls">
             <button type="button" data-elimination-prev disabled>上一步</button>

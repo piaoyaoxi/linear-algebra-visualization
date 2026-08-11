@@ -1,0 +1,371 @@
+.ch9-foundation,
+[data-ch9-lab] {
+  display: grid;
+  gap: 22px;
+}
+
+[data-ch9-lab] [hidden] { display: none !important; }
+
+.ch9-lead {
+  max-width: 850px;
+  margin: 0;
+  color: var(--muted);
+  font-size: 15px;
+  line-height: 1.85;
+}
+
+.ch9-theory-sequence {
+  overflow: hidden;
+  border: 1px solid var(--line);
+  border-radius: calc(var(--radius) + 1px);
+  background: var(--surface-solid);
+}
+
+.ch9-theory-row {
+  display: grid;
+  grid-template-columns: 104px minmax(0, 1fr);
+  gap: 22px;
+  padding: 20px 22px;
+}
+
+.ch9-theory-row + .ch9-theory-row { border-top: 1px solid var(--line); }
+
+.ch9-theory-row > span {
+  color: var(--accent-strong);
+  font-size: 12px;
+  font-weight: 820;
+  letter-spacing: .04em;
+}
+
+.ch9-theory-row h3 { margin: 0 0 4px; font-size: 19px; line-height: 1.4; }
+.ch9-theory-row small { display: block; margin-bottom: 7px; color: var(--muted); font-weight: 720; }
+.ch9-theory-row p,
+.ch9-theory-row div { margin: 0; color: var(--muted); font-size: 14px; line-height: 1.78; }
+
+.ch9-origin-map {
+  position: relative;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 16px;
+  padding-top: 88px;
+}
+
+.ch9-origin-center {
+  position: absolute;
+  top: 0;
+  left: 50%;
+  display: grid;
+  min-width: 230px;
+  padding: 13px 20px;
+  border: 1px solid var(--accent);
+  border-radius: 14px;
+  background: var(--surface-soft);
+  text-align: center;
+  transform: translateX(-50%);
+}
+
+.ch9-origin-center strong { color: var(--accent-strong); font-size: 20px; }
+.ch9-origin-center span { color: var(--muted); font-size: 12px; }
+
+.ch9-process-strip { display: grid; gap: 12px; }
+.ch9-process-strip > article {
+  display: grid;
+  grid-template-columns: 56px minmax(0, 1fr);
+  gap: 18px;
+  align-items: start;
+  padding: 20px 22px;
+  border: 1px solid var(--line);
+  border-radius: 15px;
+  background: var(--surface-solid);
+}
+.ch9-process-strip > article > span {
+  color: var(--accent-strong);
+  font-size: 22px;
+  font-weight: 850;
+}
+.ch9-process-strip h3 { margin: 0 0 4px; font-size: 19px; }
+.ch9-process-strip p { margin: 0 0 8px; color: var(--muted); font-size: 12px; font-weight: 760; }
+
+.ch9-structure-compare { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; }
+.ch9-compare-head { display: grid; grid-column: 1 / -1; grid-template-columns: 1fr 1fr; gap: 14px; }
+.ch9-compare-head span { padding: 11px 16px; border-radius: 11px; background: var(--surface-soft); color: var(--muted); font-size: 13px; font-weight: 780; text-align: center; }
+.ch9-structure-compare .ch9-formal-card:nth-of-type(3) { grid-column: 1 / -1; }
+.ch9-structure-compare .is-emphasis { border-color: var(--accent); background: var(--surface-soft); }
+
+.ch9-evidence-row { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 14px; }
+.ch9-evidence-row .ch9-formal-card { position: relative; padding-top: 58px; }
+.ch9-evidence-row .ch9-formal-card::before {
+  position: absolute;
+  top: 18px;
+  left: 22px;
+  display: grid;
+  width: 28px;
+  height: 28px;
+  place-items: center;
+  border: 1px solid var(--accent);
+  border-radius: 50%;
+  color: var(--accent-strong);
+  content: "✓";
+  font-weight: 850;
+}
+
+.ch9-proof-flow { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 30px; }
+.ch9-proof-flow > .ch9-proof-step { position: relative; }
+.ch9-proof-flow .ch9-formal-card { height: 100%; }
+.ch9-flow-arrow { position: absolute; top: 50%; right: -23px; color: var(--accent-strong); font-size: 25px; transform: translateY(-50%); }
+
+.ch9-theorem-gate { display: grid; grid-template-columns: minmax(0, 1.45fr) minmax(250px, .55fr); gap: 16px; }
+.ch9-theorem-main { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+.ch9-theorem-gate .is-gate { border-left: 4px solid var(--coral); }
+
+.ch9-algebra-bridge { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 26px; }
+.ch9-algebra-bridge > .ch9-algebra-step { position: relative; }
+.ch9-algebra-bridge > .ch9-algebra-step > span { display: block; margin-bottom: 8px; color: var(--accent-strong); font-size: 12px; font-weight: 820; }
+.ch9-algebra-bridge > .ch9-algebra-step:not(:last-child)::after { position: absolute; top: 54%; right: -20px; color: var(--accent-strong); content: "→"; font-size: 22px; }
+
+.ch9-real-complex-map { display: grid; grid-template-columns: 1.2fr 1fr 1fr; gap: 14px; }
+.ch9-real-complex-map .is-conjugate { border-top: 4px solid var(--accent); }
+
+[data-ch9-lab] {
+  overflow: hidden;
+  border: 1px solid var(--line);
+  border-radius: calc(var(--radius) + 2px);
+  background: var(--surface-solid);
+  box-shadow: var(--shadow-soft);
+}
+
+.ch9-experiment-header {
+  padding: 24px 26px 20px;
+  border-bottom: 1px solid var(--line);
+}
+
+.ch9-experiment-header h3 { margin: 0 0 7px; font-size: clamp(20px, 2.1vw, 25px); line-height: 1.35; }
+.ch9-experiment-header p { max-width: 820px; margin: 0; color: var(--muted); font-size: 14px; line-height: 1.75; }
+
+.ch9-task {
+  display: grid;
+  grid-template-columns: 104px minmax(0, 1fr);
+  gap: 18px;
+  margin: 0 24px 24px;
+  padding: 16px 18px;
+  border: 1px solid var(--line);
+  border-radius: 13px;
+  background: var(--surface-soft);
+}
+.ch9-task strong { color: var(--accent-strong); font-size: 13px; }
+.ch9-task ol { display: grid; gap: 6px; margin: 0; padding-left: 20px; color: var(--muted); font-size: 13px; line-height: 1.6; }
+
+.ch9-toolbar { display: flex; flex-wrap: wrap; gap: 9px; }
+.ch9-toolbar button,
+.ch9-stepper button,
+.ch9-action {
+  min-height: 40px;
+  padding: 9px 14px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: var(--surface-solid);
+  color: var(--text);
+  font: inherit;
+  font-size: 13px;
+  font-weight: 760;
+  cursor: pointer;
+}
+.ch9-toolbar button:hover,
+.ch9-stepper button:hover,
+.ch9-action:hover { border-color: var(--accent); color: var(--accent-strong); }
+.ch9-toolbar button.is-active,
+.ch9-stepper button.is-active,
+.ch9-action.is-primary { border-color: var(--accent); background: var(--accent); color: #fff; }
+.ch9-toolbar button.is-active:hover,
+.ch9-stepper button.is-active:hover,
+.ch9-action.is-primary:hover { color: #fff; }
+.ch9-toolbar button:focus-visible,
+.ch9-stepper button:focus-visible,
+.ch9-action:focus-visible,
+.ch9-range input:focus-visible { outline: 3px solid color-mix(in srgb, var(--accent) 28%, transparent); outline-offset: 2px; }
+
+.ch9-range-list { display: grid; gap: 10px; }
+.ch9-range {
+  display: grid;
+  grid-template-columns: 128px minmax(120px, 1fr) 58px;
+  gap: 12px;
+  align-items: center;
+  padding: 10px 12px;
+  border: 1px solid var(--line);
+  border-radius: 11px;
+  background: var(--surface-solid);
+}
+.ch9-range > span { color: var(--muted); font-size: 12px; font-weight: 760; }
+.ch9-range input { width: 100%; accent-color: var(--accent); }
+.ch9-range output { color: var(--accent-strong); font-size: 13px; font-weight: 820; text-align: right; }
+
+.ch9-stage {
+  overflow: hidden;
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  background: var(--surface-solid);
+}
+.ch9-stage canvas { display: block; width: 100%; min-height: 360px; touch-action: none; }
+.ch9-stage-top { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 8px 18px; padding: 13px 16px; border-bottom: 1px solid var(--line); background: var(--surface-soft); }
+.ch9-stage-top strong { font-size: 14px; }
+.ch9-stage-top span { color: var(--muted); font-size: 12px; }
+
+.ch9-metric-strip { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); border: 1px solid var(--line); border-radius: 13px; background: var(--surface-soft); }
+.ch9-metric-strip > div { padding: 13px 15px; }
+.ch9-metric-strip > div + div { border-left: 1px solid var(--line); }
+.ch9-metric-strip span { display: block; margin-bottom: 4px; color: var(--muted); font-size: 11px; }
+.ch9-metric-strip strong { color: var(--accent-strong); font-size: 16px; }
+.ch9-conclusion { padding: 15px 17px; border-left: 4px solid var(--accent); border-radius: 11px; background: var(--surface-soft); }
+.ch9-conclusion.is-warning { border-left-color: var(--coral); }
+.ch9-conclusion strong { display: block; margin-bottom: 4px; }
+.ch9-conclusion p { margin: 0; color: var(--muted); font-size: 13px; line-height: 1.65; }
+.ch9-equation { min-width: 0; overflow-x: auto; padding: 13px 16px; border: 1px solid var(--line); border-radius: 12px; background: var(--surface-soft); text-align: center; }
+.ch9-equation .tex-display { margin: 0; }
+
+/* §1: the geometric scene is the first and largest object. */
+.ch9-inner-lab { gap: 0; }
+.ch9-inner-body { display: grid; grid-template-columns: minmax(0, 1.5fr) minmax(270px, .65fr); gap: 16px; padding: 20px 24px 24px; }
+.ch9-inner-scene { display: grid; gap: 12px; }
+.ch9-inner-side { display: grid; align-content: start; gap: 12px; }
+
+/* §2: controls are a timeline below one persistent stage. */
+.ch9-gs-lab { gap: 0; }
+.ch9-gs-body { display: grid; grid-template-columns: minmax(0, 1.45fr) minmax(280px, .65fr); gap: 16px; padding: 20px 24px 16px; }
+.ch9-gs-side { display: grid; align-content: start; gap: 12px; }
+.ch9-stepper { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; padding: 0 24px 24px; }
+.ch9-stepper button { display: grid; gap: 3px; text-align: left; }
+.ch9-stepper button span { font-size: 11px; opacity: .78; }
+
+/* §3: two spaces are tied by a visible bridge. */
+.ch9-iso-lab { gap: 0; }
+.ch9-iso-controls { display: grid; grid-template-columns: 1fr minmax(280px, .7fr); gap: 14px; padding: 16px 24px; border-bottom: 1px solid var(--line); background: var(--surface-soft); }
+.ch9-iso-scene { padding: 20px 24px 12px; }
+.ch9-iso-scene canvas { min-height: 420px; }
+.ch9-iso-footer { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; padding: 0 24px 24px; }
+
+/* §4: geometry and the three equivalent certificates share one row. */
+.ch9-ortho-lab { gap: 0; }
+.ch9-ortho-controls { display: grid; grid-template-columns: 1fr minmax(300px, .7fr); gap: 14px; padding: 16px 24px; border-bottom: 1px solid var(--line); }
+.ch9-ortho-body { display: grid; grid-template-columns: minmax(0, 1.45fr) minmax(280px, .65fr); gap: 16px; padding: 20px 24px 24px; }
+.ch9-certificate-stack { display: grid; align-content: start; gap: 10px; }
+.ch9-certificate { padding: 13px 15px; border: 1px solid var(--line); border-radius: 12px; background: var(--surface-soft); }
+.ch9-certificate span { display: block; color: var(--muted); font-size: 11px; }
+.ch9-certificate strong { font-size: 15px; }
+.ch9-certificate.is-pass { border-color: var(--accent); }
+.ch9-certificate.is-fail { border-color: var(--coral); }
+
+/* §5: the point on W and the point on the curve share one parameter. */
+.ch9-proj-lab { gap: 0; }
+.ch9-proj-controls { display: grid; grid-template-columns: 1fr minmax(320px, .8fr); gap: 14px; padding: 16px 24px; border-bottom: 1px solid var(--line); background: var(--surface-soft); }
+.ch9-proj-linked { display: grid; grid-template-columns: 1.08fr .92fr; gap: 0; margin: 20px 24px 12px; border: 1px solid var(--line); border-radius: 16px; overflow: hidden; }
+.ch9-proj-panel + .ch9-proj-panel { border-left: 1px solid var(--line); }
+.ch9-proj-panel header { padding: 11px 14px; border-bottom: 1px solid var(--line); background: var(--surface-soft); font-size: 13px; font-weight: 780; }
+.ch9-proj-panel canvas { display: block; width: 100%; min-height: 340px; }
+.ch9-proj-footer { display: grid; grid-template-columns: 1.2fr .8fr; gap: 12px; padding: 0 24px 24px; }
+.ch9-view-switch { display: none; }
+
+/* §6: three panels reveal the factorization instead of one overlaid tooltip. */
+.ch9-spectral-lab { gap: 0; }
+.ch9-spectral-controls { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 12px; padding: 16px 24px; border-bottom: 1px solid var(--line); }
+.ch9-spectral-story { padding: 20px 24px 12px; }
+.ch9-spectral-story canvas { min-height: 400px; }
+.ch9-spectral-footer { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; padding: 0 24px 24px; }
+.ch9-theorem-warning { padding: 18px; border: 1px solid var(--coral); border-radius: 13px; background: var(--surface-solid); }
+
+/* §7: the answer is revealed only after the student has explored. */
+.ch9-ls-lab { gap: 0; }
+.ch9-ls-body { display: grid; grid-template-columns: minmax(0, 1.45fr) minmax(280px, .65fr); gap: 16px; padding: 20px 24px 24px; }
+.ch9-ls-side { display: grid; align-content: start; gap: 12px; }
+.ch9-ls-side .ch9-action { width: 100%; }
+.ch9-ls-readings { display: grid; grid-template-columns: 1.35fr 1fr 1fr; overflow: hidden; border: 1px solid var(--line); border-radius: 12px; }
+.ch9-ls-readings > div { min-width: 0; padding: 11px 12px; }
+.ch9-ls-readings > div + div { border-left: 1px solid var(--line); }
+.ch9-ls-readings span { display: block; color: var(--muted); font-size: 10px; }
+.ch9-ls-readings strong { color: var(--accent-strong); font-size: 14px; }
+.ch9-normal-equations { display: grid; gap: 7px; padding: 14px; border: 1px solid var(--line); border-radius: 12px; background: var(--surface-soft); }
+.ch9-normal-equations > div { display: flex; justify-content: space-between; gap: 12px; font-size: 13px; }
+
+/* §8: conjugation and unitary motion are two different chapters of the lab. */
+.ch9-unitary-lab { gap: 0; }
+.ch9-unitary-tabs { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; padding: 16px 24px; border-bottom: 1px solid var(--line); }
+.ch9-unitary-body { display: grid; grid-template-columns: minmax(0, 1.35fr) minmax(290px, .65fr); gap: 16px; padding: 20px 24px 24px; }
+.ch9-unitary-side { display: grid; align-content: start; gap: 12px; }
+.ch9-dictionary { display: grid; grid-template-columns: 1fr 1fr; overflow: hidden; border: 1px solid var(--line); border-radius: 12px; }
+.ch9-dictionary div { padding: 10px 12px; font-size: 12px; }
+.ch9-dictionary div:nth-child(odd) { background: var(--surface-soft); color: var(--muted); }
+
+body.dark [data-ch9-lab],
+body.dark .ch9-formal-card { box-shadow: none; }
+
+@media (max-width: 920px) {
+  .ch9-origin-map,
+  .ch9-evidence-row,
+  .ch9-proof-flow,
+  .ch9-algebra-bridge,
+  .ch9-real-complex-map { grid-template-columns: 1fr; }
+  .ch9-origin-map { padding-top: 84px; }
+  .ch9-flow-arrow,
+  .ch9-algebra-bridge > .ch9-algebra-step::after { display: none; }
+  .ch9-theorem-gate,
+  .ch9-inner-body,
+  .ch9-gs-body,
+  .ch9-ortho-body,
+  .ch9-ls-body,
+  .ch9-unitary-body { grid-template-columns: 1fr; }
+}
+
+@media (max-width: 720px) {
+  .ch9-experiment-header { padding: 19px 18px 16px; }
+  .ch9-task { grid-template-columns: 1fr; gap: 7px; margin: 0 18px 18px; padding: 14px 15px; }
+  .ch9-inner-body,
+  .ch9-gs-body,
+  .ch9-ortho-body,
+  .ch9-ls-body,
+  .ch9-unitary-body { padding: 16px 18px 18px; }
+  .ch9-iso-controls,
+  .ch9-ortho-controls,
+  .ch9-proj-controls { grid-template-columns: 1fr; padding: 14px 18px; }
+  .ch9-iso-scene { padding: 16px 18px 10px; }
+  .ch9-iso-scene canvas { min-height: 680px; }
+  .ch9-iso-footer,
+  .ch9-proj-footer,
+  .ch9-spectral-footer { grid-template-columns: 1fr; padding: 0 18px 18px; }
+  .ch9-view-switch { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; padding: 14px 18px 0; }
+  .ch9-view-switch button { min-height: 40px; border: 1px solid var(--line); border-radius: 10px; background: var(--surface-solid); color: var(--text); font: inherit; font-size: 13px; font-weight: 760; }
+  .ch9-view-switch button.is-active { border-color: var(--accent); background: var(--accent); color: #fff; }
+  .ch9-proj-linked { grid-template-columns: 1fr; margin: 10px 18px; }
+  .ch9-proj-panel { display: none; }
+  .ch9-proj-panel.is-current { display: block; }
+  .ch9-proj-panel + .ch9-proj-panel { border-left: 0; }
+  .ch9-proj-panel canvas { min-height: 300px; }
+  .ch9-spectral-controls { padding: 14px 18px; }
+  .ch9-spectral-story { padding: 16px 18px 10px; }
+  .ch9-spectral-story canvas { min-height: 330px; }
+  .ch9-spectral-controls .ch9-toolbar:last-child { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); width: 100%; }
+  .ch9-spectral-controls .ch9-toolbar:last-child button { min-width: 0; padding-inline: 8px; }
+  .ch9-unitary-tabs { grid-template-columns: 1fr; padding: 14px 18px; }
+  .ch9-stepper { grid-template-columns: 1fr 1fr; padding: 0 18px 18px; }
+  .ch9-stage canvas { min-height: 300px; }
+  .ch9-iso-scene .ch9-stage canvas { min-height: 560px; }
+  .ch9-metric-strip { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .ch9-metric-strip > div { min-width: 0; padding: 10px 9px; }
+  .ch9-metric-strip > div + div { border-left: 1px solid var(--line); }
+  .ch9-metric-strip strong { font-size: 14px; overflow-wrap: anywhere; }
+  .ch9-range { grid-template-columns: 105px minmax(90px, 1fr) 50px; }
+  .ch9-structure-compare,
+  .ch9-theorem-main { grid-template-columns: 1fr; }
+  .ch9-compare-head { grid-template-columns: 1fr; }
+  .ch9-structure-compare .ch9-formal-card:nth-of-type(3) { grid-column: auto; }
+  .ch9-theory-row { grid-template-columns: 1fr; gap: 5px; padding: 17px 18px; }
+}
+
+@media (max-width: 430px) {
+  .ch9-formal-card { padding: 18px; }
+  .ch9-origin-center { min-width: 205px; }
+  .ch9-toolbar button { flex: 1 1 112px; }
+  .ch9-spectral-controls .ch9-toolbar:last-child button { flex: 1 1 0; }
+  .ch9-range { grid-template-columns: 1fr auto; }
+  .ch9-range input { grid-column: 1 / -1; grid-row: 2; }
+  .ch9-range output { grid-column: 2; grid-row: 1; }
+  .ch9-stepper { grid-template-columns: 1fr; }
+}

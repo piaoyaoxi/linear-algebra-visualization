@@ -20,6 +20,19 @@
     if (typeof enhancer === "function") enhancers.push(enhancer);
   };
 
+  window.renderChapter4SourcePanel = function renderChapter4SourcePanel(section) {
+    const source = section?.textbook;
+    if (!source) return "";
+    const items = (source.items || []).map((item) => `<li>${item}</li>`).join("");
+    return `
+      <aside class="script-panel textbook-panel ch4-source-panel">
+        <span class="matrix-formal-kicker">经典教材脉络</span>
+        <h3>${source.reference || "经典线性代数教材综合"}</h3>
+        ${source.page ? `<p>对应章节：${source.page}</p>` : ""}
+        ${items ? `<ul>${items}</ul>` : ""}
+      </aside>`;
+  };
+
   window.mountChapter4Lesson = function mountChapter4Lesson(section, root) {
     if (!section?.id || !root) return;
 

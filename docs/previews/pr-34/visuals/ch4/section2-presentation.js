@@ -55,13 +55,13 @@
     `;
   }
 
-  function renderFormal(formal) {
+  function renderFormal(formal, section) {
     if (!formal || formal.dataset.sectionTwoReady === "true") return;
 
     formal.innerHTML = `
       <h2>先把运算规则放进同一张地图</h2>
       <div class="s2-foundation">
-        <p class="s2-lead">加法与数乘在相同位置上工作；转置改变行列方向；乘法先通过尺寸闸门，再把一行与一列配对。每条规则都回答一个具体问题，不需要把它们混成一串公式背诵。</p>
+        <p class="s2-lead">加法与数乘在相同位置上工作；转置改变行列方向。乘法先把 B 的每一列交给 A，再把所得列并排起来；行乘列公式由这一定义展开。</p>
 
         <section class="s2-module" aria-labelledby="s2-basic-operations-title">
           <div class="s2-module-heading">
@@ -145,9 +145,25 @@
           </div>
         </section>
 
-        <section class="s2-module" aria-labelledby="s2-laws-title">
+        <section class="s2-module" aria-labelledby="s2-column-definition-title">
           <div class="s2-module-heading">
             <span>04</span>
+            <div>
+              <h3 id="s2-column-definition-title">先定义输出列，再得到行乘列</h3>
+              <p>这条路线同时解释尺寸、元素公式和连续作用。</p>
+            </div>
+          </div>
+          <div class="s2-property-grid s2-column-rule-grid">
+            <article><span>列定义</span>${mathDisplay("B=[b_1\\ \\cdots\\ b_p]\\quad\\Longrightarrow\\quad AB=[Ab_1\\ \\cdots\\ Ab_p]")}<p>B 有 p 列，因此 AB 也有 p 列；每个 bⱼ 必须拥有 A 所需的 n 个坐标。</p></article>
+            <article><span>元素公式</span>${mathDisplay("(AB)_{ij}=(Ab_j)_i=\\sum_{k=1}^{n}a_{ik}b_{kj}")}<p>取第 j 个输出列的第 i 个坐标，行乘列公式随之出现。</p></article>
+            <article><span>连续作用</span>${mathDisplay("(AB)x=A(Bx)")}<p>B 先把 x 组合成中间向量，A 再处理这个中间结果。</p></article>
+            <article><span>结合律理由</span>${mathDisplay("((AB)C)_j=(AB)c_j=A(Bc_j)=(A(BC))_j")}<p>两边每一列相同，因此 (AB)C=A(BC)。</p></article>
+          </div>
+        </section>
+
+        <section class="s2-module" aria-labelledby="s2-laws-title">
+          <div class="s2-module-heading">
+            <span>05</span>
             <div>
               <h3 id="s2-laws-title">单位矩阵、结合律与作用方向</h3>
               <p>把“保持不变”“重新打包”和“交换顺序”分开理解。</p>
@@ -179,7 +195,7 @@
 
         <section class="s2-module s2-extension-module" aria-labelledby="s2-extension-title">
           <div class="s2-module-heading">
-            <span>05</span>
+            <span>06</span>
             <div>
               <h3 id="s2-extension-title">延伸观察</h3>
               <p>三条支线折叠收纳，不打断本节主线。</p>
@@ -192,6 +208,7 @@
           </div>
         </section>
       </div>
+      ${window.renderChapter4SourcePanel?.(section) || ""}
     `;
 
     bindBasicOperations(formal);

@@ -18,7 +18,7 @@
     const shell = S.createLab(section, lesson, {
       layout: "matrix-columns",
       title: "为什么二维矩阵的两列，正好就是两根基向量的像？",
-      description: "整张变换网格由两根列向量撑开。矩阵不是旁边的一张数字表，它和网格中的两根箭头是同一个信息。",
+      description: "整张变换网格由两根列向量撑开；矩阵的两列与网格中的两根箭头记录同一个线性变换。",
       task: "先拖动青绿、珊瑚圆环，观察整张网格和矩阵两列同步变化；再用同一组系数重建 T(x)。",
     });
     shell.toolbar.innerHTML = `${S.buttonGroup("观察", modes, state.mode, "mode")}<div data-basis-choice hidden>${S.buttonGroup("选基", bases.map((item, index) => ({ value: index, label: item.name })), state.basis, "basis")}</div>`;

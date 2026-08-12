@@ -2070,7 +2070,7 @@
           ],
         },
         textbook: sources(
-          "Axler 8.D；Friedberg 7.3；Hoffman–Kunze 6.4、7.1",
+          "Axler 8.C–8.D；Friedberg 7.3；Hoffman–Kunze 6.4、7.1",
           ["算子多项式", "Cayley–Hamilton", "多项式除法与整除性质", "循环轨道和 Jordan 最大块"],
         ),
         example: {

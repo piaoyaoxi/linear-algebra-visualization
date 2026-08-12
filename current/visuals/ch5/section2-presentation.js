@@ -16,7 +16,7 @@
 
         ${module(
           "01",
-          "交叉项不是二次型的固定标签",
+          "交叉项会随坐标改变",
           "它会随坐标改变；配方法寻找一组解耦变量",
           `<div class="ch5-pair">
             <div class="ch5-card ch5s2-axis-card"><div class="ch5s2-tilted-axes"><span></span><i></i><b></b></div><h4>耦合表达</h4><p>${inline("q_t=x_1^2+2tx_1x_2+x_2^2")} 含交叉项。</p></div>
@@ -47,12 +47,12 @@
         ${module(
           "04",
           "矩阵中必须行列成对",
-          "普通行消元只改一侧，不是二次型换元",
+          "普通行消元只改一侧；二次型换元要求行、列成对变化",
           `<div class="ch5s2-paired-operation"><div><strong>右乘 E</strong><span>实施一次列变换</span></div><b>+</b><div><strong>左乘 Eᵀ</strong><span>同步做对应行变换</span></div><b>→</b><div><strong>EᵀAE</strong><span>仍对称，且换元可追踪</span></div></div>
           <p class="ch5-muted">逐步累积初等矩阵后得到 ${inline("C^TAC=D")}。因为每一步可逆，最终标准形与原二次型秩相同。</p>`,
         )}
 
-        <div class="ch5-next-note"><span>两条路线</span><p>Lagrange 配方法给出一般合同对角化；学过谱定理后，实对称矩阵还能被正交对角化，得到保持长度与夹角的主轴坐标。正交法是更强的特殊选择，不是每次配方的几何含义。</p></div>
+        <div class="ch5-next-note"><span>两条路线</span><p>Lagrange 配方法给出一般合同对角化；学过谱定理后，实对称矩阵还能被正交对角化，得到保持长度与夹角的主轴坐标。一般配方允许非正交换元；正交法是在额外保持欧氏几何时采用的更强选择。</p></div>
       </div>`;
   }
 
@@ -121,7 +121,7 @@
     }
 
     function lookCopy(kind, final) {
-      if (final) return "终点：矩阵已经对角化，坐标表达不再耦合。现在核对右侧三项，而不是只凭图形判断。";
+      if (final) return "终点：矩阵已经对角化，坐标表达不再耦合。请展开右侧三个平方项，逐项核对原二次型的系数。";
       const copy = {
         start: "先看原式：交叉项还在，所以当前矩阵的非对角元不为 0。",
         pick: "这一页只是在选择主平方项并收集相关项，还没有完成变量替换。",

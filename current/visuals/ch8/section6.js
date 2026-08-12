@@ -35,7 +35,7 @@
         <div class="ch8-lab ch8-cinema ch8-jordan-cinema">
           <header class="ch8-cinema-head">
             <div><span>固定 N=A−λ₀I</span><h3>链每向上多一层，核空间就多看见一层</h3></div>
-            <p>链长不是装饰：它同时决定 ker Nᵏ 的增长速度和 Jordan 块的大小。</p>
+            <p>链长同时决定 ker Nᵏ 的增长速度和 Jordan 块的大小。</p>
           </header>
 
           <div class="ch8-jordan-toolbar">

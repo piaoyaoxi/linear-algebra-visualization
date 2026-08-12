@@ -109,7 +109,7 @@
           <div class="ch8-trace-formula">${I(active.left)}<i>−</i>${I(active.right)}<i>=</i><strong>${I(active.result)}</strong></div>
           <p>${active.explanation}</p>
         </div>
-        ${conclusionMarkup("现在应该看见", "对角位置保留 λ，非对角位置只做 0−aᵢⱼ", "三个矩阵中同一坐标被同时标出；这不是分块，也不是三组独立卡片，而是一次逐位置相减。")}`;
+        ${conclusionMarkup("现在应该看见", "对角位置保留 λ，非对角位置只做 0−aᵢⱼ", "三个矩阵中同一坐标被同时标出；它们共同展示一次逐位置相减，并保持位置一一对应。")}`;
       stage.querySelectorAll("[data-build-cell]").forEach((button) => on(button, "click", () => {
         selectedCell = button.dataset.buildCell;
         renderBuild();

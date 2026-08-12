@@ -26,7 +26,7 @@
 
           <header class="ch8-cinema-head">
             <div><span>循环子空间</span><h3>每作用一次 A，轨道向前推进；第一次回流决定最后一列</h3></div>
-            <p>伴随矩阵不是凭空写出的模板。它完整记录了“前移”和“反馈”两种动作。</p>
+            <p>伴随矩阵完整记录“前移”和“反馈”两种动作，因此自然出现在循环子空间的基下。</p>
           </header>
 
           <section class="ch8-krylov-machine">

@@ -41,7 +41,7 @@ defineChapter3Section("linear-dependence", {
     },
   ],
   textbook: {
-    reference: "北大版《高等代数》第三章 §3",
+    reference: "北大版《高等代数》第三章 §3 · Axler pp. 36–41 · Friedberg pp. 35–47",
     page: "",
     items: ["表示唯一性", "线性相关与线性无关", "相关性的基本性质", "删除引理", "极大线性无关组"],
   },

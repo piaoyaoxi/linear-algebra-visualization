@@ -41,7 +41,7 @@ defineChapter3Section("elimination", {
     },
   ],
   textbook: {
-    reference: "北大版《高等代数》第三章 §1",
+    reference: "北大版《高等代数》第三章 §1 · Hoffman–Kunze pp. 14–22 · Strang pp. 42–59",
     page: "",
     items: ["等价方程组", "三类初等行变换", "增广矩阵", "阶梯形与回代", "解的三种终局"],
   },

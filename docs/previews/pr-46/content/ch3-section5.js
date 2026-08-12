@@ -41,7 +41,7 @@ defineChapter3Section("solvability", {
     },
   ],
   textbook: {
-    reference: "北大版《高等代数》第三章 §5",
+    reference: "北大版《高等代数》第三章 §5 · Lay pp. 50–52 · Friedberg pp. 184–186",
     page: "",
     items: ["Ax 的列组合", "列向量张成", "有解判别定理", "系数秩与增广秩", "唯一解与无穷多解"],
   },

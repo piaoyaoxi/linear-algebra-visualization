@@ -41,7 +41,7 @@ defineChapter3Section("n-vector-space", {
     },
   ],
   textbook: {
-    reference: "北大版《高等代数》第三章 §2",
+    reference: "北大版《高等代数》第三章 §2 · Lay pp. 39–52 · Strang pp. 42–43",
     page: "",
     items: ["n 维向量", "向量加法与数乘", "标准基与坐标", "线性组合", "Ax 的列组合解释"],
   },

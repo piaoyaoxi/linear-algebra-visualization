@@ -41,7 +41,7 @@ defineChapter3Section("solution-structure", {
     },
   ],
   textbook: {
-    reference: "北大版《高等代数》第三章 §6",
+    reference: "北大版《高等代数》第三章 §6 · Friedberg pp. 180–184 · Strang pp. 145–160 · Axler pp. 59–64",
     page: "",
     items: ["齐次方程组", "基础解系", "非齐次方程组的特解", "通解结构", "秩与自由变量"],
   },

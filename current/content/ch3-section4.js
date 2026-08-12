@@ -41,7 +41,7 @@ defineChapter3Section("matrix-rank", {
     },
   ],
   textbook: {
-    reference: "北大版《高等代数》第三章 §4",
+    reference: "北大版《高等代数》第三章 §4 · Strang pp. 174–195 · Hoffman–Kunze pp. 65–68",
     page: "",
     items: ["向量组的秩", "矩阵的行秩与列秩", "行列秩相等", "主元与秩", "子式判定"],
   },

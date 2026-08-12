@@ -17,21 +17,21 @@
     if (!root) return;
     root.innerHTML = formalShell(
       "选学：结式消元",
-      "这里保留本章最核心的算法动作——消去一个变量、回代另一个变量、最后验解——但把运算对象从线性方程行升级为一元多项式的系数表。",
+      "前六节的线性理论已经闭合。本节只迁移“消去一个变量—恢复另一个变量—代回验解”的算法顺序，并把运算对象换成一元多项式的系数表。",
       module(
         "01",
         "Sylvester 矩阵与结式",
         "公共根问题被编码为一个行列式",
-        `<div class="ch3-theorem-row"><div>${texD(String.raw`\operatorname{Res}_x(f,g)=\det S_x(f,g)`)}</div><p>把 f、g 按 x 的次数排列系数并错位堆叠，得到 Sylvester 矩阵。次数正常时，行列式为零恰好表示两多项式关于 x 有公共根。</p></div>`,
+        `<div class="ch3-theorem-row"><div>${texD(String.raw`\operatorname{Res}_x(f,g)=\det S_x(f,g)`)}</div><p>把 f、g 按 x 的次数排列系数并错位堆叠，得到 Sylvester 矩阵。固定次数的正常情形下，结式为零给出关于 x 存在公共根的条件。</p></div>`,
       ) +
         module(
           "02",
-          "结式只负责候选",
-          "完整解还需要回代与边界检查",
+          "候选、边界与真解",
+          "完整解还需要恢复坐标并检查次数退化",
           cards([
             ["选择", "先选消元变量", "优先选择次数较低、系数较简单的方向。"],
-            ["候选", "解结式多项式", "得到被保留变量的可能取值，包含重根和复根信息。"],
-            ["确认", "逐点回代验解", "求另一坐标，并排除退化或变形过程产生的伪候选。"],
+            ["候选", "解结式多项式", "得到被保留变量的可能取值，其中可能含复根或重根。"],
+            ["确认", "逐点回代验解", "恢复另一坐标，并检查首项系数消失造成的次数下降。"],
           ]),
         ) +
         `<p class="ch3-source-note">本节为教材选学内容。可视化重点是消元流程与代数边界，不把曲线图当作严格证明。</p>`,
@@ -124,7 +124,7 @@
     root.innerHTML = `
       <h2>交互实验</h2>
       <div class="ch3-lab" data-ch3-lab="resultant">
-        <div class="ch3-lab-head"><span class="ch3-lab-kicker">目标 · 区分“结式候选”和“原方程组真解”</span><h3>从曲线交点到一元方程</h3><p>一次只推进一个代数动作。左侧曲线说明我们正在寻找什么，右侧公式说明这一步保留了哪些信息。</p></div><div class="ch3-mission"><strong>你来试一试</strong><span>选择“抛物线与切线”，逐步推进到回代，观察二重根为何对应相切。</span><span class="ch3-mission-result">观察：结式给候选，回代确认真解</span></div>
+        <div class="ch3-lab-head"><span class="ch3-lab-kicker">目标 · 区分“结式候选”和“原方程组真解”</span><h3>从曲线公共点到一元候选</h3><p>一次只推进一个代数动作。左侧曲线说明要寻找的对象，右侧公式明确每一步保留和丢失的信息。</p></div><div class="ch3-mission"><strong>你来试一试</strong><span>先在求出候选根后暂停，再执行回代；随后选择“抛物线与切线”，观察二重根怎样对应相切。</span><span class="ch3-mission-result">观察：结式缩小候选集，原方程完成最终确认</span></div>
         <div class="ch3-presets">
           <button type="button" class="is-active" data-preset="crossing">圆与割线</button>
           <button type="button" data-preset="tangent">抛物线与切线</button>

@@ -21,18 +21,18 @@
     },
     "n-vector-space": {
       kicker: "向量空间 · 线性组合",
-      title: "缩放、首尾相接，再读出结果向量",
-      intro: "沿用第四章的坐标系与细箭头：αu 和 βv 是两段位移，从原点到最终终点的箭头才是 αu+βv。",
+      title: "坐标给出权重，线性组合给出结果",
+      intro: "箭头提供二维可见模型：α、β 分别缩放 u、v，再把两段位移首尾相接。矩阵语言中，同样的系数就是组合各列所用的权重。",
       aria: "两个向量缩放后首尾相接形成线性组合",
       controls: "vector",
       precisionTitle: "用完整坐标计算线性组合",
       precisionNote: "改变维数和坐标，核对每一个分量怎样参与运算",
-      caption: "拖动系数时，三根箭头始终保持首尾相接；坐标只是同一几何位移的记录。",
+      caption: "拖动系数时，三根箭头始终保持首尾相接；右侧完整坐标逐项记录同一次线性组合。",
     },
     "linear-dependence": {
-      kicker: "线性相关 · span 是否增长",
-      title: "维数只在新方向出现时增加",
-      intro: "依次加入三个向量：先得到一条直线，再由第二个独立方向铺开平面；第三个向量若已在这个平面中，span 不再增长。",
+      kicker: "线性相关 · 表示是否唯一",
+      title: "新向量落入旧 span，系数表示开始重复",
+      intro: "依次加入三个向量：前两个独立方向铺开平面；第三个向量若已在这个平面中，它可以由旧向量合成，于是同一目标出现不同的组合系数。",
       aria: "一个向量张成直线，第二个向量扩成平面，第三个向量不增加维数",
       controls: "steps",
       precisionTitle: "用线性关系判断相关",
@@ -41,13 +41,13 @@
       caption: [
         "span(v₁) 是穿过原点的一条直线，维数为 1。",
         "v₂ 不在原来的直线上；两组系数现在可以到达整个平面，维数升为 2。",
-        "v₃=0.7v₁+0.55v₂ 已由旧方向合成；向量增加了，span 的维数仍是 2。",
+        "v₃=0.7v₁+0.55v₂ 给出非平凡零关系；删去 v₃ 后，span 的维数仍是 2。",
       ],
     },
     "matrix-rank": {
       kicker: "矩阵的秩 · 先看二维例子",
       title: "二维网格会变成平面、直线或点",
-      intro: "这里先用 2×2 矩阵观察秩 2、1、0：面积逐渐缩小，两个输出方向共线时网格坍缩成直线。3×3 矩阵将在下面用真正的三维视图表示。",
+      intro: "先用 2×2 矩阵观察列张成的维数：两个输出方向独立时铺满平面，共线时只生成直线，同时为零时只剩原点。下面再用主元和子式给出严格证书。",
       aria: "矩阵把二维网格连续压缩为直线或点",
       controls: "rank",
       precisionTitle: "用完整矩阵判断秩",
@@ -56,13 +56,13 @@
     },
     solvability: {
       kicker: "有解判别 · 目标是否可达",
-      title: "把 b 拖离列空间，残差立即出现",
-      intro: "A 的列向量只能生成绿色直线。b 落在线上时可写成列向量的线性组合；离开直线后，多出的垂直分量无法由 A 产生。",
+      title: "把 b 放入或移出列向量张成",
+      intro: "A 的列向量在这个例子中只能生成绿色直线。b 落在线上时存在系数 x 使 Ax=b；离开直线后，偏离的分量无法由当前列生成。",
       aria: "目标向量与列空间的距离决定方程组是否有解",
       controls: "solvability",
       precisionTitle: "用增广矩阵判断有没有解",
       precisionNote: "移动目标 b，并比较 rank(A) 与 rank([A|b])",
-      caption: "虚线是 b 到列空间的投影；短的残差段越长，目标离可达区域越远。",
+      caption: "虚线标出 b 相对可达直线的偏离；只有偏离精确为零时，原方程 Ax=b 才有解。",
     },
     "solution-structure": {
       kicker: "解的结构 · 特解加零空间",
@@ -299,8 +299,8 @@
     lineWorld(sized.ctx, frame, projection, b, p.coral, 1.4, [5, 5]);
     M().drawArrow(sized.ctx, frame, b, TARGET, "b", 2.3, { labelT: 1, labelOffset: 7 });
     if (Math.abs(state.distance) > .025) {
-      M().drawPoint(sized.ctx, frame, projection, p.accentStrong, "投影", 3.3);
-      labelPx(sized.ctx, `残差 ${format(Math.abs(state.distance))}`, sized.width - 15, 24, p.coral, "right");
+      M().drawPoint(sized.ctx, frame, projection, p.accentStrong, "列空间点", 3.3);
+      labelPx(sized.ctx, `不可达分量 ${format(Math.abs(state.distance))}`, sized.width - 15, 24, p.coral, "right");
     }
     labelPx(sized.ctx, "Col(A)", 15, 24, p.accentStrong);
   }
@@ -375,7 +375,7 @@
   function textFor(sectionId, state) {
     if (sectionId === "elimination") {
       return [
-        ["共同交点", "先把解看成几何对象。两个约束的公共点 (2,1) 是后续所有等价方程组必须保留的对象。", String.raw`\begin{cases}x+y=3\\x+2y=4\end{cases}`, "行变换的核心不是换数字，而是保持共同解集。"],
+        ["共同交点", "先把解看成几何对象。两个约束的公共点 (2,1) 是后续所有等价方程组必须保留的对象。", String.raw`\begin{cases}x+y=3\\x+2y=4\end{cases}`, "行变换沿整条计算路径保持共同解集。"],
         ["可逆地改写约束", "用 R₂←R₂−R₁ 把第二个约束改写成 y=1。灰色虚线保留旧直线作对照，新旧约束都经过同一个解。", String.raw`R_2\leftarrow R_2-R_1`, "操作可逆，因此没有丢掉解，也没有制造新解。"],
         ["阶梯形暴露顺序", "新方程 y=1 先确定 y，再把它代回 x+y=3 得到 x=2。阶梯形只是在安排求解顺序。", String.raw`\left[\begin{array}{cc|c}1&1&3\\0&1&1\end{array}\right]`, "两个主元、没有自由变量，所以解唯一。"],
       ][state.step];
@@ -383,13 +383,13 @@
     if (sectionId === "n-vector-space") {
       const x = 2.1 * state.alpha - .65 * state.beta;
       const y = 1.05 * state.alpha + 1.75 * state.beta;
-      return ["同一条位移链", "绿色段是 αu；橙色段从它的终点出发，表示 βv；蓝色箭头直接连接原点与最终终点。", String.raw`\alpha u+\beta v=\begin{bmatrix}${format(x)}\\${format(y)}\end{bmatrix}`, "高维情形也遵守同样的坐标运算，只是不再把所有坐标轴同时画出来。"];
+      return ["系数决定组合权重", "绿色段是 αu；橙色段从它的终点出发，表示 βv；蓝色箭头连接原点与最终终点。把 u、v 作为矩阵的列时，(α,β)ᵀ 就是系数向量。", String.raw`\alpha u+\beta v=\begin{bmatrix}${format(x)}\\${format(y)}\end{bmatrix}`, "高维情形仍逐坐标计算；画布只显示投影，右侧坐标列保存完整结果。"];
     }
     if (sectionId === "linear-dependence") {
       return [
         ["一个方向", "v₁ 的所有倍数都留在同一条过原点的直线上。系数可以连续变化，但可达方向只有一个。", String.raw`\operatorname{span}(v_1)`, "加入第一个非零向量，span 的维数是 1。"],
         ["新方向扩张空间", "v₂ 不在原直线上。现在 a v₁+b v₂ 的两个系数能独立变化，平面中的点都可由这两条方向组合得到。", String.raw`\dim\operatorname{span}(v_1,v_2)=2`, "第二个独立方向让 span 从直线扩成平面。"],
-        ["冗余不增加维数", "蓝色 v₃ 已能沿绿色、橙色两段合成。它属于原有 span，因此加入它不会产生第三个独立方向。", String.raw`v_3=0.7v_1+0.55v_2`, "向量个数变成 3，但 span 的维数仍然是 2。"],
+        ["表示重复产生零关系", "蓝色 v₃ 已能沿绿色、橙色两段合成。同一个 v₃ 既可直接取系数 1，也可用 v₁、v₂ 的系数表示。", String.raw`0.7v_1+0.55v_2-v_3=0`, "这条非平凡关系证明向量组相关；删去 v₃ 不改变 span。"],
       ][state.step];
     }
     if (sectionId === "matrix-rank") {
@@ -399,7 +399,7 @@
     }
     if (sectionId === "solvability") {
       const on = Math.abs(state.distance) < .025;
-      return [on ? "目标落在列空间中" : "目标带来新方向", on ? "b 与绿色可达直线重合，存在系数 x 使 Ax=b。" : "b 含有一个垂直于列空间的残差分量；任何列向量组合都无法生成它。", String.raw`${on ? "b\\in\\operatorname{Col}(A)" : "b\\notin\\operatorname{Col}(A)"}`, on ? "增广列没有增加秩，方程组有解。" : "增广列增加了秩，方程组无解。"];
+      return [on ? "目标落在列空间中" : "目标带来新方向", on ? "b 与绿色可达直线重合，存在系数 x 使 Ax=b。" : "b 含有当前列向量无法生成的偏离分量；因此没有任何系数组合能到达它。", String.raw`${on ? "b\\in\\operatorname{Col}(A)" : "b\\notin\\operatorname{Col}(A)"}`, on ? "增广列没有增加秩，方程组有解。" : "增广列增加了秩，方程组无解。"];
     }
     if (sectionId === "solution-structure") {
       return ["一整条仿射解集", "x₀ 是一个已知特解；橙色位移 sη 落在零空间中。移动滑杆只改变输入位置，不改变右侧输出。", String.raw`x=x_0+${format(state.s)}\eta`, "因为 Aη=0，所以 A(x₀+sη)=b 对任意 s 都成立。"];

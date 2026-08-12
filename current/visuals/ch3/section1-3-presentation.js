@@ -26,11 +26,17 @@
     if (!root) return;
     root.innerHTML = formalShell(
       "定理与方法",
-      "消元法的可靠性来自可逆性：每次行操作都能被另一条行操作撤销，所以它改变方程的外观，却不改变同时满足全部方程的向量。",
+      "消元法的可靠性来自可逆性：每次行操作都有逆操作，变换前后的方程组因而互相推出，拥有完全相同的解集。",
       module(
         "01",
-        "三类初等行变换",
-        "把“允许做什么”与“为什么允许”放在一起",
+        "等价方程组",
+        "先说明要保持什么，再开始计算",
+        `<div class="ch3-theorem-row"><div>${texD(String.raw`S(\mathcal E)=\{x:x\text{ 同时满足 }\mathcal E\text{ 中全部方程}\}`)}</div><p>消元中的每一步都要保持解集 S 不变。只证明新方程由旧方程得到还不够；逆操作保证旧方程也能由新方程恢复。</p></div>`,
+      ) +
+        module(
+          "02",
+          "三类初等行变换",
+          "每条规则都与它的逆操作成对出现",
         cards([
           ["交换", "交换两行", "只调整方程顺序；再交换一次即可恢复。"],
           ["倍乘", "一行乘非零数", "逆操作是乘其倒数；因子为零时约束会被抹掉。"],
@@ -38,19 +44,13 @@
         ]),
       ) +
         module(
-          "02",
-          "主元与阶梯形",
-          "每个主元锁定一个新的独立约束",
-          `<div class="ch3-theorem-row"><div>${texD(String.raw`\begin{bmatrix}* & * & * & | & *\\0 & * & * & | & *\\0 & 0 & * & | & *\end{bmatrix}`)}</div><p>主元逐级向右下推进。阶梯形完成前向消元；从最后一行开始回代，就能逐层恢复主元变量。</p></div>`,
-        ) +
-        module(
           "03",
-          "终局判读",
-          "在真正算出每个变量前，先读结构信号",
+          "阶梯形的结构信号",
+          "主元安排回代，特殊行决定解的类型",
           cards([
-            ["唯一", "每列都有主元", "没有矛盾行，也没有自由列。"],
-            ["无解", "出现矛盾行", `某行化为 ${tex(String.raw`0=c`)}, ${tex(String.raw`c\neq0`)}。`],
-            ["无穷", "存在自由列", "没有矛盾，但至少一个未知量列没有主元。"],
+            ["主元", "新的独立约束", "主元逐级向右推进；从最后一行开始可依次回代。"],
+            ["冲突", "矛盾行", `某行化为 ${tex(String.raw`0=c`)}, ${tex(String.raw`c\neq0`)}，整个系统无解。`],
+            ["自由", "非主元列", "没有矛盾且存在自由列时，自由变量产生无穷多解。"],
           ]),
         ),
     );
@@ -274,21 +274,27 @@
     if (!root) return;
     root.innerHTML = formalShell(
       "定理与概念",
-      "高维空间不要求我们画出所有坐标轴。只要坐标顺序、数域和运算规则明确，Fⁿ 中的每一步运算都可以被完整核验。",
+      "Fⁿ 用固定顺序的坐标保存未知量。矩阵的每一列对应一个可被组合的向量，x 的坐标同时充当这些列的组合权重。",
       module(
         "01",
-        "Fⁿ 与标准基",
-        "坐标不是标签，而是相对于固定基的系数",
-        `<div class="ch3-theorem-row"><div>${texD(String.raw`x=\begin{bmatrix}x_1\\\vdots\\x_n\end{bmatrix}=x_1e_1+\cdots+x_ne_n`)}</div><p>标准基中的第 i 个向量只有第 i 个坐标为 1。坐标分解唯一，因此每个位置都承担固定含义。</p></div>`,
+        "有序坐标与标准基",
+        "每个坐标位置承担固定含义",
+        `<div class="ch3-theorem-row"><div>${texD(String.raw`x=\begin{bmatrix}x_1\\\vdots\\x_n\end{bmatrix}=x_1e_1+\cdots+x_ne_n`)}</div><p>逐坐标比较即可验证标准基分解的系数唯一。高维图像可以省略坐标轴，完整坐标不能省略。</p></div>`,
       ) +
         module(
           "02",
-          "线性组合",
-          "先缩放，再相加；所有坐标同步参与",
+          "Ax 是列向量的线性组合",
+          "标量方程、向量方程和矩阵方程共享同一组未知系数",
+          `<div class="ch3-theorem-row"><div>${texD(String.raw`A=[a_1\ \cdots\ a_n]\quad\Longrightarrow\quad Ax=x_1a_1+\cdots+x_na_n`)}</div><p>A 有 n 列，所以 x 有 n 个坐标；A 有 m 行，所以每个 aᵢ 与 Ax 都有 m 个坐标。</p></div>`,
+        ) +
+        module(
+          "03",
+          "运算与观察边界",
+          "坐标承担严格计算，投影承担低维观察",
           cards([
-            ["闭合", "结果仍在 Fⁿ", "同维向量相加、数乘后坐标个数不变。"],
-            ["零向量", "所有坐标为 0", "它是加法单位元，也是所有线性组合的共同基准。"],
-            ["投影", "只保留部分坐标", "投影适合观察，但不能代替完整高维判定。"],
+            ["加法", "对应坐标相加", "每个位置都保持与同一标准基向量对应。"],
+            ["数乘", "全部坐标同步缩放", "系数改变大小与方向，坐标个数保持不变。"],
+            ["投影", "只显示部分坐标", "画面可以不变而高维向量已经改变，严格判断要读完整坐标。"],
           ]),
         ),
     );
@@ -300,14 +306,14 @@
       <h2>交互实验</h2>
       <div class="ch3-lab ch3-lab--vector" data-ch3-lab="vector-space">
         <div class="ch3-lab-head">
-<span class="ch3-lab-kicker">向量表示从起点到终点的有向位移</span>
-<h3>把线性组合走一遍</h3>
-<p>先沿着 αu 走，再从它的终点沿 βv 走；最终从原点指向终点的箭头，就是 w=αu+βv。</p>
+<span class="ch3-lab-kicker">目标 · 把组合系数同时读成坐标权重</span>
+<h3>从二维位移读到完整坐标</h3>
+<p>先沿 αu 移动，再从它的终点沿 βv 移动；若把 u、v 作为矩阵的两列，(α,β)ᵀ 就是产生 w 的系数向量。</p>
         </div>
         <div class="ch3-mission" aria-label="实验任务">
 <strong>你来试一试</strong>
-<span>改变 α、β 或任意坐标，观察“首尾相接”的两段位移怎样合成为 w。</span>
-<span class="ch3-mission-result">观察：每一个坐标都按同一组系数相加</span>
+<span>先预测二维终点，再升到 n=4，只改变第三、第四坐标；比较画布与右侧完整坐标。</span>
+<span class="ch3-mission-result">观察：投影可以不变，完整线性组合已经改变</span>
         </div>
         <div class="ch3-control-row ch3-scenario-row">
 <label>空间维数 n <input type="range" min="1" max="8" step="1" value="3" data-n /></label>
@@ -450,7 +456,7 @@
         return `<div class="ch3-bar-row ${value < 0 ? "is-negative" : "is-positive"}"><span>w${index + 1}</span><div class="ch3-bar-track"><div class="ch3-bar-fill" style="width:${width}%"></div></div><strong>${M().formatNumber(value)}</strong></div>`;
       }).join("");
       root.querySelector("[data-note]").textContent = state.n > 2
-        ? "图中只保留前两坐标，所以它是投影，不是完整的高维向量；完整结论请读右侧坐标列。"
+        ? "图中只保留前两坐标，是完整高维向量的投影；完整结论请读右侧坐标列。"
         : "αu 与 βv 首尾相接，合向量 w 从原点直接指向同一个终点。";
       M().pulse(root.querySelector("[data-formula-card]"));
       draw();
@@ -486,21 +492,27 @@
     if (!root) return;
     root.innerHTML = formalShell(
       "定理与概念",
-      "图形可以提示共线、共面或冗余；严格判断来自一个不全为零的系数向量，它使线性组合恰好等于零。",
+      "线性无关首先意味着系数表示唯一。若同一个目标有两套表示，两式相减就得到非平凡零组合；这条关系同时指出了可删去的冗余向量。",
       module(
         "01",
-        "非平凡零组合",
-        "把向量作为矩阵的列，问题变成齐次方程",
-        `<div class="ch3-theorem-row"><div>${texD(String.raw`c_1v_1+\cdots+c_pv_p=0\quad\Longleftrightarrow\quad Ac=0`)}</div><p>若零空间中存在非零 c，向量组相关；若零空间只有零向量，向量组无关。</p></div>`,
+        "表示唯一性与零关系",
+        "两套系数的差落入齐次方程",
+        `<div class="ch3-theorem-row"><div>${texD(String.raw`\sum a_iv_i=\sum b_iv_i\quad\Longleftrightarrow\quad\sum(a_i-b_i)v_i=0`)}</div><p>把向量作为 A 的列，右式就是 Ac=0。只有 c=0 时表示唯一；存在非零 c 时向量组相关。</p></div>`,
       ) +
         module(
           "02",
-          "张成是否增长",
-          "加入与删除是同一问题的两个方向",
+          "删除引理",
+          "一条非平凡关系给出具体的删减方法",
+          `<div class="ch3-theorem-row"><div>${texD(String.raw`c_j\neq0\quad\Longrightarrow\quad v_j=-\sum_{i\neq j}\frac{c_i}{c_j}v_i`)}</div><p>因此删去 vⱼ 后，原来的每个线性组合仍可由剩余向量重写，张成保持不变。</p></div>`,
+        ) +
+        module(
+          "03",
+          "从张成增长到极大无关组",
+          "逐个保留真正增加维数的向量",
           cards([
             ["加入", "新向量在旧张成外", "张成维数增加，提供新方向。"],
-            ["冗余", "新向量在旧张成内", "可由原向量表示，整体相关。"],
-            ["极大", "删去冗余后的骨架", "保持原张成且内部线性无关。"],
+            ["冗余", "新向量在旧张成内", "它带来另一套表示，删去后张成不变。"],
+            ["极大", "无冗余的生成骨架", "保持原张成且内部线性无关；其长度将在下一节定义为秩。"],
           ]),
         ),
     );
@@ -511,7 +523,7 @@
     root.innerHTML = `
       <h2>交互实验</h2>
       <div class="ch3-lab" data-ch3-lab="dependence">
-        <div class="ch3-lab-head"><span class="ch3-lab-kicker">目标 · 判断新向量有没有带来新方向</span><h3>新向量会不会增加维数</h3><p>拖动向量箭头，让 v₃ 进入或离开已有张成。先看张成是否扩大，再用右侧的非平凡线性关系作严格判断。</p></div><div class="ch3-mission"><strong>你来试一试</strong><span>选择“第三个是和”，观察 v₃ 如何由 v₁、v₂ 合成；再取消保留 v₃，比较张成维数。</span><span class="ch3-mission-result">观察：删掉冗余向量，张成不变</span></div>
+        <div class="ch3-lab-head"><span class="ch3-lab-kicker">目标 · 从表示重复找到冗余向量</span><h3>新向量何时带来第二套系数</h3><p>拖动 v₃ 进入或离开已有张成。先看张成是否扩大，再用右侧非平凡零关系确认表示是否唯一。</p></div><div class="ch3-mission"><strong>你来试一试</strong><span>选择“第三个是和”，把直接取 v₃ 与用 v₁、v₂ 合成 v₃ 写成两套表示；再删除 v₃，比较张成。</span><span class="ch3-mission-result">观察：零关系给出删去冗余向量的方法</span></div>
         <div class="ch3-presets">
           <button type="button" data-preset="basis">二维基</button>
           <button type="button" data-preset="proportional">比例向量</button>

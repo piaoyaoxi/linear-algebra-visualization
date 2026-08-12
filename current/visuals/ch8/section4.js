@@ -147,7 +147,7 @@
         conclusion.innerHTML = conclusionMarkup(
           "相似的几何意义",
           "矩阵在变，线性变换本身没有变",
-          "同一个对象在连续变化的基下由 B(t)=P(t)⁻¹AP(t) 记录。相似不是图形碰巧像，而是同一线性变换的不同坐标表达。",
+          "同一个线性变换在连续变化的基下由 B(t)=P(t)⁻¹AP(t) 记录；相似矩阵正是这些不同坐标表达。",
         );
         markExperimentStep(host, basisT < 0.05 ? 0 : basisT < 0.95 ? 1 : 2);
       }

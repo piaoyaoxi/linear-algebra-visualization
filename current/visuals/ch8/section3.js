@@ -39,7 +39,7 @@
 
           <header class="ch8-cinema-head ch8-invariant-head">
             <div><span>固定 Smith 对角形</span><h3>从所有子式中，只保留这一层真正新增的结构</h3></div>
-            <p>先把同阶子式压成首一最大公因式 Δₖ，再比较相邻两层；不变因子不是又做一次因式分解。</p>
+            <p>先把同阶子式压成首一最大公因式 Δₖ，再由相邻两层的比值提取不变因子。</p>
           </header>
 
           <div class="ch8-invariant-reference" aria-label="固定的 Smith 对角形">

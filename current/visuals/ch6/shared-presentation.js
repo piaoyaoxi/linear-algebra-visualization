@@ -19,6 +19,43 @@
     return `<h2>${title}</h2><div class="ch6-foundation"><p class="ch6-lead">${lead}</p>${modules.join("")}${bridge ? `<div class="ch6-bridge-note">${bridge}</div>` : ""}</div>`;
   }
 
+  function storyCards(items = []) {
+    return `<div class="ch6-term-grid">${items.map((item) => `<article>${item.kicker ? `<span>${item.kicker}</span>` : ""}<h4>${item.title || ""}</h4>${item.text ? `<p>${item.text}</p>` : ""}</article>`).join("")}</div>`;
+  }
+
+  function storyProof(items = []) {
+    return `<div class="ch6-extraction-steps">${items.map((item, index) => `<div><span>${index + 1}</span><strong>${item.title || `第 ${index + 1} 步`}</strong><p>${item.text || ""}</p></div>`).join("")}</div>`;
+  }
+
+  function renderStoryBlock(block) {
+    if (!block || typeof block !== "object") return "";
+    if (block.type === "cards" || block.type === "definitions") return storyCards(block.items);
+    if (block.type === "formula") {
+      return `<div class="ch6-formula-card">${block.kicker ? `<span>${block.kicker}</span>` : ""}${block.formula || ""}${block.text ? `<p>${block.text}</p>` : ""}</div>`;
+    }
+    if (block.type === "proof") return storyProof(block.items);
+    if (block.type === "misconception") {
+      return `<div class="ch6-warning-note"><strong>${block.title || "辨析"}</strong><ul>${(block.items || []).map((item) => `<li>${item}</li>`).join("")}</ul></div>`;
+    }
+    if (block.type === "note") {
+      return `<div class="ch6-reading-note"><strong>${block.title || "阅读线索"}</strong><p>${block.text || ""}</p></div>`;
+    }
+    if (block.type === "paragraph") return `<p>${block.text || ""}</p>`;
+    return "";
+  }
+
+  function formalFromSection(section) {
+    const story = section?.story;
+    if (!story?.modules?.length) return "";
+    const modules = story.modules.map((item, index) => moduleBlock(
+      item.number || String(index + 1).padStart(2, "0"),
+      item.title || "",
+      item.subtitle || "",
+      (item.blocks || []).map(renderStoryBlock).join(""),
+    ));
+    return formalShell(story.title || section.title, story.lead || "", modules, section.bridge || story.bridge || "");
+  }
+
   function taskBlock(section, fallback = []) {
     const prompts = section?.interactive?.prompts?.length ? section.interactive.prompts : fallback;
     if (!prompts.length) return "";
@@ -221,7 +258,10 @@
   function register(sectionId, formal, interactive) {
     window.defineChapter6Renderer(sectionId, {
       formal(formalRoot, section) {
-        if (formalRoot) formal(formalRoot, section);
+        if (!formalRoot) return;
+        const structuredStory = formalFromSection(section);
+        if (structuredStory) formalRoot.innerHTML = structuredStory;
+        else formal(formalRoot, section);
       },
       interactive(interactiveRoot, section) {
         if (interactiveRoot) interactive(interactiveRoot, section);
@@ -229,5 +269,5 @@
     });
   }
 
-  window.Ch6UI = { texInline, texDisplay, escapeHtml, moduleBlock, formalShell, taskBlock, labShell, segmented, setActive, setStatus, metric, gate, updateGate, formatNumber, formatVector, formatMatrix, add, sub, scale, dot, cross, norm, columns, determinant, inverse, matVec, matMul, solve, plane, point, softArrow, line, planeGrid, planeSvg, formulaCard, miniMap, register };
+  window.Ch6UI = { texInline, texDisplay, escapeHtml, moduleBlock, formalShell, formalFromSection, taskBlock, labShell, segmented, setActive, setStatus, metric, gate, updateGate, formatNumber, formatVector, formatMatrix, add, sub, scale, dot, cross, norm, columns, determinant, inverse, matVec, matMul, solve, plane, point, softArrow, line, planeGrid, planeSvg, formulaCard, miniMap, register };
 })();

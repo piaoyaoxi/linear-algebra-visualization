@@ -523,7 +523,7 @@
             </div>
             <div class="s2c-conclusion">
               <strong>${texInline("ABx=A(Bx)")}</strong>
-              <p>矩阵乘法把两个连续过程压成一个过程，而不是把两张表硬拼在一起。</p>
+              <p>矩阵乘法把两个连续过程复合成一个过程；乘积中的每一项都沿“先输入、后输出”的中间通道汇总。</p>
             </div>
           </section>
 

@@ -331,7 +331,7 @@
       coefficient: "\\begin{pmatrix}A&B\\\\\\color{#d46b4f}{C}&D\\end{pmatrix}\\begin{pmatrix}x\\\\y\\end{pmatrix}",
       rhs: "\\begin{pmatrix}f\\\\g\\end{pmatrix}",
       rule: "Ax+By=f,\\qquad Cx+Dy=g",
-      caption: "假设 A 可逆。目标不是把所有块都变成单位块，而是用第一条块方程消去第二条中的 x。",
+      caption: "假设 A 可逆。先用第一条块方程表示 x，再从第二条块方程中消去 x，得到关于 y 的 Schur 补方程。",
       state: "coupled",
     },
     {

@@ -189,7 +189,7 @@
       const status = root.querySelector("[data-s1-status]");
       result.className = `ch5-result-card ${invertible ? "is-success" : "is-warning"}`;
       status.className = `ch5-status ${invertible ? "is-ok" : "is-warn"}`;
-      status.textContent = invertible ? "合同成立" : "合同条件失败";
+      status.textContent = invertible ? "合同成立" : "不是合同：换元不可逆";
       root.querySelector("[data-s1-title]").textContent = invertible ? "只是换了一套坐标" : "一个方向被压掉了";
       root.querySelector("[data-s1-copy]").textContent = invertible
         ? `${presets[state.preset].label}的 det C≠0，新旧变量可互相恢复；两边函数值${equal ? "完全一致" : "应当一致"}。矩阵和等高线写法变了，二次型没有变。`

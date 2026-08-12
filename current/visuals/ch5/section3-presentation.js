@@ -10,9 +10,9 @@
   function renderFormal(formal) {
     if (!formal) return;
     formal.innerHTML = `
-      <h2>标准形不唯一，符号骨架唯一</h2>
+      <h2>标准形不唯一，为什么惯性唯一</h2>
       <div class="ch5-foundation ch5s3-foundation">
-        <p class="ch5-lead">上一节已经说明同一个二次型可以得到不同的标准形。本节不再追求某一组具体系数，而是寻找所有合法变量替换都无法改变的信息：正平方项、负平方项和零项的数量。</p>
+        <p class="ch5-lead">系数可以靠缩放改变；符号数量的坐标不变性需要严格证明。把正惯性指数理解为“q 在其上正定的子空间的最大维数”，就能用维数交集论证证明它与坐标无关。</p>
 
         ${module(
           "01",
@@ -35,15 +35,21 @@
             <div class="ch5-card"><h4>p：正惯性指数</h4><p>二次型能够在一个子空间上恒正的最大维数。</p></div>
             <div class="ch5-card"><h4>q：负惯性指数</h4><p>二次型能够在一个子空间上恒负的最大维数。</p></div>
           </div>
-          <p class="ch5-muted">零项数量为 ${inline("n-p-q")}；秩为 ${inline("p+q")}；符号差为 ${inline("p-q")}。</p>`,
+          <p class="ch5-muted">零项数量为 ${inline("n-p-q")}；秩为 ${inline("p+q")}；符号差为 ${inline("p-q")}。</p>
+          <div class="ch5-next-note"><span>域决定不变量</span><p>复数域中 ${inline("-1=i^2")}，负号可以被变量缩放吸收，规范形只记录秩；实数域中非零实数的平方恒正，所以正、负方向必须分别保留。</p></div>`,
         )}
 
         ${module(
           "03",
-          "Sylvester 惯性定理",
-          "可逆变量替换保持正、负方向的维数",
-          `<div class="ch5-card ch5s3-theorem"><strong>定理</strong><p>实二次型经过任意非退化实线性替换化为标准形后，正系数项的个数 p 与负系数项的个数 q 唯一确定。</p></div>
-          <div class="ch5-next-note"><span>直觉</span><p>可逆映射不会改变子空间的维数，因此不能凭空消灭一个正方向，也不能把正方向改造成负方向。只有替换变得不可逆、方向信息真正丢失时，计数才可能下降。</p></div>`,
+          "Sylvester 惯性定理：维数迫出矛盾",
+          "下面证明两种标准形的正项数 p 与 p′ 必须相等",
+          `<div class="ch5-card ch5s3-theorem"><strong>定理</strong><p>同一实二次型的任意两个标准形，正系数项数、负系数项数和零项数分别相同。</p></div>
+          <div class="ch5-mini-grid">
+            <div class="ch5-card"><h4>1 · 构造两个子空间</h4><p>令 U 为第一标准形的正坐标子空间，则 ${inline("\\dim U=p")} 且非零 u∈U 时 ${inline("q(u)>0")}。令 W 为第二标准形的负、零坐标子空间，则 ${inline("\\dim W=n-p'")} 且 ${inline("q(w)\\le0")}。</p></div>
+            <div class="ch5-card"><h4>2 · 假设 p&gt;p′</h4><p>${inline("\\dim U+\\dim W=p+n-p'>n")}。子空间维数公式迫使 ${inline("U\\cap W")} 含非零向量 v。</p></div>
+            <div class="ch5-card"><h4>3 · 同一向量产生矛盾</h4><p>因为 v∈U，有 ${inline("q(v)>0")}；又因为 v∈W，有 ${inline("q(v)\\le0")}。故 ${inline("p\\le p'")}。</p></div>
+            <div class="ch5-card"><h4>4 · 交换角色</h4><p>交换两种标准形得到 ${inline("p'\\le p")}；所以 ${inline("p=p'")}。对 ${inline("-q")} 重复论证，得到负项数也相等。</p></div>
+          </div>`,
         )}
 
         ${module(
@@ -54,7 +60,7 @@
             <article class="ch5-card"><div>${display("\\operatorname{diag}(1,1)")}</div><p>秩 2，惯性 (2,0,0)：正定碗面。</p></article>
             <article class="ch5-card"><div>${display("\\operatorname{diag}(1,-1)")}</div><p>秩 2，惯性 (1,1,0)：不定马鞍。</p></article>
           </div>
-          <p class="ch5-muted">二者秩相同但惯性不同，所以不合同。两个同阶实对称矩阵合同，当且仅当它们的 p、q 和零项数量完全相同。</p>`,
+          <p class="ch5-muted">二者秩相同但惯性不同，所以不合同。反过来，惯性相同的两个矩阵都合同于同一个 ${inline("\\operatorname{diag}(I_p,-I_q,0)")}；因此惯性三元组是完整分类标签。</p>`,
         )}
       </div>`;
   }
@@ -152,7 +158,7 @@
         status.className = "ch5-status is-warn";
         status.textContent = "合同停止";
         root.querySelector("[data-s3-title]").textContent = "惯性定理的前提已经失效";
-        root.querySelector("[data-s3-copy]").textContent = "det C=0，两个新变量方向被压到同一条线上。B 的秩和惯性可以下降，但这不是合同改变了惯性，而是替换已经不可逆。";
+        root.querySelector("[data-s3-copy]").textContent = "det C=0，两个新变量方向被压到同一条线上，合同的可逆前提已经失效。B 的秩和惯性可以下降，惯性定理仍然成立。";
       }
 
       M().drawContours(root.querySelector("[data-s3-a-canvas]"), A, { caption: "A：原来的等高线" });

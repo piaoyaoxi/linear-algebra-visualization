@@ -19,14 +19,14 @@
   function renderFormal(formal) {
     if (!formal) return;
     formal.innerHTML = `
-      <h2>从二次多项式到对称矩阵</h2>
+      <h2>二次型是对象，矩阵是坐标记录</h2>
       <div class="ch5-foundation ch5s1-foundation">
-        <p class="ch5-lead">本节只解决两个问题：多项式的系数怎样进入矩阵，以及变量替换以后为什么出现 ${inline("C^TAC")}。先把这两件事看清，后面的配方法、惯性和正定性才不会变成记号堆积。</p>
+        <p class="ch5-lead">先把一个容易混淆的层次分开：二次型是向量上的数值规律，矩阵是它在选定坐标中的记录。固定坐标后对称矩阵唯一；坐标改变后矩阵会变，但同一个向量的二次型值不会变。</p>
 
         ${module(
           "01",
-          "先确认它真的是二次型",
-          "每一项的总次数都必须等于 2",
+          "先辨认对象：二次齐次是必要条件",
+          "坐标式中的每一项总次数都必须等于 2",
           `<div class="ch5-mini-grid">
             <article class="ch5-card ch5s1-example is-yes"><span>二次型</span>${display("2x_1^2-3x_1x_2+x_2^2")}<p>平方项和交叉项的总次数都为 2。</p></article>
             <article class="ch5-card ch5s1-example is-no"><span>不是二次型</span>${display("x_1^2+x_2+1")}<p>它含有一次项和常数项，不是二次齐次多项式。</p></article>
@@ -50,25 +50,26 @@
 
         ${module(
           "03",
-          "为什么只需要对称矩阵",
-          "斜对称部分在二次型中自动消失",
+          "为什么对称表示既充分又唯一",
+          "对称化去掉冗余，极化公式恢复全部信息",
           `<div class="ch5-pair">
-            <div class="ch5-equation">${display("B=\\frac{B+B^T}{2}+\\frac{B-B^T}{2}=S+K")}</div>
-            <div class="ch5-card"><p>${inline("x^TKx")} 是标量；转置以后又等于 ${inline("-x^TKx")}，所以只能为 0。因此 ${inline("x^TBx=x^TSx")}。二次型真正看见的只有对称部分。</p></div>
-          </div>`,
+            <div class="ch5-card"><h4>去掉看不见的部分</h4>${display("B=S+K,\\quad S=\\frac{B+B^T}{2}")}<p>斜对称部分满足 ${inline("x^TKx=0")}，所以 ${inline("x^TBx=x^TSx")}。</p></div>
+            <div class="ch5-card"><h4>从 q 恢复交叉信息</h4>${display("b(u,v)=\\frac12[q(u+v)-q(u)-q(v)]")}<p>实数域上的极化公式唯一恢复对称双线性形式，因此也唯一恢复固定坐标中的 A。</p></div>
+          </div>
+          <p class="ch5-muted">“唯一”始终带着一个前提：坐标已经固定。换一组坐标，同一个二次型会得到另一个合同矩阵。</p>`,
         )}
 
         ${module(
           "04",
-          "变量替换为什么产生合同",
-          "左右两个 C 分别来自哪里",
+          "换坐标为什么产生合同",
+          "对象没有变，左右两个 C 记录坐标替换",
           `<div class="ch5s1-derivation">
             <div>${inline("x=Cy")}</div><span>代入</span>
             <div>${inline("x^TAx=(Cy)^TA(Cy)")}</div><span>转置</span>
             <div>${inline("(Cy)^T=y^TC^T")}</div><span>合并</span>
             <div>${inline("x^TAx=y^T(C^TAC)y")}</div>
           </div>
-          <div class="ch5-next-note"><span>注意</span><p>上面的代数恒等式对任意矩阵 C 都成立；只有当 ${inline("\\det C\\ne0")}、新旧变量可以互相恢复时，才称为非退化变量替换，并说 A 与 ${inline("C^TAC")} 合同。</p></div>`,
+          <div class="ch5-next-note"><span>合同与相似</span><p>恒等式对任意 C 都成立；只有 ${inline("\\det C\\ne0")} 时才称合同。合同 ${inline("C^TAC")} 描述二次型换坐标，相似 ${inline("P^{-1}AP")} 描述线性算子换基。</p></div>`,
         )}
       </div>`;
 

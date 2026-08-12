@@ -10,18 +10,19 @@
   function renderFormal(formal) {
     if (!formal) return;
     formal.innerHTML = `
-      <h2>把交叉项一步一步消掉</h2>
+      <h2>用可逆换元把变量逐层解耦</h2>
       <div class="ch5-foundation ch5s2-foundation">
-        <p class="ch5-lead">化标准形的核心不是“看见一张摆正的椭圆”，而是写出一个可逆变量替换，把原二次型真实地改写成平方项之和。本节的主方法只有一条：Lagrange 配方法，以及它在矩阵中的合同语言。</p>
+        <p class="ch5-lead">交叉项表示变量在当前坐标式中相互耦合。化标准形的核心，是明确写出可逆换元，使同一二次型变成平方项之和；图形提供直觉，换元与合同计算完成核验。</p>
 
         ${module(
           "01",
-          "交叉项意味着当前坐标没有对准",
-          "同一个二次型，换坐标后可以写得更简单",
+          "交叉项不是二次型的固定标签",
+          "它会随坐标改变；配方法寻找一组解耦变量",
           `<div class="ch5-pair">
-            <div class="ch5-card ch5s2-axis-card"><div class="ch5s2-tilted-axes"><span></span><i></i><b></b></div><h4>原坐标</h4><p>${inline("x_1^2+4x_1x_2+5x_2^2")} 含交叉项。</p></div>
-            <div class="ch5-card ch5s2-axis-card"><div class="ch5s2-straight-axes"><span></span><i></i><b></b></div><h4>新坐标</h4><p>${inline("y_1^2+y_2^2")} 只剩平方项。</p></div>
-          </div>`,
+            <div class="ch5-card ch5s2-axis-card"><div class="ch5s2-tilted-axes"><span></span><i></i><b></b></div><h4>耦合表达</h4><p>${inline("q_t=x_1^2+2tx_1x_2+x_2^2")} 含交叉项。</p></div>
+            <div class="ch5-card ch5s2-axis-card"><div class="ch5s2-straight-axes"><span></span><i></i><b></b></div><h4>解耦表达</h4><p>${inline("q_t=y_1^2+(1-t^2)y_2^2")} 只剩平方项。</p></div>
+          </div>
+          <p class="ch5-muted">这里的新坐标可以来自剪切或伸缩，并不必保持直角与长度；“解耦”不等于“正交旋转”。</p>`,
         )}
 
         ${module(
@@ -34,23 +35,24 @@
 
         ${module(
           "03",
-          "配方的一步到底做了什么",
-          "先收集，再完成平方，再定义新变量",
+          "配方的一步就是降一维",
+          "完成一个平方后，把问题交给剩余变量",
           `<div class="ch5s2-square-identity">
             <div>${inline("ax_1^2+2bx_1x_2+cx_2^2")}</div><span>=</span>
             <div>${inline("a\\left(x_1+\\frac ba x_2\\right)^2+\\left(c-\\frac{b^2}{a}\\right)x_2^2")}</div>
           </div>
-          <p class="ch5-muted">这里假设 ${inline("a\\ne0")}。若没有平方项却有交叉项，先作和差替换，把乘积变成平方差，再继续。</p>`,
+          <p class="ch5-muted">这里假设 ${inline("a\\ne0")}。第一项定义新变量后，余项只依赖剩余变量；对它重复同一过程即可归纳到 n 维。若没有平方项却有交叉项，先用和差换元把乘积变成平方差。</p>`,
         )}
 
         ${module(
           "04",
           "矩阵中必须行列成对",
-          "普通行消元不是合同变换",
-          `<div class="ch5s2-paired-operation"><div><strong>做一次行操作</strong><span>第 2 行减去 k 倍第 1 行</span></div><b>+</b><div><strong>同步做同名列操作</strong><span>第 2 列减去 k 倍第 1 列</span></div><b>→</b><div><strong>仍是 CᵀAC</strong><span>矩阵保持对称，换元可追踪</span></div></div>`,
+          "普通行消元只改一侧，不是二次型换元",
+          `<div class="ch5s2-paired-operation"><div><strong>右乘 E</strong><span>实施一次列变换</span></div><b>+</b><div><strong>左乘 Eᵀ</strong><span>同步做对应行变换</span></div><b>→</b><div><strong>EᵀAE</strong><span>仍对称，且换元可追踪</span></div></div>
+          <p class="ch5-muted">逐步累积初等矩阵后得到 ${inline("C^TAC=D")}。因为每一步可逆，最终标准形与原二次型秩相同。</p>`,
         )}
 
-        <div class="ch5-next-note"><span>后续连接</span><p>学过实对称矩阵的正交对角化后，还可以用正交替换寻找主轴。但这不是本节配方法的前置工具，也不替代下面的变量替换过程。</p></div>
+        <div class="ch5-next-note"><span>两条路线</span><p>Lagrange 配方法给出一般合同对角化；学过谱定理后，实对称矩阵还能被正交对角化，得到保持长度与夹角的主轴坐标。正交法是更强的特殊选择，不是每次配方的几何含义。</p></div>
       </div>`;
   }
 
@@ -59,7 +61,7 @@
     root.innerHTML = `
       <h2>交互实验</h2>
       <div class="ch5-lab ch5s2-lab">
-        <div class="ch5-lab-head"><h3>配方步进器</h3><p>一次只看一步。你的任务不是拖参数，而是沿着配方逻辑走到最后，并在终点核对三件事：替换可逆、交叉项为 0、秩没有改变。</p></div>
+        <div class="ch5-lab-head"><h3>配方步进器</h3><p>一次只看一步。请沿着配方逻辑走到终点，并核对三件事：替换可逆、交叉项为 0、秩没有改变。</p></div>
         <div class="ch5-task"><span>1</span><div><strong>选择一个典型例子</strong><p>建议先走“含交叉项”，再看“只有交叉项”为什么必须先做和差替换。</p></div></div>
         <div class="ch5-toolbar" role="group" aria-label="选择配方例子">
           <button type="button" class="is-active" data-s2-preset="regular">含交叉项</button>
@@ -119,14 +121,14 @@
     }
 
     function lookCopy(kind, final) {
-      if (final) return "终点：矩阵已经对角化，等高线相对新坐标轴对齐。现在核对右侧三项，而不是只凭图形判断。";
+      if (final) return "终点：矩阵已经对角化，坐标表达不再耦合。现在核对右侧三项，而不是只凭图形判断。";
       const copy = {
         start: "先看原式：交叉项还在，所以当前矩阵的非对角元不为 0。",
         pick: "这一页只是在选择主平方项并收集相关项，还没有完成变量替换。",
         square: "完成平方以后，新变量的组合已经出现，但还要明确写出新旧变量关系。",
         sub: "变量替换已经写出；下一步用 CᵀAC 核对矩阵是否真的对角。",
       };
-      return copy[kind] || "观察当前公式、矩阵和等高线是否说的是同一个状态。";
+      return copy[kind] || "观察当前公式、矩阵和曲面是否说的是同一个状态；图形只帮助理解，换元核验才是证明。";
     }
 
     function substitutionCopy(step, pack) {
@@ -178,7 +180,7 @@
         status.textContent = ok ? "标准形完成" : "还需检查";
         root.querySelector("[data-s2-result-title]").textContent = ok ? "三个条件同时通过" : "结果尚未闭环";
         root.querySelector("[data-s2-result-copy]").textContent = ok
-          ? "det C≠0，替换可逆；新矩阵的交叉项为 0；合同前后秩相同。因此这不是形式上的改写，而是一次合法的标准形变换。"
+          ? "det C≠0，替换可逆；新矩阵的交叉项为 0；合同前后秩相同。三项共同验证了一次合法的标准形变换。"
           : "请检查变量替换、合同矩阵和交叉项是否完全一致。";
       } else {
         result.className = "ch5-result-card";

@@ -10,9 +10,9 @@
   function renderFormal(formal) {
     if (!formal) return;
     formal.innerHTML = `
-      <h2>怎样证明所有方向都为正</h2>
+      <h2>把所有方向压缩成有限个主元</h2>
       <div class="ch5-foundation ch5s4-foundation">
-        <p class="ch5-lead">正定不是“看起来像碗”，也不是“试了几个向量都为正”。它要求每一个非零方向都严格为正。本节把这个无穷多方向的问题压缩成可计算的标准形与顺序主子式判据。</p>
+        <p class="ch5-lead">正定不是“看起来像碗”，也不是“试了几个向量都为正”。本节从定义走到标准形，再走到对称消元的主元，最后推导顺序主子式判据；每个等价条件都有来由。</p>
 
         ${module(
           "01",
@@ -40,7 +40,7 @@
 
         ${module(
           "03",
-          "标准形把定义变成符号检查",
+          "惯性先把无穷方向变成符号检查",
           "正惯性指数等于 n，才是正定",
           `<div class="ch5-equation">${display("f=d_1y_1^2+\\cdots+d_ny_n^2")}</div>
           <ul class="ch5-check-list"><li>全部 ${inline("d_i>0")}：正定。</li><li>全部 ${inline("d_i\\ge0")} 且至少一个为 0：半正定。</li><li>既有正系数又有负系数：不定。</li></ul>`,
@@ -48,18 +48,21 @@
 
         ${module(
           "04",
-          "Sylvester 顺序主子式判据",
-          "正定只需检查左上角逐级扩大的子矩阵",
-          `<div class="ch5s4-minor-chain"><div>${inline("A_1")}</div><span>⊂</span><div>${inline("A_2")}</div><span>⊂</span><div>⋯</div><span>⊂</span><div>${inline("A_n=A")}</div></div>
-          <div class="ch5-equation">${display("A>0\\quad\\Longleftrightarrow\\quad \\Delta_1>0,\\ldots,\\Delta_n>0")}</div>
-          <div class="ch5-next-note"><span>边界</span><p>半正定不能把上面的“全正”机械改成“顺序主子式全非负”。一般需要检查所有主子式非负。二阶矩阵要同时检查 ${inline("a\\ge0")}、${inline("c\\ge0")} 和 ${inline("ac-b^2\\ge0")}。</p></div>`,
+          "Sylvester 判据由 LDLᵀ 主元链推出",
+          "顺序主子式记录每一步对称消元的累计主元",
+          `<div class="ch5-equation">${display("A=LDL^T,\\qquad q(x)=(L^Tx)^TD(L^Tx)")}</div>
+          <div class="ch5s4-minor-chain"><div>${inline("\\Delta_0=1")}</div><span>→</span><div>${inline("d_1=\\Delta_1")}</div><span>→</span><div>${inline("d_k=\\frac{\\Delta_k}{\\Delta_{k-1}}")}</div><span>→</span><div>${inline("\\Delta_k=d_1\\cdots d_k")}</div></div>
+          <div class="ch5-equation">${display("\\begin{aligned}A>0&\\Longleftrightarrow d_1,\\ldots,d_n>0\\\\&\\Longleftrightarrow \\Delta_1,\\ldots,\\Delta_n>0\\end{aligned}")}</div>
+          <p class="ch5-muted">L 可逆，所以 ${inline("y=L^Tx")} 遍历全部非零向量；D 全部主元为正时且仅此时 ${inline("\\sum d_iy_i^2")} 恒正。主元与顺序主子式的乘积关系完成最后一步。</p>
+          <div class="ch5-next-note"><span>边界要另判</span><p>半正定不能把“全正”机械改成“顺序主子式全非负”。一般要检查所有主子式非负；二阶至少要同时检查 ${inline("a\\ge0")}、${inline("c\\ge0")} 与 ${inline("ac-b^2\\ge0")}。</p></div>`,
         )}
 
         ${module(
           "05",
-          "长度平方是正定结构的另一种写法",
-          "Gram 与 Cholesky 只作连接，不替代教材判据",
-          `<div class="ch5-pair"><div class="ch5-card">${display("x^T(B^TB)x=\\|Bx\\|^2\\ge0")}<p>所以 ${inline("B^TB")} 总是半正定；B 列满秩时正定。</p></div><div class="ch5-card">${display("A=R^TR")}<p>正定矩阵可以写成长度平方结构；具体分解算法留作后续连接。</p></div></div>`,
+          "正定就是严格的长度平方与能量",
+          "Gram、Cholesky 和极小值把代数判据连到应用",
+          `<div class="ch5-pair"><div class="ch5-card">${display("x^T(B^TB)x=\\|Bx\\|^2\\ge0")}<p>${inline("B^TB")} 总是半正定；B 列满秩时没有非零零方向，因此正定。</p></div><div class="ch5-card">${display("A=R^TR\\quad\\Longrightarrow\\quad q(x)=\\|Rx\\|^2")}<p>正定 A 的 Cholesky 因子 R 可逆，所以这是一份严格能量：离开原点的任何方向都付出正代价。</p></div></div>
+          <div class="ch5-next-note"><span>极值连接</span><p>若一个二阶近似的 Hessian 正定，那么驻点附近每个非零方向都向上弯；同一结构也保证满列秩最小二乘问题具有唯一极小解。</p></div>`,
         )}
       </div>`;
   }

@@ -15,7 +15,7 @@ defineChapter1Section("polynomial-functions", {
     { label: "插值", text: "n+1 个横坐标互异的节点唯一确定一个次数不超过 n 的多项式。" },
   ],
   textbook: {
-    reference: "北大版《高等代数》第一章 §7",
+    reference: "北大版《高等代数》第一章 §7 · Hoffman–Kunze 第 4 章 · Friedberg 插值材料 · Strang Vandermonde 材料",
     items: ["多项式函数与评价", "余数定理与因式定理", "根数上界", "Lagrange 插值"],
   },
   formal: {

@@ -15,7 +15,7 @@ defineChapter1Section("complex-real-factorization", {
     { label: "R 上不可约", text: "实系数不可约多项式只有一次式和无实根二次式。" },
   ],
   textbook: {
-    reference: "北大版《高等代数》第一章 §8",
+    reference: "北大版《高等代数》第一章 §8 · Axler 第 4 章 · Friedberg 多项式附录",
     items: ["代数基本定理", "复系数完全分裂", "实系数共轭根", "实不可约因式分类"],
   },
   formal: {

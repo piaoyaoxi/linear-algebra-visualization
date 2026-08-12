@@ -15,7 +15,7 @@ defineChapter1Section("univariate-polynomials", {
     { label: "次数", text: "非零多项式的次数是最高非零位置；零多项式单独约定。" },
   ],
   textbook: {
-    reference: "北大版《高等代数》第一章 §2",
+    reference: "北大版《高等代数》第一章 §2 · Hoffman–Kunze 第 4 章 · Friedberg 多项式附录",
     items: ["形式多项式及相等", "加法与乘法", "次数与首项", "多项式和多项式函数的区分"],
   },
   formal: {

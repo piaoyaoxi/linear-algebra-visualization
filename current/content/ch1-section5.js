@@ -15,7 +15,7 @@ defineChapter1Section("factorization-theorem", {
     { label: "唯一的含义", text: "常数 c、首一不可约因式及其重数确定；书写顺序不携带信息。" },
   ],
   textbook: {
-    reference: "北大版《高等代数》第一章 §5",
+    reference: "北大版《高等代数》第一章 §5 · Hoffman–Kunze 第 4 章 · Friedberg 多项式附录",
     items: ["可约与不可约", "分解的存在性", "不可约因式的整除性质", "标准分解与唯一性"],
   },
   formal: {

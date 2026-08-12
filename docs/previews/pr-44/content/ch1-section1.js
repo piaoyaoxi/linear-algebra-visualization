@@ -15,7 +15,7 @@ defineChapter1Section("number-fields", {
     { label: "相对不可约", text: `${texInline("x^2-2")} 在 ${texInline("\\mathbb Q[x]")} 中不可约，在 ${texInline("\\mathbb R[x]")} 中分解为两个一次因式。` },
   ],
   textbook: {
-    reference: "北大版《高等代数》第一章 §1",
+    reference: "北大版《高等代数》第一章 §1 · Hoffman–Kunze §1.1",
     items: ["数域的定义", "典型数域与反例", "扩域示例", "系数域对分解的影响"],
   },
   formal: {

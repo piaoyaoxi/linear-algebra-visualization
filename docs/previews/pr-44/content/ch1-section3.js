@@ -15,7 +15,7 @@ defineChapter1Section("polynomial-divisibility", {
     { label: "整除判定", text: `${texInline("g\\mid f")} 当且仅当带余除法的最终余式为 0。` },
   ],
   textbook: {
-    reference: "北大版《高等代数》第一章 §3",
+    reference: "北大版《高等代数》第一章 §3 · Hoffman–Kunze 第 4 章 · Axler 第 4 章",
     items: ["整除及基本性质", "带余除法定理", "商余式唯一性", "单位与相伴"],
   },
   formal: {

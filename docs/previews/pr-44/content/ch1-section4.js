@@ -15,11 +15,11 @@ defineChapter1Section("gcd-polynomials", {
     { label: "互素", text: `${texInline("\\gcd(f,g)=1")}，等价于存在 ${texInline("sf+tg=1")}。` },
   ],
   textbook: {
-    reference: "北大版《高等代数》第一章 §4",
+    reference: "北大版《高等代数》第一章 §4 · Hoffman–Kunze 第 4 章 · Friedberg 多项式附录",
     items: ["最大公因式与首一规范", "欧几里得算法", "Bézout 等式", "互素多项式"],
   },
   formal: {
-    title: "算法的核心是不变量，不是试除",
+    title: "算法的核心：取余保持公共因式",
     intro:
       "每次取余都降低次数，却保留公共因式集合。最后一个非零余式因此与原来的 f、g 有同样的公共因式，并且它还能整除前一项，成为最大公因式。若同步记录每个余式如何由原始 f、g 组成，终点便自动附带 Bézout 表示。",
     equation: "f=qg+r\\quad\\Longrightarrow\\quad\\{f,g\\text{ 的公因式}\\}=\\{g,r\\text{ 的公因式}\\}",

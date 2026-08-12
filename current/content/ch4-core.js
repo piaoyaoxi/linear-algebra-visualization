@@ -1,124 +1,140 @@
-defineChapter4Section("matrix-product-determinant-rank", {
-  number: "§3",
-  textbookSection: "矩阵乘积的行列式与秩",
-  title: "矩阵乘积的行列式与秩",
-  navTitle: "乘积的行列式与秩",
-  question: "连续施加两个矩阵后，面积缩放和有效方向会怎样变化？秩到底在数什么？",
-  goal: "把行列式理解为缩放因子，把秩理解为输出中仍然保留的独立方向数；再理解乘积为什么不会凭空增加秩。",
-  tags: ["行列式", "秩", "有效维度"],
-  intro: "矩阵乘积对应连续变换。连续缩放时，缩放因子相乘；一旦某一步已经把平面压到一条线，后面的变换只能继续处理这条线，不能重新制造第二个独立方向。",
-  concepts: [
-    { label: "行列式", text: `${texInline("\\det(A)")} 记录二维面积或高维体积的有向缩放因子。` },
-    { label: "乘积行列式", text: `${texInline("\\det(AB)=\\det(A)\\det(B)")}；连续变换的缩放因子连续相乘。` },
-    { label: "秩", text: "秩是矩阵列向量中独立方向的数量，也是输出空间的维数。" },
-    { label: "乘积与秩", text: `${texInline("\\operatorname{rank}(AB)\\leq\\min\\{\\operatorname{rank}(A),\\operatorname{rank}(B)\\}")}；复合不会凭空恢复已经丢掉的方向。` },
-  ],
-  textbook: { reference: "北大版《高等代数》第四章", page: "", items: ["矩阵乘积的行列式", "矩阵的秩", "乘积与秩的关系"] },
-  visual: { type: "rank", title: "交互图：秩是保留下来的方向数", description: "比较两列独立与两列共线的情况，再观察一个秩 1 变换被复合后为什么仍不能恢复成秩 2。" },
-  example: {
-    title: "例题：从列关系判断乘积的秩上界",
-    question: `设 ${texInline("B")} 的两列相同，且 ${texInline("A")} 是任意可相乘的矩阵。说明 ${texInline("AB")} 的两列有什么关系，并给出 ${texInline("\\operatorname{rank}(AB)")} 的上界。`,
-    choices: [
-      { correct: true, text: `${texInline("AB")} 的两列仍然相同，因此 ${texInline("\\operatorname{rank}(AB)\\leq1")}。` },
-      { text: `A 可以把相同的两列变成两个独立方向，因此 ${texInline("\\operatorname{rank}(AB)=2")}。` },
-      { text: `${texInline("AB")} 的两列互为相反数，因此 ${texInline("\\operatorname{rank}(AB)=1")}。` },
-      { text: `仅知道 B 的两列相同，无法判断 ${texInline("AB")} 的列关系。` },
-    ],
-    steps: [
-      `设 ${texInline("B")} 的两列都等于 ${texInline("b")}。那么 ${texInline("AB")} 的两列分别是 ${texInline("Ab")} 与 ${texInline("Ab")}。`,
-      "所以 AB 的两列仍然相同，至多提供一个独立方向。",
-      `因此 ${texInline("\\operatorname{rank}(AB)\\leq1")}。左乘 A 可以改变方向，但不能把同一列变成两条独立方向。`,
-    ],
-  },
-  quiz: [
-    { question: `若 ${texInline("\\det(A)\\ne0")}，n 阶矩阵 ${texInline("A")} 的秩是多少？`, answer: `秩为 ${texInline("n")}。非零行列式表示变换没有把空间压到低维对象。` },
-    { question: `若 ${texInline("\\operatorname{rank}(B)=1")}，是否可能有 ${texInline("\\operatorname{rank}(AB)=2")}？`, answer: "不可能。AB 的输出先受 B 的一维输出空间限制，后面的 A 不能创造第二条独立方向。" },
-    { question: `若 ${texInline("\\det(A)=0")}，A 在二维中的几何信号是什么？`, answer: "面积被缩放到 0；网格会坍缩到一条线或一个点，因此 A 不可逆。" },
-  ],
-  summary: ["行列式描述连续变换的缩放，乘积时缩放因子相乘。", "秩描述输出中真正保留下来的独立方向数。", "秩一旦在某一步下降，后续复合不能凭空把丢失的方向造回来。"],
-  exercises: ["构造两个 2 阶矩阵 A、B，使 B 的两列相同，并直接算出 AB 的两列。"],
-});
-
-defineChapter4Section("matrix-inverse", {
-  number: "§4",
-  textbookSection: "矩阵的逆",
-  title: "矩阵的逆",
-  navTitle: "矩阵的逆",
-  question: "什么时候一个矩阵能把输出唯一地还原回输入？这种“信息没有丢失”在公式、几何和方程组里分别长什么样？",
-  goal: "掌握逆矩阵的定义，并把可逆与非零行列式、满秩、唯一解和不坍缩的直觉连接起来。",
-  tags: ["逆矩阵", "满秩", "唯一解"],
-  intro: "判断矩阵可逆，核心是看信息能否完整保留。可逆变换把平面仍送到整个平面；不可逆变换会让不同输入挤到同一个输出上，于是无法倒推。",
-  concepts: [
-    { label: "逆矩阵的定义", text: `${texInline("A^{-1}A=AA^{-1}=I")}。先做 A，再做 ${texInline("A^{-1}")}，会回到原来的输入。` },
-    { label: "方阵限制", text: "只有方阵才可能有双侧逆矩阵，因为输入与输出的维数必须一致。" },
-    { label: "二维判定", text: `对 2 阶矩阵，${texInline("\\det(A)\\ne0")} 时可逆；${texInline("\\det(A)=0")} 时发生坍缩。` },
-    { label: "核心等价", text: "对 n 阶矩阵：可逆、行列式非零、秩为 n、列向量线性无关、方程 Ax=b 对每个 b 有唯一解，是同一件结构事实的不同说法。" },
-  ],
-  textbook: { reference: "北大版《高等代数》第四章", page: "", items: ["逆矩阵的定义", "可逆矩阵的判定", "2 阶矩阵求逆", "可逆与线性方程组"] },
-  visual: { type: "slot", label: "可逆性对照", title: "对照：不坍缩与坍缩", description: "用两组 2 阶矩阵比较可逆和不可逆；重点观察两个独立方向能否继续保持独立。" },
-  interactive: { type: "slot", label: "可逆性对照", title: "对照：不坍缩与坍缩", description: "用两组 2 阶矩阵比较可逆和不可逆；重点观察两个独立方向能否继续保持独立。" },
-  example: {
-    title: "例题：求一个 2 阶逆矩阵并解释它为什么存在",
-    question: `设 ${texInline("A=\\begin{pmatrix}2&1\\\\1&1\\end{pmatrix}")}。求 ${texInline("A^{-1}")}，并说明为什么这个逆矩阵存在。`,
-    choices: [
-      { correct: true, text: `${texInline("A^{-1}=\\begin{pmatrix}1&-1\\\\-1&2\\end{pmatrix}")}；因为 ${texInline("\\det(A)=1\\ne0")}。` },
-      { text: `${texInline("A^{-1}=\\begin{pmatrix}2&-1\\\\-1&1\\end{pmatrix}")}；把非对角元素变号即可。` },
-      { text: `${texInline("A^{-1}=\\frac12\\begin{pmatrix}1&-1\\\\-1&2\\end{pmatrix}")}；分母取主对角线元素之和。` },
-      { text: `A 没有逆矩阵，因为它的两个非对角元素相同。` },
-    ],
-    steps: [
-      `先算 ${texInline("\\det(A)=2\\cdot1-1\\cdot1=1\\ne0")}，所以 A 可逆。`,
-      `对 ${texInline("\\begin{pmatrix}a&b\\\\c&d\\end{pmatrix}")}，逆矩阵为 ${texInline("\\frac1{ad-bc}\\begin{pmatrix}d&-b\\\\-c&a\\end{pmatrix}")}。`,
-      `代入得到 ${texInline("A^{-1}=\\begin{pmatrix}1&-1\\\\-1&2\\end{pmatrix}")}。最后检查 ${texInline("AA^{-1}=I")}，说明它确实把输出还原回输入。`,
-    ],
-  },
-  quiz: [
-    { question: "一个 2 阶矩阵的两列共线，它可能可逆吗？", answer: "不可能。两列共线说明秩小于 2，平面被压到一条线，无法唯一还原输入。" },
-    { question: `若 ${texInline("Ax=b")} 对每个 ${texInline("b")} 都有唯一解，这说明什么？`, answer: "说明 A 可逆；它既不会漏掉某些输出，也不会让不同输入得到同一个输出。" },
-    { question: `为什么 ${texInline("\\det(A)=0")} 会阻止逆矩阵存在？`, answer: "因为面积缩放到 0 意味着至少丢掉一个方向。不同输入会重合到同一个输出，无法倒推。" },
-  ],
-  summary: ["可逆意味着输入信息没有丢失，输出可以唯一倒推。", "对方阵，可逆、满秩、非零行列式和唯一解彼此对应。", "求逆公式只是计算工具；不坍缩才是可逆的结构本质。"],
-  exercises: [`判断 ${texInline("\\begin{pmatrix}1&2\\\\2&4\\end{pmatrix}")} 是否可逆，并用列关系和行列式各说明一次。`],
-});
-
 defineChapter4Section("elementary-matrices", {
   number: "§6",
   textbookSection: "初等矩阵",
   title: "初等矩阵",
   navTitle: "初等矩阵",
-  question: "为什么一次行变换等于左乘一个矩阵？又为什么同样的想法会让初等变换可逆？",
-  goal: "把三类初等行变换与初等矩阵一一对应，理解“对单位矩阵做同样操作”如何构造 E，并看懂 EA 为什么正是对 A 做行变换。",
-  tags: ["初等矩阵", "左乘", "行变换"],
-  intro: "初等矩阵可以从一次行变换自然构造出来：把这次行变换施加到单位矩阵上，就得到对应的初等矩阵。左乘它时，每一行都会按同一条规则重组，所以它自然等价于对原矩阵做那一次行变换。",
+  question: "怎样把一次初等行操作编码成矩阵乘法？为什么左乘改行、右乘改列，而且每一步都能撤销？",
+  goal:
+    "会从三类初等操作构造初等矩阵，解释 EA 与 AE 的差别，写出逆操作，并把连续消元与 [A|I] 求逆联系起来。",
+  tags: ["三类操作", "I→E→EA", "左乘右乘", "消元求逆"],
+  intro:
+    "初等矩阵把消元法写进矩阵乘法。对单位矩阵 I 做一次初等操作得到 E；同一个 E 左乘任意矩阵 A，就在 A 上执行同一次行操作。由于每一步都有明确的反向操作，初等矩阵全部可逆。",
   concepts: [
-    { label: "换行", text: "交换两行；对应的初等矩阵来自把单位矩阵的相同两行交换。" },
-    { label: "倍乘", text: "某一行乘非零常数；反向操作是乘以倒数，所以仍然可逆。" },
-    { label: "倍加", text: "一行加上另一行的倍数；反向操作是加上相反数倍，因此也可逆。" },
-    { label: "左乘与右乘", text: "左乘初等矩阵作用于行；右乘初等矩阵作用于列。这里先把左乘的逻辑看透。" },
+    {
+      label: "交换型",
+      text: "交换 I 的两行得到置换型初等矩阵；再交换一次就是逆操作。",
+    },
+    {
+      label: "倍乘型",
+      text: `把 I 的第 i 行乘非零数 c；逆操作把该行乘 ${texInline("c^{-1}")}，因此 c 不能为 0。`,
+    },
+    {
+      label: "倍加型",
+      text: `执行 ${texInline("R_i\\leftarrow R_i+cR_j")}；逆操作使用 ${texInline("-c")}。`,
+    },
+    {
+      label: "左乘改行",
+      text: `${texInline("EA")} 的每一行按 E 的行系数组合 A 的各行，所以 E 把自身记录的行操作施加到 A。`,
+    },
+    {
+      label: "右乘改列",
+      text: `${texInline("AE")} 的每一列按 E 的列系数组合 A 的各列；同一个 E 放在右侧时执行对应列操作。`,
+    },
+    {
+      label: "初等矩阵可逆",
+      text: "反向初等操作产生 E⁻¹；因此初等操作保持秩，作用于增广矩阵时保持方程组解集。",
+    },
+    {
+      label: "连续操作",
+      text: `${texInline("E_k\\cdots E_2E_1A")} 按从右到左的顺序记录完整消元过程。`,
+    },
+    {
+      label: "消元求逆",
+      text: `若 ${texInline("E_k\\cdots E_1A=I")}，则 ${texInline("E_k\\cdots E_1=A^{-1}")}；这正是 ${texInline("[A\\mid I]\\to[I\\mid A^{-1}]")}。`,
+    },
   ],
-  textbook: { reference: "北大版《高等代数》第四章", page: "", items: ["三类初等行变换", "由单位矩阵构造初等矩阵", "左乘对应行变换", "初等矩阵的逆"] },
-  visual: { type: "slot", label: "逐步演示", title: "实验：同一行变换如何同时作用于 I 和 A", description: "按步骤看 R₂ ← R₂ − 3R₁：先作用于单位矩阵得到 E，再左乘到 A。" },
-  interactive: { type: "slot", label: "逐步演示", title: "实验：同一行变换如何同时作用于 I 和 A", description: "按步骤看 R₂ ← R₂ − 3R₁：先作用于单位矩阵得到 E，再左乘到 A。" },
-  example: {
-    title: "例题：从一次行变换写出初等矩阵",
-    question: `对任意 2 阶矩阵 ${texInline("A")} 执行 ${texInline("R_1\\leftarrow R_1+2R_2")}。写出对应初等矩阵 E，并说明为什么变换后的矩阵是 ${texInline("EA")}。`,
-    choices: [
-      { correct: true, text: `${texInline("E=\\begin{pmatrix}1&2\\\\0&1\\end{pmatrix}")}；它的第一行把 A 的第一行与第二行的 2 倍组合起来。` },
-      { text: `${texInline("E=\\begin{pmatrix}1&0\\\\2&1\\end{pmatrix}")}；左乘时应把 2 放在第一列。` },
-      { text: `${texInline("E=\\begin{pmatrix}1&-2\\\\0&1\\end{pmatrix}")}；加法行变换对应负号。` },
-      { text: `${texInline("E=\\begin{pmatrix}0&1\\\\1&0\\end{pmatrix}")}；所有初等行变换都由换行矩阵完成。` },
-    ],
-    steps: [
-      `先对单位矩阵 ${texInline("I")} 做同样操作，得到 ${texInline("E=\\begin{pmatrix}1&2\\\\0&1\\end{pmatrix}")}。`,
-      `把 E 左乘到 A：E 的第一行 ${texInline("(1,2)")} 会把 A 的第一行加上 A 的第二行的 2 倍。`,
-      `因此 ${texInline("EA")} 恰好就是执行 ${texInline("R_1\\leftarrow R_1+2R_2")} 后的矩阵。反向操作 ${texInline("R_1\\leftarrow R_1-2R_2")} 给出 ${texInline("E^{-1}")}。`,
+  textbook: {
+    reference: "Hoffman–Kunze · Friedberg · Strang · Lay",
+    page: "Hoffman–Kunze §1.3、§1.6；Friedberg §3.1—§3.2；Strang §2.5；Lay §2.2",
+    items: [
+      "Hoffman–Kunze：同一行操作作用于 I 与 A，给出 B=EA；反向操作立即给出 E⁻¹。",
+      "Friedberg：初等行列操作由左右乘初等矩阵实现，并保持秩。",
+      "Strang：消元矩阵把每一步消元保存为因子，Gauss–Jordan 同时作用于 A 和 I。",
+      "Lay：增广矩阵 [A|I] 的右半部分逐列求解 Ax=eⱼ。",
     ],
   },
+  interactive: {
+    type: "slot",
+    title: "初等矩阵工作台",
+    description:
+      "在交换、非零倍乘、倍加之间切换，逐步追踪 I→E→EA；再比较 EA 与 AE，并把多步行操作同步应用到方程组。",
+    task:
+      "每一种操作都完成三件事：从 I 写出 E、预测 EA 的变化行、写出 E⁻¹；随后切到右乘，确认变化对象从行转为列。",
+    prompts: [
+      "选择交换操作，确认 E=E⁻¹。",
+      "选择倍乘操作，解释系数取 0 时为什么无法形成初等操作。",
+      "选择倍加操作，比较 EA 的变化行和 AE 的变化列。",
+      "在方程组视图中确认系数矩阵与右端必须同步执行行操作。",
+    ],
+  },
+  example: {
+    title: "例题：从行操作构造 E，并验证 EA",
+    question: `对 ${texInline("A=\\begin{bmatrix}1&2\\\\3&7\\end{bmatrix}")} 执行 ${texInline("R_2\\leftarrow R_2-3R_1")}。写出 E、EA 与 E⁻¹。`,
+    choices: [
+      {
+        correct: true,
+        text: `${texInline("E=\\begin{bmatrix}1&0\\\\-3&1\\end{bmatrix}")}，${texInline("EA=\\begin{bmatrix}1&2\\\\0&1\\end{bmatrix}")}，${texInline("E^{-1}=\\begin{bmatrix}1&0\\\\3&1\\end{bmatrix}")}。`,
+      },
+      {
+        text: `${texInline("E=\\begin{bmatrix}1&-3\\\\0&1\\end{bmatrix}")}；左乘会修改 A 的第二列。`,
+      },
+      {
+        text: `${texInline("E=\\begin{bmatrix}1&0\\\\-3&0\\end{bmatrix}")}；把第二行清零就是消元。`,
+      },
+      {
+        text: `${texInline("E^{-1}=E")}；所有初等矩阵都等于自己的逆。`,
+      },
+    ],
+    steps: [
+      `从 ${texInline("I=\\begin{bmatrix}1&0\\\\0&1\\end{bmatrix}")} 开始，对第二行执行同一操作。`,
+      `得到 ${texInline("E=\\begin{bmatrix}1&0\\\\-3&1\\end{bmatrix}")}。E 的第二行记录“第二行减三倍第一行”的组合系数。`,
+      `计算 ${texInline("EA=\\begin{bmatrix}1&2\\\\-3+3&-6+7\\end{bmatrix}=\\begin{bmatrix}1&2\\\\0&1\\end{bmatrix}")}。`,
+      `反向操作是 ${texInline("R_2\\leftarrow R_2+3R_1")}，所以 ${texInline("E^{-1}=\\begin{bmatrix}1&0\\\\3&1\\end{bmatrix}")}。`,
+      `核对 ${texInline("E^{-1}EA=A")}；反向行操作确实恢复原矩阵。`,
+    ],
+    audit: {
+      matrix: [[1, 2], [3, 7]],
+      elementary: [[1, 0], [-3, 1]],
+      product: [[1, 2], [0, 1]],
+      inverse: [[1, 0], [3, 1]],
+    },
+  },
   quiz: [
-    { question: `要构造 ${texInline("R_2\\leftarrow R_2-3R_1")} 对应的初等矩阵，最直接的做法是什么？`, answer: "把同一个行变换施加到单位矩阵 I 上。" },
-    { question: "为什么初等矩阵都可逆？", answer: "每一类初等行变换都有一个反向的初等行变换；对应的反向操作就是逆矩阵。" },
-    { question: "左乘 E 和右乘 E 的主要区别是什么？", answer: "左乘改变行，右乘改变列。原因是矩阵乘法时左侧因子用自己的行组合右侧矩阵的行。" },
+    {
+      question: "怎样最快构造某次行操作对应的初等矩阵？",
+      answer: "把同一次行操作施加到同阶单位矩阵 I 上。",
+    },
+    {
+      question: "为什么倍乘型初等操作的倍数必须非零？",
+      answer: "乘 0 会把整行信息删除，无法通过乘一个数恢复，因此操作不可逆。",
+    },
+    {
+      question: `${texInline("R_1\\leftarrow R_1+4R_2")} 的逆操作是什么？`,
+      answer: `${texInline("R_1\\leftarrow R_1-4R_2")}。`,
+    },
+    {
+      question: "EA 与 AE 分别主要改变什么？",
+      answer: "EA 按 E 的行系数组合 A 的行；AE 按 E 的列系数组合 A 的列。",
+    },
+    {
+      question: `若 ${texInline("E_3E_2E_1A=I")}，A⁻¹ 是什么？`,
+      answer: `${texInline("A^{-1}=E_3E_2E_1")}。`,
+    },
+    {
+      question: "对增广矩阵做行操作时，为什么右端也要改变？",
+      answer: "行操作作用于整条方程。只改系数而不改右端会得到另一组方程，解集不再保持。",
+    },
   ],
-  summary: ["一次初等行变换 = 对单位矩阵做同样操作得到 E = 左乘 E。", "初等矩阵可逆，因为每个初等操作都能被反向操作撤销。", "左乘看行，右乘看列；§7 会把这个思想推广到分块。"],
-  exercises: [`写出 ${texInline("R_2\\leftarrow -2R_2")} 对应的 2 阶初等矩阵，并写出它的逆。`],
+  summary: [
+    "对 I 做一次初等操作得到 E；左乘 E 会把同一行操作施加到 A。",
+    "三类初等矩阵都有明确的反向操作，因此全部可逆。",
+    "左乘改行、右乘改列；矩阵所在侧决定被组合的方向。",
+    "连续初等矩阵乘积记录完整消元，Gauss–Jordan 由此产生 A⁻¹。",
+    "下一节把标量行倍加升级为带尺寸的块行倍加。",
+  ],
+  exercises: [
+    `写出 ${texInline("R_1\\leftrightarrow R_3")}、${texInline("R_2\\leftarrow5R_2")} 和 ${texInline("R_3\\leftarrow R_3-2R_1")} 对应的三阶初等矩阵及其逆。`,
+    `对同一个 A 比较 EA 与 AE，逐项说明变化的行和列。`,
+    `手工把 ${texInline("[A\\mid I]")} 化为 ${texInline("[I\\mid A^{-1}]")} 并记录每一个初等矩阵因子。`,
+  ],
 });

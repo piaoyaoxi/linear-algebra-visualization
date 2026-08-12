@@ -261,12 +261,12 @@
     </svg>`;
   }
 
-  function renderFormal(formal) {
+  function renderFormal(formal, section) {
     if (!formal) return;
     formal.innerHTML = `
       <h2>先分清两个问题：面积倍率与独立方向</h2>
       <div class="s3-formal">
-        <p class="s3-lead">参考图形把列向量张成的平行四边形、连续矩阵作用和线性相关放在同一条主线上。本页重新设计为三个层次：先观察面积与方向，再追踪乘积倍率，最后识别秩的瓶颈。</p>
+        <p class="s3-lead">行列式用一个数记录有向体积倍率，秩用一个整数记录独立列数。图形负责显示现象，列组合负责把乘积秩的结论推广到任意尺寸。</p>
 
         <section class="s3-formal-module" aria-labelledby="s3-two-meters-title">
           <div class="s3-module-heading"><span>01</span><div><h3 id="s3-two-meters-title">同一张图，两个仪表</h3><p>行列式和秩会在坍缩处相遇，但它们记录的信息不同。</p></div></div>
@@ -302,8 +302,28 @@
           </div>
         </section>
 
-        <section class="s3-formal-module" aria-labelledby="s3-row-column-title">
-          <div class="s3-module-heading"><span>04</span><div><h3 id="s3-row-column-title">行秩与列秩是同一个数</h3><p>转置会交换行与列，却不会改变独立方向的数量。</p></div></div>
+        <section class="s3-formal-module" aria-labelledby="s3-det-proof-title">
+          <div class="s3-module-heading"><span>04</span><div><h3 id="s3-det-proof-title">体积图像之外，乘积公式还有代数证明</h3><p>把第二章的“交替多线性函数唯一性”用在 B 的各列上。</p></div></div>
+          <div class="s3-law-pair">
+            <article><span>固定左因子 A</span>${mathDisplay("D_A(B)=\\det(Ab_1,\\ldots,Ab_n)=\\det(AB)")}<p>每个 bⱼ 都线性进入 Abⱼ；若 B 的两列相同，对应的 Abⱼ 也相同。因此 D_A 对 B 的列仍是交替多线性的。</p></article>
+            <article><span>确定比例常数</span>${mathDisplay("D_A(I)=\\det(A)")}<p>行列式唯一性说明 ${mathInline("D_A(B)")} 只能是普通行列式的一个常数倍；在 I 处求值得 ${mathInline("D_A(B)=\\det(A)\\det(B)")}。</p></article>
+          </div>
+        </section>
+
+        <section class="s3-formal-module" aria-labelledby="s3-rank-proof-title">
+          <div class="s3-module-heading"><span>05</span><div><h3 id="s3-rank-proof-title">秩瓶颈的两个上界来自两条理由</h3><p>两个因子分别以不同方式限制 AB，缺少任何一条都得不到 min 上界。</p></div></div>
+         <div class="s3-law-pair">
+           <article><span>受 A 的列限制</span>${mathDisplay("AB=[Ab_1\\ \\cdots\\ Ab_p]")}<p>每个 Abⱼ 都是 A 的列的线性组合，因此 AB 的列空间包含在 A 的列空间中，${mathInline("\\operatorname{rank}(AB)\\le\\operatorname{rank}(A)")}。</p></article>
+            <article><span>继承 B 的列关系</span>${mathDisplay("\\ker(B)\\subseteq\\ker(AB)")}<p>${mathInline("Bc=0\\Rightarrow ABc=0")}。B 与 AB 都有 p 列，秩—零度定理于是给出 ${mathInline("\\operatorname{rank}(AB)\\le\\operatorname{rank}(B)")}。</p></article>
+         </div>
+          <div class="s3-invertible-note">
+            <strong>可逆因子给出反向不等式</strong>
+            <p>A 可逆时，先有 ${mathInline("\\operatorname{rank}(AB)\\le\\operatorname{rank}(B)")}；再由 ${mathInline("B=A^{-1}(AB)")} 得到 ${mathInline("\\operatorname{rank}(B)\\le\\operatorname{rank}(AB)")}，于是两边相等。</p>
+          </div>
+        </section>
+
+       <section class="s3-formal-module" aria-labelledby="s3-row-column-title">
+          <div class="s3-module-heading"><span>06</span><div><h3 id="s3-row-column-title">转置交换行列，但保持秩</h3><p>这一事实让行关系与列关系可以使用同一个秩来计数。</p></div></div>
           <div class="s3-transpose-rank" data-s3-transpose-rank>
             <div class="s3-transpose-matrix" data-s3-transpose-matrix>${matrixGrid([[1, 0, 1], [0, 1, 1]])}</div>
             <button type="button" data-s3-transpose-toggle>转置</button>
@@ -312,6 +332,7 @@
           <div class="s3-rank-equality">${mathDisplay("\\operatorname{rank}(M^T)=\\operatorname{rank}(M)")}</div>
         </section>
       </div>
+      ${window.renderChapter4SourcePanel?.(section) || ""}
     `;
     bindTransposeRank(formal);
   }

@@ -56,7 +56,7 @@
           <span>从几何动作回到代数定义</span>
           <h2>定理概念</h2>
         </div>
-        <p>先抓住“做完能够原路返回”，再整理可逆的判定与计算。</p>
+        <p>双侧单位等式给出定义；结合律负责证明唯一性和乘积逆序；几何往返负责把这些等式变成可观察过程。</p>
       </div>
       <div class="section4-formal">
         <div class="definition-stack">
@@ -74,7 +74,16 @@
             )
             .join("")}
         </div>
+        <div class="script-panel inverse-proof-panel">
+          <h3>两条证明链必须实际乘出来</h3>
+          <ol>
+            <li><strong>唯一性：</strong>若 ${inline("BA=I")} 且 ${inline("AC=I")}，则 ${inline("B=B(AC)=(BA)C=C")}。</li>
+            <li><strong>逆序：</strong>${inline("(AB)(B^{-1}A^{-1})=A(BB^{-1})A^{-1}=I")}，反方向乘法也得到 I。</li>
+            <li><strong>计算选择：</strong>${inline("x=A^{-1}b")} 给出结构公式；只解一个右端时，直接消元通常步骤更少。</li>
+          </ol>
+        </div>
       </div>
+      ${window.renderChapter4SourcePanel?.(section) || ""}
     `;
   }
 

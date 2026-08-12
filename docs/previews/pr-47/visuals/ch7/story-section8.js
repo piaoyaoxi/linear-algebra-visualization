@@ -18,7 +18,7 @@
     const shell = S.createLab(section, lesson, {
       layout: "jordan-story",
       title: "第二条特征方向找不到时，缺失的信息藏在哪里？",
-      description: "Jordan 结构不是先背一个方块矩阵。先看第二个方向为何被剪切，再把共同缩放 λI 剥离，最后只观察 N 的链传递。",
+      description: "Jordan 结构从缺失的第二个特征方向开始：先看剪切，再剥离共同缩放 λI，最后观察 N 的链传递。",
       task: "按顺序切换三个故事步骤。进入链传递后，反复点击“沿 N 前进一步”，直到当前链向量到达 0。",
     });
     shell.toolbar.innerHTML = `${S.buttonGroup("选择结构", structures.map((item, index) => ({ value: index, label: item.name })), state.structure, "structure")}${S.buttonGroup("故事步骤", phases, state.phase, "phase")}<div class="ch7-control-group" data-chain-actions hidden><span class="ch7-control-label">链传递</span><div class="ch7-choice-row"><button type="button" class="ch7-action" data-next>沿 N 前进一步</button><button type="button" class="ch7-action" data-reset>重置</button></div></div>`;

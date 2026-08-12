@@ -30,7 +30,7 @@
     const shell = S.createLab(section, lesson, {
       layout: "fiber-map",
       title: "为什么一整条不同的输入，会落到完全相同的输出？",
-      description: "左图的仿射纤维必须经过当前 x，而不是经过原点。沿核方向移动，只改变被 T 完全抹去的那部分。",
+      description: "左图的仿射纤维经过当前 x，方向则来自过原点的核空间。沿核方向移动，只改变被 T 完全抹去的那部分。",
       task: "先拖动左图圆环选择 x，再拖动“沿纤维移动”。盯住右图共同像，确认它没有移动。",
     });
     shell.toolbar.innerHTML = S.buttonGroup("选择变换", presets.map((item, index) => ({ value: index, label: item.name })), state.preset, "preset");

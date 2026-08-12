@@ -31,7 +31,7 @@
             <text class="ch10-static-caption" x="36" y="230">读取器：用平行层给出标量</text>
           </g>
         </svg>
-        <figcaption>协向量不画成另一支箭头；它由核、平行读取层和对向量的读数来呈现。</figcaption>
+        <figcaption>这里用核、平行读取层和实际读数呈现协向量；选择内积以后，才可进一步用法向量代表它。</figcaption>
       </figure>
       <div class="ch10-intuition-copy">
         <p><strong>x 属于 V</strong><span>它是被测量的向量。</span></p>
@@ -89,7 +89,7 @@
 
   function renderFormal(section) {
     return `<div class="ch10-formal-flow">
-      <p class="ch10-formal-lead">对偶空间不是另一个几何平面，而是所有线性测量规则组成的空间。对偶基只是其中最精确的一组坐标读取器。</p>
+      <p class="ch10-formal-lead">所有线性测量规则组成对偶空间。对偶基是其中与一组给定基精确配合的坐标读取器。</p>
       <section class="ch10-module" aria-labelledby="dual-definition-title">
         ${renderModuleHeading("01", "对偶空间与自然配对", "先区分对象，再写配对。", "dual-definition-title")}
         <div class="ch10-concept-list">
@@ -111,7 +111,7 @@
           <div class="ch10-static-row"><strong>对偶映射</strong><p>若 ${mathInline("T:V\\to W")}，则 ${mathInline("T^*(g)=g\\circ T")} 把 W 上的测量拉回 V。</p></div>
         </div>
       </section>
-      <aside class="ch10-boundary-note"><strong>有限维不等于天然相同</strong><p>${mathInline("\\dim V=\\dim V^*")} 只说明它们同构；没有额外结构时，不能把向量与协向量直接当成同一种对象。</p></aside>
+      <aside class="ch10-boundary-note"><strong>有限维同构仍要说明选择</strong><p>${mathInline("\\dim V=\\dim V^*")} 保证两者存在同构。由基或内积得到的 ${mathInline("V\\to V^*")} 同构依赖选择；自然求值则给出 ${mathInline("V\\to V^{**}")}。</p></aside>
     </div>`;
   }
 

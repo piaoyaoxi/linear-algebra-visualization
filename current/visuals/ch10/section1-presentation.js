@@ -84,14 +84,14 @@
         </div>
       </section>
       <section class="ch10-module" aria-labelledby="functional-linearity-title">
-        ${renderModuleHeading("02", "为什么这不是普通的平行线图案", "必须同时通过加法、数乘和零向量三项检查。", "functional-linearity-title")}
+        ${renderModuleHeading("02", "线性性怎样约束这组平行层", "加法、数乘和零向量三项检查共同决定读取规则。", "functional-linearity-title")}
         <div class="ch10-static-diagram">
           <div class="ch10-static-row"><strong>${mathInline("f(x+y)=f(x)+f(y)")}</strong><p>先相加再测量，与分别测量再相加，读数相同。</p></div>
           <div class="ch10-static-row"><strong>${mathInline("f(\\lambda x)=\\lambda f(x)")}</strong><p>输入缩放多少倍，输出就缩放多少倍。</p></div>
           <div class="ch10-static-row"><strong>${mathInline("f(0)=0")}</strong><p>所以核必经过原点；这一步把线性函数与仿射函数区分开。</p></div>
         </div>
       </section>
-      <aside class="ch10-boundary-note"><strong>坐标只是记录方式</strong><p>选定基后可写成 ${mathInline("f(x)=a^Tx")}。行向量 ${mathInline("a^T")} 是函数在这组基下的坐标，不是函数本身。</p></aside>
+      <aside class="ch10-boundary-note"><strong>坐标只是记录方式</strong><p>选定基后可写成 ${mathInline("f(x)=a^Tx")}。行向量 ${mathInline("a^T")} 记录函数在这组基下的坐标；函数本身是与坐标选择无关的线性映射。</p></aside>
     </div>`;
   }
 

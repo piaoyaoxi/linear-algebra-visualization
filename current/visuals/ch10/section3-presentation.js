@@ -27,11 +27,11 @@
             <text class="ch10-static-caption" x="18" y="205">关于 x 的线性读取层</text>
           </g>
         </svg>
-        <figcaption>固定右槽以后，右槽不再是“第二个活动对象”，而是决定左槽读取方向的参数。</figcaption>
+        <figcaption>固定右槽后，y 通过 B 产生关于 x 的线性函数；它的平行层随 y 一起改变。</figcaption>
       </figure>
       <div class="ch10-intuition-copy">
-        <p><strong>固定 y</strong><span>得到读取器 Ay。</span></p>
-        <p><strong>移动 x</strong><span>用 xᵀ 读取 Ay，输出 B(x,y)。</span></p>
+        <p><strong>固定 y</strong><span>得到协向量 x ↦ B(x,y)。</span></p>
+        <p><strong>选定标准坐标</strong><span>Ay 记录该协向量的系数；等值层与 Ay 垂直。</span></p>
         <p><strong>交换角色</strong><span>固定 x 后同样得到关于 y 的线性函数。</span></p>
       </div>
     </div>`;
@@ -102,14 +102,14 @@
         </div>
       </section>
       <section class="ch10-module" aria-labelledby="bilinear-structure-title">
-        ${renderModuleHeading("03", "交换、退化与二次型各看什么", "不要把不同结构压成一个按钮实验。", "bilinear-structure-title")}
+        ${renderModuleHeading("03", "交换、退化与二次型各看什么", "三种问题需要分别检查，再沿公式连接起来。", "bilinear-structure-title")}
         <div class="ch10-static-diagram">
-          <div class="ch10-static-row"><strong>对称 / 斜对称</strong><p>比较 ${mathInline("B(x,y)")} 与 ${mathInline("B(y,x)")}；一般双线性函数可分成两部分。</p></div>
+          <div class="ch10-static-row"><strong>对称 / 斜对称</strong><p>比较 ${mathInline("B(x,y)")} 与 ${mathInline("B(y,x)")}；当数域特征不为 2 时，一般双线性型可唯一分成这两部分。</p></div>
           <div class="ch10-static-row"><strong>退化</strong><p>若存在非零方向与另一槽所有向量的配对都为 0，就出现左根或右根。</p></div>
           <div class="ch10-static-row"><strong>二次型</strong><p>${mathInline("Q(x)=B(x,x)")} 看不见斜对称部分，因此不能恢复一般双线性函数。</p></div>
         </div>
       </section>
-      <aside class="ch10-boundary-note"><strong>换基采用合同</strong><p>同一空间两个输入坐标同时改变，配对矩阵按 ${mathInline("A'=P^TAP")} 变化，而同一对几何向量的配对值不变。</p></aside>
+      <aside class="ch10-boundary-note"><strong>先分清两个空间与同一空间</strong><p>在 ${mathInline("V\\times W")} 上分别换基得到 ${mathInline("A'=P^TAQ")}；同一空间的双线性型在两槽使用同一新基时，才得到合同 ${mathInline("A'=P^TAP")}。配对值始终不变。</p></aside>
     </div>`;
   }
 
@@ -138,10 +138,10 @@
       q(lab, "[data-bilinear-formula]").innerHTML = mathInline(`B(x,y)=x^TAy=${format(value)}`);
       if (state.mode === "right") {
         q(lab, "[data-bilinear-reader]").innerHTML = mathInline(`Ay=(${format(reader[0])},${format(reader[1])})^T`);
-        q(lab, "[data-bilinear-reader-copy]").innerHTML = `固定 y 后，${mathInline("x\\mapsto x^T(Ay)")} 就是图中的线性读取层。`;
+        q(lab, "[data-bilinear-reader-copy]").innerHTML = `固定 y 后，${mathInline("x\\mapsto x^T(Ay)")} 是协向量；图中的 Ay 只标出它在标准坐标下的法向代表。`;
       } else {
         q(lab, "[data-bilinear-reader]").innerHTML = mathInline(`A^Tx=(${format(reader[0])},${format(reader[1])})^T`);
-        q(lab, "[data-bilinear-reader-copy]").innerHTML = `固定 x 后，${mathInline("y\\mapsto (A^Tx)^Ty")} 是另一组线性读取层。`;
+        q(lab, "[data-bilinear-reader-copy]").innerHTML = `固定 x 后，${mathInline("y\\mapsto (A^Tx)^Ty")} 是 W 上的协向量；Aᵀx 记录它的坐标系数。`;
       }
       q(lab, "[data-bilinear-conclusion]").textContent = state.mode === "right"
         ? "y 决定 Ay 与整组读取层；拖动 x 只改变它落在哪一层。"

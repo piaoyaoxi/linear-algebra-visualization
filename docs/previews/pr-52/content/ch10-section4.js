@@ -10,7 +10,7 @@ defineChapter10Section({
   intro:
     "二维标准配对 " + texInline("\\omega(x,y)=\\det[x\\;y]") + " 记录有向面积：交换输入会变号，共线时读数为 0。辛形式还要求非退化，即每个非零方向都能找到一个搭档产生非零配对。这个条件让我们能够反复抽出标准二维面积单元，直到整个空间被辛向量对填满。",
   textbook: {
-    reference: "Hoffman–Kunze §10.3–§10.4 · Strang §5.3",
+    reference: "Hoffman–Kunze §10.3–§10.4 · Strang §5.3（有向面积直觉）",
     page: "",
     items: [
       "交错、斜对称与非退化",

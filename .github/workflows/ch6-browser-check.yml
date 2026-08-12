@@ -6,6 +6,7 @@ on:
       - "current/**"
       - ".github/scripts/ch6-browser-review.mjs"
       - ".github/scripts/ch6-source-style-check.mjs"
+      - "tests/ch6-content-audit.cjs"
       - ".github/workflows/ch6-browser-check.yml"
 
 permissions:
@@ -21,6 +22,9 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 20
+
+      - name: Audit Chapter 6 teaching content and examples
+        run: node tests/ch6-content-audit.cjs
 
       - name: Reject off-brand Chapter 6 source styles
         shell: bash

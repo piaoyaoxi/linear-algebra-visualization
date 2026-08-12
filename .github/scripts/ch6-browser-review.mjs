@@ -19,7 +19,18 @@ const sections = [
   "direct-sum",
   "isomorphism",
 ];
+const lessonExpectations = {
+  "sets-maps": "映射由三部分共同确定",
+  "vector-space-definition": "数域与运算属于空间的完整数据",
+  "basis-coordinates": "基的核心结论是每个向量都有唯一表示",
+  "change-of-basis": "过渡矩阵的列直接记录旧基在新基中的坐标",
+  "subspaces": "非空与线性组合封闭构成统一判定法",
+  "intersection-sum": "求交空间：让两种基表示同一个向量",
+  "direct-sum": "多个子空间要检查零向量的全部表示",
+  "isomorphism": "一组基上的取值唯一决定线性映射",
+};
 fs.mkdirSync(shots, { recursive: true });
+fs.rmSync(path.join(shots, "failure.txt"), { force: true });
 
 const hasText = (locator, text) => locator.innerText().then((value) => value.includes(text));
 
@@ -212,6 +223,19 @@ async function openLesson(page, id, shotPrefix, colorScheme) {
   await page.locator(".ch6-foundation").waitFor({ state: "visible" });
   await page.locator(".ch6-guided-lab").waitFor({ state: "visible" });
   await page.evaluate(() => document.fonts?.ready);
+  const contentText = await page.locator("main.content").innerText();
+  if (!contentText.includes(lessonExpectations[id])) throw new Error(`${id}: textbook theorem spine did not render`);
+  if ((await page.locator(".ch6-lesson-module").count()) < 4) throw new Error(`${id}: formal story is too shallow`);
+  if ((await page.locator("[data-example-challenge]").count()) !== 1) throw new Error(`${id}: representative example did not mount`);
+  if ((await page.locator(".example-choice").count()) !== 4) throw new Error(`${id}: representative example must keep four choices`);
+  if ((await page.locator("[data-example-explanation]").getAttribute("hidden")) === null) {
+    throw new Error(`${id}: example analysis is visible before student action`);
+  }
+  if (/不是[^。；]{0,50}而是/.test(contentText)) throw new Error(`${id}: false-opposition sentence remains`);
+  if (contentText.includes("北大版《高等代数》第六章")) throw new Error(`${id}: generic source label remains`);
+  if (id === "change-of-basis" && !contentText.includes("½[[1,2],[-1,0]]")) {
+    throw new Error("§4 corrected transition matrix is missing");
+  }
   if ((await page.locator(".concept-strip").count()) !== 0) throw new Error(`${id}: legacy concept strip remains`);
   if ((await page.locator("main.content").innerText()).includes("阿贝尔群")) throw new Error(`${id}: abstract-algebra jargon remains`);
   await assertPageGeometry(page, id);

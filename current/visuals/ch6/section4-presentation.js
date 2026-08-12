@@ -52,7 +52,7 @@
 
   function renderFormal(root) {
     const modules = [
-      U().moduleBlock("01", "同一个向量可以有不同坐标", "坐标不是向量本身，而是相对有序基的系数", `${staticCoordinateFigure()}<div class="ch6-reading-note"><strong>始终固定的对象</strong><p>两幅图中向量 v 的起点和终点完全相同。变化的是基方向、网格和坐标数字。</p></div>`),
+      U().moduleBlock("01", "同一个向量可以有不同坐标", "坐标记录向量相对有序基的系数；向量本身保持不变", `${staticCoordinateFigure()}<div class="ch6-reading-note"><strong>始终固定的对象</strong><p>两幅图中向量 v 的起点和终点完全相同。变化的是基方向、网格和坐标数字。</p></div>`),
       U().moduleBlock("02", "基矩阵把坐标恢复成向量", "把有序基向量按列排成矩阵", `<div class="ch6-basis-matrix-story"><div>${U().formulaCard("基矩阵", "U=[u_1\\ \\cdots\\ u_n]", "列顺序与坐标分量顺序一一对应。")}</div><div class="ch6-flow-arrow">→</div><div>${U().formulaCard("坐标恢复", "v=U[v]_U", "坐标列经过基矩阵，恢复为同一个几何向量。")}</div></div>`),
       U().moduleBlock("03", "过渡矩阵必须带方向", "从 U 坐标出发，先恢复向量，再用 W 重新读取", `<div class="ch6-derivation-stack"><div>${U().texDisplay("v=Ux=Wy")}</div><span>同一个向量由两组坐标描述</span><div>${U().texDisplay("Wy=Ux")}</div><span>左乘 ${U().texInline("W^{-1}")}</span><div class="is-result">${U().texDisplay("y=W^{-1}Ux=P_{W\\leftarrow U}x")}</div></div><div class="ch6-direction-note"><strong>箭头方向写在下标里</strong><p>${U().texInline("P_{W\\leftarrow U}")} 把 U 坐标变成 W 坐标；反方向矩阵是它的逆。</p></div>`),
       U().moduleBlock("04", "主动变换与被动换基不能混在一起", "两种过程可以使用矩阵，但回答的问题不同", `<div class="ch6-active-passive-grid"><article><span>被动换基</span><h4>对象固定，表示改变</h4>${U().texDisplay("v\\text{ 固定},\\qquad [v]_U\\mapsto[v]_W")}<ul><li>基与网格改变</li><li>向量端点不动</li><li>使用过渡矩阵</li></ul></article><article><span>主动变换</span><h4>基固定，对象移动</h4>${U().texDisplay("v\\mapsto Av")}<ul><li>基与坐标轴固定</li><li>向量端点移动</li><li>A 描述真实作用</li></ul></article></div>`),

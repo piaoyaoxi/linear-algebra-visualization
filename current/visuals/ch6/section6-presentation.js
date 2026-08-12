@@ -31,7 +31,7 @@
       U().moduleBlock(
         "02",
         "和空间收集所有可以合成的方向",
-        "它不是简单把两个集合并排放在一起",
+        "它收集两个子空间中向量的全部两两和",
         `<div class="ch6-sum-definition"><div>${sumVsUnionFigure()}</div><div>${U().texDisplay("U+W=\\{u+w:u\\in U,\\ w\\in W\\}")}<p>第一段表示先取 ${U().texInline("u\\in U")}，第二段表示从它的终点再加 ${U().texInline("w\\in W")}；从原点直达终点的箭头就是 ${U().texInline("u+w")}。</p><div class="ch6-warning-note"><strong>${U().texInline("U\\cup W")} 一般不是子空间</strong><p>分别取 u∈U 与 w∈W，u+w 往往离开集合并。</p></div></div></div>`,
       ),
       U().moduleBlock("03", "维数公式是一笔重复方向的账", "dim U 与 dim W 都计算了交空间中的方向", dimensionBookkeeping()),

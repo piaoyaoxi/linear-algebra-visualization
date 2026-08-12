@@ -108,7 +108,7 @@
         </div>
       </section>
       <section class="ch10-module" aria-labelledby="preservation-title">
-        ${renderModuleHeading("03", "辛、正交与体积保持不是一回事", "先问保持了哪个对象，再看矩阵条件。", "preservation-title")}
+        ${renderModuleHeading("03", "辛、正交与体积保持各自保存什么", "先确定要保持的对象，再检查相应矩阵条件。", "preservation-title")}
         <div class="ch10-static-diagram">
           ${section.preservationCompare.slice(0, 3).map((item) => `<div class="ch10-static-row"><strong>${item.title} · ${item.keeps}</strong><p>${item.condition}；${item.visual}。</p></div>`).join("")}
         </div>

@@ -6,6 +6,7 @@ on:
     paths:
       - "current/**"
       - "tests/ch10-browser-audit.cjs"
+      - "tests/ch10-content-audit.cjs"
       - "tests/ch10-source-audit.cjs"
       - ".github/workflows/ch10-browser-audit.yml"
 
@@ -48,11 +49,13 @@ jobs:
           node --check current/visuals/ch10/section4-presentation.js
           node --check current/visuals/ch10/mount.js
           node --check tests/ch10-browser-audit.cjs
+          node --check tests/ch10-content-audit.cjs
           node --check tests/ch10-source-audit.cjs
 
       - name: Audit source escapes and capture diagnostics
         run: |
           mkdir -p artifacts/ch10-browser-audit/source
+          node tests/ch10-content-audit.cjs > artifacts/ch10-browser-audit/content-audit.json
           node tests/ch10-source-audit.cjs > artifacts/ch10-browser-audit/source-audit.json
           cp --parents \
             current/content/ch10-registry.js \
@@ -77,6 +80,7 @@ jobs:
             current/visuals/ch10/section3-presentation.css \
             current/visuals/ch10/section4-presentation.css \
             tests/ch10-browser-audit.cjs \
+            tests/ch10-content-audit.cjs \
             tests/ch10-source-audit.cjs \
             artifacts/ch10-browser-audit/source/
 

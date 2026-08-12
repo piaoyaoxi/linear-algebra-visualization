@@ -23,7 +23,7 @@ defineChapter2Section("determinant-computation", {
     { label: "倍率账本", text: "交换记 -1，倍乘记 λ，倍加记 1。" },
   ],
   textbook: {
-    reference: "北大版《高等代数》第二章 §5",
+    reference: "北大版《高等代数》第二章 §5 · Strang 第 5 章 · Lay 第 3 章",
     page: "",
     items: ["利用性质计算", "化三角形", "特殊结构与简化"],
   },

@@ -23,7 +23,7 @@ defineChapter2Section("n-order-determinant", {
     { label: "定义", text: `对 ${texInline("S_n")} 中全部 ${texInline("n!")} 个排列项求和。` },
   ],
   textbook: {
-    reference: "北大版《高等代数》第二章 §3",
+    reference: "北大版《高等代数》第二章 §3 · Strang 第 5 章 · Hoffman–Kunze 第 5 章",
     page: "",
     items: ["n 阶行列式定义", "三阶展开", "三角形行列式"],
   },

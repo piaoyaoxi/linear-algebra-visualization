@@ -23,7 +23,7 @@ defineChapter2Section("determinant-properties", {
     { label: "交替性", text: "交换两列变号；特别地，两列相同时行列式为 0。" },
   ],
   textbook: {
-    reference: "北大版《高等代数》第二章 §4",
+    reference: "北大版《高等代数》第二章 §4 · Friedberg 第 4 章 · Hoffman–Kunze 第 5 章",
     page: "",
     items: ["行列式的基本性质", "行列变换", "转置与三角形行列式"],
   },

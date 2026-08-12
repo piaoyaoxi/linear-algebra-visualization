@@ -23,7 +23,7 @@ defineChapter2Section("determinant-intro", {
     { label: "零值", text: `${texInline("\\det(A)=0")} 时两列共线，二维面积消失。` },
   ],
   textbook: {
-    reference: "北大版《高等代数》第二章 §1",
+    reference: "北大版《高等代数》第二章 §1 · Friedberg 第 4 章 · Strang 第 5 章",
     page: "",
     items: ["二阶行列式", "有向面积", "符号与零值"],
   },

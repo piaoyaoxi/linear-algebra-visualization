@@ -23,7 +23,7 @@ defineChapter2Section("cramer-rule", {
     { label: "Cramer", text: `${texInline("D\\ne0")} 时 ${texInline("x_i=D_i/D")}。` },
   ],
   textbook: {
-    reference: "北大版《高等代数》第二章 §7",
+    reference: "北大版《高等代数》第二章 §7 · Strang 第 5 章 · Lay 第 3 章",
     page: "",
     items: ["Cramer 法则", "唯一解条件", "齐次方程组"],
   },

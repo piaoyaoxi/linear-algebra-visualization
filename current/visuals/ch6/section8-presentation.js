@@ -9,7 +9,7 @@
       U().moduleBlock("04", "有限维空间的同构由维数分类", "前提是同一数域，并且两边都有限维", `<div class="ch6-dimension-classifier"><div><span>dim V</span><strong>n</strong></div><b>=</b><div><span>dim W</span><strong>n</strong></div><b>⇔</b><div class="is-result"><span>存在某个线性同构</span><strong>V≅W</strong></div></div><p class="ch6-centered-note">这个结论只保证存在一座结构桥，不保证你随手写下的任意映射都是同构。</p>`),
       U().moduleBlock("05", "同构不等于相等，也不自动保持长度", "线性结构之外还可以附加更多结构", `<div class="ch6-not-equal-grid"><article><span>集合相等</span><h4>元素本身完全相同</h4><p>${U().texInline("V=W")} 是更强的陈述。</p></article><article><span>线性同构</span><h4>加法、数乘结构相同</h4><p>元素可以是多项式、矩阵或函数。</p></article><article><span>还保持长度与角度</span><h4>需要额外的内积条件</h4><p>这比一般线性同构要求更多。</p></article></div>`),
     ];
-    root.innerHTML = U().formalShell("同构：识别不同外表背后的同一线性结构", "同构不是“看起来相像”，也不是“元素类型相同”。它要求一座可逆的线性桥，让两边的运算完全同步。", modules, "本章到这里形成闭环：先用基把空间坐标化，再用同构说明所有 n 维空间在纯线性结构上都可以与 Kⁿ 对应。");
+    root.innerHTML = U().formalShell("同构：识别不同外表背后的同一线性结构", "同构是一座可逆的线性桥：它让两边的加法与数乘完全同步，并允许从输出唯一恢复输入。", modules, "本章到这里形成闭环：先用基把空间坐标化，再用同构说明所有 n 维空间在纯线性结构上都可以与 Kⁿ 对应。");
   }
 
   function polynomialText([a, b, c]) {

@@ -23,7 +23,7 @@ defineChapter2Section("permutations", {
     { label: "排列符号", text: `${texInline("\\operatorname{sgn}(\\sigma)=(-1)^{\\tau(\\sigma)}")}。` },
   ],
   textbook: {
-    reference: "北大版《高等代数》第二章 §2",
+    reference: "北大版《高等代数》第二章 §2 · Strang 第 5 章 · Hoffman–Kunze 第 5 章",
     page: "",
     items: ["逆序与逆序数", "奇排列与偶排列", "交换对奇偶性的影响"],
   },

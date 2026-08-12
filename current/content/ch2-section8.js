@@ -23,7 +23,7 @@ defineChapter2Section("laplace-and-product", {
     { label: "乘法", text: `${texInline("\\det(AB)=\\det(A)\\det(B)")}。` },
   ],
   textbook: {
-    reference: "北大版《高等代数》第二章 §8",
+    reference: "北大版《高等代数》第二章 §8 · Hoffman–Kunze 第 5 章 · Friedberg 第 4 章",
     page: "",
     items: ["Laplace 定理", "互补子式", "行列式乘法规则"],
   },

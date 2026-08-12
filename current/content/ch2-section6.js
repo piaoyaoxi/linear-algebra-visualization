@@ -23,7 +23,7 @@ defineChapter2Section("cofactor-expansion", {
     { label: "按行展开", text: `${texInline("\\det(A)=\\sum_j a_{ij}C_{ij}")}。` },
   ],
   textbook: {
-    reference: "北大版《高等代数》第二章 §6",
+    reference: "北大版《高等代数》第二章 §6 · Strang 第 5 章 · Lay 第 3 章",
     page: "",
     items: ["余子式与代数余子式", "按行列展开", "交叉恒等式"],
   },

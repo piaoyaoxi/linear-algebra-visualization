@@ -21,7 +21,7 @@ defineChapter6Section("sets-maps", {
     { label: "双射", text: "输入无碰撞且输出无遗漏，此时可以唯一倒退。" },
   ],
   textbook: {
-    reference: "经典线性代数教材脉络",
+    reference: "Axler · Friedberg · Hoffman–Kunze",
     items: ["映射的完整数据", "像与原像", "单射、满射、双射", "复合、恒等与逆映射"],
   },
   story: {

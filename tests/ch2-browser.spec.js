@@ -1,6 +1,7 @@
 const fs = require("fs");
 const path = require("path");
 const { test, expect } = require("@playwright/test");
+const baseUrl = process.env.CH2_BASE_URL || "http://127.0.0.1:4173";
 
 const lessons = [
   ["determinant-intro", "引言"],
@@ -26,7 +27,7 @@ function browserErrors(page) {
 }
 
 async function openLesson(page, id) {
-  await page.goto(`http://127.0.0.1:4173/learn.html#ch2/${id}`, { waitUntil: "networkidle" });
+  await page.goto(`${baseUrl}/learn.html#ch2/${id}`, { waitUntil: "networkidle" });
   await expect(page.locator("#mainContent .lesson-cover h1")).toBeVisible();
   await expect(page.locator(`#${id}-formal .ch2-formal`)).toBeVisible();
   await expect(page.locator(`#${id}-interactive .ch2-lab`).first()).toBeVisible();
@@ -63,6 +64,38 @@ test.describe("Chapter 2 desktop visual system", () => {
       expect(errors).toEqual([]);
     });
   }
+
+  test("all eight lessons use one prediction, one stepwise example and four focused checks", async ({ page }) => {
+    const errors = browserErrors(page);
+    for (const [id] of lessons) {
+      await openLesson(page, id);
+      await expect(page.locator("[data-ch2-prediction]")).toHaveCount(1);
+      await expect(page.locator(".katex-error")).toHaveCount(0);
+      await expect(page.locator('[data-example-challenge][data-example-mode="steps"]')).toBeVisible();
+      await expect(page.locator(`#${id}-quiz .self-test-item`)).toHaveCount(4);
+      await page.locator('[data-prediction-index="0"]').click();
+      await expect(page.locator("[data-ch2-prediction]")).toHaveAttribute("data-state", "correct");
+    }
+    expect(errors).toEqual([]);
+  });
+
+  test("the textbook-driven theorem spine is visible at the decisive transitions", async ({ page }) => {
+    await openLesson(page, "determinant-properties");
+    await expect(page.locator("#determinant-properties-formal")).toContainText("缺一不可的三条规则");
+    await expect(page.locator("#determinant-properties-formal")).toContainText("归一化");
+
+    await openLesson(page, "cofactor-expansion");
+    await expect(page.locator("#cofactor-expansion-formal")).toContainText("重新分组");
+
+    await openLesson(page, "cramer-rule");
+    await expect(page.locator("#cramer-rule-formal")).toContainText("D=0 只说明唯一解通道关闭");
+
+    await openLesson(page, "laplace-and-product");
+    await expect(page.locator("#laplace-and-product-interactive .ch2-lab-head h3")).toHaveText([
+      "第一阶段 · 子式与互补子式",
+      "第二阶段 · I → B → AB",
+    ]);
+  });
 
   test("saves all eight desktop pages for human visual review", async ({ page }) => {
     const errors = browserErrors(page);
@@ -117,6 +150,7 @@ test.describe("Chapter 2 desktop visual system", () => {
   test("§2 turns one adjacent exchange into one inversion change", async ({ page }) => {
     await openLesson(page, "permutations");
     await expect(page.locator("[data-tau]")).toHaveText("3");
+    await expect(page.locator("[data-inv-list]")).toContainText("(1,2)：3>1");
     await expect(page.locator("[data-wires] path")).toHaveCount(4);
     await page.locator("[data-adj-step]").click();
     await expect(page.locator("[data-tau]")).toHaveText("2");
@@ -185,7 +219,7 @@ test.describe("Chapter 2 desktop visual system", () => {
     const errors = browserErrors(page);
     await openLesson(page, "laplace-and-product");
     await page.locator('[data-prod-preset="doubleMirror"]').click();
-    await page.goto("http://127.0.0.1:4173/learn.html#ch4/matrix-language", { waitUntil: "networkidle" });
+    await page.goto(`${baseUrl}/learn.html#ch4/matrix-language`, { waitUntil: "networkidle" });
     await expect(page.locator("#mainContent .lesson-cover h1")).toContainText("矩阵概念");
     await expect(page.locator('[class*="ch2-"], [data-prod]')).toHaveCount(0);
     expect(errors).toEqual([]);

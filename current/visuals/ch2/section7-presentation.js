@@ -1,9 +1,10 @@
 (() => {
-  const { M, tex, display, formalShell, module, proofSteps, misconception } = window.Ch2PresentationUtils;
+  const { M, tex, formalFromSection, labIntro, mountPrediction } = window.Ch2PresentationUtils;
 
-  function mountCramer(root) {
+  function mountCramer(root, section) {
     const controller = new AbortController();
     const { signal } = controller;
+    mountPrediction(root, section, signal);
     const state = { a11: 2, a12: 1, a21: 1, a22: 3, b1: 5, b2: 5 };
     let displayState = { ...state };
     let animating = false;
@@ -210,38 +211,16 @@
   }
 
   defineChapter2Renderer("cramer-rule", {
-    formal(formal) {
+    formal(formal, section) {
       if (!formal) return;
-      formal.innerHTML = formalShell(
-        "克拉默法则来自列线性",
-        "把 b 放进第 i 列后，沿这一列的线性展开会自动消去所有含重复列的项，只留下 xᵢdet(A)。二维面积比给出同一结论的几何版本。",
-        module("01", "替换列推导", "先写 b 的列组合，再利用重复列为零。", proofSteps([
-          `${tex("b=x_1a_1+\\cdots+x_na_n")}。`,
-          `在 ${tex("A_i")} 中把第 i 列替换为 b，并对该列使用分别线性。`,
-          "当 b 的展开项使用 aⱼ（j≠i）时，矩阵中出现两列 aⱼ，行列式为 0。",
-          `只剩 ${tex("\\det(A_i)=x_i\\det(A)")}；当 det(A)≠0 时可除得公式。`,
-        ]) + `
-          <article class="ch2-def ch2-formula-block"><span class="kicker">公式</span><strong>${display("x_i=\\frac{\\det(A_i)}{\\det(A)}")}</strong><p>分母非零是公式成立与唯一解存在的共同条件。</p></article>
-        `) + module("02", "D=0 与接近 D=0 是两种边界", "一个决定解的类型，另一个提醒坐标对扰动敏感。", `
-          <div class="ch2-card-grid">
-            <article class="ch2-card"><span class="kicker">D=0 且相容</span><h4>无穷多解</h4><p>b 落在塌缩后的列空间中，表示不唯一。</p></article>
-            <article class="ch2-card"><span class="kicker">D=0 且不相容</span><h4>无解</h4><p>b 离开列空间，任何列组合都无法到达它。</p></article>
-            <article class="ch2-card"><span class="kicker">D 很小但非零</span><h4>唯一但敏感</h4><p>两列接近共线，Dᵢ/D 会放大输入中的微小变化。</p></article>
-          </div>
-        `) + misconception([
-          "替换的是第 i 列，因为 Ax 是列向量的线性组合。",
-          "D=0 只说明克拉默公式不可用；无解与无穷多解需要继续判定。",
-          "D 很小不等于 D=0；理论上仍可能有唯一解，但数值会变得敏感。",
-        ]),
-      );
+      formal.innerHTML = formalFromSection(section);
     },
-    interactive(root) {
+    interactive(root, section) {
       if (!root) return;
       root.innerHTML = `
         <h2>交互实验</h2>
         <div class="ch2-lab">
-          <div class="ch2-lab-head"><h3>Cramer 法则 · 列空间与面积比</h3><p>系数列、b、D、D₁、D₂ 与坐标重构同步变化。D=0 时改用列空间判断相容性。</p></div>
-          <div class="ch2-task"><strong>观察任务</strong><span>先读取唯一解，再比较接近奇异、D=0 相容和 D=0 不相容三种边界。</span></div>
+          ${labIntro(section, "Cramer 法则 · 列空间与面积比", "系数列、b、替换列行列式与坐标重构同步变化。")}
           <div class="ch2-cramer-layout">
             <div class="ch2-cramer-main">
               <div class="ch2-stage"><canvas data-cramer-canvas aria-label="克拉默法则列向量与常数向量画布"></canvas></div>
@@ -272,7 +251,7 @@
             </div>
           </div>
         </div>`;
-      return mountCramer(root);
+      return mountCramer(root, section);
     },
   });
 })();

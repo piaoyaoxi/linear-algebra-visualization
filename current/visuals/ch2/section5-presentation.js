@@ -1,9 +1,10 @@
 (() => {
-  const { M, tex, display, aEntry, productTermHtml, formalShell, module, proofSteps, misconception, taskBox } = window.Ch2PresentationUtils;
+  const { M, formalFromSection, labIntro, mountPrediction } = window.Ch2PresentationUtils;
   // ---------- §5 ----------
-  function mountStrategy(root) {
+  function mountStrategy(root, section) {
     const controller = new AbortController();
     const { signal } = controller;
+    mountPrediction(root, section, signal);
     const initial = [[2, 1, 0], [1, 3, 1], [0, 2, 1]];
     let matrix = M().cloneMat(initial);
     let factor = 1;
@@ -140,35 +141,16 @@
   }
 
   defineChapter2Renderer("determinant-computation", {
-    formal(formal) {
+    formal(formal, section) {
       if (!formal) return;
-      formal.innerHTML = formalShell(
-        "计算从识别结构开始",
-        "定义说明行列式是什么，性质决定怎样高效计算。每一步操作都要同时回答两个问题：它能制造什么结构，它对行列式乘了多少。",
-        module("01", "策略优先级", "先减少非零结构，再选择终点。", `
-          <div class="ch2-card-grid">
-            <article class="ch2-card"><span class="kicker">读结构</span><h4>零、因子、相似行列</h4><p>先观察矩阵已经提供了哪些捷径。</p></article>
-            <article class="ch2-card"><span class="kicker">制造零</span><h4>倍加保持 det</h4><p>用消元把主对角线下方或某一展开方向清空。</p></article>
-            <article class="ch2-card"><span class="kicker">抵达终点</span><h4>三角或零多展开</h4><p>三角形读对角线，零多行列只算少量余子式。</p></article>
-          </div>
-        `) + module("02", "倍率账本", "当前值与原值之间始终保留可验证关系。", proofSteps([
-          "交换：当前行列式乘 −1。",
-          "一行整体倍乘 λ：当前行列式乘 λ。",
-          "倍加：当前行列式保持不变。",
-          "终点求出当前值后，用累计倍率恢复原行列式。",
-        ]) + misconception([
-          "只有三角矩阵才能直接读取主对角线乘积。",
-          "计算路线可以不同；账本完整时结果应一致。",
-        ])),
-      );
+      formal.innerHTML = formalFromSection(section);
     },
-    interactive(root) {
+    interactive(root, section) {
       if (!root) return;
       root.innerHTML = `
         <h2>交互实验</h2>
         <div class="ch2-lab">
-          <div class="ch2-lab-head"><h3>造零路线 · 两步到上三角</h3><p>矩阵、当前 det、累计倍率和操作历史同步。形成上三角后，直接读取对角线乘积。</p></div>
-          <div class="ch2-task"><strong>观察任务</strong><span>只用两次倍加完成三角化；再尝试交换或倍乘并撤销，核对账本。</span></div>
+          ${labIntro(section, "造零路线 · 两步到上三角", "矩阵、当前 det、累计倍率和操作历史同步。")}
           <div class="ch2-lab-grid ch2-elimination-layout">
             <div class="ch2-matrix-box">
               <table class="ch2-matrix-table is-static" data-mat-table aria-label="三阶计算策略矩阵"></table>
@@ -195,7 +177,7 @@
             </div>
           </div>
         </div>`;
-      return mountStrategy(root);
+      return mountStrategy(root, section);
     },
   });
 

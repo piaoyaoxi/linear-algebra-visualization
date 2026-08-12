@@ -1,9 +1,10 @@
 (() => {
-  const { M, tex, display, aEntry, productTermHtml, formalShell, module, proofSteps, misconception, taskBox } = window.Ch2PresentationUtils;
+  const { M, tex, formalFromSection, labIntro, mountPrediction } = window.Ch2PresentationUtils;
   // ---------- §4 ----------
-  function mountColumnOperations(root) {
+  function mountColumnOperations(root, section) {
     const controller = new AbortController();
     const { signal } = controller;
+    mountPrediction(root, section, signal);
     const initial = [[1.2, 0.35], [0.2, 1.1]];
     let matrix = M().cloneMat(initial);
     const baseDet = M().det2(initial);
@@ -106,40 +107,16 @@
   }
 
   defineChapter2Renderer("determinant-properties", {
-    formal(formal) {
+    formal(formal, section) {
       if (!formal) return;
-      formal.innerHTML = formalShell(
-        "分别线性与交替性统一全部计算规则",
-        "交互直接展示列操作，因为平行四边形的生成边就是矩阵的列。由 det(Aᵀ)=det(A)，所有结论逐字转化为行操作版本。",
-        module("01", "两条结构性质", "先抓住母性质，再记住派生规则。", `
-          <div class="ch2-def-stack">
-            <article class="ch2-def"><span class="kicker">分别线性</span><strong>${tex("D(\\ldots,u+v,\\ldots)=D(\\ldots,u,\\ldots)+D(\\ldots,v,\\ldots)")}</strong><p>固定其余行或列后，对单独一个位置线性。</p></article>
-            <article class="ch2-def"><span class="kicker">交替性</span><strong>交换两行或两列，行列式变号</strong><p>同一组生成向量的次序翻转，定向随之翻转。</p></article>
-          </div>
-        `) + module("02", "三类初等变换", "每一步都对应一个明确倍率。", `
-          <div class="ch2-card-grid">
-            <article class="ch2-card"><span class="kicker">交换</span><h4>×(−1)</h4><p>绝对值不变，定向翻转。</p></article>
-            <article class="ch2-card"><span class="kicker">倍乘</span><h4>×λ</h4><p>一条生成边缩放，体积同比缩放。</p></article>
-            <article class="ch2-card"><span class="kicker">倍加</span><h4>×1</h4><p>产生剪切，底与高的乘积保持。</p></article>
-          </div>
-        `) + module("03", "派生结论的依赖链", "证明时回到结构，计算时使用结论。", proofSteps([
-          "两行相同：交换后矩阵未变，但行列式应变号，因此只能为 0。",
-          "一行加另一行的倍数：按分别线性拆开，新增项含两行相同而为 0。",
-          "三角矩阵：用倍加逐步消元或直接由定义，最终只剩主对角线乘积。",
-          `${tex("\\det(\\lambda A)=\\lambda^n\\det(A)")}：n 行都各自提出一个 λ。`,
-        ]) + misconception([
-          `${tex("\\det(A+B)")} 一般不满足整体线性；线性只针对一行或一列。`,
-          "交互中的列操作与教材中的行操作规则一致，连接桥梁是转置不变性。",
-        ])),
-      );
+      formal.innerHTML = formalFromSection(section);
     },
-    interactive(root) {
+    interactive(root, section) {
       if (!root) return;
       root.innerHTML = `
         <h2>交互实验</h2>
         <div class="ch2-lab">
-          <div class="ch2-lab-head"><h3>三种列操作 · 对比几何变化</h3><p>平行四边形由两列生成，所以画面直接操作列。右侧同步验证当前 det=初始 det×累计倍率。</p></div>
-          <div class="ch2-task"><strong>观察任务</strong><span>依次做交换、倍乘、倍加，再逐步撤销；每一步先预测 det。</span></div>
+          ${labIntro(section, "三种列操作 · 对比几何变化", "平行四边形由两列生成，右侧同步验证倍率账本。")}
           <div class="ch2-operation-layout">
             <div class="ch2-compare-stage">
               <div><span>变换前 · 固定参照</span><div class="ch2-stage"><canvas data-row-before aria-label="列操作前的有向面积"></canvas></div></div>
@@ -165,7 +142,7 @@
             </div>
           </div>
         </div>`;
-      return mountColumnOperations(root);
+      return mountColumnOperations(root, section);
     },
   });
 })();

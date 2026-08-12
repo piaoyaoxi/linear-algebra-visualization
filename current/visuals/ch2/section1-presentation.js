@@ -1,9 +1,10 @@
 (() => {
-  const { M, tex, display, aEntry, productTermHtml, formalShell, module, proofSteps, misconception, taskBox } = window.Ch2PresentationUtils;
+  const { M, formalFromSection, labIntro, mountPrediction } = window.Ch2PresentationUtils;
   // ---------- §1 ----------
-  function mountDetMeter(root) {
+  function mountDetMeter(root, section) {
     const controller = new AbortController();
     const { signal } = controller;
+    mountPrediction(root, section, signal);
     const canvas = root.querySelector("[data-ch2-canvas]");
     const state = { matrix: [[1, 0.65], [0.15, 1]], view: null, dragging: -1, animating: false };
     const presets = {
@@ -137,36 +138,16 @@
   }
 
   defineChapter2Renderer("determinant-intro", {
-    formal(formal) {
+    formal(formal, section) {
       if (!formal) return;
-      formal.innerHTML = formalShell(
-        "从平行四边形到有向面积",
-        "二维图像负责建立直觉：矩阵的两列决定变换后的两条生成边。一般 n 阶结论将在 §3 通过排列求和定义得到严格支撑。",
-        module("01", "二阶公式的几何落点", "同一公式同时读取面积、方向与塌缩。", `
-          <div class="ch2-def-stack">
-            <article class="ch2-def"><span class="kicker">公式</span><strong>${display("\\det\\begin{bmatrix}a&b\\\\c&d\\end{bmatrix}=ad-bc")}</strong><p>两列张成的平行四边形有向面积为 ad−bc，普通面积取绝对值。</p></article>
-            <article class="ch2-def"><span class="kicker">符号</span><strong>正号保持定向，负号翻转定向</strong><p>符号记录有序基的方向；它不把普通几何面积变成负数。</p></article>
-            <article class="ch2-def"><span class="kicker">零值</span><strong>共线使二维面积消失</strong><p>两列线性相关时，输出只能落在直线或点上，完整二维信息无法恢复。</p></article>
-          </div>
-        `) +
-        module("02", "从零值连接到可逆与唯一解", "三个表述描述同一个二维边界。", proofSteps([
-          `${tex("\\det(A)=0")} 表示两列张成的平行四边形面积为 0。`,
-          "面积为 0 等价于两列共线，因此列向量线性相关。",
-          "列向量无法构成平面的基，变换会丢失一个方向。",
-          "丢失方向后无法唯一撤回，方程 Ax=b 也不再对所有 b 保证唯一解。",
-        ]) + misconception([
-          `${tex("\\det(A)=1")} 只说明有向面积倍率为 1，并不要求 ${tex("A=I")}。`,
-          "det<0 表示定向翻转；普通面积仍为 |det|。",
-        ]) + taskBox("阅读线索", "在交互中让 det 连续穿过 0。零点前后面积绝对值连续，方向状态在零点两侧发生改变。")),
-      );
+      formal.innerHTML = formalFromSection(section);
     },
-    interactive(root) {
+    interactive(root, section) {
       if (!root) return;
       root.innerHTML = `
         <h2>交互实验</h2>
         <div class="ch2-lab">
-          <div class="ch2-lab-head"><h3>有向面积 · 拖动两列</h3><p>拖动两根列向量的端点，也可以使用滑杆与预设。图形、ad−bc、|det| 与状态同步更新。</p></div>
-          <div class="ch2-task"><strong>观察任务</strong><span>构造明显剪切但 det=1 的图形，再让两列共线并继续拖到 det<0。</span></div>
+          ${labIntro(section, "有向面积 · 拖动两列", "拖动两根列向量的端点，图形与行列式读数同步更新。")}
           <div class="ch2-lab-grid ch2-area-layout">
             <div class="ch2-stage"><canvas data-ch2-canvas aria-label="可拖动两列向量的有向面积画布"></canvas></div>
             <div class="ch2-side">
@@ -191,7 +172,7 @@
             <button type="button" data-preset="negative2">det=−2</button>
           </div>
         </div>`;
-      return mountDetMeter(root);
+      return mountDetMeter(root, section);
     },
   });
 

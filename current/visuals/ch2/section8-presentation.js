@@ -1,13 +1,14 @@
 (() => {
-  const { M, tex, display, formalShell, module, proofSteps, misconception } = window.Ch2PresentationUtils;
+  const { M, tex, formalFromSection, labIntro, mountPrediction } = window.Ch2PresentationUtils;
 
   function matrixTex(matrix) {
     return tex(`\\begin{bmatrix}${matrix.map((row) => row.map((value) => M().formatNum(value, 3)).join("&")).join("\\\\")}\\end{bmatrix}`);
   }
 
-  function mountLaplacePairing(root) {
+  function mountLaplacePairing(root, section) {
     const controller = new AbortController();
     const { signal } = controller;
+    mountPrediction(root, section, signal);
     const matrix = [[1, 2, 0, 1], [0, 1, 1, 0], [2, 0, 1, 1], [1, 1, 0, 2]];
     const rows = [0, 1];
     const pairs = [[0, 1], [0, 2], [0, 3], [1, 2], [1, 3], [2, 3]];
@@ -172,46 +173,16 @@
   }
 
   defineChapter2Renderer("laplace-and-product", {
-    formal(formal) {
+    formal(formal, section) {
       if (!formal) return;
-      formal.innerHTML = formalShell(
-        "从子式配对到复合倍率",
-        "本节包含两条收束主线：广义 Laplace 定理把单行展开推广到多个行；乘法规则把行列式解释为线性变换复合时可乘的有向体积倍率。",
-        module("01", "广义 Laplace 定理", "固定 k 行，遍历全部 k 列组合。", `
-          <div class="ch2-def-stack">
-            <article class="ch2-def"><span class="kicker">子式</span><strong>所选 k 行与 k 列交叉得到 k 阶行列式</strong><p>未被选择的行列形成互补子式。</p></article>
-            <article class="ch2-def"><span class="kicker">位置符号</span><strong>${tex("(-1)^{\\sum I+\\sum J}")}</strong><p>I、J 分别是所选行指标集与列指标集。</p></article>
-          </div>
-          <article class="ch2-def ch2-formula-block"><span class="kicker">固定行指标集 I 的展开</span><strong>${display("\\det(A)=\\sum_{\\substack{J\\subset\\{1,\\ldots,n\\}\\\\|J|=k}}(-1)^{\\sum I+\\sum J}\\det A[I,J]\\,\\det A[I^c,J^c]")}</strong><p>当 k=1 时，子式就是一个元素，互补子式就是余子式，公式退化为 §6。</p></article>
-        `) + module("02", "乘法规则", "第二阶段必须从 B 后的图形继续，而非重新从单位形开始。", `
-          <article class="ch2-def ch2-formula-block"><span class="kicker">定理</span><strong>${display("\\det(AB)=\\det(A)\\det(B)")}</strong><p>向量先经过 B，再经过 A；有向体积先乘 det(B)，随后乘 det(A)。</p></article>
-          ${proofSteps([
-            "几何入口：单位体积经过 B 后乘 det(B)，再经过 A 后乘 det(A)。",
-            "代数入口：把 AB 的每一列写成 A 的列向量的线性组合。",
-            "对所有列使用多重线性展开；含重复 A 列的项全部为零。",
-            "剩余列指标必须构成排列，其符号与 B 的 Leibniz 展开一致。",
-            "把 A 的排列和与 B 的排列和分离，得到 det(A)det(B)。",
-          ])}
-        `) + module("03", "重要推论", "乘法规则把多个结论压缩成一行计算。", `
-          <div class="ch2-card-grid">
-            <article class="ch2-card"><span class="kicker">逆矩阵</span><h4>${tex("\\det(A^{-1})=1/\\det(A)")}</h4><p>由 det(I)=det(A)det(A⁻¹)。</p></article>
-            <article class="ch2-card"><span class="kicker">矩阵幂</span><h4>${tex("\\det(A^m)=\\det(A)^m")}</h4><p>重复复合，倍率重复相乘。</p></article>
-            <article class="ch2-card"><span class="kicker">相似</span><h4>${tex("\\det(P^{-1}AP)=\\det(A)")}</h4><p>换基前后的两个 P 因子相互抵消。</p></article>
-          </div>
-        `) + misconception([
-          "AB 与 BA 通常不同，但二者行列式都等于 det(A)det(B)。",
-          "几何动画解释公式为何自然；一般 n 阶的严格证明仍要回到多重线性与排列。",
-          "广义 Laplace 定理与乘法规则是本节两条独立而相互呼应的结论。",
-        ]),
-      );
+      formal.innerHTML = formalFromSection(section);
     },
-    interactive(root) {
+    interactive(root, section) {
       if (!root) return;
       root.innerHTML = `
         <h2>交互实验</h2>
         <div class="ch2-lab">
-          <div class="ch2-lab-head"><h3>Laplace 展开 · 子式与互补子式</h3><p>固定前两行，4×4 中共有六个两列组合。逐项读取子式、互补子式、位置符号与最终贡献。</p></div>
-          <div class="ch2-task"><strong>观察任务</strong><span>浏览六个组合，核对贡献之和与原 4 阶行列式完全一致。</span></div>
+          ${labIntro(section, "Laplace 展开 · 子式与互补子式", "固定前两行并逐项读取互补配对。", "laplace", false)}
           <div class="ch2-laplace-layout">
             <div class="ch2-pair-list" data-pair-list></div>
             <div class="ch2-laplace-main">
@@ -233,8 +204,7 @@
           </div>
         </div>
         <div class="ch2-lab ch2-lab-spaced">
-          <div class="ch2-lab-head"><h3>两阶段体积实验 · I → B → AB</h3><p>中间屏先从 I 变为 B；右侧屏以 B 为真实起点，再连续变为 AB。</p></div>
-          <div class="ch2-task"><strong>观察任务</strong><span>比较一次镜像、两次镜像与含投影三种符号或零值情形。</span></div>
+          ${labIntro(section, "两阶段体积实验 · I → B → AB", "第二阶段从 B 的图形继续。", "product", true)}
           <div class="ch2-stage-row">
             <div class="ch2-stage-panel"><div class="ch2-stage"><canvas data-c-i aria-label="单位形"></canvas></div><div class="ch2-stage-caption">I · 单位形</div></div>
             <div class="ch2-stage-panel"><div class="ch2-stage"><canvas data-c-b aria-label="经过 B 的图形"></canvas></div><div class="ch2-stage-caption">第一阶段 · I → B</div></div>
@@ -256,7 +226,7 @@
             <button type="button" data-prod-replay>重播</button>
           </div>
         </div>`;
-      const cleanupPairing = mountLaplacePairing(root);
+      const cleanupPairing = mountLaplacePairing(root, section);
       const cleanupProduct = mountProduct(root);
       return () => {
         cleanupProduct?.();

@@ -4,7 +4,7 @@ registerAlgebraChapter({
   title: "第二章 行列式",
   subtitle: "有向体积与结构",
   summary:
-    "本章沿教材 §1—§8 展开。主线从二维有向面积出发，经排列奇偶性建立 n 阶定义，再把性质组织成计算工具，最后连接余子式展开、克拉默法则、Laplace 定理与矩阵乘积。行列式的绝对值记录体积倍率，符号记录定向，零值标志维度塌缩。",
+    "本章沿教材 §1—§8 展开。主线从二维有向面积提出问题，经排列奇偶性建立 n 阶定义，再以 det(I)=1、分别线性与交替性统一计算规则，最后推导余子式展开、Cramer 法则、Laplace 定理与乘法规则。行列式的绝对值记录体积倍率，符号记录定向，零值标志维度塌缩。",
   sections: [
     { id: "determinant-intro", number: "§1", title: "引言", navTitle: "引言" },
     { id: "permutations", number: "§2", title: "排列", navTitle: "排列" },

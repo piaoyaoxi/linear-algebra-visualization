@@ -45,7 +45,7 @@
       matrix: [["1", "0"], ["0", "\\lambda+1"]],
       activeRow: 1,
       why: "−1 是 F[λ] 的单位，所以可以把最后一个对角元改成首一多项式。",
-      invariant: "1∣(λ+1)。这不是任意对角形，而是唯一的 Smith 标准形。",
+      invariant: "1∣(λ+1)。首一条件与整除链共同确定唯一的 Smith 标准形。",
     },
   ];
 
@@ -117,7 +117,7 @@
             <button type="button" data-legal="minus">${I("R_1\\leftarrow- R_1")}</button>
             <button type="button" data-legal="poly">${I("R_1\\leftarrow(\\lambda+1)R_1")}</button>
           </div>
-          <p data-legal-feedback>不要看形式像不像消元；只检查乘数是不是 F[λ] 的单位。</p>
+          <p data-legal-feedback>合法性只取决于乘数是否为 F[λ] 的单位。</p>
         </section>
 
         <button type="button" class="ch8-detail-toggle" data-smith-verification aria-expanded="false">展开累计关系</button>
@@ -176,7 +176,7 @@
         index === steps.length - 1 ? "非零对角元首一，并满足 1∣(λ+1)。左右两条操作通道只改变表示，不改变等价类。" : "跟着发亮的左轨或右轨看：每一步都必须有明确反操作。",
         index === steps.length - 1 ? "accent" : "quiet",
       );
-      verificationSlot.innerHTML = showVerification ? `<div class="ch8-smith-verification"><span>累计关系</span><strong>${I("D(\\lambda)=U(\\lambda)A(\\lambda)V(\\lambda)")}</strong><p>U 与 V 分别累计行操作和列操作，一般不互为逆。因此这里是等价，不是相似。</p></div>` : "";
+      verificationSlot.innerHTML = showVerification ? `<div class="ch8-smith-verification"><span>累计关系</span><strong>${I("D(\\lambda)=U(\\lambda)A(\\lambda)V(\\lambda)")}</strong><p>U 与 V 分别累计行操作和列操作，所以这里得到矩阵等价；相似还要求左右因子来自同一个换基矩阵并互为逆。</p></div>` : "";
     }
 
     host.querySelectorAll("[data-smith-step]").forEach((button) => on(button, "click", () => {
@@ -191,7 +191,7 @@
       button.classList.add(legalChoice === "minus" ? "is-correct" : "is-wrong");
       host.querySelector("[data-legal-feedback]").textContent = legalChoice === "minus"
         ? "正确：−1 是非零常数单位，反操作仍然是乘 −1。"
-        : "不合法：次数大于 0 的多项式不是 F[λ] 的单位，不能保证可逆。";
+        : "不合法：F[λ] 的单位只有非零常数；次数大于 0 的乘数不能保证变换可逆。";
     }));
     on(host.querySelector("[data-smith-verification]"), "click", (event) => {
       showVerification = !showVerification;

@@ -160,7 +160,9 @@
         root.querySelector("[data-note]").textContent = M().isZeroPoly(step.r) ? "相减后余式归零。" : `相减后得到 ${polynomial(step.r)}，余式次数降为 ${M().deg(step.r)}。`;
       } else {
         root.querySelector("[data-focus]").textContent = divides ? "余式归零，除法结束。" : "余式次数已经低于除式次数，除法结束。";
-        root.querySelector("[data-note]").textContent = divides ? "因此 f(x)=q(x)g(x)。" : `最终 deg r=${M().deg(step.r)}<deg g=${M().deg(state.example.g)}。`;
+        root.querySelector("[data-note]").textContent = divides
+          ? "因此 f(x)=q(x)g(x)。"
+          : `最终余式次数为 ${M().deg(step.r)}，低于除式次数 ${M().deg(state.example.g)}。`;
       }
       root.querySelector("[data-progress]").innerHTML = state.steps.map((_, stepIndex) => `<span class="${stepIndex < index ? "is-done" : stepIndex === index ? "is-current" : ""}" aria-label="第 ${stepIndex + 1} 步"></span>`).join("");
     }
@@ -173,10 +175,26 @@
       root.querySelector("[data-play]").textContent = state.playing ? "暂停" : "自动播放";
     }
 
+    function followCurrentTerms(index) {
+      const scroller = root.querySelector(".ch1-long-division-scroll");
+      if (!scroller || scroller.scrollWidth <= scroller.clientWidth + 2) return;
+      const step = state.steps[index];
+      if (!step || step.kind === "start") {
+        scroller.scrollLeft = 0;
+        return;
+      }
+      const remainder = step.r || M().zeroPoly();
+      const focusDegree = M().isZeroPoly(remainder) ? 0 : M().deg(remainder);
+      const maxDegree = Math.max(1, M().deg(state.example.f));
+      const focusX = 224 + (maxDegree - focusDegree) * 112;
+      scroller.scrollLeft = Math.max(0, focusX - scroller.clientWidth * 0.52);
+    }
+
     function render() {
       svgNode().outerHTML = scene(state.index);
       updateText(state.index);
       updateButtons();
+      followCurrentTerms(state.index);
     }
 
     function stop() {
@@ -197,6 +215,7 @@
       }
       svgNode().outerHTML = scene(targetIndex, targetIndex);
       updateText(targetIndex);
+      followCurrentTerms(targetIndex);
       state.animation = { targetIndex };
       updateButtons();
       const live = svgNode();
@@ -297,7 +316,7 @@
       <div class="ch1-lab ch1-long-division-lab">
         <div class="ch1-lab-head">
           <h3>标准多项式长除法</h3>
-          <p>${section.interactive.description} 所有多项式都作为完整算式显示，不再把每个系数切成独立卡片。</p>
+          <p>${section.interactive.description}</p>
         </div>
         <div class="ch1-controls" role="group" aria-label="长除法示例与播放控制">
           <button type="button" data-preset="default" class="is-active" aria-pressed="true">非整除</button>
@@ -327,7 +346,7 @@
               <div><span>r(x)</span><strong data-r></strong></div>
             </div>
             <div data-status class="ch1-status"></div>
-            <div class="ch1-ld-focus"><span>当前只看这一件事</span><strong data-focus></strong><p data-note></p></div>
+            <div class="ch1-ld-focus"><span>本步任务</span><strong data-focus></strong><p data-note></p></div>
             <div class="ch1-ld-invariant"><span>全过程保持不变</span><strong data-invariant></strong></div>
           </aside>
         </div>

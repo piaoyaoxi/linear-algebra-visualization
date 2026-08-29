@@ -176,6 +176,10 @@ async function division(page, verifyAnimation) {
     }, null, { timeout: 2800 });
   }
   ensure(/整除成立|不整除/.test((await lab.locator("[data-status]").textContent()) || ""), "§3: no final division conclusion");
+  if ((await page.viewportSize()).width < 760) {
+    const scrollLeft = await lab.locator(".ch1-long-division-scroll").evaluate((node) => node.scrollLeft);
+    ensure(scrollLeft > 0, "§3 mobile: long division did not follow the low-degree remainder");
+  }
   if (verifyAnimation) {
     await lab.locator('[data-preset="divides"]').click();
     ensure((await lab.locator("[data-step]").textContent())?.startsWith("1/"), "§3: preset did not reset the process");

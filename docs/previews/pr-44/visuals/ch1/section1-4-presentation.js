@@ -61,51 +61,101 @@
 
   window.Ch1UI = { tex, display, esc, renderFormal, lab, selectButtons, readStrip };
 
-  // §1 — number field lens
+  // §1 — field test and extension chain
   function mountNumberFields(root) {
     const domains = {
-      Z: { name: "整数集 ℤ", field: false, form: "n∈ℤ", gates: [true, true, true, false], witness: "1÷2=1/2 不属于 ℤ。", detail: "整数含 0、1，对加法逆元和乘法封闭；一般非零整数没有整数逆元。" },
-      Q: { name: "有理数域 ℚ", field: true, form: "p/q, q≠0", gates: [true, true, true, true], witness: "两个有理数四则运算后仍为有理数。", detail: "这是包含 1 的最小数域，也是有理系数多项式的舞台。" },
-      Q2: { name: "二次域 ℚ(√2)", field: true, form: "a+b√2", gates: [true, true, true, true], witness: "1/(a+b√2)=(a−b√2)/(a²−2b²)。", detail: "分母非零时 a²−2b²≠0，求逆结果仍为 u+v√2。" },
-      R: { name: "实数域 ℝ", field: true, form: "实数", gates: [true, true, true, true], witness: "实数对四则运算封闭（除数非零）。", detail: "允许 √2 等实数系数，但仍不允许 i。" },
-      C: { name: "复数域 ℂ", field: true, form: "a+bi", gates: [true, true, true, true], witness: "非零 a+bi 的逆为 (a−bi)/(a²+b²)。", detail: "代数基本定理保证非常数复系数多项式至少有一个复根。" },
-      P: { name: "正实数集 ℝ₊", field: false, form: "x>0", gates: [false, false, true, true], witness: "0 不属于 ℝ₊，且 1−2=−1 也离开集合。", detail: "乘法与非零除法虽封闭，零元和加法逆元仍然缺失。" },
+      Z: { name: "整数集 ℤ", field: false, form: "n∈ℤ", gates: [true, true, true, false], witness: "1÷2=1/2 不属于 ℤ。", detail: "整数含有 0、1，并且对加、减、乘封闭；非零整数通常没有整数逆元。", proof: "\\frac12\\notin\\mathbb Z" },
+      Q: { name: "有理数域 ℚ", field: true, form: "p/q, q≠0", gates: [true, true, true, true], witness: "两个有理数作四则运算，除数非零时结果仍为有理数。", detail: "ℚ 是包含 1 的最小数域，也是有理系数多项式的系数域。", proof: "\\frac{a/b}{c/d}=\\frac{ad}{bc}\\in\\mathbb Q\\quad(c\\ne0)" },
+      Q2: { name: "二次域 ℚ(√2)", field: true, form: "a+b√2", gates: [true, true, true, true], witness: "共轭有理化把非零元素的逆仍写成 u+v√2。", detail: "乘积和逆元都保留 a+b√2 的形式，其中 a、b 为有理数。", proof: "\\begin{aligned}(a+b\\sqrt2)(c+d\\sqrt2)&=(ac+2bd)+(ad+bc)\\sqrt2\\\\(a+b\\sqrt2)^{-1}&=\\frac{a-b\\sqrt2}{a^2-2b^2}\\end{aligned}" },
+      R: { name: "实数域 ℝ", field: true, form: "实数", gates: [true, true, true, true], witness: "非零实数的倒数仍是实数。", detail: "ℝ 允许 √2 和 ⁴√2 等实数系数，但不含 i。", proof: "a\\in\\mathbb R,\\ a\\ne0\\Longrightarrow a^{-1}\\in\\mathbb R" },
+      C: { name: "复数域 ℂ", field: true, form: "a+bi", gates: [true, true, true, true], witness: "非零复数可用共轭写出逆元。", detail: "在 ℂ 中，每个非常数多项式都能继续分解为一次因式的乘积。", proof: "(a+bi)^{-1}=\\frac{a-bi}{a^2+b^2}" },
+      P: { name: "正实数集", field: false, form: "x>0", gates: [false, false, true, true], witness: "0 不在集合中，而且 1−2=−1 也离开集合。", detail: "乘法和非零除法可以留在集合中，零元与加法逆元仍然缺失。", proof: "1-2=-1\\notin\\mathbb R_{>0}" },
     };
-    const polys = [
-      { formula: "x^2-2", coeff: { Z: true, Q: true, Q2: true, R: true, C: true, P: false }, factor: { Q: "不可约", Q2: "可分解", R: "可分解", C: "可分解" } },
-      { formula: "x^2-\\sqrt2", coeff: { Z: false, Q: false, Q2: true, R: true, C: true, P: false }, factor: { Q2: "不可约", R: "可分解", C: "可分解" } },
-      { formula: "x^2+1", coeff: { Z: true, Q: true, Q2: true, R: true, C: true, P: false }, factor: { Q: "不可约", Q2: "不可约", R: "不可约", C: "可分解" } },
-      { formula: "x^2-i", coeff: { Z: false, Q: false, Q2: false, R: false, C: true, P: false }, factor: { C: "可分解" } },
-    ];
+    const polynomials = {
+      x2m2: {
+        label: "x²−2",
+        formula: "x^2-2",
+        stages: [
+          { key: "Q", ring: "\\mathbb Q[x]", ringText: "Q[x]", status: "不可约", kind: "irreducible", equation: "x^2-2", note: "没有有理根。" },
+          { key: "Q2", ring: "\\mathbb Q(\\sqrt2)[x]", ringText: "Q(√2)[x]", status: "分成一次因式", kind: "reducible", equation: "(x-\\sqrt2)(x+\\sqrt2)", note: "√2 已成为合法系数。" },
+          { key: "R", ring: "\\mathbb R[x]", ringText: "R[x]", status: "分成一次因式", kind: "reducible", equation: "(x-\\sqrt2)(x+\\sqrt2)", note: "两个根都在实数域中。" },
+          { key: "C", ring: "\\mathbb C[x]", ringText: "C[x]", status: "分成一次因式", kind: "reducible", equation: "(x-\\sqrt2)(x+\\sqrt2)", note: "扩到复数域后分解不再改变。" },
+        ],
+      },
+      x2msqrt2: {
+        label: "x²−√2",
+        formula: "x^2-\\sqrt2",
+        stages: [
+          { key: "Q", ring: "\\mathbb Q[x]", ringText: "Q[x]", status: "系数越界", kind: "outside", equation: "x^2-\\sqrt2\\notin\\mathbb Q[x]", note: "√2 还不是合法系数。" },
+          { key: "Q2", ring: "\\mathbb Q(\\sqrt2)[x]", ringText: "Q(√2)[x]", status: "不可约", kind: "irreducible", equation: "x^2-\\sqrt2", note: "⁴√2 不在 Q(√2) 中。" },
+          { key: "R", ring: "\\mathbb R[x]", ringText: "R[x]", status: "分成一次因式", kind: "reducible", equation: "(x-\\sqrt[4]{2})(x+\\sqrt[4]{2})", note: "两个四次方根进入系数域。" },
+          { key: "C", ring: "\\mathbb C[x]", ringText: "C[x]", status: "分成一次因式", kind: "reducible", equation: "(x-\\sqrt[4]{2})(x+\\sqrt[4]{2})", note: "这两个实根也属于复数域。" },
+        ],
+      },
+      x2p1: {
+        label: "x²+1",
+        formula: "x^2+1",
+        stages: [
+          { key: "Q", ring: "\\mathbb Q[x]", ringText: "Q[x]", status: "不可约", kind: "irreducible", equation: "x^2+1", note: "没有有理根。" },
+          { key: "Q2", ring: "\\mathbb Q(\\sqrt2)[x]", ringText: "Q(√2)[x]", status: "不可约", kind: "irreducible", equation: "x^2+1", note: "这个域仍只含实数。" },
+          { key: "R", ring: "\\mathbb R[x]", ringText: "R[x]", status: "不可约", kind: "irreducible", equation: "x^2+1", note: "没有实根。" },
+          { key: "C", ring: "\\mathbb C[x]", ringText: "C[x]", status: "分成一次因式", kind: "reducible", equation: "(x-i)(x+i)", note: "i 与 −i 成为合法根。" },
+        ],
+      },
+      x2mi: {
+        label: "x²−i",
+        formula: "x^2-i",
+        stages: [
+          { key: "Q", ring: "\\mathbb Q[x]", ringText: "Q[x]", status: "系数越界", kind: "outside", equation: "x^2-i\\notin\\mathbb Q[x]", note: "i 不是有理数。" },
+          { key: "Q2", ring: "\\mathbb Q(\\sqrt2)[x]", ringText: "Q(√2)[x]", status: "系数越界", kind: "outside", equation: "x^2-i\\notin\\mathbb Q(\\sqrt2)[x]", note: "Q(√2) 仍是实数域的子域。" },
+          { key: "R", ring: "\\mathbb R[x]", ringText: "R[x]", status: "系数越界", kind: "outside", equation: "x^2-i\\notin\\mathbb R[x]", note: "i 不是实数。" },
+          { key: "C", ring: "\\mathbb C[x]", ringText: "C[x]", status: "分成一次因式", kind: "reducible", equation: "\\left(x-\\frac{1+i}{\\sqrt2}\\right)\\left(x+\\frac{1+i}{\\sqrt2}\\right)", note: "i 的两个平方根都在复数域中。" },
+        ],
+      },
+    };
     let current = "Q";
+    let currentPolynomial = "x2m2";
     const paint = () => {
       const d = domains[current];
       root.querySelector("[data-domain-name]").textContent = d.name;
       root.querySelector("[data-domain-form]").textContent = d.form;
       root.querySelector("[data-witness]").textContent = d.witness;
       root.querySelector("[data-domain-detail]").textContent = d.detail;
+      root.querySelector("[data-closure-proof]").innerHTML = display(d.proof);
       const status = root.querySelector("[data-field-status]");
       status.className = `ch1-status ${d.field ? "is-ok" : "is-bad"}`;
-      status.textContent = d.field ? "通过全部数域条件" : "不是数域";
+      status.textContent = d.field ? "符合数域定义" : "不符合数域定义";
       root.querySelector("[data-gates]").innerHTML = ["0 与 1", "加法与相反数", "乘法", "非零求逆"].map((label, i) => `<div class="ch1-gate ${d.gates[i] ? "is-ok" : "is-bad"}"><strong>${label}</strong><span>${d.gates[i] ? "通过" : "失败"}</span></div>`).join("");
-      root.querySelector("[data-poly-table]").innerHTML = polys.map((p) => {
-        const legal = p.coeff[current];
-        const factor = legal && p.factor[current] ? p.factor[current] : legal ? "本节不判定" : "无意义";
-        return `<tr><td>${tex(p.formula)}</td><td><span class="ch1-status ${legal ? "is-ok" : "is-bad"}">${legal ? "系数合法" : "系数越界"}</span></td><td>${factor}</td></tr>`;
-      }).join("");
-      root.querySelector("[data-q2-proof]").innerHTML = current === "Q2" ? `${display("(a+b\\sqrt2)(c+d\\sqrt2)=(ac+2bd)+(ad+bc)\\sqrt2")} ${display("\\frac1{a+b\\sqrt2}=\\frac{a-b\\sqrt2}{a^2-2b^2}")}` : "选择 ℚ(√2) 查看乘法与求逆为什么仍留在同一形式。";
+      const polynomial = polynomials[currentPolynomial];
+      root.querySelector("[data-polynomial-formula]").innerHTML = display(polynomial.formula);
+      root.querySelector("[data-field-track]").innerHTML = polynomial.stages.map((stage, index) => `${index ? '<span class="ch1-domain-link" aria-hidden="true">扩域</span>' : ""}<article class="ch1-field-stage is-${stage.kind}${stage.key === current ? " is-current" : ""}" data-field-stage="${stage.key}"${stage.key === current ? ' aria-current="true"' : ""}><span>${tex(stage.ring)}</span><strong>${stage.status}</strong><div>${tex(stage.equation)}</div><p>${stage.note}</p></article>`).join("");
+      const stage = polynomial.stages.find((item) => item.key === current);
+      root.querySelector("[data-current-factor]").textContent = stage
+        ? `${polynomial.label} 在 ${stage.ringText} 中：${stage.status}。`
+        : `${d.name} 未列入右侧数域包含链；先用上方封闭性检验完成判断。`;
     };
     root.querySelectorAll("[data-domain]").forEach((button) => button.addEventListener("click", () => { current = button.dataset.domain; selectButtons(root, "[data-domain]", button); paint(); }));
+    root.querySelectorAll("[data-polynomial]").forEach((button) => button.addEventListener("click", () => { currentPolynomial = button.dataset.polynomial; selectButtons(root, "[data-polynomial]", button); paint(); }));
     paint();
   }
 
   function interactive1(el, section) {
-    lab(el, "数域透镜", section.interactive.description,
+    lab(el, "系数域与分解", section.interactive.description,
       ["Z", "Q", "Q2", "R", "C", "P"].map((key, i) => `<button type="button" data-domain="${key}"${i === 1 ? ' class="is-active"' : ""}>${{ Z: "ℤ", Q: "ℚ", Q2: "ℚ(√2)", R: "ℝ", C: "ℂ", P: "正实数" }[key]}</button>`).join(""),
-      `<div class="ch1-metrics"><div class="ch1-metric"><span>当前集合</span><strong data-domain-name></strong><small data-domain-form></small></div><div class="ch1-metric"><span>判定</span><strong data-field-status class="ch1-status"></strong></div></div>
-       <div class="ch1-gates" data-gates></div>
-       <div class="ch1-callout"><strong>最短证据</strong><p data-witness></p><p class="ch1-muted" data-domain-detail></p></div>
-       <div class="ch1-two-col"><div><h4>系数合法与可分解要分开</h4><div class="ch1-table-wrap"><table class="ch1-table"><thead><tr><th>表达式</th><th>系数</th><th>当前域中的分解状态</th></tr></thead><tbody data-poly-table></tbody></table></div></div><div><h4>ℚ(√2) 的封闭性</h4><div class="ch1-equation-stack" data-q2-proof></div><div class="ch1-nest"><div data-level="4" class="ch1-nest-layer">ℂ</div><div data-level="3" class="ch1-nest-layer">ℝ</div><div data-level="2" class="ch1-nest-layer">ℚ(√2)</div><div data-level="1" class="ch1-nest-layer">ℚ</div></div></div></div>`);
+      `<div class="ch1-field-check">
+        <section class="ch1-field-summary">
+          <div class="ch1-metrics"><div class="ch1-metric"><span>当前集合</span><strong data-domain-name></strong><small data-domain-form></small></div><div class="ch1-metric"><span>判定</span><strong data-field-status class="ch1-status"></strong></div></div>
+          <div class="ch1-gates" data-gates></div>
+          <div class="ch1-callout"><strong>完成判断的证据</strong><p data-witness></p></div>
+        </section>
+        <section class="ch1-closure-card"><span>运算为什么留在集合中</span><div class="ch1-closure-formula" data-closure-proof></div><p data-domain-detail></p></section>
+       </div>
+       <section class="ch1-factor-workbench">
+         <header><div><span>扩大系数域</span><h4>追踪同一个多项式</h4><p>先看系数是否合法，再看根与因式何时进入当前域。</p></div><div class="ch1-polynomial-controls"><button type="button" class="is-active" data-polynomial="x2m2">x²−2</button><button type="button" data-polynomial="x2msqrt2">x²−√2</button><button type="button" data-polynomial="x2p1">x²+1</button><button type="button" data-polynomial="x2mi">x²−i</button></div></header>
+         <div class="ch1-polynomial-focus" data-polynomial-formula></div>
+         <div class="ch1-field-track" data-field-track></div>
+         <p class="ch1-current-factor" data-current-factor></p>
+       </section>`);
     mountNumberFields(el);
   }
 

@@ -46,9 +46,11 @@
   function planFor(section) {
     const interactive = section?.interactive || {};
     return {
-      question: section?.question || interactive.title || "这个实验揭示了什么结构？",
+      question: interactive.task || section?.question || interactive.title || "这个实验揭示了什么结构？",
       steps: Array.isArray(interactive.guide) ? interactive.guide : [],
       takeaway: interactive.takeaway || (section?.summary || []).join(" "),
+      controlsTitle: interactive.controlsTitle || "设置实验条件",
+      controlsDescription: interactive.controlsDescription || "选择要比较的模式、参数或示例，再观察结果怎样变化。",
     };
   }
 
@@ -74,7 +76,7 @@
     guide.setAttribute("aria-label", "实验任务与观察路径");
     guide.innerHTML = `
       <div class="ch1-learning-question">
-        <span>本实验要回答</span>
+        <span>观察目标</span>
         <strong>${plan.question}</strong>
       </div>
       <ol class="ch1-learning-steps">
@@ -84,12 +86,13 @@
     return guide;
   }
 
-  function wrapTopControls(lab) {
+  function wrapTopControls(section, lab) {
     const controls = lab.querySelector(":scope > .ch1-controls");
     if (!controls || controls.closest(".ch1-control-module")) return;
+    const plan = planFor(section);
     const module = document.createElement("section");
     module.className = "ch1-learning-module ch1-control-module";
-    module.append(moduleHeading("01", "选择实验情境", "先决定要比较的模式、参数或示例，再进入主观察区。"));
+    module.append(moduleHeading("01", plan.controlsTitle, plan.controlsDescription));
     controls.before(module);
     module.append(controls);
   }
@@ -101,9 +104,8 @@
     conclusion.className = "ch1-live-conclusion";
     conclusion.setAttribute("aria-live", "polite");
     conclusion.innerHTML = `
-      <div class="ch1-module-heading"><span>✓</span><div><h4>把现象说成一句数学结论</h4><p>先读当前状态，再对照本节不变量。</p></div></div>
-      <p data-ch1-live-result>${plan.takeaway}</p>
-      <small>${plan.takeaway}</small>`;
+      <div class="ch1-module-heading"><span>✓</span><div><h4>当前观察</h4><p>操作后，检查哪些条件成立，哪些对象发生变化。</p></div></div>
+      <p data-ch1-live-result>${plan.takeaway}</p>`;
     lab.append(conclusion);
     return conclusion;
   }
@@ -113,7 +115,10 @@
     const plan = planFor(section);
     const active = (selector) => text(lab.querySelector(selector));
     if (sectionId === "number-fields") {
-      return [active("[data-domain-name]"), active("[data-field-status]"), active("[data-witness]")].filter(Boolean).join("：");
+      const parts = [active("[data-domain-name]"), active("[data-field-status]"), active("[data-witness]"), active("[data-current-factor]")]
+        .filter(Boolean)
+        .map((part) => part.replace(/[。；]+$/, ""));
+      return `${parts.join("；")}。`;
     }
     if (sectionId === "univariate-polynomials") {
       const mode = lab.querySelector("[data-mode].is-active")?.dataset.mode;
@@ -266,7 +271,7 @@
     if (guide && head) head.after(guide);
 
     if (section.id === "univariate-polynomials") restructureCoefficientLab(lab);
-    else wrapTopControls(lab);
+    else wrapTopControls(section, lab);
 
     const conclusion = buildConclusion(section, lab);
     installLiveConclusion(section, lab, conclusion);

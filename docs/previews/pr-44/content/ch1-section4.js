@@ -9,7 +9,7 @@ defineChapter1Section("gcd-polynomials", {
   intro:
     "直接分解能够看见公共因式，欧几里得算法则在不知道分解的情况下找到它。带余式 f=qg+r 同时给出双向关系 r=f−qg 与 f=qg+r，所以 (f,g) 和 (g,r) 拥有完全相同的公共因式。",
   concepts: [
-    { label: "首一 gcd", text: "最大公因式只确定到非零常数倍；统一选首项系数为 1 的代表。" },
+    { label: "首一 gcd", text: "d 同时整除 f、g，每个公共因式也都整除 d；再取首项系数为 1 的代表。“最大”按整除关系理解。" },
     { label: "取余不变量", text: `${texInline("\\gcd(f,g)=\\gcd(g,r)")}，其中 ${texInline("f=qg+r")}。` },
     { label: "Bézout 等式", text: `${texInline("\\gcd(f,g)=sf+tg")}，${texInline("s,t\\in F[x]")}。` },
     { label: "互素", text: `${texInline("\\gcd(f,g)=1")}，等价于存在 ${texInline("sf+tg=1")}。` },
@@ -66,8 +66,10 @@ defineChapter1Section("gcd-polynomials", {
   interactive: {
     type: "slot",
     title: "实验：欧几里得算法与 Bézout 证书",
-    description: "逐步查看商、余式与次数下降；右侧同步显示最终 gcd 的线性组合表示。",
-    task: "完成 gcd(x⁴−1,x³−1)，再切到互素和含公共因式示例，逐个代回验证。",
+    description: "逐步查看商、余式与次数下降；右侧同步显示当前对象的线性组合，终点再得到 gcd 的 Bézout 证书。",
+    task: "完成 gcd(x⁴−1,x³−1) 的余式链，再切换到互素和含公共因式示例，逐个代回验证。",
+    controlsTitle: "选择示例并推进余式链",
+    controlsDescription: "每次点击下一步只揭示一轮取余；右侧同步追踪当前余式怎样由原始 f、g 线性组合得到。",
     guide: [
       ["取余", "从 A=qB+r 进入下一对 (B,r)。"],
       ["盯住不变量", "确认每一步的公共因式集合不变。"],

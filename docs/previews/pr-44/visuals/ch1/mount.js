@@ -129,7 +129,7 @@
       return labels[mode] || plan.takeaway;
     }
     if (sectionId === "polynomial-divisibility") return [active("[data-status]"), active("[data-degree]"), active("[data-note]")].filter(Boolean).join("；");
-    if (sectionId === "gcd-polynomials") return [active("[data-coprime]"), `gcd=${active("[data-gcd]")}`, active("[data-note]")].filter(Boolean).join("；");
+    if (sectionId === "gcd-polynomials") return [active("[data-coprime]"), `${active("[data-object-label]")}=${active("[data-gcd]")}`, active("[data-stage-note]")].filter(Boolean).join("；");
     if (sectionId === "factorization-theorem") return `当前标准化叶节点：${active("[data-standard]")}。${active("[data-unique]")}`;
     if (sectionId === "multiple-factors") return [active("[data-status]"), `gcd(f,f′)=${active("[data-gcd]")}`].filter(Boolean).join("；");
     if (sectionId === "polynomial-functions") {

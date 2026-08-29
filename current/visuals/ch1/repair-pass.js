@@ -401,17 +401,31 @@
       root.querySelector("[data-b]").innerHTML = tex(M().formatPolyTex(step.b || M().zeroPoly()));
       root.querySelector("[data-q]").innerHTML = step.q ? tex(M().formatPolyTex(step.q)) : "—";
       root.querySelector("[data-r]").innerHTML = step.remainder ? tex(M().formatPolyTex(step.remainder)) : "—";
-      root.querySelector("[data-note]").innerHTML = stepMarkup(step);
-      root.querySelector("[data-gcd]").innerHTML = tex(M().formatPolyTex(final.d || final.a));
-      root.querySelector("[data-s]").innerHTML = tex(M().formatPolyTex(final.s || M().zeroPoly()));
-      root.querySelector("[data-t]").innerHTML = tex(M().formatPolyTex(final.t || M().zeroPoly()));
-      const verify = M().polyAdd(M().polyMul(final.s, current.f), M().polyMul(final.t, current.g));
-      root.querySelector("[data-verify]").innerHTML = tex(`(${M().formatPolyTex(final.s)})(${M().formatPolyTex(current.f)})+(${M().formatPolyTex(final.t)})(${M().formatPolyTex(current.g)})=${M().formatPolyTex(verify)}`);
+      const isDone = step.kind === "done";
+      const trackedS = step.s || M().onePoly();
+      const trackedT = step.t || M().zeroPoly();
+      const trackedObject = step.kind === "divide" ? step.remainder : (step.d || step.a);
+      const trackedLabel = step.kind === "start" ? "初始对象 A" : (isDone ? "首一最大公因式" : "当前余式 r");
+      const verify = M().polyAdd(M().polyMul(trackedS, current.f), M().polyMul(trackedT, current.g));
+      root.querySelector("[data-certificate-title]").textContent = isDone ? "Bézout 证书" : "线性组合追踪";
+      root.querySelector("[data-object-label]").textContent = trackedLabel;
+      root.querySelector("[data-gcd]").innerHTML = tex(M().formatPolyTex(trackedObject));
+      root.querySelector("[data-s]").innerHTML = tex(M().formatPolyTex(trackedS));
+      root.querySelector("[data-t]").innerHTML = tex(M().formatPolyTex(trackedT));
+      root.querySelector("[data-verify]").innerHTML = tex(`(${M().formatPolyTex(trackedS)})(${M().formatPolyTex(current.f)})+(${M().formatPolyTex(trackedT)})(${M().formatPolyTex(current.g)})=${M().formatPolyTex(verify)}`);
+      const stageNote = step.kind === "start"
+        ? "从 A=f、B=g 出发，下一步计算第一次余式。"
+        : (isDone
+          ? "算法结束：最后一个非零余式首一化后就是 gcd。"
+          : (M().isZeroPoly(step.remainder)
+            ? "本轮余式为 0；下一步把最后一个非零余式首一化。"
+            : `本轮余式次数降到 ${M().deg(step.remainder)}；下一轮改用 (B,r)。`));
+      root.querySelector("[data-stage-note]").textContent = stageNote;
       const coprime = M().polyEq(final.d, M().onePoly());
       const status = root.querySelector("[data-coprime]");
-      status.className = `ch1-status ${coprime ? "is-ok" : "is-warn"}`;
-      status.textContent = coprime ? "互素" : "有非常数公共因式";
-      root.querySelector("[data-ledger]").innerHTML = steps.map((entry, stepIndex) => `<div class="${stepIndex === index ? "is-current" : ""}"><span>${stepIndex + 1}</span>${stepMarkup(entry)}</div>`).join("");
+      status.className = `ch1-status ${isDone ? (coprime ? "is-ok" : "is-warn") : ""}`;
+      status.textContent = isDone ? (coprime ? "互素：gcd=1" : "含非常数公共因式") : "正在取余";
+      root.querySelector("[data-ledger]").innerHTML = steps.slice(0, index + 1).map((entry, stepIndex) => `<div class="${stepIndex === index ? "is-current" : ""}"><span>${stepIndex + 1}</span>${stepMarkup(entry)}</div>`).join("");
       root.querySelector("[data-prev]").disabled = index === 0;
       root.querySelector("[data-next]").disabled = index === steps.length - 1;
       root.querySelector("[data-reset]").disabled = index === 0;
@@ -457,11 +471,11 @@
           <section class="ch1-euclid-panel">
             <h4>欧几里得账本</h4>
             <div class="ch1-ledger" data-ledger></div>
-            <div class="ch1-muted" data-note></div>
+            <p class="ch1-muted" data-stage-note></p>
           </section>
           <section class="ch1-bezout-panel">
-            <h4>Bézout 证书</h4>
-            <div class="ch1-bezout-main"><span>首一最大公因式</span><strong data-gcd></strong></div>
+            <h4 data-certificate-title>线性组合追踪</h4>
+            <div class="ch1-bezout-main"><span data-object-label>初始对象 A</span><strong data-gcd></strong></div>
             <div class="ch1-bezout-coefficients">
               <div class="ch1-bezout-coeff"><span>s(x)</span><strong data-s></strong></div>
               <div class="ch1-bezout-coeff"><span>t(x)</span><strong data-t></strong></div>

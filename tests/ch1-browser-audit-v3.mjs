@@ -265,7 +265,12 @@ async function operate(page, section, viewport, theme) {
     await checkDivisionSummary(page, viewport);
     await division(page, viewport.name === "desktop" && theme === "light");
   } else if (section === "gcd-polynomials") {
+    ensure((await page.locator("[data-ledger] > div").count()) === 1, "§4: future Euclidean steps are revealed before interaction");
+    ensure(/正在取余/.test((await page.locator("[data-coprime]").textContent()) || ""), "§4: initial state reveals the final coprimality result");
     const next = page.locator("[data-next]"); for (let i = 0; i < 8 && !(await next.isDisabled()); i += 1) await next.click();
+    const [shownSteps, totalSteps] = ((await page.locator("[data-step]").textContent()) || "0/0").split("/").map(Number);
+    ensure(shownSteps === totalSteps && (await page.locator("[data-ledger] > div").count()) === totalSteps, "§4: completed Euclidean ledger is incomplete");
+    ensure(/Bézout 证书/.test((await page.locator("[data-certificate-title]").textContent()) || ""), "§4: final certificate label is missing");
     ensure((await page.locator("[data-verify] .tex-inline").count()) === 1, "§4: Bezout identity is fragmented");
   } else if (section === "factorization-theorem") {
     await clickIf(page, '[data-domain="C"]'); await clickIf(page, '[data-poly="x4p4"]'); await clickIf(page, '[data-route-btn="1"]');

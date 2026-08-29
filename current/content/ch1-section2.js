@@ -36,7 +36,7 @@ defineChapter1Section("univariate-polynomials", {
     theorem: {
       label: "次数定理",
       title: "非零乘积的次数相加",
-      statement: `若 ${texInline("f,g\\in F[x]")} 都非零，则 ${texInline("\\deg(fg)=\\deg f+\\deg g")}；同时 ${texInline("\\deg(f+g)\\le\\max(\\deg f,\\deg g)")}，且首项抵消时可能严格小于。`,
+      statement: `若 ${texInline("f,g\\in F[x]")} 都非零，则 ${texInline("\\deg(fg)=\\deg f+\\deg g")}。当 ${texInline("f+g\\ne0")} 时，${texInline("\\deg(f+g)\\le\\max(\\deg f,\\deg g)")}；首项抵消时可能严格小于。`,
     },
     proof: {
       title: "最高次项为什么不会在乘法中消失",
@@ -48,13 +48,13 @@ defineChapter1Section("univariate-polynomials", {
       ],
     },
     definitions: [
-      { title: "零多项式", text: "所有系数都为 0。为了让次数公式书写统一，有些教材记 deg 0=−∞；本网站在界面中直接标记“零多项式，次数单独处理”。" },
+      { title: "零多项式", text: "所有系数都为 0。它没有最高非零项，因此次数需要单独约定；常见做法是记 deg 0=−∞。" },
       { title: "卷积的含义", text: `固定 ${texInline("k")} 后，贡献来自 ${texInline("(0,k),(1,k-1),\\ldots,(k,0)")} 中实际存在的所有配对。对应位置相乘只取到其中一项，通常会漏算。` },
       { title: "形式与函数", text: "本节用系数定义形式多项式。§7 才引入评价 f↦f(a)，把形式对象送成一个函数。" },
     ],
     boundary: {
-      title: "在有限域上，相同函数值未必代表相同形式",
-      text: `若把数域概念推广到有限域 ${texInline("\\mathbb F_p")}，多项式 ${texInline("x^p-x")} 在每个域元素上都取 0，却仍是非零形式多项式。这个边界说明：系数相等始终是形式相等的定义；函数值判定需要无限域条件。`,
+      title: "有限个取值不能代替系数比较",
+      text: `多项式 ${texInline("h=x(x-1)\\cdots(x-m)")} 在 ${texInline("0,1,\\ldots,m")} 处都取 0，但 ${texInline("h")} 仍是非零形式多项式。检查若干函数值只能发现差异，不能据此证明两个形式多项式相等。`,
     },
     pitfalls: [
       "删除内部零系数会把后续所有幂次错位。",
@@ -67,7 +67,7 @@ defineChapter1Section("univariate-polynomials", {
     type: "slot",
     title: "实验：系数带工作台",
     description: "编辑两个有限系数序列，比较加减、数乘与卷积乘法，并追踪指定结果次数的全部来源。",
-    task: "先制造首项抵消，再在乘法模式中逐项核对 i+j=k；最后尝试分数系数与零多项式。",
+    task: "先观察首项抵消，再在乘法模式中逐项核对 i+j=k；最后检查分数系数与零多项式。",
     guide: [
       ["对齐", "把 f 与 g 的相同幂次放在同一列。"],
       ["选择运算", "观察加法的同列规则和乘法的跨列配对。"],

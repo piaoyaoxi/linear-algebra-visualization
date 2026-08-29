@@ -242,11 +242,6 @@
 }
 
 .ch1-live-conclusion > [data-ch1-live-result] {
-  display: none;
-}
-
-.ch1-live-conclusion > small {
-  grid-column: 2;
   margin: 0;
   color: var(--text);
   font-size: 15px;
@@ -738,10 +733,6 @@
     grid-template-columns: 1fr;
     gap: 12px;
     padding: 15px;
-  }
-
-  .ch1-live-conclusion > small {
-    grid-column: 1;
   }
 
   .ch1-coeff-card .ch1-strip {

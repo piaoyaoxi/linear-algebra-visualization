@@ -74,6 +74,7 @@ async function checkLearningArchitecture(page, section) {
     const challenge = example?.querySelector("[data-example-challenge]");
     const question = challenge?.querySelector(".example-challenge-question");
     const explanation = challenge?.querySelector("[data-example-explanation]");
+    const liveObservation = interactive?.querySelector("[data-ch1-live-result]");
     return {
       experimentBeforeTheory: Boolean(interactive && formal && (interactive.compareDocumentPosition(formal) & Node.DOCUMENT_POSITION_FOLLOWING)),
       bridge: Boolean(formal?.querySelector(".ch1-experiment-bridge")),
@@ -83,11 +84,13 @@ async function checkLearningArchitecture(page, section) {
       challenge: Boolean(challenge),
       questionVisible: Boolean(question && question.getClientRects().length),
       answerHidden: Boolean(explanation?.hidden),
+      liveObservationVisible: Boolean(liveObservation && liveObservation.getClientRects().length && liveObservation.textContent?.trim()),
     };
   }, section);
   ensure(result.experimentBeforeTheory, `${section}: experiment must appear before theory`);
   ensure(result.bridge && result.theorem && result.proofSteps >= 4 && result.boundary, `${section}: deep theory structure is incomplete`);
   ensure(result.challenge && result.questionVisible && result.answerHidden, `${section}: representative example is not properly gated`);
+  ensure(result.liveObservationVisible, `${section}: current observation is hidden or empty`);
 }
 
 async function checkMathBoundaries(page, section) {

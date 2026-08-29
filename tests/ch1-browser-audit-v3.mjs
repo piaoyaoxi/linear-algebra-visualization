@@ -117,6 +117,8 @@ async function checkMathBoundaries(page, section) {
     await page.locator("[data-m]").fill("2");
     const gcd = ((await page.locator("[data-gcd]").textContent()) || "").replace(/\s+/g, "");
     ensure(!/\^?2/.test(gcd) && /x/.test(gcd), `§6: adjustable root collided with the fixed root (${gcd})`);
+    ensure((await page.locator("[data-derivatives] tr").count()) === 3, "§6: derivative table continues after the first nonzero derivative");
+    ensure(/首次非零/.test((await page.locator("[data-derivatives] tr").last().textContent()) || ""), "§6: multiplicity witness is not identified");
   } else if (section === "polynomial-functions") {
     await clickIf(page, '[data-mode="roots"]');
     await page.locator("[data-degree]").fill("3");
@@ -279,7 +281,13 @@ async function operate(page, section, viewport, theme) {
     await clickIf(page, '[data-domain="C"]'); await clickIf(page, '[data-poly="x4p4"]'); await clickIf(page, '[data-route-btn="1"]');
   } else if (section === "multiple-factors") {
     if (detail) await page.locator("#multiple-factors-interactive .ch1-lab").screenshot({ path: path.join(outputDir, `${viewport.name}-${theme}-multiple-factors-formulas.png`) });
-    await clickIf(page, '[data-preset-m="3"]'); await clickIf(page, '[data-mode="merge"]'); await clickIf(page, "[data-merge-exact]");
+    await clickIf(page, '[data-preset-m="3"]');
+    ensure((await page.locator("[data-derivatives] tr").count()) === 4, "§6: m=3 derivative witness is incomplete");
+    await clickIf(page, '[data-mode="merge"]');
+    ensure((await page.locator("[data-derivatives] tr").count()) === 2 && /互素/.test((await page.locator("[data-observation]").textContent()) || ""), "§6: two distinct roots were treated as a multiple root");
+    await clickIf(page, "[data-merge-exact]");
+    ensure((await page.locator("[data-derivatives] tr").count()) === 3 && /二阶导数首次非零/.test((await page.locator("[data-observation]").textContent()) || ""), "§6: exact root merge did not produce the double-root witness");
+    ensure(!/107|\\frac/.test((await page.locator("[data-ch1-live-result]").textContent()) || ""), "§6: flattened fraction leaked into the live observation");
   } else if (section === "polynomial-functions") {
     if (detail) await page.locator("#polynomial-functions-interactive .ch1-lab").screenshot({ path: path.join(outputDir, `${viewport.name}-${theme}-horner.png`) });
     await clickIf(page, '[data-mode="roots"]'); await clickIf(page, '[data-mode="interp"]');

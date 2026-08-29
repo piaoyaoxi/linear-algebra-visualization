@@ -151,32 +151,57 @@
   function mountMultiplicity(root) {
     const state = { mode: "multiplicity", a: 1, m: 2, u: -0.7, v: 0.7 };
     const graphBounds = { xMin: -3.5, xMax: 3, yMin: -6, yMax: 8 };
+    const numberLabel = (value, digits = null) => (digits === null ? String(value) : Number(value).toFixed(digits)).replace("-", "−");
+    const factorLabel = (value, digits = null) => {
+      if (Math.abs(value) < 1e-12) return "x";
+      return value > 0 ? `x−${numberLabel(value, digits)}` : `x+${numberLabel(Math.abs(value), digits)}`;
+    };
     const currentPoly = () => state.mode === "multiplicity"
       ? M().polyMul(M().polyPow(M().poly([-state.a, 1]), state.m), M().poly([3, 1]))
       : M().polyMul(M().poly([-state.u, 1]), M().poly([-state.v, 1]));
     function rootData() {
-      if (state.mode === "multiplicity") return [{ x: state.a, m: state.m, label: `a=${state.a}` }, { x: -3, m: 1, label: "−3（固定单根）" }];
+      if (state.mode === "multiplicity") return [
+        { x: state.a, m: state.m, label: `a=${numberLabel(state.a)} · ${state.m} 重`, labelDx: 0, labelDy: 27, labelAlign: "center" },
+        { x: -3, m: 1, label: "固定单根 −3", labelDx: 8, labelDy: -14 },
+      ];
       const equal = Math.abs(state.u - state.v) < 1e-12;
-      return equal ? [{ x: state.u, m: 2, label: "二重根" }] : [{ x: state.u, m: 1, label: "u" }, { x: state.v, m: 1, label: "v" }];
+      return equal
+        ? [{ x: state.u, m: 2, label: `u=v=${numberLabel(state.u, 2)} · 二重`, labelDx: 0, labelDy: 27, labelAlign: "center" }]
+        : [
+            { x: state.u, m: 1, label: `u=${numberLabel(state.u, 2)}`, labelDx: 0, labelDy: -14, labelAlign: "center" },
+            { x: state.v, m: 1, label: `v=${numberLabel(state.v, 2)}`, labelDx: 0, labelDy: 27, labelAlign: "center" },
+          ];
     }
     function paint() {
       const p = currentPoly();
       const dp = M().polyDerivative(p);
       const gcd = M().polyGcd(p, dp);
       const focus = state.mode === "multiplicity" ? M().parseR(state.a) : M().parseR(state.u);
+      const equal = state.mode === "merge" && Math.abs(state.u - state.v) < 1e-12;
+      const multiplicity = state.mode === "multiplicity" ? state.m : (equal ? 2 : 1);
       const derivatives = [];
-      for (let order = 0; order <= 4; order++) derivatives.push({ order, value: M().evalPoly(M().polyDerivative(p, order), focus) });
+      for (let order = 0; order <= multiplicity; order++) derivatives.push({ order, value: M().evalPoly(M().polyDerivative(p, order), focus) });
       root.querySelector("[data-poly]").innerHTML = tex(M().formatPolyTex(p));
       root.querySelector("[data-derivative]").innerHTML = tex(M().formatPolyTex(dp));
       root.querySelector("[data-gcd]").innerHTML = tex(M().formatPolyTex(gcd));
-      root.querySelector("[data-derivatives]").innerHTML = derivatives.map((row) => `<tr><td>${row.order === 0 ? "f" : `f<sup>(${row.order})</sup>`}</td><td>${M().formatR(row.value)}</td><td><span class="ch1-status ${M().rIsZero(row.value) ? "is-warn" : "is-ok"}">${M().rIsZero(row.value) ? "0" : "非零"}</span></td></tr>`).join("");
+      root.querySelector("[data-derivatives]").innerHTML = derivatives.map((row) => {
+        const zero = M().rIsZero(row.value);
+        return `<tr><td>${row.order === 0 ? "f" : `f<sup>(${row.order})</sup>`}</td><td>${M().formatR(row.value)}</td><td><span class="ch1-status ${zero ? "is-warn" : "is-ok"}">${zero ? "0" : "首次非零"}</span></td></tr>`;
+      }).join("");
       const status = root.querySelector("[data-status]");
       if (state.mode === "multiplicity") {
-        status.textContent = `${state.a} 是 ${state.m} 重根 · ${state.m % 2 ? "穿过横轴" : "贴住后返回"}`;
+        status.textContent = `a=${numberLabel(state.a)}，重数 m=${state.m}：${state.m % 2 ? "曲线穿过横轴" : "曲线接触后返回"}`;
+        root.querySelector("[data-derivative-title]").textContent = `在 a=${numberLabel(state.a)} 处寻找首次非零导数`;
+        root.querySelector("[data-observation]").textContent = state.m === 1
+          ? "f(a)=0，f′(a) 首次非零；f 与 f′ 互素。"
+          : `0 到 ${state.m - 1} 阶导数在 a 处均为 0，第 ${state.m} 阶首次非零；gcd 中 ${factorLabel(state.a)} 的指数为 ${state.m - 1}。`;
         root.querySelector("[data-m-controls]").hidden = false; root.querySelector("[data-merge-controls]").hidden = true;
       } else {
-        const equal = Math.abs(state.u - state.v) < 1e-12;
         status.textContent = equal ? "u=v：精确合并为二重根" : `u≠v：仍是两个单根（间距 ${Math.abs(state.u - state.v).toFixed(2)}）`;
+        root.querySelector("[data-derivative-title]").textContent = `在 u=${numberLabel(state.u, 2)} 处寻找首次非零导数`;
+        root.querySelector("[data-observation]").textContent = equal
+          ? `u=v=${numberLabel(state.u, 2)} 时，f 与 f′ 共享因式 ${factorLabel(state.u, 2)}；二阶导数首次非零。`
+          : `u=${numberLabel(state.u, 2)} 与 v=${numberLabel(state.v, 2)} 仍不相等，f′(u) 已非零；f 与 f′ 互素。`;
         root.querySelector("[data-m-controls]").hidden = true; root.querySelector("[data-merge-controls]").hidden = false;
       }
       status.className = `ch1-status ${M().polyEq(gcd, M().onePoly()) ? "is-ok" : "is-warn"}`;
@@ -199,7 +224,7 @@
   function interactive6(el, section) {
     lab(el, "重数与根合并实验室", section.interactive.description,
       `<button type="button" data-mode="multiplicity" class="is-active">重数模式</button><button type="button" data-mode="merge">根合并模式</button><span class="ch1-control-separator"></span><button type="button" data-preset-m="1">m=1</button><button type="button" data-preset-m="2">m=2</button><button type="button" data-preset-m="3">m=3</button><button type="button" data-preset-m="4">m=4</button>`,
-      `<div class="ch1-two-col"><div><div class="ch1-stage"><canvas data-graph aria-label="重数多项式图像"></canvas></div><div class="ch1-stage is-short"><canvas data-roots aria-label="实根与重数轴"></canvas></div></div><div class="ch1-panel"><div data-m-controls><label class="ch1-slider-row"><span>根 a</span><input data-a type="range" min="-2" max="2" step="1" value="1"><output data-a-value></output></label><label class="ch1-slider-row"><span>重数 m</span><input data-m type="range" min="1" max="4" step="1" value="2"><output data-m-value></output></label></div><div data-merge-controls hidden><label class="ch1-slider-row"><span>根 u</span><input data-u type="range" min="-2" max="2" step="0.05" value="-0.7"><output data-u-value></output></label><label class="ch1-slider-row"><span>根 v</span><input data-v type="range" min="-2" max="2" step="0.05" value="0.7"><output data-v-value></output></label><button type="button" class="ch1-btn" data-merge-exact>令 v=u（精确重合）</button></div><div class="ch1-result-band"><div><span>当前结论</span><strong data-status class="ch1-status"></strong></div></div><div class="ch1-equation-grid"><div><span>f</span><strong data-poly></strong></div><div><span>f′</span><strong data-derivative></strong></div><div><span>gcd(f,f′)</span><strong data-gcd></strong></div></div><h4>在关注点的导数消失表</h4><div class="ch1-table-wrap"><table class="ch1-table"><thead><tr><th>导数</th><th>值</th><th>状态</th></tr></thead><tbody data-derivatives></tbody></table></div></div></div>`);
+      `<div class="ch1-two-col"><div><div class="ch1-stage"><canvas data-graph aria-label="重数多项式图像"></canvas></div><div class="ch1-stage is-short"><canvas data-roots aria-label="实根与重数轴"></canvas></div></div><div class="ch1-panel"><div data-m-controls><label class="ch1-slider-row"><span>根 a</span><input data-a type="range" min="-2" max="2" step="1" value="1"><output data-a-value></output></label><label class="ch1-slider-row"><span>重数 m</span><input data-m type="range" min="1" max="4" step="1" value="2"><output data-m-value></output></label></div><div data-merge-controls hidden><label class="ch1-slider-row"><span>根 u</span><input data-u type="range" min="-2" max="2" step="0.05" value="-0.7"><output data-u-value></output></label><label class="ch1-slider-row"><span>根 v</span><input data-v type="range" min="-2" max="2" step="0.05" value="0.7"><output data-v-value></output></label><button type="button" class="ch1-btn" data-merge-exact>令 v=u（精确重合）</button></div><div class="ch1-result-band"><div><span>当前结论</span><strong data-status class="ch1-status"></strong></div></div><p class="ch1-multiplicity-observation" data-observation></p><div class="ch1-equation-grid"><div><span>f</span><strong data-poly></strong></div><div><span>f′</span><strong data-derivative></strong></div><div><span>gcd(f,f′)</span><strong data-gcd></strong></div></div><h4 data-derivative-title>寻找首次非零导数</h4><div class="ch1-table-wrap"><table class="ch1-table"><thead><tr><th>导数</th><th>值</th><th>判别</th></tr></thead><tbody data-derivatives></tbody></table></div></div></div>`);
     mountMultiplicity(el);
   }
 

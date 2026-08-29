@@ -137,7 +137,7 @@
       return text(visible?.querySelector("[data-factor], [data-root-status], [data-interp-observation]")) || plan.takeaway;
     }
     if (sectionId === "complex-real-factorization") return [active("[data-real-status]"), active("[data-observation]")].filter(Boolean).join("；");
-    if (sectionId === "rational-polynomials") return active("[data-eisenstein-status]") || plan.takeaway;
+    if (sectionId === "rational-polynomials") return active("[data-rational-current-observation]") || active("[data-eisenstein-status]") || plan.takeaway;
     if (sectionId === "multivariate-polynomials") return active("[data-lattice-readout]") || active("[data-active]") || plan.takeaway;
     if (sectionId === "symmetric-polynomials") return active("[data-global-status]") || active("[data-sym-status]") || plan.takeaway;
     return plan.takeaway;

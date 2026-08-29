@@ -55,13 +55,20 @@
         label: "x⁴+4",
         poly: M().polyFrom(["4", "0", "0", "0", "1"]),
         note: "没有有理根，但它仍可分成两个二次式；用来阻止错误推理。",
+        evidence: "x^4+4=(x^2-2x+2)(x^2+2x+2)",
       },
     };
     let normalization = "fraction";
     let current = "root";
     let prime = 5;
+    let revealedCandidates = new Set();
+    let lastCandidateIndex = null;
 
-    function renderNormalization() {
+    function setCurrentObservation(message) {
+      root.querySelector("[data-rational-current-observation]").textContent = message;
+    }
+
+    function renderNormalization(announce = false) {
       const item = normalizationExamples[normalization];
       const result = M().contentAndPrimitive(item.poly);
       const cleared = M().polyFrom(result.integers);
@@ -76,6 +83,10 @@
         button.classList.toggle("is-active", active);
         button.setAttribute("aria-pressed", String(active));
       });
+      if (announce) {
+        setCurrentObservation(`${normalization === "fraction" ? "分数系数" : "有公共因子"}示例：公分母为 ${result.commonDen}，提出常数 ${M().formatR(result.content)}；规范化等式已完整显示。`);
+      }
+      return result;
     }
 
     function eisenstein(poly, p) {
@@ -96,24 +107,53 @@
       };
     }
 
-    function render() {
-      renderNormalization();
+    function renderCandidates() {
       const item = examples[current];
       const poly = item.poly;
-      root.querySelector("[data-rational-poly]").innerHTML = tex(M().formatPolyTex(poly));
-      root.querySelector("[data-rational-note]").textContent = item.note;
       const candidates = rationalCandidates(poly);
-      root.querySelector("[data-candidate-count]").textContent = `候选 ${candidates.length} 个（约分、去重、含正负）`;
-      root.querySelector("[data-candidates]").innerHTML = candidates.map((candidate) => {
+      const revealedCount = revealedCandidates.size;
+      root.querySelector("[data-candidate-count]").textContent = `共 ${candidates.length} 个（已约分、去重并包含正负）`;
+      root.querySelector("[data-candidates]").innerHTML = candidates.map((candidate, index) => {
+        const revealed = revealedCandidates.has(index);
         const value = M().evalPoly(poly, candidate);
         const isRoot = M().rIsZero(value);
-        return `<article class="ch1-candidate ${isRoot ? "is-root" : ""}">
+        return `<button type="button" class="ch1-candidate ${revealed ? "is-revealed" : ""} ${revealed && isRoot ? "is-root" : ""}" data-candidate-index="${index}" aria-expanded="${revealed}" aria-label="验算候选 ${M().formatR(candidate)}">
           <strong>${tex(M().formatRTex(candidate))}</strong>
-          <span>${tex(`f(${M().formatRTex(candidate)})=${M().formatRTex(value)}`)}</span>
-          <em>${isRoot ? "是根" : "不是根"}</em>
-        </article>`;
+          ${revealed
+            ? `<span data-candidate-result>${tex(`f(${M().formatRTex(candidate)})=${M().formatRTex(value)}`)}</span><em>${isRoot ? "是根" : "不是根"}</em>`
+            : "<span>点击后显示精确代入值</span><em>待验算</em>"}
+        </button>`;
       }).join("") || "<p>常数项为 0 时先提出 x，再对剩余多项式使用定理。</p>";
 
+      const observation = root.querySelector("[data-candidate-observation]");
+      if (lastCandidateIndex !== null && candidates[lastCandidateIndex]) {
+        const candidate = candidates[lastCandidateIndex];
+        const value = M().evalPoly(poly, candidate);
+        const verdict = M().rIsZero(value) ? "是根" : "不是根";
+        observation.textContent = `刚验算：f(${M().formatR(candidate)})=${M().formatR(value)}，${candidate.n === 0 ? "0" : M().formatR(candidate)} ${verdict}。已完成 ${revealedCount}/${candidates.length}。`;
+      } else {
+        observation.textContent = "候选尚未验算；点击任一卡片后才会显示代入值。";
+      }
+      return { item, poly, candidates };
+    }
+
+    function renderExample() {
+      const item = examples[current];
+      root.querySelector("[data-rational-poly]").innerHTML = tex(M().formatPolyTex(item.poly));
+      root.querySelector("[data-rational-note]").textContent = item.note;
+      const evidence = root.querySelector("[data-rational-evidence]");
+      evidence.hidden = !item.evidence;
+      evidence.querySelector("p").innerHTML = item.evidence ? tex(item.evidence) : "";
+      root.querySelectorAll("[data-rational-example]").forEach((button) => {
+        const active = button.dataset.rationalExample === current;
+        button.classList.toggle("is-active", active);
+        button.setAttribute("aria-pressed", String(active));
+      });
+      return renderCandidates();
+    }
+
+    function renderEisenstein() {
+      const poly = examples[current].poly;
       const result = eisenstein(poly, prime);
       const labels = [
         `${prime} 不整除首项系数`,
@@ -128,23 +168,59 @@
       status.textContent = result.message;
       status.className = `ch1-status ${result.applicable ? "is-ok" : "is-warn"}`;
       root.querySelector("[data-prime-value]").textContent = String(prime);
-      root.querySelectorAll("[data-rational-example]").forEach((button) => button.classList.toggle("is-active", button.dataset.rationalExample === current));
-      root.querySelectorAll("[data-prime]").forEach((button) => button.classList.toggle("is-active", Number(button.dataset.prime) === prime));
+      root.querySelectorAll("[data-prime]").forEach((button) => {
+        const active = Number(button.dataset.prime) === prime;
+        button.classList.toggle("is-active", active);
+        button.setAttribute("aria-pressed", String(active));
+      });
+      return result;
+    }
+
+    function render() {
+      renderNormalization();
+      renderExample();
+      renderEisenstein();
     }
 
     root.querySelectorAll("[data-rational-example]").forEach((button) => listen(button, "click", () => {
       current = button.dataset.rationalExample;
+      revealedCandidates = new Set();
+      lastCandidateIndex = null;
       render();
+      const count = rationalCandidates(examples[current].poly).length;
+      setCurrentObservation(`${examples[current].label} 有 ${count} 个既约有理根候选；点击候选后再判断它是否为根。`);
     }));
     root.querySelectorAll("[data-prime]").forEach((button) => listen(button, "click", () => {
       prime = Number(button.dataset.prime);
-      render();
+      const result = renderEisenstein();
+      setCurrentObservation(result.message);
     }));
     root.querySelectorAll("[data-normalization-example]").forEach((button) => listen(button, "click", () => {
       normalization = button.dataset.normalizationExample;
-      renderNormalization();
+      renderNormalization(true);
     }));
+    listen(root.querySelector("[data-candidates]"), "click", (event) => {
+      const button = event.target.closest?.("[data-candidate-index]");
+      if (!button) return;
+      const index = Number(button.dataset.candidateIndex);
+      revealedCandidates.add(index);
+      lastCandidateIndex = index;
+      const { candidates, poly } = renderCandidates();
+      const candidate = candidates[index];
+      const value = M().evalPoly(poly, candidate);
+      const verdict = M().rIsZero(value) ? "是根" : "不是根";
+      const hasRationalRoot = candidates.some((valueCandidate) => M().rIsZero(M().evalPoly(poly, valueCandidate)));
+      const noRootConclusion = M().deg(poly) <= 3
+        ? "这个二次或三次多项式在 ℚ[x] 中不可约。"
+        : "这个多项式没有有理根；仍需排除二次或更高次数的因式。";
+      const completed = revealedCandidates.size === candidates.length
+        ? `全部 ${candidates.length} 个候选已经验算。${hasRationalRoot ? "实际有理根已在卡片中标出。" : noRootConclusion}`
+        : `已验算 ${revealedCandidates.size}/${candidates.length} 个候选。`;
+      setCurrentObservation(`f(${M().formatR(candidate)})=${M().formatR(value)}，所以 ${M().formatR(candidate)} ${verdict}；${completed}`);
+      root.querySelector(`[data-candidate-index="${index}"]`)?.focus({ preventScroll: true });
+    });
     render();
+    setCurrentObservation("三个工作台使用独立示例：先核对规范化等式，再点击候选验算，最后选择素数检查 Eisenstein 条件。");
   }
 
   function mountExponentLattice(root) {
@@ -427,7 +503,8 @@
 
   function interactive9(el) {
     el.innerHTML = `<h2>交互实验</h2><div class="ch1-lab">
-      <div class="ch1-lab-head"><h3>从本原化到不可约证书</h3><p>先把有理系数规范化为本原整数系数，再筛有理根并检查 Eisenstein；每一步都显示可核验的精确等式。</p></div>
+      <div class="ch1-lab-head"><h3>三种整数检验，各自回答一个问题</h3><p>本原化、有理根验算和 Eisenstein 检查使用独立示例；每个结果都保留可核验的精确等式。</p></div>
+      <span hidden data-rational-current-observation></span>
       <section class="ch1-panel ch1-primitive-workbench">
         <div class="ch1-panel-head"><div><span>01 · 本原化</span><h4>清分母，再提出内容</h4></div><div class="ch1-controls"><button type="button" class="is-active" data-normalization-example="fraction" aria-pressed="true">分数系数</button><button type="button" data-normalization-example="integer" aria-pressed="false">有公共因子</button></div></div>
         <div class="ch1-equation-grid">
@@ -441,27 +518,29 @@
       </section>
       <div class="ch1-control-groups">
         <div class="ch1-controls">
-          <span>02 · 候选与判据：</span>
-          <button type="button" class="is-active" data-rational-example="root">2x³+x²−x−1</button>
-          <button type="button" data-rational-example="eisenstein">x⁵+10x+5</button>
-          <button type="button" data-rational-example="quartic">x⁴+4 反例</button>
+          <span>02 · 选择待检验多项式：</span>
+          <button type="button" class="is-active" data-rational-example="root" aria-pressed="true">2x³+x²−x−1</button>
+          <button type="button" data-rational-example="eisenstein" aria-pressed="false">x⁵+10x+5</button>
+          <button type="button" data-rational-example="quartic" aria-pressed="false">x⁴+4 反例</button>
         </div>
         <div class="ch1-controls">
-          <span>素数 p：</span>
-          <button type="button" data-prime="2">2</button>
-          <button type="button" data-prime="3">3</button>
-          <button type="button" class="is-active" data-prime="5">5</button>
+          <span>03 · 选择素数 p：</span>
+          <button type="button" data-prime="2" aria-pressed="false">2</button>
+          <button type="button" data-prime="3" aria-pressed="false">3</button>
+          <button type="button" class="is-active" data-prime="5" aria-pressed="true">5</button>
         </div>
       </div>
       <div class="ch1-readout">
         <div>f = <strong data-rational-poly></strong></div>
         <p class="ch1-muted" data-rational-note></p>
       </div>
+      <div class="ch1-callout" data-rational-evidence hidden><strong>分解证据</strong><p></p></div>
       <div class="ch1-lab-grid">
         <section class="ch1-panel">
-          <h4>有理根候选</h4>
+          <h4>逐个验算有理根候选</h4>
           <p class="ch1-muted" data-candidate-count></p>
           <div class="ch1-candidate-grid" data-candidates></div>
+          <p class="ch1-candidate-observation" data-candidate-observation aria-live="polite"></p>
         </section>
         <section class="ch1-panel">
           <h4>Eisenstein：p=<span data-prime-value></span></h4>

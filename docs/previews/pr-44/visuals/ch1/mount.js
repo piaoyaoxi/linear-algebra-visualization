@@ -131,7 +131,7 @@
     if (sectionId === "polynomial-divisibility") return [active("[data-status]"), active("[data-degree]"), active("[data-note]")].filter(Boolean).join("；");
     if (sectionId === "gcd-polynomials") return [active("[data-coprime]"), `${active("[data-object-label]")}=${active("[data-gcd]")}`, active("[data-stage-note]")].filter(Boolean).join("；");
     if (sectionId === "factorization-theorem") return [active("[data-route-label]"), active("[data-factor-note]"), active("[data-unique]")].filter(Boolean).join("；");
-    if (sectionId === "multiple-factors") return [active("[data-status]"), `gcd(f,f′)=${active("[data-gcd]")}`].filter(Boolean).join("；");
+    if (sectionId === "multiple-factors") return [active("[data-status]"), active("[data-observation]")].filter(Boolean).join("；");
     if (sectionId === "polynomial-functions") {
       const visible = [...lab.querySelectorAll("[data-eval-panel], [data-root-panel], [data-interp-panel]")].find((node) => !node.hidden);
       return text(visible?.querySelector("[data-factor], [data-root-status], [data-interp-poly]")) || plan.takeaway;

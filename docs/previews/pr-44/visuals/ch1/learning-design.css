@@ -789,6 +789,15 @@
   gap: 12px;
 }
 
+.ch1-section-multiple-factors .ch1-multiplicity-observation {
+  margin: 0;
+  padding: 11px 13px;
+  border-left: 3px solid var(--accent);
+  background: color-mix(in srgb, var(--accent) 7%, var(--surface-solid));
+  color: var(--muted);
+  line-height: 1.65;
+}
+
 .ch1-section-polynomial-functions .ch1-two-col {
   grid-template-columns: 1fr;
   align-items: start;

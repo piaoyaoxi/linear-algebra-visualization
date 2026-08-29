@@ -49,7 +49,7 @@ defineChapter1Section("multiple-factors", {
     },
     definitions: [
       { title: "图像奇偶", text: `在实根附近，${texInline("h(a)\\ne0")} 的符号稳定，曲线局部形状由 ${texInline("(x-a)^m")} 控制：m 奇数时换号穿过，m 偶数时同号返回。` },
-      { title: "平方自由部分", text: `若 ${texInline("d=\\gcd(f,f')")}，则 ${texInline("f/d")} 把每个不同不可约因式至少保留一次；更完整的平方自由分解可从连续 gcd 中恢复各重数层。` },
+      { title: "平方自由部分", text: `若 ${texInline("d=\\gcd(f,f')")}，则 ${texInline("f/d")} 中每个不同不可约因式恰好保留一次；连续计算 gcd 还能恢复各个重数层。` },
     ],
     boundary: {
       title: "非常接近的两个单根仍是两个单根",
@@ -67,6 +67,8 @@ defineChapter1Section("multiple-factors", {
     title: "实验：重数、导数与根合并",
     description: "调节根 a 与重数 m，同步观察 f、f′、gcd、导数消失表、根轴和固定坐标曲线。",
     task: "比较 m=1,2,3,4；再把两个单根逐渐靠近并令它们精确重合。",
+    controlsTitle: "选择重数实验或根合并实验",
+    controlsDescription: "先用 m=1 到 4 对照代数与曲线，再切换到根合并模式，比较 u≠v 与 u=v。",
     guide: [
       ["读代数", "先核对 f、f′ 与 gcd 中的因式指数。"],
       ["读导数", "找到在 a 处第一次非零的导数阶数。"],

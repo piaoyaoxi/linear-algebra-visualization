@@ -455,7 +455,11 @@
       }
       ctx.fillStyle = palette.text;
       ctx.font = "12px ui-sans-serif, system-ui, sans-serif";
-      if (root.label) ctx.fillText(root.label, base.x + 8, base.y + 18);
+      if (root.label) {
+        ctx.textAlign = root.labelAlign || "left";
+        ctx.fillText(root.label, base.x + (root.labelDx ?? 8), base.y + (root.labelDy ?? 18));
+        ctx.textAlign = "start";
+      }
     });
     return cam;
   }

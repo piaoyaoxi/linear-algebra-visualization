@@ -7,7 +7,7 @@ defineChapter1Section("rational-polynomials", {
   goal: "掌握内容、本原多项式与 Gauss 引理；会生成并验证全部有理根候选，正确使用 Eisenstein 不可约判据。",
   tags: ["Gauss 引理", "本原多项式", "有理根定理", "Eisenstein"],
   intro:
-    "有理系数看起来增加了分母，Gauss 引理却说明真正的分解结构可以转移到整数系数。先清分母，再提出所有系数的最大公因数，剩下的本原部分承载可约性；有理根与 Eisenstein 则提供两种方向不同的有限检验。",
+    "有理系数多项式带着分母，不便直接使用整数整除性。清分母并提出系数的最大公因数后，剩下的本原部分保留全部非常数因式。Gauss 引理说明这一步不会改变可约性；有理根定理给出有限候选，Eisenstein 判据在三项整除条件成立时直接判定不可约。",
   concepts: [
     { label: "内容", text: "整系数多项式全部系数的正最大公因数，记作 cont(f)。" },
     { label: "本原", text: `${texInline("\\operatorname{cont}(f)=1")}。` },
@@ -21,17 +21,17 @@ defineChapter1Section("rational-polynomials", {
   formal: {
     title: "规范化以后，整数整除性成为分解探针",
     intro:
-      "清分母只乘上一个非零有理常数，提内容只拿走一个单位意义上的常数，它们都不改变非常数因式结构。Gauss 引理保证本原因式在相乘后仍保持本原，从而让 Q[x] 与 Z[x] 的可约性准确对接。",
-    equation: "f=c\\,f^*,\\qquad f^*\\in\\mathbb Z[x],\\quad\\operatorname{cont}(f^*)=1",
+      "清分母和提内容都只改变非零常数因子，不会增加或删去正次数因式。对非零有理系数多项式，约定本原部分的首项系数为正，就能固定符号。Gauss 引理据此把 Q[x] 中的可约性转成 Z[x] 中的可约性。",
+    equation: "0\\ne f=c\\,f^*,\\qquad c\\in\\mathbb Q^\\times,\\quad f^*\\in\\mathbb Z[x]\\text{ 本原且首项系数为正}",
     map: [
       { label: "清分母", text: "乘系数分母的最小公倍数，得到整系数多项式。" },
       { label: "提内容", text: "提出系数 gcd，留下本原部分 f*。" },
       { label: "筛有理根", text: "由首项和常数项的因数生成既约候选，再逐一精确代入。" },
-      { label: "找不可约证书", text: "选择素数检查 Eisenstein 三条件；通过即可结束。" },
+      { label: "检查判据", text: "选择素数检查 Eisenstein 三条件；同时成立即可判定不可约。" },
     ],
     bridge: {
-      title: "三个工作台对应同一条判定流水线",
-      text: "本原化面板先给出唯一的整数代表；候选筛选器在这个代表上枚举 p/q；素数透镜再逐项展示 Eisenstein 的逻辑方向。每一步都保留精确整数或有理数。",
+      title: "三个工作台回答三类问题",
+      text: "本原化面板核对 f=c f*；候选筛选器检验某个整系数多项式是否有有理根；素数检查器判断另一个例子是否满足 Eisenstein 三条件。三个面板使用独立示例，所有运算都保留精确整数或有理数。",
     },
     theorem: {
       label: "Gauss 引理",
@@ -50,7 +50,7 @@ defineChapter1Section("rational-polynomials", {
     definitions: [
       { title: "有理根定理", text: `对 ${texInline("a_nx^n+\\cdots+a_0\\in\\mathbb Z[x]")} 的既约有理根 ${texInline("p/q")}，代入并整理可知 ${texInline("p\\mid a_0")}、${texInline("q\\mid a_n")}。它生成候选，不保证候选一定为根。` },
       { title: "Eisenstein 判据", text: `若存在素数 p，使 ${texInline("p\\nmid a_n")}、${texInline("p\\mid a_0,\\ldots,a_{n-1}")} 且 ${texInline("p^2\\nmid a_0")}，则 f 在 Q[x] 中不可约。` },
-      { title: "判据失败的含义", text: "某个素数未通过三条件，只能说明这一张证书没有签发。可以换素数、作变量平移，或使用其他分解方法。" },
+      { title: "判据失败的含义", text: "某个素数未通过三条件，只能说明 Eisenstein 判据对这个素数没有给出结论。可以换素数、作变量平移，或使用其他分解方法。" },
     ],
     boundary: {
       title: "没有有理根，只排除了一次因式",
@@ -66,17 +66,19 @@ defineChapter1Section("rational-polynomials", {
   interactive: {
     type: "slot",
     title: "实验：本原化、有理根与 Eisenstein",
-    description: "先把有理系数多项式规范化，再生成有理根候选，并按素数检查 Eisenstein 三条件。",
-    task: "规范化一个分数系数多项式；验证 2x³+x²−x−1 的全部候选；最后用 p=5 判定 x⁵+10x+5。",
+    description: "分别观察本原化等式、有理根候选的代入值，以及 Eisenstein 三项整除条件。",
+    task: "分别完成三项检查：规范化分数系数多项式，逐个验证 2x³+x²−x−1 的有理根候选，再用 p=5 检查 x⁵+10x+5。",
     guide: [
-      ["规范化", "读取公分母、整数内容和本原部分。"],
-      ["筛候选", "由常数项与首项列出约分后的 ±p/q。"],
-      ["找证书", "逐门检查 Eisenstein，并尊重判据的单向逻辑。"],
+      ["规范化", "核对公分母、提出常数和本原部分的乘积。"],
+      ["验候选", "由常数项与首项列出 ±p/q，再点击逐项代入。"],
+      ["查判据", "逐条检查 Eisenstein 条件，并判断结论是否成立。"],
     ],
-    takeaway: "Gauss 引理把 Q[x] 分解转到本原整数系数；有理根负责筛选，Eisenstein 负责签发不可约证书。",
+    controlsTitle: "选择示例与检验条件",
+    controlsDescription: "三个工作台彼此独立：先选规范化示例，再选待检验多项式与素数。",
+    takeaway: "本原化保留正次数因式；有理根定理只给候选，Eisenstein 三条件同时成立才得到不可约结论。",
     prompts: [
       "比较原多项式与本原部分的非常数因式。",
-      "逐个点击候选，读取精确 Horner 值。",
+      "逐个点击候选，读取精确代入值。",
       "让一个素数失败，确认结论只写“未判出”。",
     ],
   },

@@ -526,6 +526,7 @@
 }
 
 .ch1-candidate {
+  appearance: none;
   display: grid;
   gap: 5px;
   min-width: 0;
@@ -533,6 +534,24 @@
   border: 1px solid var(--line);
   border-radius: 11px;
   background: var(--surface-soft);
+  color: var(--text);
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+  transition: border-color 160ms ease, background 160ms ease, transform 160ms ease;
+}
+
+.ch1-candidate:hover {
+  border-color: color-mix(in srgb, var(--accent) 44%, var(--line));
+}
+
+.ch1-candidate:focus-visible {
+  outline: 3px solid color-mix(in srgb, var(--accent) 28%, transparent);
+  outline-offset: 2px;
+}
+
+.ch1-candidate.is-revealed {
+  background: color-mix(in srgb, var(--accent) 6%, var(--surface-soft));
 }
 
 .ch1-candidate strong {
@@ -559,6 +578,15 @@
 .ch1-candidate.is-root em {
   color: var(--accent-strong, #08736e);
   font-weight: 650;
+}
+
+.ch1-candidate-observation {
+  margin: 12px 0 0;
+  padding-top: 10px;
+  border-top: 1px solid var(--line);
+  color: var(--muted);
+  font-size: 13px;
+  line-height: 1.65;
 }
 
 .ch1-check-list {

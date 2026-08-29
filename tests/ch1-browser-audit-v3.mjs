@@ -131,6 +131,12 @@ async function checkMathBoundaries(page, section) {
     const values = await page.locator("[data-common-denominator], [data-cleared-poly], [data-content], [data-primitive]").allTextContents();
     ensure(values.length === 4 && values.every((value) => value.trim()), "§9: normalization workbench is incomplete");
     ensure(/=/.test((await page.locator("[data-normalization-check]").textContent()) || ""), "§9: normalization equality is missing");
+    await clickIf(page, '[data-normalization-example="integer"]');
+    const integerDenominator = ((await page.locator("[data-common-denominator]").innerText()) || "").trim();
+    const integerContent = ((await page.locator("[data-content] .katex-html").innerText()) || "").replace(/\s+/g, "");
+    const integerPrimitive = ((await page.locator("[data-primitive] .katex-html").innerText()) || "").replace(/\s+/g, "");
+    ensure(integerDenominator === "1" && integerContent === "3" && /2x4\+3x2−1/.test(integerPrimitive), `§9: integer primitive normalization is wrong (${integerDenominator}; ${integerContent}; ${integerPrimitive})`);
+    ensure(/公分母为 1/.test((await page.locator("[data-ch1-live-result]").textContent()) || ""), "§9: normalization changes do not reach the live observation");
   } else if (section === "multivariate-polynomials") {
     await clickIf(page, '[data-lattice-mode="multiply"]');
     ensure((await page.locator("[data-coefficient-ledger] tr").count()) === 2, "§10: x³y coefficient ledger should have two contributions");
@@ -304,7 +310,21 @@ async function operate(page, section, viewport, theme) {
     ensure(/不属于 R\[x\]/.test((await page.locator("[data-observation]").textContent()) || ""), "§8: live observation does not identify the failed real-coefficient condition");
     ensure(!/CONJUGATE ROOTS/.test((await page.locator(".ch1-motion-head").textContent()) || "") && !/x2[−+-]/.test((await page.locator("[data-ch1-live-result]").textContent()) || ""), "§8: English heading or flattened quadratic leaked into the student view");
   } else if (section === "rational-polynomials") {
+    await clickIf(page, '[data-rational-example="root"]');
+    ensure((await page.locator("[data-candidate-index]").count()) === 4, "§9: rational-root candidate set is incomplete");
+    ensure((await page.locator("[data-candidate-result]").count()) === 0, "§9: candidate values are revealed before student action");
+    const candidateButtons = page.locator("[data-candidate-index]");
+    await candidateButtons.first().click();
+    ensure((await page.locator("[data-candidate-result]").count()) === 1 && /已验算 1\/4/.test((await page.locator("[data-ch1-live-result]").textContent()) || ""), "§9: candidate reveal or progress feedback failed");
+    if (detail) {
+      for (let index = 1; index < 4; index += 1) await page.locator(`[data-candidate-index="${index}"]`).click();
+      ensure((await page.locator("[data-candidate-result]").count()) === 4 && /ℚ\[x\].*不可约/.test((await page.locator("[data-ch1-live-result]").textContent()) || ""), "§9: completed cubic candidate check has the wrong conclusion");
+    }
+    await clickIf(page, '[data-rational-example="eisenstein"]'); await clickIf(page, '[data-prime="5"]');
+    ensure(/在 ℚ\[x\] 中不可约/.test((await page.locator("[data-eisenstein-status]").textContent()) || ""), "§9: p=5 Eisenstein certificate failed");
     await clickIf(page, '[data-rational-example="quartic"]'); await clickIf(page, '[data-prime="2"]');
+    ensure(await page.locator("[data-rational-evidence]").isVisible() && /x4\+4=.*x2−2x\+2.*x2\+2x\+2/.test(((await page.locator("[data-rational-evidence]").innerText()) || "").replace(/\s+/g, "")), "§9: quartic counterexample lacks its factorization evidence");
+    ensure(/没有给出结论/.test((await page.locator("[data-eisenstein-status]").textContent()) || ""), "§9: failed Eisenstein check implies a false conclusion");
   } else if (section === "multivariate-polynomials") {
     await checkMultivariateLayout(page, viewport);
     if (detail) await page.locator("#multivariate-polynomials-interactive .ch1-lab").screenshot({ path: path.join(outputDir, `${viewport.name}-${theme}-multivariate-support.png`) });

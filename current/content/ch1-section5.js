@@ -44,7 +44,7 @@ defineChapter1Section("factorization-theorem", {
         { title: "存在性", text: "若 f 可约，就拆成两个更低正次数因式并递归；次数严格下降，因此过程有限。" },
         { title: "建立素性", text: `设不可约 ${texInline("p\\mid fg")} 且 ${texInline("p\\nmid f")}。不可约性给出 ${texInline("\\gcd(p,f)=1")}，所以存在 ${texInline("sp+tf=1")}。乘 g 后可知 ${texInline("p\\mid g")}。` },
         { title: "跨分解寻找配对", text: `若 ${texInline("p_1\\cdots p_m=q_1\\cdots q_n")}，则 ${texInline("p_1")} 整除右侧乘积，反复用素性可知它整除某个 ${texInline("q_j")}。` },
-        { title: "约去并归纳", text: `两个不可约因式相除时只能相伴；首一化后相等。约去这一对，继续配对剩余因式，重数也随之确定。` },
+        { title: "约去并归纳", text: `若不可约因式 ${texInline("p\\mid q")}，则 ${texInline("q=up")}，其中 u 是非零常数；首一化后 p=q。约去这一对并继续配对，便得到全部因式及其重数。` },
       ],
     },
     definitions: [
@@ -67,6 +67,8 @@ defineChapter1Section("factorization-theorem", {
     title: "实验：双路径因式树",
     description: "在 Q、R、C 中比较两条真实拆分路线，并分别标准化它们的不可约叶。",
     task: "比较 x⁴−1 的两条路线；再切换 x²−2、x²+1 与 x⁴+4，观察数域怎样改变最终叶。",
+    controlsTitle: "选定系数域与待分解多项式",
+    controlsDescription: "同一多项式先固定系数域，再切换路线 A、B；每条路线的中间式和标准化叶分别计算。",
     guide: [
       ["定域", "先选择 Q、R 或 C。"],
       ["走两条路线", "分别展开 A、B 路线的中间因式。"],

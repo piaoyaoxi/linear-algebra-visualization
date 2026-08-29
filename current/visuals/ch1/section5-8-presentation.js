@@ -34,11 +34,11 @@
         ] },
         R: { leaves: ["x-\\sqrt2", "x+\\sqrt2"], kinds: ["linear", "linear"], note: "实根 ±√2 产生两个一次因式。", routes: [
           { steps: ["x^2-(\\sqrt2)^2", "(x-\\sqrt2)(x+\\sqrt2)"], leaves: ["x-\\sqrt2", "x+\\sqrt2"] },
-          { steps: ["\\operatorname{roots}=\\{\\sqrt2,-\\sqrt2\\}", "(x+\\sqrt2)(x-\\sqrt2)"], leaves: ["x+\\sqrt2", "x-\\sqrt2"] },
+          { steps: ["\\text{根集合}=\\{\\sqrt2,-\\sqrt2\\}", "(x+\\sqrt2)(x-\\sqrt2)"], leaves: ["x+\\sqrt2", "x-\\sqrt2"] },
         ] },
         C: { leaves: ["x-\\sqrt2", "x+\\sqrt2"], kinds: ["linear", "linear"], note: "根已在 R 中，扩到 C 后分解不再改变。", routes: [
           { steps: ["x^2-(\\sqrt2)^2", "(x-\\sqrt2)(x+\\sqrt2)"], leaves: ["x-\\sqrt2", "x+\\sqrt2"] },
-          { steps: ["\\operatorname{roots}=\\{\\sqrt2,-\\sqrt2\\}", "(x+\\sqrt2)(x-\\sqrt2)"], leaves: ["x+\\sqrt2", "x-\\sqrt2"] },
+          { steps: ["\\text{根集合}=\\{\\sqrt2,-\\sqrt2\\}", "(x+\\sqrt2)(x-\\sqrt2)"], leaves: ["x+\\sqrt2", "x-\\sqrt2"] },
         ] },
       },
       x2p1: {
@@ -53,7 +53,7 @@
         ] },
         C: { leaves: ["x-i", "x+i"], kinds: ["linear", "linear"], note: "复根 ±i 使其完全分裂。", routes: [
           { steps: ["x^2-i^2", "(x-i)(x+i)"], leaves: ["x-i", "x+i"] },
-          { steps: ["\\operatorname{roots}=\\{i,-i\\}", "(x+i)(x-i)"], leaves: ["x+i", "x-i"] },
+          { steps: ["\\text{根集合}=\\{i,-i\\}", "(x+i)(x-i)"], leaves: ["x+i", "x-i"] },
         ] },
       },
       x4p4: {
@@ -68,7 +68,7 @@
         ] },
         C: { leaves: ["x-1-i", "x-1+i", "x+1-i", "x+1+i"], kinds: ["linear", "linear", "linear", "linear"], note: "两个实二次在 C 中继续分裂。", routes: [
           { steps: ["(x^2-2x+2)(x^2+2x+2)", "(x-1-i)(x-1+i)(x+1-i)(x+1+i)"], leaves: ["x-1-i", "x-1+i", "x+1-i", "x+1+i"] },
-          { steps: ["\\operatorname{roots}=\\{1\\pm i,-1\\pm i\\}", "(x+1+i)(x-1-i)(x+1-i)(x-1+i)"], leaves: ["x+1+i", "x-1-i", "x+1-i", "x-1+i"] },
+          { steps: ["\\text{根集合}=\\{1\\pm i,-1\\pm i\\}", "(x+1+i)(x-1-i)(x+1-i)(x-1+i)"], leaves: ["x+1+i", "x-1-i", "x+1-i", "x-1+i"] },
         ] },
       },
     };
@@ -79,15 +79,48 @@
     function leafHtml(item) {
       return item.leaves.map((leaf, i) => `<span class="ch1-factor-node is-leaf is-${item.kinds[i]}">${tex(leaf)}</span>`).join("");
     }
+    function standardLeaves(leaves) {
+      const counts = new Map();
+      leaves.forEach((leaf) => counts.set(leaf, (counts.get(leaf) || 0) + 1));
+      return [...counts.entries()].sort(([left], [right]) => left.localeCompare(right));
+    }
+    function standardHtml(leaves) {
+      return standardLeaves(leaves).map(([leaf, count]) => {
+        const formula = count > 1 ? `(${leaf})^{${count}}` : leaf;
+        return `<span class="ch1-standard-factor">${tex(formula)}</span>`;
+      }).join("");
+    }
+    function routeExpressionHtml(expression) {
+      const factors = expression.match(/\([^()]+\)/g);
+      const isProduct = factors?.length > 1 && factors.join("") === expression.replace(/\s+/g, "");
+      if (!isProduct) return tex(expression);
+      return `<span class="ch1-route-factor-product">${factors.map((factor, index) => `${index ? `<span class="ch1-product-dot" aria-hidden="true">·</span>` : ""}<span>${tex(factor)}</span>`).join("")}</span>`;
+    }
+    function legendHtml(item) {
+      const kinds = new Set(item.kinds);
+      return [
+        kinds.has("linear") ? `<span class="is-linear">一次因式</span>` : "",
+        kinds.has("irred") ? `<span class="is-irred">高次不可约因式</span>` : "",
+      ].join("");
+    }
     function paint() {
       const source = data[polynomial];
       const item = source[domain];
-      root.querySelector("[data-factor-tree]").innerHTML = `<div class="ch1-factor-tree"><div class="ch1-factor-root"><span class="ch1-factor-node is-root">${tex(source.formula)}</span><span class="ch1-factor-domain">${domainLabel[domain]}[x]</span></div><div class="ch1-factor-branch"></div><div class="ch1-factor-leaves">${leafHtml(item)}</div><p class="ch1-factor-note">${item.note}</p></div>`;
-      root.querySelector("[data-route]").innerHTML = item.routes[route].steps.map((node, i) => `<div class="ch1-route-node"><span>${i + 1}</span>${tex(node)}</div>`).join(`<div class="ch1-route-arrow">→</div>`);
-      root.querySelector("[data-standard-a]").innerHTML = item.routes[0].leaves.map((leaf) => tex(leaf)).join(" · ");
-      root.querySelector("[data-standard-b]").innerHTML = item.routes[1].leaves.map((leaf) => tex(leaf)).join(" · ");
-      const normalizedA = [...item.routes[0].leaves].sort().join("|");
-      const normalizedB = [...item.routes[1].leaves].sort().join("|");
+      const selectedRoute = item.routes[route];
+      root.querySelector("[data-route-label]").textContent = `路线 ${route === 0 ? "A" : "B"}`;
+      root.querySelector("[data-factor-tree]").innerHTML = `<div class="ch1-factor-tree">
+        <div class="ch1-factor-root"><span class="ch1-factor-node is-root">${tex(source.formula)}</span><span class="ch1-factor-domain">${domainLabel[domain]}[x]</span></div>
+        <div class="ch1-route-arrow" aria-hidden="true">↓</div>
+        <div class="ch1-factor-route" data-route>${selectedRoute.steps.map((node, i) => `<div class="ch1-route-node" data-route-step><span class="ch1-route-step-index">步骤 ${i + 1}</span><div class="ch1-route-expression">${routeExpressionHtml(node)}</div></div>${i < selectedRoute.steps.length - 1 ? `<div class="ch1-route-arrow" aria-hidden="true">↓</div>` : ""}`).join("")}</div>
+        <div class="ch1-route-arrow" aria-hidden="true">↓</div>
+        <div class="ch1-factor-leaf-group"><span>当前数域中的不可约叶</span><div class="ch1-factor-leaves">${leafHtml(item)}</div></div>
+        <div class="ch1-factor-legend">${legendHtml(item)}</div>
+        <p class="ch1-factor-note" data-factor-note>${item.note}</p>
+      </div>`;
+      root.querySelector("[data-standard-a]").innerHTML = standardHtml(item.routes[0].leaves);
+      root.querySelector("[data-standard-b]").innerHTML = standardHtml(item.routes[1].leaves);
+      const normalizedA = JSON.stringify(standardLeaves(item.routes[0].leaves));
+      const normalizedB = JSON.stringify(standardLeaves(item.routes[1].leaves));
       root.querySelector("[data-unique]").innerHTML = normalizedA === normalizedB ? `<span class="ch1-status is-ok">标准叶多重集合一致</span>` : `<span class="ch1-status is-bad">叶集合不一致</span>`;
     }
     root.querySelectorAll("[data-domain]").forEach((button) => button.addEventListener("click", () => { domain = button.dataset.domain; selectButtons(root, "[data-domain]", button); paint(); }));
@@ -99,7 +132,18 @@
   function interactive5(el, section) {
     lab(el, "双路径因式树", section.interactive.description,
       `<button type="button" data-domain="Q" class="is-active">ℚ</button><button type="button" data-domain="R">ℝ</button><button type="button" data-domain="C">ℂ</button><span class="ch1-control-separator"></span><button type="button" data-poly="x4m1" class="is-active">x⁴−1</button><button type="button" data-poly="x2m2">x²−2</button><button type="button" data-poly="x2p1">x²+1</button><button type="button" data-poly="x4p4">x⁴+4</button>`,
-      `<div data-factor-tree></div><div class="ch1-two-col"><div><h4>当前拆分路线</h4><div class="ch1-controls"><button type="button" data-route-btn="0" class="is-active">路线 A</button><button type="button" data-route-btn="1">路线 B</button></div><div class="ch1-factor-route" data-route></div></div><div><h4>分别标准化，再比较</h4><div class="ch1-result-band" data-standard><div><span>路线 A 的不可约叶</span><strong data-standard-a></strong></div><div><span>路线 B 的不可约叶</span><strong data-standard-b></strong></div></div><div data-unique></div><p class="ch1-muted">两条路线独立计算；只有首一化、排序后的叶多重集合一致，唯一性检查才通过。</p></div></div>`);
+      `<div class="ch1-factor-workspace">
+        <section class="ch1-factor-route-panel">
+          <div class="ch1-factor-panel-head"><div><span>当前拆分过程</span><h4 data-route-label>路线 A</h4></div><div class="ch1-controls"><button type="button" data-route-btn="0" class="is-active">路线 A</button><button type="button" data-route-btn="1">路线 B</button></div></div>
+          <div data-factor-tree></div>
+        </section>
+        <section class="ch1-factor-compare-panel">
+          <div class="ch1-factor-panel-head"><div><span>独立标准化</span><h4>比较叶的多重集合</h4></div></div>
+          <div class="ch1-result-band ch1-standard-result" data-standard><div><span>路线 A</span><strong data-standard-a></strong></div><div><span>路线 B</span><strong data-standard-b></strong></div></div>
+          <div data-unique></div>
+          <p class="ch1-muted">每条路线先提出常数，再把不可约因式首一化、排序并合并重复项；最后比较因式及其重数。</p>
+        </section>
+      </div>`);
     mountFactorization(el);
   }
 

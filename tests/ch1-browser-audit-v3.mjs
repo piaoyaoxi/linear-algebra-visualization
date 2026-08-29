@@ -107,7 +107,10 @@ async function checkMathBoundaries(page, section) {
     const routeB = (await page.locator("#factorization-theorem-interactive .ch1-factor-route").textContent()) || "";
     const standards = await page.locator("[data-standard] strong").allTextContents();
     ensure(routeA !== routeB, "§5: the two x⁴+4 derivations are not independent");
-    ensure(standards.length === 2 && standards.every(Boolean), "§5: route leaves were not normalized independently");
+    ensure(standards.length === 2 && standards.every(Boolean) && standards[0].replace(/\s+/g, "") === standards[1].replace(/\s+/g, ""), "§5: route leaves were not normalized and sorted independently");
+    ensure((await page.locator("[data-route-step]").count()) >= 2, "§5: selected route does not expose its intermediate derivation");
+    ensure((await page.locator(".ch1-route-step-index").first().textContent()) === "步骤 1", "§5: route index is fused with the formula");
+    ensure((await page.locator(".ch1-route-factor-product").count()) >= 1, "§5: long factor products cannot wrap on narrow screens");
     ensure(/一致/.test((await page.locator("[data-unique]").textContent()) || ""), "§5: normalized leaf multisets disagree");
   } else if (section === "multiple-factors") {
     await page.locator("[data-a]").fill("-1");

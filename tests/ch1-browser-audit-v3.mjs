@@ -126,6 +126,7 @@ async function checkMathBoundaries(page, section) {
     ensure(/至少有一个实根/.test((await page.locator("[data-root-status]").textContent()) || ""), "§7: odd-degree zero-real-root case was accepted");
     await page.locator("[data-degree]").fill("4");
     ensure(/可以构造恰有 0 个/.test((await page.locator("[data-root-status]").textContent()) || ""), "§7: even-degree zero-real-root construction failed");
+    ensure((await page.locator("[data-canvas]").getAttribute("data-visual")) === "root-construction", "§7: valid root construction is shown as an empty axis");
   } else if (section === "rational-polynomials") {
     const values = await page.locator("[data-common-denominator], [data-cleared-poly], [data-content], [data-primitive]").allTextContents();
     ensure(values.length === 4 && values.every((value) => value.trim()), "§9: normalization workbench is incomplete");
@@ -291,6 +292,11 @@ async function operate(page, section, viewport, theme) {
   } else if (section === "polynomial-functions") {
     if (detail) await page.locator("#polynomial-functions-interactive .ch1-lab").screenshot({ path: path.join(outputDir, `${viewport.name}-${theme}-horner.png`) });
     await clickIf(page, '[data-mode="roots"]'); await clickIf(page, '[data-mode="interp"]');
+    ensure((await page.locator(".ch1-basis-values > span").count()) === 9 && (await page.locator(".ch1-basis-values > span.is-on").count()) === 3, "§7: Lagrange basis values at the nodes are missing");
+    await page.locator('[data-node-x="1"]').fill("0"); await page.locator('[data-node-x="1"]').dispatchEvent("change");
+    ensure(/横坐标必须互不相同/.test((await page.locator("[data-interp-error]").textContent()) || "") && await page.locator("[data-interp-output]").isHidden(), "§7: conflicting interpolation nodes leave a stale answer visible");
+    await page.locator('[data-node-x="1"]').fill("1"); await page.locator('[data-node-x="1"]').dispatchEvent("change");
+    ensure(await page.locator("[data-interp-output]").isVisible() && !/x2\+1/.test((await page.locator("[data-ch1-live-result]").textContent()) || ""), "§7: valid interpolation result or readable observation was not restored");
   } else if (section === "complex-real-factorization") {
     if (detail) await dragConjugate(page); await clickIf(page, '[data-mode="C"]');
     if (await page.locator("[data-re]").count()) await page.locator("[data-re]").fill("1.5");

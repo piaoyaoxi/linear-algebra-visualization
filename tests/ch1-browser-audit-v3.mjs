@@ -301,6 +301,8 @@ async function operate(page, section, viewport, theme) {
     if (detail) await dragConjugate(page); await clickIf(page, '[data-mode="C"]');
     if (await page.locator("[data-re]").count()) await page.locator("[data-re]").fill("1.5");
     ensure(/虚部/.test((await page.locator("[data-real-status]").textContent()) || ""), "§8: unlocked coefficient explanation missing");
+    ensure(/不属于 R\[x\]/.test((await page.locator("[data-observation]").textContent()) || ""), "§8: live observation does not identify the failed real-coefficient condition");
+    ensure(!/CONJUGATE ROOTS/.test((await page.locator(".ch1-motion-head").textContent()) || "") && !/x2[−+-]/.test((await page.locator("[data-ch1-live-result]").textContent()) || ""), "§8: English heading or flattened quadratic leaked into the student view");
   } else if (section === "rational-polynomials") {
     await clickIf(page, '[data-rational-example="quartic"]'); await clickIf(page, '[data-prime="2"]');
   } else if (section === "multivariate-polynomials") {

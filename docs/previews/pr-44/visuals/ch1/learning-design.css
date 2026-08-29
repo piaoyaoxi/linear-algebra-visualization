@@ -621,6 +621,169 @@
   align-items: start;
 }
 
+.ch1-section-factorization-theorem .ch1-factor-workspace {
+  display: grid;
+  grid-template-columns: minmax(0, 1.12fr) minmax(310px, 0.88fr);
+  gap: 20px;
+  align-items: start;
+}
+
+.ch1-section-factorization-theorem .ch1-factor-route-panel,
+.ch1-section-factorization-theorem .ch1-factor-compare-panel {
+  display: grid;
+  gap: 16px;
+  min-width: 0;
+  padding: 18px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: var(--surface-soft);
+}
+
+.ch1-section-factorization-theorem .ch1-factor-panel-head {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: end;
+  gap: 12px;
+}
+
+.ch1-section-factorization-theorem .ch1-factor-panel-head span,
+.ch1-section-factorization-theorem .ch1-factor-leaf-group > span {
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.ch1-section-factorization-theorem .ch1-factor-panel-head h4 {
+  margin: 3px 0 0;
+}
+
+.ch1-section-factorization-theorem .ch1-factor-tree {
+  gap: 9px;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+}
+
+.ch1-section-factorization-theorem .ch1-factor-route {
+  display: grid;
+  gap: 8px;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+}
+
+.ch1-section-factorization-theorem .ch1-route-node {
+  display: grid;
+  grid-template-columns: 64px minmax(0, 1fr);
+  gap: 12px;
+  align-items: center;
+  width: 100%;
+  min-width: 0;
+  padding: 11px 12px;
+  border: 1px solid var(--line);
+  border-radius: 11px;
+  background: var(--surface-solid);
+}
+
+.ch1-section-factorization-theorem .ch1-route-node > div {
+  min-width: 0;
+  overflow-x: auto;
+  overflow-y: hidden;
+  line-height: 1.6;
+  scrollbar-width: thin;
+}
+
+.ch1-section-factorization-theorem .ch1-route-factor-product {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 5px;
+}
+
+.ch1-section-factorization-theorem .ch1-route-factor-product > span:not(.ch1-product-dot) {
+  display: inline-flex;
+  white-space: nowrap;
+}
+
+.ch1-section-factorization-theorem .ch1-product-dot {
+  color: var(--muted);
+}
+
+.ch1-section-factorization-theorem .ch1-route-step-index {
+  color: var(--accent-strong);
+  font-size: 11px;
+  font-weight: 750;
+  letter-spacing: 0.03em;
+}
+
+.ch1-section-factorization-theorem .ch1-route-arrow {
+  justify-self: center;
+  width: auto;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: var(--accent-strong);
+  line-height: 1;
+}
+
+.ch1-section-factorization-theorem .ch1-factor-leaf-group {
+  display: grid;
+  gap: 8px;
+  padding-top: 3px;
+  text-align: center;
+}
+
+.ch1-section-factorization-theorem .ch1-factor-legend {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 8px 14px;
+  color: var(--muted);
+  font-size: 11.5px;
+}
+
+.ch1-section-factorization-theorem .ch1-factor-legend span::before {
+  display: inline-block;
+  width: 7px;
+  height: 7px;
+  margin-right: 6px;
+  border-radius: 50%;
+  background: var(--accent);
+  content: "";
+}
+
+.ch1-section-factorization-theorem .ch1-factor-legend .is-irred::before {
+  background: var(--coral, #d9835f);
+}
+
+.ch1-section-factorization-theorem .ch1-standard-result {
+  grid-template-columns: 1fr;
+}
+
+.ch1-section-factorization-theorem .ch1-standard-result > div {
+  gap: 9px;
+}
+
+.ch1-section-factorization-theorem .ch1-standard-result strong {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 7px;
+}
+
+.ch1-section-factorization-theorem .ch1-standard-factor {
+  display: inline-flex;
+  max-width: 100%;
+  padding: 6px 8px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--surface-solid);
+  overflow-x: auto;
+  overflow-y: hidden;
+}
+
 .ch1-section-multiple-factors .ch1-two-col > div:first-child {
   display: grid;
   gap: 12px;
@@ -684,6 +847,7 @@
   }
 
   .ch1-guided-lab .ch1-two-col,
+  .ch1-section-factorization-theorem .ch1-factor-workspace,
   .ch1-section-number-fields .ch1-two-col,
   .ch1-section-complex-real-factorization .ch1-two-col {
     grid-template-columns: 1fr;
@@ -711,6 +875,17 @@
 }
 
 @media (max-width: 760px) {
+  .ch1-section-factorization-theorem .ch1-factor-route-panel,
+  .ch1-section-factorization-theorem .ch1-factor-compare-panel {
+    padding: 14px;
+  }
+
+  .ch1-section-factorization-theorem .ch1-route-node {
+    grid-template-columns: 52px minmax(0, 1fr);
+    gap: 8px;
+    padding: 10px;
+  }
+
   .ch1-guided-lab {
     gap: 18px;
     padding: 16px;

@@ -1,0 +1,96 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta
+      name="description"
+      content="高等代数可视化：沿北大版教材，用动态几何与交互实验建立抽象结构的直觉。"
+    />
+    <meta name="theme-color" content="#f2f1ec" media="(prefers-color-scheme: light)" />
+    <meta name="theme-color" content="#111411" media="(prefers-color-scheme: dark)" />
+    <title>高等代数可视化</title>
+    <link rel="icon" href="data:," />
+    <link rel="stylesheet" href="./cover.css" />
+    <script defer src="./cover.js"></script>
+  </head>
+  <body>
+    <main class="cover" id="cover">
+      <header class="cover-header">
+        <a class="cover-brand" href="./index.html">
+          <span class="cover-brand-mark" aria-hidden="true">
+            <span>1</span><span>0</span><span>0</span><span>1</span>
+          </span>
+          <span>高等代数可视化</span>
+        </a>
+        <a class="cover-index-link" href="#chapters">课程目录</a>
+      </header>
+
+      <section class="cover-hero" aria-labelledby="coverTitle">
+        <div class="cover-copy">
+          <p class="cover-kicker">北大版《高等代数》伴学网站</p>
+          <h1 class="cover-title" id="coverTitle">
+            <span>看见</span>
+            <span>高等代数</span>
+          </h1>
+          <p class="cover-intro">沿教材，用动态几何与交互实验建立抽象结构的直觉。</p>
+          <div class="cover-actions">
+            <a class="cover-button is-primary" id="coverStart" href="./learn.html#ch1">从第一章开始</a>
+            <a class="cover-button is-secondary" href="./learn.html#guide">先看导学</a>
+          </div>
+        </div>
+
+        <figure class="transform-lab" id="transformLab" aria-labelledby="labTitle">
+          <figcaption class="transform-lab-header">
+            <div>
+              <span class="transform-lab-label">线性变换实验</span>
+              <strong id="labTitle">拖动基向量，改变整个空间</strong>
+            </div>
+            <button class="transform-reset" id="transformReset" type="button">重置</button>
+          </figcaption>
+
+          <div class="transform-stage" id="transformStage">
+            <canvas class="transform-canvas" id="transformCanvas" aria-hidden="true"></canvas>
+            <button
+              class="basis-handle is-first"
+              id="basisE1"
+              type="button"
+              aria-label="第一基向量 e₁。使用方向键移动"
+            >
+              <span>e₁</span>
+            </button>
+            <button
+              class="basis-handle is-second"
+              id="basisE2"
+              type="button"
+              aria-label="第二基向量 e₂。使用方向键移动"
+            >
+              <span>e₂</span>
+            </button>
+          </div>
+
+          <div class="transform-readout" aria-live="off">
+            <div class="matrix-readout" aria-label="当前变换矩阵">
+              <span class="matrix-name">A</span>
+              <span class="matrix-equals">=</span>
+              <span class="matrix-values">
+                <span id="matrixA">1.00</span>
+                <span id="matrixB">0.36</span>
+                <span id="matrixC">0.08</span>
+                <span id="matrixD">1.00</span>
+              </span>
+            </div>
+            <p class="det-readout">面积倍率 <strong id="determinantValue">0.97</strong></p>
+          </div>
+          <p class="sr-only" id="matrixStatus" aria-live="polite"></p>
+        </figure>
+      </section>
+
+      <nav class="cover-chapters" id="chapters" aria-label="全书章节">
+        <div class="cover-chapters-track" id="coverChapters">
+          <span class="cover-chapters-heading">全书十章</span>
+        </div>
+      </nav>
+    </main>
+  </body>
+</html>

@@ -44,7 +44,7 @@ defineChapter1Section("polynomial-divisibility", {
         { title: "达到停止条件", text: `若 ${texInline("f=0")} 或 ${texInline("\\deg f<\\deg g")}，取 ${texInline("q=0,r=f")} 即可。` },
         { title: "消去当前首项", text: `若当前余式首项为 ${texInline("ax^m")}，g 的首项为 ${texInline("bx^n")}，加入商项 ${texInline("(a/b)x^{m-n}")}。数域保证 ${texInline("a/b")} 合法。` },
         { title: "有限步终止", text: "相减后最高项消失，非零余式的次数严格下降；非负整数次数无法无限下降。" },
-        { title: "排除两组答案", text: `若 ${texInline("q_1g+r_1=q_2g+r_2")} 且两余式都低于 g，则 ${texInline("(q_1-q_2)g=r_2-r_1")}。商差非零时左边次数至少为 deg g，右边却低于 deg g，矛盾。` },
+        { title: "排除两组答案", text: `若 ${texInline("q_1g+r_1=q_2g+r_2")} 且两余式都低于 g，则 ${texInline("(q_1-q_2)g=r_2-r_1")}。商差非零时左边次数至少为 deg g，右边等于 0 或次数低于 deg g，矛盾。` },
       ],
     },
     definitions: [
@@ -68,6 +68,8 @@ defineChapter1Section("polynomial-divisibility", {
     title: "实验：标准多项式长除法",
     description: "逐步显示商项、乘回项、纵向相减与新余式，并始终保留 f=qg+r。",
     task: "先预测每一步的新商项，再播放消去；比较整除、非整除与分数系数三个示例。",
+    controlsTitle: "选择示例并推进除法",
+    controlsDescription: "先选整除类型，再用上一步、下一步或自动播放观察首项消去。",
     guide: [
       ["看首项", "用当前余式首项除以 g 的首项。"],
       ["乘回相减", "在同次项下方对齐，检查最高项恰好消失。"],

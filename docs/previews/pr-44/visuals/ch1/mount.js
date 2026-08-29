@@ -245,7 +245,6 @@
 
     const graph = document.createElement("details");
     graph.className = "ch1-graph-details";
-    graph.open = true;
     graph.innerHTML = `<summary><span>辅助观察：函数图像</span><small>图像只帮助感受结果形状；系数运算仍以系数带为准。</small></summary>`;
     graph.append(stage);
 

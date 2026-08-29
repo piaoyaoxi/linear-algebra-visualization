@@ -803,6 +803,130 @@
   align-items: start;
 }
 
+.ch1-section-polynomial-functions [data-eval-panel],
+.ch1-section-polynomial-functions [data-root-panel],
+.ch1-section-polynomial-functions [data-interp-panel],
+.ch1-section-polynomial-functions .ch1-interp-output {
+  display: grid;
+  gap: 14px;
+}
+
+.ch1-section-polynomial-functions [hidden] {
+  display: none !important;
+}
+
+.ch1-section-polynomial-functions .ch1-interpolation-nodes {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.ch1-section-polynomial-functions .ch1-interpolation-node-row {
+  display: grid;
+  grid-template-columns: 34px repeat(2, minmax(0, 1fr));
+  gap: 8px;
+  align-items: center;
+  padding: 10px;
+  border: 1px solid var(--line);
+  border-radius: 11px;
+  background: var(--surface-soft);
+}
+
+.ch1-section-polynomial-functions .ch1-interpolation-node-row > strong {
+  color: var(--accent-strong);
+  font-size: 13px;
+}
+
+.ch1-section-polynomial-functions .ch1-interpolation-node-row label {
+  display: grid;
+  grid-template-columns: 20px minmax(0, 1fr);
+  gap: 5px;
+  align-items: center;
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.ch1-section-polynomial-functions .ch1-interpolation-node-row input {
+  width: 100%;
+  min-width: 0;
+  padding: 7px 8px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--surface-solid);
+  color: var(--text);
+  font: inherit;
+}
+
+.ch1-section-polynomial-functions .ch1-interp-observation {
+  margin: 0;
+  padding: 11px 13px;
+  border-left: 3px solid var(--accent);
+  background: color-mix(in srgb, var(--accent) 7%, var(--surface-solid));
+  color: var(--muted);
+  line-height: 1.65;
+}
+
+.ch1-section-polynomial-functions .ch1-interpolation-bases {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.ch1-section-polynomial-functions .ch1-basis-card {
+  display: grid;
+  gap: 10px;
+  min-width: 0;
+  padding: 12px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: var(--surface-soft);
+}
+
+.ch1-section-polynomial-functions .ch1-basis-card > strong {
+  min-width: 0;
+  overflow-x: auto;
+  overflow-y: hidden;
+  scrollbar-width: thin;
+}
+
+.ch1-section-polynomial-functions .ch1-basis-values {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 6px;
+}
+
+.ch1-section-polynomial-functions .ch1-basis-values > span {
+  display: grid;
+  gap: 2px;
+  place-items: center;
+  padding: 6px 4px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  color: var(--muted);
+}
+
+.ch1-section-polynomial-functions .ch1-basis-values > span.is-on {
+  border-color: color-mix(in srgb, var(--accent) 50%, var(--line));
+  background: color-mix(in srgb, var(--accent) 10%, var(--surface-solid));
+  color: var(--accent-strong);
+}
+
+.ch1-section-polynomial-functions .ch1-basis-values small {
+  font-size: 10px;
+}
+
+.ch1-section-polynomial-functions .ch1-basis-card p {
+  display: grid;
+  gap: 5px;
+  margin: 0;
+  color: var(--text);
+  line-height: 1.6;
+}
+
+.ch1-section-polynomial-functions .ch1-basis-card p > span {
+  color: var(--muted);
+  font-size: 11px;
+  font-weight: 700;
+}
+
 .ch1-section-polynomial-functions .ch1-panel {
   order: 1;
 }
@@ -884,6 +1008,11 @@
 }
 
 @media (max-width: 760px) {
+  .ch1-section-polynomial-functions .ch1-interpolation-nodes,
+  .ch1-section-polynomial-functions .ch1-interpolation-bases {
+    grid-template-columns: 1fr;
+  }
+
   .ch1-section-factorization-theorem .ch1-factor-route-panel,
   .ch1-section-factorization-theorem .ch1-factor-compare-panel {
     padding: 14px;

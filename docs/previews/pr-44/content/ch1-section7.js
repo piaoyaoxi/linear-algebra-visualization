@@ -68,6 +68,8 @@ defineChapter1Section("polynomial-functions", {
     title: "实验：评价、根预算与插值",
     description: "在 Horner、不同根上界和三点 Lagrange 插值之间切换，所有计算都使用精确有理数。",
     task: "移动评价点检查余数定理；给 n 次多项式分配不同根；最后编辑三个互异节点并重建二次以下多项式。",
+    controlsTitle: "选择评价、根预算或插值",
+    controlsDescription: "三个模式共用评价这一主线：先算一个点，再分配零点，最后由三个点反向重建多项式。",
     guide: [
       ["评价", "用 Horner 账本算 f(a)，再判断 x−a 是否为因式。"],
       ["分配根", "每加入一个不同根，就消耗一个一次因式的次数。"],

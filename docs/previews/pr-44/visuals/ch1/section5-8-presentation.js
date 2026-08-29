@@ -232,15 +232,22 @@
   function mountPolynomialFunctions(root) {
     const state = { mode: "eval", p: M().poly([1, -2, 0, 1]), a: 1, degree: 3, roots: 2, nodes: [{ x: M().R(0), y: M().R(1) }, { x: M().R(1), y: M().R(2) }, { x: M().R(2), y: M().R(5) }] };
     const bounds = { xMin: -2.5, xMax: 3.5, yMin: -4, yMax: 10 };
+    const numberLabel = (value) => String(value).replace("-", "−");
+    const factorLabel = (value) => value === 0 ? "x" : (value > 0 ? `x−${value}` : `x+${Math.abs(value)}`);
     function paintEval() {
       const h = M().hornerSteps(state.p, M().parseR(state.a));
       root.querySelector("[data-eval-panel]").hidden = false; root.querySelector("[data-root-panel]").hidden = true; root.querySelector("[data-interp-panel]").hidden = true;
       root.querySelector("[data-eval-poly]").innerHTML = tex(M().formatPolyTex(state.p));
       root.querySelector("[data-a-value]").textContent = state.a;
       root.querySelector("[data-fa]").innerHTML = tex(M().formatRTex(h.value));
-      root.querySelector("[data-horner]").innerHTML = h.steps.map((s, i) => `<div class="${i === h.steps.length - 1 ? "is-current" : ""}"><span>${i + 1}</span><p>(${tex(M().formatRTex(s.before))})·${state.a}+${tex(M().formatRTex(s.coefficient))}=${tex(M().formatRTex(s.after))}</p></div>`).join("");
+      root.querySelector("[data-horner]").innerHTML = h.steps.map((s, i) => {
+        const negative = M().rToNum(s.coefficient) < 0;
+        const arithmetic = `(${M().formatRTex(s.before)})\\cdot(${M().formatRTex(M().parseR(state.a))})${negative ? "-" : "+"}${M().formatRTex(M().rAbs(s.coefficient))}=${M().formatRTex(s.after)}`;
+        return `<div class="${i === h.steps.length - 1 ? "is-current" : ""}"><span>${i + 1}</span><p>${tex(arithmetic)}</p></div>`;
+      }).join("");
       const isRoot = M().rIsZero(h.value);
-      const st = root.querySelector("[data-factor]"); st.className = `ch1-status ${isRoot ? "is-ok" : "is-warn"}`; st.textContent = isRoot ? `f(${state.a})=0，x−${state.a} 是因式` : `余式 f(${state.a})≠0`;
+      const st = root.querySelector("[data-factor]"); st.className = `ch1-status ${isRoot ? "is-ok" : "is-warn"}`; st.textContent = isRoot ? `f(${numberLabel(state.a)})=0，${factorLabel(state.a)} 是因式` : `余式 f(${numberLabel(state.a)})≠0`;
+      root.querySelector("[data-canvas]").dataset.visual = "evaluation";
       M().drawPolynomial(root.querySelector("[data-canvas]"), state.p, { bounds, points: [{ x: state.a, y: M().rToNum(h.value) }], caption: "评价点 (a,f(a))" });
     }
     function paintRoots() {
@@ -272,7 +279,17 @@
         remaining -= 2;
       }
       root.querySelector("[data-root-poly]").innerHTML = possible ? tex(M().formatPolyTex(p)) : "—";
-      M().drawRootAxis(root.querySelector("[data-canvas]"), roots.map((x, index) => ({ x, m: index === 0 && repeatedFirst ? 2 : 1, label: String(x) })), { bounds: { xMin: -4, xMax: 4, yMin: -1.4, yMax: 1.4 } });
+      if (possible) {
+        root.querySelector("[data-canvas]").dataset.visual = "root-construction";
+        M().drawPolynomial(root.querySelector("[data-canvas]"), p, {
+          bounds: { xMin: -4, xMax: 4, yMin: -8, yMax: 8 },
+          points: roots.map((x) => ({ x, y: 0 })),
+          caption: `精确构造 · ${state.degree} 次 · ${state.roots} 个不同实根`,
+        });
+      } else {
+        root.querySelector("[data-canvas]").dataset.visual = "invalid-root-budget";
+        M().drawRootAxis(root.querySelector("[data-canvas]"), [], { bounds: { xMin: -4, xMax: 4, yMin: -1.4, yMax: 1.4 } });
+      }
     }
     function readNodes() {
       return [0, 1, 2].map((i) => ({ x: M().parseR(root.querySelector(`[data-node-x="${i}"]`).value), y: M().parseR(root.querySelector(`[data-node-y="${i}"]`).value) }));
@@ -284,12 +301,20 @@
         state.nodes = readNodes();
         result = M().lagrangeInterpolation(state.nodes);
         root.querySelector("[data-interp-error]").textContent = "";
+        root.querySelector("[data-interp-output]").hidden = false;
       } catch (error) {
-        root.querySelector("[data-interp-error]").textContent = error.message.includes("distinct") ? "横坐标必须互不相同。" : "请输入合法有理数。";
+        const message = error.message.includes("distinct") ? "横坐标必须互不相同；当前无法构造插值多项式。" : "请输入合法有理数。";
+        root.querySelector("[data-interp-error]").textContent = message;
+        root.querySelector("[data-interp-observation]").textContent = message;
+        root.querySelector("[data-interp-output]").hidden = true;
+        root.querySelector("[data-canvas]").dataset.visual = "invalid-interpolation";
+        M().drawRootAxis(root.querySelector("[data-canvas]"), [], { bounds: { xMin: -4, xMax: 4, yMin: -1.4, yMax: 1.4 } });
         return;
       }
       root.querySelector("[data-interp-poly]").innerHTML = tex(M().formatPolyTex(result.polynomial));
-      root.querySelector("[data-bases]").innerHTML = result.bases.map((b, i) => `<div class="ch1-compare-card"><strong>${tex(`L_${i}(x)=${M().formatPolyTex(b.L)}`)}</strong><p>加权贡献：${tex(M().formatPolyTex(b.contribution))}</p></div>`).join("");
+      root.querySelector("[data-bases]").innerHTML = result.bases.map((b, i) => `<div class="ch1-basis-card"><strong>${tex(`L_${i}(x)=${M().formatPolyTex(b.L)}`)}</strong><div class="ch1-basis-values" aria-label="L_${i} 在三个节点的值">${[0, 1, 2].map((nodeIndex) => `<span class="${nodeIndex === i ? "is-on" : ""}"><small>x${["₀", "₁", "₂"][nodeIndex]}</small><b>${nodeIndex === i ? 1 : 0}</b></span>`).join("")}</div><p><span>加权贡献</span>${tex(M().formatPolyTex(b.contribution))}</p></div>`).join("");
+      root.querySelector("[data-interp-observation]").textContent = "三个横坐标互异的节点确定唯一的二次以下多项式；每个 Lagrange 基只在自己的节点取 1。";
+      root.querySelector("[data-canvas]").dataset.visual = "interpolation";
       M().drawPolynomial(root.querySelector("[data-canvas]"), result.polynomial, { bounds, points: state.nodes.map((n) => ({ x: M().rToNum(n.x), y: M().rToNum(n.y) })), caption: "Lagrange 插值 · 节点横坐标互异" });
     }
     function paint() { if (state.mode === "eval") paintEval(); else if (state.mode === "roots") paintRoots(); else paintInterpolation(); }
@@ -306,7 +331,33 @@
   function interactive7(el, section) {
     lab(el, "评价、根数与插值", section.interactive.description,
       `<button type="button" data-mode="eval" class="is-active">评价 / Horner</button><button type="button" data-mode="roots">根数上界</button><button type="button" data-mode="interp">Lagrange 插值</button>`,
-      `<div class="ch1-two-col"><div class="ch1-stage"><canvas data-canvas aria-label="多项式函数实验图"></canvas></div><div class="ch1-panel"><section data-eval-panel><div class="ch1-controls"><button type="button" data-eval-preset="default">三次示例</button><button type="button" data-eval-preset="root">有整数根示例</button></div><label class="ch1-slider-row"><span>a</span><input data-a type="range" min="-2" max="3" step="1" value="1"><output data-a-value></output></label><div class="ch1-equation-grid"><div><span>f</span><strong data-eval-poly></strong></div><div><span>f(a)</span><strong data-fa></strong></div></div><div data-factor class="ch1-status"></div><div class="ch1-ledger" data-horner></div></section><section data-root-panel hidden><label class="ch1-slider-row"><span>次数 n</span><input data-degree type="range" min="1" max="6" value="3"><output data-degree-value></output></label><label class="ch1-slider-row"><span>不同实根数 m</span><input data-root-count type="range" min="0" max="7" value="2"><output data-roots-value></output></label><div data-root-status class="ch1-status"></div><div class="ch1-callout"><strong>精确构造</strong><p data-root-poly></p><p class="ch1-muted">剩余偶数次数用 x²+1 填充；需要一个额外奇数次数时，提高已有根的重数，避免产生新实根。</p></div></section><section data-interp-panel hidden><div class="ch1-node-grid">${[0,1,2].map((i) => `<label>节点 ${i}<span>x</span><input type="text" value="${i}" data-node-x="${i}"><span>y</span><input type="text" value="${[1,2,5][i]}" data-node-y="${i}"></label>`).join("")}</div><p class="ch1-error" data-interp-error aria-live="polite"></p><div class="ch1-result-band"><div><span>插值多项式</span><strong data-interp-poly></strong></div></div><div class="ch1-compare" data-bases></div></section></div></div>`);
+      `<div class="ch1-two-col">
+        <div class="ch1-stage"><canvas data-canvas aria-label="多项式函数实验图"></canvas></div>
+        <div class="ch1-panel">
+          <section data-eval-panel>
+            <div class="ch1-controls"><button type="button" data-eval-preset="default">三次示例</button><button type="button" data-eval-preset="root">有整数根示例</button></div>
+            <label class="ch1-slider-row"><span>评价点 a</span><input data-a type="range" min="-2" max="3" step="1" value="1"><output data-a-value></output></label>
+            <div class="ch1-equation-grid"><div><span>f</span><strong data-eval-poly></strong></div><div><span>f(a)</span><strong data-fa></strong></div></div>
+            <div data-factor class="ch1-status"></div>
+            <h4>Horner 累积账本</h4><div class="ch1-ledger" data-horner></div>
+          </section>
+          <section data-root-panel hidden>
+            <label class="ch1-slider-row"><span>次数 n</span><input data-degree type="range" min="1" max="6" value="3"><output data-degree-value></output></label>
+            <label class="ch1-slider-row"><span>不同实根数 m</span><input data-root-count type="range" min="0" max="7" value="2"><output data-roots-value></output></label>
+            <div data-root-status class="ch1-status"></div>
+            <div class="ch1-callout"><strong>精确构造</strong><p data-root-poly></p><p class="ch1-muted">剩余偶数次数用 x²+1 填充；需要一个额外奇数次数时，提高已有根的重数，避免产生新实根。</p></div>
+          </section>
+          <section data-interp-panel hidden>
+            <div class="ch1-interpolation-nodes">${[0, 1, 2].map((i) => `<div class="ch1-interpolation-node-row"><strong>P${["₀", "₁", "₂"][i]}</strong><label><span>x${["₀", "₁", "₂"][i]}</span><input type="text" value="${i}" data-node-x="${i}" aria-label="P${i} 的横坐标"></label><label><span>y${["₀", "₁", "₂"][i]}</span><input type="text" value="${[1, 2, 5][i]}" data-node-y="${i}" aria-label="P${i} 的纵坐标"></label></div>`).join("")}</div>
+            <p class="ch1-error" data-interp-error aria-live="polite"></p>
+            <p class="ch1-interp-observation" data-interp-observation>三个横坐标互异的节点确定唯一的二次以下多项式；每个 Lagrange 基只在自己的节点取 1。</p>
+            <div class="ch1-interp-output" data-interp-output>
+              <div class="ch1-result-band"><div><span>插值多项式</span><strong data-interp-poly></strong></div></div>
+              <div class="ch1-compare ch1-interpolation-bases" data-bases></div>
+            </div>
+          </section>
+        </div>
+      </div>`);
     mountPolynomialFunctions(el);
   }
 

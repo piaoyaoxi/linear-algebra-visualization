@@ -197,6 +197,15 @@
   display: none;
 }
 
+.ch1-conjugate-observation {
+  margin: 0;
+  padding: 11px 13px;
+  border-left: 3px solid var(--accent);
+  background: color-mix(in srgb, var(--accent) 7%, var(--surface-solid));
+  color: var(--muted);
+  line-height: 1.65;
+}
+
 @media (max-width: 1040px) {
   .ch1-motion-grid {
     grid-template-columns: 1fr;

@@ -242,11 +242,6 @@
 }
 
 .ch1-live-conclusion > [data-ch1-live-result] {
-  display: none;
-}
-
-.ch1-live-conclusion > small {
-  grid-column: 2;
   margin: 0;
   color: var(--text);
   font-size: 15px;
@@ -423,6 +418,199 @@
   background: color-mix(in srgb, var(--coral, #d9835f) 13%, var(--surface-solid));
 }
 
+/* §1: one closure test followed by one field-extension comparison. */
+.ch1-field-check {
+  display: grid;
+  grid-template-columns: minmax(0, 1.15fr) minmax(280px, 0.85fr);
+  gap: 16px;
+  align-items: stretch;
+}
+
+.ch1-field-summary {
+  display: grid;
+  gap: 14px;
+  min-width: 0;
+}
+
+.ch1-closure-card {
+  display: grid;
+  align-content: start;
+  gap: 12px;
+  min-width: 0;
+  padding: 18px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: var(--surface-soft);
+}
+
+.ch1-closure-card > span,
+.ch1-factor-workbench header span {
+  color: var(--accent-strong);
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+}
+
+.ch1-closure-card > p,
+.ch1-factor-workbench header p,
+.ch1-field-stage p {
+  margin: 0;
+  color: var(--muted);
+  line-height: 1.6;
+}
+
+.ch1-closure-formula {
+  display: grid;
+  align-content: center;
+  min-height: 118px;
+  overflow-x: auto;
+  padding: 16px;
+  border: 1px solid color-mix(in srgb, var(--accent) 24%, var(--line));
+  border-radius: 12px;
+  background: var(--surface-solid);
+}
+
+.ch1-closure-formula .tex-display {
+  margin: 0;
+}
+
+.ch1-factor-workbench {
+  display: grid;
+  gap: 16px;
+  padding: 18px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: var(--surface-solid);
+}
+
+.ch1-factor-workbench > header {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 14px 22px;
+  align-items: end;
+  justify-content: space-between;
+}
+
+.ch1-factor-workbench header h4 {
+  margin: 4px 0;
+  font-size: clamp(18px, 1.8vw, 21px);
+}
+
+.ch1-polynomial-controls {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.ch1-polynomial-controls button {
+  min-height: 38px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  padding: 8px 13px;
+  background: var(--surface-soft);
+  color: var(--text);
+  font: inherit;
+  font-size: 13px;
+  font-weight: 650;
+  cursor: pointer;
+  transition: border-color 160ms ease, background 160ms ease, color 160ms ease;
+}
+
+.ch1-polynomial-controls button:hover,
+.ch1-polynomial-controls button.is-active {
+  border-color: color-mix(in srgb, var(--accent) 50%, var(--line));
+  background: color-mix(in srgb, var(--accent) 12%, var(--surface-solid));
+  color: var(--accent-strong);
+}
+
+.ch1-polynomial-controls button:focus-visible {
+  outline: 2px solid color-mix(in srgb, var(--accent) 65%, transparent);
+  outline-offset: 2px;
+}
+
+.ch1-polynomial-focus {
+  display: grid;
+  place-items: center;
+  min-height: 72px;
+  padding: 12px;
+  border-block: 1px solid var(--line);
+  color: var(--text);
+  font-size: clamp(18px, 2vw, 23px);
+}
+
+.ch1-polynomial-focus .tex-display {
+  margin: 0;
+}
+
+.ch1-field-track {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 18px minmax(0, 1fr) 18px minmax(0, 1fr) 18px minmax(0, 1fr);
+  gap: 8px;
+  align-items: stretch;
+}
+
+.ch1-domain-link {
+  display: grid;
+  place-items: center;
+  color: var(--muted);
+  font-size: 11px;
+  font-weight: 750;
+}
+
+.ch1-field-stage {
+  display: grid;
+  align-content: start;
+  gap: 8px;
+  min-width: 0;
+  padding: 14px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: var(--surface-soft);
+}
+
+.ch1-field-stage > span {
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 750;
+}
+
+.ch1-field-stage > strong {
+  font-size: 14px;
+}
+
+.ch1-field-stage > div {
+  min-height: 46px;
+  overflow-x: auto;
+  color: var(--text);
+  line-height: 1.55;
+}
+
+.ch1-field-stage p {
+  font-size: 12.5px;
+}
+
+.ch1-field-stage.is-current {
+  border-color: color-mix(in srgb, var(--accent) 64%, var(--line));
+  background: color-mix(in srgb, var(--accent) 10%, var(--surface-solid));
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--accent) 18%, transparent);
+}
+
+.ch1-field-stage.is-outside > strong {
+  color: var(--coral, #b75c3a);
+}
+
+.ch1-field-stage.is-reducible > strong {
+  color: var(--accent-strong);
+}
+
+.ch1-current-factor {
+  margin: 0;
+  padding: 12px 14px;
+  border-left: 3px solid var(--accent);
+  background: color-mix(in srgb, var(--accent) 7%, var(--surface-solid));
+  line-height: 1.65;
+}
+
 /* Section-specific balance fixes. */
 .ch1-section-number-fields .ch1-two-col {
   grid-template-columns: minmax(0, 1.18fr) minmax(300px, 0.82fr);
@@ -433,14 +621,310 @@
   align-items: start;
 }
 
+.ch1-section-factorization-theorem .ch1-factor-workspace {
+  display: grid;
+  grid-template-columns: minmax(0, 1.12fr) minmax(310px, 0.88fr);
+  gap: 20px;
+  align-items: start;
+}
+
+.ch1-section-factorization-theorem .ch1-factor-route-panel,
+.ch1-section-factorization-theorem .ch1-factor-compare-panel {
+  display: grid;
+  gap: 16px;
+  min-width: 0;
+  padding: 18px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: var(--surface-soft);
+}
+
+.ch1-section-factorization-theorem .ch1-factor-panel-head {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: end;
+  gap: 12px;
+}
+
+.ch1-section-factorization-theorem .ch1-factor-panel-head span,
+.ch1-section-factorization-theorem .ch1-factor-leaf-group > span {
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.ch1-section-factorization-theorem .ch1-factor-panel-head h4 {
+  margin: 3px 0 0;
+}
+
+.ch1-section-factorization-theorem .ch1-factor-tree {
+  gap: 9px;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+}
+
+.ch1-section-factorization-theorem .ch1-factor-route {
+  display: grid;
+  gap: 8px;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+}
+
+.ch1-section-factorization-theorem .ch1-route-node {
+  display: grid;
+  grid-template-columns: 64px minmax(0, 1fr);
+  gap: 12px;
+  align-items: center;
+  width: 100%;
+  min-width: 0;
+  padding: 11px 12px;
+  border: 1px solid var(--line);
+  border-radius: 11px;
+  background: var(--surface-solid);
+}
+
+.ch1-section-factorization-theorem .ch1-route-node > div {
+  min-width: 0;
+  overflow-x: auto;
+  overflow-y: hidden;
+  line-height: 1.6;
+  scrollbar-width: thin;
+}
+
+.ch1-section-factorization-theorem .ch1-route-factor-product {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 5px;
+}
+
+.ch1-section-factorization-theorem .ch1-route-factor-product > span:not(.ch1-product-dot) {
+  display: inline-flex;
+  white-space: nowrap;
+}
+
+.ch1-section-factorization-theorem .ch1-product-dot {
+  color: var(--muted);
+}
+
+.ch1-section-factorization-theorem .ch1-route-step-index {
+  color: var(--accent-strong);
+  font-size: 11px;
+  font-weight: 750;
+  letter-spacing: 0.03em;
+}
+
+.ch1-section-factorization-theorem .ch1-route-arrow {
+  justify-self: center;
+  width: auto;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: var(--accent-strong);
+  line-height: 1;
+}
+
+.ch1-section-factorization-theorem .ch1-factor-leaf-group {
+  display: grid;
+  gap: 8px;
+  padding-top: 3px;
+  text-align: center;
+}
+
+.ch1-section-factorization-theorem .ch1-factor-legend {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 8px 14px;
+  color: var(--muted);
+  font-size: 11.5px;
+}
+
+.ch1-section-factorization-theorem .ch1-factor-legend span::before {
+  display: inline-block;
+  width: 7px;
+  height: 7px;
+  margin-right: 6px;
+  border-radius: 50%;
+  background: var(--accent);
+  content: "";
+}
+
+.ch1-section-factorization-theorem .ch1-factor-legend .is-irred::before {
+  background: var(--coral, #d9835f);
+}
+
+.ch1-section-factorization-theorem .ch1-standard-result {
+  grid-template-columns: 1fr;
+}
+
+.ch1-section-factorization-theorem .ch1-standard-result > div {
+  gap: 9px;
+}
+
+.ch1-section-factorization-theorem .ch1-standard-result strong {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 7px;
+}
+
+.ch1-section-factorization-theorem .ch1-standard-factor {
+  display: inline-flex;
+  max-width: 100%;
+  padding: 6px 8px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--surface-solid);
+  overflow-x: auto;
+  overflow-y: hidden;
+}
+
 .ch1-section-multiple-factors .ch1-two-col > div:first-child {
   display: grid;
   gap: 12px;
 }
 
+.ch1-section-multiple-factors .ch1-multiplicity-observation {
+  margin: 0;
+  padding: 11px 13px;
+  border-left: 3px solid var(--accent);
+  background: color-mix(in srgb, var(--accent) 7%, var(--surface-solid));
+  color: var(--muted);
+  line-height: 1.65;
+}
+
 .ch1-section-polynomial-functions .ch1-two-col {
   grid-template-columns: 1fr;
   align-items: start;
+}
+
+.ch1-section-polynomial-functions [data-eval-panel],
+.ch1-section-polynomial-functions [data-root-panel],
+.ch1-section-polynomial-functions [data-interp-panel],
+.ch1-section-polynomial-functions .ch1-interp-output {
+  display: grid;
+  gap: 14px;
+}
+
+.ch1-section-polynomial-functions [hidden] {
+  display: none !important;
+}
+
+.ch1-section-polynomial-functions .ch1-interpolation-nodes {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.ch1-section-polynomial-functions .ch1-interpolation-node-row {
+  display: grid;
+  grid-template-columns: 34px repeat(2, minmax(0, 1fr));
+  gap: 8px;
+  align-items: center;
+  padding: 10px;
+  border: 1px solid var(--line);
+  border-radius: 11px;
+  background: var(--surface-soft);
+}
+
+.ch1-section-polynomial-functions .ch1-interpolation-node-row > strong {
+  color: var(--accent-strong);
+  font-size: 13px;
+}
+
+.ch1-section-polynomial-functions .ch1-interpolation-node-row label {
+  display: grid;
+  grid-template-columns: 20px minmax(0, 1fr);
+  gap: 5px;
+  align-items: center;
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.ch1-section-polynomial-functions .ch1-interpolation-node-row input {
+  width: 100%;
+  min-width: 0;
+  padding: 7px 8px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--surface-solid);
+  color: var(--text);
+  font: inherit;
+}
+
+.ch1-section-polynomial-functions .ch1-interp-observation {
+  margin: 0;
+  padding: 11px 13px;
+  border-left: 3px solid var(--accent);
+  background: color-mix(in srgb, var(--accent) 7%, var(--surface-solid));
+  color: var(--muted);
+  line-height: 1.65;
+}
+
+.ch1-section-polynomial-functions .ch1-interpolation-bases {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.ch1-section-polynomial-functions .ch1-basis-card {
+  display: grid;
+  gap: 10px;
+  min-width: 0;
+  padding: 12px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: var(--surface-soft);
+}
+
+.ch1-section-polynomial-functions .ch1-basis-card > strong {
+  min-width: 0;
+  overflow-x: auto;
+  overflow-y: hidden;
+  scrollbar-width: thin;
+}
+
+.ch1-section-polynomial-functions .ch1-basis-values {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 6px;
+}
+
+.ch1-section-polynomial-functions .ch1-basis-values > span {
+  display: grid;
+  gap: 2px;
+  place-items: center;
+  padding: 6px 4px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  color: var(--muted);
+}
+
+.ch1-section-polynomial-functions .ch1-basis-values > span.is-on {
+  border-color: color-mix(in srgb, var(--accent) 50%, var(--line));
+  background: color-mix(in srgb, var(--accent) 10%, var(--surface-solid));
+  color: var(--accent-strong);
+}
+
+.ch1-section-polynomial-functions .ch1-basis-values small {
+  font-size: 10px;
+}
+
+.ch1-section-polynomial-functions .ch1-basis-card p {
+  display: grid;
+  gap: 5px;
+  margin: 0;
+  color: var(--text);
+  line-height: 1.6;
+}
+
+.ch1-section-polynomial-functions .ch1-basis-card p > span {
+  color: var(--muted);
+  font-size: 11px;
+  font-weight: 700;
 }
 
 .ch1-section-polynomial-functions .ch1-panel {
@@ -496,6 +980,7 @@
   }
 
   .ch1-guided-lab .ch1-two-col,
+  .ch1-section-factorization-theorem .ch1-factor-workspace,
   .ch1-section-number-fields .ch1-two-col,
   .ch1-section-complex-real-factorization .ch1-two-col {
     grid-template-columns: 1fr;
@@ -508,9 +993,37 @@
   .ch1-coeff-analysis-grid {
     grid-template-columns: 1fr;
   }
+
+  .ch1-field-check {
+    grid-template-columns: 1fr;
+  }
+
+  .ch1-field-track {
+    grid-template-columns: 1fr;
+  }
+
+  .ch1-domain-link {
+    min-height: 18px;
+  }
 }
 
 @media (max-width: 760px) {
+  .ch1-section-polynomial-functions .ch1-interpolation-nodes,
+  .ch1-section-polynomial-functions .ch1-interpolation-bases {
+    grid-template-columns: 1fr;
+  }
+
+  .ch1-section-factorization-theorem .ch1-factor-route-panel,
+  .ch1-section-factorization-theorem .ch1-factor-compare-panel {
+    padding: 14px;
+  }
+
+  .ch1-section-factorization-theorem .ch1-route-node {
+    grid-template-columns: 52px minmax(0, 1fr);
+    gap: 8px;
+    padding: 10px;
+  }
+
   .ch1-guided-lab {
     gap: 18px;
     padding: 16px;
@@ -533,10 +1046,6 @@
     grid-template-columns: 1fr;
     gap: 12px;
     padding: 15px;
-  }
-
-  .ch1-live-conclusion > small {
-    grid-column: 1;
   }
 
   .ch1-coeff-card .ch1-strip {
@@ -574,6 +1083,86 @@
     height: 250px;
     min-height: 250px;
     max-height: 250px;
+  }
+
+  .ch1-factor-workbench,
+  .ch1-closure-card {
+    padding: 14px;
+  }
+
+  .ch1-factor-workbench > header {
+    align-items: start;
+  }
+
+  .ch1-polynomial-controls {
+    width: 100%;
+  }
+}
+
+.ch1-panel-head {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 14px 24px;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.ch1-panel-head span {
+  color: var(--accent-strong);
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.09em;
+}
+
+.ch1-panel-head h4 {
+  margin: 5px 0 0;
+  font-size: 20px;
+}
+
+.ch1-primitive-workbench,
+.ch1-vieta-workbench,
+.ch1-coefficient-aggregation {
+  display: grid;
+  gap: 16px;
+}
+
+.ch1-coefficient-aggregation {
+  margin-top: 20px;
+  padding-top: 20px;
+  border-top: 1px solid var(--line);
+}
+
+.ch1-vieta-workbench {
+  margin-top: 18px;
+}
+
+.ch1-vieta-grid {
+  display: grid;
+  grid-template-columns: minmax(230px, 0.75fr) minmax(0, 1.25fr);
+  gap: 16px;
+  align-items: start;
+}
+
+.ch1-vieta-workbench .ch1-node-grid {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.ch1-vieta-workbench .ch1-node-grid label {
+  display: grid;
+  gap: 7px;
+  color: var(--muted);
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.ch1-vieta-workbench .ch1-node-grid input {
+  width: 100%;
+}
+
+@media (max-width: 760px) {
+  .ch1-vieta-grid,
+  .ch1-vieta-workbench .ch1-node-grid {
+    grid-template-columns: 1fr;
   }
 }
 
@@ -626,5 +1215,224 @@
   .ch1-guided-lab *::before,
   .ch1-guided-lab *::after {
     scroll-behavior: auto !important;
+  }
+}
+
+/* Chapter-level reading map: five units instead of an undifferentiated card wall. */
+.chapter-unit-list {
+  display: grid;
+  gap: 30px;
+}
+
+.chapter-unit {
+  display: grid;
+  gap: 16px;
+  padding-top: 22px;
+  border-top: 1px solid var(--line);
+}
+
+.chapter-unit:first-child {
+  padding-top: 0;
+  border-top: 0;
+}
+
+.chapter-unit-head {
+  display: grid;
+  grid-template-columns: 54px minmax(0, 1fr);
+  gap: 16px;
+  align-items: start;
+}
+
+.chapter-unit-head > span {
+  color: var(--accent-strong);
+  font: 720 30px/1 Georgia, "Times New Roman", serif;
+  letter-spacing: -0.04em;
+}
+
+.chapter-unit-head h3 {
+  margin: 3px 0 6px;
+  font-size: clamp(20px, 2.2vw, 27px);
+}
+
+.chapter-unit-head p {
+  max-width: 72ch;
+  margin: 0;
+  color: var(--muted);
+  line-height: 1.75;
+}
+
+/* Formal reading sequence: observed phenomenon -> theorem -> proof -> boundary. */
+.ch1-experiment-bridge,
+.ch1-boundary-case {
+  display: grid;
+  grid-template-columns: 155px minmax(0, 1fr);
+  gap: 8px 18px;
+  padding: 18px 20px;
+  border-left: 3px solid var(--accent);
+  background: var(--surface-soft);
+}
+
+.ch1-experiment-bridge > span,
+.ch1-boundary-case > span {
+  grid-row: 1 / span 2;
+  color: var(--accent-strong);
+  font-size: 13px;
+  font-weight: 780;
+  letter-spacing: 0.04em;
+}
+
+.ch1-experiment-bridge > strong,
+.ch1-boundary-case > strong {
+  color: var(--text);
+  font-size: 17px;
+}
+
+.ch1-experiment-bridge > p,
+.ch1-boundary-case > p {
+  margin: 0;
+  color: var(--muted);
+  line-height: 1.8;
+}
+
+.ch1-boundary-case {
+  border-left-color: var(--coral, #c66f52);
+}
+
+.ch1-boundary-case > span {
+  color: var(--coral, #a9573c);
+}
+
+.ch1-theorem-block {
+  position: relative;
+  padding: 24px 26px 22px;
+  overflow: hidden;
+  border: 1px solid color-mix(in srgb, var(--accent) 34%, var(--line));
+  border-radius: var(--radius);
+  background: var(--surface-solid);
+}
+
+.ch1-theorem-block::before {
+  position: absolute;
+  inset: 0 auto 0 0;
+  width: 5px;
+  background: var(--accent);
+  content: "";
+}
+
+.ch1-theorem-label {
+  margin-bottom: 7px;
+  color: var(--accent-strong);
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.ch1-theorem-block h3 {
+  margin: 0 0 10px;
+  font-size: clamp(20px, 2.4vw, 28px);
+}
+
+.ch1-theorem-statement {
+  color: var(--text);
+  font-size: 16px;
+  line-height: 1.9;
+}
+
+.ch1-proof-spine {
+  display: grid;
+  grid-template-columns: minmax(190px, 0.72fr) minmax(0, 1.6fr);
+  gap: 24px;
+  padding: 22px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: var(--surface-solid);
+}
+
+.ch1-proof-spine header > span {
+  color: var(--accent-strong);
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+}
+
+.ch1-proof-spine header h3 {
+  margin: 8px 0 10px;
+  font-size: 21px;
+}
+
+.ch1-proof-spine header p {
+  margin: 0;
+  color: var(--muted);
+  line-height: 1.75;
+}
+
+.ch1-proof-spine ol {
+  display: grid;
+  gap: 0;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.ch1-proof-spine li {
+  display: grid;
+  grid-template-columns: 30px minmax(0, 1fr);
+  gap: 12px;
+  padding: 0 0 16px;
+}
+
+.ch1-proof-spine li:last-child {
+  padding-bottom: 0;
+}
+
+.ch1-proof-spine li > span {
+  display: grid;
+  width: 28px;
+  height: 28px;
+  place-items: center;
+  border: 1px solid color-mix(in srgb, var(--accent) 35%, var(--line));
+  border-radius: 50%;
+  color: var(--accent-strong);
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.ch1-proof-spine li strong {
+  display: block;
+  margin-bottom: 4px;
+  color: var(--text);
+}
+
+.ch1-proof-spine li p {
+  margin: 0;
+  color: var(--muted);
+  line-height: 1.75;
+}
+
+@media (max-width: 760px) {
+  .chapter-unit-head,
+  .ch1-proof-spine,
+  .ch1-experiment-bridge,
+  .ch1-boundary-case {
+    grid-template-columns: 1fr;
+  }
+
+  .chapter-unit-head {
+    gap: 6px;
+  }
+
+  .chapter-unit-head > span {
+    font-size: 23px;
+  }
+
+  .ch1-experiment-bridge > span,
+  .ch1-boundary-case > span {
+    grid-row: auto;
+  }
+
+  .ch1-theorem-block,
+  .ch1-proof-spine {
+    padding: 18px;
   }
 }

@@ -17,7 +17,10 @@ const viewports = [
 const themes = ["light", "dark"];
 
 await fs.mkdir(outputDir, { recursive: true });
-const browser = await chromium.launch({ headless: true });
+const browser = await chromium.launch({
+  headless: true,
+  ...(process.env.CH1_BROWSER_EXECUTABLE ? { executablePath: process.env.CH1_BROWSER_EXECUTABLE } : {}),
+});
 const report = [];
 const ensure = (condition, message) => { if (!condition) throw new Error(message); };
 
@@ -40,10 +43,12 @@ async function checkMath(page, section) {
     }).length;
     const outsideMath = lab?.cloneNode(true);
     outsideMath?.querySelectorAll(".tex").forEach((node) => node.remove());
-    return { boxed, wrappers: wrappers.length, raw: /\\frac|\^\{|_\{/.test(outsideMath?.textContent || "") };
+    const rawText = outsideMath?.textContent || "";
+    const rawMatch = rawText.match(/.{0,50}(?:\\frac|\^\{|_\{).{0,80}/s);
+    return { boxed, wrappers: wrappers.length, raw: Boolean(rawMatch), rawSnippet: rawMatch?.[0] || "" };
   }, section);
   ensure(result.boxed === 0, `${section}: ${result.boxed}/${result.wrappers} formulas still have chip styling`);
-  ensure(!result.raw, `${section}: raw LaTeX exists outside rendered formulas`);
+  ensure(!result.raw, `${section}: raw LaTeX exists outside rendered formulas (${result.rawSnippet.replace(/\s+/g, " ")})`);
 }
 
 async function checkVisibleText(page, section) {
@@ -59,6 +64,90 @@ async function checkVisibleText(page, section) {
     return { clipped };
   }, section);
   ensure(result.clipped.length === 0, `${section}: clipped visible text ${result.clipped.join(" | ")}`);
+}
+
+async function checkLearningArchitecture(page, section) {
+  const result = await page.evaluate((sectionId) => {
+    const interactive = document.querySelector(`#${CSS.escape(sectionId)}-interactive`);
+    const formal = document.querySelector(`#${CSS.escape(sectionId)}-formal`);
+    const example = document.querySelector(`#${CSS.escape(sectionId)}-example`);
+    const challenge = example?.querySelector("[data-example-challenge]");
+    const question = challenge?.querySelector(".example-challenge-question");
+    const explanation = challenge?.querySelector("[data-example-explanation]");
+    const liveObservation = interactive?.querySelector("[data-ch1-live-result]");
+    return {
+      experimentBeforeTheory: Boolean(interactive && formal && (interactive.compareDocumentPosition(formal) & Node.DOCUMENT_POSITION_FOLLOWING)),
+      bridge: Boolean(formal?.querySelector(".ch1-experiment-bridge")),
+      theorem: Boolean(formal?.querySelector(".ch1-theorem-block")),
+      proofSteps: formal?.querySelectorAll(".ch1-proof-spine li").length || 0,
+      boundary: Boolean(formal?.querySelector(".ch1-boundary-case")),
+      challenge: Boolean(challenge),
+      questionVisible: Boolean(question && question.getClientRects().length),
+      answerHidden: Boolean(explanation?.hidden),
+      liveObservationVisible: Boolean(liveObservation && liveObservation.getClientRects().length && liveObservation.textContent?.trim()),
+    };
+  }, section);
+  ensure(result.experimentBeforeTheory, `${section}: experiment must appear before theory`);
+  ensure(result.bridge && result.theorem && result.proofSteps >= 4 && result.boundary, `${section}: deep theory structure is incomplete`);
+  ensure(result.challenge && result.questionVisible && result.answerHidden, `${section}: representative example is not properly gated`);
+  ensure(result.liveObservationVisible, `${section}: current observation is hidden or empty`);
+}
+
+async function checkMathBoundaries(page, section) {
+  if (section === "number-fields") {
+    await clickIf(page, '[data-domain="Q2"]');
+    await clickIf(page, '[data-polynomial="x2msqrt2"]');
+    const stage = page.locator('[data-field-stage="Q2"]');
+    ensure(/不可约/.test((await stage.textContent()) || ""), "§1: x²−√2 is not marked irreducible over Q(√2)");
+  } else if (section === "factorization-theorem") {
+    await clickIf(page, '[data-domain="Q"]');
+    await clickIf(page, '[data-poly="x4p4"]');
+    const routeA = (await page.locator("#factorization-theorem-interactive .ch1-factor-route").textContent()) || "";
+    await clickIf(page, '[data-route-btn="1"]');
+    const routeB = (await page.locator("#factorization-theorem-interactive .ch1-factor-route").textContent()) || "";
+    const standards = await page.locator("[data-standard] strong").allTextContents();
+    ensure(routeA !== routeB, "§5: the two x⁴+4 derivations are not independent");
+    ensure(standards.length === 2 && standards.every(Boolean) && standards[0].replace(/\s+/g, "") === standards[1].replace(/\s+/g, ""), "§5: route leaves were not normalized and sorted independently");
+    ensure((await page.locator("[data-route-step]").count()) >= 2, "§5: selected route does not expose its intermediate derivation");
+    ensure((await page.locator(".ch1-route-step-index").first().textContent()) === "步骤 1", "§5: route index is fused with the formula");
+    ensure((await page.locator(".ch1-route-factor-product").count()) >= 1, "§5: long factor products cannot wrap on narrow screens");
+    ensure(/一致/.test((await page.locator("[data-unique]").textContent()) || ""), "§5: normalized leaf multisets disagree");
+  } else if (section === "multiple-factors") {
+    await page.locator("[data-a]").fill("-1");
+    await page.locator("[data-m]").fill("2");
+    const gcd = ((await page.locator("[data-gcd]").textContent()) || "").replace(/\s+/g, "");
+    ensure(!/\^?2/.test(gcd) && /x/.test(gcd), `§6: adjustable root collided with the fixed root (${gcd})`);
+    ensure((await page.locator("[data-derivatives] tr").count()) === 3, "§6: derivative table continues after the first nonzero derivative");
+    ensure(/首次非零/.test((await page.locator("[data-derivatives] tr").last().textContent()) || ""), "§6: multiplicity witness is not identified");
+  } else if (section === "polynomial-functions") {
+    await clickIf(page, '[data-mode="roots"]');
+    await page.locator("[data-degree]").fill("3");
+    await page.locator("[data-root-count]").fill("0");
+    ensure(/至少有一个实根/.test((await page.locator("[data-root-status]").textContent()) || ""), "§7: odd-degree zero-real-root case was accepted");
+    await page.locator("[data-degree]").fill("4");
+    ensure(/可以构造恰有 0 个/.test((await page.locator("[data-root-status]").textContent()) || ""), "§7: even-degree zero-real-root construction failed");
+    ensure((await page.locator("[data-canvas]").getAttribute("data-visual")) === "root-construction", "§7: valid root construction is shown as an empty axis");
+  } else if (section === "rational-polynomials") {
+    const values = await page.locator("[data-common-denominator], [data-cleared-poly], [data-content], [data-primitive]").allTextContents();
+    ensure(values.length === 4 && values.every((value) => value.trim()), "§9: normalization workbench is incomplete");
+    ensure(/=/.test((await page.locator("[data-normalization-check]").textContent()) || ""), "§9: normalization equality is missing");
+    await clickIf(page, '[data-normalization-example="integer"]');
+    const integerDenominator = ((await page.locator("[data-common-denominator]").innerText()) || "").trim();
+    const integerContent = ((await page.locator("[data-content] .katex-html").innerText()) || "").replace(/\s+/g, "");
+    const integerPrimitive = ((await page.locator("[data-primitive] .katex-html").innerText()) || "").replace(/\s+/g, "");
+    ensure(integerDenominator === "1" && integerContent === "3" && /2x4\+3x2−1/.test(integerPrimitive), `§9: integer primitive normalization is wrong (${integerDenominator}; ${integerContent}; ${integerPrimitive})`);
+    ensure(/公分母为 1/.test((await page.locator("[data-ch1-live-result]").textContent()) || ""), "§9: normalization changes do not reach the live observation");
+  } else if (section === "multivariate-polynomials") {
+    await clickIf(page, '[data-lattice-mode="multiply"]');
+    ensure((await page.locator("[data-coefficient-ledger] tr").count()) === 2, "§10: x³y coefficient ledger should have two contributions");
+    ensure(((await page.locator("[data-target-coefficient]").textContent()) || "").trim() === "1", "§10: x³y coefficient should aggregate to 1");
+    await clickIf(page, '[data-lattice-mode="support"]');
+  } else if (section === "symmetric-polynomials") {
+    const sigmas = await page.locator("[data-vieta-sigma1], [data-vieta-sigma2], [data-vieta-sigma3]").allTextContents();
+    ensure(sigmas.join(",") === "6,11,6", `§11: Vieta elementary symmetric values are wrong (${sigmas.join(",")})`);
+    const polynomial = ((await page.locator("[data-vieta-polynomial]").textContent()) || "").replace(/\s+/g, "");
+    ensure(polynomial.includes("6") && polynomial.includes("11") && polynomial.endsWith("−6"), `§11: Vieta polynomial is incomplete (${polynomial})`);
+  }
 }
 
 async function division(page, verifyAnimation) {
@@ -99,6 +188,10 @@ async function division(page, verifyAnimation) {
     }, null, { timeout: 2800 });
   }
   ensure(/整除成立|不整除/.test((await lab.locator("[data-status]").textContent()) || ""), "§3: no final division conclusion");
+  if ((await page.viewportSize()).width < 760) {
+    const scrollLeft = await lab.locator(".ch1-long-division-scroll").evaluate((node) => node.scrollLeft);
+    ensure(scrollLeft > 0, "§3 mobile: long division did not follow the low-degree remainder");
+  }
   if (verifyAnimation) {
     await lab.locator('[data-preset="divides"]').click();
     ensure((await lab.locator("[data-step]").textContent())?.startsWith("1/"), "§3: preset did not reset the process");
@@ -158,12 +251,14 @@ async function checkMultivariateLayout(page, viewport) {
       sameRow: s && i ? Math.abs(s.top - i.top) <= 3 : false,
       heightDiff: s && i ? Math.abs(s.height - i.height) : 999,
       supportBelow: p && m ? m.top >= p.bottom - 2 : false,
+      primaryBottom: p?.bottom || 0,
+      supportTop: m?.top || 0,
       legacyGrid: Boolean(document.querySelector("#multivariate-polynomials-interactive .ch1-lab-grid")),
     };
   });
   ensure(result.primary && result.stage && result.inspector && result.support, "§10: rebuilt workspace is incomplete");
   ensure(!result.legacyGrid, "§10: legacy two-column lab grid still mounted");
-  ensure(result.supportBelow, "§10: explanation modules still compete beside the main graph");
+  ensure(result.supportBelow, `§10: explanation modules still compete beside the main graph (${result.supportTop}/${result.primaryBottom})`);
   if (viewport.width > 1040) {
     ensure(result.sameRow && result.heightDiff <= 4, `§10 desktop: main graph and inspector are unbalanced (${result.heightDiff}px)`);
   } else {
@@ -182,28 +277,60 @@ async function operate(page, section, viewport, theme) {
     await checkDivisionSummary(page, viewport);
     await division(page, viewport.name === "desktop" && theme === "light");
   } else if (section === "gcd-polynomials") {
+    ensure((await page.locator("[data-ledger] > div").count()) === 1, "§4: future Euclidean steps are revealed before interaction");
+    ensure(/正在取余/.test((await page.locator("[data-coprime]").textContent()) || ""), "§4: initial state reveals the final coprimality result");
     const next = page.locator("[data-next]"); for (let i = 0; i < 8 && !(await next.isDisabled()); i += 1) await next.click();
+    const [shownSteps, totalSteps] = ((await page.locator("[data-step]").textContent()) || "0/0").split("/").map(Number);
+    ensure(shownSteps === totalSteps && (await page.locator("[data-ledger] > div").count()) === totalSteps, "§4: completed Euclidean ledger is incomplete");
+    ensure(/Bézout 证书/.test((await page.locator("[data-certificate-title]").textContent()) || ""), "§4: final certificate label is missing");
     ensure((await page.locator("[data-verify] .tex-inline").count()) === 1, "§4: Bezout identity is fragmented");
   } else if (section === "factorization-theorem") {
     await clickIf(page, '[data-domain="C"]'); await clickIf(page, '[data-poly="x4p4"]'); await clickIf(page, '[data-route-btn="1"]');
   } else if (section === "multiple-factors") {
     if (detail) await page.locator("#multiple-factors-interactive .ch1-lab").screenshot({ path: path.join(outputDir, `${viewport.name}-${theme}-multiple-factors-formulas.png`) });
-    await clickIf(page, '[data-preset-m="3"]'); await clickIf(page, '[data-mode="merge"]'); await clickIf(page, "[data-merge-exact]");
+    await clickIf(page, '[data-preset-m="3"]');
+    ensure((await page.locator("[data-derivatives] tr").count()) === 4, "§6: m=3 derivative witness is incomplete");
+    await clickIf(page, '[data-mode="merge"]');
+    ensure((await page.locator("[data-derivatives] tr").count()) === 2 && /互素/.test((await page.locator("[data-observation]").textContent()) || ""), "§6: two distinct roots were treated as a multiple root");
+    await clickIf(page, "[data-merge-exact]");
+    ensure((await page.locator("[data-derivatives] tr").count()) === 3 && /二阶导数首次非零/.test((await page.locator("[data-observation]").textContent()) || ""), "§6: exact root merge did not produce the double-root witness");
+    ensure(!/107|\\frac/.test((await page.locator("[data-ch1-live-result]").textContent()) || ""), "§6: flattened fraction leaked into the live observation");
   } else if (section === "polynomial-functions") {
     if (detail) await page.locator("#polynomial-functions-interactive .ch1-lab").screenshot({ path: path.join(outputDir, `${viewport.name}-${theme}-horner.png`) });
     await clickIf(page, '[data-mode="roots"]'); await clickIf(page, '[data-mode="interp"]');
+    ensure((await page.locator(".ch1-basis-values > span").count()) === 9 && (await page.locator(".ch1-basis-values > span.is-on").count()) === 3, "§7: Lagrange basis values at the nodes are missing");
+    await page.locator('[data-node-x="1"]').fill("0"); await page.locator('[data-node-x="1"]').dispatchEvent("change");
+    ensure(/横坐标必须互不相同/.test((await page.locator("[data-interp-error]").textContent()) || "") && await page.locator("[data-interp-output]").isHidden(), "§7: conflicting interpolation nodes leave a stale answer visible");
+    await page.locator('[data-node-x="1"]').fill("1"); await page.locator('[data-node-x="1"]').dispatchEvent("change");
+    ensure(await page.locator("[data-interp-output]").isVisible() && !/x2\+1/.test((await page.locator("[data-ch1-live-result]").textContent()) || ""), "§7: valid interpolation result or readable observation was not restored");
   } else if (section === "complex-real-factorization") {
     if (detail) await dragConjugate(page); await clickIf(page, '[data-mode="C"]');
     if (await page.locator("[data-re]").count()) await page.locator("[data-re]").fill("1.5");
     ensure(/虚部/.test((await page.locator("[data-real-status]").textContent()) || ""), "§8: unlocked coefficient explanation missing");
+    ensure(/不属于 R\[x\]/.test((await page.locator("[data-observation]").textContent()) || ""), "§8: live observation does not identify the failed real-coefficient condition");
+    ensure(!/CONJUGATE ROOTS/.test((await page.locator(".ch1-motion-head").textContent()) || "") && !/x2[−+-]/.test((await page.locator("[data-ch1-live-result]").textContent()) || ""), "§8: English heading or flattened quadratic leaked into the student view");
   } else if (section === "rational-polynomials") {
+    await clickIf(page, '[data-rational-example="root"]');
+    ensure((await page.locator("[data-candidate-index]").count()) === 4, "§9: rational-root candidate set is incomplete");
+    ensure((await page.locator("[data-candidate-result]").count()) === 0, "§9: candidate values are revealed before student action");
+    const candidateButtons = page.locator("[data-candidate-index]");
+    await candidateButtons.first().click();
+    ensure((await page.locator("[data-candidate-result]").count()) === 1 && /已验算 1\/4/.test((await page.locator("[data-ch1-live-result]").textContent()) || ""), "§9: candidate reveal or progress feedback failed");
+    if (detail) {
+      for (let index = 1; index < 4; index += 1) await page.locator(`[data-candidate-index="${index}"]`).click();
+      ensure((await page.locator("[data-candidate-result]").count()) === 4 && /ℚ\[x\].*不可约/.test((await page.locator("[data-ch1-live-result]").textContent()) || ""), "§9: completed cubic candidate check has the wrong conclusion");
+    }
+    await clickIf(page, '[data-rational-example="eisenstein"]'); await clickIf(page, '[data-prime="5"]');
+    ensure(/在 ℚ\[x\] 中不可约/.test((await page.locator("[data-eisenstein-status]").textContent()) || ""), "§9: p=5 Eisenstein certificate failed");
     await clickIf(page, '[data-rational-example="quartic"]'); await clickIf(page, '[data-prime="2"]');
+    ensure(await page.locator("[data-rational-evidence]").isVisible() && /x4\+4=.*x2−2x\+2.*x2\+2x\+2/.test(((await page.locator("[data-rational-evidence]").innerText()) || "").replace(/\s+/g, "")), "§9: quartic counterexample lacks its factorization evidence");
+    ensure(/没有给出结论/.test((await page.locator("[data-eisenstein-status]").textContent()) || ""), "§9: failed Eisenstein check implies a false conclusion");
   } else if (section === "multivariate-polynomials") {
     await checkMultivariateLayout(page, viewport);
     if (detail) await page.locator("#multivariate-polynomials-interactive .ch1-lab").screenshot({ path: path.join(outputDir, `${viewport.name}-${theme}-multivariate-support.png`) });
     await clickIf(page, '[data-lattice-mode="multiply"]');
-    await clickIf(page, '[data-first="{\"i\":1,\"j\":2}"]');
-    await clickIf(page, '[data-second="{\"i\":0,\"j\":1}"]');
+    await page.locator("[data-first]").nth(1).click();
+    await page.locator("[data-second]").nth(1).click();
     ensure(!(await page.locator("[data-multiply-module]").getAttribute("hidden")), "§10: multiply module did not open");
   } else if (section === "symmetric-polynomials") {
     await clickIf(page, "[data-cycle]"); await clickIf(page, "[data-swap-xy]"); await clickIf(page, "[data-rewrite-next]");
@@ -226,6 +353,8 @@ for (const viewport of viewports) {
       const lab = page.locator(`#${section}-interactive .ch1-lab`);
       await lab.waitFor({ state: "visible" });
       if ((theme === "dark") !== Boolean(await page.locator("body.dark").count())) await page.locator("#themeToggle").click();
+      await checkLearningArchitecture(page, section);
+      await checkMathBoundaries(page, section);
       await checkMath(page, section); await checkVisibleText(page, section); await operate(page, section, viewport, theme); await checkMath(page, section); await checkVisibleText(page, section);
       const layout = await page.evaluate((id) => {
         const node = document.querySelector(`#${CSS.escape(id)}-interactive .ch1-lab`);
@@ -249,6 +378,9 @@ for (const viewport of viewports) {
 }
 
 const regression = await browser.newPage({ viewport: { width: 1440, height: 900 } });
+await regression.goto(`${baseUrl}/learn.html#ch1`, { waitUntil: "networkidle" });
+ensure((await regression.locator(".chapter-unit").count()) === 5, "Chapter 1 overview should group the 11 sections into five learning units");
+ensure((await regression.locator(".chapter-unit .lesson-card").count()) === 11, "Chapter 1 overview lost one or more sections");
 await regression.goto(`${baseUrl}/learn.html#ch4/matrix-language`, { waitUntil: "networkidle" });
 ensure(await regression.locator("#matrix-language-formal").count(), "Chapter 4 regression failed");
 await regression.screenshot({ path: path.join(outputDir, "regression-ch4-matrix-language.png"), fullPage: true });

@@ -13,27 +13,63 @@
     const data = {
       x4m1: {
         formula: "x^4-1",
-        Q: { leaves: ["x-1", "x+1", "x^2+1"], kinds: ["linear", "linear", "irred"], note: "x²+1 在 Q 中没有有理根，二次故不可约。", routes: [["x^2-1", "x^2+1"], ["x-1", "x^3+x^2+x+1"]] },
-        R: { leaves: ["x-1", "x+1", "x^2+1"], kinds: ["linear", "linear", "irred"], note: "x²+1 无实根，在 R 中保持不可约。", routes: [["x^2-1", "x^2+1"], ["x-1", "(x+1)(x^2+1)"]] },
-        C: { leaves: ["x-1", "x+1", "x-i", "x+i"], kinds: ["linear", "linear", "linear", "linear"], note: "在 C 中 x²+1 继续拆成两个一次因式。", routes: [["x^2-1", "x^2+1"], ["x-1", "(x+1)(x-i)(x+i)"]] },
+        Q: { leaves: ["x-1", "x+1", "x^2+1"], kinds: ["linear", "linear", "irred"], note: "x²+1 在 Q 中没有有理根，二次故不可约。", routes: [
+          { steps: ["(x^2-1)(x^2+1)", "(x-1)(x+1)(x^2+1)"], leaves: ["x-1", "x+1", "x^2+1"] },
+          { steps: ["(x-1)(x^3+x^2+x+1)", "(x-1)(x+1)(x^2+1)"], leaves: ["x-1", "x+1", "x^2+1"] },
+        ] },
+        R: { leaves: ["x-1", "x+1", "x^2+1"], kinds: ["linear", "linear", "irred"], note: "x²+1 无实根，在 R 中保持不可约。", routes: [
+          { steps: ["(x^2-1)(x^2+1)", "(x-1)(x+1)(x^2+1)"], leaves: ["x-1", "x+1", "x^2+1"] },
+          { steps: ["(x-1)(x^3+x^2+x+1)", "(x-1)(x+1)(x^2+1)"], leaves: ["x-1", "x+1", "x^2+1"] },
+        ] },
+        C: { leaves: ["x-1", "x+1", "x-i", "x+i"], kinds: ["linear", "linear", "linear", "linear"], note: "在 C 中 x²+1 继续拆成两个一次因式。", routes: [
+          { steps: ["(x^2-1)(x^2+1)", "(x-1)(x+1)(x-i)(x+i)"], leaves: ["x-1", "x+1", "x-i", "x+i"] },
+          { steps: ["(x-1)(x^3+x^2+x+1)", "(x-1)(x+1)(x-i)(x+i)"], leaves: ["x-1", "x+1", "x-i", "x+i"] },
+        ] },
       },
       x2m2: {
         formula: "x^2-2",
-        Q: { leaves: ["x^2-2"], kinds: ["irred"], note: "无有理根，二次故在 Q 中不可约。", routes: [["x^2-2"], ["x^2-2"]] },
-        R: { leaves: ["x-\\sqrt2", "x+\\sqrt2"], kinds: ["linear", "linear"], note: "实根 ±√2 产生两个一次因式。", routes: [["x-\\sqrt2", "x+\\sqrt2"], ["x+\\sqrt2", "x-\\sqrt2"]] },
-        C: { leaves: ["x-\\sqrt2", "x+\\sqrt2"], kinds: ["linear", "linear"], note: "根已在 R 中，扩到 C 后分解不再改变。", routes: [["x-\\sqrt2", "x+\\sqrt2"], ["x+\\sqrt2", "x-\\sqrt2"]] },
+        Q: { leaves: ["x^2-2"], kinds: ["irred"], note: "无有理根，二次故在 Q 中不可约。", routes: [
+          { steps: ["x^2-2\\;\\text{ 无有理根}"], leaves: ["x^2-2"] },
+          { steps: ["x^2-2\\;\\text{ 已不可约}"], leaves: ["x^2-2"] },
+        ] },
+        R: { leaves: ["x-\\sqrt2", "x+\\sqrt2"], kinds: ["linear", "linear"], note: "实根 ±√2 产生两个一次因式。", routes: [
+          { steps: ["x^2-(\\sqrt2)^2", "(x-\\sqrt2)(x+\\sqrt2)"], leaves: ["x-\\sqrt2", "x+\\sqrt2"] },
+          { steps: ["\\text{根集合}=\\{\\sqrt2,-\\sqrt2\\}", "(x+\\sqrt2)(x-\\sqrt2)"], leaves: ["x+\\sqrt2", "x-\\sqrt2"] },
+        ] },
+        C: { leaves: ["x-\\sqrt2", "x+\\sqrt2"], kinds: ["linear", "linear"], note: "根已在 R 中，扩到 C 后分解不再改变。", routes: [
+          { steps: ["x^2-(\\sqrt2)^2", "(x-\\sqrt2)(x+\\sqrt2)"], leaves: ["x-\\sqrt2", "x+\\sqrt2"] },
+          { steps: ["\\text{根集合}=\\{\\sqrt2,-\\sqrt2\\}", "(x+\\sqrt2)(x-\\sqrt2)"], leaves: ["x+\\sqrt2", "x-\\sqrt2"] },
+        ] },
       },
       x2p1: {
         formula: "x^2+1",
-        Q: { leaves: ["x^2+1"], kinds: ["irred"], note: "无有理根，二次不可约。", routes: [["x^2+1"], ["x^2+1"]] },
-        R: { leaves: ["x^2+1"], kinds: ["irred"], note: "无实根，二次不可约。", routes: [["x^2+1"], ["x^2+1"]] },
-        C: { leaves: ["x-i", "x+i"], kinds: ["linear", "linear"], note: "复根 ±i 使其完全分裂。", routes: [["x-i", "x+i"], ["x+i", "x-i"]] },
+        Q: { leaves: ["x^2+1"], kinds: ["irred"], note: "无有理根，二次不可约。", routes: [
+          { steps: ["x^2+1\\;\\text{ 无有理根}"], leaves: ["x^2+1"] },
+          { steps: ["x^2+1\\;\\text{ 已不可约}"], leaves: ["x^2+1"] },
+        ] },
+        R: { leaves: ["x^2+1"], kinds: ["irred"], note: "无实根，二次不可约。", routes: [
+          { steps: ["\\Delta=-4<0", "x^2+1\\;\\text{ 已不可约}"], leaves: ["x^2+1"] },
+          { steps: ["x^2+1>0\\;(x\\in\\mathbb R)", "x^2+1\\;\\text{ 已不可约}"], leaves: ["x^2+1"] },
+        ] },
+        C: { leaves: ["x-i", "x+i"], kinds: ["linear", "linear"], note: "复根 ±i 使其完全分裂。", routes: [
+          { steps: ["x^2-i^2", "(x-i)(x+i)"], leaves: ["x-i", "x+i"] },
+          { steps: ["\\text{根集合}=\\{i,-i\\}", "(x+i)(x-i)"], leaves: ["x+i", "x-i"] },
+        ] },
       },
       x4p4: {
         formula: "x^4+4",
-        Q: { leaves: ["x^2-2x+2", "x^2+2x+2"], kinds: ["irred", "irred"], note: "两个二次判别式均为 −4，在 Q 中不可约。", routes: [["x^2-2x+2", "x^2+2x+2"], ["x^4+4"]] },
-        R: { leaves: ["x^2-2x+2", "x^2+2x+2"], kinds: ["irred", "irred"], note: "两个二次均无实根，在 R 中不可约。", routes: [["x^2-2x+2", "x^2+2x+2"], ["x^4+4"]] },
-        C: { leaves: ["x-1-i", "x-1+i", "x+1-i", "x+1+i"], kinds: ["linear", "linear", "linear", "linear"], note: "两个实二次在 C 中继续分裂。", routes: [["x^2-2x+2", "x^2+2x+2"], ["(x-1)^2+1", "(x+1)^2+1"]] },
+        Q: { leaves: ["x^2-2x+2", "x^2+2x+2"], kinds: ["irred", "irred"], note: "两个二次判别式均为 −4，在 Q 中不可约。", routes: [
+          { steps: ["x^4+4x^2+4-4x^2", "(x^2-2x+2)(x^2+2x+2)"], leaves: ["x^2-2x+2", "x^2+2x+2"] },
+          { steps: ["(x^2+2)^2-(2x)^2", "(x^2+2x+2)(x^2-2x+2)"], leaves: ["x^2+2x+2", "x^2-2x+2"] },
+        ] },
+        R: { leaves: ["x^2-2x+2", "x^2+2x+2"], kinds: ["irred", "irred"], note: "两个二次均无实根，在 R 中不可约。", routes: [
+          { steps: ["x^4+4x^2+4-4x^2", "(x^2-2x+2)(x^2+2x+2)"], leaves: ["x^2-2x+2", "x^2+2x+2"] },
+          { steps: ["(x^2+2)^2-(2x)^2", "(x^2+2x+2)(x^2-2x+2)"], leaves: ["x^2+2x+2", "x^2-2x+2"] },
+        ] },
+        C: { leaves: ["x-1-i", "x-1+i", "x+1-i", "x+1+i"], kinds: ["linear", "linear", "linear", "linear"], note: "两个实二次在 C 中继续分裂。", routes: [
+          { steps: ["(x^2-2x+2)(x^2+2x+2)", "(x-1-i)(x-1+i)(x+1-i)(x+1+i)"], leaves: ["x-1-i", "x-1+i", "x+1-i", "x+1+i"] },
+          { steps: ["\\text{根集合}=\\{1\\pm i,-1\\pm i\\}", "(x+1+i)(x-1-i)(x+1-i)(x-1+i)"], leaves: ["x+1+i", "x-1-i", "x+1-i", "x-1+i"] },
+        ] },
       },
     };
     let polynomial = "x4m1";
@@ -43,14 +79,48 @@
     function leafHtml(item) {
       return item.leaves.map((leaf, i) => `<span class="ch1-factor-node is-leaf is-${item.kinds[i]}">${tex(leaf)}</span>`).join("");
     }
+    function standardLeaves(leaves) {
+      const counts = new Map();
+      leaves.forEach((leaf) => counts.set(leaf, (counts.get(leaf) || 0) + 1));
+      return [...counts.entries()].sort(([left], [right]) => left.localeCompare(right));
+    }
+    function standardHtml(leaves) {
+      return standardLeaves(leaves).map(([leaf, count]) => {
+        const formula = count > 1 ? `(${leaf})^{${count}}` : leaf;
+        return `<span class="ch1-standard-factor">${tex(formula)}</span>`;
+      }).join("");
+    }
+    function routeExpressionHtml(expression) {
+      const factors = expression.match(/\([^()]+\)/g);
+      const isProduct = factors?.length > 1 && factors.join("") === expression.replace(/\s+/g, "");
+      if (!isProduct) return tex(expression);
+      return `<span class="ch1-route-factor-product">${factors.map((factor, index) => `${index ? `<span class="ch1-product-dot" aria-hidden="true">·</span>` : ""}<span>${tex(factor)}</span>`).join("")}</span>`;
+    }
+    function legendHtml(item) {
+      const kinds = new Set(item.kinds);
+      return [
+        kinds.has("linear") ? `<span class="is-linear">一次因式</span>` : "",
+        kinds.has("irred") ? `<span class="is-irred">高次不可约因式</span>` : "",
+      ].join("");
+    }
     function paint() {
       const source = data[polynomial];
       const item = source[domain];
-      root.querySelector("[data-factor-tree]").innerHTML = `<div class="ch1-factor-tree"><div class="ch1-factor-root"><span class="ch1-factor-node is-root">${tex(source.formula)}</span><span class="ch1-factor-domain">${domainLabel[domain]}[x]</span></div><div class="ch1-factor-branch"></div><div class="ch1-factor-leaves">${leafHtml(item)}</div><p class="ch1-factor-note">${item.note}</p></div>`;
-      root.querySelector("[data-route]").innerHTML = item.routes[route].map((node, i) => `<div class="ch1-route-node"><span>${i + 1}</span>${tex(node)}</div>`).join(`<div class="ch1-route-arrow">→</div>`);
-      root.querySelector("[data-standard]").innerHTML = item.leaves.map((leaf) => tex(leaf)).join(" · ");
-      const normalizedA = [...item.leaves].sort().join("|");
-      const normalizedB = [...item.leaves].reverse().sort().join("|");
+      const selectedRoute = item.routes[route];
+      root.querySelector("[data-route-label]").textContent = `路线 ${route === 0 ? "A" : "B"}`;
+      root.querySelector("[data-factor-tree]").innerHTML = `<div class="ch1-factor-tree">
+        <div class="ch1-factor-root"><span class="ch1-factor-node is-root">${tex(source.formula)}</span><span class="ch1-factor-domain">${domainLabel[domain]}[x]</span></div>
+        <div class="ch1-route-arrow" aria-hidden="true">↓</div>
+        <div class="ch1-factor-route" data-route>${selectedRoute.steps.map((node, i) => `<div class="ch1-route-node" data-route-step><span class="ch1-route-step-index">步骤 ${i + 1}</span><div class="ch1-route-expression">${routeExpressionHtml(node)}</div></div>${i < selectedRoute.steps.length - 1 ? `<div class="ch1-route-arrow" aria-hidden="true">↓</div>` : ""}`).join("")}</div>
+        <div class="ch1-route-arrow" aria-hidden="true">↓</div>
+        <div class="ch1-factor-leaf-group"><span>当前数域中的不可约叶</span><div class="ch1-factor-leaves">${leafHtml(item)}</div></div>
+        <div class="ch1-factor-legend">${legendHtml(item)}</div>
+        <p class="ch1-factor-note" data-factor-note>${item.note}</p>
+      </div>`;
+      root.querySelector("[data-standard-a]").innerHTML = standardHtml(item.routes[0].leaves);
+      root.querySelector("[data-standard-b]").innerHTML = standardHtml(item.routes[1].leaves);
+      const normalizedA = JSON.stringify(standardLeaves(item.routes[0].leaves));
+      const normalizedB = JSON.stringify(standardLeaves(item.routes[1].leaves));
       root.querySelector("[data-unique]").innerHTML = normalizedA === normalizedB ? `<span class="ch1-status is-ok">标准叶多重集合一致</span>` : `<span class="ch1-status is-bad">叶集合不一致</span>`;
     }
     root.querySelectorAll("[data-domain]").forEach((button) => button.addEventListener("click", () => { domain = button.dataset.domain; selectButtons(root, "[data-domain]", button); paint(); }));
@@ -62,45 +132,81 @@
   function interactive5(el, section) {
     lab(el, "双路径因式树", section.interactive.description,
       `<button type="button" data-domain="Q" class="is-active">ℚ</button><button type="button" data-domain="R">ℝ</button><button type="button" data-domain="C">ℂ</button><span class="ch1-control-separator"></span><button type="button" data-poly="x4m1" class="is-active">x⁴−1</button><button type="button" data-poly="x2m2">x²−2</button><button type="button" data-poly="x2p1">x²+1</button><button type="button" data-poly="x4p4">x⁴+4</button>`,
-      `<div data-factor-tree></div><div class="ch1-two-col"><div><h4>一条拆分路线</h4><div class="ch1-controls"><button type="button" data-route-btn="0" class="is-active">路线 A</button><button type="button" data-route-btn="1">路线 B</button></div><div class="ch1-factor-route" data-route></div></div><div><h4>标准化结果</h4><div class="ch1-result-band"><div><span>首一、排序后的叶</span><strong data-standard></strong></div></div><div data-unique></div><p class="ch1-muted">路线可以不同；最终不可约因式的多重集合必须一致。</p></div></div>`);
+      `<div class="ch1-factor-workspace">
+        <section class="ch1-factor-route-panel">
+          <div class="ch1-factor-panel-head"><div><span>当前拆分过程</span><h4 data-route-label>路线 A</h4></div><div class="ch1-controls"><button type="button" data-route-btn="0" class="is-active">路线 A</button><button type="button" data-route-btn="1">路线 B</button></div></div>
+          <div data-factor-tree></div>
+        </section>
+        <section class="ch1-factor-compare-panel">
+          <div class="ch1-factor-panel-head"><div><span>独立标准化</span><h4>比较叶的多重集合</h4></div></div>
+          <div class="ch1-result-band ch1-standard-result" data-standard><div><span>路线 A</span><strong data-standard-a></strong></div><div><span>路线 B</span><strong data-standard-b></strong></div></div>
+          <div data-unique></div>
+          <p class="ch1-muted">每条路线先提出常数，再把不可约因式首一化、排序并合并重复项；最后比较因式及其重数。</p>
+        </section>
+      </div>`);
     mountFactorization(el);
   }
 
   // §6 — multiplicity and root merge
   function mountMultiplicity(root) {
     const state = { mode: "multiplicity", a: 1, m: 2, u: -0.7, v: 0.7 };
-    const graphBounds = { xMin: -3, xMax: 3, yMin: -4, yMax: 6 };
+    const graphBounds = { xMin: -3.5, xMax: 3, yMin: -6, yMax: 8 };
+    const numberLabel = (value, digits = null) => (digits === null ? String(value) : Number(value).toFixed(digits)).replace("-", "−");
+    const factorLabel = (value, digits = null) => {
+      if (Math.abs(value) < 1e-12) return "x";
+      return value > 0 ? `x−${numberLabel(value, digits)}` : `x+${numberLabel(Math.abs(value), digits)}`;
+    };
     const currentPoly = () => state.mode === "multiplicity"
-      ? M().polyMul(M().polyPow(M().poly([-state.a, 1]), state.m), M().poly([1, 1]))
+      ? M().polyMul(M().polyPow(M().poly([-state.a, 1]), state.m), M().poly([3, 1]))
       : M().polyMul(M().poly([-state.u, 1]), M().poly([-state.v, 1]));
     function rootData() {
-      if (state.mode === "multiplicity") return [{ x: state.a, m: state.m, label: `a=${state.a}` }, { x: -1, m: 1, label: "−1" }];
+      if (state.mode === "multiplicity") return [
+        { x: state.a, m: state.m, label: `a=${numberLabel(state.a)} · ${state.m} 重`, labelDx: 0, labelDy: 27, labelAlign: "center" },
+        { x: -3, m: 1, label: "固定单根 −3", labelDx: 8, labelDy: -14 },
+      ];
       const equal = Math.abs(state.u - state.v) < 1e-12;
-      return equal ? [{ x: state.u, m: 2, label: "二重根" }] : [{ x: state.u, m: 1, label: "u" }, { x: state.v, m: 1, label: "v" }];
+      return equal
+        ? [{ x: state.u, m: 2, label: `u=v=${numberLabel(state.u, 2)} · 二重`, labelDx: 0, labelDy: 27, labelAlign: "center" }]
+        : [
+            { x: state.u, m: 1, label: `u=${numberLabel(state.u, 2)}`, labelDx: 0, labelDy: -14, labelAlign: "center" },
+            { x: state.v, m: 1, label: `v=${numberLabel(state.v, 2)}`, labelDx: 0, labelDy: 27, labelAlign: "center" },
+          ];
     }
     function paint() {
       const p = currentPoly();
       const dp = M().polyDerivative(p);
       const gcd = M().polyGcd(p, dp);
       const focus = state.mode === "multiplicity" ? M().parseR(state.a) : M().parseR(state.u);
+      const equal = state.mode === "merge" && Math.abs(state.u - state.v) < 1e-12;
+      const multiplicity = state.mode === "multiplicity" ? state.m : (equal ? 2 : 1);
       const derivatives = [];
-      for (let order = 0; order <= 4; order++) derivatives.push({ order, value: M().evalPoly(M().polyDerivative(p, order), focus) });
+      for (let order = 0; order <= multiplicity; order++) derivatives.push({ order, value: M().evalPoly(M().polyDerivative(p, order), focus) });
       root.querySelector("[data-poly]").innerHTML = tex(M().formatPolyTex(p));
       root.querySelector("[data-derivative]").innerHTML = tex(M().formatPolyTex(dp));
       root.querySelector("[data-gcd]").innerHTML = tex(M().formatPolyTex(gcd));
-      root.querySelector("[data-derivatives]").innerHTML = derivatives.map((row) => `<tr><td>${row.order === 0 ? "f" : `f<sup>(${row.order})</sup>`}</td><td>${M().formatR(row.value)}</td><td><span class="ch1-status ${M().rIsZero(row.value) ? "is-warn" : "is-ok"}">${M().rIsZero(row.value) ? "0" : "非零"}</span></td></tr>`).join("");
+      root.querySelector("[data-derivatives]").innerHTML = derivatives.map((row) => {
+        const zero = M().rIsZero(row.value);
+        return `<tr><td>${row.order === 0 ? "f" : `f<sup>(${row.order})</sup>`}</td><td>${M().formatR(row.value)}</td><td><span class="ch1-status ${zero ? "is-warn" : "is-ok"}">${zero ? "0" : "首次非零"}</span></td></tr>`;
+      }).join("");
       const status = root.querySelector("[data-status]");
       if (state.mode === "multiplicity") {
-        status.textContent = `${state.a} 是 ${state.m} 重根 · ${state.m % 2 ? "穿过横轴" : "贴住后返回"}`;
+        status.textContent = `a=${numberLabel(state.a)}，重数 m=${state.m}：${state.m % 2 ? "曲线穿过横轴" : "曲线接触后返回"}`;
+        root.querySelector("[data-derivative-title]").textContent = `在 a=${numberLabel(state.a)} 处寻找首次非零导数`;
+        root.querySelector("[data-observation]").textContent = state.m === 1
+          ? "f(a)=0，f′(a) 首次非零；f 与 f′ 互素。"
+          : `0 到 ${state.m - 1} 阶导数在 a 处均为 0，第 ${state.m} 阶首次非零；gcd 中 ${factorLabel(state.a)} 的指数为 ${state.m - 1}。`;
         root.querySelector("[data-m-controls]").hidden = false; root.querySelector("[data-merge-controls]").hidden = true;
       } else {
-        const equal = Math.abs(state.u - state.v) < 1e-12;
         status.textContent = equal ? "u=v：精确合并为二重根" : `u≠v：仍是两个单根（间距 ${Math.abs(state.u - state.v).toFixed(2)}）`;
+        root.querySelector("[data-derivative-title]").textContent = `在 u=${numberLabel(state.u, 2)} 处寻找首次非零导数`;
+        root.querySelector("[data-observation]").textContent = equal
+          ? `u=v=${numberLabel(state.u, 2)} 时，f 与 f′ 共享因式 ${factorLabel(state.u, 2)}；二阶导数首次非零。`
+          : `u=${numberLabel(state.u, 2)} 与 v=${numberLabel(state.v, 2)} 仍不相等，f′(u) 已非零；f 与 f′ 互素。`;
         root.querySelector("[data-m-controls]").hidden = true; root.querySelector("[data-merge-controls]").hidden = false;
       }
       status.className = `ch1-status ${M().polyEq(gcd, M().onePoly()) ? "is-ok" : "is-warn"}`;
       M().drawPolynomial(root.querySelector("[data-graph]"), p, { bounds: graphBounds, points: rootData().map((r) => ({ x: r.x, y: 0 })), caption: "固定世界坐标 · 重数由代数状态判定" });
-      M().drawRootAxis(root.querySelector("[data-roots]"), rootData(), { bounds: { xMin: -3, xMax: 3, yMin: -1.2, yMax: 1.2 } });
+      M().drawRootAxis(root.querySelector("[data-roots]"), rootData(), { bounds: { xMin: -3.5, xMax: 3, yMin: -1.2, yMax: 1.2 } });
       root.querySelector("[data-a-value]").textContent = state.a; root.querySelector("[data-m-value]").textContent = state.m;
       root.querySelector("[data-u-value]").textContent = state.u.toFixed(2); root.querySelector("[data-v-value]").textContent = state.v.toFixed(2);
     }
@@ -118,7 +224,7 @@
   function interactive6(el, section) {
     lab(el, "重数与根合并实验室", section.interactive.description,
       `<button type="button" data-mode="multiplicity" class="is-active">重数模式</button><button type="button" data-mode="merge">根合并模式</button><span class="ch1-control-separator"></span><button type="button" data-preset-m="1">m=1</button><button type="button" data-preset-m="2">m=2</button><button type="button" data-preset-m="3">m=3</button><button type="button" data-preset-m="4">m=4</button>`,
-      `<div class="ch1-two-col"><div><div class="ch1-stage"><canvas data-graph aria-label="重数多项式图像"></canvas></div><div class="ch1-stage is-short"><canvas data-roots aria-label="实根与重数轴"></canvas></div></div><div class="ch1-panel"><div data-m-controls><label class="ch1-slider-row"><span>根 a</span><input data-a type="range" min="-2" max="2" step="1" value="1"><output data-a-value></output></label><label class="ch1-slider-row"><span>重数 m</span><input data-m type="range" min="1" max="4" step="1" value="2"><output data-m-value></output></label></div><div data-merge-controls hidden><label class="ch1-slider-row"><span>根 u</span><input data-u type="range" min="-2" max="2" step="0.05" value="-0.7"><output data-u-value></output></label><label class="ch1-slider-row"><span>根 v</span><input data-v type="range" min="-2" max="2" step="0.05" value="0.7"><output data-v-value></output></label><button type="button" class="ch1-btn" data-merge-exact>令 v=u（精确重合）</button></div><div class="ch1-result-band"><div><span>当前结论</span><strong data-status class="ch1-status"></strong></div></div><div class="ch1-equation-grid"><div><span>f</span><strong data-poly></strong></div><div><span>f′</span><strong data-derivative></strong></div><div><span>gcd(f,f′)</span><strong data-gcd></strong></div></div><h4>在关注点的导数消失表</h4><div class="ch1-table-wrap"><table class="ch1-table"><thead><tr><th>导数</th><th>值</th><th>状态</th></tr></thead><tbody data-derivatives></tbody></table></div></div></div>`);
+      `<div class="ch1-two-col"><div><div class="ch1-stage"><canvas data-graph aria-label="重数多项式图像"></canvas></div><div class="ch1-stage is-short"><canvas data-roots aria-label="实根与重数轴"></canvas></div></div><div class="ch1-panel"><div data-m-controls><label class="ch1-slider-row"><span>根 a</span><input data-a type="range" min="-2" max="2" step="1" value="1"><output data-a-value></output></label><label class="ch1-slider-row"><span>重数 m</span><input data-m type="range" min="1" max="4" step="1" value="2"><output data-m-value></output></label></div><div data-merge-controls hidden><label class="ch1-slider-row"><span>根 u</span><input data-u type="range" min="-2" max="2" step="0.05" value="-0.7"><output data-u-value></output></label><label class="ch1-slider-row"><span>根 v</span><input data-v type="range" min="-2" max="2" step="0.05" value="0.7"><output data-v-value></output></label><button type="button" class="ch1-btn" data-merge-exact>令 v=u（精确重合）</button></div><div class="ch1-result-band"><div><span>当前结论</span><strong data-status class="ch1-status"></strong></div></div><p class="ch1-multiplicity-observation" data-observation></p><div class="ch1-equation-grid"><div><span>f</span><strong data-poly></strong></div><div><span>f′</span><strong data-derivative></strong></div><div><span>gcd(f,f′)</span><strong data-gcd></strong></div></div><h4 data-derivative-title>寻找首次非零导数</h4><div class="ch1-table-wrap"><table class="ch1-table"><thead><tr><th>导数</th><th>值</th><th>判别</th></tr></thead><tbody data-derivatives></tbody></table></div></div></div>`);
     mountMultiplicity(el);
   }
 
@@ -126,29 +232,64 @@
   function mountPolynomialFunctions(root) {
     const state = { mode: "eval", p: M().poly([1, -2, 0, 1]), a: 1, degree: 3, roots: 2, nodes: [{ x: M().R(0), y: M().R(1) }, { x: M().R(1), y: M().R(2) }, { x: M().R(2), y: M().R(5) }] };
     const bounds = { xMin: -2.5, xMax: 3.5, yMin: -4, yMax: 10 };
+    const numberLabel = (value) => String(value).replace("-", "−");
+    const factorLabel = (value) => value === 0 ? "x" : (value > 0 ? `x−${value}` : `x+${Math.abs(value)}`);
     function paintEval() {
       const h = M().hornerSteps(state.p, M().parseR(state.a));
       root.querySelector("[data-eval-panel]").hidden = false; root.querySelector("[data-root-panel]").hidden = true; root.querySelector("[data-interp-panel]").hidden = true;
       root.querySelector("[data-eval-poly]").innerHTML = tex(M().formatPolyTex(state.p));
       root.querySelector("[data-a-value]").textContent = state.a;
       root.querySelector("[data-fa]").innerHTML = tex(M().formatRTex(h.value));
-      root.querySelector("[data-horner]").innerHTML = h.steps.map((s, i) => `<div class="${i === h.steps.length - 1 ? "is-current" : ""}"><span>${i + 1}</span><p>(${tex(M().formatRTex(s.before))})·${state.a}+${tex(M().formatRTex(s.coefficient))}=${tex(M().formatRTex(s.after))}</p></div>`).join("");
+      root.querySelector("[data-horner]").innerHTML = h.steps.map((s, i) => {
+        const negative = M().rToNum(s.coefficient) < 0;
+        const arithmetic = `(${M().formatRTex(s.before)})\\cdot(${M().formatRTex(M().parseR(state.a))})${negative ? "-" : "+"}${M().formatRTex(M().rAbs(s.coefficient))}=${M().formatRTex(s.after)}`;
+        return `<div class="${i === h.steps.length - 1 ? "is-current" : ""}"><span>${i + 1}</span><p>${tex(arithmetic)}</p></div>`;
+      }).join("");
       const isRoot = M().rIsZero(h.value);
-      const st = root.querySelector("[data-factor]"); st.className = `ch1-status ${isRoot ? "is-ok" : "is-warn"}`; st.textContent = isRoot ? `f(${state.a})=0，x−${state.a} 是因式` : `余式 f(${state.a})≠0`;
+      const st = root.querySelector("[data-factor]"); st.className = `ch1-status ${isRoot ? "is-ok" : "is-warn"}`; st.textContent = isRoot ? `f(${numberLabel(state.a)})=0，${factorLabel(state.a)} 是因式` : `余式 f(${numberLabel(state.a)})≠0`;
+      root.querySelector("[data-canvas]").dataset.visual = "evaluation";
       M().drawPolynomial(root.querySelector("[data-canvas]"), state.p, { bounds, points: [{ x: state.a, y: M().rToNum(h.value) }], caption: "评价点 (a,f(a))" });
     }
     function paintRoots() {
       root.querySelector("[data-eval-panel]").hidden = true; root.querySelector("[data-root-panel]").hidden = false; root.querySelector("[data-interp-panel]").hidden = true;
       root.querySelector("[data-degree-value]").textContent = state.degree;
       root.querySelector("[data-roots-value]").textContent = state.roots;
-      const possible = state.roots <= state.degree;
-      const status = root.querySelector("[data-root-status]"); status.className = `ch1-status ${possible ? "is-ok" : "is-bad"}`; status.textContent = possible ? "可以构造非零多项式" : "超过次数上界：只能是零多项式";
-      const roots = Array.from({ length: Math.min(state.roots, state.degree + 1) }, (_, i) => i - Math.floor(state.roots / 2));
+      const withinDegree = state.roots <= state.degree;
+      const realParityAllows = state.roots > 0 || state.degree % 2 === 0;
+      const possible = withinDegree && realParityAllows;
+      const status = root.querySelector("[data-root-status]");
+      status.className = `ch1-status ${possible ? "is-ok" : "is-bad"}`;
+      status.textContent = !withinDegree
+        ? "m>n：违反非零 n 次多项式的不同根上界"
+        : !realParityAllows
+          ? "实系数奇次多项式至少有一个实根，不能恰有 0 个"
+          : `可以构造恰有 ${state.roots} 个不同实根的 ${state.degree} 次多项式`;
+      const roots = Array.from({ length: possible ? state.roots : 0 }, (_, i) => i - Math.floor(state.roots / 2));
       let p = M().onePoly();
       roots.forEach((r) => { p = M().polyMul(p, M().poly([-r, 1])); });
-      while (M().deg(p) < state.degree) p = M().polyMul(p, M().poly([1, 1]));
+      let remaining = state.degree - M().deg(p);
+      let repeatedFirst = false;
+      if (possible && roots.length && remaining % 2 === 1) {
+        p = M().polyMul(p, M().poly([-roots[0], 1]));
+        remaining -= 1;
+        repeatedFirst = true;
+      }
+      while (possible && remaining >= 2) {
+        p = M().polyMul(p, M().poly([1, 0, 1]));
+        remaining -= 2;
+      }
       root.querySelector("[data-root-poly]").innerHTML = possible ? tex(M().formatPolyTex(p)) : "—";
-      M().drawRootAxis(root.querySelector("[data-canvas]"), roots.map((x) => ({ x, m: 1, label: String(x) })), { bounds: { xMin: -4, xMax: 4, yMin: -1.4, yMax: 1.4 } });
+      if (possible) {
+        root.querySelector("[data-canvas]").dataset.visual = "root-construction";
+        M().drawPolynomial(root.querySelector("[data-canvas]"), p, {
+          bounds: { xMin: -4, xMax: 4, yMin: -8, yMax: 8 },
+          points: roots.map((x) => ({ x, y: 0 })),
+          caption: `精确构造 · ${state.degree} 次 · ${state.roots} 个不同实根`,
+        });
+      } else {
+        root.querySelector("[data-canvas]").dataset.visual = "invalid-root-budget";
+        M().drawRootAxis(root.querySelector("[data-canvas]"), [], { bounds: { xMin: -4, xMax: 4, yMin: -1.4, yMax: 1.4 } });
+      }
     }
     function readNodes() {
       return [0, 1, 2].map((i) => ({ x: M().parseR(root.querySelector(`[data-node-x="${i}"]`).value), y: M().parseR(root.querySelector(`[data-node-y="${i}"]`).value) }));
@@ -160,12 +301,20 @@
         state.nodes = readNodes();
         result = M().lagrangeInterpolation(state.nodes);
         root.querySelector("[data-interp-error]").textContent = "";
+        root.querySelector("[data-interp-output]").hidden = false;
       } catch (error) {
-        root.querySelector("[data-interp-error]").textContent = error.message.includes("distinct") ? "横坐标必须互不相同。" : "请输入合法有理数。";
+        const message = error.message.includes("distinct") ? "横坐标必须互不相同；当前无法构造插值多项式。" : "请输入合法有理数。";
+        root.querySelector("[data-interp-error]").textContent = message;
+        root.querySelector("[data-interp-observation]").textContent = message;
+        root.querySelector("[data-interp-output]").hidden = true;
+        root.querySelector("[data-canvas]").dataset.visual = "invalid-interpolation";
+        M().drawRootAxis(root.querySelector("[data-canvas]"), [], { bounds: { xMin: -4, xMax: 4, yMin: -1.4, yMax: 1.4 } });
         return;
       }
       root.querySelector("[data-interp-poly]").innerHTML = tex(M().formatPolyTex(result.polynomial));
-      root.querySelector("[data-bases]").innerHTML = result.bases.map((b, i) => `<div class="ch1-compare-card"><strong>${tex(`L_${i}(x)=${M().formatPolyTex(b.L)}`)}</strong><p>加权贡献：${tex(M().formatPolyTex(b.contribution))}</p></div>`).join("");
+      root.querySelector("[data-bases]").innerHTML = result.bases.map((b, i) => `<div class="ch1-basis-card"><strong>${tex(`L_${i}(x)=${M().formatPolyTex(b.L)}`)}</strong><div class="ch1-basis-values" aria-label="L_${i} 在三个节点的值">${[0, 1, 2].map((nodeIndex) => `<span class="${nodeIndex === i ? "is-on" : ""}"><small>x${["₀", "₁", "₂"][nodeIndex]}</small><b>${nodeIndex === i ? 1 : 0}</b></span>`).join("")}</div><p><span>加权贡献</span>${tex(M().formatPolyTex(b.contribution))}</p></div>`).join("");
+      root.querySelector("[data-interp-observation]").textContent = "三个横坐标互异的节点确定唯一的二次以下多项式；每个 Lagrange 基只在自己的节点取 1。";
+      root.querySelector("[data-canvas]").dataset.visual = "interpolation";
       M().drawPolynomial(root.querySelector("[data-canvas]"), result.polynomial, { bounds, points: state.nodes.map((n) => ({ x: M().rToNum(n.x), y: M().rToNum(n.y) })), caption: "Lagrange 插值 · 节点横坐标互异" });
     }
     function paint() { if (state.mode === "eval") paintEval(); else if (state.mode === "roots") paintRoots(); else paintInterpolation(); }
@@ -182,7 +331,33 @@
   function interactive7(el, section) {
     lab(el, "评价、根数与插值", section.interactive.description,
       `<button type="button" data-mode="eval" class="is-active">评价 / Horner</button><button type="button" data-mode="roots">根数上界</button><button type="button" data-mode="interp">Lagrange 插值</button>`,
-      `<div class="ch1-two-col"><div class="ch1-stage"><canvas data-canvas aria-label="多项式函数实验图"></canvas></div><div class="ch1-panel"><section data-eval-panel><div class="ch1-controls"><button type="button" data-eval-preset="default">三次示例</button><button type="button" data-eval-preset="root">有整数根示例</button></div><label class="ch1-slider-row"><span>a</span><input data-a type="range" min="-2" max="3" step="1" value="1"><output data-a-value></output></label><div class="ch1-equation-grid"><div><span>f</span><strong data-eval-poly></strong></div><div><span>f(a)</span><strong data-fa></strong></div></div><div data-factor class="ch1-status"></div><div class="ch1-ledger" data-horner></div></section><section data-root-panel hidden><label class="ch1-slider-row"><span>次数 n</span><input data-degree type="range" min="1" max="6" value="3"><output data-degree-value></output></label><label class="ch1-slider-row"><span>不同根数 m</span><input data-root-count type="range" min="0" max="7" value="2"><output data-roots-value></output></label><div data-root-status class="ch1-status"></div><div class="ch1-callout"><strong>构造结果</strong><p data-root-poly></p></div></section><section data-interp-panel hidden><div class="ch1-node-grid">${[0,1,2].map((i) => `<label>节点 ${i}<span>x</span><input type="text" value="${i}" data-node-x="${i}"><span>y</span><input type="text" value="${[1,2,5][i]}" data-node-y="${i}"></label>`).join("")}</div><p class="ch1-error" data-interp-error aria-live="polite"></p><div class="ch1-result-band"><div><span>插值多项式</span><strong data-interp-poly></strong></div></div><div class="ch1-compare" data-bases></div></section></div></div>`);
+      `<div class="ch1-two-col">
+        <div class="ch1-stage"><canvas data-canvas aria-label="多项式函数实验图"></canvas></div>
+        <div class="ch1-panel">
+          <section data-eval-panel>
+            <div class="ch1-controls"><button type="button" data-eval-preset="default">三次示例</button><button type="button" data-eval-preset="root">有整数根示例</button></div>
+            <label class="ch1-slider-row"><span>评价点 a</span><input data-a type="range" min="-2" max="3" step="1" value="1"><output data-a-value></output></label>
+            <div class="ch1-equation-grid"><div><span>f</span><strong data-eval-poly></strong></div><div><span>f(a)</span><strong data-fa></strong></div></div>
+            <div data-factor class="ch1-status"></div>
+            <h4>Horner 累积账本</h4><div class="ch1-ledger" data-horner></div>
+          </section>
+          <section data-root-panel hidden>
+            <label class="ch1-slider-row"><span>次数 n</span><input data-degree type="range" min="1" max="6" value="3"><output data-degree-value></output></label>
+            <label class="ch1-slider-row"><span>不同实根数 m</span><input data-root-count type="range" min="0" max="7" value="2"><output data-roots-value></output></label>
+            <div data-root-status class="ch1-status"></div>
+            <div class="ch1-callout"><strong>精确构造</strong><p data-root-poly></p><p class="ch1-muted">剩余偶数次数用 x²+1 填充；需要一个额外奇数次数时，提高已有根的重数，避免产生新实根。</p></div>
+          </section>
+          <section data-interp-panel hidden>
+            <div class="ch1-interpolation-nodes">${[0, 1, 2].map((i) => `<div class="ch1-interpolation-node-row"><strong>P${["₀", "₁", "₂"][i]}</strong><label><span>x${["₀", "₁", "₂"][i]}</span><input type="text" value="${i}" data-node-x="${i}" aria-label="P${i} 的横坐标"></label><label><span>y${["₀", "₁", "₂"][i]}</span><input type="text" value="${[1, 2, 5][i]}" data-node-y="${i}" aria-label="P${i} 的纵坐标"></label></div>`).join("")}</div>
+            <p class="ch1-error" data-interp-error aria-live="polite"></p>
+            <p class="ch1-interp-observation" data-interp-observation>三个横坐标互异的节点确定唯一的二次以下多项式；每个 Lagrange 基只在自己的节点取 1。</p>
+            <div class="ch1-interp-output" data-interp-output>
+              <div class="ch1-result-band"><div><span>插值多项式</span><strong data-interp-poly></strong></div></div>
+              <div class="ch1-compare ch1-interpolation-bases" data-bases></div>
+            </div>
+          </section>
+        </div>
+      </div>`);
     mountPolynomialFunctions(el);
   }
 

@@ -5,6 +5,7 @@
  */
 (() => {
   const renderers = new Map();
+  const enhancers = [];
   let cleanups = [];
 
   function runCleanup() {
@@ -48,8 +49,16 @@
     renderers.set(sectionId, { ...current, ...renderer });
   };
 
+  window.defineChapter1LessonEnhancer = function defineChapter1LessonEnhancer(enhancer) {
+    if (typeof enhancer === "function") enhancers.push(enhancer);
+  };
+
   window.renderChapter1Formal = function renderChapter1Formal(el, section, config = {}) {
     if (!el || !section) return;
+    if (window.Ch1UI?.renderFormal) {
+      window.Ch1UI.renderFormal(el, section);
+      return;
+    }
     const display = (source) => (window.texDisplay ? window.texDisplay(source) : source);
     const concepts = Array.isArray(section.concepts) ? section.concepts : [];
     const details = Array.isArray(config.details) ? config.details : [];
@@ -122,6 +131,10 @@
     const interactive = root.querySelector(`#${CSS.escape(section.id)}-interactive`);
     renderer.formal?.(formal, section, root);
     renderer.interactive?.(interactive, section, root);
+    enhancers.forEach((enhancer) => {
+      const cleanup = enhancer(section, root);
+      if (typeof cleanup === "function") window.ch1UseCleanup(cleanup);
+    });
   };
 
   window.teardownChapter1Lesson = runCleanup;

@@ -4,10 +4,6 @@
   const listen = (...args) => window.ch1Listen?.(...args);
   const observe = (...args) => window.ch1ObserveResize?.(...args);
 
-  function formal(section, el, config) {
-    window.renderChapter1Formal?.(el, section, config);
-  }
-
   function integerDivisors(value) {
     const n = Math.abs(Math.trunc(value));
     if (n === 0) return [0];
@@ -34,6 +30,16 @@
   }
 
   function mountRationalLab(root) {
+    const normalizationExamples = {
+      fraction: {
+        label: "(3/2)x³−(9/4)x+3/8",
+        poly: M().polyFrom(["3/8", "-9/4", "0", "3/2"]),
+      },
+      integer: {
+        label: "6x⁴+9x²−3",
+        poly: M().polyFrom(["-3", "0", "9", "0", "6"]),
+      },
+    };
     const examples = {
       root: {
         label: "2x³+x²−x−1",
@@ -49,10 +55,39 @@
         label: "x⁴+4",
         poly: M().polyFrom(["4", "0", "0", "0", "1"]),
         note: "没有有理根，但它仍可分成两个二次式；用来阻止错误推理。",
+        evidence: "x^4+4=(x^2-2x+2)(x^2+2x+2)",
       },
     };
+    let normalization = "fraction";
     let current = "root";
     let prime = 5;
+    let revealedCandidates = new Set();
+    let lastCandidateIndex = null;
+
+    function setCurrentObservation(message) {
+      root.querySelector("[data-rational-current-observation]").textContent = message;
+    }
+
+    function renderNormalization(announce = false) {
+      const item = normalizationExamples[normalization];
+      const result = M().contentAndPrimitive(item.poly);
+      const cleared = M().polyFrom(result.integers);
+      root.querySelector("[data-normalization-original]").innerHTML = tex(M().formatPolyTex(item.poly));
+      root.querySelector("[data-common-denominator]").textContent = String(result.commonDen);
+      root.querySelector("[data-cleared-poly]").innerHTML = tex(M().formatPolyTex(cleared));
+      root.querySelector("[data-content]").innerHTML = tex(M().formatRTex(result.content));
+      root.querySelector("[data-primitive]").innerHTML = tex(M().formatPolyTex(result.primitive));
+      root.querySelector("[data-normalization-check]").innerHTML = tex(`${M().formatPolyTex(item.poly)}=(${M().formatRTex(result.content)})(${M().formatPolyTex(result.primitive)})`);
+      root.querySelectorAll("[data-normalization-example]").forEach((button) => {
+        const active = button.dataset.normalizationExample === normalization;
+        button.classList.toggle("is-active", active);
+        button.setAttribute("aria-pressed", String(active));
+      });
+      if (announce) {
+        setCurrentObservation(`${normalization === "fraction" ? "分数系数" : "有公共因子"}示例：公分母为 ${result.commonDen}，提出常数 ${M().formatR(result.content)}；规范化等式已完整显示。`);
+      }
+      return result;
+    }
 
     function eisenstein(poly, p) {
       const coefficients = poly.map((c) => c.d === 1 ? c.n : NaN);
@@ -72,23 +107,53 @@
       };
     }
 
-    function render() {
+    function renderCandidates() {
       const item = examples[current];
       const poly = item.poly;
-      root.querySelector("[data-rational-poly]").innerHTML = tex(M().formatPolyTex(poly));
-      root.querySelector("[data-rational-note]").textContent = item.note;
       const candidates = rationalCandidates(poly);
-      root.querySelector("[data-candidate-count]").textContent = `候选 ${candidates.length} 个（约分、去重、含正负）`;
-      root.querySelector("[data-candidates]").innerHTML = candidates.map((candidate) => {
+      const revealedCount = revealedCandidates.size;
+      root.querySelector("[data-candidate-count]").textContent = `共 ${candidates.length} 个（已约分、去重并包含正负）`;
+      root.querySelector("[data-candidates]").innerHTML = candidates.map((candidate, index) => {
+        const revealed = revealedCandidates.has(index);
         const value = M().evalPoly(poly, candidate);
         const isRoot = M().rIsZero(value);
-        return `<article class="ch1-candidate ${isRoot ? "is-root" : ""}">
+        return `<button type="button" class="ch1-candidate ${revealed ? "is-revealed" : ""} ${revealed && isRoot ? "is-root" : ""}" data-candidate-index="${index}" aria-expanded="${revealed}" aria-label="验算候选 ${M().formatR(candidate)}">
           <strong>${tex(M().formatRTex(candidate))}</strong>
-          <span>${tex(`f(${M().formatRTex(candidate)})=${M().formatRTex(value)}`)}</span>
-          <em>${isRoot ? "是根" : "不是根"}</em>
-        </article>`;
+          ${revealed
+            ? `<span data-candidate-result>${tex(`f(${M().formatRTex(candidate)})=${M().formatRTex(value)}`)}</span><em>${isRoot ? "是根" : "不是根"}</em>`
+            : "<span>点击后显示精确代入值</span><em>待验算</em>"}
+        </button>`;
       }).join("") || "<p>常数项为 0 时先提出 x，再对剩余多项式使用定理。</p>";
 
+      const observation = root.querySelector("[data-candidate-observation]");
+      if (lastCandidateIndex !== null && candidates[lastCandidateIndex]) {
+        const candidate = candidates[lastCandidateIndex];
+        const value = M().evalPoly(poly, candidate);
+        const verdict = M().rIsZero(value) ? "是根" : "不是根";
+        observation.textContent = `刚验算：f(${M().formatR(candidate)})=${M().formatR(value)}，${candidate.n === 0 ? "0" : M().formatR(candidate)} ${verdict}。已完成 ${revealedCount}/${candidates.length}。`;
+      } else {
+        observation.textContent = "候选尚未验算；点击任一卡片后才会显示代入值。";
+      }
+      return { item, poly, candidates };
+    }
+
+    function renderExample() {
+      const item = examples[current];
+      root.querySelector("[data-rational-poly]").innerHTML = tex(M().formatPolyTex(item.poly));
+      root.querySelector("[data-rational-note]").textContent = item.note;
+      const evidence = root.querySelector("[data-rational-evidence]");
+      evidence.hidden = !item.evidence;
+      evidence.querySelector("p").innerHTML = item.evidence ? tex(item.evidence) : "";
+      root.querySelectorAll("[data-rational-example]").forEach((button) => {
+        const active = button.dataset.rationalExample === current;
+        button.classList.toggle("is-active", active);
+        button.setAttribute("aria-pressed", String(active));
+      });
+      return renderCandidates();
+    }
+
+    function renderEisenstein() {
+      const poly = examples[current].poly;
       const result = eisenstein(poly, prime);
       const labels = [
         `${prime} 不整除首项系数`,
@@ -103,19 +168,59 @@
       status.textContent = result.message;
       status.className = `ch1-status ${result.applicable ? "is-ok" : "is-warn"}`;
       root.querySelector("[data-prime-value]").textContent = String(prime);
-      root.querySelectorAll("[data-rational-example]").forEach((button) => button.classList.toggle("is-active", button.dataset.rationalExample === current));
-      root.querySelectorAll("[data-prime]").forEach((button) => button.classList.toggle("is-active", Number(button.dataset.prime) === prime));
+      root.querySelectorAll("[data-prime]").forEach((button) => {
+        const active = Number(button.dataset.prime) === prime;
+        button.classList.toggle("is-active", active);
+        button.setAttribute("aria-pressed", String(active));
+      });
+      return result;
+    }
+
+    function render() {
+      renderNormalization();
+      renderExample();
+      renderEisenstein();
     }
 
     root.querySelectorAll("[data-rational-example]").forEach((button) => listen(button, "click", () => {
       current = button.dataset.rationalExample;
+      revealedCandidates = new Set();
+      lastCandidateIndex = null;
       render();
+      const count = rationalCandidates(examples[current].poly).length;
+      setCurrentObservation(`${examples[current].label} 有 ${count} 个既约有理根候选；点击候选后再判断它是否为根。`);
     }));
     root.querySelectorAll("[data-prime]").forEach((button) => listen(button, "click", () => {
       prime = Number(button.dataset.prime);
-      render();
+      const result = renderEisenstein();
+      setCurrentObservation(result.message);
     }));
+    root.querySelectorAll("[data-normalization-example]").forEach((button) => listen(button, "click", () => {
+      normalization = button.dataset.normalizationExample;
+      renderNormalization(true);
+    }));
+    listen(root.querySelector("[data-candidates]"), "click", (event) => {
+      const button = event.target.closest?.("[data-candidate-index]");
+      if (!button) return;
+      const index = Number(button.dataset.candidateIndex);
+      revealedCandidates.add(index);
+      lastCandidateIndex = index;
+      const { candidates, poly } = renderCandidates();
+      const candidate = candidates[index];
+      const value = M().evalPoly(poly, candidate);
+      const verdict = M().rIsZero(value) ? "是根" : "不是根";
+      const hasRationalRoot = candidates.some((valueCandidate) => M().rIsZero(M().evalPoly(poly, valueCandidate)));
+      const noRootConclusion = M().deg(poly) <= 3
+        ? "这个二次或三次多项式在 ℚ[x] 中不可约。"
+        : "这个多项式没有有理根；仍需排除二次或更高次数的因式。";
+      const completed = revealedCandidates.size === candidates.length
+        ? `全部 ${candidates.length} 个候选已经验算。${hasRationalRoot ? "实际有理根已在卡片中标出。" : noRootConclusion}`
+        : `已验算 ${revealedCandidates.size}/${candidates.length} 个候选。`;
+      setCurrentObservation(`f(${M().formatR(candidate)})=${M().formatR(value)}，所以 ${M().formatR(candidate)} ${verdict}；${completed}`);
+      root.querySelector(`[data-candidate-index="${index}"]`)?.focus({ preventScroll: true });
+    });
     render();
+    setCurrentObservation("三个工作台使用独立示例：先核对规范化等式，再点击候选验算，最后选择素数检查 Eisenstein 条件。");
   }
 
   function mountExponentLattice(root) {
@@ -266,7 +371,7 @@
         terms: [{ c: 1, e: [2,1,0] }, { c: 1, e: [0,2,1] }, { c: 1, e: [1,0,2] }],
       },
     };
-    const state = { current: "squares", permutation: [0,1,2], rewrite: "squares", step: 0 };
+    const state = { current: "squares", permutation: [0,1,2], rewrite: "squares", step: 0, roots: [1, 2, 3] };
     const rewriteSteps = {
       squares: [
         { title: "目标", formula: "x^2+y^2+z^2" },
@@ -279,7 +384,34 @@
         { title: "识别 σ₃", formula: "\\sigma_1\\sigma_2=\\sum_{sym}x^2y+3\\sigma_3" },
         { title: "移项", formula: "\\sum_{sym}x^2y=\\sigma_1\\sigma_2-3\\sigma_3" },
       ],
+      cubes: [
+        { title: "目标", formula: "x^3+y^3+z^3" },
+        { title: "展开 σ₁³", formula: "\\sigma_1^3=x^3+y^3+z^3+3\\sum_{sym}x^2y+6xyz" },
+        { title: "代入轨道和", formula: "\\sum_{sym}x^2y=\\sigma_1\\sigma_2-3\\sigma_3" },
+        { title: "合并", formula: "x^3+y^3+z^3=\\sigma_1^3-3\\sigma_1\\sigma_2+3\\sigma_3" },
+      ],
     };
+
+    function signedTerm(coefficient, body, first = false) {
+      if (coefficient === 0) return "";
+      const sign = coefficient < 0 ? "-" : first ? "" : "+";
+      const absolute = Math.abs(coefficient);
+      const magnitude = body && absolute === 1 ? "" : String(absolute);
+      return `${sign}${magnitude}${body}`;
+    }
+
+    function renderVieta() {
+      const [r1, r2, r3] = state.roots;
+      const sigma1 = r1 + r2 + r3;
+      const sigma2 = r1 * r2 + r1 * r3 + r2 * r3;
+      const sigma3 = r1 * r2 * r3;
+      const formula = `t^3${signedTerm(-sigma1, "t^2")}${signedTerm(sigma2, "t")}${signedTerm(-sigma3, "")}`;
+      root.querySelector("[data-vieta-sigma1]").textContent = String(sigma1);
+      root.querySelector("[data-vieta-sigma2]").textContent = String(sigma2);
+      root.querySelector("[data-vieta-sigma3]").textContent = String(sigma3);
+      root.querySelector("[data-vieta-polynomial]").innerHTML = tex(formula);
+      root.querySelector("[data-vieta-factorization]").innerHTML = tex(`(t-(${r1}))(t-(${r2}))(t-(${r3}))`);
+    }
 
     function composePermutation(next) {
       state.permutation = next.map((source) => state.permutation[source]);
@@ -313,6 +445,7 @@
       root.querySelector("[data-rewrite-next]").disabled = state.step === steps.length - 1;
       root.querySelectorAll("[data-rewrite-kind]").forEach((button) => button.classList.toggle("is-active", button.dataset.rewriteKind === state.rewrite));
       root.querySelector("[data-orbit]").innerHTML = expressions.orbit.terms.map((term) => `<span>${tex(expressionTex([term]))}</span>`).join("");
+      renderVieta();
     }
 
     root.querySelectorAll("[data-sym-expression]").forEach((button) => listen(button, "click", () => {
@@ -349,88 +482,65 @@
       state.step = 0;
       render();
     });
+    root.querySelectorAll("[data-root]").forEach((input) => listen(input, "input", () => {
+      state.roots[Number(input.dataset.root)] = Number(input.value);
+      renderVieta();
+    }));
     render();
   }
 
   function formal9(el, section) {
-    formal(section, el, {
-      title: "从有理系数到精确整数判据",
-      formula: "f=\\operatorname{cont}(f)f^*,\\qquad \\gcd(\\text{coefficients of }f^*)=1",
-      details: [
-        { title: "清分母与本原化", html: "先乘最小公倍数得到整系数，再提出系数最大公因数；剩余本原部分承载真正的分解问题。" },
-        { title: "有理根候选", html: `既约根 ${tex("p/q")} 必满足 ${tex("p\\mid a_0,q\\mid a_n")}；这是候选条件，不是自动判根。` },
-        { title: "Eisenstein 三门", html: "素数 p 不整除首项，整除其余所有系数，且 p² 不整除常数项。" },
-        { title: "逻辑方向", html: "有理根和 Eisenstein 都是工具。判据失败应写“未得到结论”，不能反写成“可约”。" },
-      ],
-      cards: [
-        { kicker: "候选", title: "约分、去重、含正负", html: "筛选器显示每个候选的精确代值。" },
-        { kicker: "素数", title: "失败定位到具体条件", html: "切换 p 后逐行说明哪一门通过或失败。" },
-        { kicker: "反例", title: "无有理根未必不可约", html: "x⁴+4 没有有理根，却能分成两个二次因式。" },
-      ],
-    });
+    window.Ch1UI?.renderFormal(el, section);
   }
 
   function formal10(el, section) {
-    formal(section, el, {
-      title: "指数格点与齐次分层",
-      formula: "x^\\alpha x^\\beta=x^{\\alpha+\\beta},\\qquad |\\alpha|=\\sum_i\\alpha_i",
-      details: [
-        { title: "支撑", html: "非零系数对应的指数格点集合就是多项式的支撑；缺项不会改变格点坐标系。" },
-        { title: "三种次数", html: "degₓ、degᵧ 分别取单个坐标最大值；总次数逐项求指数和再取最大。" },
-        { title: "齐次层", html: `二元情形 ${tex("i+j=d")} 是一条斜线；同一斜线上的项组成 ${tex("f_d")}。` },
-        { title: "乘法聚合", html: "指数向量相加给出落点，所有落到同一格点的系数再相加。" },
-      ],
-      cards: [
-        { kicker: "点击", title: "格点直接读取单项式", html: "点击空格点也会明确显示系数为 0。" },
-        { kicker: "过滤", title: "按总次数看齐次层", html: "0、1、2、3 层保持同一坐标系，不重新排列。" },
-        { kicker: "配对", title: "指定系数追踪来源", html: "x³y 的系数同时接收 x·2x²y 与 −y·x³。" },
-      ],
-    });
+    window.Ch1UI?.renderFormal(el, section);
   }
 
   function formal11(el, section) {
-    formal(section, el, {
-      title: "置换不变性与基本对称构件",
-      formula: "\\sigma_1=x+y+z,\\quad\\sigma_2=xy+xz+yz,\\quad\\sigma_3=xyz",
-      details: [
-        { title: "规范比较", html: "置换后先按统一单项式次序合并同类项，再比较；不能依赖字符串顺序。" },
-        { title: "轨道和", html: "一个单项式的全部置换像构成轨道；任何置换只重排轨道，因此等系数轨道和对称。" },
-        { title: "基本定理的算法", html: "用 σ 的乘积匹配当前最高单项式并相减；规定次序下最高项严格下降，最终终止。" },
-        { title: "Vieta", html: "把变量换成一元多项式的根，σ₁、σ₂、… 正好给出带交替符号的系数。" },
-      ],
-      cards: [
-        { kicker: "区分", title: "循环对称不等于全对称", html: "三循环保持不变仍可能在一个换位下改变。" },
-        { kicker: "轨道", title: "x²y 产生六个不同项", html: "页面列出并检查不重不漏。" },
-        { kicker: "改写", title: "一步一步消去最高项", html: "平方和与六项轨道和各有完整推导。" },
-      ],
-    });
+    window.Ch1UI?.renderFormal(el, section);
   }
 
   function interactive9(el) {
     el.innerHTML = `<h2>交互实验</h2><div class="ch1-lab">
-      <div class="ch1-lab-head"><h3>有理根筛选器与素数透镜</h3><p>候选根显示精确代值；Eisenstein 失败只写“未判定”，绝不误报“可约”。</p></div>
+      <div class="ch1-lab-head"><h3>三种整数检验，各自回答一个问题</h3><p>本原化、有理根验算和 Eisenstein 检查使用独立示例；每个结果都保留可核验的精确等式。</p></div>
+      <span hidden data-rational-current-observation></span>
+      <section class="ch1-panel ch1-primitive-workbench">
+        <div class="ch1-panel-head"><div><span>01 · 本原化</span><h4>清分母，再提出内容</h4></div><div class="ch1-controls"><button type="button" class="is-active" data-normalization-example="fraction" aria-pressed="true">分数系数</button><button type="button" data-normalization-example="integer" aria-pressed="false">有公共因子</button></div></div>
+        <div class="ch1-equation-grid">
+          <div><span>原多项式 f</span><strong data-normalization-original></strong></div>
+          <div><span>公分母 L</span><strong data-common-denominator></strong></div>
+          <div><span>Lf</span><strong data-cleared-poly></strong></div>
+          <div><span>提出常数 c</span><strong data-content></strong></div>
+          <div><span>本原部分 f*</span><strong data-primitive></strong></div>
+        </div>
+        <div class="ch1-callout"><strong>规范化核验</strong><p data-normalization-check></p></div>
+      </section>
       <div class="ch1-control-groups">
         <div class="ch1-controls">
-          <button type="button" class="is-active" data-rational-example="root">2x³+x²−x−1</button>
-          <button type="button" data-rational-example="eisenstein">x⁵+10x+5</button>
-          <button type="button" data-rational-example="quartic">x⁴+4 反例</button>
+          <span>02 · 选择待检验多项式：</span>
+          <button type="button" class="is-active" data-rational-example="root" aria-pressed="true">2x³+x²−x−1</button>
+          <button type="button" data-rational-example="eisenstein" aria-pressed="false">x⁵+10x+5</button>
+          <button type="button" data-rational-example="quartic" aria-pressed="false">x⁴+4 反例</button>
         </div>
         <div class="ch1-controls">
-          <span>素数 p：</span>
-          <button type="button" data-prime="2">2</button>
-          <button type="button" data-prime="3">3</button>
-          <button type="button" class="is-active" data-prime="5">5</button>
+          <span>03 · 选择素数 p：</span>
+          <button type="button" data-prime="2" aria-pressed="false">2</button>
+          <button type="button" data-prime="3" aria-pressed="false">3</button>
+          <button type="button" class="is-active" data-prime="5" aria-pressed="true">5</button>
         </div>
       </div>
       <div class="ch1-readout">
         <div>f = <strong data-rational-poly></strong></div>
         <p class="ch1-muted" data-rational-note></p>
       </div>
+      <div class="ch1-callout" data-rational-evidence hidden><strong>分解证据</strong><p></p></div>
       <div class="ch1-lab-grid">
         <section class="ch1-panel">
-          <h4>有理根候选</h4>
+          <h4>逐个验算有理根候选</h4>
           <p class="ch1-muted" data-candidate-count></p>
           <div class="ch1-candidate-grid" data-candidates></div>
+          <p class="ch1-candidate-observation" data-candidate-observation aria-live="polite"></p>
         </section>
         <section class="ch1-panel">
           <h4>Eisenstein：p=<span data-prime-value></span></h4>
@@ -505,6 +615,7 @@
           <div class="ch1-controls">
             <button type="button" class="is-active" data-rewrite-kind="squares">平方和改写</button>
             <button type="button" data-rewrite-kind="orbit">六项轨道和改写</button>
+            <button type="button" data-rewrite-kind="cubes">立方和改写</button>
           </div>
           <div class="ch1-rewrite-stage">
             <span>步骤 <strong data-rewrite-step></strong></span>
@@ -518,6 +629,22 @@
           </div>
         </section>
       </div>
+      <section class="ch1-panel ch1-vieta-workbench">
+        <div class="ch1-panel-head"><div><span>ROOTS → COEFFICIENTS</span><h4>把根代入 σ，直接生成首一三次式</h4></div></div>
+        <div class="ch1-vieta-grid">
+          <div class="ch1-node-grid">
+            <label>根 r₁<input type="number" step="1" min="-4" max="4" value="1" data-root="0"></label>
+            <label>根 r₂<input type="number" step="1" min="-4" max="4" value="2" data-root="1"></label>
+            <label>根 r₃<input type="number" step="1" min="-4" max="4" value="3" data-root="2"></label>
+          </div>
+          <div class="ch1-equation-grid">
+            <div><span>σ₁=r₁+r₂+r₃</span><strong data-vieta-sigma1></strong></div>
+            <div><span>σ₂=Σrᵢrⱼ</span><strong data-vieta-sigma2></strong></div>
+            <div><span>σ₃=r₁r₂r₃</span><strong data-vieta-sigma3></strong></div>
+          </div>
+        </div>
+        <div class="ch1-result-band"><div><span>因式形式</span><strong data-vieta-factorization></strong></div><div><span>展开形式</span><strong data-vieta-polynomial></strong></div></div>
+      </section>
     </div>`;
     mountSymmetry(el);
   }

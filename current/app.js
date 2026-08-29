@@ -636,9 +636,7 @@ function renderStructuredChapter(chapter) {
           <h2>进入具体小节</h2>
         </div>
       </div>
-      <div class="lesson-card-grid">
-        ${sections.map((section) => renderLessonCard(section, chapter)).join("")}
-      </div>
+      ${renderChapterLessonDirectory(chapter, sections)}
     </section>
   `;
 }
@@ -674,9 +672,9 @@ function renderLessonPage(section, chapter = null) {
 
     ${renderVideoSection(section, video)}
 
-    ${renderFormalSection(section, concepts)}
-
     ${renderInteractiveSection(section, interactive)}
+
+    ${renderFormalSection(section, concepts)}
 
     ${renderExampleSection(section)}
 
@@ -693,6 +691,33 @@ function renderLessonPage(section, chapter = null) {
 }
 
 window.renderLessonPage = renderLessonPage;
+
+function renderChapterLessonDirectory(chapter, sections) {
+  const units = Array.isArray(chapter.learningUnits) ? chapter.learningUnits : [];
+  if (!units.length) {
+    return `<div class="lesson-card-grid">${sections.map((section) => renderLessonCard(section, chapter)).join("")}</div>`;
+  }
+
+  const byId = new Map(sections.map((section) => [section.id, section]));
+  return `<div class="chapter-unit-list">
+    ${units.map((unit, index) => {
+      const unitSections = (unit.sections || []).map((id) => byId.get(id)).filter(Boolean);
+      return `<section class="chapter-unit">
+        <header class="chapter-unit-head">
+          <span>${String(index + 1).padStart(2, "0")}</span>
+          <div>
+            <div class="section-kicker">${unit.eyebrow || "学习单元"}</div>
+            <h3>${unit.title}</h3>
+            <p>${unit.summary}</p>
+          </div>
+        </header>
+        <div class="lesson-card-grid">${unitSections.map((section) => renderLessonCard(section, chapter)).join("")}</div>
+      </section>`;
+    }).join("")}
+  </div>`;
+}
+
+window.renderChapterLessonDirectory = renderChapterLessonDirectory;
 
 
 function getCourseNavigationNodes() {

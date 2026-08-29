@@ -528,6 +528,8 @@
     function formatComplex(z) {
       const re = formatNumber(z.re);
       const im = formatNumber(Math.abs(z.im));
+      if (Math.abs(z.im) < 1e-10) return re;
+      if (Math.abs(z.re) < 1e-10) return `${z.im < 0 ? "−" : ""}${im}i`;
       return `${re}${z.im < 0 ? "−" : "+"}${im}i`;
     }
 
@@ -714,7 +716,11 @@
       root.querySelector("[data-beta]").textContent = formatComplex(state.beta);
       root.querySelector("[data-sum]").textContent = formatComplex(c.sum);
       root.querySelector("[data-product]").textContent = formatComplex(c.product);
-      const exactReal = Math.abs(c.sum.im) < 1e-9 && Math.abs(c.product.im) < 1e-9;
+      const sumReal = Math.abs(c.sum.im) < 1e-9;
+      const productReal = Math.abs(c.product.im) < 1e-9;
+      const exactReal = sumReal && productReal;
+      const conjugatePair = Math.abs(state.alpha.re - state.beta.re) < 1e-9 && Math.abs(state.alpha.im + state.beta.im) < 1e-9;
+      const bothReal = Math.abs(state.alpha.im) < 1e-9 && Math.abs(state.beta.im) < 1e-9;
       const status = root.querySelector("[data-real-status]");
       status.className = `ch1-status ${state.locking ? "is-warn" : exactReal ? "is-ok" : "is-bad"}`;
       status.textContent = state.locking ? "共轭点正在沿镜像位置归位" : exactReal ? "根之和与根之积都是实数" : "两个根未成共轭对，系数出现虚部";
@@ -724,6 +730,13 @@
       root.querySelector("[data-geometry-copy]").textContent = state.mode === "R"
         ? "横坐标 a 决定根之和 2a；从原点到 α 的距离平方决定根之积 |α|²。"
         : "解锁后 β 可以独立移动；镜像关系一旦破坏，和与积通常带有虚部。";
+      root.querySelector("[data-observation]").textContent = state.locking
+        ? "第二个根正在回到 α 的共轭位置。"
+        : exactReal
+          ? (bothReal
+            ? "两个根都在实轴上，根之和与根之积自然为实数。"
+            : `${state.mode === "C" && conjugatePair ? "解锁状态下 β 恰好等于 ᾱ；" : "α 与第二个根互为共轭；"}根之和为 ${formatNumber(c.sum.re)}，根之积为 ${formatNumber(c.product.re)}。`)
+          : `${sumReal ? "根之和仍为实数" : "根之和带有虚部"}，${productReal ? "根之积仍为实数" : "根之积带有虚部"}；对应二次式不属于 R[x]。`;
       root.querySelector("[data-beta-controls]").hidden = state.mode === "R";
       root.querySelector("[data-re]").value = state.alpha.re;
       root.querySelector("[data-im]").value = state.alpha.im;
@@ -871,8 +884,8 @@
     el.innerHTML = `<h2>交互实验</h2>
       <div class="ch1-lab ch1-motion-lab ch1-conjugate-motion">
         <header class="ch1-motion-head">
-          <span>CONJUGATE ROOTS</span>
-          <h3>拖动一个复根，直接看“镜像”怎样把系数拉回实数轴</h3>
+          <span>共轭根与实系数</span>
+          <h3>拖动一个复根，观察共轭约束怎样保持实系数</h3>
           <p>${section.interactive.description}</p>
         </header>
         <div class="ch1-controls ch1-motion-toolbar" role="group" aria-label="选择系数模式与根的预设">
@@ -890,7 +903,7 @@
           </section>
           <aside class="ch1-motion-aside">
             <div class="ch1-focus-note">
-              <span>图上真正要看懂的关系</span>
+              <span>当前几何关系</span>
               <strong data-geometry-copy></strong>
             </div>
             <label class="ch1-slider-row"><span>Re(α)</span><input data-re type="range" min="-2.5" max="2.5" step="0.05"><output data-re-value></output></label>
@@ -906,6 +919,7 @@
               <div><span>根之积</span><strong data-product></strong></div>
             </div>
             <div data-real-status class="ch1-status"></div>
+            <p class="ch1-conjugate-observation" data-observation></p>
             <div class="ch1-result-band is-compact">
               <div><span>由根得到的二次因式</span><strong data-factor></strong></div>
             </div>

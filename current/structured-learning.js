@@ -95,6 +95,8 @@
 
   function renderFallbackOverview(chapter) {
     const sections = structuredSections(chapter);
+    const lessonDirectory = window.renderChapterLessonDirectory?.(chapter, sections)
+      || `<div class="lesson-card-grid">${sections.map((section) => renderFallbackLessonCard(chapter, section)).join("")}</div>`;
     const cards = chapter.overviewCards?.length
       ? chapter.overviewCards
       : [
@@ -120,7 +122,7 @@
       </section>
       <section class="section-band compact-band" id="${chapter.id}-lessons">
         <div class="section-head"><div><div class="section-kicker">本章目录</div><h2>进入具体小节</h2></div></div>
-        <div class="lesson-card-grid">${sections.map((section) => renderFallbackLessonCard(chapter, section)).join("")}</div>
+        ${lessonDirectory}
       </section>`;
   }
 

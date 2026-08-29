@@ -93,8 +93,9 @@ async function checkLearningArchitecture(page, section) {
 async function checkMathBoundaries(page, section) {
   if (section === "number-fields") {
     await clickIf(page, '[data-domain="Q2"]');
-    const row = page.locator("[data-poly-table] tr").nth(1);
-    ensure(/不可约/.test((await row.textContent()) || ""), "§1: x²−√2 is not marked irreducible over Q(√2)");
+    await clickIf(page, '[data-polynomial="x2msqrt2"]');
+    const stage = page.locator('[data-field-stage="Q2"]');
+    ensure(/不可约/.test((await stage.textContent()) || ""), "§1: x²−√2 is not marked irreducible over Q(√2)");
   } else if (section === "factorization-theorem") {
     await clickIf(page, '[data-domain="Q"]');
     await clickIf(page, '[data-poly="x4p4"]');

@@ -32,6 +32,7 @@ for (let index = 1; index <= 11; index += 1) {
 assert.deepEqual([...sections.keys()], expectedIds, "第一章必须完整注册 11 节并保持课程顺序");
 
 const forbiddenStudentWording = /开发进度|原型状态|占位(?:符|内容)?|后续制作|未来生产|future production/i;
+const forbiddenAiTemplateWording = /不是[^。！？\n]{0,40}而是|一句(?:话|数学)(?:结论|总结|说明)|很值钱|最狠|很狠/;
 for (const id of expectedIds) {
   const section = sections.get(id);
   const label = `${section.number} ${section.title}`;
@@ -57,6 +58,7 @@ for (const id of expectedIds) {
   assert.ok(section.quiz?.length >= 3 && section.quiz.length <= 5, `${label}: 自测应保持诊断性而非题海`);
   assert.equal(section.summary?.length, 3, `${label}: 小结应收束为 3 条`);
   assert.doesNotMatch(JSON.stringify(section), forbiddenStudentWording, `${label}: 出现面向开发者的内部措辞`);
+  assert.doesNotMatch(JSON.stringify(section), forbiddenAiTemplateWording, `${label}: 出现高频 AI 模板措辞`);
 }
 
 let chapter;
@@ -78,8 +80,14 @@ assert.ok(
 const fieldVisual = fs.readFileSync(path.join(root, "current", "visuals", "ch1", "section1-4-presentation.js"), "utf8");
 const qSqrtTwo = fieldVisual.indexOf('formula: "x^2-\\\\sqrt2"');
 assert.ok(qSqrtTwo >= 0, "数域透镜必须包含 x²−√2");
-assert.match(fieldVisual.slice(qSqrtTwo, qSqrtTwo + 260), /Q2: "不可约"/, "x²−√2 在 Q(√2) 中必须显示为不可约");
+assert.match(fieldVisual.slice(qSqrtTwo, qSqrtTwo + 900), /key: "Q2"[^\n]+status: "不可约"/, "x²−√2 在 Q(√2) 中必须显示为不可约");
 assert.doesNotMatch(fieldVisual, /correctNumberFieldComparison/, "不得用挂载后的 DOM 补丁掩盖数域数据错误");
+
+const chapterOnePresentationSource = fs.readdirSync(path.join(root, "current", "visuals", "ch1"))
+  .filter((filename) => filename.endsWith(".js"))
+  .map((filename) => fs.readFileSync(path.join(root, "current", "visuals", "ch1", filename), "utf8"))
+  .join("\n");
+assert.doesNotMatch(chapterOnePresentationSource, forbiddenAiTemplateWording, "第一章交互出现高频 AI 模板措辞");
 
 const middleVisual = fs.readFileSync(path.join(root, "current", "visuals", "ch1", "section5-8-presentation.js"), "utf8");
 assert.match(middleVisual, /\(x\^2\+2\)\^2-\(2x\)\^2/, "x⁴+4 的第二条路线必须是独立的有效恒等变形");

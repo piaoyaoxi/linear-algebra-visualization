@@ -423,6 +423,199 @@
   background: color-mix(in srgb, var(--coral, #d9835f) 13%, var(--surface-solid));
 }
 
+/* §1: one closure test followed by one field-extension comparison. */
+.ch1-field-check {
+  display: grid;
+  grid-template-columns: minmax(0, 1.15fr) minmax(280px, 0.85fr);
+  gap: 16px;
+  align-items: stretch;
+}
+
+.ch1-field-summary {
+  display: grid;
+  gap: 14px;
+  min-width: 0;
+}
+
+.ch1-closure-card {
+  display: grid;
+  align-content: start;
+  gap: 12px;
+  min-width: 0;
+  padding: 18px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: var(--surface-soft);
+}
+
+.ch1-closure-card > span,
+.ch1-factor-workbench header span {
+  color: var(--accent-strong);
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+}
+
+.ch1-closure-card > p,
+.ch1-factor-workbench header p,
+.ch1-field-stage p {
+  margin: 0;
+  color: var(--muted);
+  line-height: 1.6;
+}
+
+.ch1-closure-formula {
+  display: grid;
+  align-content: center;
+  min-height: 118px;
+  overflow-x: auto;
+  padding: 16px;
+  border: 1px solid color-mix(in srgb, var(--accent) 24%, var(--line));
+  border-radius: 12px;
+  background: var(--surface-solid);
+}
+
+.ch1-closure-formula .tex-display {
+  margin: 0;
+}
+
+.ch1-factor-workbench {
+  display: grid;
+  gap: 16px;
+  padding: 18px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: var(--surface-solid);
+}
+
+.ch1-factor-workbench > header {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 14px 22px;
+  align-items: end;
+  justify-content: space-between;
+}
+
+.ch1-factor-workbench header h4 {
+  margin: 4px 0;
+  font-size: clamp(18px, 1.8vw, 21px);
+}
+
+.ch1-polynomial-controls {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.ch1-polynomial-controls button {
+  min-height: 38px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  padding: 8px 13px;
+  background: var(--surface-soft);
+  color: var(--text);
+  font: inherit;
+  font-size: 13px;
+  font-weight: 650;
+  cursor: pointer;
+  transition: border-color 160ms ease, background 160ms ease, color 160ms ease;
+}
+
+.ch1-polynomial-controls button:hover,
+.ch1-polynomial-controls button.is-active {
+  border-color: color-mix(in srgb, var(--accent) 50%, var(--line));
+  background: color-mix(in srgb, var(--accent) 12%, var(--surface-solid));
+  color: var(--accent-strong);
+}
+
+.ch1-polynomial-controls button:focus-visible {
+  outline: 2px solid color-mix(in srgb, var(--accent) 65%, transparent);
+  outline-offset: 2px;
+}
+
+.ch1-polynomial-focus {
+  display: grid;
+  place-items: center;
+  min-height: 72px;
+  padding: 12px;
+  border-block: 1px solid var(--line);
+  color: var(--text);
+  font-size: clamp(18px, 2vw, 23px);
+}
+
+.ch1-polynomial-focus .tex-display {
+  margin: 0;
+}
+
+.ch1-field-track {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 18px minmax(0, 1fr) 18px minmax(0, 1fr) 18px minmax(0, 1fr);
+  gap: 8px;
+  align-items: stretch;
+}
+
+.ch1-domain-link {
+  display: grid;
+  place-items: center;
+  color: var(--muted);
+  font-size: 11px;
+  font-weight: 750;
+}
+
+.ch1-field-stage {
+  display: grid;
+  align-content: start;
+  gap: 8px;
+  min-width: 0;
+  padding: 14px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: var(--surface-soft);
+}
+
+.ch1-field-stage > span {
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 750;
+}
+
+.ch1-field-stage > strong {
+  font-size: 14px;
+}
+
+.ch1-field-stage > div {
+  min-height: 46px;
+  overflow-x: auto;
+  color: var(--text);
+  line-height: 1.55;
+}
+
+.ch1-field-stage p {
+  font-size: 12.5px;
+}
+
+.ch1-field-stage.is-current {
+  border-color: color-mix(in srgb, var(--accent) 64%, var(--line));
+  background: color-mix(in srgb, var(--accent) 10%, var(--surface-solid));
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--accent) 18%, transparent);
+}
+
+.ch1-field-stage.is-outside > strong {
+  color: var(--coral, #b75c3a);
+}
+
+.ch1-field-stage.is-reducible > strong {
+  color: var(--accent-strong);
+}
+
+.ch1-current-factor {
+  margin: 0;
+  padding: 12px 14px;
+  border-left: 3px solid var(--accent);
+  background: color-mix(in srgb, var(--accent) 7%, var(--surface-solid));
+  line-height: 1.65;
+}
+
 /* Section-specific balance fixes. */
 .ch1-section-number-fields .ch1-two-col {
   grid-template-columns: minmax(0, 1.18fr) minmax(300px, 0.82fr);
@@ -508,6 +701,18 @@
   .ch1-coeff-analysis-grid {
     grid-template-columns: 1fr;
   }
+
+  .ch1-field-check {
+    grid-template-columns: 1fr;
+  }
+
+  .ch1-field-track {
+    grid-template-columns: 1fr;
+  }
+
+  .ch1-domain-link {
+    min-height: 18px;
+  }
 }
 
 @media (max-width: 760px) {
@@ -574,6 +779,19 @@
     height: 250px;
     min-height: 250px;
     max-height: 250px;
+  }
+
+  .ch1-factor-workbench,
+  .ch1-closure-card {
+    padding: 14px;
+  }
+
+  .ch1-factor-workbench > header {
+    align-items: start;
+  }
+
+  .ch1-polynomial-controls {
+    width: 100%;
   }
 }
 

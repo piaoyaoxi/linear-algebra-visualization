@@ -49,9 +49,9 @@
     <link rel="stylesheet" href="./visuals/ch10/section4-presentation.css?v=10l" />
     <link rel="stylesheet" href="./visuals/page-toc-rail.css?v=21i" />
     <link rel="stylesheet" href="./visuals/theme-transition.css?v=dk1" />
-    <link rel="stylesheet" href="./visuals/liquid-glass.css?v=se1" />
+    <link rel="stylesheet" href="./visuals/liquid-glass.css?v=lq1" />
     <link rel="stylesheet" href="./visuals/sidebar.css?v=sb2" />
-    <link rel="stylesheet" href="./visuals/search.css?v=se2" />
+    <link rel="stylesheet" href="./visuals/search.css?v=lq1" />
     <script defer src="./vendor/katex/katex.min.js"></script>
     <script defer src="./app.js?v=se1"></script>
     <script defer src="./visuals/theme-transition.js?v=dk1"></script>
@@ -228,7 +228,7 @@
     <script defer src="./guide-nav.js"></script>
     <script defer src="./visuals/page-toc-rail.js?v=21i"></script>
     <script defer src="./visuals/search-index.js?v=se1"></script>
-    <script defer src="./visuals/search.js?v=se4"></script>
+    <script defer src="./visuals/search.js?v=lq1"></script>
   </head>
   <body>
     <header class="topbar">
@@ -292,23 +292,37 @@
     <div class="drawer-backdrop" id="drawerBackdrop"></div>
     <div class="search-modal" id="searchModal" hidden data-phase="closed">
       <div class="search-modal-backdrop" data-search-close tabindex="-1" aria-hidden="true"></div>
+      <svg class="search-liquid-shadow" aria-hidden="true" focusable="false">
+        <defs>
+          <filter id="searchLiquidShadowFar" x="-20%" y="-20%" width="140%" height="160%"><feGaussianBlur stdDeviation="18" /></filter>
+          <filter id="searchLiquidShadowNear" x="-10%" y="-10%" width="120%" height="130%"><feGaussianBlur stdDeviation="2" /></filter>
+          <mask id="searchLiquidShadowMask" maskUnits="userSpaceOnUse" x="-100" y="-100" width="10000" height="10000">
+            <rect x="-100" y="-100" width="10000" height="10000" fill="#fff" />
+            <path fill="#000" />
+          </mask>
+        </defs>
+        <g mask="url(#searchLiquidShadowMask)">
+          <path class="search-liquid-shadow-far" filter="url(#searchLiquidShadowFar)" transform="translate(0 16)" />
+          <path class="search-liquid-shadow-near" filter="url(#searchLiquidShadowNear)" transform="translate(0 1)" />
+        </g>
+      </svg>
+      <div class="search-liquid-surface" aria-hidden="true"></div>
+      <svg class="search-liquid-lines" aria-hidden="true" focusable="false">
+        <defs>
+          <linearGradient id="searchLiquidRimGradient" gradientUnits="userSpaceOnUse">
+            <stop class="search-liquid-rim-strong" offset="0" />
+            <stop class="search-liquid-rim-weak" offset="0.34" />
+            <stop class="search-liquid-rim-weak" offset="0.64" />
+            <stop class="search-liquid-rim-back" offset="1" />
+          </linearGradient>
+          <clipPath id="searchLiquidClip"><path /></clipPath>
+        </defs>
+        <path class="search-liquid-hairline" />
+        <path class="search-liquid-rim" clip-path="url(#searchLiquidClip)" />
+      </svg>
       <div class="search-modal-panel" role="dialog" aria-modal="true" aria-labelledby="searchModalTitle" aria-describedby="searchModalDescription">
         <h2 class="visually-hidden" id="searchModalTitle">搜索课程内容</h2>
         <div class="search-modal-bar-anchor" aria-hidden="true"></div>
-        <svg class="search-results-merge-field" aria-hidden="true" preserveAspectRatio="none">
-          <defs>
-            <filter id="searchLiquidFusion" x="-12%" y="-32%" width="124%" height="164%" color-interpolation-filters="sRGB">
-              <feGaussianBlur in="SourceGraphic" stdDeviation="5 8" result="searchFusionBlur" />
-              <feColorMatrix in="searchFusionBlur" type="matrix" values="0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 24 -16.3" result="searchFusionAlpha" />
-              <feFlood class="search-liquid-flood" result="searchFusionColor" />
-              <feComposite in="searchFusionColor" in2="searchFusionAlpha" operator="in" />
-            </filter>
-          </defs>
-          <g filter="url(#searchLiquidFusion)">
-            <path class="search-liquid-blob search-liquid-results-blob" />
-            <path class="search-liquid-blob search-liquid-top-blob" />
-          </g>
-        </svg>
         <div class="search-results-viewport">
           <div class="search-results-panel" aria-hidden="true" inert>
             <div class="search-modal-body" id="searchModalDescription" aria-live="polite"></div>

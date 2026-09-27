@@ -2,6 +2,10 @@
  * Top-bar controls and course search.
  * Round glass controls; the search capsule and its results surface use the
  * liquid-glass material tokens. Layout and motion hooks follow visuals/search.js.
+ *
+ * While search is open the capsule element only carries the input: the glass
+ * is drawn by .search-liquid-surface, one clipped body that covers the
+ * capsule, the bridge and the results panel.
  */
 
 :root {
@@ -47,24 +51,27 @@
   height: 100%;
   padding: 0 17px;
   border-radius: 999px;
-  background:
-    linear-gradient(180deg, var(--lg-sheen), transparent 58%),
-    color-mix(in srgb, var(--lg-panel-tint) calc(var(--search-open-progress, 0) * 100%), var(--lg-tint));
 }
 
-:is(body.dark, body) .search-capsule-stage .topbar-search:hover {
-  background:
-    linear-gradient(180deg, var(--lg-sheen), transparent 58%),
-    var(--lg-tint-hover);
+:is(body.dark, body).search-modal-open .search-capsule-stage .topbar-search,
+:is(body.dark, body).search-modal-open .search-capsule-stage .topbar-search:hover,
+.lg-refract :is(body.dark, body).search-modal-open .search-capsule-stage .topbar-search {
+  background: transparent;
+  box-shadow: none;
+  -webkit-backdrop-filter: none;
+  backdrop-filter: none;
+  transform: none;
+  transition: none;
+}
+
+body.search-modal-open .topbar-search::before,
+body.search-modal-open .topbar-search::after {
+  display: none;
 }
 
 .topbar-search > svg,
 .topbar-search > .topbar-search-text {
   opacity: var(--search-closed-content-opacity, 1);
-}
-
-:is(body.dark, body) .topbar-search::before {
-  opacity: var(--search-edge-opacity, 1);
 }
 
 .topbar-search:not(.is-interactive) {
@@ -73,12 +80,6 @@
 
 .topbar-search.is-pointer-focus-return:focus-visible {
   outline: 0;
-}
-
-/* The capsule resizes every frame while searching; keep it to plain glass. */
-.lg-refract body.search-modal-open .topbar-search[data-lg-filter] {
-  -webkit-backdrop-filter: blur(var(--lg-blur)) saturate(var(--lg-saturate)) brightness(var(--lg-brightness));
-  backdrop-filter: blur(var(--lg-blur)) saturate(var(--lg-saturate)) brightness(var(--lg-brightness));
 }
 
 .search-capsule-open {
@@ -227,7 +228,7 @@ body.search-modal-open .topbar-right {
   position: fixed;
   top: clamp(96px, 14vh, 132px);
   left: 50%;
-  z-index: 2;
+  z-index: 4;
   display: grid;
   grid-template-rows: 56px minmax(190px, 1fr);
   width: min(590px, calc(100vw - 32px));
@@ -272,53 +273,92 @@ body.search-modal-open .topbar-right {
   z-index: 1;
   overflow: hidden;
   border-radius: 23px;
-  opacity: 0;
+  background: none;
+  box-shadow: none;
+  -webkit-backdrop-filter: none;
+  backdrop-filter: none;
   pointer-events: none;
   visibility: hidden;
-  transform: translateY(-66px);
-  transform-origin: 50% 28px;
-  will-change: clip-path, opacity, transform;
-  box-shadow:
-    0 0 0 0.5px var(--lg-hairline),
-    inset 0 1px 1px var(--lg-sheen),
-    0 28px 64px rgb(20 28 40 / calc(0.16 * (1 - var(--search-surface-merge, 0)))),
-    0 5px 16px rgb(20 28 40 / calc(0.08 * (1 - var(--search-surface-merge, 0))));
+  will-change: clip-path, transform;
 }
 
-body.dark .search-results-panel {
-  box-shadow:
-    0 0 0 0.5px var(--lg-hairline),
-    inset 0 1px 1px var(--lg-sheen),
-    0 32px 80px rgb(0 0 0 / calc(0.5 * (1 - var(--search-surface-merge, 0)))),
-    0 5px 18px rgb(0 0 0 / calc(0.3 * (1 - var(--search-surface-merge, 0))));
-}
+/* ---------- Liquid body ---------- */
 
-:is(body.dark, body) .search-results-panel::before {
-  opacity: var(--search-edge-opacity, 1);
-}
+.search-liquid-surface {
+  --m: var(--search-material, 0);
 
-.search-results-merge-field {
-  position: absolute;
+  position: fixed;
   top: 0;
   left: 0;
   z-index: 2;
-  width: 100%;
-  height: 132px;
-  overflow: visible;
-  color: var(--lg-panel-tint);
-  opacity: 0;
+  width: 0;
+  height: 0;
+  background:
+    linear-gradient(180deg, var(--lg-sheen), transparent 40px),
+    color-mix(in srgb, var(--lg-panel-tint) calc(var(--m) * 100%), var(--search-start-tint, var(--lg-tint)));
+  -webkit-backdrop-filter: blur(calc(var(--lg-blur) + (var(--lg-panel-blur) - var(--lg-blur)) * var(--m)))
+    saturate(calc(var(--lg-saturate) + (170% - var(--lg-saturate)) * var(--m)));
+  backdrop-filter: blur(calc(var(--lg-blur) + (var(--lg-panel-blur) - var(--lg-blur)) * var(--m)))
+    saturate(calc(var(--lg-saturate) + (170% - var(--lg-saturate)) * var(--m)));
   pointer-events: none;
-  will-change: opacity;
-  -webkit-mask-image: linear-gradient(to bottom, transparent 0, #000 44px, #000 78px, transparent 116px);
-  mask-image: linear-gradient(to bottom, transparent 0, #000 44px, #000 78px, transparent 116px);
+  will-change: transform, clip-path;
 }
 
-.search-liquid-blob {
-  fill: currentColor;
+.search-liquid-shadow,
+.search-liquid-lines {
+  position: fixed;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+  pointer-events: none;
 }
 
-.search-liquid-flood {
-  flood-color: currentColor;
+.search-liquid-shadow {
+  z-index: 1;
+  --search-shadow-far: rgba(24, 44, 38, 0.13);
+  --search-shadow-near: rgba(24, 44, 38, 0.07);
+}
+
+body.dark .search-liquid-shadow {
+  --search-shadow-far: rgba(0, 0, 0, 0.46);
+  --search-shadow-near: rgba(0, 0, 0, 0.28);
+}
+
+.search-liquid-shadow-far {
+  fill: var(--search-shadow-far);
+}
+
+.search-liquid-shadow-near {
+  fill: var(--search-shadow-near);
+}
+
+.search-liquid-lines {
+  z-index: 3;
+}
+
+.search-liquid-hairline {
+  fill: none;
+  stroke: var(--lg-hairline);
+  stroke-width: 1;
+}
+
+.search-liquid-rim {
+  fill: none;
+  stroke: url(#searchLiquidRimGradient);
+  stroke-width: 2;
+}
+
+.search-liquid-rim-strong {
+  stop-color: var(--lg-rim-strong);
+}
+
+.search-liquid-rim-weak {
+  stop-color: var(--lg-rim-weak);
+}
+
+.search-liquid-rim-back {
+  stop-color: var(--lg-rim-back);
 }
 
 /* ---------- Results ---------- */

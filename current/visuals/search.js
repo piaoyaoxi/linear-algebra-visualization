@@ -1,10 +1,12 @@
 /*
- * Course search: the top-bar capsule travels to the search position, then a
- * liquid results surface is emitted from behind it and unfolds downward.
- * Clearing the query or closing reverses the same phases.
+ * Course search: the top-bar capsule travels to the search position, then the
+ * results grow out of it as one continuous glass body and pinch off into their
+ * own panel. Clearing the query or closing runs the same shape in reverse.
  *
- * Spring constants, morph geometry and result rendering come from the
- * Liquid Glass draft (PR #30); this module drives search on its own.
+ * One glass surface draws the capsule, the bridge and the results panel, so
+ * there is never a seam or a second material between them. The capsule
+ * element only carries the input; spring constants and result rendering come
+ * from the Liquid Glass draft (PR #30).
  */
 (() => {
   "use strict";
@@ -94,68 +96,112 @@
     }
   }
 
-  const REFERENCE_OPEN_GAP = 10;
-  const REFERENCE_CLOSED_GAP = -56;
-  const REFERENCE_TOP_HEIGHT = 80;
-  const REFERENCE_GAP_SCALE = 1.4;
-  const REFERENCE_OPEN_TRAVEL = REFERENCE_TOP_HEIGHT + REFERENCE_OPEN_GAP * REFERENCE_GAP_SCALE;
+  /*
+   * The search body is one outline: the capsule on top, the results panel
+   * below and, while they are joined, a bridge between them.
+   *
+   *   grow  - the panel lengthens out of the capsule while still fused, so it
+   *           is already recognisably the results panel before it separates;
+   *   sep   - the corners round again, a gap opens from both sides towards
+   *           the middle and the last bridge pinches into two short tips
+   *           that are drawn back into each body.
+   *
+   * All values are continuous in `s`, so reversing the spring retraces the
+   * same shapes: the panel rejoins the capsule, then shortens into it.
+   */
+  const FUSED_RADIUS = 0;
 
-  const topMorphPath = (x, y, width, height, bow) => {
-    const radius = height / 2;
-    const right = x + width;
-    const bottom = y + height;
-    const straightSpan = Math.max(0, width - radius * 2);
-    const curveInset = straightSpan * 0.22;
-    const curveStart = right - radius - curveInset;
-    const curveEnd = x + radius + curveInset;
-    const curveWidth = Math.max(0, curveStart - curveEnd);
-    const curveDepth = (bow * 4) / 3;
-    return [
-      `M ${x + radius} ${y}`,
-      `H ${right - radius}`,
-      `A ${radius} ${radius} 0 0 1 ${right - radius} ${bottom}`,
-      `H ${curveStart}`,
-      `C ${curveStart - curveWidth / 3} ${bottom + curveDepth}, ${curveEnd + curveWidth / 3} ${bottom + curveDepth}, ${curveEnd} ${bottom}`,
-      `H ${x + radius}`,
-      `A ${radius} ${radius} 0 0 1 ${x + radius} ${y}`,
-      "Z",
-    ].join(" ");
-  };
+  const liquidShape = (capsule, panel, s, stretch) => {
+    const { left: L, top: ty, width: W, height: hc } = capsule;
+    const R = L + W;
+    const cx = L + W / 2;
+    const tb = ty + hc;
+    const rt = hc / 2;
+    const gap = Math.max(0, panel.top - tb);
 
-  const resultsMorphPath = (x, y, width, height, bow) => {
-    const radius = Math.min(height / 2, width / 2);
-    const right = x + width;
-    const bottom = y + height;
-    const straightSpan = Math.max(0, width - radius * 2);
-    const curveInset = straightSpan * 0.22;
-    const curveStart = x + radius + curveInset;
-    const curveEnd = right - radius - curveInset;
-    const curveWidth = Math.max(0, curveEnd - curveStart);
-    const curveDepth = (bow * 4) / 3;
-    return [
-      `M ${x + radius} ${y}`,
-      `H ${curveStart}`,
-      `C ${curveStart + curveWidth / 3} ${y - curveDepth}, ${curveEnd - curveWidth / 3} ${y - curveDepth}, ${curveEnd} ${y}`,
-      `H ${right - radius}`,
-      `A ${radius} ${radius} 0 0 1 ${right} ${y + radius}`,
-      `V ${bottom - radius}`,
-      `A ${radius} ${radius} 0 0 1 ${right - radius} ${bottom}`,
-      `H ${x + radius}`,
-      `A ${radius} ${radius} 0 0 1 ${x} ${bottom - radius}`,
-      `V ${y + radius}`,
-      `A ${radius} ${radius} 0 0 1 ${x + radius} ${y}`,
-      "Z",
-    ].join(" ");
-  };
+    const grow = smootherstep(range(s, 0, 0.72));
+    const h = panel.height * grow * (1 + stretch * 1.6);
+    const sep = smootherstep(range(s, 0.46, 0.98));
+    const round = smootherstep(range(sep, 0, 0.8));
+    const up = smoothstep(range(h, 0, 40));
 
-  const referenceMorphGeometry = (progress) => {
-    const gap = lerp(REFERENCE_CLOSED_GAP, REFERENCE_OPEN_GAP, progress);
-    const extension = Math.max(0, REFERENCE_TOP_HEIGHT + gap * REFERENCE_GAP_SCALE);
-    const absorption = smoothstep(range(extension, 18, 38));
-    const shoulder = 8 * Math.exp(-Math.pow((gap + 27) / 6, 2));
-    const y = ((extension * absorption + shoulder) / REFERENCE_OPEN_TRAVEL) * 66;
-    const pull = Math.max(0, gap - REFERENCE_OPEN_GAP);
-    return { y, bow: Math.min(6, pull * 0.95) };
+    const rtb = lerp(rt, lerp(FUSED_RADIUS, rt, round), up);
+    const wb = lerp(W - 2 * rt, W, up);
+    const bl = cx - wb / 2;
+    const br = cx + wb / 2;
+    const rbb = Math.min(panel.radius, h / 2, wb / 2);
+    const rbt = Math.max(0, Math.min(lerp(FUSED_RADIUS * up, panel.radius, round), h - rbb, wb / 2));
+    const g = gap * smoothstep(range(sep, 0, 0.6));
+    const yt = tb + g;
+    const yb = yt + h;
+    const mid = tb + g / 2;
+
+    // Bridge: waist half-width m, flaring to e where it meets both bodies.
+    const edge = Math.max(0, Math.min(W / 2 - rtb, wb / 2 - rbt));
+    const flare = Math.min(edge, g * 1.6);
+    const zip = smootherstep(range(sep, 0.08, 0.84));
+    const pinched = zip >= 1;
+    const tipScale = pinched ? 1 - smoothstep(range(sep, 0.84, 1)) : 1;
+    const m = pinched ? 0 : (edge - flare) * (1 - zip);
+    const e = pinched ? flare * tipScale : m + flare;
+    const tip = (g / 2) * tipScale;
+    const spread = (e - m) * 0.35;
+
+    const path = (ox = 0, oy = 0) => {
+      const x = (value) => px(value - ox);
+      const y = (value) => px(value - oy);
+      const arc = (r, toX, toY) => `A ${px(r)} ${px(r)} 0 0 1 ${x(toX)} ${y(toY)}`;
+      const top = [
+        `M ${x(L + rt)} ${y(ty)}`,
+        `H ${x(R - rt)}`,
+        arc(rt, R, ty + rt),
+        `V ${y(Math.max(ty + rt, tb - rtb))}`,
+        arc(rtb, R - rtb, tb),
+        `H ${x(cx + e)}`,
+      ];
+      const panelRightToLeft = [
+        `H ${x(br - rbt)}`,
+        arc(rbt, br, yt + rbt),
+        `V ${y(Math.max(yt + rbt, yb - rbb))}`,
+        arc(rbb, br - rbb, yb),
+        `H ${x(bl + rbb)}`,
+        arc(rbb, bl, yb - rbb),
+        `V ${y(yt + rbt)}`,
+        arc(rbt, bl + rbt, yt),
+        `H ${x(cx - e)}`,
+      ];
+      const topClose = [`H ${x(L + rtb)}`, arc(rtb, L, tb - rtb), `V ${y(ty + rt)}`, arc(rt, L + rt, ty), "Z"];
+
+      if (h <= 0.01) {
+        return [...top, ...topClose].join(" ");
+      }
+
+      if (!pinched) {
+        return [
+          ...top,
+          `C ${x(cx + m + spread)} ${y(tb)} ${x(cx + m)} ${y(mid - tip * 0.55)} ${x(cx + m)} ${y(mid)}`,
+          `C ${x(cx + m)} ${y(mid + tip * 0.55)} ${x(cx + m + spread)} ${y(yt)} ${x(cx + e)} ${y(yt)}`,
+          ...panelRightToLeft,
+          `C ${x(cx - m - spread)} ${y(yt)} ${x(cx - m)} ${y(mid + tip * 0.55)} ${x(cx - m)} ${y(mid)}`,
+          `C ${x(cx - m)} ${y(mid - tip * 0.55)} ${x(cx - m - spread)} ${y(tb)} ${x(cx - e)} ${y(tb)}`,
+          ...topClose,
+        ].join(" ");
+      }
+
+      return [
+        ...top,
+        `C ${x(cx + spread)} ${y(tb)} ${x(cx)} ${y(tb + tip * 0.45)} ${x(cx)} ${y(tb + tip)}`,
+        `C ${x(cx)} ${y(tb + tip * 0.45)} ${x(cx - spread)} ${y(tb)} ${x(cx - e)} ${y(tb)}`,
+        ...topClose,
+        `M ${x(cx - e)} ${y(yt)}`,
+        `C ${x(cx - spread)} ${y(yt)} ${x(cx)} ${y(yt - tip * 0.45)} ${x(cx)} ${y(yt - tip)}`,
+        `C ${x(cx)} ${y(yt - tip * 0.45)} ${x(cx + spread)} ${y(yt)} ${x(cx + e)} ${y(yt)}`,
+        ...panelRightToLeft.slice(0, -1),
+        "Z",
+      ].join(" ");
+    };
+
+    return { path, panelTop: yt, panelHeight: h, bottom: h > 0.01 ? yb : tb };
   };
 
   const appendHighlightedText = (element, value, rawQuery) => {
@@ -194,7 +240,9 @@
         backdrop: modal?.querySelector(".search-modal-backdrop"),
         panel: modal?.querySelector(".search-modal-panel"),
         anchor: modal?.querySelector(".search-modal-bar-anchor"),
-        mergeField: modal?.querySelector(".search-results-merge-field"),
+        surface: modal?.querySelector(".search-liquid-surface"),
+        shadow: modal?.querySelector(".search-liquid-shadow"),
+        lines: modal?.querySelector(".search-liquid-lines"),
         results: modal?.querySelector(".search-results-panel"),
         resultsBody: modal?.querySelector(".search-modal-body"),
         input: document.querySelector("#searchModalInput"),
@@ -207,10 +255,14 @@
       this.restoreFocus = false;
       this.restoreFocusVisible = false;
       this.resultsInteractive = false;
-      this.blobs = {
-        top: this.el.mergeField.querySelector(".search-liquid-top-blob"),
-        results: this.el.mergeField.querySelector(".search-liquid-results-blob"),
-      };
+      this.capsuleRect = null;
+      this.resultsState = { value: 0, raw: 0, target: 0 };
+      this.pointer = null;
+      this.liquidPaths = [
+        ...this.el.shadow.querySelectorAll("path"),
+        ...this.el.lines.querySelectorAll("path"),
+      ];
+      this.rimGradient = this.el.lines.querySelector("linearGradient");
 
       const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
       this.motion = new ReversibleSpring({
@@ -222,10 +274,10 @@
         onSettle: (value) => this.settle(value),
       });
       this.resultsMotion = new ReversibleSpring({
-        openFrequency: reduced ? 50 : 8.6,
-        closeFrequency: reduced ? 52 : 9.4,
-        openDamping: reduced ? 1 : 0.86,
-        closeDamping: reduced ? 1 : 0.9,
+        openFrequency: reduced ? 50 : 10.5,
+        closeFrequency: reduced ? 52 : 12.5,
+        openDamping: reduced ? 1 : 0.78,
+        closeDamping: reduced ? 1 : 0.86,
         onUpdate: (value, raw, target) => this.renderResultsMotion(value, raw, target),
         onSettle: (value) => this.settleResults(value),
       });
@@ -257,6 +309,13 @@
         if (event.target.closest?.(".search-result-link")) this.close({ skipMerge: true });
       });
       document.addEventListener("keydown", (event) => this.onKeydown(event));
+      document.addEventListener(
+        "pointermove",
+        (event) => {
+          this.pointer = { x: event.clientX, y: event.clientY };
+        },
+        { passive: true },
+      );
       window.addEventListener("resize", () => this.onResize(), { passive: true });
       window.addEventListener("la-themestart", () => this.close({ skipMerge: true }));
     }
@@ -348,6 +407,7 @@
     beginReturn() {
       if (this.phase === "closed") return;
       this.phase = "returning";
+      this.setStartTint(this.isPointerOverHome());
       this.setCapsuleInteraction(false);
       if (this.resultsMotion.value > 0.001 || this.resultsMotion.target) {
         this.setResultsInert(true);
@@ -375,8 +435,21 @@
       }
     }
 
+    // The surface starts and ends as the resting capsule; match its hover tint.
+    setStartTint(hovered) {
+      this.el.surface.style.setProperty("--search-start-tint", hovered ? "var(--lg-tint-hover)" : "var(--lg-tint)");
+    }
+
+    isPointerOverHome() {
+      const start = this.geometry?.start;
+      if (!start || !this.pointer || !this.pointerFineQuery.matches) return false;
+      const { x, y } = this.pointer;
+      return x >= start.left && x <= start.left + start.width && y >= start.top && y <= start.top + start.height;
+    }
+
     mount() {
       const { modal, open, resultsBody, results } = this.el;
+      const hovered = open.matches(":hover");
       modal.hidden = false;
       this.phase = "opening";
       modal.dataset.resultsPhase = "closed";
@@ -389,7 +462,9 @@
       this.setResultsInert(true);
       this.measure();
       this.pinCapsule();
+      this.setStartTint(hovered);
       this.resultsMotion.jump(0);
+      this.render(0, 0, 1);
     }
 
     // Take the capsule out of the centred flex flow so growing its width does
@@ -405,18 +480,24 @@
     }
 
     measure() {
-      const { capsule, anchor, panel, results } = this.el;
+      const { capsule, anchor, results } = this.el;
       // Read the capsule's resting box: drop the motion styles for one
       // synchronous layout read (no paint happens in between).
       const saved = capsule.getAttribute("style");
       capsule.removeAttribute("style");
       const home = capsule.getBoundingClientRect();
       if (saved) capsule.setAttribute("style", saved);
+      const viewport = results.offsetParent.getBoundingClientRect();
       this.geometry = {
         start: { left: home.left, top: home.top, width: home.width, height: home.height },
         end: anchor.getBoundingClientRect(),
-        panelWidth: panel.getBoundingClientRect().width,
-        resultsHeight: results.getBoundingClientRect().height || 344,
+        panel: {
+          left: viewport.left,
+          top: viewport.top + results.offsetTop,
+          width: viewport.width,
+          height: results.offsetHeight || 344,
+          radius: parseFloat(getComputedStyle(results).borderTopLeftRadius) || 22,
+        },
       };
     }
 
@@ -435,7 +516,6 @@
       backdrop.style.opacity = backdropProgress.toFixed(4);
       open.style.setProperty("--search-closed-content-opacity", closedContentProgress.toFixed(4));
       capsuleOpen.style.opacity = openContentProgress.toFixed(4);
-      open.style.setProperty("--search-open-progress", travelProgress.toFixed(4));
 
       const interactive = p > 0.88 && target === 1 && (this.phase === "opening" || this.phase === "open");
       open.classList.toggle("is-interactive", !interactive && p < 0.12);
@@ -444,11 +524,48 @@
       const { start, end } = this.geometry;
       const press = target === 1 ? Math.sin(range(p, 0, 0.16) * Math.PI) * 0.008 : 0;
       const pulse = 1 - press + overshoot * 0.08;
-      capsule.style.width = `${px(lerp(start.width, end.width, travelProgress) * pulse)}px`;
-      capsule.style.height = `${px(lerp(start.height, end.height, travelProgress) * pulse)}px`;
-      capsule.style.transform = `translate3d(${px(lerp(0, end.left - start.left, travelProgress))}px, ${px(
-        lerp(0, end.top - start.top, travelProgress),
-      )}px, 0)`;
+      const rect = {
+        left: start.left + lerp(0, end.left - start.left, travelProgress),
+        top: start.top + lerp(0, end.top - start.top, travelProgress),
+        width: lerp(start.width, end.width, travelProgress) * pulse,
+        height: lerp(start.height, end.height, travelProgress) * pulse,
+      };
+      capsule.style.width = `${px(rect.width)}px`;
+      capsule.style.height = `${px(rect.height)}px`;
+      capsule.style.transform = `translate3d(${px(rect.left - start.left)}px, ${px(rect.top - start.top)}px, 0)`;
+      this.capsuleRect = rect;
+      this.el.surface.style.setProperty("--search-material", travelProgress.toFixed(4));
+      this.drawLiquid();
+    }
+
+    // Draw the single glass body: surface clip, shadow, hairline and rim.
+    drawLiquid() {
+      const capsule = this.capsuleRect;
+      const panel = this.geometry?.panel;
+      if (!capsule || !panel) return;
+      const { value, raw, target } = this.resultsState;
+      const stretch = target === 1 ? clamp(raw - 1, 0, 0.04) : 0;
+      const shape = liquidShape(capsule, panel, clamp(value), stretch);
+      const pad = 2;
+      const left = Math.min(capsule.left, panel.left) - pad;
+      const top = capsule.top - pad;
+      const width = Math.max(capsule.left + capsule.width, panel.left + panel.width) + pad - left;
+      const height = shape.bottom + pad - top;
+
+      const { surface } = this.el;
+      surface.style.transform = `translate3d(${px(left)}px, ${px(top)}px, 0)`;
+      surface.style.width = `${px(width)}px`;
+      surface.style.height = `${px(height)}px`;
+      surface.style.clipPath = `path("${shape.path(left, top)}")`;
+
+      const d = shape.path();
+      this.liquidPaths.forEach((path) => path.setAttribute("d", d));
+      this.rimGradient?.setAttribute("x1", px(left));
+      this.rimGradient?.setAttribute("y1", px(top));
+      // Same direction as the 135deg rim on the other glass controls.
+      this.rimGradient?.setAttribute("x2", px(left + (width + height) / 2));
+      this.rimGradient?.setAttribute("y2", px(top + (width + height) / 2));
+      this.liquidShape = shape;
     }
 
     settle(value) {
@@ -467,7 +584,6 @@
       modal.hidden = true;
       capsule.removeAttribute("style");
       open.style.removeProperty("--search-closed-content-opacity");
-      open.style.removeProperty("--search-open-progress");
       open.classList.add("is-interactive");
       open.removeAttribute("tabindex");
       capsuleOpen.classList.remove("is-interactive");
@@ -478,6 +594,8 @@
       resultsBody.replaceChildren();
       this.body.classList.remove("search-modal-open");
       this.geometry = null;
+      this.capsuleRect = null;
+      this.liquidShape = null;
       if (this.restoreFocus) {
         open.classList.toggle("is-pointer-focus-return", !this.restoreFocusVisible);
         requestAnimationFrame(() => open.focus({ preventScroll: true }));
@@ -502,42 +620,28 @@
     }
 
     renderResultsMotion(progress, raw, target) {
-      const { results, resultsBody, mergeField, open } = this.el;
+      const { results, resultsBody } = this.el;
       const p = clamp(progress);
-      const resultsHeight = this.geometry?.resultsHeight || results.offsetHeight || 344;
-      const panelWidth = this.geometry?.panelWidth || this.el.panel.offsetWidth || 590;
+      this.resultsState = { value: progress, raw, target };
+      this.drawLiquid();
 
-      // 1. a capsule leaves from behind the fixed upper capsule;
-      // 2. it settles 10px below it;
-      // 3. only then does it grow downward and reveal its content.
-      const detachProgress = smootherstep(range(p, 0.02, 0.58));
-      const geometry = referenceMorphGeometry(detachProgress);
-      const resultTopY = geometry.y;
-      const expandProgress = smootherstep(range(p, 0.58, 0.92));
-      const visibleHeight = lerp(56, resultsHeight, expandProgress);
-      const clippedBottom = Math.max(0, resultsHeight - visibleHeight);
-      const clippedTop = Math.max(0, 56 - resultTopY);
-      const radius = lerp(28, 23, expandProgress);
-      const bodyProgress = smootherstep(range(p, 0.86, 0.995));
-
+      // The content sits in the final panel box: it follows the panel's top
+      // edge and is revealed by the panel's current length.
+      const panel = this.geometry?.panel;
+      const shape = this.liquidShape;
+      if (panel && shape) {
+        const hidden = Math.max(0, panel.height - shape.panelHeight);
+        results.style.transform = `translateY(${px(shape.panelTop - panel.top)}px)`;
+        results.style.clipPath = `inset(0 0 ${px(hidden)}px 0 round ${px(panel.radius)}px)`;
+      }
       results.style.visibility = p > 0.001 ? "visible" : "hidden";
-      results.style.opacity = p > 0.001 ? "1" : "0";
-      results.style.clipPath = `inset(${px(clippedTop)}px 0 ${px(clippedBottom)}px 0 round ${px(radius)}px)`;
-      results.style.transform = `translateY(${px(resultTopY - 66)}px)`;
+      const bodyProgress = smootherstep(range(p, 0.6, 0.97));
       resultsBody.style.opacity = bodyProgress.toFixed(4);
-      resultsBody.style.transform = `translateY(${px(lerp(7, 0, bodyProgress))}px)`;
+      resultsBody.style.transform = `translateY(${px(lerp(8, 0, bodyProgress))}px)`;
 
-      const fusionEnter = smootherstep(range(detachProgress, 0.01, 0.16));
-      const fusionRelease = 1 - smootherstep(range(detachProgress, 0.58, 0.96));
-      const merge = fusionEnter * fusionRelease;
-      results.style.setProperty("--search-surface-merge", merge.toFixed(4));
-      results.style.setProperty("--search-edge-opacity", (1 - merge).toFixed(4));
-      open.style.setProperty("--search-edge-opacity", (1 - merge * 0.76).toFixed(4));
-
-      mergeField.setAttribute("viewBox", `0 0 ${px(panelWidth)} 132`);
-      this.blobs.top?.setAttribute("d", topMorphPath(0, 0, panelWidth, 56, geometry.bow));
-      this.blobs.results?.setAttribute("d", resultsMorphPath(0, resultTopY, panelWidth, 56, geometry.bow));
-      mergeField.style.opacity = (merge * 0.82).toFixed(4);
+      // Closing with results: once the panel is mostly absorbed the capsule
+      // starts home and carries the last of it along, with no pause between.
+      if (this.phase === "merging" && target === 0 && p < 0.2) this.beginReturn();
 
       const interactive = p > 0.94 && target === 1 && this.phase === "open";
       if (interactive !== this.resultsInteractive) this.setResultsInert(!interactive);

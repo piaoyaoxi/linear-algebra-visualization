@@ -79,6 +79,8 @@
   }
 
   function updateRefraction(element) {
+    // The search capsule resizes every frame while search is open.
+    if (document.body.classList.contains("search-modal-open")) return;
     const rect = element.getBoundingClientRect();
     const width = Math.round(rect.width);
     const height = Math.round(rect.height);

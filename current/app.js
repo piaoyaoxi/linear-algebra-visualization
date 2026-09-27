@@ -1871,6 +1871,23 @@ function updateProgressUI() {
     const status = link.querySelector(".section-status");
     if (status) status.textContent = isDone ? "已掌握" : "未掌握";
   });
+
+  document.querySelectorAll(".chapter-group").forEach((group) => {
+    const button = group.querySelector(".nav-chapter");
+    const links = group.querySelectorAll("[data-section-link]");
+    if (!button || !links.length) return;
+    const done = [...links].filter((link) => state.completed.has(link.dataset.sectionLink)).length;
+    let badge = button.querySelector(".chapter-progress");
+    if (!badge) {
+      badge = document.createElement("span");
+      badge.className = "chapter-progress";
+      button.insertBefore(badge, button.querySelector(".chapter-arrow"));
+    }
+    badge.textContent = done ? `${done}/${links.length}` : "";
+    badge.classList.toggle("is-complete", done === links.length);
+    if (done) badge.setAttribute("aria-label", `已掌握 ${done} 节，共 ${links.length} 节`);
+    else badge.removeAttribute("aria-label");
+  });
 }
 
 function filterNav(value) {

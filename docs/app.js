@@ -62,6 +62,13 @@ function registerAlgebraChapter(chapter) {
   const index = algebraContent.chapters.findIndex((item) => item.id === normalized.id);
   if (index >= 0) algebraContent.chapters[index] = normalized;
   else algebraContent.chapters.push(normalized);
+  // Content scripts load in any order; keep textbook chapter order.
+  algebraContent.chapters.sort((a, b) => chapterOrder(a) - chapterOrder(b));
+}
+
+function chapterOrder(chapter) {
+  const match = /^ch(\d+)$/.exec(chapter.id || "");
+  return match ? Number(match[1]) : Number.MAX_SAFE_INTEGER;
 }
 
 window.registerAlgebraChapter = registerAlgebraChapter;

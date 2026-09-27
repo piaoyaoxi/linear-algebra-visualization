@@ -3331,6 +3331,20 @@ body.dark .button.primary {
   color: color-mix(in srgb, var(--surface-solid) 94%, white);
 }
 
+.button.ghost,
+body.dark .button.ghost {
+  border-color: var(--line-strong);
+  background: transparent;
+  color: var(--text);
+}
+
+.button.ghost:hover,
+body.dark .button.ghost:hover {
+  border-color: color-mix(in srgb, var(--accent) 36%, var(--line));
+  background: color-mix(in srgb, var(--surface-solid) 72%, transparent);
+  color: var(--accent-strong);
+}
+
 .segmented button,
 body.dark .segmented button {
   border-color: var(--line);

@@ -222,10 +222,10 @@
         onSettle: (value) => this.settle(value),
       });
       this.resultsMotion = new ReversibleSpring({
-        openFrequency: reduced ? 50 : 8.6,
-        closeFrequency: reduced ? 52 : 9.4,
-        openDamping: reduced ? 1 : 0.86,
-        closeDamping: reduced ? 1 : 0.9,
+        openFrequency: reduced ? 50 : 10.8,
+        closeFrequency: reduced ? 52 : 11.6,
+        openDamping: reduced ? 1 : 0.9,
+        closeDamping: reduced ? 1 : 0.92,
         onUpdate: (value, raw, target) => this.renderResultsMotion(value, raw, target),
         onSettle: (value) => this.settleResults(value),
       });
@@ -468,6 +468,8 @@
       capsule.removeAttribute("style");
       open.style.removeProperty("--search-closed-content-opacity");
       open.style.removeProperty("--search-open-progress");
+      open.style.removeProperty("--search-surface-merge");
+      open.style.removeProperty("--search-unified-merge");
       open.classList.add("is-interactive");
       open.removeAttribute("tabindex");
       capsuleOpen.classList.remove("is-interactive");
@@ -507,37 +509,48 @@
       const resultsHeight = this.geometry?.resultsHeight || results.offsetHeight || 344;
       const panelWidth = this.geometry?.panelWidth || this.el.panel.offsetWidth || 590;
 
-      // 1. a capsule leaves from behind the fixed upper capsule;
-      // 2. it settles 10px below it;
-      // 3. only then does it grow downward and reveal its content.
-      const detachProgress = smootherstep(range(p, 0.02, 0.58));
-      const geometry = referenceMorphGeometry(detachProgress);
-      const resultTopY = geometry.y;
-      const expandProgress = smootherstep(range(p, 0.58, 0.92));
+      // The lower capsule slides out from behind the fixed search capsule
+      // and, while it is still fused to it, already starts to unfold into
+      // the panel; the content follows the unfold. Travel runs slightly
+      // ahead of the spring (raw / 0.84), so the release comes before the
+      // panel reaches full height. Reversing runs the same map backwards.
+      const motionProgress = clamp(raw / 0.84);
+      const geometry = referenceMorphGeometry(motionProgress);
+      const travelProgress = Math.pow(smootherstep(motionProgress), 1.55);
+      const resultTopY = lerp(0, 66, travelProgress);
+      const expandProgress = smootherstep(range(p, 0.5, 0.99));
       const visibleHeight = lerp(56, resultsHeight, expandProgress);
       const clippedBottom = Math.max(0, resultsHeight - visibleHeight);
-      const clippedTop = Math.max(0, 56 - resultTopY);
       const radius = lerp(28, 23, expandProgress);
-      const bodyProgress = smootherstep(range(p, 0.86, 0.995));
+      const bodyProgress = smootherstep(range(p, 0.52, 0.99));
 
-      results.style.visibility = p > 0.001 ? "visible" : "hidden";
-      results.style.opacity = p > 0.001 ? "1" : "0";
-      results.style.clipPath = `inset(${px(clippedTop)}px 0 ${px(clippedBottom)}px 0 round ${px(radius)}px)`;
+      // Once the capsule heads home the rest of this layer is already under
+      // it; hide it so it is not left behind at the search position.
+      const shown = p > 0.001 && !(this.phase === "returning" && p < 0.2);
+      results.style.visibility = shown ? "visible" : "hidden";
+      results.style.opacity = shown ? "1" : "0";
+      results.style.clipPath = `inset(0 0 ${px(clippedBottom)}px 0 round ${px(radius)}px)`;
       results.style.transform = `translateY(${px(resultTopY - 66)}px)`;
       resultsBody.style.opacity = bodyProgress.toFixed(4);
       resultsBody.style.transform = `translateY(${px(lerp(7, 0, bodyProgress))}px)`;
 
-      const fusionEnter = smootherstep(range(detachProgress, 0.01, 0.16));
-      const fusionRelease = 1 - smootherstep(range(detachProgress, 0.58, 0.96));
+      const fusionEnter = smootherstep(range(p, 0.01, 0.35));
+      const fusionRelease = 1 - smootherstep(range(p, 0.55, 0.9));
       const merge = fusionEnter * fusionRelease;
       results.style.setProperty("--search-surface-merge", merge.toFixed(4));
-      results.style.setProperty("--search-edge-opacity", (1 - merge).toFixed(4));
-      open.style.setProperty("--search-edge-opacity", (1 - merge * 0.76).toFixed(4));
+      results.style.setProperty("--search-unified-merge", merge.toFixed(4));
+      open.style.setProperty("--search-surface-merge", merge.toFixed(4));
+      open.style.setProperty("--search-unified-merge", merge.toFixed(4));
 
       mergeField.setAttribute("viewBox", `0 0 ${px(panelWidth)} 132`);
       this.blobs.top?.setAttribute("d", topMorphPath(0, 0, panelWidth, 56, geometry.bow));
       this.blobs.results?.setAttribute("d", resultsMorphPath(0, resultTopY, panelWidth, 56, geometry.bow));
-      mergeField.style.opacity = (merge * 0.82).toFixed(4);
+      mergeField.style.opacity = shown ? merge.toFixed(4) : "0";
+
+      // Closing with results: head home once the lower capsule is back under
+      // the search capsule (below p = 0.18 it is within a pixel of hidden),
+      // rather than after the spring's long settling tail.
+      if (this.phase === "merging" && target === 0 && p < 0.18) this.beginReturn();
 
       const interactive = p > 0.94 && target === 1 && this.phase === "open";
       if (interactive !== this.resultsInteractive) this.setResultsInert(!interactive);

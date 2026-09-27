@@ -1,0 +1,241 @@
+#quadratic-matrix-formal .ch5s1-example {
+  display: grid;
+  gap: 10px;
+  min-height: 160px;
+  align-content: start;
+}
+
+#quadratic-matrix-formal .ch5s1-example > span {
+  width: fit-content;
+  padding: 5px 9px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 800;
+}
+
+#quadratic-matrix-formal .ch5s1-example.is-yes > span {
+  color: var(--accent-strong);
+  background: var(--accent-soft);
+}
+
+#quadratic-matrix-formal .ch5s1-example.is-no > span {
+  color: var(--coral);
+  background: color-mix(in srgb, var(--coral) 11%, var(--surface-soft));
+}
+
+#quadratic-matrix-formal .ch5s1-map-demo {
+  display: grid;
+  grid-template-columns: minmax(210px, 0.8fr) 44px minmax(260px, 1.2fr);
+  gap: 16px;
+  align-items: center;
+  padding: 22px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: var(--surface-solid);
+  box-shadow: var(--shadow-soft);
+}
+
+#quadratic-matrix-formal .ch5s1-term-list {
+  display: grid;
+  gap: 9px;
+}
+
+#quadratic-matrix-formal .ch5s1-term-list button,
+#quadratic-matrix-formal .ch5s1-matrix-map button {
+  border: 1px solid transparent;
+  border-radius: 11px;
+  background: var(--surface-soft);
+  color: var(--text);
+  cursor: pointer;
+  transition: border-color 150ms ease, background 150ms ease, color 150ms ease, transform 150ms ease, opacity 150ms ease;
+}
+
+#quadratic-matrix-formal .ch5s1-term-list button {
+  min-height: 50px;
+  padding: 8px 14px;
+  text-align: left;
+  font: inherit;
+}
+
+#quadratic-matrix-formal .ch5s1-term-list button.is-active,
+#quadratic-matrix-formal .ch5s1-matrix-map button.is-active {
+  border-color: color-mix(in srgb, var(--coral) 52%, var(--line));
+  background: color-mix(in srgb, var(--coral) 12%, var(--surface-solid));
+  color: var(--coral);
+  transform: translateY(-1px);
+}
+
+#quadratic-matrix-formal .ch5s1-term-list button:not(.is-active),
+#quadratic-matrix-formal .ch5s1-matrix-map button:not(.is-active) {
+  opacity: 0.48;
+}
+
+#quadratic-matrix-formal .ch5s1-term-list button:focus-visible,
+#quadratic-matrix-formal .ch5s1-matrix-map button:focus-visible {
+  outline: 3px solid color-mix(in srgb, var(--coral) 28%, transparent);
+  outline-offset: 2px;
+}
+
+#quadratic-matrix-formal .ch5s1-map-arrow {
+  color: var(--faint);
+  text-align: center;
+  font-size: 28px;
+  font-weight: 800;
+  pointer-events: none;
+}
+
+#quadratic-matrix-formal .ch5s1-matrix-map {
+  position: relative;
+  display: grid;
+  grid-template-columns: repeat(2, 72px);
+  gap: 9px;
+  width: fit-content;
+  margin: 0 auto;
+  padding: 16px 24px;
+}
+
+#quadratic-matrix-formal .ch5s1-matrix-map::before,
+#quadratic-matrix-formal .ch5s1-matrix-map::after {
+  content: "";
+  position: absolute;
+  top: 8px;
+  bottom: 8px;
+  width: 12px;
+  border-top: 2px solid var(--text);
+  border-bottom: 2px solid var(--text);
+  opacity: 0.72;
+  pointer-events: none;
+}
+
+#quadratic-matrix-formal .ch5s1-matrix-map::before {
+  left: 5px;
+  border-left: 2px solid var(--text);
+}
+
+#quadratic-matrix-formal .ch5s1-matrix-map::after {
+  right: 5px;
+  border-right: 2px solid var(--text);
+}
+
+#quadratic-matrix-formal .ch5s1-matrix-map button {
+  min-height: 58px;
+  font: 800 17px ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+}
+
+#quadratic-matrix-formal .ch5s1-map-copy {
+  min-height: 48px;
+  margin: 14px 0 0;
+  color: var(--muted);
+  text-align: center;
+  line-height: 1.65;
+}
+
+#quadratic-matrix-formal .ch5s1-derivation {
+  display: grid;
+  grid-template-columns: minmax(130px, 0.7fr) auto minmax(210px, 1fr) auto minmax(160px, 0.8fr) auto minmax(220px, 1fr);
+  gap: 8px;
+  align-items: center;
+  overflow-x: auto;
+  padding: 18px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: var(--surface-solid);
+}
+
+#quadratic-matrix-formal .ch5s1-derivation > div {
+  min-width: 128px;
+  padding: 12px;
+  border-radius: 12px;
+  background: var(--surface-soft);
+  text-align: center;
+}
+
+#quadratic-matrix-formal .ch5s1-derivation > span {
+  color: var(--muted);
+  font-size: 11px;
+  font-weight: 800;
+}
+
+#quadratic-matrix-interactive .ch5s1-flow {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr) auto minmax(0, 1fr);
+  align-items: center;
+  gap: 9px;
+  padding: 14px;
+  border-radius: 15px;
+  background: var(--surface-soft);
+}
+
+#quadratic-matrix-interactive .ch5s1-flow > div {
+  display: grid;
+  gap: 4px;
+  min-height: 66px;
+  place-content: center;
+  padding: 8px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: var(--surface-solid);
+  text-align: center;
+}
+
+#quadratic-matrix-interactive .ch5s1-flow > div span {
+  color: var(--muted);
+  font-size: 10px;
+}
+
+#quadratic-matrix-interactive .ch5s1-flow > b {
+  color: var(--accent-strong);
+  font-size: 20px;
+  pointer-events: none;
+}
+
+#quadratic-matrix-interactive .ch5s1-canvas-pair {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+
+#quadratic-matrix-interactive .ch5s1-canvas-pair > div {
+  min-width: 0;
+  display: grid;
+  gap: 7px;
+}
+
+#quadratic-matrix-interactive .ch5s1-canvas-pair strong {
+  color: var(--muted);
+  text-align: center;
+  font-size: 12px;
+}
+
+@media (max-width: 800px) {
+  #quadratic-matrix-formal .ch5s1-map-demo {
+    grid-template-columns: 1fr;
+  }
+
+  #quadratic-matrix-formal .ch5s1-map-arrow {
+    transform: rotate(90deg);
+  }
+
+  #quadratic-matrix-formal .ch5s1-derivation {
+    grid-template-columns: 1fr;
+  }
+
+  #quadratic-matrix-formal .ch5s1-derivation > span {
+    text-align: center;
+  }
+
+  #quadratic-matrix-interactive .ch5s1-flow {
+    grid-template-columns: 1fr;
+  }
+
+  #quadratic-matrix-interactive .ch5s1-flow > b {
+    transform: rotate(90deg);
+    text-align: center;
+  }
+}
+
+@media (max-width: 560px) {
+  #quadratic-matrix-interactive .ch5s1-canvas-pair {
+    grid-template-columns: 1fr;
+  }
+}

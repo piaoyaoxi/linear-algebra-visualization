@@ -1,0 +1,14 @@
+.symplectic-core .ch10-plot-shell {
+  max-width: 560px;
+  margin-inline: auto;
+}
+
+.symplectic-modes {
+  padding-bottom: 2px;
+}
+
+.symplectic-drag-hint {
+  margin: 12px 0 0;
+  color: var(--muted);
+  font-size: 13px;
+}

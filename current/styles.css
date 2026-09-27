@@ -42,19 +42,23 @@
 
 body.dark {
   color-scheme: dark;
-  --bg: #0b0f0e;
-  --bg-grid: rgba(200, 230, 220, 0.045);
-  --surface: rgba(255, 255, 255, 0.08);
-  --surface-solid: rgba(22, 28, 26, 0.78);
-  --surface-soft: rgba(255, 255, 255, 0.06);
-  --text: #f2f5f3;
-  --muted: #a8b3ad;
-  --faint: #7d8882;
-  --line: rgba(255, 255, 255, 0.14);
-  --line-strong: rgba(255, 255, 255, 0.24);
-  --accent: #5ee0d0;
-  --accent-strong: #8ef0e3;
-  --accent-soft: rgba(94, 224, 208, 0.14);
+  --bg: #0e121b;
+  --bg-grid: rgba(205, 215, 240, 0.04);
+  --surface: rgba(205, 215, 240, 0.06);
+  --surface-solid: rgba(22, 27, 39, 0.92);
+  --surface-soft: rgba(205, 215, 240, 0.06);
+  --text: #e9ebf1;
+  --muted: #a3a9b8;
+  --faint: #707789;
+  --line: rgba(205, 215, 240, 0.11);
+  --line-strong: rgba(205, 215, 240, 0.2);
+  /* Dark palette from the homepage painting: sky-blue accent, apricot warm. */
+  --accent: #8fb8ee;
+  --accent-strong: #bad3f5;
+  --accent-soft: rgba(143, 184, 238, 0.14);
+  --coral: #f0a583;
+  --blue: #c2aeea;
+  --gold: #ddbf84;
   --shadow:
     0 22px 56px rgba(0, 0, 0, 0.42),
     0 0 0 0.5px rgba(255, 255, 255, 0.05);
@@ -62,7 +66,7 @@ body.dark {
     0 14px 36px rgba(0, 0, 0, 0.3),
     0 0 0 0.5px rgba(255, 255, 255, 0.04);
   --glass-blur: 28px;
-  --hero-bg: #080c0b;
+  --hero-bg: #0a0d14;
   --hero-line: rgba(255, 255, 255, 0.14);
   /* Liquid Glass edge system (dark) */
   --glass-border: rgba(255, 255, 255, 0.18);
@@ -71,11 +75,11 @@ body.dark {
   --glass-rim-soft: rgba(255, 255, 255, 0.1);
   --glass-sheen-top: rgba(255, 255, 255, 0.14);
   --glass-sheen-bot: rgba(255, 255, 255, 0.03);
-  --glass-base: rgba(14, 18, 17, 0.48);
-  --glass-base-strong: rgba(16, 22, 20, 0.64);
-  --canvas-paper-top: #141a18;
-  --canvas-paper-bottom: #0e1311;
-  --canvas-paper-glow: rgba(94, 224, 208, 0.07);
+  --glass-base: rgba(18, 23, 34, 0.52);
+  --glass-base-strong: rgba(18, 23, 34, 0.7);
+  --canvas-paper-top: #161b27;
+  --canvas-paper-bottom: #11151f;
+  --canvas-paper-glow: rgba(143, 184, 238, 0.06);
 }
 
 * {
@@ -225,16 +229,16 @@ body.dark .icon-button {
 }
 
 body.dark .icon-button:hover {
-  border-color: rgba(142, 240, 227, 0.36);
+  border-color: color-mix(in srgb, var(--accent-strong) 36%, transparent);
   background:
     linear-gradient(180deg, rgba(255, 255, 255, 0.2), rgba(255, 255, 255, 0.05)),
     rgba(18, 28, 26, 0.58);
   box-shadow:
     inset 0 1px 0 rgba(255, 255, 255, 0.48),
     inset 0 -0.5px 0 rgba(255, 255, 255, 0.1),
-    0 0 0 0.5px rgba(142, 240, 227, 0.12),
+    0 0 0 0.5px color-mix(in srgb, var(--accent-strong) 12%, transparent),
     0 14px 32px rgba(0, 0, 0, 0.36);
-  color: #9ff5ea;
+  color: var(--accent-strong);
 }
 
 .icon-button:active {
@@ -776,9 +780,9 @@ body.dark .tag {
 }
 
 .hero .tag.accent {
-  border-color: rgba(67, 198, 186, 0.34);
-  background: rgba(67, 198, 186, 0.12);
-  color: #6ee4d9;
+  border-color: color-mix(in srgb, var(--accent) 34%, transparent);
+  background: color-mix(in srgb, var(--accent) 12%, transparent);
+  color: var(--accent-strong);
 }
 
 .mark-button {
@@ -929,7 +933,7 @@ body.dark .tag {
 
 body.dark .video-slot {
   background:
-    linear-gradient(90deg, rgba(67, 198, 186, 0.12), transparent),
+    linear-gradient(90deg, color-mix(in srgb, var(--accent) 12%, transparent), transparent),
     repeating-linear-gradient(135deg, rgba(231, 244, 249, 0.05) 0 1px, transparent 1px 14px);
 }
 
@@ -1035,13 +1039,13 @@ body.dark .segmented button {
 }
 
 body.dark .segmented button.is-active {
-  border-color: rgba(142, 240, 227, 0.34);
+  border-color: color-mix(in srgb, var(--accent-strong) 34%, transparent);
   background:
-    linear-gradient(180deg, rgba(142, 240, 227, 0.18), rgba(94, 224, 208, 0.08)),
+    linear-gradient(180deg, color-mix(in srgb, var(--accent-strong) 18%, transparent), color-mix(in srgb, var(--accent) 8%, transparent)),
     rgba(16, 28, 26, 0.7);
   box-shadow:
     inset 0 1px 0 rgba(255, 255, 255, 0.28),
-    0 0 0 0.5px rgba(142, 240, 227, 0.1);
+    0 0 0 0.5px color-mix(in srgb, var(--accent-strong) 10%, transparent);
   color: var(--accent-strong);
 }
 
@@ -1539,18 +1543,23 @@ body[data-route="home"].sidebar-collapsed .app-layout {
 }
 
 body.dark {
-  --bg: #0b0f0e;
-  --surface: rgba(255, 255, 255, 0.08);
-  --surface-solid: rgba(22, 28, 26, 0.78);
-  --surface-soft: rgba(255, 255, 255, 0.06);
-  --text: #f2f5f3;
-  --muted: #a8b3ad;
-  --faint: #7d8882;
-  --line: rgba(255, 255, 255, 0.14);
-  --line-strong: rgba(255, 255, 255, 0.24);
-  --accent: #5ee0d0;
-  --accent-strong: #8ef0e3;
-  --accent-soft: rgba(94, 224, 208, 0.14);
+  --bg: #0e121b;
+  --bg-grid: rgba(205, 215, 240, 0.04);
+  --surface: rgba(205, 215, 240, 0.06);
+  --surface-solid: rgba(22, 27, 39, 0.92);
+  --surface-soft: rgba(205, 215, 240, 0.06);
+  --text: #e9ebf1;
+  --muted: #a3a9b8;
+  --faint: #707789;
+  --line: rgba(205, 215, 240, 0.11);
+  --line-strong: rgba(205, 215, 240, 0.2);
+  /* Dark palette from the homepage painting: sky-blue accent, apricot warm. */
+  --accent: #8fb8ee;
+  --accent-strong: #bad3f5;
+  --accent-soft: rgba(143, 184, 238, 0.14);
+  --coral: #f0a583;
+  --blue: #c2aeea;
+  --gold: #ddbf84;
   --shadow:
     0 24px 64px rgba(0, 0, 0, 0.45),
     0 0 0 0.5px rgba(255, 255, 255, 0.05);
@@ -1564,8 +1573,8 @@ body.dark {
   --glass-rim-soft: rgba(255, 255, 255, 0.1);
   --glass-sheen-top: rgba(255, 255, 255, 0.14);
   --glass-sheen-bot: rgba(255, 255, 255, 0.03);
-  --glass-base: rgba(14, 18, 17, 0.48);
-  --glass-base-strong: rgba(16, 22, 20, 0.64);
+  --glass-base: rgba(18, 23, 34, 0.52);
+  --glass-base-strong: rgba(18, 23, 34, 0.7);
 }
 
 body {
@@ -1579,10 +1588,10 @@ body {
 
 body.dark {
   background-image:
-    radial-gradient(circle at 78% 8%, rgba(36, 96, 82, 0.38), transparent 36%),
-    radial-gradient(circle at 16% 72%, rgba(48, 68, 98, 0.2), transparent 40%),
-    radial-gradient(circle at 86% 78%, rgba(90, 72, 40, 0.14), transparent 34%),
-    radial-gradient(circle at 48% 40%, rgba(20, 36, 32, 0.55), transparent 48%);
+    radial-gradient(circle at 78% 8%, rgba(58, 84, 132, 0.34), transparent 36%),
+    radial-gradient(circle at 16% 72%, rgba(52, 62, 104, 0.22), transparent 40%),
+    radial-gradient(circle at 86% 78%, rgba(120, 78, 58, 0.14), transparent 34%),
+    radial-gradient(circle at 48% 40%, rgba(22, 30, 48, 0.55), transparent 48%);
 }
 
 body::before {
@@ -1593,8 +1602,8 @@ body::before {
 
 body.dark::before {
   background:
-    linear-gradient(180deg, rgba(7, 11, 10, 0.28), rgba(7, 11, 10, 0.72)),
-    radial-gradient(circle at 74% 12%, rgba(48, 150, 132, 0.2), transparent 40%),
+    linear-gradient(180deg, rgba(8, 11, 18, 0.28), rgba(8, 11, 18, 0.72)),
+    radial-gradient(circle at 74% 12%, rgba(88, 124, 190, 0.18), transparent 40%),
     radial-gradient(circle at 22% 82%, rgba(55, 75, 110, 0.12), transparent 44%);
 }
 
@@ -1708,27 +1717,27 @@ body.dark .sidebar {
 
 body.dark .nav-chapter.is-active {
   background:
-    linear-gradient(180deg, rgba(255, 255, 255, 0.12), rgba(94, 224, 208, 0.08)),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.12), color-mix(in srgb, var(--accent) 8%, transparent)),
     rgba(255, 255, 255, 0.05);
   box-shadow:
     inset 0 1px 0 rgba(255, 255, 255, 0.22),
-    inset 0 0 0 1px rgba(94, 224, 208, 0.18),
+    inset 0 0 0 1px color-mix(in srgb, var(--accent) 18%, transparent),
     0 8px 18px rgba(0, 0, 0, 0.18);
 }
 
 body.dark .nav-chapter:hover,
 body.dark .nav-section:hover {
-  background: rgba(94, 224, 208, 0.08);
+  background: color-mix(in srgb, var(--accent) 8%, transparent);
 }
 
 body.dark .nav-section.is-active {
   background:
-    linear-gradient(180deg, rgba(255, 255, 255, 0.12), rgba(94, 224, 208, 0.08)),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.12), color-mix(in srgb, var(--accent) 8%, transparent)),
     rgba(255, 255, 255, 0.05);
   color: var(--accent-strong);
   box-shadow:
     inset 0 1px 0 rgba(255, 255, 255, 0.22),
-    inset 0 0 0 1px rgba(94, 224, 208, 0.18),
+    inset 0 0 0 1px color-mix(in srgb, var(--accent) 18%, transparent),
     0 8px 18px rgba(0, 0, 0, 0.18);
   backdrop-filter: blur(12px) saturate(160%);
   -webkit-backdrop-filter: blur(12px) saturate(160%);
@@ -1903,7 +1912,7 @@ body.dark .latin-title {
 }
 
 body.dark .eyebrow {
-  border-color: rgba(142, 240, 227, 0.28);
+  border-color: color-mix(in srgb, var(--accent-strong) 28%, transparent);
   background:
     linear-gradient(180deg, rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0.03)),
     rgba(14, 18, 17, 0.45);
@@ -1942,11 +1951,11 @@ body.dark .button {
 }
 
 body.dark .button.primary {
-  border-color: rgba(142, 240, 227, 0.22);
-  background: linear-gradient(180deg, #2ec4b2, #0f8a7d);
+  border-color: transparent;
+  background: var(--accent);
   box-shadow:
     inset 0 1px 0 rgba(255, 255, 255, 0.28),
-    0 14px 32px rgba(46, 196, 178, 0.22);
+    0 8px 20px rgba(0, 0, 0, 0.24);
   color: #04110e;
 }
 
@@ -2063,7 +2072,7 @@ body.dark .feature-card {
 body.dark .lesson-cover {
   border-color: var(--glass-border);
   background:
-    radial-gradient(circle at 82% 0%, rgba(48, 150, 132, 0.22), transparent 36%),
+    radial-gradient(circle at 82% 0%, color-mix(in srgb, var(--accent) 16%, transparent), transparent 36%),
     linear-gradient(180deg, rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0.03)),
     rgba(12, 16, 15, 0.55);
   box-shadow:
@@ -2354,9 +2363,9 @@ body.dark .lesson-card {
 }
 
 body.dark .lesson-card:hover {
-  border-color: rgba(142, 240, 227, 0.32);
+  border-color: color-mix(in srgb, var(--accent-strong) 32%, transparent);
   background:
-    linear-gradient(180deg, rgba(255, 255, 255, 0.14), rgba(94, 224, 208, 0.06)),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.14), color-mix(in srgb, var(--accent) 6%, transparent)),
     rgba(16, 24, 22, 0.62);
 }
 
@@ -2456,14 +2465,14 @@ body.dark .lesson-neighbor-card {
 
 body.dark .lesson-neighbor-card:hover,
 body.dark .lesson-neighbor-card:focus-visible {
-  border-color: rgba(142, 240, 227, 0.36);
+  border-color: color-mix(in srgb, var(--accent-strong) 36%, transparent);
   background:
-    linear-gradient(145deg, rgba(255, 255, 255, 0.18), rgba(94, 224, 208, 0.08)),
+    linear-gradient(145deg, rgba(255, 255, 255, 0.18), color-mix(in srgb, var(--accent) 8%, transparent)),
     rgba(16, 24, 22, 0.62);
   box-shadow:
     inset 0 1px 0 rgba(255, 255, 255, 0.46),
     inset 0 -0.5px 0 rgba(255, 255, 255, 0.1),
-    0 0 0 0.5px rgba(142, 240, 227, 0.12),
+    0 0 0 0.5px color-mix(in srgb, var(--accent-strong) 12%, transparent),
     0 20px 44px rgba(0, 0, 0, 0.4);
 }
 
@@ -2563,7 +2572,7 @@ body.dark .lesson-neighbor-card:focus-visible {
 body.dark .canvas-wrap canvas,
 body.dark #transformCanvas {
   background:
-    radial-gradient(ellipse 78% 64% at 50% 48%, rgba(94, 224, 208, 0.08), transparent 72%),
+    radial-gradient(ellipse 78% 64% at 50% 48%, color-mix(in srgb, var(--accent) 8%, transparent), transparent 72%),
     linear-gradient(180deg, #141a18 0%, #0e1311 100%);
 }
 
@@ -3390,4 +3399,56 @@ body.dark .vector-plane {
 
 .tex {
   color: var(--accent-strong);
+}
+
+/* Inline math reads as part of the sentence: no outline, no forced height. */
+.tex-inline,
+body.dark .tex-inline {
+  min-height: 0;
+  margin: 0 1px;
+  padding: 0 3px;
+  border-color: transparent;
+  border-radius: 5px;
+  background: color-mix(in srgb, var(--accent) 7%, transparent);
+  color: var(--text);
+}
+
+/* Buttons: one filled primary, one outlined secondary, same geometry. */
+.button,
+body.dark .button {
+  min-height: 40px;
+  padding: 0 16px;
+  border-radius: 10px;
+  font-size: 14.5px;
+  font-weight: 650;
+}
+
+.button.primary,
+body.dark .button.primary {
+  border-color: transparent;
+  box-shadow: none;
+}
+
+.button.primary:hover,
+body.dark .button.primary:hover {
+  background: var(--accent-strong);
+}
+
+.button.mark-button,
+body.dark .button.mark-button {
+  border-color: color-mix(in srgb, var(--accent) 45%, transparent);
+  background: transparent;
+  color: var(--accent-strong);
+}
+
+.button.mark-button:hover,
+body.dark .button.mark-button:hover {
+  background: var(--accent-soft);
+}
+
+.button.mark-button.is-done,
+body.dark .button.mark-button.is-done {
+  border-color: transparent;
+  background: var(--accent);
+  color: color-mix(in srgb, var(--surface-solid) 94%, white);
 }

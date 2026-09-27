@@ -49,13 +49,13 @@
     <link rel="stylesheet" href="./visuals/ch10/section4-presentation.css?v=10l" />
     <link rel="stylesheet" href="./visuals/page-toc-rail.css?v=21i" />
     <link rel="stylesheet" href="./visuals/theme-transition.css?v=dk1" />
-    <link rel="stylesheet" href="./visuals/liquid-glass.css?v=lg2" />
+    <link rel="stylesheet" href="./visuals/liquid-glass.css?v=se1" />
     <link rel="stylesheet" href="./visuals/sidebar.css?v=sb2" />
+    <link rel="stylesheet" href="./visuals/search.css?v=se2" />
     <script defer src="./vendor/katex/katex.min.js"></script>
-    <script defer src="./app.js?v=sb1"></script>
+    <script defer src="./app.js?v=se1"></script>
     <script defer src="./visuals/theme-transition.js?v=dk1"></script>
-    <script defer src="./visuals/liquid-glass.js?v=lg1"></script>
-    <script defer src="./search-modal-state.js"></script>
+    <script defer src="./visuals/liquid-glass.js?v=se1"></script>
     <script defer src="./content/ch1-registry.js"></script>
     <script defer src="./content/ch1-section1.js"></script>
     <script defer src="./content/ch1-section2.js"></script>
@@ -227,6 +227,8 @@
     <script defer src="./ch8-entry.js?v=41w"></script>
     <script defer src="./guide-nav.js"></script>
     <script defer src="./visuals/page-toc-rail.js?v=21i"></script>
+    <script defer src="./visuals/search-index.js?v=se1"></script>
+    <script defer src="./visuals/search.js?v=se4"></script>
   </head>
   <body>
     <header class="topbar">
@@ -238,28 +240,35 @@
         </svg>
       </button>
       <div class="topbar-center">
-        <button
-          class="topbar-search"
-          id="searchOpen"
-          type="button"
-          aria-haspopup="dialog"
-          aria-controls="searchModal"
-          aria-expanded="false"
-        >
-          <svg viewBox="0 0 24 24" aria-hidden="true">
-            <circle cx="11" cy="11" r="6.5" />
-            <path d="m16.2 16.2 4.3 4.3" />
-          </svg>
-          <span class="topbar-search-text">搜索</span>
-        </button>
+        <div class="search-capsule-stage" id="searchCapsule">
+          <button
+            class="topbar-search"
+            id="searchOpen"
+            type="button"
+            aria-haspopup="dialog"
+            aria-controls="searchModal"
+            aria-expanded="false"
+            aria-label="搜索课程内容"
+          >
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+              <circle cx="11" cy="11" r="6.5" />
+              <path d="m16.2 16.2 4.3 4.3" />
+            </svg>
+            <span class="topbar-search-text">搜索</span>
+          </button>
+          <div class="search-capsule-open" aria-hidden="true">
+            <svg class="search-modal-icon" viewBox="0 0 24 24" aria-hidden="true">
+              <circle cx="11" cy="11" r="6.5" />
+              <path d="m16.2 16.2 4.3 4.3" />
+            </svg>
+            <input id="searchModalInput" type="search" aria-label="搜索课程内容" placeholder="搜索章节、概念或关键词" autocomplete="off" enterkeyhint="search" tabindex="-1" />
+            <button class="search-close-button" id="searchCloseButton" type="button" data-search-close aria-label="关闭搜索" title="关闭搜索" tabindex="-1">
+              <svg viewBox="0 0 20 20" aria-hidden="true"><path d="m5.25 5.25 9.5 9.5M14.75 5.25l-9.5 9.5" /></svg>
+            </button>
+          </div>
+        </div>
       </div>
       <div class="topbar-right">
-        <button class="icon-button lang-button" id="langToggle" type="button" aria-label="切换显示语言" title="切换语言">
-          <span class="lang-button-mark" aria-hidden="true">
-            <span class="lang-zh">文</span>
-            <span class="lang-en">A</span>
-          </span>
-        </button>
         <button class="icon-button" id="themeToggle" type="button" aria-label="切换明暗外观" title="切换明暗外观">
           <svg viewBox="0 0 24 24" aria-hidden="true">
             <circle cx="12" cy="12" r="4" />
@@ -281,12 +290,30 @@
     </div>
     <aside class="page-toc" id="pageToc" aria-label="当前页目录"></aside>
     <div class="drawer-backdrop" id="drawerBackdrop"></div>
-    <div class="search-modal" id="searchModal" hidden>
-      <div class="search-modal-backdrop" data-search-close tabindex="-1"></div>
+    <div class="search-modal" id="searchModal" hidden data-phase="closed">
+      <div class="search-modal-backdrop" data-search-close tabindex="-1" aria-hidden="true"></div>
       <div class="search-modal-panel" role="dialog" aria-modal="true" aria-labelledby="searchModalTitle" aria-describedby="searchModalDescription">
         <h2 class="visually-hidden" id="searchModalTitle">搜索课程内容</h2>
-        <div class="search-modal-bar"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="6.5" /><path d="m16.2 16.2 4.3 4.3" /></svg><input id="searchModalInput" type="search" aria-label="搜索课程内容" placeholder="搜索" autocomplete="off" enterkeyhint="search" /></div>
-        <div class="search-modal-body" id="searchModalDescription">输入章节名称、概念或关键词。</div>
+        <div class="search-modal-bar-anchor" aria-hidden="true"></div>
+        <svg class="search-results-merge-field" aria-hidden="true" preserveAspectRatio="none">
+          <defs>
+            <filter id="searchLiquidFusion" x="-12%" y="-32%" width="124%" height="164%" color-interpolation-filters="sRGB">
+              <feGaussianBlur in="SourceGraphic" stdDeviation="5 8" result="searchFusionBlur" />
+              <feColorMatrix in="searchFusionBlur" type="matrix" values="0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 24 -16.3" result="searchFusionAlpha" />
+              <feFlood class="search-liquid-flood" result="searchFusionColor" />
+              <feComposite in="searchFusionColor" in2="searchFusionAlpha" operator="in" />
+            </filter>
+          </defs>
+          <g filter="url(#searchLiquidFusion)">
+            <path class="search-liquid-blob search-liquid-results-blob" />
+            <path class="search-liquid-blob search-liquid-top-blob" />
+          </g>
+        </svg>
+        <div class="search-results-viewport">
+          <div class="search-results-panel" aria-hidden="true" inert>
+            <div class="search-modal-body" id="searchModalDescription" aria-live="polite"></div>
+          </div>
+        </div>
       </div>
     </div>
   </body>

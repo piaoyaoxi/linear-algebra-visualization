@@ -1,8 +1,7 @@
 /*
  * Liquid Glass material for the learning-page chrome.
  * Loaded last so it is the single source for glass surfaces:
- * top controls, search pill, chapter sidebar, section rail labels.
- * The open search body draws its own glass (visuals/search.css).
+ * top controls, search pill, chapter sidebar, section rail labels, search panel.
  * Lesson content stays on solid surfaces.
  */
 
@@ -63,7 +62,9 @@ body.dark .topbar-search,
 body .sidebar,
 body.dark .sidebar,
 body .toc-rail-label,
-body.dark .toc-rail-label {
+body.dark .toc-rail-label,
+body .search-results-panel,
+body.dark .search-results-panel {
   border-color: transparent;
   box-shadow:
     0 0 0 0.5px var(--lg-hairline),
@@ -77,7 +78,9 @@ body.dark .icon-button,
 body .topbar-search,
 body.dark .topbar-search,
 body .sidebar,
-body.dark .sidebar {
+body.dark .sidebar,
+body .search-results-panel,
+body.dark .search-results-panel {
   isolation: isolate;
 }
 
@@ -134,7 +137,8 @@ body .topbar-search:active {
 body .icon-button::before,
 body .topbar-search::before,
 body .sidebar::before,
-body .toc-rail-label::before {
+body .toc-rail-label::before,
+body .search-results-panel::before {
   content: "";
   position: absolute;
   inset: 0;
@@ -180,7 +184,9 @@ body .topbar-search:hover::after {
 /* ---------- Panels ---------- */
 
 body .sidebar,
-body.dark .sidebar {
+body.dark .sidebar,
+body .search-results-panel,
+body.dark .search-results-panel {
   background:
     linear-gradient(180deg, var(--lg-sheen), transparent 22%),
     var(--lg-panel-tint);
@@ -264,8 +270,8 @@ body.lg-scrolled .topbar::before {
   body.dark .sidebar,
   body .toc-rail-label,
   body.dark .toc-rail-label,
-  body .search-liquid-surface,
-  body.dark .search-liquid-surface {
+  body .search-results-panel,
+  body.dark .search-results-panel {
     background: var(--surface-solid);
     -webkit-backdrop-filter: none;
     backdrop-filter: none;

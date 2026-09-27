@@ -1,247 +1,204 @@
-const COVER_CHAPTERS = [
-  { id: "ch1", title: "第一章 多项式" },
-  { id: "ch2", title: "第二章 行列式" },
-  { id: "ch3", title: "第三章 线性方程组" },
-  { id: "ch4", title: "第四章 矩阵" },
-  { id: "ch5", title: "第五章 二次型" },
-  { id: "ch6", title: "第六章 线性空间" },
-  { id: "ch7", title: "第七章 线性变换" },
-  { id: "ch8", title: "第八章 λ-矩阵" },
-  { id: "ch9", title: "第九章 欧几里得空间" },
-  { id: "ch10", title: "第十章 双线性函数" },
-];
+/*
+ * 首页：继续学习入口、学习进度标记、导航状态、首屏视差与开场像素化显影。
+ */
+(() => {
+  const LEARN_HREF = "./learn.html";
+  const INTRO_KEY = "la-home-intro";
+  const MOSAIC_STEPS = [48, 30, 18, 10, 5];
+  const MOSAIC_STEP_MS = 110;
+  const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
 
-const COVER_KEYFRAMES = [
-  { a: 1, b: 0, c: 0, d: 1 },
-  { a: 0.94, b: -0.36, c: 0.36, d: 0.94 },
-  { a: 1, b: 0, c: 0, d: 1 },
-  { a: 1, b: 0.55, c: 0, d: 1 },
-  { a: 1, b: 0, c: 0, d: 1 },
-  { a: 1.26, b: 0, c: 0.16, d: 0.78 },
-  { a: 1, b: 0, c: 0, d: 1 },
-  { a: 0.84, b: 0.42, c: -0.28, d: 0.92 },
-];
-
-const coverAnim = { raf: 0, resize: null };
-
-function escapeHtml(value) {
-  return String(value)
-    .replace(/&/g, "&amp;")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;")
-    .replace(/"/g, "&quot;")
-    .replace(/'/g, "&#39;");
-}
-
-function getChapterShortTitle(title) {
-  return String(title || "")
-    .replace(/^第[0-9一二三四五六七八九十百]+章/, "")
-    .replace(/^[\s·:：\-—]+/, "")
-    .trim();
-}
-
-function getLastLearningTarget() {
-  const last = localStorage.getItem("la-visual-last");
-  if (!last || !last.startsWith("#")) return null;
-  const [route] = last.slice(1).split("/");
-  return COVER_CHAPTERS.some((chapter) => chapter.id === route) ? last : null;
-}
-
-function getLearnHref(hash) {
-  return `./learn.html${hash}`;
-}
-
-function renderChapterOrbit() {
-  const orbit = document.querySelector("#coverOrbit");
-  if (!orbit) return;
-  const count = COVER_CHAPTERS.length;
-  orbit.innerHTML = COVER_CHAPTERS.map((chapter, index) => {
-    const angle = (((index / count) * 360 - 90 + 180 / count) * Math.PI) / 180;
-    const nx = 50 + 42 * Math.cos(angle);
-    const ny = 50 + 38 * Math.sin(angle);
-    return `
-      <a class="cover-node" href="${getLearnHref(`#${chapter.id}`)}" style="--nx:${nx.toFixed(2)}%; --ny:${ny.toFixed(2)}%; --float-delay:${(index * 0.65).toFixed(2)}s" aria-label="${escapeHtml(chapter.title)}">
-        <span class="cover-node-index">${String(index + 1).padStart(2, "0")}</span>
-        <span class="cover-node-name">${escapeHtml(getChapterShortTitle(chapter.title))}</span>
-      </a>`;
-  }).join("");
-}
-
-function updateStartLink() {
-  const start = document.querySelector("#coverStart");
-  if (!start) return;
-  const last = getLastLearningTarget();
-  start.href = getLearnHref(last || "#guide");
-  start.textContent = last ? "继续学习" : "开始学习";
-}
-
-function lerp(from, to, t) { return from + (to - from) * t; }
-function easeInOutCubic(t) { return t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2; }
-
-function drawArrow(ctx, from, to, color, label) {
-  const angle = Math.atan2(to.y - from.y, to.x - from.x);
-  ctx.strokeStyle = color;
-  ctx.fillStyle = color;
-  ctx.lineWidth = 2.7;
-  ctx.beginPath();
-  ctx.moveTo(from.x, from.y);
-  ctx.lineTo(to.x, to.y);
-  ctx.stroke();
-  ctx.beginPath();
-  ctx.moveTo(to.x, to.y);
-  ctx.lineTo(to.x - 10 * Math.cos(angle - Math.PI / 6), to.y - 10 * Math.sin(angle - Math.PI / 6));
-  ctx.lineTo(to.x - 10 * Math.cos(angle + Math.PI / 6), to.y - 10 * Math.sin(angle + Math.PI / 6));
-  ctx.closePath();
-  ctx.fill();
-  ctx.font = "700 13px ui-monospace, SFMono-Regular, Menlo, Consolas, monospace";
-  ctx.fillText(label, to.x + 8, to.y - 8);
-}
-
-function drawCoverFrame(canvas, matrix) {
-  const dpr = window.devicePixelRatio || 1;
-  const width = canvas.width / dpr;
-  const height = canvas.height / dpr;
-  if (!width || !height) return;
-
-  const ctx = canvas.getContext("2d");
-  ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-  ctx.clearRect(0, 0, width, height);
-
-  const origin = { x: width * 0.5, y: height * 0.54 };
-  const scale = Math.min(width, height) / 7.6;
-  const extent = Math.ceil(Math.max(width, height) / scale) + 2;
-  const point = (x, y, transformed = false) => {
-    const px = transformed ? matrix.a * x + matrix.b * y : x;
-    const py = transformed ? matrix.c * x + matrix.d * y : y;
-    return { x: origin.x + px * scale, y: origin.y - py * scale };
-  };
-  const line = (from, to, color, lineWidth, alpha) => {
-    ctx.save();
-    ctx.globalAlpha = alpha;
-    ctx.strokeStyle = color;
-    ctx.lineWidth = lineWidth;
-    ctx.beginPath();
-    ctx.moveTo(from.x, from.y);
-    ctx.lineTo(to.x, to.y);
-    ctx.stroke();
-    ctx.restore();
-  };
-
-  for (let i = -extent; i <= extent; i += 1) {
-    line(point(-extent, i), point(extent, i), "rgba(214,236,228,1)", 1, 0.05);
-    line(point(i, -extent), point(i, extent), "rgba(214,236,228,1)", 1, 0.05);
-  }
-  for (let i = -extent; i <= extent; i += 1) {
-    const isAxis = i === 0;
-    line(point(-extent, i, true), point(extent, i, true), "rgba(95,227,211,1)", isAxis ? 1.6 : 1, isAxis ? 0.5 : 0.15);
-    line(point(i, -extent, true), point(i, extent, true), "rgba(232,195,117,1)", isAxis ? 1.6 : 1, isAxis ? 0.42 : 0.12);
-  }
-
-  const square = [point(0, 0, true), point(1, 0, true), point(1, 1, true), point(0, 1, true)];
-  ctx.save();
-  ctx.beginPath();
-  ctx.moveTo(square[0].x, square[0].y);
-  square.slice(1).forEach((p) => ctx.lineTo(p.x, p.y));
-  ctx.closePath();
-  ctx.fillStyle = "rgba(95,227,211,.07)";
-  ctx.strokeStyle = "rgba(95,227,211,.4)";
-  ctx.lineWidth = 1.2;
-  ctx.fill();
-  ctx.stroke();
-  ctx.restore();
-
-  ctx.save();
-  ctx.fillStyle = "rgba(150,226,210,.2)";
-  for (let i = -4; i <= 4; i += 1) {
-    for (let j = -4; j <= 4; j += 1) {
-      if (i === 0 && j === 0) continue;
-      const dot = point(i, j, true);
-      ctx.beginPath();
-      ctx.arc(dot.x, dot.y, 1.6, 0, Math.PI * 2);
-      ctx.fill();
+  function readStorage(storage, key) {
+    try {
+      return storage.getItem(key);
+    } catch (error) {
+      return null;
     }
   }
-  ctx.restore();
 
-  ctx.save();
-  ctx.shadowColor = "rgba(95,227,211,.6)";
-  ctx.shadowBlur = 16;
-  drawArrow(ctx, origin, point(1, 0, true), "#5fe3d3", "e₁");
-  ctx.shadowColor = "rgba(232,195,117,.55)";
-  drawArrow(ctx, origin, point(0, 1, true), "#e8c375", "e₂");
-  ctx.restore();
+  function writeStorage(storage, key, value) {
+    try {
+      storage.setItem(key, value);
+    } catch (error) {
+      /* 存储不可用时跳过 */
+    }
+  }
 
-  ctx.fillStyle = "rgba(240,250,246,.9)";
-  ctx.beginPath();
-  ctx.arc(origin.x, origin.y, 3.4, 0, Math.PI * 2);
-  ctx.fill();
-}
+  function readProgress() {
+    try {
+      const list = JSON.parse(readStorage(window.localStorage, "la-visual-progress") || "[]");
+      return new Set(Array.isArray(list) ? list : []);
+    } catch (error) {
+      return new Set();
+    }
+  }
 
-function startCoverAnimation() {
-  const canvas = document.querySelector("#coverCanvas");
-  if (!canvas) return;
-  const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-  const staticMatrix = { a: 1, b: 0.4, c: 0.16, d: 0.94 };
-  const size = () => {
-    const rect = canvas.getBoundingClientRect();
-    const dpr = window.devicePixelRatio || 1;
-    canvas.width = Math.max(1, Math.floor(rect.width * dpr));
-    canvas.height = Math.max(1, Math.floor(rect.height * dpr));
-  };
-  size();
-  coverAnim.resize = () => { size(); if (reduceMotion) drawCoverFrame(canvas, staticMatrix); };
-  window.addEventListener("resize", coverAnim.resize, { passive: true });
-  if (reduceMotion) { drawCoverFrame(canvas, staticMatrix); return; }
+  function readLastTarget() {
+    const last = readStorage(window.localStorage, "la-visual-last");
+    return last && /^#ch\d+(\/[\w-]+)?$/.test(last) ? last : null;
+  }
 
-  const segment = 5200;
-  const keyCount = COVER_KEYFRAMES.length;
-  const total = keyCount * segment;
-  // rAF frame timestamps can precede a schedule-time clock. Always derive elapsed
-  // from the first rAF timestamp and use a non-negative modulo so index stays valid.
-  let startTime = null;
-  const frame = (now) => {
-    if (startTime == null) startTime = now;
-    const elapsed = Math.max(0, now - startTime);
-    const local = elapsed % total;
-    const index = ((Math.floor(local / segment) % keyCount) + keyCount) % keyCount;
-    const next = (index + 1) % keyCount;
-    const from = COVER_KEYFRAMES[index] || COVER_KEYFRAMES[0];
-    const to = COVER_KEYFRAMES[next] || from;
-    const t = easeInOutCubic((local - index * segment) / segment);
-    drawCoverFrame(canvas, {
-      a: lerp(from.a, to.a, t),
-      b: lerp(from.b, to.b, t),
-      c: lerp(from.c, to.c, t),
-      d: lerp(from.d, to.d, t),
+  function sectionTitle(link) {
+    const clone = link.cloneNode(true);
+    clone.querySelectorAll(".home-section-num, .home-sr").forEach((node) => node.remove());
+    return clone.textContent.trim();
+  }
+
+  function applyLearningState() {
+    const done = readProgress();
+    document.querySelectorAll(".home-sections a[data-section]").forEach((link) => {
+      const isDone = done.has(link.dataset.section);
+      link.classList.toggle("is-done", isDone);
+      let note = link.querySelector(".home-done-note");
+      if (isDone && !note) {
+        note = document.createElement("span");
+        note.className = "home-sr home-done-note";
+        note.textContent = "（已完成）";
+        link.append(note);
+      } else if (!isDone && note) {
+        note.remove();
+      }
     });
-    coverAnim.raf = window.requestAnimationFrame(frame);
-  };
-  if (coverAnim.raf) window.cancelAnimationFrame(coverAnim.raf);
-  coverAnim.raf = window.requestAnimationFrame(frame);
-}
 
-function stopCoverAnimation() {
-  if (coverAnim.raf) {
-    window.cancelAnimationFrame(coverAnim.raf);
-    coverAnim.raf = 0;
+    const last = readLastTarget();
+    const target = last ? document.querySelector(`.home-chapters a[href="${LEARN_HREF}${last}"]`) : null;
+    document.querySelectorAll(".home-sections a.is-last").forEach((link) => link.classList.remove("is-last"));
+
+    const resume = document.querySelector("#homeResume");
+    const resumeLink = document.querySelector("#homeResumeLink");
+    const href = target ? `${LEARN_HREF}${last}` : `${LEARN_HREF}#guide`;
+    document.querySelectorAll("[data-start]").forEach((link) => {
+      link.href = href;
+      link.textContent = target ? "继续学习" : "开始学习";
+    });
+    if (!target || !resume || !resumeLink) {
+      if (resume) resume.hidden = true;
+      return;
+    }
+
+    const chapter = target.closest(".home-chapter");
+    const chapterLabel = chapter?.querySelector(".home-chapter-title .home-sr")?.textContent.trim() || "";
+    const chapterName = sectionTitle(chapter?.querySelector(".home-chapter-title a") || target);
+    const isSection = target.hasAttribute("data-section");
+    if (isSection) target.classList.add("is-last");
+    resumeLink.href = href;
+    resumeLink.textContent = `${chapterLabel} · ${isSection ? sectionTitle(target) : chapterName}`;
+    resume.hidden = false;
   }
-  if (coverAnim.resize) {
-    window.removeEventListener("resize", coverAnim.resize);
-    coverAnim.resize = null;
+
+  function initScrollEffects() {
+    const hero = document.querySelector(".home-hero");
+    const media = document.querySelector("#heroMedia");
+    const nav = document.querySelector("#homeNav");
+    if (!hero || !nav) return;
+
+    let queued = false;
+    const update = () => {
+      queued = false;
+      const heroBottom = hero.getBoundingClientRect().bottom;
+      nav.classList.toggle("is-solid", heroBottom <= nav.getBoundingClientRect().bottom + 12);
+      if (media) {
+        const offset = reduceMotion.matches ? 0 : Math.min(window.scrollY, hero.offsetHeight) * 0.28;
+        media.style.transform = offset ? `translate3d(0, ${offset.toFixed(1)}px, 0)` : "";
+      }
+    };
+    const request = () => {
+      if (queued) return;
+      queued = true;
+      window.requestAnimationFrame(update);
+    };
+    window.addEventListener("scroll", request, { passive: true });
+    window.addEventListener("resize", request, { passive: true });
+    update();
   }
-}
 
-function initCover() {
-  renderChapterOrbit();
-  updateStartLink();
-  stopCoverAnimation();
-  startCoverAnimation();
-}
+  function objectPosition(img) {
+    const parts = window.getComputedStyle(img).objectPosition.split(/\s+/);
+    const toRatio = (value) => (value && value.endsWith("%") ? parseFloat(value) / 100 : 0.5);
+    return [toRatio(parts[0]), toRatio(parts[1])];
+  }
 
-if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", initCover, { once: true });
-else initCover();
+  function finishIntro(canvas) {
+    document.documentElement.classList.remove("home-intro");
+    if (canvas) canvas.classList.remove("is-active");
+  }
 
-// bfcache / back-forward can freeze rAF; restart when the cover is shown again.
-window.addEventListener("pageshow", () => {
-  if (document.querySelector("#coverCanvas")) initCover();
-});
+  function playIntro() {
+    const root = document.documentElement;
+    if (!root.classList.contains("home-intro")) return;
+    const img = document.querySelector("#heroImage");
+    const canvas = document.querySelector("#heroMosaic");
+    const ctx = canvas?.getContext("2d");
+    if (!img || !canvas || !ctx || reduceMotion.matches) {
+      finishIntro(canvas);
+      return;
+    }
+    writeStorage(window.sessionStorage, INTRO_KEY, "1");
+
+    const fallback = window.setTimeout(() => finishIntro(canvas), 3000);
+    const ready = img.complete && img.naturalWidth ? Promise.resolve() : img.decode();
+    ready.then(() => {
+      window.clearTimeout(fallback);
+      if (!root.classList.contains("home-intro")) return;
+
+      const rect = canvas.getBoundingClientRect();
+      const dpr = Math.min(window.devicePixelRatio || 1, 2);
+      const width = Math.max(1, Math.round(rect.width * dpr));
+      const height = Math.max(1, Math.round(rect.height * dpr));
+      canvas.width = width;
+      canvas.height = height;
+
+      const scale = Math.max(width / img.naturalWidth, height / img.naturalHeight);
+      const drawWidth = img.naturalWidth * scale;
+      const drawHeight = img.naturalHeight * scale;
+      const [px, py] = objectPosition(img);
+      const dx = (width - drawWidth) * px;
+      const dy = (height - drawHeight) * py;
+      const small = document.createElement("canvas");
+      const smallCtx = small.getContext("2d");
+
+      const drawStep = (block) => {
+        const size = block * dpr;
+        const cols = Math.max(1, Math.ceil(drawWidth / size));
+        const rows = Math.max(1, Math.ceil(drawHeight / size));
+        small.width = cols;
+        small.height = rows;
+        smallCtx.imageSmoothingEnabled = true;
+        smallCtx.imageSmoothingQuality = "high";
+        smallCtx.drawImage(img, 0, 0, cols, rows);
+        ctx.imageSmoothingEnabled = false;
+        ctx.clearRect(0, 0, width, height);
+        ctx.drawImage(small, 0, 0, cols, rows, dx, dy, cols * size, rows * size);
+      };
+
+      let step = 0;
+      drawStep(MOSAIC_STEPS[step]);
+      canvas.classList.add("is-active");
+      const timer = window.setInterval(() => {
+        step += 1;
+        if (step < MOSAIC_STEPS.length) {
+          drawStep(MOSAIC_STEPS[step]);
+          return;
+        }
+        window.clearInterval(timer);
+        finishIntro(canvas);
+      }, MOSAIC_STEP_MS);
+    }).catch(() => {
+      window.clearTimeout(fallback);
+      finishIntro(canvas);
+    });
+  }
+
+  function init() {
+    applyLearningState();
+    initScrollEffects();
+    playIntro();
+  }
+
+  if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", init, { once: true });
+  else init();
+
+  window.addEventListener("pageshow", (event) => {
+    if (event.persisted) applyLearningState();
+  });
+})();

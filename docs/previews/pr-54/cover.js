@@ -1,5 +1,5 @@
 /*
- * 首页：继续学习入口、学习进度标记、导航状态、首屏视差与开场像素化显影。
+ * 首页：继续学习入口、学习进度标记、首屏视差与开场像素化显影。
  */
 (() => {
   const LEARN_HREF = "./learn.html";
@@ -64,15 +64,15 @@
     const target = last ? document.querySelector(`.home-chapters a[href="${LEARN_HREF}${last}"]`) : null;
     document.querySelectorAll(".home-sections a.is-last").forEach((link) => link.classList.remove("is-last"));
 
-    const resume = document.querySelector("#homeResume");
-    const resumeLink = document.querySelector("#homeResumeLink");
-    const href = target ? `${LEARN_HREF}${last}` : `${LEARN_HREF}#guide`;
-    document.querySelectorAll("[data-start]").forEach((link) => {
-      link.href = href;
-      link.textContent = target ? "继续学习" : "开始学习";
-    });
-    if (!target || !resume || !resumeLink) {
-      if (resume) resume.hidden = true;
+    const start = document.querySelector("#homeStart");
+    const label = start?.querySelector(".home-cta-label");
+    const note = document.querySelector("#homeStartNote");
+    if (!start || !label || !note) return;
+    if (!target) {
+      start.href = `${LEARN_HREF}#guide`;
+      label.textContent = "开始学习";
+      note.hidden = true;
+      note.textContent = "";
       return;
     }
 
@@ -81,26 +81,22 @@
     const chapterName = sectionTitle(chapter?.querySelector(".home-chapter-title a") || target);
     const isSection = target.hasAttribute("data-section");
     if (isSection) target.classList.add("is-last");
-    resumeLink.href = href;
-    resumeLink.textContent = `${chapterLabel} · ${isSection ? sectionTitle(target) : chapterName}`;
-    resume.hidden = false;
+    start.href = `${LEARN_HREF}${last}`;
+    label.textContent = "继续学习";
+    note.textContent = `${chapterLabel} · ${isSection ? target.dataset.short || sectionTitle(target) : chapterName}`;
+    note.hidden = false;
   }
 
-  function initScrollEffects() {
+  function initParallax() {
     const hero = document.querySelector(".home-hero");
     const media = document.querySelector("#heroMedia");
-    const nav = document.querySelector("#homeNav");
-    if (!hero || !nav) return;
+    if (!hero || !media) return;
 
     let queued = false;
     const update = () => {
       queued = false;
-      const heroBottom = hero.getBoundingClientRect().bottom;
-      nav.classList.toggle("is-solid", heroBottom <= nav.getBoundingClientRect().bottom + 12);
-      if (media) {
-        const offset = reduceMotion.matches ? 0 : Math.min(window.scrollY, hero.offsetHeight) * 0.28;
-        media.style.transform = offset ? `translate3d(0, ${offset.toFixed(1)}px, 0)` : "";
-      }
+      const offset = reduceMotion.matches ? 0 : Math.min(window.scrollY, hero.offsetHeight) * 0.28;
+      media.style.transform = offset ? `translate3d(0, ${offset.toFixed(1)}px, 0)` : "";
     };
     const request = () => {
       if (queued) return;
@@ -191,7 +187,7 @@
 
   function init() {
     applyLearningState();
-    initScrollEffects();
+    initParallax();
     playIntro();
   }
 

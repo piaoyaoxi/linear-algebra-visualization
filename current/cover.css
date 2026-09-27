@@ -90,7 +90,8 @@ a:focus-visible { outline: 2px solid currentColor; outline-offset: 4px; border-r
 .home-hero-body { width: 100%; max-width: 920px; padding: 120px 24px 150px; text-align: center; }
 .home-kicker,
 .home-title,
-.home-cta { animation: homeRise 900ms var(--ease-out) both; }
+.home-cta,
+.home-resume { animation: homeRise 900ms var(--ease-out) both; }
 .home-kicker {
   margin: 0 0 24px;
   padding-left: 0.36em;
@@ -122,8 +123,8 @@ a:focus-visible { outline: 2px solid currentColor; outline-offset: 4px; border-r
   gap: 14px;
   max-width: 100%;
   height: 60px;
-  margin-top: 52px;
-  padding: 0 8px 0 32px;
+  margin-top: 84px;
+  padding: 0 8px 0 30px;
   border: 1px solid rgba(255, 255, 255, 0.42);
   border-radius: 999px;
   background: linear-gradient(180deg, rgba(255, 255, 255, 0.3) 0%, rgba(255, 255, 255, 0.12) 52%, rgba(255, 255, 255, 0.18) 100%);
@@ -163,22 +164,7 @@ a:focus-visible { outline: 2px solid currentColor; outline-offset: 4px; border-r
 }
 .home-cta:active { transform: translateY(0); }
 .home-cta:focus-visible { outline: 2px solid var(--on-image); outline-offset: 5px; border-radius: 999px; }
-.home-cta-label { letter-spacing: 0.16em; white-space: nowrap; }
-.home-cta-note {
-  flex: 0 1 auto;
-  min-width: 0;
-  overflow: hidden;
-  max-width: 18em;
-  padding-left: 14px;
-  border-left: 1px solid rgba(255, 255, 255, 0.4);
-  color: rgba(255, 253, 248, 0.82);
-  font-size: 14.5px;
-  font-weight: 500;
-  line-height: 1.3;
-  letter-spacing: 0.06em;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
+.home-cta-label { padding-left: 0.2em; font-size: 17px; font-weight: 600; letter-spacing: 0.2em; white-space: nowrap; }
 .home-cta-arrow {
   display: grid;
   flex: none;
@@ -193,6 +179,23 @@ a:focus-visible { outline: 2px solid currentColor; outline-offset: 4px; border-r
 }
 .home-cta-arrow svg { width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
 .home-cta:hover .home-cta-arrow { transform: translateX(3px); }
+.home-resume {
+  margin: 18px 0 0;
+  color: rgba(255, 253, 248, 0.86);
+  font-size: 13.5px;
+  letter-spacing: 0.08em;
+  text-shadow: 0 1px 2px rgba(24, 34, 62, 0.35), 0 1px 14px rgba(24, 34, 62, 0.5);
+  animation-delay: 460ms;
+}
+.home-resume a {
+  margin-left: 0.6em;
+  color: var(--on-image);
+  text-decoration: underline;
+  text-decoration-color: transparent;
+  text-underline-offset: 4px;
+  transition: text-decoration-color 160ms ease;
+}
+.home-resume a:hover { text-decoration-color: currentColor; }
 
 /* 下滑到目录 */
 .home-scroll {
@@ -272,9 +275,10 @@ a:focus-visible { outline: 2px solid currentColor; outline-offset: 4px; border-r
   .home-hero-body { padding: 100px 20px 136px; }
   .home-kicker { margin-bottom: 18px; font-size: 13px; letter-spacing: 0.28em; padding-left: 0.28em; }
   .home-title { font-size: min(42px, calc((100vw - 40px) / 7.8)); }
-  .home-cta { gap: 12px; height: 56px; margin-top: 42px; padding-left: 26px; font-size: 15px; }
+  .home-cta { gap: 12px; height: 56px; margin-top: 60px; padding-left: 26px; }
+  .home-cta-label { font-size: 16px; }
   .home-cta-arrow { width: 42px; height: 42px; }
-  .home-cta-note { max-width: 12em; padding-left: 12px; font-size: 13.5px; }
+  .home-resume { font-size: 13px; }
   .home-contents { padding: 24px 20px 88px; }
   .home-chapter { grid-template-columns: 48px minmax(0, 1fr) auto; column-gap: 12px; padding: 26px 0 28px; }
   .home-chapter-num { font-size: 26px; }
@@ -286,7 +290,7 @@ a:focus-visible { outline: 2px solid currentColor; outline-offset: 4px; border-r
 
 @media (prefers-reduced-motion: reduce) {
   html { scroll-behavior: auto; }
-  .home-mark, .home-kicker, .home-title, .home-cta, .home-scroll, .home-scroll-line::after { animation: none; }
+  .home-mark, .home-kicker, .home-title, .home-cta, .home-resume, .home-scroll, .home-scroll-line::after { animation: none; }
   .home-scroll-line::after { top: 30%; }
   .home-hero-media { will-change: auto; }
   .home-cta, .home-cta-arrow, .home-hero-mosaic { transition: none; }

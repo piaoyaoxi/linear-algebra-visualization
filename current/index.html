@@ -17,8 +17,8 @@
         if (!played && !window.matchMedia("(prefers-reduced-motion: reduce)").matches) root.classList.add("home-intro");
       })();
     </script>
-    <link rel="stylesheet" href="./cover.css?v=home3" />
-    <script defer src="./cover.js?v=home3"></script>
+    <link rel="stylesheet" href="./cover.css?v=home4" />
+    <script defer src="./cover.js?v=home4"></script>
   </head>
   <body>
     <header class="home-hero" id="top">
@@ -43,13 +43,13 @@
       <div class="home-hero-body">
         <p class="home-kicker">北大版《高等代数》</p>
         <h1 class="home-title">高等代数<wbr />可视化</h1>
-        <a class="home-cta" id="homeStart" href="./learn.html#guide">
-          <span class="home-cta-label">开始学习</span>
-          <span class="home-cta-note" id="homeStartNote" hidden></span>
+        <a class="home-cta" href="./learn.html#guide" aria-label="开始学习">
+          <span class="home-cta-label" aria-hidden="true">Start</span>
           <span class="home-cta-arrow" aria-hidden="true">
             <svg viewBox="0 0 20 20"><path d="M4 10h11M11 5.5 15.5 10 11 14.5" /></svg>
           </span>
         </a>
+        <p class="home-resume" id="homeResume" hidden>上次学到<a id="homeResumeLink" href="./learn.html#guide"></a></p>
       </div>
 
       <a class="home-scroll" href="#contents">

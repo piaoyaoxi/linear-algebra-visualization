@@ -64,15 +64,11 @@
     const target = last ? document.querySelector(`.home-chapters a[href="${LEARN_HREF}${last}"]`) : null;
     document.querySelectorAll(".home-sections a.is-last").forEach((link) => link.classList.remove("is-last"));
 
-    const start = document.querySelector("#homeStart");
-    const label = start?.querySelector(".home-cta-label");
-    const note = document.querySelector("#homeStartNote");
-    if (!start || !label || !note) return;
+    const resume = document.querySelector("#homeResume");
+    const resumeLink = document.querySelector("#homeResumeLink");
+    if (!resume || !resumeLink) return;
     if (!target) {
-      start.href = `${LEARN_HREF}#guide`;
-      label.textContent = "开始学习";
-      note.hidden = true;
-      note.textContent = "";
+      resume.hidden = true;
       return;
     }
 
@@ -81,10 +77,9 @@
     const chapterName = sectionTitle(chapter?.querySelector(".home-chapter-title a") || target);
     const isSection = target.hasAttribute("data-section");
     if (isSection) target.classList.add("is-last");
-    start.href = `${LEARN_HREF}${last}`;
-    label.textContent = "继续学习";
-    note.textContent = `${chapterLabel} · ${isSection ? target.dataset.short || sectionTitle(target) : chapterName}`;
-    note.hidden = false;
+    resumeLink.href = `${LEARN_HREF}${last}`;
+    resumeLink.textContent = `${chapterLabel} · ${isSection ? target.dataset.short || sectionTitle(target) : chapterName}`;
+    resume.hidden = false;
   }
 
   function initParallax() {

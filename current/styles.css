@@ -1192,7 +1192,7 @@ body.dark .vector-plane {
   overflow: hidden;
 }
 
-.block-grid span {
+.block-grid > span:not(.block-cell) {
   min-height: 92px;
   display: grid;
   place-items: center;
@@ -1203,11 +1203,11 @@ body.dark .vector-plane {
   font-weight: 780;
 }
 
-.block-grid span:nth-child(2n) {
+.block-grid > span:not(.block-cell):nth-child(2n) {
   border-right: 0;
 }
 
-.block-grid span:nth-last-child(-n + 2) {
+.block-grid > span:not(.block-cell):nth-last-child(-n + 2) {
   border-bottom: 0;
 }
 

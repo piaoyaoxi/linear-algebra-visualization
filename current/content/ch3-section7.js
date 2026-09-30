@@ -7,7 +7,7 @@ defineChapter3Section("binary-higher-degree", {
   goal: "理解二元多项式方程组的公共解是代数曲线交点；会选择消元变量；认识 Sylvester 矩阵与结式；能够从结式得到候选根、回代求另一坐标并逐点验解，同时识别重根与次数退化。",
   tags: ["选学", "多项式消元", "Sylvester 矩阵", "结式", "回代验解"],
   intro:
-    "线性消元用行变换消去未知量；高次消元则把两个方程看成关于某个变量的多项式，通过结式消去该变量。结式为零给出公共根存在的候选条件，但代数边界可能引入或遗漏特殊情况，因此回代验解始终是最后一道门。",
+    "把两个方程都看成关于 x 的多项式，系数是 y 的多项式。结式 R(y) 为 0 的 y 是交点纵坐标的候选；每个候选都要回代求 x，并代回两个原方程检验。",
   videoPlan: {
     title: "从直线交点到曲线交点",
     duration: "约 2.5 分钟",
@@ -63,7 +63,7 @@ defineChapter3Section("binary-higher-degree", {
     choices: [
       {
         correct: true,
-        text: `结式为 ${texInline(String.raw`2y^2-1`)}；故 ${texInline(String.raw`y=\pm\frac{\sqrt2}{2}`)}，由 ${texInline(String.raw`x=y`)} 得两交点 ${texInline(String.raw`(\pm\frac{\sqrt2}{2},\pm\frac{\sqrt2}{2})`)}。`,
+        text: `结式为 ${texInline(String.raw`2y^2-1`)}；故 ${texInline(String.raw`y=\pm\frac{\sqrt2}{2}`)}，由 ${texInline(String.raw`x=y`)} 得两个交点 ${texInline(String.raw`\left(\tfrac{\sqrt2}{2},\tfrac{\sqrt2}{2}\right)`)} 与 ${texInline(String.raw`\left(-\tfrac{\sqrt2}{2},-\tfrac{\sqrt2}{2}\right)`)}。`,
       },
       { text: "结式为零的每个根都自动对应原方程组解，无需回代。" },
       { text: "圆与直线的次数分别为 2 和 1，因此一定有三个实交点。" },
@@ -79,18 +79,23 @@ defineChapter3Section("binary-higher-degree", {
     ],
   },
   quiz: [
-    { question: "为什么选择消去 x 或 y 会影响计算？", answer: "两种写法的次数与系数复杂度可能不同，Sylvester 矩阵大小和结式次数也会变化。" },
-    { question: "Sylvester 矩阵的行列式是什么？", answer: "关于所选消元变量的结式。" },
-    { question: "结式为零后为什么仍要回代？", answer: "需要求出另一坐标并排除次数退化、清分母或其他过程产生的伪候选。" },
-    { question: "结式出现二重根常对应什么几何现象？", answer: "常对应曲线相切或更高阶接触，但仍需结合回代和局部结构判断。" },
-    { question: "结式没有实根说明什么？", answer: "在正常次数条件下，原方程组没有实公共点；可能仍有复数公共解。" },
-    { question: "本节与线性消元的共同主线是什么？", answer: "都通过消去变量降低维数，再回代恢复完整解并验解。" },
+    {
+      question: `解 ${texInline("x^2+y^2=5,\\ xy=2")} 时，候选 y=1 给出 ${texInline("x^2=4")}。${texInline("(-2,1)")} 是解吗？`,
+      answer: `不是。x 必须同时是 ${texInline("f(x,1)=x^2-4")} 与 ${texInline("g(x,1)=x-2")} 的根，只有 x=2。回代时要用两个方程。`,
+    },
+    {
+      question: `${texInline("x^2+y^2=2")} 与 ${texInline("y=x^2")} 消去 x 得 ${texInline("R(y)=(y-1)^2(y+2)^2")}。二重根 y=1 表示两条曲线在那里相切吗？`,
+      answer: "不是。y=1 对应两个横截交点 (1,1) 与 (−1,1)，它们纵坐标相同，所以 y=1 是二重根。y=−2 回代得 x=±√2 i，没有实交点。",
+    },
+    {
+      question: `${texInline("xy=1")} 与 ${texInline("xy=2")} 消去 x 得 ${texInline("R(y)=-y")}。y=0 为什么不是解？`,
+      answer: "两个方程关于 x 的首项系数都是 y，在 y=0 处同时为 0，结式的根在这里只是伪候选。回代得 0=1，不成立。",
+    },
   ],
   summary: [
-    "高次消元把曲线交点压缩为单变量候选根问题。",
-    "Sylvester 矩阵的行列式给出结式。",
-    "结式负责筛选候选，回代与验解负责确认真正公共解。",
-    "本节是选学延伸；前六节构成线性方程组的完整主线。",
+    "结式把两条曲线的交点问题化为一个单变量多项式的根。",
+    "结式的根只是候选：可能对应复交点，也可能来自首项系数同时为零的伪候选。",
+    "每个候选都要回代求另一坐标，并代回两个原方程检验。",
   ],
   exercises: [
     "对单位圆与 x=y 改为消去 y，比较两个 Sylvester 矩阵与最终交点。",

@@ -12,11 +12,11 @@
     formal.innerHTML = `
       <h2>把交叉项一步一步消掉</h2>
       <div class="ch5-foundation ch5s2-foundation">
-        <p class="ch5-lead">化标准形的核心不是“看见一张摆正的椭圆”，而是写出一个可逆变量替换，把原二次型真实地改写成平方项之和。本节的主方法只有一条：Lagrange 配方法，以及它在矩阵中的合同语言。</p>
+        <p class="ch5-lead">化标准形要做的是写出一个可逆变量替换，把原二次型真实地改写成平方项之和。本节的主方法是 Lagrange 配方法，以及它在矩阵中的合同语言。</p>
 
         ${module(
           "01",
-          "交叉项意味着当前坐标没有对准",
+          "交叉项让等高线在当前坐标里倾斜",
           "同一个二次型，换坐标后可以写得更简单",
           `<div class="ch5-pair">
             <div class="ch5-card ch5s2-axis-card"><div class="ch5s2-tilted-axes"><span></span><i></i><b></b></div><h4>原坐标</h4><p>${inline("x_1^2+4x_1x_2+5x_2^2")} 含交叉项。</p></div>

@@ -38,7 +38,7 @@ defineChapter3Section("n-vector-space", {
     choices: [
       { correct: true, text: `${texInline("x=(0,0,2)")}，因为 ${texInline("b=2a_3")}；${texInline("\\det A\\ne0")}，所以这是唯一解。` },
       { text: `${texInline("x=(6,4,2)")}，因为解就是 b 的坐标。` },
-      { text: `${texInline("x=(2,0,0)")}，因为 ${texInline("2a_1")} 的前两个分量与 b 一致。` },
+      { text: `${texInline("x=(2,0,0)")}，因为 ${texInline("2a_1")} 的第二个分量与 b 一致。` },
       { text: "不做消元就无法确定。" },
     ],
     steps: [

@@ -24,7 +24,7 @@ defineChapter3Section("solution-structure", {
       {
         title: "非齐次方程组：特解 + 解空间",
         tex: String.raw`Ax_0=b\ \Longrightarrow\ \{x:Ax=b\}=\{x_0+\eta:\ A\eta=0\}`,
-        text: `若 ${texInline("Ax=b")}，则 ${texInline("A(x-x_0)=0")}，所以 ${texInline("x-x_0")} 是齐次解；反过来，${texInline("A(x_0+\\eta)=b+0=b")}。b≠0 时，原点不是解，解集是一条不过原点的直线或平面，与解空间平行。`,
+        text: `若 ${texInline("Ax=b")}，则 ${texInline("A(x-x_0)=0")}，所以 ${texInline("x-x_0")} 是齐次解；反过来，${texInline("A(x_0+\\eta)=b+0=b")}。b≠0 时，原点不是解。解集是把 n−r 维解空间平移到 x₀ 处得到的（三维里可能是一个点、一条直线或一个平面），它与解空间平行。`,
       },
     ],
     pitfalls: [
@@ -65,7 +65,7 @@ defineChapter3Section("solution-structure", {
   ],
   summary: [
     "齐次方程组的解构成 n−r 维解空间，基础解系是它的一组基。",
-    "非齐次方程组的全部解 = 一个特解 + 解空间；改变 b，解集只平移不转动。",
+    "非齐次方程组的全部解 = 一个特解 + 解空间；改变 b 时，只要仍然有解，解集就只平移、不转动。",
     "选学 §7 把消元思想推广到两个变量的高次方程组。",
   ],
 });

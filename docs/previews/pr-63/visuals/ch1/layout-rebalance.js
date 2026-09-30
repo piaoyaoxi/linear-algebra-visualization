@@ -160,7 +160,7 @@
       <div class="ch1-lab">
         <div class="ch1-lab-head">
           <h3>指数格点：先看位置，再看分层与乘法</h3>
-          <p>${section.interactive.description} 主图只承担格点观察；齐次分层和乘法计算分别放在图下方，不再挤进右栏。</p>
+          <p>${section.interactive.description}</p>
         </div>
         <div class="ch1-controls" role="group" aria-label="选择指数格点观察模式">
           <button type="button" class="is-active" data-lattice-mode="support" aria-pressed="true">支撑与齐次层</button>

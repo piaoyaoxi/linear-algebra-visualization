@@ -187,7 +187,7 @@
 .ch9-range-list { display: grid; gap: 10px; }
 .ch9-range {
   display: grid;
-  grid-template-columns: 128px minmax(120px, 1fr) 58px;
+  grid-template-columns: minmax(64px, 7.5em) minmax(0, 1fr) 48px;
   gap: 12px;
   align-items: center;
   padding: 10px 12px;
@@ -369,3 +369,6 @@ body.dark .ch9-formal-card { box-shadow: none; }
   .ch9-range output { grid-column: 2; grid-row: 1; }
   .ch9-stepper { grid-template-columns: 1fr; }
 }
+
+/* Side columns must be allowed to shrink below their content width. */
+.ch9-inner-body > *, .ch9-unitary-body > *, .ch9-ls-body > *, .ch9-ls-side > *, .ch9-range > * { min-width: 0; }

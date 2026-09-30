@@ -195,7 +195,7 @@
         <div><h3>${block.title}</h3><small>${block.eyebrow}</small>${block.body}</div>
       </article>`).join("");
     const body = `<div class="ch9-theory-sequence">${rows}</div>`;
-    root.innerHTML = `<h2>${headings[id] || section.question}</h2><div class="ch9-foundation ch9-foundation-${id}"><p class="ch9-lead">${section.intro}</p>${body}</div>`;
+    root.innerHTML = `<h2>${headings[id] || section.question}</h2><div class="ch9-foundation ch9-foundation-${id}">${body}</div>`;
   }
 
   function experimentHeader(title, description) {

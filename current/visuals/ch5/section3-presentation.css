@@ -27,7 +27,7 @@
   gap: 7px;
 }
 
-#quadratic-uniqueness-formal .ch5s3-form-pair article span,
+#quadratic-uniqueness-formal .ch5s3-form-pair article > div:last-child > span,
 #quadratic-uniqueness-formal .ch5s3-classification p::before {
   padding: 5px 9px;
   border-radius: 999px;

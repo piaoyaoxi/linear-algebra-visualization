@@ -231,26 +231,14 @@
 }
 
 .ch1-live-conclusion {
-  display: grid;
-  grid-template-columns: minmax(220px, 0.75fr) minmax(0, 1.35fr);
-  gap: 18px;
-  align-items: center;
-  padding: 18px;
-  border: 1px solid color-mix(in srgb, var(--accent) 38%, var(--line));
-  border-radius: var(--radius);
-  background: color-mix(in srgb, var(--accent) 8%, var(--surface-solid));
-}
-
-.ch1-live-conclusion > [data-ch1-live-result] {
-  display: none;
-}
-
-.ch1-live-conclusion > small {
-  grid-column: 2;
   margin: 0;
+  padding: 14px 18px;
+  border-left: 4px solid var(--accent);
+  border-radius: 0 var(--radius) var(--radius) 0;
+  background: color-mix(in srgb, var(--accent) 8%, var(--surface-solid));
   color: var(--text);
   font-size: 15px;
-  line-height: 1.7;
+  line-height: 1.75;
 }
 
 /* §2 — the coefficient workbench is a sequence, not two unmatched columns. */
@@ -530,13 +518,7 @@
   }
 
   .ch1-live-conclusion {
-    grid-template-columns: 1fr;
-    gap: 12px;
-    padding: 15px;
-  }
-
-  .ch1-live-conclusion > small {
-    grid-column: 1;
+    padding: 12px 14px;
   }
 
   .ch1-coeff-card .ch1-strip {
@@ -585,8 +567,7 @@
 
   .ch1-learning-guide,
   .ch1-control-module,
-  .ch1-coeff-operation,
-  .ch1-live-conclusion {
+  .ch1-coeff-operation {
     border-radius: 12px;
   }
 
@@ -627,4 +608,52 @@
   .ch1-guided-lab *::after {
     scroll-behavior: auto !important;
   }
+}
+
+/* Slim formal section: one plain display equation, no hero box. */
+.ch1-formal .ch1-formal-equation {
+  margin: 0;
+  padding: 4px 0;
+  text-align: center;
+  overflow-x: auto;
+  overflow-y: hidden;
+  -webkit-overflow-scrolling: touch;
+}
+
+.ch1-formal .ch1-formal-equation .tex-display,
+.ch1-formal .ch1-formal-equation .katex-display {
+  margin: 0;
+  font-size: 1.12rem;
+  overflow: visible;
+}
+
+.ch1-formal .ch1-next-note {
+  margin: 0;
+  color: var(--muted);
+  line-height: 1.75;
+}
+
+.ch1-formal .ch1-next-note strong {
+  margin-right: 10px;
+  color: var(--accent-strong);
+  font-size: 14px;
+}
+
+.ch1-guided-lab > .ch1-lab-head > .ch1-lab-task {
+  color: var(--text);
+}
+
+.ch1-module-heading:not(:has(p)) {
+  align-items: center;
+}
+
+/* §6 — the root-merge action is the point of the lab. */
+.ch1-section-multiple-factors .ch1-merge-exact {
+  justify-self: start;
+  min-height: 40px;
+  padding: 8px 16px;
+  border-color: var(--accent);
+  background: var(--accent);
+  color: var(--surface-solid);
+  font-weight: 700;
 }

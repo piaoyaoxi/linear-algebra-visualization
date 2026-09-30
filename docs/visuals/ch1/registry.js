@@ -51,7 +51,6 @@
   window.renderChapter1Formal = function renderChapter1Formal(el, section, config = {}) {
     if (!el || !section) return;
     const display = (source) => (window.texDisplay ? window.texDisplay(source) : source);
-    const concepts = Array.isArray(section.concepts) ? section.concepts : [];
     const details = Array.isArray(config.details) ? config.details : [];
     const cards = Array.isArray(config.cards) ? config.cards : [];
     const misconceptions = Array.isArray(section.misconceptions) ? section.misconceptions : [];
@@ -62,19 +61,7 @@
       <h2>${title}</h2>
       <div class="lesson-formal-layout">
         <p class="lesson-formal-intro">${config.intro || section.intro || ""}</p>
-        ${
-          formula
-            ? `<div class="operation-map">
-                <div class="operation-map-main">${display(formula)}</div>
-                <dl class="lesson-meta-list">
-                  ${concepts
-                    .slice(0, 5)
-                    .map((item) => `<div><dt>${item.label}</dt><dd>${item.text}</dd></div>`)
-                    .join("")}
-                </dl>
-              </div>`
-            : ""
-        }
+        ${formula ? `<div class="ch1-formal-equation">${display(formula)}</div>` : ""}
         <div class="definition-stack">
           ${details
             .map(
@@ -120,8 +107,9 @@
     if (!renderer) return;
     const formal = root.querySelector(`#${CSS.escape(section.id)}-formal`);
     const interactive = root.querySelector(`#${CSS.escape(section.id)}-interactive`);
-    renderer.formal?.(formal, section, root);
-    renderer.interactive?.(interactive, section, root);
+    if (formal) renderer.formal?.(formal, section, root);
+    // `interactive: false` removes the band entirely; only mount a lab where one exists.
+    if (interactive && section.interactive) renderer.interactive?.(interactive, section, root);
   };
 
   window.teardownChapter1Lesson = runCleanup;

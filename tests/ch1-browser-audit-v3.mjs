@@ -9,6 +9,8 @@ const sections = [
   "factorization-theorem", "multiple-factors", "polynomial-functions", "complex-real-factorization",
   "rational-polynomials", "multivariate-polynomials", "symmetric-polynomials",
 ];
+// These sections are text + stepped example only; they must not render an interactive band.
+const textOnly = new Set(["number-fields", "factorization-theorem", "rational-polynomials", "symmetric-polynomials"]);
 const viewports = [
   { name: "desktop", width: 1440, height: 900 },
   { name: "tablet", width: 820, height: 900 },
@@ -173,9 +175,9 @@ async function checkMultivariateLayout(page, viewport) {
 
 async function operate(page, section, viewport, theme) {
   const detail = (viewport.name === "desktop" && theme === "light") || (viewport.name === "mobile" && theme === "dark");
-  if (section === "number-fields") {
-    await clickIf(page, '[data-domain="P"]'); await clickIf(page, '[data-domain="Q2"]');
-  } else if (section === "univariate-polynomials") {
+  if (section === "univariate-polynomials") {
+    const initialRows = await page.locator("[data-contributions] tr td:not([colspan])").count();
+    ensure(initialRows > 0, "§2: contribution table is empty on load (multiplication should be the default view)");
     await clickIf(page, '[data-mode="mul"]'); if (await page.locator("[data-k]").count()) await page.locator("[data-k]").fill("4");
     await clickIf(page, '[data-preset="fraction"]'); await clickIf(page, '[data-mode="mul"]');
   } else if (section === "polynomial-divisibility") {
@@ -184,11 +186,14 @@ async function operate(page, section, viewport, theme) {
   } else if (section === "gcd-polynomials") {
     const next = page.locator("[data-next]"); for (let i = 0; i < 8 && !(await next.isDisabled()); i += 1) await next.click();
     ensure((await page.locator("[data-verify] .tex-inline").count()) === 1, "§4: Bezout identity is fragmented");
-  } else if (section === "factorization-theorem") {
-    await clickIf(page, '[data-domain="C"]'); await clickIf(page, '[data-poly="x4p4"]'); await clickIf(page, '[data-route-btn="1"]');
   } else if (section === "multiple-factors") {
     if (detail) await page.locator("#multiple-factors-interactive .ch1-lab").screenshot({ path: path.join(outputDir, `${viewport.name}-${theme}-multiple-factors-formulas.png`) });
-    await clickIf(page, '[data-preset-m="3"]'); await clickIf(page, '[data-mode="merge"]'); await clickIf(page, "[data-merge-exact]");
+    ensure(await page.locator('[data-mode="merge"].is-active').count(), "§6: root-merge mode is not the default");
+    await clickIf(page, "[data-merge-exact]");
+    ensure(/二重根/.test((await page.locator("[data-status]").textContent()) || ""), "§6: exact merge did not produce a double root");
+    await clickIf(page, '[data-preset-m="3"]');
+    await page.locator("[data-a]").fill("-1");
+    ensure(/4 重根/.test((await page.locator("[data-status]").textContent()) || ""), "§6: a=−1 must merge with the factor x+1 into a 4-fold root");
   } else if (section === "polynomial-functions") {
     if (detail) await page.locator("#polynomial-functions-interactive .ch1-lab").screenshot({ path: path.join(outputDir, `${viewport.name}-${theme}-horner.png`) });
     await clickIf(page, '[data-mode="roots"]'); await clickIf(page, '[data-mode="interp"]');
@@ -196,8 +201,6 @@ async function operate(page, section, viewport, theme) {
     if (detail) await dragConjugate(page); await clickIf(page, '[data-mode="C"]');
     if (await page.locator("[data-re]").count()) await page.locator("[data-re]").fill("1.5");
     ensure(/虚部/.test((await page.locator("[data-real-status]").textContent()) || ""), "§8: unlocked coefficient explanation missing");
-  } else if (section === "rational-polynomials") {
-    await clickIf(page, '[data-rational-example="quartic"]'); await clickIf(page, '[data-prime="2"]');
   } else if (section === "multivariate-polynomials") {
     await checkMultivariateLayout(page, viewport);
     if (detail) await page.locator("#multivariate-polynomials-interactive .ch1-lab").screenshot({ path: path.join(outputDir, `${viewport.name}-${theme}-multivariate-support.png`) });
@@ -205,8 +208,6 @@ async function operate(page, section, viewport, theme) {
     await clickIf(page, '[data-first="{\"i\":1,\"j\":2}"]');
     await clickIf(page, '[data-second="{\"i\":0,\"j\":1}"]');
     ensure(!(await page.locator("[data-multiply-module]").getAttribute("hidden")), "§10: multiply module did not open");
-  } else if (section === "symmetric-polynomials") {
-    await clickIf(page, "[data-cycle]"); await clickIf(page, "[data-swap-xy]"); await clickIf(page, "[data-rewrite-next]");
   }
   await page.waitForTimeout(100);
 }
@@ -223,21 +224,48 @@ for (const viewport of viewports) {
     for (const section of sections) {
       consoleErrors.length = pageErrors.length = failed.length = 0;
       await page.goto(`${baseUrl}/learn.html#ch1/${section}`, { waitUntil: "networkidle" });
+      await page.locator(`#${section}-formal`).waitFor({ state: "visible" });
+      if ((theme === "dark") !== Boolean(await page.locator("body.dark").count())) await page.locator("#themeToggle").click();
+      const formal = await page.evaluate((id) => {
+        const node = document.querySelector(`#${CSS.escape(id)}-formal`);
+        const equation = node?.querySelector(".ch1-formal-equation");
+        return {
+          heroBox: Boolean(node?.querySelector(".operation-map, .lesson-meta-list, .lesson-card-grid")),
+          equation: Boolean(equation?.querySelector(".katex")),
+          equationFits: equation ? equation.scrollWidth - equation.clientWidth <= 2 || ["auto", "scroll"].includes(getComputedStyle(equation).overflowX) : false,
+          definitions: node?.querySelectorAll(".definition-row").length ?? 99,
+          katexErrors: document.querySelectorAll("#mainContent .katex-error").length,
+        };
+      }, section);
+      ensure(!formal.heroBox, `${section}: formal section still renders the boxed map or card grid`);
+      ensure(formal.equation && formal.equationFits, `${section}: display equation missing or clipped`);
+      ensure(formal.definitions <= 3, `${section}: more than three definitions`);
+      ensure(formal.katexErrors === 0, `${section}: KaTeX errors on page`);
+      if (textOnly.has(section)) {
+        const leftover = await page.locator(`#${section}-interactive`).count();
+        ensure(leftover === 0, `${section}: interactive band should be removed`);
+        const docOverflow = await page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth);
+        ensure(docOverflow <= 2, `${viewport.name}/${theme}/${section}: horizontal overflow`);
+        ensure(!consoleErrors.length && !pageErrors.length && !failed.length, `${viewport.name}/${theme}/${section}: browser errors ${[...consoleErrors, ...pageErrors, ...failed].join(" | ")}`);
+        report.push({ viewport: viewport.name, theme, section, textOnly: true, documentOverflow: docOverflow });
+        continue;
+      }
       const lab = page.locator(`#${section}-interactive .ch1-lab`);
       await lab.waitFor({ state: "visible" });
-      if ((theme === "dark") !== Boolean(await page.locator("body.dark").count())) await page.locator("#themeToggle").click();
       await checkMath(page, section); await checkVisibleText(page, section); await operate(page, section, viewport, theme); await checkMath(page, section); await checkVisibleText(page, section);
       const layout = await page.evaluate((id) => {
         const node = document.querySelector(`#${CSS.escape(id)}-interactive .ch1-lab`);
         return {
           documentOverflow: document.documentElement.scrollWidth - document.documentElement.clientWidth,
           labOverflow: node ? node.scrollWidth - node.clientWidth : 999,
-          guide: Boolean(node?.querySelector(".ch1-learning-guide")), conclusion: Boolean(node?.querySelector(".ch1-live-conclusion")),
+          task: Boolean(node?.querySelector(".ch1-lab-head .ch1-lab-task")?.textContent.trim()),
+          boilerplate: Boolean(node?.querySelector(".ch1-learning-guide, .ch1-control-module")) || /本实验要回答|选择实验情境|把现象说成一句数学结论/.test(node?.textContent || ""),
+          conclusion: Boolean(node?.querySelector(".ch1-live-conclusion")?.textContent.trim()),
           placeholder: /开发中|占位/.test(node?.textContent || ""),
         };
       }, section);
       ensure(layout.documentOverflow <= 2 && layout.labOverflow <= 2, `${viewport.name}/${theme}/${section}: horizontal overflow`);
-      ensure(layout.guide && layout.conclusion && !layout.placeholder, `${viewport.name}/${theme}/${section}: guided structure failed`);
+      ensure(layout.task && layout.conclusion && !layout.boilerplate && !layout.placeholder, `${viewport.name}/${theme}/${section}: lab task/conclusion structure failed`);
       ensure(!consoleErrors.length && !pageErrors.length && !failed.length, `${viewport.name}/${theme}/${section}: browser errors ${[...consoleErrors, ...pageErrors, ...failed].join(" | ")}`);
       if ((viewport.name === "desktop" && theme === "light") || (viewport.name === "mobile" && theme === "dark")) {
         await lab.screenshot({ path: path.join(outputDir, `${viewport.name}-${theme}-${section}.png`) });

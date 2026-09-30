@@ -127,12 +127,12 @@
       });
 
       return `<svg data-division-svg data-animation-progress="0" viewBox="0 0 ${width} ${height}" role="img" aria-label="标准多项式长除法">
-        <text class="ch1-ld-label" x="22" y="57">商</text>
+        <text class="ch1-ld-label" x="174" y="57" text-anchor="end">商</text>
         ${termRow(quotient, maxDegree, 59, { x0, columnWidth, newDegree: newQuotientDegree })}
         <path class="ch1-ld-bracket" d="M188 91 H${width - 34} M188 91 V154"></path>
-        <text class="ch1-ld-label" x="22" y="111">除式</text>
+        <text class="ch1-ld-label" x="174" y="113" text-anchor="end">除式</text>
+        <text class="ch1-ld-label" x="${x0 - 10}" y="113">被除式</text>
         <text class="ch1-ld-divisor-text" x="174" y="141" text-anchor="end">${svgEscape(polynomial(state.example.g))}</text>
-        <text class="ch1-ld-label" x="22" y="141">被除式</text>
         ${termRow(state.example.f, maxDegree, 141, { x0, columnWidth, focusDegree: activeDegree })}
         ${rows.join("")}
       </svg>`;
@@ -297,7 +297,7 @@
       <div class="ch1-lab ch1-long-division-lab">
         <div class="ch1-lab-head">
           <h3>标准多项式长除法</h3>
-          <p>${section.interactive.description} 所有多项式都作为完整算式显示，不再把每个系数切成独立卡片。</p>
+          <p>${section.interactive.description}</p>
         </div>
         <div class="ch1-controls" role="group" aria-label="长除法示例与播放控制">
           <button type="button" data-preset="default" class="is-active" aria-pressed="true">非整除</button>

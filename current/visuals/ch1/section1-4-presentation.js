@@ -8,18 +8,15 @@
   function renderFormal(el, section) {
     if (!el) return;
     const f = section.formal || {};
-    const map = (f.map || []).map((item) => `<div><dt>${esc(item.label)}</dt><dd>${item.text}</dd></div>`).join("");
-    const definitions = (f.definitions || []).map((item) => `<article class="definition-row"><strong>${item.title}</strong><p>${item.text}</p></article>`).join("");
-    const cards = (f.cards || []).map((item) => `<article class="lesson-card"><span class="lesson-card-kicker">${item.kicker}</span><h3>${item.title}</h3><p>${item.text}</p></article>`).join("");
-    const pitfalls = (f.pitfalls || []).length ? `<div class="ch1-pitfalls"><strong>常见误区</strong><ul>${f.pitfalls.map((item) => `<li>${item}</li>`).join("")}</ul></div>` : "";
+    const definitions = (f.definitions || []).slice(0, 3).map((item) => `<article class="definition-row"><strong>${item.title}</strong><p>${item.text}</p></article>`).join("");
+    const pitfalls = (f.pitfalls || []).length ? `<div class="ch1-pitfalls"><strong>常见误区</strong><ul>${f.pitfalls.slice(0, 3).map((item) => `<li>${item}</li>`).join("")}</ul></div>` : "";
     el.innerHTML = `<h2>${f.title || "定理与概念"}</h2>
       <div class="lesson-formal-layout ch1-formal">
-        <p class="lesson-formal-intro">${f.intro || section.intro || ""}</p>
-        ${f.equation ? `<div class="operation-map"><div class="operation-map-main">${display(f.equation)}</div><dl class="lesson-meta-list">${map}</dl></div>` : ""}
-        <div class="definition-stack">${definitions}</div>
-        <div class="lesson-card-grid">${cards}</div>
+        ${f.intro ? `<p class="lesson-formal-intro">${f.intro}</p>` : ""}
+        ${f.equation ? `<div class="ch1-formal-equation">${display(f.equation)}</div>` : ""}
+        ${definitions ? `<div class="definition-stack">${definitions}</div>` : ""}
         ${pitfalls}
-        ${f.note ? `<div class="lesson-reading-note"><strong>这一节的核心</strong><p>${f.note}</p></div>` : ""}
+        ${f.note ? `<p class="ch1-next-note"><strong>${f.noteLabel || "下一节"}</strong>${f.note}</p>` : ""}
       </div>`;
   }
 
@@ -46,57 +43,9 @@
 
   window.Ch1UI = { tex, display, esc, renderFormal, lab, selectButtons, readStrip };
 
-  // §1 — number field lens
-  function mountNumberFields(root) {
-    const domains = {
-      Z: { name: "整数集 ℤ", field: false, form: "n∈ℤ", gates: [true, true, true, false], witness: "1÷2=1/2 不属于 ℤ。", detail: "整数对加、减、乘封闭，但缺少一般非零元素的乘法逆元。" },
-      Q: { name: "有理数域 ℚ", field: true, form: "p/q, q≠0", gates: [true, true, true, true], witness: "两个有理数四则运算后仍为有理数。", detail: "这是包含 1 的最小数域，也是有理系数多项式的舞台。" },
-      Q2: { name: "二次域 ℚ(√2)", field: true, form: "a+b√2", gates: [true, true, true, true], witness: "1/(a+b√2)=(a−b√2)/(a²−2b²)。", detail: "分母非零时 a²−2b²≠0，求逆结果仍为 u+v√2。" },
-      R: { name: "实数域 ℝ", field: true, form: "实数", gates: [true, true, true, true], witness: "实数对四则运算封闭（除数非零）。", detail: "允许 √2 等实数系数，但仍不允许 i。" },
-      C: { name: "复数域 ℂ", field: true, form: "a+bi", gates: [true, true, true, true], witness: "非零 a+bi 的逆为 (a−bi)/(a²+b²)。", detail: "代数基本定理保证非常数复系数多项式至少有一个复根。" },
-      P: { name: "正实数集 ℝ₊", field: false, form: "x>0", gates: [true, false, true, true], witness: "1−2=−1 不属于 ℝ₊，且 0 不在集合中。", detail: "乘除封闭并不足够；加法逆元和 0 也不可缺少。" },
-    };
-    const polys = [
-      { formula: "x^2-2", coeff: { Z: true, Q: true, Q2: true, R: true, C: true, P: false }, factor: { Q: "不可约", Q2: "可分解", R: "可分解", C: "可分解" } },
-      { formula: "x^2-\\sqrt2", coeff: { Z: false, Q: false, Q2: true, R: true, C: true, P: false }, factor: { Q2: "可分解", R: "可分解", C: "可分解" } },
-      { formula: "x^2+1", coeff: { Z: true, Q: true, Q2: true, R: true, C: true, P: false }, factor: { Q: "不可约", Q2: "不可约", R: "不可约", C: "可分解" } },
-      { formula: "x^2-i", coeff: { Z: false, Q: false, Q2: false, R: false, C: true, P: false }, factor: { C: "可分解" } },
-    ];
-    let current = "Q";
-    const paint = () => {
-      const d = domains[current];
-      root.querySelector("[data-domain-name]").textContent = d.name;
-      root.querySelector("[data-domain-form]").textContent = d.form;
-      root.querySelector("[data-witness]").textContent = d.witness;
-      root.querySelector("[data-domain-detail]").textContent = d.detail;
-      const status = root.querySelector("[data-field-status]");
-      status.className = `ch1-status ${d.field ? "is-ok" : "is-bad"}`;
-      status.textContent = d.field ? "通过全部数域条件" : "不是数域";
-      root.querySelector("[data-gates]").innerHTML = ["加法", "减法", "乘法", "非零除法"].map((label, i) => `<div class="ch1-gate ${d.gates[i] ? "is-ok" : "is-bad"}"><strong>${label}</strong><span>${d.gates[i] ? "封闭" : "失败"}</span></div>`).join("");
-      root.querySelector("[data-poly-table]").innerHTML = polys.map((p) => {
-        const legal = p.coeff[current];
-        const factor = legal && p.factor[current] ? p.factor[current] : legal ? "本节不判定" : "无意义";
-        return `<tr><td>${tex(p.formula)}</td><td><span class="ch1-status ${legal ? "is-ok" : "is-bad"}">${legal ? "系数合法" : "系数越界"}</span></td><td>${factor}</td></tr>`;
-      }).join("");
-      root.querySelector("[data-q2-proof]").innerHTML = current === "Q2" ? `${display("(a+b\\sqrt2)(c+d\\sqrt2)=(ac+2bd)+(ad+bc)\\sqrt2")} ${display("\\frac1{a+b\\sqrt2}=\\frac{a-b\\sqrt2}{a^2-2b^2}")}` : "选择 ℚ(√2) 查看乘法与求逆为什么仍留在同一形式。";
-    };
-    root.querySelectorAll("[data-domain]").forEach((button) => button.addEventListener("click", () => { current = button.dataset.domain; selectButtons(root, "[data-domain]", button); paint(); }));
-    paint();
-  }
-
-  function interactive1(el, section) {
-    lab(el, "数域透镜", section.interactive.description,
-      ["Z", "Q", "Q2", "R", "C", "P"].map((key, i) => `<button type="button" data-domain="${key}"${i === 1 ? ' class="is-active"' : ""}>${{ Z: "ℤ", Q: "ℚ", Q2: "ℚ(√2)", R: "ℝ", C: "ℂ", P: "正实数" }[key]}</button>`).join(""),
-      `<div class="ch1-metrics"><div class="ch1-metric"><span>当前集合</span><strong data-domain-name></strong><small data-domain-form></small></div><div class="ch1-metric"><span>判定</span><strong data-field-status class="ch1-status"></strong></div></div>
-       <div class="ch1-gates" data-gates></div>
-       <div class="ch1-callout"><strong>最短证据</strong><p data-witness></p><p class="ch1-muted" data-domain-detail></p></div>
-       <div class="ch1-two-col"><div><h4>系数合法与可分解要分开</h4><div class="ch1-table-wrap"><table class="ch1-table"><thead><tr><th>表达式</th><th>系数</th><th>当前域中的分解状态</th></tr></thead><tbody data-poly-table></tbody></table></div></div><div><h4>ℚ(√2) 的封闭性</h4><div class="ch1-equation-stack" data-q2-proof></div><div class="ch1-nest"><div data-level="4" class="ch1-nest-layer">ℂ</div><div data-level="3" class="ch1-nest-layer">ℝ</div><div data-level="2" class="ch1-nest-layer">ℚ(√2)</div><div data-level="1" class="ch1-nest-layer">ℚ</div></div></div></div>`);
-    mountNumberFields(el);
-  }
-
   // §2 — coefficient strip and exact convolution
   function mountCoefficients(root) {
-    const state = { f: M().poly([2, -1, 0, 3]), g: M().poly([-2, 1, 1, -3]), mode: "add", k: 3, scale: M().R(2) };
+    const state = { f: M().poly([2, -1, 0, 3]), g: M().poly([-2, 1, 1, -3]), mode: "mul", k: 3, scale: M().R(2) };
     const bounds = { xMin: -2.5, xMax: 2.5, yMin: -8, yMax: 8 };
     const inputLength = 5;
     function result() {
@@ -135,7 +84,7 @@
       root.querySelector("[data-k-coeff]").innerHTML = tex(M().formatRTex(coefficient));
       root.querySelector("[data-scale-box]").hidden = state.mode !== "scale";
       root.querySelector("[data-k-box]").hidden = state.mode !== "mul";
-      M().drawPolynomial(root.querySelector("canvas"), out, { bounds, caption: "固定世界坐标 · 图像只是系数结构的观察窗口" });
+      M().drawPolynomial(root.querySelector("canvas"), out, { bounds, caption: "结果多项式的图像" });
     }
     root.addEventListener("change", (event) => {
       const target = event.target;
@@ -151,7 +100,7 @@
       if (button.dataset.preset === "cancel") { state.f = M().poly([1, 0, 0, 2]); state.g = M().poly([0, 1, 0, -2]); state.mode = "add"; }
       else if (button.dataset.preset === "fraction") { state.f = M().poly(["1/2", "-3/2", 0, 1]); state.g = M().poly(["-1/2", "3/2", 1]); state.mode = "mul"; }
       else if (button.dataset.preset === "zero") { state.f = M().poly([0]); state.g = M().poly([1, 2]); state.mode = "add"; }
-      else { state.f = M().poly([2, -1, 0, 3]); state.g = M().poly([-2, 1, 1, -3]); state.mode = "add"; }
+      else { state.f = M().poly([2, -1, 0, 3]); state.g = M().poly([-2, 1, 1, -3]); state.mode = "mul"; }
       root.querySelectorAll("[data-mode]").forEach((b) => b.classList.toggle("is-active", b.dataset.mode === state.mode));
       paint(true);
     }));
@@ -161,7 +110,7 @@
 
   function interactive2(el, section) {
     lab(el, "系数带工作台", section.interactive.description,
-      `<button type="button" data-mode="add" class="is-active">f+g</button><button type="button" data-mode="sub">f−g</button><button type="button" data-mode="mul">fg</button><button type="button" data-mode="scale">λf</button><span class="ch1-control-separator"></span><button type="button" data-preset="default">默认</button><button type="button" data-preset="cancel">首项抵消</button><button type="button" data-preset="fraction">分数系数</button><button type="button" data-preset="zero">零多项式</button>`,
+      `<button type="button" data-mode="mul" class="is-active">fg</button><button type="button" data-mode="add">f+g</button><button type="button" data-mode="sub">f−g</button><button type="button" data-mode="scale">λf</button><span class="ch1-control-separator"></span><button type="button" data-preset="default">默认</button><button type="button" data-preset="cancel">首项抵消</button><button type="button" data-preset="fraction">分数系数</button><button type="button" data-preset="zero">零多项式</button>`,
       `<div class="ch1-two-col"><div class="ch1-panel"><div><h4>f 的系数带</h4><div data-f-strip></div><div class="ch1-inline-equation">${tex("f=")}<span data-f-tex></span> · deg f=<strong data-deg-f></strong></div></div><div><h4>g 的系数带</h4><div data-g-strip></div><div class="ch1-inline-equation">${tex("g=")}<span data-g-tex></span> · deg g=<strong data-deg-g></strong></div></div><div data-scale-box hidden><label class="ch1-field">λ（支持分数）<input type="text" value="2" data-scale></label></div><div data-k-box hidden><label class="ch1-slider-row"><span>结果次数 k</span><input type="range" min="0" max="8" value="3" data-k><output data-k-value>3</output></label></div></div><div class="ch1-stage"><canvas aria-label="结果多项式固定坐标图像"></canvas></div></div>
        <div class="ch1-result-band"><div><span>结果</span><strong data-out-tex></strong><small>次数：<span data-deg-out></span></small></div><div data-out-strip></div></div>
        <div class="ch1-two-col"><div><h4>指定次数贡献</h4><div class="ch1-table-wrap"><table class="ch1-table"><thead><tr><th>f 项</th><th>g 项</th><th>乘积</th></tr></thead><tbody data-contributions></tbody></table></div></div><div class="ch1-callout"><strong>${tex("[x^k](fg)")} 的当前值</strong><p>当 k=<span data-k-value></span> 时，系数为 <span data-k-coeff></span>。</p><p class="ch1-muted">输入允许整数、小数与分数，例如 −3/2；计算在有理数上精确完成。</p></div></div>`);
@@ -269,7 +218,7 @@
     mountEuclid(el);
   }
 
-  window.defineChapter1Renderer("number-fields", { formal: renderFormal, interactive: interactive1 });
+  window.defineChapter1Renderer("number-fields", { formal: renderFormal });
   window.defineChapter1Renderer("univariate-polynomials", { formal: renderFormal, interactive: interactive2 });
   window.defineChapter1Renderer("polynomial-divisibility", { formal: renderFormal, interactive: interactive3 });
   window.defineChapter1Renderer("gcd-polynomials", { formal: renderFormal, interactive: interactive4 });

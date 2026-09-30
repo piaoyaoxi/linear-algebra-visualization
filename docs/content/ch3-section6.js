@@ -3,97 +3,69 @@ defineChapter3Section("solution-structure", {
   textbookSection: "线性方程组解的结构",
   title: "线性方程组解的结构",
   navTitle: "解的结构",
-  question: "方程组一旦有解，为什么所有解一定构成“一个特解 + 齐次解空间”？自由变量究竟在生成哪些方向？",
-  goal: `从 RREF 识别主元变量与自由变量；求齐次方程 ${texInline(String.raw`Ax=0`)} 的基础解系；理解 ${texInline(String.raw`x=x_0+\operatorname{Ker}(A)`)} 的仿射结构，并用 ${texInline(String.raw`n-\operatorname{rank}(A)`)} 计算解集维数。`,
-  tags: ["主元变量", "自由变量", "基础解系", "零空间", "仿射解集"],
+  question: "为什么全部解等于“一个特解加上齐次方程组的全部解”？改变 b 时，解集怎样移动？",
+  goal: "掌握齐次方程组的基础解系与解空间维数 n−r；会写出非齐次方程组的通解 x=x₀+k₁η₁+⋯+kₛηₛ。",
+  tags: ["基础解系", "解空间", "特解", "通解"],
   intro:
-    "有解只说明至少找到一个点。真正的结构来自差值：任意两个非齐次解之差都会被 A 送到零，所以所有解之间允许的移动方向恰好是零空间。选择不同特解只会改变参数原点，不会改变整个解集。",
-  videoPlan: {
-    title: "把零空间平移到特解处",
-    duration: "约 2.5 分钟",
-    scenes: [
-      "RREF 中主元列与自由列分别着色。",
-      "每个自由变量单独取 1，生成一个基础解向量。",
-      "齐次解空间从原点展开。",
-      "一个特解把整个零空间平移成非齐次解集。",
-    ],
-  },
+    "两个非齐次解相减，得到的是齐次解。所以只要找到一个解，其余的解都是在它上面加一个齐次解。几何上，解集就是齐次解空间整体平移到特解那里。",
   concepts: [
-    {
-      label: "主元与自由变量",
-      text: "主元变量由方程约束，自由变量可以独立取值；每个自由变量通常对应零空间中的一个基本方向。",
-    },
-    {
-      label: "零空间",
-      text: `${texInline(String.raw`\operatorname{Ker}(A)=\{x\in F^n:Ax=0\}`)} 对加法和数乘封闭，是一个线性子空间。`,
-    },
-    {
-      label: "基础解系",
-      text: "齐次方程解空间的一组基。实际计算时常让一个自由变量取 1、其余取 0，依次得到基础方向。",
-    },
-    {
-      label: "特解加齐次解",
-      text: `若 ${texInline(String.raw`Ax_0=b`)}，则 ${texInline(String.raw`Ax=b`)} 的全部解为 ${texInline(String.raw`x=x_0+x_h`)}，其中 ${texInline(String.raw`x_h\in\operatorname{Ker}(A)`)}。`,
-    },
-    {
-      label: "维数公式",
-      text: `零空间维数为 ${texInline(String.raw`n-\operatorname{rank}(A)`)}；这就是自由变量个数，也是有解时解集的方向维数。`,
-    },
+    { label: "基础解系", text: "齐次方程组解空间的一组基，含 n−r 个向量。" },
+    { label: "通解", text: `${texInline("x=x_0+k_1\\eta_1+\\cdots+k_s\\eta_s")}。` },
   ],
-  textbook: {
-    reference: "北大版《高等代数》第三章 §6",
-    page: "",
-    items: ["齐次方程组的基础解系", "零空间", "非齐次方程组的特解", "通解结构", "解空间维数与秩"],
-  },
-  interactive: {
-    type: "slot",
-    title: "实验：特解加零空间得到全部解",
-    description: "从 RREF 自动拆出特解和零空间基；调节参数生成具体解，并同时验证 Ax=b 与 A(x−x₀)=0。",
-    task: "选择一个自由变量的预设，沿参数滑块移动；再把特解替换成解集中的另一个点，确认整条解集不变。",
-    prompts: [
-      "选择唯一解预设，观察零空间只含零向量。",
-      "选择仿射直线预设，分别开关特解和齐次方向。",
-      "选择两个自由变量的预设，用两个参数在解平面中移动。",
-      "点击“换一个特解”，比较公式参数变化与实际解集。",
+  textbook: { reference: "北大版《高等代数》第三章 §6", items: ["齐次方程组的基础解系", "非齐次方程组解的结构"] },
+  interactive: { type: "slot", title: "解集是零空间平移过去的样子" },
+  lesson3d: {
+    blocks: [
+      {
+        title: "齐次方程组：解构成子空间",
+        tex: String.raw`\dim\{x: Ax=0\}=n-\operatorname{rank}A`,
+        text: "两个齐次解的和、数乘仍是齐次解，所以解集是一个子空间，称为解空间。阶梯形中每个自由未知量恰好对应基础解系中的一个向量：令它取 1、其余自由未知量取 0，解出主元未知量即可。",
+      },
+      {
+        title: "非齐次方程组：特解 + 解空间",
+        tex: String.raw`Ax_0=b\ \Longrightarrow\ \{x:Ax=b\}=\{x_0+\eta:\ A\eta=0\}`,
+        text: `若 ${texInline("Ax=b")}，则 ${texInline("A(x-x_0)=0")}，所以 ${texInline("x-x_0")} 是齐次解；反过来，${texInline("A(x_0+\\eta)=b+0=b")}。b≠0 时，原点不是解。解集是把 n−r 维解空间平移到 x₀ 处得到的（三维里可能是一个点、一条直线或一个平面），它与解空间平行。`,
+      },
+    ],
+    pitfalls: [
+      "给特解也乘上任意常数。通解里只有齐次部分带任意常数。",
+      "以为非齐次方程组的解集对加法封闭：两个解之和满足的是 Ax=2b。",
+      "自由未知量选得不同，通解看起来不一样，就以为算错了。",
     ],
   },
   example: {
-    title: "例题：从 RREF 写出完整通解",
-    question: `求方程组 ${texInline(String.raw`x_1+x_2+x_3=2`)}，${texInline(String.raw`2x_1+2x_2+2x_3=4`)} 的全部解，并说明解集的维数。`,
+    title: "例题：写出通解，并看它怎样随 b 移动",
+    question: `求 ${texInline("x+y+z=3")}，${texInline("x+2y-z=4")} 的全部解。若右端改为 (3, 5)，解集怎样变化？`,
     choices: [
-      {
-        correct: true,
-        text: `令 ${texInline(String.raw`x_2=s,x_3=t`)}，则 ${texInline(String.raw`x=(2,0,0)^T+s(-1,1,0)^T+t(-1,0,1)^T`)}；解集维数为 ${texInline(String.raw`3-1=2`)}。`,
-      },
-      { text: "有两个方程，所以只有一个自由变量。" },
-      { text: "非齐次解集必须过原点，因此特解应取零向量。" },
-      { text: "第二个方程与第一个不同，所以秩为 2。" },
+      { correct: true, text: `${texInline("x=(2,1,0)+t(-3,2,1)")}；改右端后为 ${texInline("(1,2,0)+t(-3,2,1)")}，方向不变，直线平移。` },
+      { text: `${texInline("x=t(2,1,0)")}；改右端后直线绕原点转动。` },
+      { text: `${texInline("x=(2,1,0)+t(-3,2,1)")}；改右端后解集变成一个平面。` },
+      { text: "两个方程三个未知量，无法确定全部解。" },
     ],
     steps: [
-      "第二个方程是第一个方程的 2 倍，只有一个独立约束，rank(A)=1。",
-      `主元变量取 ${texInline(String.raw`x_1`)}；令 ${texInline(String.raw`x_2=s,x_3=t`)}。`,
-      `得到 ${texInline(String.raw`x_1=2-s-t`)}。`,
-      `取 ${texInline(String.raw`s=t=0`)} 得特解 ${texInline(String.raw`x_0=(2,0,0)^T`)}。`,
-      `分别让 ${texInline(String.raw`(s,t)=(1,0)`)} 与 ${texInline(String.raw`(0,1)`)} 得两个齐次方向。`,
-      `解集是 R³ 中经过 x₀ 的二维仿射平面，维数 ${texInline(String.raw`n-r=2`)}。`,
+      `消元：${texInline(String.raw`R_2\leftarrow R_2-R_1`)} 得 ${texInline("y-2z=1")}。z 是自由未知量。`,
+      `令 z=0，得特解 ${texInline("x_0=(2,1,0)")}。`,
+      `齐次方程组令 z=1，得 ${texInline("\\eta=(-3,2,1)")}，通解 ${texInline("x=(2,1,0)+t(-3,2,1)")}。`,
+      `右端改为 (3,5)：特解变为 ${texInline("(1,2,0)")}，方向仍是 ${texInline("(-3,2,1)")}。两条解线都与解空间 ${texInline("t(-3,2,1)")} 平行。`,
     ],
   },
   quiz: [
-    { question: "为什么任意两个非齐次解之差是齐次解？", answer: "若 Ax₁=b 且 Ax₂=b，则 A(x₁−x₂)=b−b=0。" },
-    { question: "为什么特解加任意齐次解仍是原方程的解？", answer: "A(x₀+x_h)=Ax₀+Ax_h=b+0=b。" },
-    { question: "自由变量个数如何计算？", answer: "未知量个数 n 减去 rank(A)。" },
-    { question: "齐次解集与非齐次解集的几何区别是什么？", answer: "齐次解集是过原点的线性子空间；非齐次解集是它的平移，通常不过原点。" },
-    { question: "更换特解会改变解集吗？", answer: "不会。两个特解之差属于零空间，只会改变参数原点。" },
-    { question: "有解且零空间维数为 0 时有多少个解？", answer: "唯一解，因为没有非零齐次方向可移动。" },
+    {
+      question: `${texInline("x_1,x_2")} 都是 ${texInline("Ax=b")}（b≠0）的解。${texInline("x_1+x_2")}、${texInline("2x_1-x_2")}、${texInline("\\tfrac12(x_1+x_2)")}、${texInline("x_1-x_2")} 中，哪些仍是 Ax=b 的解？`,
+      answer: "只有 2x₁−x₂ 和 ½(x₁+x₂)（系数之和为 1）；x₁−x₂ 是齐次解；x₁+x₂ 满足 Ax=2b。",
+    },
+    {
+      question: "A 是 5×7 矩阵，rank A=4。基础解系含几个向量？若 Ax=b 有解，解集是几维的？",
+      answer: "3 个；解集是一个 3 维解空间平移后的结果。",
+    },
+    {
+      question: `${texInline("(2,1,0)+t(-3,2,1)")} 与 ${texInline("(-1,3,1)+u(6,-4,-2)")} 表示同一个解集吗？`,
+      answer: "是。两个特解之差 (3,−2,−1) 在解空间里，两个方向也共线。",
+    },
   ],
   summary: [
-    "自由变量生成零空间方向，主元变量随之被确定。",
-    "非齐次通解等于任一特解加上整个零空间。",
-    "零空间维数 n−rank(A) 精确给出解集的自由度。",
-    "选学的下一节保留‘消去变量—回代—验解’主线，把对象从线性式升级为多项式。",
-  ],
-  exercises: [
-    "给一个秩为 2 的 2×4 有解系统，写出两个基础解向量。",
-    "从一个通解中另选特解，并重新参数化，验证解集没有改变。",
+    "齐次方程组的解构成 n−r 维解空间，基础解系是它的一组基。",
+    "非齐次方程组的全部解 = 一个特解 + 解空间；改变 b 时，只要仍然有解，解集就只平移、不转动。",
+    "选学 §7 把消元思想推广到两个变量的高次方程组。",
   ],
 });

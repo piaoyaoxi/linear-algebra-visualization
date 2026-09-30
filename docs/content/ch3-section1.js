@@ -3,127 +3,73 @@ defineChapter3Section("elimination", {
   textbookSection: "消元法",
   title: "消元法",
   navTitle: "消元法",
-  question: "为什么交换、倍乘或相减方程以后，解集仍然不变？消元究竟在保留什么、又在逐步暴露什么？",
-  goal: `把线性方程组统一写成 ${texInline(String.raw`Ax=b`)} 与增广矩阵 ${texInline(String.raw`[A\mid b]`)}；理解三类初等行变换的可逆性；掌握主元选择、阶梯形、回代与 Gauss–Jordan 消元，并能从终局识别唯一解、无解和无穷多解。`,
-  tags: ["等价方程组", "增广矩阵", "主元", "阶梯形", "回代"],
+  question: "为什么交换、倍乘或倍加方程以后，解集不变？“消去一个未知量”在几何上做了什么？",
+  goal: "理解三类初等行变换都可逆，因此保持解集；会用增广矩阵完成消元与回代，并从阶梯形读出唯一解、无解或无穷多解。",
+  tags: ["初等行变换", "增广矩阵", "阶梯形", "回代", "三平面"],
   intro:
-    "消元法不是一套机械的减法口诀，而是一条保持解集的可逆路径。每一步都把原有约束重新组织：主元锁定一个变量方向，零行暴露冗余，矛盾行暴露不可兼容，自由列则留下可以变化的参数。",
-  videoPlan: {
-    title: "同一个解集的三种语言",
-    duration: "约 2 分钟",
-    scenes: [
-      "方程组、增广矩阵与二维直线交点同步出现。",
-      "三类行变换分别播放正向与逆向操作，强调可逆性。",
-      "主元逐级向右下移动，最后由阶梯形读出回代顺序。",
-      "平行、重合与相交三种终局并列比较。",
-    ],
-  },
+    "三元一次方程的每一个方程是空间里的一个平面，方程组的解就是三个平面的公共点。消元不断把方程换成新的组合：平面在变，公共点不变。",
   concepts: [
-    {
-      label: "矩阵语言",
-      text: `${texInline(String.raw`Ax=b`)} 记录线性映射与目标向量；${texInline(String.raw`[A\mid b]`)} 把每个方程的系数和右端放在同一行，便于同步变换。`,
-    },
-    {
-      label: "等价变换",
-      text: "交换两行、一行乘非零数、把一行的倍数加到另一行，都有明确逆操作，因此前后方程组具有完全相同的解集。",
-    },
-    {
-      label: "主元",
-      text: "主元是当前子矩阵中用于消去同列其他元素的非零入口。若入口为零，需要换行；不能把零当作除数。",
-    },
-    {
-      label: "阶梯形与回代",
-      text: "行阶梯形把主元按列向右推进，先解最后一个主元变量，再逐层回代；简化阶梯形则把每个主元列的其他元素也清零。",
-    },
-    {
-      label: "三种终局",
-      text: `出现 ${texInline(String.raw`0=c`)} 且 ${texInline(String.raw`c\neq0`)} 时无解；没有矛盾且每个未知量列都有主元时唯一解；没有矛盾但存在非主元列时有自由变量。`,
-    },
+    { label: "初等行变换", text: "交换两行、一行乘非零数、一行加上另一行的倍数；每一种都有逆变换。" },
+    { label: "阶梯形", text: "主元逐行向右下推进；从最后一个主元开始回代。" },
   ],
-  textbook: {
-    reference: "北大版《高等代数》第三章 §1",
-    page: "",
-    items: [
-      "线性方程组与增广矩阵",
-      "初等行变换与等价方程组",
-      "主元、阶梯形与回代",
-      "Gauss 消元与 Gauss–Jordan 消元",
-      "唯一解、无解和无穷多解的终局信号",
+  textbook: { reference: "北大版《高等代数》第三章 §1", items: ["初等变换与同解方程组", "阶梯形与回代"] },
+  interactive: { type: "slot", title: "消元：平面绕交线转动，解点不动" },
+  lesson3d: {
+    blocks: [
+      {
+        title: "三类变换都可逆，所以解集不变",
+        tex: String.raw`R_i\leftrightarrow R_j,\qquad R_i\leftarrow kR_i\ (k\ne0),\qquad R_i\leftarrow R_i+cR_j`,
+        text: `它们的逆变换分别是再交换一次、乘 ${texInline("1/k")}、减去 ${texInline("cR_j")}。新方程组的每个方程都由旧方程组合而来，所以旧解都是新解；再用逆变换倒回去，新解也都是旧解。乘 0 没有逆变换，会丢掉一个约束，因此不允许。`,
+      },
+      {
+        title: "倍加的几何含义",
+        text: `新方程 ${texInline("R_i+cR_j")} 被所有同时满足 ${texInline("R_i")}、${texInline("R_j")} 的点满足，所以新平面始终含着这两个平面的交线；${texInline("c")} 变化时，新平面绕这条交线转动。选对 ${texInline("c")} 让某个系数变成 0，新平面就与对应的坐标轴平行，这就是“消去一个未知量”。`,
+      },
+      {
+        title: "从阶梯形读出结果",
+        tex: String.raw`\begin{array}{l}\text{出现 }[0\ \cdots\ 0\mid d],\ d\ne0\ \Rightarrow\ \text{无解}\\ \text{无矛盾行，每列都有主元}\ \Rightarrow\ \text{唯一解}\\ \text{无矛盾行，有非主元列}\ \Rightarrow\ \text{无穷多解}\end{array}`,
+      },
     ],
-  },
-  interactive: {
-    type: "slot",
-    title: "实验：一步一步完成消元",
-    description: "选择行、操作类型与有理数因子，真实执行可撤销的行变换；方程、矩阵、几何图和秩信号始终同步。",
-    task: "先在“唯一解”预设中手动完成一次倍加，再用“下一步建议”走到阶梯形；随后切换到平行与重合预设，对比矛盾行和自由变量。",
-    prompts: [
-      "执行 R₂←R₂−R₁，观察两条直线本身改变，但交点保持不变。",
-      "尝试把一行乘 0，检查系统为何拒绝这一操作。",
-      "在需要换行的预设中先交换两行，再继续寻找主元。",
-      "比较阶梯形与简化阶梯形：前者需要回代，后者可以直接读解。",
+    pitfalls: [
+      "以为无解就意味着有两个平行平面。三个平面可以两两相交，却围成一个“三棱柱”，没有公共点。",
+      "只对系数做变换，忘记右端常数要跟着一起变。",
+      "以为方程个数等于未知量个数就一定有唯一解。",
     ],
   },
   example: {
-    title: "例题：完整记录一次消元",
-    question: `解方程组 ${texInline(String.raw`x+y+z=4`)}，${texInline(String.raw`2x-y+z=1`)}，${texInline(String.raw`x+2y-z=2`)}。要求写出增广矩阵、每一步行变换、主元位置，并在最后代回验证。`,
+    title: "例题：消元，并读出每一步的几何含义",
+    question: `解方程组 ${texInline("x+y+z=2")}，${texInline("2x+2y+3z=5")}，${texInline("x-y+z=0")}。做完 ${texInline(String.raw`R_2\leftarrow R_2-2R_1`)} 以后，新的第二个平面与哪些坐标轴平行？`,
     choices: [
-      {
-        correct: true,
-        text: `消元得到三个主元，解为 ${texInline(String.raw`x=1,\ y=2,\ z=1`)}；代回三式均成立。`,
-      },
-      {
-        text: "只要方程数等于未知量数，就不必消元，必有唯一解。",
-      },
-      {
-        text: `第一步可以令 ${texInline(String.raw`R_1\leftarrow0R_1`)}；零行不会丢失任何约束。`,
-      },
-      {
-        text: "只需在系数矩阵上做变换，右端列保持不动。",
-      },
+      { correct: true, text: `解为 ${texInline("(0,1,1)")}；新平面 ${texInline("z=1")} 同时平行于 x 轴和 y 轴。` },
+      { text: `解为 ${texInline("(1,1,0)")}；新平面只平行于 x 轴。` },
+      { text: `解为 ${texInline("(0,1,1)")}；新平面平行于 z 轴。` },
+      { text: "方程组有无穷多解，因为第二行消元后只剩一个未知量。" },
     ],
     steps: [
-      `写出 ${texInline(String.raw`[A\mid b]=\begin{bmatrix}1&1&1&|&4\\2&-1&1&|&1\\1&2&-1&|&2\end{bmatrix}`)}。`,
-      `做 ${texInline(String.raw`R_2\leftarrow R_2-2R_1`)} 与 ${texInline(String.raw`R_3\leftarrow R_3-R_1`)}。`,
-      `再用第二列主元消去第三行，得到上三角阶梯形。`,
-      "从最后一行开始回代，依次得到 z、y、x。",
-      `得到 ${texInline(String.raw`(x,y,z)=(1,2,1)`)}。`,
-      "代回原方程验证；验证不是弥补行变换的不可靠，而是检查计算过程是否出错。",
+      `增广矩阵为 ${texInline(String.raw`\left[\begin{array}{ccc|c}1&1&1&2\\2&2&3&5\\1&-1&1&0\end{array}\right]`)}。`,
+      `${texInline(String.raw`R_2\leftarrow R_2-2R_1`)} 得到 ${texInline("z=1")}：x、y 的系数同时变成 0，这个平面与 x 轴、y 轴都平行。`,
+      `${texInline(String.raw`R_3\leftarrow R_3-R_1`)} 得到 ${texInline("-2y=-2")}。第二列的主元位置是 0，交换第二、三行后继续。`,
+      `回代：${texInline("z=1")}，${texInline("y=1")}，${texInline("x=2-1-1=0")}。`,
+      `代回三个原方程检验：${texInline("0+1+1=2")}，${texInline("0+2+3=5")}，${texInline("0-1+1=0")}。`,
     ],
   },
   quiz: [
     {
-      question: "为什么一行只能乘非零数？",
-      answer: "乘零没有逆操作，会把原方程的约束抹掉，因此不能保证解集保持不变。",
+      question: `对一个方程组做 ${texInline(String.raw`R_3\leftarrow R_3-4R_1`)}。若平面 1 与平面 3 相交，新的第三个平面一定包含哪条直线？`,
+      answer: "原来的平面 1 与平面 3 的交线。若方程组有解，这条线也经过解。",
     },
     {
-      question: "交换两行为什么不改变解集？",
-      answer: "它只改变方程书写顺序，所有方程仍需同时满足。",
+      question: "三个平面两两相交，但没有公共点。消元到最后会出现什么？",
+      answer: `出现形如 ${texInline(String.raw`[0\ 0\ 0\mid d]`)}（${texInline(String.raw`d\ne0`)}）的矛盾行，此时 ${texInline(String.raw`\operatorname{rank}A=2<\operatorname{rank}[A\mid b]=3`)}。`,
     },
     {
-      question: `出现 ${texInline(String.raw`[0\ 0\ 0\mid 5]`)} 表示什么？`,
-      answer: "它对应 0=5，是矛盾行，因此方程组无解。",
-    },
-    {
-      question: "阶梯形中非主元列意味着什么？",
-      answer: "对应变量没有被独立主元锁定，可以选作自由变量。",
-    },
-    {
-      question: "Gauss 消元与 Gauss–Jordan 消元的主要区别是什么？",
-      answer: "前者化到阶梯形后回代；后者继续把主元上方清零，得到简化阶梯形。",
-    },
-    {
-      question: "行变换过程中直线可能改变，为什么交点仍不变？",
-      answer: "新方程是旧方程的可逆线性组合；满足全部旧方程的点恰好也满足全部新方程。",
+      question: "把唯一解方程组的某一行乘 0，解集会怎样？这一步为什么不允许？",
+      answer: "少了一个约束，解集一般从一个点扩大成一条直线。乘 0 没有逆变换，解集不再保持。",
     },
   ],
   summary: [
-    "消元是一串保持解集的可逆行变换。",
-    "主元组织独立约束；零行、矛盾行和自由列分别对应冗余、无解与参数自由度。",
-    "阶梯形适合回代，简化阶梯形适合直接读解。",
-    "下一节把未知量整体看成向量，建立后续线性组合、相关性与秩的共同语言。",
-  ],
-  exercises: [
-    "给一个首个系数为零的方程组，先换行再完成消元。",
-    "对同一系统分别化到阶梯形与简化阶梯形，比较计算量与读解方式。",
+    "三类初等行变换都可逆，所以消元前后解集相同。",
+    "倍加让平面绕两平面的交线转动；消去一个未知量，就是把平面转到与对应坐标轴平行。",
+    "阶梯形里的矛盾行、主元与非主元列，分别对应无解、唯一解和自由变量。",
   ],
 });

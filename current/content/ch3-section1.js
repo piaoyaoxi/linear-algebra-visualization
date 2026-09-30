@@ -55,8 +55,8 @@ defineChapter3Section("elimination", {
   },
   quiz: [
     {
-      question: `对一个方程组做 ${texInline(String.raw`R_3\leftarrow R_3-4R_1`)}，新的第三个平面一定包含哪条直线？`,
-      answer: "原来的平面 1 与平面 3 的交线。它仍然经过方程组的解。",
+      question: `对一个方程组做 ${texInline(String.raw`R_3\leftarrow R_3-4R_1`)}。若平面 1 与平面 3 相交，新的第三个平面一定包含哪条直线？`,
+      answer: "原来的平面 1 与平面 3 的交线。若方程组有解，这条线也经过解。",
     },
     {
       question: "三个平面两两相交，但没有公共点。消元到最后会出现什么？",

@@ -27,7 +27,7 @@ defineChapter3Section("matrix-rank", {
       },
       {
         title: "用子式刻画秩",
-        text: `${texInline("\\operatorname{rank}A=r")}，当且仅当 A 有一个 r 阶子式不为 0，而所有 r+1 阶子式都为 0。取主元所在的行与主元列交叉，就能得到一个非零的 r 阶子式。`,
+        text: `${texInline("\\operatorname{rank}A=r")}，当且仅当 A 有一个 r 阶子式不为 0，而所有 r+1 阶子式都为 0。找非零 r 阶子式时，先在 A 的主元列里取 r 列，再从这 r 列中挑出 r 个线性无关的行；它们交叉处的子式不为 0。`,
       },
     ],
     pitfalls: [
@@ -49,7 +49,7 @@ defineChapter3Section("matrix-rank", {
       `行：${texInline("r_2=2r_1")}，${texInline("r_1,r_3")} 不共线，都满足 z=x+y，所以行空间是平面 z=x+y。`,
       `列：${texInline("c_3=c_1+c_2")}，${texInline("c_1=(1,2,0)^T,\\ c_2=(2,4,1)^T")} 不共线，都满足 y=2x，所以列空间是平面 y=2x。`,
       "两个平面不同，但都是 2 维，所以 rank A=2。",
-      `非零的 2 阶子式：取第 1、3 行与第 1、3 列，${texInline(String.raw`\begin{vmatrix}1&3\\0&1\end{vmatrix}=1`)}。`,
+      `非零的 2 阶子式：主元列是第 1、2 列，其中第 1、3 行线性无关，${texInline(String.raw`\begin{vmatrix}1&2\\0&1\end{vmatrix}=1`)}。第 1、2 行不行：${texInline(String.raw`\begin{vmatrix}1&2\\2&4\end{vmatrix}=0`)}。`,
     ],
   },
   quiz: [

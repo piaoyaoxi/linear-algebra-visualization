@@ -190,7 +190,7 @@
       });
       const changed = state.c !== 0 && state.target !== state.source ? [state.target] : [];
       sysBox.innerHTML = `<h4>当前方程组</h4>${M().htmlEquations(rows, changed)}<p class="ch3l-muted">${describeSolution(rows)}</p>`;
-      $("[data-cv]").textContent = String(state.c);
+      $("[data-cv]").innerHTML = Number.isInteger(state.c * 12) ? tex(fmt(F(state.c))) : state.c.toFixed(2);
       $("[data-undo]").disabled = !state.history.length;
     }
 
@@ -242,7 +242,7 @@
       const step = (now) => {
         const t = Math.min(1, (now - t0) / 900);
         state.c = Math.round((start + (goal - start) * (1 - (1 - t) ** 3)) * 1000) / 1000;
-        if (t >= 1) state.c = goal;
+        if (t >= 1) state.c = goal; // goal is exactly num(f.c); F() recovers the fraction
         $("[data-c]").value = String(state.c);
         redraw();
         if (t < 1) anim = requestAnimationFrame(step);
@@ -326,7 +326,7 @@
     pair.append(left, right);
     lab.append(pair);
     const rowScene = S().create(left, { range: 3, label: "三个平面与点 x", hint: "拖动旋转" });
-    const colScene = S().create(right, { range: 7, label: "列向量的组合与目标 b", hint: "拖动旋转" });
+    const colScene = S().create(right, { range: 7, label: "列向量的组合与目标 b", hint: "拖动旋转", axisNames: ["b₁", "b₂", "b₃"] });
 
     const controls = el("div", "ch3l-controls");
     controls.innerHTML = [0, 1, 2]
@@ -386,7 +386,7 @@
       options: [
         { text: tex("x=(0,0,2)"), correct: true },
         { text: tex("x=(6,4,2)"), why: "x 是列的权重，不是 b 的坐标。" },
-        { text: tex("x=(2,0,0)"), why: "2a₁=(2,4,12)，第三个分量不对。" },
+        { text: tex("x=(2,0,0)"), why: "2a₁=(2,4,12)，只有第二个分量与 b 相同。" },
         { text: "必须先消元才能知道", why: "观察一下 b 和 a₃ 的关系。" },
       ],
       right: "b=2a₃。把 x₃ 调到 2 验证：左图的点同时落到三个平面上。",
@@ -406,7 +406,7 @@
       title: "第三个向量有没有带来新方向",
       task: "v₁、v₂ 张成一个过原点的平面。拖动 v₃（每次移动半格），看平行六面体的体积：体积为 0 的那一刻，v₃ 落进了平面，三个向量线性相关。",
     });
-    const state = { v: [[1, 0, 1], [0, 1, 1], [1, 1, 0]], stage: 3 };
+    const state = { v: [[1, 0, 1], [0, 1, 1], [1, 1, 0]], stage: 3, showDrop: false };
     const toolbar = el("div", "ch3l-toolbar");
     lab.append(toolbar);
     const body = el("div", "ch3l-body");
@@ -414,7 +414,7 @@
     const side = el("aside", "ch3l-side");
     body.append(stage, side);
     lab.append(body);
-    const scene = S().create(stage, { range: 2.6, label: "三个向量与它们张成的空间", yaw: 0.4, pitch: 0.35 });
+    const scene = S().create(stage, { range: 2.5, label: "三个向量与它们张成的空间", yaw: 0.4, pitch: 0.35 });
     const info = el("div", "ch3l-card");
     const tools = el("div", "ch3l-actions");
     tools.innerHTML = `<button type="button" class="ch3l-btn" data-snap>把 v₃ 放进平面</button><button type="button" class="ch3l-btn" data-look>沿平面看</button><button type="button" class="ch3l-btn" data-reset>回到默认视角</button>`;
@@ -435,7 +435,7 @@
         if (planeOk) objs.push({ type: "plane", n: cross, d: 0, color: "accent", alpha: 0.12, label: "span{v₁,v₂}" });
         if (state.stage === 3) {
           objs.push({ type: "box", vectors: state.v, color: "coral", alpha: 0.07 });
-          if (planeOk && Math.abs(cross[2]) > 1e-9) {
+          if (state.showDrop && planeOk && Math.abs(cross[2]) > 1e-9) {
             // Where the vertical line through v3 meets the plane: no inner product needed.
             const [x, y] = state.v[2];
             const z = -(cross[0] * x + cross[1] * y) / cross[2];
@@ -485,6 +485,7 @@
       if (Math.abs(c[2]) < 1e-9) return;
       const [x, y] = state.v[2];
       state.v[2] = [x, y, -(c[0] * x + c[1] * y) / c[2]];
+      state.showDrop = true;
       redraw();
     });
     tools.querySelector("[data-look]").addEventListener("click", () => scene.lookAlong(state.v[0]));
@@ -502,7 +503,11 @@
         ],
         right: "(1,1,2)=v₁+v₂ 落在平面里，六面体被压扁。点“沿平面看”，三个向量排成一条线。",
       },
-      () => (result.hidden = false),
+      () => {
+        result.hidden = false;
+        state.showDrop = true;
+        redraw();
+      },
     );
     result.innerHTML = `<strong>结论</strong><p>v₃ 带来新方向，当且仅当它不在 ${tex("\\operatorname{span}\\{v_1,v_2\\}")} 里。不在平面里，体积非零，三个向量无关；落进平面，体积为 0，并且可以写出一个非平凡关系。体积很小但不为 0，仍然是无关。</p>`;
 
@@ -551,7 +556,7 @@
     pair.append(left, right);
     lab.append(pair);
     const rowScene = S().create(left, { range: 4, hint: "拖动旋转", label: "行向量与行空间", yaw: 0.4, pitch: 0.35 });
-    const colScene = S().create(right, { range: 4, hint: "拖动旋转", label: "列向量与列空间", yaw: 0.2, pitch: 0.35 });
+    const colScene = S().create(right, { range: 4, hint: "拖动旋转", label: "列向量与列空间", yaw: 0.2, pitch: 0.35, axisNames: ["y₁", "y₂", "y₃"] });
     const strip = el("div", "ch3l-strip");
     lab.append(strip);
     const gateHost = el("div");
@@ -619,7 +624,7 @@
   function solvabilityLab(root) {
     const lab = labShell(root, {
       title: "把 b 拖离列空间，三个平面失去公共线",
-      task: "A 的第三列等于前两列之和，列空间是平面 x₃=x₁+x₂。拖动 b：它在平面上时方程组有解，一离开就无解。右图同步显示三个方程对应的平面。",
+      task: "A 的第三列等于前两列之和，列空间是平面 b₃=b₁+b₂。拖动 b：它在平面上时方程组有解，一离开就无解。右图同步显示三个方程对应的平面。",
     });
     const A = [[1, 1, 2], [1, 2, 3], [2, 3, 5]].map((r) => r.map(F));
     const state = { b: [1, 2, 3] };
@@ -630,7 +635,7 @@
     right.innerHTML = `<div class="ch3l-view-title">三个方程的平面（输入空间）</div>`;
     pair.append(left, right);
     lab.append(pair);
-    const colScene = S().create(left, { range: 5, label: "列空间平面与可拖动的 b", hint: "拖动 b 或旋转", yaw: 0.4, pitch: 0.35 });
+    const colScene = S().create(left, { range: 5, label: "列空间平面与可拖动的 b", hint: "拖动 b 或旋转", yaw: 0.4, pitch: 0.35, axisNames: ["b₁", "b₂", "b₃"] });
     const rowScene = S().create(right, { range: 3.5, label: "三个平面", hint: "拖动旋转", yaw: 0.35, pitch: 0.3 });
     const status = el("div", "ch3l-status");
     const tools = el("div", "ch3l-actions");
@@ -707,15 +712,42 @@
   /* ================= §6 解的结构：特解 + 零空间 ================= */
 
   function structureLab(root) {
-    const lab = labShell(root, {
-      title: "解集是零空间平移过去的样子",
-      task: "实线平面是两个方程，它们的交线是全部解；虚线平面是对应的齐次方程，交线是零空间。改变 b，或者沿解线移动 t，比较两条直线。",
-    });
     const presets = {
-      line: { label: "两个方程", A: [[1, 1, 1], [1, 2, -1]], b: [3, 4] },
-      plane: { label: "一个方程", A: [[1, 1, 1]], b: [2] },
+      line: {
+        label: "两个方程",
+        A: [[1, 1, 1], [1, 2, -1]],
+        b: [3, 4],
+        task: "实线平面是两个方程，它们的交线是全部解；虚线平面是对应的齐次方程，交线是零空间。改变 b，或者沿解线移动 t，比较两条直线。",
+        predict: {
+          question: `改变 ${tex("b_1")} 或 ${tex("b_2")}，金色的解线会怎样？`,
+          options: [
+            { text: "只平移，方向不变", correct: true },
+            { text: "绕特解转动", why: "方向由齐次方程 Ax=0 决定，与 b 无关。" },
+            { text: "变成一个平面", why: "解集的维数是 n−rank A，与 b 无关。" },
+            { text: "穿过原点", why: "b≠0 时 A·0=0≠b，原点不是解。" },
+          ],
+          right: "两个平面各自平移，交线也跟着平移，但始终与零空间平行。全部解 = 一个特解 + 零空间。",
+        },
+      },
+      plane: {
+        label: "一个方程",
+        A: [[1, 1, 1]],
+        b: [2],
+        task: "只有一个方程 x₁+x₂+x₃=b₁：全部解是一个平面，零空间是过原点的平行平面，由两个基础解向量张成。用 s、t 在解平面上移动点 x。",
+        predict: {
+          question: `这个方程有 3 个未知量、秩为 1。基础解系含几个向量？`,
+          options: [
+            { text: "2 个", correct: true },
+            { text: "1 个", why: "自由未知量的个数是 n−r=3−1。" },
+            { text: "3 个", why: "秩为 1，主元未知量占掉一个。" },
+            { text: "0 个", why: "方程个数少于未知量个数，一定有自由未知量。" },
+          ],
+          right: "n−r=2：零空间是一个平面，解集是把这个平面平移到特解处。",
+        },
+      },
     };
-    const state = { key: "line", b: [3, 4], t: 0 };
+    const lab = labShell(root, { title: "解集是零空间平移过去的样子", task: presets.line.task });
+    const state = { key: "line", b: [3, 4], t: 0, s: 0 };
     const toolbar = el("div", "ch3l-toolbar");
     lab.append(toolbar);
     const body = el("div", "ch3l-body");
@@ -738,33 +770,34 @@
       const part = M().particularSolution(aug);
       const ns = M().nullspaceBasis(A).basis.map(vecNum);
       const xp = vecNum(part.x);
-      const dir = ns[0];
-      const x = S().vec.add(xp, S().vec.mul(dir, state.t));
+      const params = [state.t, state.s];
+      const x = ns.reduce((acc, v, i) => S().vec.add(acc, S().vec.mul(v, params[i] || 0)), xp);
       scene.setObjects(() => {
         const objs = [];
-        aug.forEach((r, i) => objs.push(planeObj(r, PLANE_COLORS[i], { alpha: 0.1 })));
-        hom.forEach((r, i) => objs.push(planeObj(r, PLANE_COLORS[i], { alpha: 0.03, dash: [5, 5], strokeAlpha: 0.45 })));
+        aug.forEach((r, i) => objs.push(planeObj(r, ns.length === 2 ? "gold" : PLANE_COLORS[i], { alpha: ns.length === 2 ? 0.2 : 0.1, label: ns.length === 2 ? "解集" : undefined })));
+        hom.forEach((r, i) => objs.push(planeObj(r, ns.length === 2 ? "muted" : PLANE_COLORS[i], { alpha: 0.03, dash: [5, 5], strokeAlpha: 0.45, label: ns.length === 2 ? "零空间" : undefined })));
         if (ns.length === 1) {
-          objs.push({ type: "line", dir, color: "muted", width: 2, dash: [7, 5], label: "零空间" });
-          objs.push({ type: "line", p: xp, dir, color: "gold", width: 3.4, label: "解集" });
+          objs.push({ type: "line", dir: ns[0], color: "muted", width: 2, dash: [7, 5], label: "零空间" });
+          objs.push({ type: "line", p: xp, dir: ns[0], color: "gold", width: 3.4, label: "解集" });
         }
         objs.push({ type: "arrow", to: xp, color: "violet", width: 2.4, label: "特解" });
-        if (state.t !== 0) objs.push({ type: "arrow", from: xp, to: x, color: "blue", width: 2.4 });
+        if (S().vec.len(S().vec.sub(x, xp)) > 1e-9) objs.push({ type: "arrow", from: xp, to: x, color: "blue", width: 2.4 });
         objs.push({ type: "point", p: x, color: "gold", r: 6, label: "x" });
         return objs;
       });
       const Ax = M().matVec(A, x.map(F));
       info.innerHTML = `<h4>读数</h4>
-        <p>${tex(`x_p=(${part.x.map(fmt).join(",")})`)}</p>
-        <p>零空间方向 ${ns.map((v) => tex(`(${v.join(",")})`)).join("、")}</p>
-        <p>${tex(`Ax=(${Ax.map(fmt).join(",")})=b`)}：沿解集移动，Ax 始终等于 b。</p>`;
+        <p>${tex(`x_0=(${part.x.map(fmt).join(",")})`)}</p>
+        <p>基础解系 ${ns.map((v) => tex(`(${v.join(",")})`)).join("、")}</p>
+        <p>${tex(`Ax=(${Ax.map(fmt).join(",")})=b`)}：在解集上移动，Ax 始终等于 b。</p>`;
     }
 
     function renderControls() {
       const P = presets[state.key];
-      controls.innerHTML = `<h4>调节</h4>${P.b
-        .map((_, i) => `<label class="ch3l-range"><span>${tex(`b_${i + 1}`)}</span><input type="range" min="-3" max="5" step="0.5" value="${state.b[i]}" data-b="${i}" /><b data-bv="${i}">${state.b[i]}</b></label>`)
-        .join("")}<label class="ch3l-range"><span>${tex("t")}</span><input type="range" min="-1.5" max="1.5" step="0.25" value="${state.t}" data-tt /><b data-tv>${state.t}</b></label>`;
+      const ranges = P.b.map((_, i) => `<label class="ch3l-range"><span>${tex(`b_${i + 1}`)}</span><input type="range" min="-3" max="5" step="0.5" value="${state.b[i]}" data-b="${i}" /><b data-bv="${i}">${state.b[i]}</b></label>`);
+      ranges.push(`<label class="ch3l-range"><span>${tex("t")}</span><input type="range" min="-1.5" max="1.5" step="0.25" value="${state.t}" data-p="t" /><b data-pv="t">${state.t}</b></label>`);
+      if (state.key === "plane") ranges.push(`<label class="ch3l-range"><span>${tex("s")}</span><input type="range" min="-1.5" max="1.5" step="0.25" value="${state.s}" data-p="s" /><b data-pv="s">${state.s}</b></label>`);
+      controls.innerHTML = `<h4>调节</h4>${ranges.join("")}`;
       controls.querySelectorAll("[data-b]").forEach((input) =>
         input.addEventListener("input", () => {
           state.b[Number(input.dataset.b)] = Number(input.value);
@@ -772,32 +805,29 @@
           redraw();
         }),
       );
-      controls.querySelector("[data-tt]").addEventListener("input", (e) => {
-        state.t = Number(e.target.value);
-        controls.querySelector("[data-tv]").textContent = e.target.value;
-        redraw();
-      });
+      controls.querySelectorAll("[data-p]").forEach((input) =>
+        input.addEventListener("input", () => {
+          state[input.dataset.p] = Number(input.value);
+          controls.querySelector(`[data-pv="${input.dataset.p}"]`).textContent = input.value;
+          redraw();
+        }),
+      );
     }
 
-    buttons(toolbar, Object.entries(presets).map(([k, v]) => [k, v.label]), (k) => {
-      state.key = k;
-      state.b = presets[k].b.slice();
+    function load(key) {
+      state.key = key;
+      state.b = presets[key].b.slice();
       state.t = 0;
+      state.s = 0;
+      lab.querySelector(".ch3l-head p").textContent = presets[key].task;
+      gateHost.innerHTML = "";
+      predictGate(gateHost, presets[key].predict);
       renderControls();
       redraw();
-    }, "line");
-    predictGate(gateHost, {
-      question: `改变 ${tex("b_1")} 或 ${tex("b_2")}，金色的解线会怎样？`,
-      options: [
-        { text: "只平移，方向不变", correct: true },
-        { text: "绕特解转动", why: "方向由齐次方程 Ax=0 决定，与 b 无关。" },
-        { text: "变成一个平面", why: "解集的维数是 n−rank A，与 b 无关。" },
-        { text: "穿过原点", why: "b≠0 时 A·0=0≠b，原点不是解。" },
-      ],
-      right: "两个平面各自平移，交线也跟着平移，但始终与零空间平行。所有解 = 一个特解 + 零空间。",
-    });
-    renderControls();
-    redraw();
+    }
+
+    buttons(toolbar, Object.entries(presets).map(([k, v]) => [k, v.label]), load, "line");
+    load("line");
     return () => scene.destroy();
   }
 

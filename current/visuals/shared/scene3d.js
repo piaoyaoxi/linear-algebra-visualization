@@ -87,10 +87,16 @@
       }
     }
     const pts = [];
+    const eps = 1e-9 * Math.max(1, Math.abs(d) + V.len(n) * L);
+    // Corners lying exactly on the plane.
+    corners.forEach((c) => {
+      if (Math.abs(V.dot(n, c) - d) <= eps) pts.push(c);
+    });
+    // Proper crossings strictly inside an edge.
     for (const [a, b] of edges) {
       const fa = V.dot(n, a) - d;
       const fb = V.dot(n, b) - d;
-      if (Math.abs(fa) < 1e-9) pts.push(a);
+      if (Math.abs(fa) <= eps || Math.abs(fb) <= eps) continue;
       if ((fa < 0 && fb > 0) || (fa > 0 && fb < 0)) {
         const t = fa / (fa - fb);
         pts.push(V.add(a, V.mul(V.sub(b, a), t)));
@@ -406,9 +412,10 @@
     /* Point the view so that the viewer looks along direction v. */
     function lookAlong(v, animate = true) {
       const d = V.norm(v);
-      const pitch = Math.asin(Math.max(-0.999, Math.min(0.999, d[2])));
+      const pitch = Math.asin(Math.max(-1, Math.min(1, d[2])));
       const yaw = Math.abs(d[0]) + Math.abs(d[1]) < 1e-6 ? camera.yaw : Math.atan2(d[1], d[0]);
-      setCamera({ yaw, pitch: Math.max(-1.52, Math.min(1.52, pitch)) }, animate);
+      // Exact alignment is allowed here so edge-on planes really collapse to a line.
+      setCamera({ yaw, pitch: Math.max(-Math.PI / 2, Math.min(Math.PI / 2, pitch)) }, animate);
     }
 
     function resetView(animate = true) {

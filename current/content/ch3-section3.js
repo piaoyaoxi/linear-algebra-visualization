@@ -4,15 +4,15 @@ defineChapter3Section("linear-dependence", {
   title: "线性相关性",
   navTitle: "线性相关性",
   question: "一组向量里，哪些向量真正带来了新方向？为什么多的向量由少的向量线性表出，就一定相关？",
-  goal: "理解线性相关、线性无关与张成的关系；会写出具体的线性关系；掌握替换定理、极大无关组与向量组的秩。",
-  tags: ["线性相关", "线性无关", "张成", "替换定理", "极大无关组"],
+  goal: "理解线性相关、线性无关与张成的关系；会写出具体的线性关系；理解“多的由少的线性表出必相关”，掌握极大无关组与向量组的秩。",
+  tags: ["线性相关", "线性无关", "张成", "极大无关组", "向量组的秩"],
   intro:
     "一个向量带来新方向，当且仅当它不能由前面的向量组合出来。在三维空间里，这件事看得见：新向量一旦落进前两个向量张成的平面，平行六面体就被压扁，体积变成 0。",
   concepts: [
     { label: "线性相关", text: `存在不全为零的 ${texInline("k_1,\\dots,k_s")}，使 ${texInline("k_1\\alpha_1+\\cdots+k_s\\alpha_s=0")}。` },
     { label: "极大无关组", text: "向量组中一个线性无关、并且能表出全部向量的部分组。" },
   ],
-  textbook: { reference: "北大版《高等代数》第三章 §3", items: ["线性相关与线性无关", "替换定理", "极大线性无关组与向量组的秩"] },
+  textbook: { reference: "北大版《高等代数》第三章 §3", items: ["线性相关与线性无关", "向量组的线性表出", "极大线性无关组与向量组的秩"] },
   interactive: { type: "slot", title: "第三个向量有没有带来新方向" },
   lesson3d: {
     blocks: [
@@ -22,12 +22,12 @@ defineChapter3Section("linear-dependence", {
         text: `注意：相关组里并不是每个向量都能由其余向量表出。例如 ${texInline("\\{u,2u,w\\}")} 相关，但 ${texInline("w")} 不在 ${texInline("\\operatorname{span}\\{u,2u\\}")} 里。`,
       },
       {
-        title: "替换定理",
-        text: `若 ${texInline("\\alpha_1,\\dots,\\alpha_r")} 都能由 ${texInline("\\beta_1,\\dots,\\beta_s")} 线性表出，并且 ${texInline("r>s")}，那么 ${texInline("\\alpha_1,\\dots,\\alpha_r")} 线性相关。直观地说，s 个向量最多提供 s 个方向，多出来的向量不可能都是新方向。特别地，${texInline("F^n")} 中任意 n+1 个向量都相关。`,
+        title: "多的由少的线性表出，必然相关",
+        text: `若 ${texInline("\\alpha_1,\\dots,\\alpha_r")} 都能由 ${texInline("\\beta_1,\\dots,\\beta_s")} 线性表出，并且 ${texInline("r>s")}，那么 ${texInline("\\alpha_1,\\dots,\\alpha_r")} 线性相关（教材 §3 定理 2）。直观地说，s 个向量最多提供 s 个方向，多出来的向量不可能都是新方向。特别地，${texInline("F^n")} 中任意 n+1 个向量都相关。`,
       },
       {
         title: "极大无关组与秩",
-        text: "由替换定理，同一向量组的任意两个极大无关组所含向量个数相同。这个共同的个数叫作向量组的秩。极大无关组本身一般不唯一。",
+        text: "由这个定理，同一向量组的任意两个极大无关组所含向量个数相同。这个共同的个数叫作向量组的秩。极大无关组本身一般不唯一。",
       },
     ],
     pitfalls: [
@@ -59,7 +59,7 @@ defineChapter3Section("linear-dependence", {
     },
     {
       question: `${texInline("\\alpha_1,\\dots,\\alpha_4")} 都能由 ${texInline("\\beta_1,\\beta_2,\\beta_3")} 线性表出。α 组一定相关吗？`,
-      answer: "一定相关。这就是替换定理：4 个向量由 3 个向量表出。",
+      answer: "一定相关：4 个向量由 3 个向量线性表出。",
     },
     {
       question: `实验里把 ${texInline("v_3")} 拖到 ${texInline("(1,1,1.5)")}，体积为 −0.5。这三个向量相关吗？`,
@@ -68,7 +68,7 @@ defineChapter3Section("linear-dependence", {
   ],
   summary: [
     "线性相关 ⇔ 存在非零组合等于 0 ⇔ 某个向量可由前面的向量表出。",
-    "替换定理：多的由少的表出，必然相关；因此极大无关组的个数确定，这就是秩。",
+    "多的由少的线性表出，必然相关；因此极大无关组所含向量个数确定，这就是秩。",
     "下一节把秩搬到矩阵上：行向量组和列向量组的秩为什么相等。",
   ],
 });

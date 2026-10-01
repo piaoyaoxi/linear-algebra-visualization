@@ -1,4 +1,26 @@
 (() => {
+  /*
+   * Content files tend to list the correct choice first. Show choices in a
+   * fixed order derived from the question text, so the order is the same on
+   * every visit but the correct answer is not always "A". Input values keep
+   * the original index, so answer checking is unchanged.
+   */
+  function displayOrder(example) {
+    const n = example.choices.length;
+    let seed = 2166136261;
+    for (const ch of String(example.question || example.title || "")) seed = Math.imul(seed ^ ch.codePointAt(0), 16777619) >>> 0;
+    const next = () => {
+      seed = (Math.imul(seed, 1664525) + 1013904223) >>> 0;
+      return seed / 4294967296;
+    };
+    const order = Array.from({ length: n }, (_, i) => i);
+    for (let i = n - 1; i > 0; i -= 1) {
+      const j = Math.floor(next() * (i + 1));
+      [order[i], order[j]] = [order[j], order[i]];
+    }
+    return order;
+  }
+
   const PI_PATH = "m10.5 177.038 20.675 1.532c21.44-24.249 29.864-95.974 156.213-81.935-4.595 307.32-139.367 339.737-130.943 402.784 3.063 35.735 31.395 57.687 62.025 58.963 96.74-3.318 92.4-133.751 122.52-462.513h124.818c-6.637 115.883-24.76 231.767-26.802 345.353 1.532 75.554 47.477 115.884 107.971 116.394 99.548 3.318 130.943-112.82 130.943-162.339h-21.44c-2.043 40.84-21.697 70.194-63.558 71.98-114.097 1.532-51.305-200.626-50.54-369.857l135.538.766-.765-86.53C13.807 8.908 85.312-2.137 10.5 177.038";
   const activeBursts = new WeakMap();
   let piShapePoints = null;
@@ -49,12 +71,15 @@
           <p class="example-challenge-question">${example.question}</p>
           <fieldset class="example-choice-list" aria-label="${escapeText(example.title)}">
             <legend class="sr-only">请选择一个答案</legend>
-            ${example.choices
+            ${displayOrder(example)
               .map(
-                (choice, index) => `
+                (index, position) => [example.choices[index], index, position],
+              )
+              .map(
+                ([choice, index, position]) => `
                   <label class="example-choice">
                     <input type="radio" name="${fieldName}" value="${index}" />
-                    <span class="example-choice-marker" aria-hidden="true">${String.fromCharCode(65 + index)}</span>
+                    <span class="example-choice-marker" aria-hidden="true">${String.fromCharCode(65 + position)}</span>
                     <span class="example-choice-copy">${choice.text}</span>
                     <span class="example-choice-result" aria-hidden="true">✓</span>
                   </label>`,

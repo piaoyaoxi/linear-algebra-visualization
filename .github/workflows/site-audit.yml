@@ -1,0 +1,51 @@
+name: Site audit
+
+on:
+  pull_request:
+    paths:
+      - "current/**"
+      - ".github/scripts/site-audit.mjs"
+      - ".github/workflows/site-audit.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Install Playwright
+        run: |
+          npm install --no-save playwright@1.52.0
+          npx playwright install --with-deps chromium
+
+      - name: Start static site
+        run: |
+          python3 -m http.server 4173 --directory current > /tmp/site-static.log 2>&1 &
+          for attempt in {1..20}; do
+            if curl --fail --silent http://127.0.0.1:4173/learn.html > /dev/null; then
+              exit 0
+            fi
+            sleep 1
+          done
+          cat /tmp/site-static.log
+          exit 1
+
+      - name: Audit every lesson section
+        run: node .github/scripts/site-audit.mjs
+
+      - name: Upload report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: site-audit-report
+          path: /tmp/site-audit
+          if-no-files-found: ignore

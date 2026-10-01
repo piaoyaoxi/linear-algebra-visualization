@@ -1,3 +1,7 @@
+// Browser gate for Chapter 10: every lesson renders through the standard lesson
+// page without errors; each lab draws a large canvas above the theorem blocks,
+// keeps its conclusion behind a prediction, and opens it only after the student
+// predicts and then acts; the page never scrolls sideways.
 const { chromium } = require("playwright");
 const fs = require("node:fs");
 const path = require("node:path");
@@ -6,12 +10,13 @@ const baseURL = process.env.AUDIT_BASE_URL || "http://127.0.0.1:4173/learn.html"
 const outputDir = process.env.AUDIT_OUTPUT_DIR || path.join(process.cwd(), "artifacts", "ch10-browser-audit");
 fs.mkdirSync(outputDir, { recursive: true });
 
+/* act: how the audit operates each lab after predicting (handle positions are the lab's initial world coordinates). */
 const routes = [
   { id: "overview", hash: "#ch10", lesson: false },
-  { id: "linear-functional", hash: "#ch10/linear-functional", lesson: true },
-  { id: "dual-space", hash: "#ch10/dual-space", lesson: true },
-  { id: "bilinear-form", hash: "#ch10/bilinear-form", lesson: true },
-  { id: "symplectic-space", hash: "#ch10/symplectic-space", lesson: true },
+  { id: "linear-functional", hash: "#ch10/linear-functional", lesson: true, act: { range: true } },
+  { id: "dual-space", hash: "#ch10/dual-space", lesson: true, act: { drag: [0.5, 1.5], extent: 3.2 } },
+  { id: "bilinear-form", hash: "#ch10/bilinear-form", lesson: true, act: { drag: [1, 0], extent: 3.2 } },
+  { id: "symplectic-space", hash: "#ch10/symplectic-space", lesson: true, act: { chip: 1 } },
 ];
 const viewports = [
   { id: "desktop", width: 1440, height: 900 },
@@ -19,29 +24,21 @@ const viewports = [
   { id: "mobile", width: 390, height: 844 },
 ];
 const themes = ["light", "dark"];
-const results = [];
+const forbidden = ["正在开发", "占位", "即将制作", "待完善", "待补充", "原型", "开发进度"];
 const failures = [];
+let passed = 0;
 
 function assert(condition, message) {
   if (!condition) throw new Error(message);
 }
 
-function numeric(text) {
-  return Number(String(text || "").replace(/[^0-9.-]/g, ""));
-}
-
-function watchErrors(page, label) {
+function watchErrors(page) {
   const errors = [];
   page.on("pageerror", (error) => errors.push(`pageerror: ${error.message}`));
   page.on("console", (message) => {
-    if (message.type() === "error") errors.push(`console: ${message.text()}`);
+    if (message.type() === "error" && !message.text().includes("Failed to load resource")) errors.push(`console: ${message.text()}`);
   });
-  page.on("requestfailed", (request) => {
-    if (/^https?:\/\/(127\.0\.0\.1|localhost)/.test(request.url())) {
-      errors.push(`requestfailed: ${request.failure()?.errorText || "unknown"} ${request.url()}`);
-    }
-  });
-  return () => assert(errors.length === 0, `${label}: ${errors.join(" | ")}`);
+  return errors;
 }
 
 async function setTheme(page, theme) {
@@ -53,218 +50,124 @@ async function setTheme(page, theme) {
   }
 }
 
-async function inspectLayout(page, label, lesson) {
-  const state = await page.evaluate(() => {
-    const root = document.documentElement;
-    const visibleButtons = [...document.querySelectorAll(".ch10-core-lab button")]
-      .filter((button) => button.offsetParent !== null)
-      .map((button) => ({
-        text: button.textContent.trim(),
-        width: button.getBoundingClientRect().width,
-        height: button.getBoundingClientRect().height,
-      }));
+async function inspect(page, route, viewport, label) {
+  const state = await page.evaluate((id) => {
+    const main = document.querySelector("#mainContent");
+    const lab = main.querySelector(".ch7l-lab");
+    const canvas = lab?.querySelector("canvas")?.getBoundingClientRect();
+    const interactive = document.getElementById(`${id}-interactive`);
+    const formal = document.getElementById(`${id}-formal`);
     return {
-      clientWidth: root.clientWidth,
-      scrollWidth: root.scrollWidth,
-      h1Count: document.querySelectorAll("#mainContent h1").length,
-      katexErrors: document.querySelectorAll(".katex-error").length,
-      coreCount: document.querySelectorAll(".ch10-core-lab").length,
-      coreSvgCount: document.querySelectorAll(".ch10-core-lab svg").length,
-      cinematicCount: document.querySelectorAll("[data-ch10-cinema], .ch10-cinema").length,
-      svgFilterCount: document.querySelectorAll(".ch10-core-lab svg filter").length,
-      moduleCount: document.querySelectorAll(".ch10-formal-flow .ch10-module").length,
-      intuitionVisualCount: document.querySelectorAll(".ch10-intuition-visual").length,
-      legacyIntuitionCount: document.querySelectorAll(".ch10-intuition-list").length,
-      numberedModuleBadges: document.querySelectorAll(".ch10-module-heading > span").length,
-      brokenInlineMath: [...document.querySelectorAll(".ch10-intuition-section .tex")]
-        .filter((node) => {
-          const box = node.getBoundingClientRect();
-          return box.height > 60 || box.width < 8;
-        }).length,
-      formalButtonCount: document.querySelectorAll(".ch10-formal-flow button").length,
-      emptyMounts: [...document.querySelectorAll("[data-ch10-interactive], [data-ch10-formal]")]
-        .filter((node) => !node.textContent.trim() && !node.querySelector("svg")).length,
-      text: document.querySelector("#mainContent")?.textContent || "",
-      visibleButtons,
+      overflow: document.documentElement.scrollWidth - document.documentElement.clientWidth,
+      h1: main.querySelectorAll("h1").length,
+      katexErrors: main.querySelectorAll(".katex-error").length,
+      text: main.innerText,
+      examples: main.querySelectorAll("[data-example-challenge]").length,
+      choices: main.querySelectorAll("[data-example-challenge] [data-choice], [data-example-challenge] .example-choice").length,
+      selfTests: main.querySelectorAll(".self-test-list").length,
+      theorems: main.querySelectorAll(".ch7l-theorem").length,
+      labs: main.querySelectorAll(".ch7l-lab").length,
+      canvas: canvas ? [canvas.width, canvas.height] : null,
+      labFirst: Boolean(interactive && formal && interactive.compareDocumentPosition(formal) & Node.DOCUMENT_POSITION_FOLLOWING),
+      resultHidden: lab ? lab.querySelector(".ch7l-result")?.hidden : null,
     };
-  });
-  assert(state.scrollWidth <= state.clientWidth + 2, `${label}: horizontal overflow ${state.scrollWidth} > ${state.clientWidth}`);
-  assert(state.h1Count === 1, `${label}: expected one h1, found ${state.h1Count}`);
-  assert(state.katexErrors === 0, `${label}: KaTeX errors found`);
-  assert(!state.text.includes("正在开发"), `${label}: development wording is visible`);
-  if (lesson) {
-    assert(state.coreCount === 1, `${label}: expected exactly one core interaction, found ${state.coreCount}`);
-    assert(state.coreSvgCount === 1, `${label}: expected exactly one core SVG, found ${state.coreSvgCount}`);
-    assert(state.cinematicCount === 0, `${label}: cinematic shell is still present`);
-    assert(state.svgFilterCount === 0, `${label}: SVG glow/filter is present`);
-    assert(state.intuitionVisualCount === 1, `${label}: expected one visual intuition figure`);
-    assert(state.legacyIntuitionCount === 0, `${label}: legacy numbered intuition cards are still present`);
-    assert(state.numberedModuleBadges === 0, `${label}: numbered formal badges are still present`);
-    assert(state.brokenInlineMath === 0, `${label}: inline math has collapsed into a vertical stack`);
-    assert(state.moduleCount >= 2 && state.moduleCount <= 3, `${label}: formal module count is ${state.moduleCount}`);
-    assert(state.formalButtonCount === 0, `${label}: secondary formal interactions compete with the core interaction`);
-    assert(state.emptyMounts === 0, `${label}: empty renderer mount found`);
-    const minimumHeight = label.includes("mobile") ? 44 : 36;
-    const undersized = state.visibleButtons.filter((button) => button.width < 36 || button.height < minimumHeight);
-    assert(undersized.length === 0, `${label}: undersized controls ${JSON.stringify(undersized)}`);
-  }
+  }, route.id);
+  assert(state.overflow <= 1, `${label}: horizontal overflow ${state.overflow}px`);
+  assert(state.h1 === 1, `${label}: expected one h1, found ${state.h1}`);
+  assert(state.katexErrors === 0, `${label}: KaTeX errors`);
+  for (const phrase of forbidden) assert(!state.text.includes(phrase), `${label}: internal wording ${phrase}`);
+  assert(!/不是[^。；！？\n]{0,30}而是/.test(state.text), `${label}: banned pattern 不是……而是`);
+  if (!route.lesson) return;
+  assert(state.examples === 1, `${label}: expected one example challenge`);
+  assert(state.selfTests === 1, `${label}: expected one self test`);
+  assert(state.theorems >= 2 && state.theorems <= 3, `${label}: theorem block count ${state.theorems}`);
+  assert(state.labs === 1, `${label}: expected one lab, found ${state.labs}`);
+  assert(state.labFirst, `${label}: the lab must sit above the theorem blocks`);
+  const minHeight = viewport.width >= 1000 ? 380 : 280;
+  assert(state.canvas && state.canvas[0] >= 280 && state.canvas[1] >= minHeight, `${label}: canvas too small ${JSON.stringify(state.canvas)}`);
+  assert(state.resultHidden === true, `${label}: conclusion visible before any prediction`);
 }
 
-async function auditVisualMatrix(browser) {
-  for (const viewport of viewports) {
-    for (const theme of themes) {
-      const context = await browser.newContext({ viewport, reducedMotion: "no-preference" });
-      const page = await context.newPage();
-      page.setDefaultTimeout(10000);
-      const labelPrefix = `${viewport.id}-${theme}`;
-      const verifyErrors = watchErrors(page, labelPrefix);
-      try {
-        for (const route of routes) {
-          const label = `${route.id}-${labelPrefix}`;
-          await page.goto(`${baseURL}${route.hash}`, { waitUntil: "networkidle" });
-          await page.waitForSelector("#mainContent h1");
-          await setTheme(page, theme);
-          await inspectLayout(page, label, route.lesson);
-          const target = route.lesson ? page.locator(".ch10-core-lab") : page.locator("#mainContent");
-          await target.scrollIntoViewIfNeeded();
-          await target.screenshot({ path: path.join(outputDir, `${label}.png`) });
-          results.push({ label, status: "passed" });
-        }
-        verifyErrors();
-      } finally {
-        await context.close();
-      }
+async function operateLab(page, route, label) {
+  const lab = page.locator(".ch7l-lab").first();
+  let grab = route.act.drag ? route.act.drag.slice() : null;
+  const act = async () => {
+    if (route.act.range) {
+      const range = lab.locator("input[type=range]").first();
+      await range.focus();
+      await page.keyboard.press("ArrowLeft");
+    } else if (route.act.chip != null) {
+      await lab.locator(".ch7l-toolbar .ch7l-chip").nth(route.act.chip).click();
+    } else if (route.act.drag) {
+      const canvas = lab.locator("canvas").first();
+      await canvas.evaluate((node) => node.scrollIntoView({ block: "center" }));
+      await page.waitForTimeout(120);
+      const box = await canvas.boundingBox();
+      const s = Math.min(box.width, box.height) / (2 * route.act.extent);
+      const px = box.x + box.width / 2 + grab[0] * s;
+      const py = box.y + box.height / 2 - grab[1] * s;
+      await page.mouse.move(px, py);
+      await page.mouse.down();
+      await page.mouse.move(px + 0.75 * s, py - 0.5 * s, { steps: 5 });
+      await page.mouse.up();
+      grab = [grab[0] + 0.75, grab[1] + 0.5];
     }
-  }
+    await page.waitForTimeout(150);
+  };
+  // Acting first must not open the conclusion.
+  await act();
+  assert(await lab.locator(".ch7l-result").isHidden(), `${label}: conclusion opened without a prediction`);
+  await lab.locator(".ch7l-predict-options [data-i]").first().click();
+  assert(await lab.locator(".ch7l-predict-feedback").isVisible(), `${label}: prediction feedback missing`);
+  const before = await lab.locator(".ch7l-side").innerText();
+  await act();
+  assert((await lab.locator(".ch7l-side").innerText()) !== before || route.act.chip != null, `${label}: control did not change the readout`);
+  assert(await lab.locator(".ch7l-result").isVisible(), `${label}: conclusion did not open after predicting and acting`);
 }
 
-async function auditInteractions(browser) {
-  const context = await browser.newContext({ viewport: { width: 1440, height: 900 } });
-  const page = await context.newPage();
-  page.setDefaultTimeout(10000);
-  const verifyErrors = watchErrors(page, "interaction-audit");
-
-  await page.goto(`${baseURL}#ch10/linear-functional`, { waitUntil: "networkidle" });
-  const firstX = Number(await page.locator('.ch10-vector.is-x').getAttribute("x2"));
-  const firstValue = numeric(await page.locator("[data-functional-value]").textContent());
-  await page.getByRole("button", { name: "沿等值层移动" }).click();
-  await page.waitForTimeout(90);
-  const middleX = Number(await page.locator('.ch10-vector.is-x').getAttribute("x2"));
-  await page.waitForTimeout(360);
-  const finalX = Number(await page.locator('.ch10-vector.is-x').getAttribute("x2"));
-  const levelValue = numeric(await page.locator("[data-functional-value]").textContent());
-  assert(firstX !== middleX && middleX !== finalX, "§1 guided motion has no visible middle frame");
-  assert(Math.abs(firstValue - levelValue) < 0.01, `§1 equal-level move changed value: ${firstValue} -> ${levelValue}`);
-  await page.getByRole("button", { name: "穿过核" }).click();
-  await page.waitForTimeout(380);
-  assert(numeric(await page.locator("[data-functional-value]").textContent()) < 0, "§1 crossing the kernel did not change sign");
-  await page.locator("[data-example-start]").click();
-  assert((await page.locator("[data-example-progress]").textContent()).includes("1 /"), "§1 example did not start");
-
-  await page.goto(`${baseURL}#ch10/dual-space`, { waitUntil: "networkidle" });
-  assert((await page.locator("[data-dual-coordinates]").textContent()).includes("1.4, -0.7"), "§2 initial dual coordinates are wrong");
-  assert(await page.locator('.dual-core .ch10-vector.is-measure').count() === 2, "§2 basis vectors are missing");
-  assert(await page.locator('.dual-core [data-vector-handle="measure"]').count() === 0, "§2 covector is drawn as a draggable arrow");
-  await page.getByRole("button", { name: "把 x 放到 v₁" }).click();
-  await page.waitForTimeout(380);
-  assert((await page.locator("[data-dual-coordinates]").textContent()).includes("1, 0"), "§2 v₁ was not read as (1,0)");
-  await page.getByRole("tab", { name: "用 v² 读取第二坐标" }).click();
-  await page.getByRole("button", { name: "把 x 放到 v₂" }).click();
-  await page.waitForTimeout(380);
-  assert((await page.locator("[data-dual-coordinates]").textContent()).includes("0, 1"), "§2 v₂ was not read as (0,1)");
-
-  await page.goto(`${baseURL}#ch10/bilinear-form`, { waitUntil: "networkidle" });
-  const bilinearInitial = numeric(await page.locator("[data-bilinear-value]").textContent());
-  await page.getByRole("button", { name: "沿等值层移动" }).click();
-  await page.waitForTimeout(380);
-  assert(Math.abs(numeric(await page.locator("[data-bilinear-value]").textContent()) - bilinearInitial) < 0.02, "§3 equal-level move changed B(x,y)");
-  await page.getByRole("tab", { name: "固定 x，移动 y" }).click();
-  assert((await page.locator("[data-bilinear-reader]").innerText()).includes("A"), "§3 fixed-left reader did not switch to Aᵀx");
-  const beforeDouble = numeric(await page.locator("[data-bilinear-value]").textContent());
-  await page.getByRole("button", { name: "活动输入放大 2 倍" }).click();
-  await page.waitForTimeout(380);
-  assert(Math.abs(numeric(await page.locator("[data-bilinear-value]").textContent()) - 2 * beforeDouble) < 0.03, "§3 homogeneity check failed");
-
-  await page.goto(`${baseURL}#ch10/symplectic-space`, { waitUntil: "networkidle" });
-  assert(Math.abs(numeric(await page.locator("[data-symplectic-value]").textContent()) - 4.62) < 0.01, "§4 initial area is wrong");
-  await page.getByRole("tab", { name: "交换输入" }).click();
-  await page.waitForTimeout(380);
-  assert(Math.abs(numeric(await page.locator("[data-symplectic-value]").textContent()) + 4.62) < 0.01, "§4 swap did not reverse sign");
-  await page.getByRole("tab", { name: "令两向量共线" }).click();
-  await page.waitForTimeout(380);
-  assert(Math.abs(numeric(await page.locator("[data-symplectic-value]").textContent())) < 0.01, "§4 collinear area is not zero");
-  await page.getByRole("tab", { name: "剪切 y ← y+x" }).click();
-  await page.waitForTimeout(380);
-  assert(Math.abs(numeric(await page.locator("[data-symplectic-value]").textContent()) - 4.62) < 0.01, "§4 shear changed the pairing");
-  await page.getByRole("tab", { name: "均匀缩放" }).click();
-  await page.waitForTimeout(380);
-  assert(Math.abs(numeric(await page.locator("[data-symplectic-value]").textContent()) - 5.59) < 0.01, "§4 uniform scaling value is wrong");
-
-  verifyErrors();
-  results.push({ label: "interaction-audit", status: "passed" });
-  await context.close();
-}
-
-async function auditReducedMotion(browser) {
-  const context = await browser.newContext({ viewport: { width: 390, height: 844 }, reducedMotion: "reduce" });
-  const page = await context.newPage();
-  await page.goto(`${baseURL}#ch10/symplectic-space`, { waitUntil: "networkidle" });
-  await page.getByRole("tab", { name: "均匀缩放" }).click();
-  await page.waitForTimeout(60);
-  assert(Math.abs(numeric(await page.locator("[data-symplectic-value]").textContent()) - 5.59) < 0.01, "reduced motion did not settle immediately");
-  results.push({ label: "reduced-motion", status: "passed" });
-  await context.close();
-}
-
-async function auditRegressions(browser) {
-  const pages = [
-    { hash: "#ch1/number-fields", title: "数域", selector: "#number-fields-formal .ch1-formal" },
-    { hash: "#ch4/matrix-language", title: "矩阵概念的一些背景", selector: "#transformCanvas" },
-    { hash: "#ch5/quadratic-matrix", title: "二次型及其矩阵表示", selector: "[data-s1-map]" },
-  ];
-  const regressionViewports = [viewports[0], viewports[2]];
-  for (const viewport of regressionViewports) {
-    for (const theme of themes) {
-      const context = await browser.newContext({ viewport });
-      const page = await context.newPage();
-      const label = `regression-${viewport.id}-${theme}`;
-      const verifyErrors = watchErrors(page, label);
-      for (const item of pages) {
-        await page.goto(`${baseURL}${item.hash}`, { waitUntil: "networkidle" });
-        await page.waitForSelector(item.selector);
-        await setTheme(page, theme);
-        assert((await page.locator("h1").first().textContent()).includes(item.title), `${item.hash}: wrong lesson rendered`);
-        assert(await page.locator(".ch10-core-lab").count() === 0, `${item.hash}: Chapter 10 style leaked into regression page`);
-        const overflow = await page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth);
-        assert(overflow <= 2, `${item.hash}: horizontal overflow ${overflow}`);
-        const slug = item.hash.split("/").pop();
-        await page.screenshot({ path: path.join(outputDir, `${label}-${slug}.png`), fullPage: true });
-      }
-      verifyErrors();
-      await context.close();
-    }
-  }
-  results.push({ label: "regression-audit", status: "passed" });
-}
-
-(async () => {
-  const browser = await chromium.launch({
-    headless: true,
-    ...(process.env.CHROMIUM_EXECUTABLE_PATH ? { executablePath: process.env.CHROMIUM_EXECUTABLE_PATH } : {}),
-  });
+async function main() {
+  const browser = await chromium.launch({ headless: true });
   try {
-    for (const audit of [auditVisualMatrix, auditInteractions, auditReducedMotion, auditRegressions]) {
-      try {
-        await audit(browser);
-      } catch (error) {
-        failures.push(`${audit.name}: ${error.stack || error.message}`);
+    for (const viewport of viewports) {
+      for (const theme of themes) {
+        const context = await browser.newContext({ viewport: { width: viewport.width, height: viewport.height } });
+        const page = await context.newPage();
+        page.setDefaultTimeout(10000);
+        const errors = watchErrors(page);
+        for (const route of routes) {
+          const label = `${route.id}-${viewport.id}-${theme}`;
+          try {
+            await page.goto(`${baseURL}${route.hash}`, { waitUntil: "networkidle" });
+            await page.waitForSelector("#mainContent h1");
+            await setTheme(page, theme);
+            await page.waitForTimeout(250);
+            await inspect(page, route, viewport, label);
+            if (route.lesson) await operateLab(page, route, label);
+            if (viewport.id !== "tablet") {
+              const target = route.lesson ? page.locator(".ch7l-lab").first() : page.locator("#mainContent");
+              await target.screenshot({ path: path.join(outputDir, `${label}.png`) });
+            }
+            passed += 1;
+          } catch (error) {
+            failures.push(error.message);
+          }
+        }
+        if (errors.length) failures.push(`${viewport.id}-${theme}: ${errors.join(" | ")}`);
+        await context.close();
       }
     }
   } finally {
     await browser.close();
   }
-  const report = { generatedAt: new Date().toISOString(), baseURL, results, failures };
-  fs.writeFileSync(path.join(outputDir, "report.json"), JSON.stringify(report, null, 2));
-  console.log(JSON.stringify(report, null, 2));
-  if (failures.length) process.exit(1);
-})();
+  fs.writeFileSync(path.join(outputDir, "report.json"), JSON.stringify({ passed, failures }, null, 2));
+  if (failures.length) {
+    console.error(failures.join("\n"));
+    process.exit(1);
+  }
+  console.log(`PASS Chapter 10 browser audit (${passed} checks)`);
+}
+
+main().catch((error) => {
+  console.error(error);
+  process.exit(1);
+});

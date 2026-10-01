@@ -32,21 +32,10 @@ jobs:
       - name: Check JavaScript syntax
         run: |
           set -euo pipefail
-          node --check current/content/ch10-registry.js
-          node --check current/content/ch10-section1.js
-          node --check current/content/ch10-section2.js
-          node --check current/content/ch10-section3.js
-          node --check current/content/ch10-section4.js
-          node --check current/content/ch10.js
+          for file in current/content/ch10*.js current/visuals/ch10/*.js; do
+            node --check "$file"
+          done
           node --check current/structured-learning.js
-          node --check current/visuals/structured-chapter-registry.js
-          node --check current/visuals/ch10/registry.js
-          node --check current/visuals/ch10/shared.js
-          node --check current/visuals/ch10/section1-presentation.js
-          node --check current/visuals/ch10/section2-presentation.js
-          node --check current/visuals/ch10/section3-presentation.js
-          node --check current/visuals/ch10/section4-presentation.js
-          node --check current/visuals/ch10/mount.js
           node --check tests/ch10-browser-audit.cjs
           node --check tests/ch10-source-audit.cjs
 
@@ -55,27 +44,9 @@ jobs:
           mkdir -p artifacts/ch10-browser-audit/source
           node tests/ch10-source-audit.cjs > artifacts/ch10-browser-audit/source-audit.json
           cp --parents \
-            current/content/ch10-registry.js \
-            current/content/ch10-section1.js \
-            current/content/ch10-section2.js \
-            current/content/ch10-section3.js \
-            current/content/ch10-section4.js \
-            current/content/ch10.js \
-            current/structured-learning.js \
+            current/content/ch10*.js \
+            current/visuals/ch10/* \
             current/learn.html \
-            current/visuals/structured-chapter-registry.js \
-            current/visuals/ch10/registry.js \
-            current/visuals/ch10/shared.js \
-            current/visuals/ch10/section1-presentation.js \
-            current/visuals/ch10/section2-presentation.js \
-            current/visuals/ch10/section3-presentation.js \
-            current/visuals/ch10/section4-presentation.js \
-            current/visuals/ch10/mount.js \
-            current/visuals/ch10/base.css \
-            current/visuals/ch10/section1-presentation.css \
-            current/visuals/ch10/section2-presentation.css \
-            current/visuals/ch10/section3-presentation.css \
-            current/visuals/ch10/section4-presentation.css \
             tests/ch10-browser-audit.cjs \
             tests/ch10-source-audit.cjs \
             artifacts/ch10-browser-audit/source/

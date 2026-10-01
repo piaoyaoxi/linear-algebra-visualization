@@ -1,198 +1,84 @@
-defineChapter10Section({
-  id: "dual-space",
+defineChapter10Section("dual-space", {
   number: "§2",
   textbookSection: "对偶空间",
   title: "对偶空间",
   navTitle: "对偶空间",
-  question: "所有线性测量方法放在一起，会不会也形成一个向量空间？",
-  goal: "把对偶空间理解为测量方法的空间，掌握自然配对、对偶基、换基平衡、双对偶和对偶映射。",
-  tags: ["对偶空间", "对偶基", "对偶映射"],
+  question: "对偶基怎样读出一个向量的坐标？",
+  goal: "知道 V*=L(V,P) 与 V 同维，会求一组基的对偶基；掌握两组基的对偶基之间的过渡矩阵是 (Aᵀ)⁻¹。",
+  tags: ["对偶空间", "对偶基", "坐标读取", "(Aᵀ)⁻¹"],
   intro:
-    "原空间中的对象是向量；对偶空间中的对象是线性函数。它们通过求值相遇：函数读取向量，输出一个标量。对偶基是一组坐标读取器：第 i 个对偶向量只读出第 i 个坐标。",
-  openingFunctions: [
-    { id: "first", label: "读取第一坐标", coefficients: [1, 0] },
-    { id: "second", label: "读取第二坐标", coefficients: [0, 1] },
-    { id: "sum", label: "读取坐标和", coefficients: [1, 1] },
-  ],
-  interactive: {
-    type: "dual-probe",
-    title: "谁在测量谁",
-    question: "固定其中一个输入时，另一个输入怎样线性地改变配对值？",
-    instruction:
-      "左侧拖动向量，右侧拖动测量器参数。先固定测量器缩放向量，再固定向量缩放测量器；切换“看 V 中的等值线”和“看 V* 中的等值线”。",
-    tasks: [
-      "固定函数，把向量放大 2 倍，检查读数是否放大 2 倍。",
-      "固定向量，把函数系数放大 2 倍，检查读数是否放大 2 倍。",
-      "切换等值线所在的空间，说明自然配对为什么对两个槽分别线性。",
-    ],
-  },
+    "V 上的全体线性函数在加法与数乘下也组成线性空间，称为对偶空间 V*。取定 V 的一组基，有一组线性函数恰好读出向量在这组基下的各个坐标，这就是对偶基。下面拖动一组斜的基，看两族读数直线怎样跟着变。",
   concepts: [
-    {
-      label: "对偶空间",
-      text: `${texInline("V^*=\\operatorname{Hom}(V,F)")}，其中每个元素都是一个线性函数。`,
-    },
-    {
-      label: "自然配对",
-      text: `${texInline("\\langle f,x\\rangle=f(x)")}；一个函数槽与一个向量槽共同产生标量。`,
-    },
-    {
-      label: "对偶基",
-      text: `${texInline("e^i(e_j)=\\delta_{ij}")}；${texInline("e^i")} 只读取第 ${texInline("i")} 个坐标。`,
-    },
-    {
-      label: "对偶映射",
-      text: `若 ${texInline("T:V\\to W")}，则 ${texInline("T^*:W^*\\to V^*")}，${texInline("T^*(g)=g\\circ T")}。`,
-    },
+    { label: "对偶基", text: texInline(String.raw`f_i(\varepsilon_j)=\delta_{ij}`) },
+    { label: "过渡矩阵", text: texInline(String.raw`(\eta)=(\varepsilon)A\Rightarrow(g)=(f)(A^T)^{-1}`) },
   ],
-  coordinateReaders: {
-    title: "坐标读取器",
-    basis: [
-      [1, 0],
-      [0, 1],
-    ],
-    vector: [2, -1],
-    table: [
-      [1, 0],
-      [0, 1],
-    ],
-  },
-  dualBasisBuilder: {
-    title: "非标准基的对偶读取器",
-    presets: [
+  textbook: { reference: "北大版《高等代数》第十章 §2", items: ["对偶空间 L(V,P)", "对偶基", "对偶基之间的过渡矩阵", "V 与 V** 的同构"] },
+  interactive: { type: "slot", title: "斜基与它的对偶基" },
+  lesson3d: {
+    blocks: [
       {
-        id: "standard",
-        label: "标准基",
-        basis: [
-          [1, 0],
-          [0, 1],
-        ],
+        title: "对偶空间与对偶基",
+        tex: String.raw`f_i(\varepsilon_j)=\delta_{ij}=\begin{cases}1,&i=j\\0,&i\ne j\end{cases},\qquad \dim V^*=\dim V`,
+        text: "V* 中的运算逐点定义：(f+g)(α)=f(α)+g(α)，(kf)(α)=kf(α)。基 ε₁,…,εₙ 的对偶基 f₁,…,fₙ 是 V* 的一组基；fᵢ 读出第 i 个坐标，所以 α=f₁(α)ε₁+…+fₙ(α)εₙ，f=f(ε₁)f₁+…+f(εₙ)fₙ。",
+        ponder: {
+          q: "η₁, η₂ 的对偶基中，g₁ 只与 η₁ 有关吗？",
+          a: "还与 η₂ 有关。g₁ 要满足 g₁(η₂)=0，η₂ 一动，g₁ 的零线就跟着转。",
+        },
       },
       {
-        id: "skew",
-        label: "斜基",
-        basis: [
-          [1, 0.45],
-          [0.65, 1.25],
-        ],
+        title: "对偶基的过渡矩阵",
+        tex: String.raw`(\eta_1,\dots,\eta_n)=(\varepsilon_1,\dots,\varepsilon_n)A\ \Longrightarrow\ (g_1,\dots,g_n)=(f_1,\dots,f_n)(A^T)^{-1}`,
+        text: `f₁,…,fₙ 与 g₁,…,gₙ 分别是两组基的对偶基。例：η₁=ε₁，η₂=ε₁+ε₂，则 ${texInline(String.raw`A=\begin{pmatrix}1&1\\0&1\end{pmatrix}`)}，${texInline(String.raw`(A^T)^{-1}=\begin{pmatrix}1&0\\-1&1\end{pmatrix}`)}，于是 g₁=f₁−f₂，g₂=f₂。η₁ 没有变，g₁ 却变了。`,
+        ponder: {
+          q: "把每个基向量都放大 2 倍，对偶基怎样变？",
+          a: "A=2E，(Aᵀ)⁻¹=½E，所以每个 gᵢ=½fᵢ。量尺变长，读数变小。",
+        },
       },
       {
-        id: "near",
-        label: "接近共线",
-        basis: [
-          [1.35, 0.4],
-          [1.55, 0.5],
-        ],
-      },
-      {
-        id: "singular",
-        label: "精确共线",
-        basis: [
-          [1, 0.5],
-          [2, 1],
-        ],
+        title: "V 与 V** 的同构",
+        tex: String.raw`\alpha\mapsto\alpha^{**},\qquad \alpha^{**}(f)=f(\alpha)\quad(f\in V^*)`,
+        text: "把 α 看成 V* 上“在 α 处取值”的函数，得到 V 到 V** 的同构映射，它的定义不依赖基的选取。因此 V 也可以看成 V* 的对偶空间。",
       },
     ],
-    tasks: [
-      "检查第一读取器的核是否沿第二支基向量。",
-      "检查第二读取器的核是否沿第一支基向量。",
-      "让基接近共线，观察读取器系数为什么迅速增大。",
-      "在精确共线时说明为什么无法分别读取两个坐标。",
-    ],
-  },
-  balance: {
-    title: "换基平衡",
-    text: "几何向量和几何函数都不变；向量坐标与函数坐标相互配合地改变，使配对值保持不变。",
-    standardBasis: [
-      [1, 0],
-      [0, 1],
-    ],
-    newBasis: [
-      [1, 1],
-      [1, -1],
-    ],
-    vector: [2, 1],
-    functional: [2, -1],
-  },
-  doubleDual: {
-    title: "向量也能读取函数",
-    steps: [
-      {
-        label: "给定向量",
-        formula: texInline("x\\in V"),
-        text: "先固定一个几何向量。",
-      },
-      {
-        label: "输入任意函数",
-        formula: texInline("f\\in V^*"),
-        text: "让向量面对所有线性函数。",
-      },
-      {
-        label: "返回求值结果",
-        formula: texInline("J(x)(f)=f(x)"),
-        text: `${texInline("J(x)")} 本身是对 ${texInline("V^*")} 的线性函数，因此属于 ${texInline("V^{**}")}。`,
-      },
-    ],
-  },
-  pullback: {
-    title: "拉回传送带",
-    steps: [
-      { label: "原输入", formula: texInline("x\\in V") },
-      { label: "先做变换", formula: texInline("x\\mapsto Tx\\in W") },
-      { label: "再做测量", formula: texInline("Tx\\mapsto g(Tx)") },
-      { label: "压缩成一个测量", formula: texInline("T^*(g)=g\\circ T\\in V^*") },
+    pitfalls: [
+      "以为 gᵢ 只由 ηᵢ 决定。条件 gᵢ(ηⱼ)=0（j≠i）把其余基向量都牵连进来。",
+      "把对偶基的过渡矩阵写成 A 或 A⁻¹。正确的是 (Aᵀ)⁻¹。",
+      "把 V* 的元素当成 V 的向量。f 是函数，取定基以后才用 n 个数 f(ε₁),…,f(εₙ) 记录它。",
     ],
   },
   example: {
-    title: "求非标准基的对偶基",
-    question: `在 ${texInline("\\mathbb R^2")} 中，令 ${texInline("v_1=(1,1)^T")}、${texInline("v_2=(2,1)^T")}。求对偶基 ${texInline("v^1,v^2")}。`,
+    title: "例题：基向量没变，对偶基却变了",
+    question: `f₁, f₂ 是 ε₁, ε₂ 的对偶基。新基 ${texInline(String.raw`\eta_1=\varepsilon_1,\ \eta_2=\varepsilon_1+\varepsilon_2`)} 的对偶基中，${texInline("g_1")} 等于什么？`,
+    choices: [
+      { correct: true, text: texInline("f_1-f_2") },
+      { text: `${texInline("f_1")}，因为 ${texInline(String.raw`\eta_1=\varepsilon_1`)}` },
+      { text: texInline("f_1+f_2") },
+      { text: texInline("f_2-f_1") },
+    ],
     steps: [
-      {
-        title: "为第一读取器设未知系数",
-        text: `设 ${texInline("v^1=[a\\;b]")}，要求 ${texInline("v^1(v_1)=1")}、${texInline("v^1(v_2)=0")}。`,
-      },
-      {
-        title: "解第一组条件",
-        text: `${texInline("a+b=1")}、${texInline("2a+b=0")}，得到 ${texInline("v^1=[-1\\;2]")}。`,
-      },
-      {
-        title: "求第二读取器",
-        text: `同理得到 ${texInline("v^2=[1\\;-1]")}。`,
-      },
-      {
-        title: "用逆矩阵统一验证",
-        text: `基矩阵 ${texInline("P=\\begin{bmatrix}1&2\\\\1&1\\end{bmatrix}")} 的逆矩阵各行正是 ${texInline("v^1,v^2")}。`,
-      },
-      {
-        title: "恢复任意向量",
-        text: `${texInline("x=v^1(x)v_1+v^2(x)v_2")}。`,
-      },
+      `设 ${texInline("g_1=af_1+bf_2")}，它要满足 ${texInline(String.raw`g_1(\eta_1)=1,\ g_1(\eta_2)=0`)}。`,
+      `${texInline(String.raw`g_1(\eta_1)=g_1(\varepsilon_1)=a=1`)}；${texInline(String.raw`g_1(\eta_2)=a+b=0`)}，所以 ${texInline("b=-1")}。`,
+      `于是 ${texInline("g_1=f_1-f_2")}。用公式核对：${texInline(String.raw`(A^T)^{-1}=\begin{pmatrix}1&0\\-1&1\end{pmatrix}`)} 的第一列是 ${texInline("(1,-1)^T")}。`,
+      `${texInline(String.raw`f_1(\eta_2)=1\ne0`)}，所以 ${texInline("f_1")} 不满足条件；${texInline("f_1+f_2")} 在 ${texInline(String.raw`\eta_2`)} 上的值是 2；${texInline("f_2-f_1")} 在 ${texInline(String.raw`\eta_1`)} 上的值是 −1。`,
     ],
   },
   quiz: [
     {
-      question: `线性函数 ${texInline("f:V\\to F")} 属于哪个空间？`,
-      answer: `${texInline("f\\in V^*")}。`,
+      question: "dim V=n 时，dim V* 是多少？V* 的一组基可以怎样得到？",
+      answer: "dim V*=n。任取 V 的一组基，它的对偶基就是 V* 的一组基。",
     },
     {
-      question: `为什么 ${texInline("e^i(x)")} 等于第 ${texInline("i")} 个坐标？`,
-      answer: `把 ${texInline("x=\\sum_jx_je_j")} 代入，并使用 ${texInline("e^i(e_j)=\\delta_{ij}")}。`,
+      question: "接上面的例题，线性函数 f=3f₁+f₂ 在对偶基 g₁, g₂ 下的坐标是什么？",
+      answer: "坐标是 (f(η₁), f(η₂))=(3, 4)，即 f=3g₁+4g₂。核对：3(f₁−f₂)+4f₂=3f₁+f₂。",
     },
     {
-      question: "有限维时维数相同，能否直接把原空间和对偶空间视为同一个空间？",
-      answer: "不能。维数相同保证存在同构，但一般没有不依赖选择的自然同构。",
-    },
-    {
-      question: `若 ${texInline("T:V\\to W")}，对偶映射为什么从 ${texInline("W^*")} 指向 ${texInline("V^*")}？`,
-      answer: "W 上的测量与 T 复合后，变成了 V 上的测量。",
-    },
-    {
-      question: `自然映射 ${texInline("J:V\\to V^{**}")} 怎样定义？`,
-      answer: `${texInline("J(x)(f)=f(x)")}。`,
+      question: "怎样用对偶基 g₁,…,gₙ 写出向量 α 在基 η₁,…,ηₙ 下的坐标？",
+      answer: "α=g₁(α)η₁+…+gₙ(α)ηₙ，第 i 个坐标就是 gᵢ(α)。",
     },
   ],
   summary: [
-    "对偶空间的元素是线性测量方法，自然配对把函数与向量送到标量。",
-    "对偶基是按 Kronecker 条件读取坐标的函数。",
-    "换基时向量坐标与函数坐标共同改变；对偶映射通过复合把测量拉回。",
+    "V*=L(V,P) 与 V 同维；基 ε₁,…,εₙ 的对偶基满足 fᵢ(εⱼ)=δᵢⱼ。",
+    "对偶基是读坐标的工具：α=Σfᵢ(α)εᵢ，f=Σf(εᵢ)fᵢ；每个 fᵢ 由整组基决定。",
+    "(η)=(ε)A 时，对偶基满足 (g)=(f)(Aᵀ)⁻¹。",
   ],
 });

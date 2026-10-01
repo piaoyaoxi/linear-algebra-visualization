@@ -1,172 +1,89 @@
-defineChapter10Section({
-  id: "linear-functional",
+defineChapter10Section("linear-functional", {
   number: "§1",
   textbookSection: "线性函数",
   title: "线性函数",
   navTitle: "线性函数",
-  question: "一个线性对象怎样把整个向量空间测量成一个数，同时保留加法与数乘？",
-  goal: "从等值线、核空间和基上的读数出发，理解线性函数如何测量向量，并分清函数本身、坐标行向量与内积代表向量。",
-  tags: ["线性函数", "核空间", "等值超平面"],
+  question: "线性函数怎样把每个向量读成一个数？",
+  goal: "理解线性函数的定义，会由基上的值写出 f(x)=a₁x₁+…+aₙxₙ，知道非零线性函数的核是 n−1 维子空间，等值面彼此平行。",
+  tags: ["线性函数", "基上的值", "核", "等值线"],
   intro:
-    "先不要把它想成普通的一元函数曲线。在线性函数眼中，平面被分成一层层平行的等值线；向量移动到哪一层，仪表就读出相应的标量。穿过零值层时，读数改变符号。",
-  openingCases: [
-    {
-      label: "读取第一坐标",
-      formula: texInline("f(x_1,x_2)=x_1"),
-      text: "竖直移动不会改变读数；横向跨过核直线时读数改变。",
-    },
-    {
-      label: "把两个坐标相加",
-      formula: texInline("f(x_1,x_2)=x_1+x_2"),
-      text: "等值线倾斜，但仍然彼此平行；零值线仍穿过原点。",
-    },
-    {
-      label: "零函数",
-      formula: texInline("f(x)=0"),
-      text: "所有向量都得到同一个读数，整个空间就是核。",
-    },
-  ],
-  interactive: {
-    type: "functional-field",
-    title: "向量扫描器",
-    question: "怎样移动向量，才能改变位置却保持函数值不变？",
-    instruction:
-      "先按“沿等值线走”播放一次引导，再拖动向量端点。切换视图观察正负区域、核直线、当前等值线和基向量读数怎样同步。",
-    presets: [
-      { id: "first", label: "读取 x₁", direction: [1, 0], scale: 1, vector: [2, 1] },
-      { id: "second", label: "读取 x₂", direction: [0, 1], scale: 1, vector: [1, 2] },
-      { id: "sum", label: "求和", direction: [1, 1], scale: 1, vector: [2, 1] },
-      { id: "difference", label: "作差", direction: [1, -1], scale: 1, vector: [2, 1] },
-      { id: "zero", label: "零函数", direction: [0, 0], scale: 0, vector: [2, 1] },
-    ],
-    tasks: [
-      "沿当前等值线移动，确认位置变化而读数不变。",
-      "沿测量方向跨过核，观察读数经过 0 并改变符号。",
-      "只把倍率放大为 2，观察核方向不变而读数翻倍。",
-      "切换零函数，说明为什么不再存在唯一的测量方向。",
-    ],
-  },
-  linearityChecks: [
-    {
-      id: "addition",
-      title: "先相加再测量",
-      left: texInline("f(x+y)"),
-      right: texInline("f(x)+f(y)"),
-      text: "两条路径必须落到同一个标量读数。",
-    },
-    {
-      id: "scaling",
-      title: "先缩放再测量",
-      left: texInline("f(\\lambda x)"),
-      right: texInline("\\lambda f(x)"),
-      text: "输入缩放多少倍，输出就缩放多少倍。",
-    },
-  ],
+    "线性函数 f 把每个向量读成数域 P 中的一个数，并且保持加法与数乘。在平面上，f 取同一个值的点排成一条直线，不同的值给出一族平行线。下面拖动向量 x 读出 f(x)，再看 f 在基上的两个值怎样决定整族直线。",
   concepts: [
-    {
-      label: "线性条件",
-      text: `${texInline("f(x+y)=f(x)+f(y)")}，且 ${texInline("f(\\lambda x)=\\lambda f(x)")}。`,
-    },
-    {
-      label: "核空间",
-      text: `${texInline("\\ker f=\\{x:f(x)=0\\}")}；非零线性函数的核是余维 1 的子空间。`,
-    },
-    {
-      label: "基值决定函数",
-      text: `若 ${texInline("x=\\sum_i x_i e_i")}，则 ${texInline("f(x)=\\sum_i x_i f(e_i)")}。`,
-    },
-    {
-      label: "坐标表示",
-      text: `选定基后，${texInline("f(x)=[f][x]")}；行向量是函数的坐标，不是函数本身。`,
-    },
+    { label: "线性函数", text: texInline(String.raw`f(k\alpha+l\beta)=kf(\alpha)+lf(\beta)`) },
+    { label: "坐标表示", text: texInline(String.raw`f(x)=a_1x_1+\cdots+a_nx_n,\ a_i=f(\varepsilon_i)`) },
   ],
-  basisBuilder: {
-    title: "基值构造器",
-    instruction: "先规定函数怎样读取两支基向量，再让任意向量按同样系数组合这些读数。",
-    standard: {
-      basis: [
-        [1, 0],
-        [0, 1],
-      ],
-      values: [2, -1],
-      vector: [1, 2],
-    },
-    skew: {
-      basis: [
-        [1, 1],
-        [1, -1],
-      ],
-      values: [3, 1],
-      vector: [2, 1],
-    },
+  textbook: { reference: "北大版《高等代数》第十章 §1", items: ["线性函数的定义与例", "线性函数由基上的值唯一决定"] },
+  interactive: { type: "slot", title: "等值线读出 f(x)" },
+  lesson3d: {
+    blocks: [
+      {
+        title: "线性函数的定义",
+        tex: String.raw`f:V\to P,\qquad f(k\alpha+l\beta)=kf(\alpha)+lf(\beta)`,
+        text: "V 是数域 P 上的线性空间。例如 Pⁿ 上的 a₁x₁+…+aₙxₙ，n 阶矩阵的迹 tr A，P[x] 上的 f(p)=p(t₀)。由定义 f(0)=0，并且 f 把线性组合读成读数的线性组合。",
+        ponder: {
+          q: "f(x₁,x₂)=x₁+x₂+1 是线性函数吗？",
+          a: "不是。f(0)=1≠0。它的等值线也彼此平行，但 f=0 的那一条不过原点。",
+        },
+      },
+      {
+        title: "由基上的值唯一决定",
+        tex: String.raw`f(x_1\varepsilon_1+\cdots+x_n\varepsilon_n)=a_1x_1+\cdots+a_nx_n,\qquad a_i=f(\varepsilon_i)`,
+        text: "取定 V 的基 ε₁,…,εₙ，f 由 n 个数 f(ε₁),…,f(εₙ) 完全决定。反过来，任给 P 中 n 个数 a₁,…,aₙ，存在唯一的线性函数 f 使 f(εᵢ)=aᵢ。",
+        ponder: {
+          q: "f 在一组基上的值全是 0，f 是什么？",
+          a: "零函数：对一切 x，f(x)=0·x₁+…+0·xₙ=0。",
+        },
+      },
+      {
+        title: "核与等值面",
+        tex: String.raw`\ker f=\{\alpha\in V\mid f(\alpha)=0\},\qquad \dim\ker f=n-1\quad(f\ne 0)`,
+        text: "f≠0 时值域是整个 P，由维数公式得 dim ker f=n−1。取 α₀ 使 f(α₀)=c，则 f=c 的全体向量恰好是 α₀+ker f。平面上 ker f 是过原点的直线，其余等值线都与它平行。",
+        ponder: {
+          q: "两个非零线性函数 f、g 的核相同，它们有什么关系？",
+          a: "相差一个非零常数倍。取 α₀ 使 f(α₀)=1，则 V=L(α₀)⊕ker f，两边比较得 g=g(α₀)f。",
+        },
+      },
+    ],
+    pitfalls: [
+      "把 a₁x₁+a₂x₂+b（b≠0）当成线性函数。线性函数必须满足 f(0)=0。",
+      "以为系数 aᵢ 只属于 f。aᵢ=f(εᵢ) 依赖所选的基，换一组基，同一个 f 的系数一般会变。",
+      "把直线 a₁x₁+a₂x₂=0 的方向当成 (a₁,a₂)。这条直线的方向是 (−a₂,a₁)。",
+    ],
   },
-  boundaryCases: [
-    {
-      id: "linear",
-      label: "线性",
-      formula: texInline("f(x)=a^Tx"),
-      test: texInline("f(0)=0"),
-      conclusion: "零向量必被送到 0，零值集合是子空间。",
-    },
-    {
-      id: "affine",
-      label: "仿射",
-      formula: texInline("g(x)=a^Tx+c"),
-      test: texInline("g(0)=c"),
-      conclusion: "等值线仍然平行，但当常数项不为 0 时不再是线性函数。",
-    },
-  ],
   example: {
-    title: "由非标准基上的取值确定线性函数",
-    question: `在 ${texInline("\\mathbb R^2")} 中，令 ${texInline("v_1=(1,1)^T")}、${texInline("v_2=(1,-1)^T")}。已知 ${texInline("f(v_1)=3")}、${texInline("f(v_2)=1")}。求 ${texInline("f(x_1,x_2)")} 与 ${texInline("\\ker f")}。`,
+    title: "例题：由基上的值求线性函数",
+    question: `在 ${texInline("P^3")} 中取基 ${texInline(String.raw`\alpha_1=(1,1,0),\ \alpha_2=(0,1,1),\ \alpha_3=(1,0,1)`)}，线性函数 f 满足 ${texInline(String.raw`f(\alpha_1)=1,\ f(\alpha_2)=2,\ f(\alpha_3)=3`)}。${texInline(String.raw`f(x_1,x_2,x_3)`)} 等于什么？`,
+    choices: [
+      { correct: true, text: texInline("x_1+2x_3") },
+      { text: `${texInline("x_1+2x_2+3x_3")}：把 1, 2, 3 直接当作系数。` },
+      { text: texInline("2x_1+x_3") },
+      { text: "条件不够，f 不唯一。" },
+    ],
     steps: [
-      {
-        title: "确认这是一组基",
-        text: `${texInline("v_1,v_2")} 不共线，因此每个向量都有唯一的基坐标。`,
-      },
-      {
-        title: "把标准基写回这组基",
-        text: `${texInline("e_1=(v_1+v_2)/2")}，${texInline("e_2=(v_1-v_2)/2")}。`,
-      },
-      {
-        title: "利用线性性读取标准基",
-        text: `${texInline("f(e_1)=2")}，${texInline("f(e_2)=1")}。`,
-      },
-      {
-        title: "写出坐标表达",
-        text: `${texInline("f(x_1,x_2)=2x_1+x_2")}。`,
-      },
-      {
-        title: "寻找零值方向",
-        text: `${texInline("\\ker f=\\{(x_1,x_2)^T:2x_1+x_2=0\\}")}。`,
-      },
+      `设 ${texInline("f(x)=a_1x_1+a_2x_2+a_3x_3")}，P³ 上的线性函数都是这种形状。`,
+      `代入三个基向量：${texInline("a_1+a_2=1,\\ a_2+a_3=2,\\ a_1+a_3=3")}。`,
+      `三式相加得 ${texInline("2(a_1+a_2+a_3)=6")}，于是 ${texInline("a_3=2,\\ a_1=1,\\ a_2=0")}。`,
+      `所以 ${texInline("f=x_1+2x_3")}。检验：${texInline("f(\\alpha_1)=1,\\ f(\\alpha_2)=2,\\ f(\\alpha_3)=3")}。基上的值唯一决定 f。`,
+      `系数取 1, 2, 3 时 ${texInline("f(\\alpha_1)=3")}；系数取 2, 0, 1 时 ${texInline("f(\\alpha_1)=2")}，都与条件不符。`,
     ],
   },
   quiz: [
     {
-      question: `为什么线性函数必有 ${texInline("f(0)=0")}？`,
-      answer: `${texInline("f(0)=f(0+0)=f(0)+f(0)")}，消去一项即可。`,
+      question: `${texInline("f(x_1,x_2)=x_1x_2")} 是线性函数吗？`,
+      answer: "不是。f(2x)=4f(x)，不满足 f(kα)=kf(α)。它的等值线是双曲线，也不平行。",
     },
     {
-      question: `集合 ${texInline("\\{x:f(x)=2\\}")} 一定是子空间吗？`,
-      answer: "不一定。它通常不经过原点，是与核平行的仿射超平面。",
+      question: "V 是 n 维空间，f≠0。ker f 是几维的？f=1 的全体向量构成子空间吗？",
+      answer: "ker f 是 n−1 维的。f=1 的向量不含零向量，不构成子空间；它是 α₀+ker f，其中 f(α₀)=1。",
     },
     {
-      question: `函数 ${texInline("g(x,y)=2x-y+1")} 是否线性？`,
-      answer: `不是，因为 ${texInline("g(0,0)=1\\ne0")}。`,
-    },
-    {
-      question: "同一个线性函数换基后，什么保持不变？",
-      answer: "函数对同一个几何向量的读数保持不变；向量坐标与函数的行坐标都会改变。",
-    },
-    {
-      question: "为什么不能把法向箭头当成线性函数的定义？",
-      answer: "法向箭头依赖选定的坐标与内积；线性函数本身只是从向量空间到标量域的线性映射。",
+      question: `在 ${texInline("P[x]_n")} 中，f(p)=p(1) 是线性函数吗？它在基 ${texInline("1,x,\\dots,x^{n-1}")} 上的值是多少？`,
+      answer: "是线性函数：(kp+lq)(1)=kp(1)+lq(1)。它在每个基向量上的值都是 1，所以 f(a₀+a₁x+…)=a₀+a₁+…+aₙ₋₁。",
     },
   ],
   summary: [
-    "线性函数把空间分成平行等值层，穿过原点的零值层就是核。",
-    "一组基上的读数决定整个函数；行向量只是选定基后的坐标记录。",
-    "下一节把所有线性测量方法放在一起，得到对偶空间。",
+    "线性函数 f: V→P 保持线性组合；取定基后 f(x)=a₁x₁+…+aₙxₙ，aᵢ=f(εᵢ)。",
+    "基上的 n 个值可以任意给定，并且唯一决定 f。",
+    "f≠0 时 ker f 是 n−1 维子空间，f=c 的向量是它的平移，各等值面彼此平行。",
   ],
 });

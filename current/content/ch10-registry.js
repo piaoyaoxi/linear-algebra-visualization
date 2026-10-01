@@ -1,15 +1,17 @@
+/*
+ * Chapter 10 section data registry.
+ */
 (() => {
-  const sections = [];
+  const patches = new Map();
 
-  window.defineChapter10Section = function defineChapter10Section(section) {
-    if (!section?.id) throw new TypeError("Chapter 10 sections require an id.");
-    if (sections.some((item) => item.id === section.id)) {
-      throw new Error(`Duplicate Chapter 10 section: ${section.id}`);
+  window.defineChapter10Section = function defineChapter10Section(sectionId, patch) {
+    if (!sectionId || !patch || typeof patch !== "object") {
+      throw new TypeError("Chapter 10 section patches require an id and an object.");
     }
-    sections.push(section);
+    patches.set(sectionId, patch);
   };
 
-  window.getChapter10Sections = function getChapter10Sections() {
-    return sections.slice();
+  window.getChapter10SectionPatches = function getChapter10SectionPatches() {
+    return patches;
   };
 })();

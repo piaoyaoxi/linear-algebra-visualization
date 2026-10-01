@@ -187,7 +187,7 @@
   text-transform: uppercase;
 }
 
-.ch2-meter-card span {
+.ch2-meter-card > span {
   overflow-wrap: anywhere;
   font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
   font-size: 1.08rem;

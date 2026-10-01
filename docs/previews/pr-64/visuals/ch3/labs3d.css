@@ -1,0 +1,403 @@
+/* Chapter 3 3D labs (labs3d.js). */
+.ch3l-lab {
+  display: grid;
+  gap: 16px;
+  padding: 22px;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  background: var(--surface-solid);
+}
+
+.ch3l-head h3 {
+  margin: 0 0 6px;
+  font-size: 20px;
+}
+
+.ch3l-head p {
+  margin: 0;
+  max-width: 72ch;
+  color: var(--muted);
+  line-height: 1.75;
+}
+
+.ch3l-toolbar,
+.ch3l-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+}
+
+.ch3l-chip,
+.ch3l-btn {
+  padding: 8px 13px;
+  border: 1px solid var(--line-strong);
+  border-radius: 999px;
+  background: var(--surface-solid);
+  color: var(--text);
+  font: inherit;
+  font-size: 13.5px;
+  font-weight: 650;
+  cursor: pointer;
+}
+
+.ch3l-chip.is-active,
+.ch3l-chip:hover,
+.ch3l-btn:hover {
+  border-color: var(--accent);
+  background: var(--accent-soft);
+  color: var(--accent-strong);
+}
+
+.ch3l-btn.is-primary {
+  border-color: var(--accent);
+  background: var(--accent);
+  color: #fff;
+}
+
+body.dark .ch3l-btn.is-primary {
+  color: #0e121b;
+}
+
+.ch3l-btn:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.ch3l-body {
+  display: grid;
+  grid-template-columns: minmax(0, 1.5fr) minmax(250px, 1fr);
+  gap: 16px;
+  align-items: start;
+}
+
+.ch3l-side {
+  display: grid;
+  gap: 12px;
+  min-width: 0;
+}
+
+.ch3l-pair {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.ch3l-view {
+  display: grid;
+  gap: 6px;
+  min-width: 0;
+}
+
+.ch3l-view-title {
+  color: var(--muted);
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.ch3l-pair .la3d-canvas {
+  height: clamp(260px, 32vw, 340px);
+}
+
+.ch3l-card {
+  display: grid;
+  gap: 8px;
+  min-width: 0;
+  padding: 14px 16px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: var(--surface-soft);
+}
+
+.ch3l-card h4 {
+  margin: 0;
+  font-size: 14px;
+}
+
+.ch3l-card p {
+  margin: 0;
+  line-height: 1.7;
+  overflow-wrap: anywhere;
+}
+
+.ch3l-card .ch3-equation-list,
+.ch3l-card .ch3-math {
+  overflow-x: auto;
+}
+
+.ch3l-op-row {
+  display: flex;
+  gap: 14px;
+}
+
+.ch3l-op-row select {
+  margin-left: 4px;
+  padding: 4px 6px;
+  border: 1px solid var(--line-strong);
+  border-radius: 8px;
+  background: var(--surface-solid);
+  color: var(--text);
+  font: inherit;
+}
+
+.ch3l-range {
+  display: grid;
+  grid-template-columns: 30px minmax(0, 1fr) 40px;
+  gap: 10px;
+  align-items: center;
+}
+
+.ch3l-range input {
+  width: 100%;
+  accent-color: var(--accent);
+}
+
+.ch3l-range b {
+  color: var(--accent-strong);
+  font-variant-numeric: tabular-nums;
+  text-align: right;
+}
+
+.ch3l-controls {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px 20px;
+}
+
+.ch3l-status {
+  padding: 12px 16px;
+  border-radius: 12px;
+  background: var(--surface-soft);
+  line-height: 1.8;
+}
+
+.ch3l-strip {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: 18px;
+  align-items: center;
+  padding: 14px 16px;
+  border-radius: 12px;
+  background: var(--surface-soft);
+}
+
+.ch3l-strip-info p {
+  margin: 0 0 6px;
+}
+
+.ch3l-matrix {
+  overflow-x: auto;
+}
+
+.ch3l-muted {
+  color: var(--muted);
+}
+
+.ch3l-ok,
+.ch3l-bad {
+  font-weight: 750;
+}
+
+.ch3l-ok {
+  color: var(--accent-strong);
+}
+
+.ch3l-bad {
+  color: var(--coral);
+}
+
+/* Prediction gate */
+.ch3l-predict {
+  display: grid;
+  gap: 10px;
+  padding: 14px 16px;
+  border: 1px solid color-mix(in srgb, var(--gold) 45%, var(--line));
+  border-radius: 12px;
+  background: color-mix(in srgb, var(--gold) 7%, var(--surface-solid));
+}
+
+.ch3l-predict-q {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: 10px;
+  align-items: start;
+}
+
+.ch3l-predict-q > span {
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: var(--gold);
+  color: #fff;
+  font-size: 12px;
+  font-weight: 750;
+}
+
+body.dark .ch3l-predict-q > span {
+  color: #0e121b;
+}
+
+.ch3l-predict-q p {
+  margin: 0;
+  line-height: 1.7;
+}
+
+.ch3l-predict-options {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.ch3l-predict-options button {
+  padding: 7px 12px;
+  border: 1px solid var(--line-strong);
+  border-radius: 10px;
+  background: var(--surface-solid);
+  color: var(--text);
+  font: inherit;
+  font-size: 13.5px;
+  cursor: pointer;
+}
+
+.ch3l-predict-options button.is-right {
+  border-color: var(--accent);
+  background: var(--accent-soft);
+  color: var(--accent-strong);
+}
+
+.ch3l-predict-options button.is-wrong {
+  border-color: var(--coral);
+  color: var(--coral);
+}
+
+.ch3l-predict-feedback {
+  margin: 0;
+  color: var(--muted);
+  line-height: 1.7;
+}
+
+.ch3l-result {
+  padding: 14px 16px;
+  border-left: 4px solid var(--accent);
+  border-radius: 0 12px 12px 0;
+  background: var(--accent-soft);
+}
+
+.ch3l-result p {
+  margin: 6px 0 0;
+  line-height: 1.75;
+}
+
+/* Formal blocks */
+.ch3l-formal {
+  display: grid;
+  gap: 12px;
+  min-width: 0;
+}
+
+.ch3l-formal > * {
+  min-width: 0;
+}
+
+.ch3l-theorem {
+  padding: 16px 18px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: var(--surface-solid);
+}
+
+.ch3l-theorem h3 {
+  margin: 0 0 8px;
+  font-size: 16px;
+}
+
+.ch3l-theorem p {
+  margin: 0;
+  color: var(--muted);
+  line-height: 1.8;
+}
+
+.ch3l-theorem-math {
+  margin: 6px 0 10px;
+  overflow-x: auto;
+}
+
+.ch3l-pitfalls {
+  padding: 14px 18px;
+  border: 1px solid color-mix(in srgb, var(--coral) 30%, var(--line));
+  border-radius: 12px;
+  background: color-mix(in srgb, var(--coral) 5%, var(--surface-solid));
+}
+
+.ch3l-pitfalls h3 {
+  margin: 0 0 6px;
+  font-size: 15px;
+}
+
+.ch3l-pitfalls ul {
+  margin: 0;
+  padding-left: 20px;
+  line-height: 1.8;
+}
+
+@media (max-width: 900px) {
+  .ch3l-body,
+  .ch3l-pair,
+  .ch3l-strip {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 640px) {
+  .ch3l-lab {
+    padding: 14px;
+  }
+
+  .ch3l-controls {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Chapter 4 §6 elementary-matrix lab (reuses the ch3l lab chrome). */
+.el6-stage {
+  min-width: 0;
+  overflow: hidden;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: linear-gradient(180deg, var(--canvas-paper-top, #fbfcfb), var(--canvas-paper-bottom, #f3f6f4));
+}
+
+body.dark .el6-stage {
+  background: linear-gradient(180deg, rgba(205, 215, 240, 0.05), rgba(205, 215, 240, 0.02));
+}
+
+.el6-canvas {
+  display: block;
+  width: 100%;
+  height: clamp(300px, 40vw, 420px);
+}
+
+.el6-steps {
+  display: grid;
+  gap: 6px;
+  margin: 0;
+  padding-left: 20px;
+}
+
+.el6-steps li {
+  color: var(--muted);
+  line-height: 1.6;
+}
+
+.el6-steps .el6-why {
+  display: block;
+  font-size: 13px;
+}
+
+.el6-steps li.is-done {
+  color: var(--accent-strong);
+}
+
+.el6-steps li.is-next {
+  color: var(--text);
+  font-weight: 650;
+}

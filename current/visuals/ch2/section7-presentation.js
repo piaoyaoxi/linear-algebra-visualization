@@ -86,7 +86,7 @@
         ctx.stroke();
         ctx.setLineDash([]);
         ctx.fillStyle = palette.text;
-        ctx.font = "600 12px system-ui, sans-serif";
+        ctx.font = "600 12px 'LA Serif Latin', 'LA Serif SC', 'Songti SC', serif";
         ctx.fillText("沿 a₂ 方向滑到 x₁a₁", (target.x + slid.x) / 2 + 7, (target.y + slid.y) / 2 - 7);
         ctx.restore();
       } else {
@@ -104,13 +104,13 @@
         ctx.lineTo(pB.x, pB.y);
         ctx.stroke();
         ctx.fillStyle = palette.text;
-        ctx.font = "600 12px system-ui, sans-serif";
+        ctx.font = "600 12px 'LA Serif Latin', 'LA Serif SC', 'Songti SC', serif";
         ctx.fillText("列空间", view.origin.x + 10, view.origin.y + 18);
         ctx.restore();
       }
       ctx.save();
       ctx.fillStyle = palette.text;
-      ctx.font = "600 12px system-ui, sans-serif";
+      ctx.font = "600 12px 'LA Serif Latin', 'LA Serif SC', 'Songti SC', serif";
       ctx.fillText("b", target.x + 8, target.y - 7);
       ctx.restore();
     }

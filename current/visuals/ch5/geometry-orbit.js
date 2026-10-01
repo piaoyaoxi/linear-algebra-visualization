@@ -225,7 +225,7 @@
     arrow(ctx, origin, yAxis, palette.text);
     arrow(ctx, origin, zAxis, palette.text);
     ctx.fillStyle = palette.muted;
-    ctx.font = "600 12px ui-sans-serif, system-ui, sans-serif";
+    ctx.font = "600 12px 'LA Serif Latin', 'LA Serif SC', 'Songti SC', serif";
     ctx.fillText("x₁", xAxis.x + 5, xAxis.y + 2);
     ctx.fillText("x₂", yAxis.x - 18, yAxis.y + 2);
     ctx.fillText("q", zAxis.x + 6, zAxis.y + 2);

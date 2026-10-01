@@ -8,7 +8,6 @@
   --accent: #087d71;
   --on-image: #fffdf8;
   --serif: "LA Serif Latin", "LA Serif SC", "Songti SC", "STSong", "Source Han Serif SC", "Noto Serif SC", "Noto Serif CJK SC", "SimSun", serif;
-  --sans: -apple-system, BlinkMacSystemFont, "SF Pro Text", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", "Segoe UI", sans-serif;
   --ease-out: cubic-bezier(0.2, 0.7, 0.2, 1);
   color-scheme: light;
 }
@@ -30,7 +29,7 @@ body {
   overflow-x: hidden;
   background: var(--paper);
   color: var(--ink);
-  font-family: var(--sans);
+  font-family: var(--serif);
   -webkit-font-smoothing: antialiased;
   text-rendering: optimizeLegibility;
 }

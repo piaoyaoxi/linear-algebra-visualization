@@ -157,11 +157,11 @@
         d.segment([X(LO) - 0.3, AXIS], [X(HI) + 0.3, AXIS], "muted", { width: 1.3 });
         for (let t = LO; t <= HI; t += 1) {
           d.segment([X(t), AXIS - 0.06], [X(t), AXIS + 0.06], "muted", { width: 1.2 });
-          d.text([X(t), AXIS], minus(t), "muted", { dy: 14, align: "center", font: "600 12px Inter, sans-serif" });
+          d.text([X(t), AXIS], minus(t), "muted", { dy: 14, align: "center", font: "600 12px 'LA Serif Latin', 'LA Serif SC', 'Songti SC', serif" });
         }
-        d.text([X(HI) + 0.3, AXIS], "λ₀", "muted", { dy: -12, align: "right", font: "650 13px Inter, sans-serif" });
+        d.text([X(HI) + 0.3, AXIS], "λ₀", "muted", { dy: -12, align: "right", font: "650 13px 'LA Serif Latin', 'LA Serif SC', 'Songti SC', serif" });
         if (!open) {
-          d.text([0, 0.6], "先在上方作出预测", "faint", { align: "center", font: "650 14px Inter, 'PingFang SC', sans-serif" });
+          d.text([0, 0.6], "先在上方作出预测", "faint", { align: "center", font: "650 14px 'LA Serif Latin', 'LA Serif SC', 'Songti SC', serif" });
           return;
         }
         const pts = [];
@@ -170,17 +170,17 @@
           pts.push([X(lam), AXIS + yScale * M().toNumber(P.evalAt(det, F(`${Math.round(lam * 400)}/400`)))]);
         }
         d.polyline(pts, "accent", { width: 2.4 });
-        d.text([X(HI) - 0.2, Math.min(d.halfH - 0.3, pts[pts.length - 1][1])], `|M(λ)|`, "accent", { align: "right", dy: -10, font: "700 13px Inter, sans-serif" });
+        d.text([X(HI) - 0.2, Math.min(d.halfH - 0.3, pts[pts.length - 1][1])], `|M(λ)|`, "accent", { align: "right", dy: -10, font: "700 13px 'LA Serif Latin', 'LA Serif SC', 'Songti SC', serif" });
         /* rank track below the axis */
         const TRACK = AXIS - 0.55;
-        d.text([X(LO), TRACK], `秩 ${n}`, "muted", { align: "left", dy: 16, font: "650 12px Inter, 'PingFang SC', sans-serif" });
+        d.text([X(LO), TRACK], `秩 ${n}`, "muted", { align: "left", dy: 16, font: "650 12px 'LA Serif Latin', 'LA Serif SC', 'Songti SC', serif" });
         d.segment([X(LO), TRACK], [X(HI), TRACK], "accent", { width: 3, alpha: 0.55 });
         roots.forEach((root) => {
           const rr = M().rankOf(P.evalMatrix(Mx, root));
           const rx = X(M().toNumber(root));
           d.point([rx, TRACK], "coral", { r: 5 });
           d.point([rx, AXIS], "coral", { r: 4 });
-          d.text([rx, TRACK], `秩 ${rr}`, "coral", { dy: 16, align: "center", font: "700 12px Inter, 'PingFang SC', sans-serif" });
+          d.text([rx, TRACK], `秩 ${rr}`, "coral", { dy: 16, align: "center", font: "700 12px 'LA Serif Latin', 'LA Serif SC', 'Songti SC', serif" });
         });
         const xv = X(M().toNumber(x0));
         const yv = AXIS + yScale * M().toNumber(P.evalAt(det, x0));
@@ -902,7 +902,7 @@
         const L = layout(d);
         const ease = (t) => 1 - (1 - t) ** 3;
         const t = ease(anim.t);
-        const font = (px, wt = 650) => `${wt} ${px}px Inter, 'PingFang SC', sans-serif`;
+        const font = (px, wt = 650) => `${wt} ${px}px 'LA Serif Latin', 'LA Serif SC', 'Songti SC', serif`;
         const write = (x, y, str, color, opts = {}) => d.text(at(d, x, y), str, color, { font: font(opts.size || 13, opts.weight), align: opts.align || "left" });
         if (state.view === "inv") {
           const { rows } = preset;
@@ -1139,7 +1139,7 @@
         const ctx = d.ctx;
         const [w, h] = size(d);
         const write = (x, y, str, color, opts = {}) =>
-          d.text(at(d, x, y), str, color, { font: `${opts.weight || 650} ${opts.size || 13}px Inter, 'PingFang SC', sans-serif`, align: opts.align || "left" });
+          d.text(at(d, x, y), str, color, { font: `${opts.weight || 650} ${opts.size || 13}px 'LA Serif Latin', 'LA Serif SC', 'Songti SC', serif`, align: opts.align || "left" });
         const narrow = w < 520;
         const towerW = narrow ? w * 0.58 : w * 0.56;
         const gapY = Math.min(96, (h - 110) / Math.max(top, 3));
@@ -1214,7 +1214,7 @@
             ctx.restore();
             const idx = len - lv + 1;
             ctx.save();
-            ctx.font = `750 ${narrow ? 12 : 14}px Inter, 'PingFang SC', sans-serif`;
+            ctx.font = `750 ${narrow ? 12 : 14}px 'LA Serif Latin', 'LA Serif SC', 'Songti SC', serif`;
             ctx.textAlign = "center";
             ctx.textBaseline = "middle";
             ctx.fillStyle = on ? (d.pal.dark ? "#0e121b" : "#ffffff") : d.color("faint");
@@ -1348,7 +1348,7 @@
         const xs = [w * 0.18, w * 0.5, w * 0.82];
         const R = narrow ? 22 : 28;
         const write = (x, yy, str, color, opts = {}) =>
-          d.text(at(d, x, yy), str, color, { font: `${opts.weight || 700} ${opts.size || 14}px Inter, 'PingFang SC', sans-serif`, align: opts.align || "center" });
+          d.text(at(d, x, yy), str, color, { font: `${opts.weight || 700} ${opts.size || 14}px 'LA Serif Latin', 'LA Serif SC', 'Songti SC', serif`, align: opts.align || "center" });
         const arrowHead = (x, yy, ang, color) => {
           ctx.beginPath();
           ctx.moveTo(x, yy);

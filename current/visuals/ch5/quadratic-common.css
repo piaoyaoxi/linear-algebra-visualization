@@ -326,7 +326,7 @@
   border-radius: 9px;
   background: var(--surface-solid);
   color: var(--text);
-  font: 700 13px ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font: 700 13px var(--font-serif);
 }
 
 .ch5-cell.is-hot,

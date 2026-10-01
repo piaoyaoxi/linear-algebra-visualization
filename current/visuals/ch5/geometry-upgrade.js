@@ -56,9 +56,9 @@
       ctx.stroke();
     });
     const o = project(0,0,0); arrow(ctx,o,project(1.65,0,0),p.text,1.3); arrow(ctx,o,project(0,1.65,0),p.text,1.3); arrow(ctx,o,project(0,0,2.1),p.text,1.3);
-    ctx.fillStyle=p.muted; ctx.font="600 12px ui-sans-serif,system-ui"; ctx.fillText("x₁",project(1.65,0,0).x+4,project(1.65,0,0).y); ctx.fillText("x₂",project(0,1.65,0).x-17,project(0,1.65,0).y); ctx.fillText("q",project(0,0,2.1).x+5,project(0,0,2.1).y);
+    ctx.fillStyle=p.muted; ctx.font="600 12px 'LA Serif Latin', 'LA Serif SC', 'Songti SC', serif"; ctx.fillText("x₁",project(1.65,0,0).x+4,project(1.65,0,0).y); ctx.fillText("x₂",project(0,1.65,0).x-17,project(0,1.65,0).y); ctx.fillText("q",project(0,0,2.1).x+5,project(0,0,2.1).y);
     if (point) { const z=M().qForm(A,point), a=project(point[0],point[1],0), b=project(point[0],point[1],z); ctx.strokeStyle=p.coral; ctx.setLineDash([4,4]); ctx.beginPath(); ctx.moveTo(a.x,a.y); ctx.lineTo(b.x,b.y); ctx.stroke(); ctx.setLineDash([]); ctx.fillStyle=p.coral; ctx.beginPath(); ctx.arc(b.x,b.y,5,0,TAU); ctx.fill(); }
-    ctx.fillStyle=p.surface; ctx.globalAlpha=.9; ctx.fillRect(14,14,Math.min(290,width-28),34); ctx.globalAlpha=1; ctx.fillStyle=p.text; ctx.font="800 14px ui-sans-serif,system-ui"; ctx.fillText(title,26,36);
+    ctx.fillStyle=p.surface; ctx.globalAlpha=.9; ctx.fillRect(14,14,Math.min(290,width-28),34); ctx.globalAlpha=1; ctx.fillStyle=p.text; ctx.font="800 14px 'LA Serif Latin', 'LA Serif SC', 'Songti SC', serif"; ctx.fillText(title,26,36);
   }
 
   function contour(canvas, A, caption) { M().drawContours(canvas, A, { caption, levels: [-2,-1,-.5,.5,1,2] }); }
@@ -68,7 +68,7 @@
     const p=M().getPalette(), cx=width/2, cy=height/2, r=Math.min(width,height)*.31, values=[];
     ctx.fillStyle=p.soft; ctx.fillRect(0,0,width,height);
     for(let i=0;i<240;i+=1){const th=TAU*i/240,q=M().qForm(A,[Math.cos(th),Math.sin(th)]);values.push(q);ctx.strokeStyle=q>1e-4?p.pos:q<-1e-4?p.neg:p.coral;ctx.lineWidth=7;ctx.beginPath();ctx.arc(cx,cy,r,th,th+TAU/240+.015);ctx.stroke();}
-    const min=Math.min(...values), max=Math.max(...values); ctx.fillStyle=p.text;ctx.font="800 22px ui-sans-serif,system-ui";ctx.textAlign="center";ctx.fillText(min>0?"全部 > 0":min===0?"接触 0":"出现 < 0",cx,cy-2);ctx.fillStyle=p.muted;ctx.font="12px ui-sans-serif,system-ui";ctx.fillText(`min ${fmt(min)} · max ${fmt(max)}`,cx,cy+22);ctx.textAlign="left";
+    const min=Math.min(...values), max=Math.max(...values); ctx.fillStyle=p.text;ctx.font="800 22px 'LA Serif Latin', 'LA Serif SC', 'Songti SC', serif";ctx.textAlign="center";ctx.fillText(min>0?"全部 > 0":min===0?"接触 0":"出现 < 0",cx,cy-2);ctx.fillStyle=p.muted;ctx.font="12px 'LA Serif Latin', 'LA Serif SC', 'Songti SC', serif";ctx.fillText(`min ${fmt(min)} · max ${fmt(max)}`,cx,cy+22);ctx.textAlign="left";
   }
 
   function counts(inn){return `<div class="qv-counts"><span>正<strong>${inn.p}</strong></span><span>负<strong>${inn.q}</strong></span><span>零<strong>${inn.zero}</strong></span></div>`;}

@@ -203,7 +203,7 @@
       render();
     }
 
-    function drawText(text, x, y, color, font = "600 13px Inter, 'PingFang SC', sans-serif", align = "left") {
+    function drawText(text, x, y, color, font = "600 13px 'LA Serif Latin', 'LA Serif SC', 'Songti SC', serif", align = "left") {
       ctx.save();
       ctx.font = font;
       ctx.textAlign = align;
@@ -236,7 +236,7 @@
         const names = options.axisNames || ["x₁", "x₂", "x₃"];
         [[1, 0, 0], [0, 1, 0], [0, 0, 1]].forEach((e, i) => {
           prims.push({ kind: "seg", a: V.mul(e, -L), b: V.mul(e, L), color: pal.muted, width: 1, alpha: 0.55 });
-          labels.push({ p: V.mul(e, L * 1.08), text: names[i], color: pal.muted, font: "600 12px Inter, sans-serif" });
+          labels.push({ p: V.mul(e, L * 1.08), text: names[i], color: pal.muted, font: "600 12px 'LA Serif Latin', 'LA Serif SC', 'Songti SC', serif" });
         });
       }
 
@@ -277,7 +277,7 @@
           const from = o.from || [0, 0, 0];
           if (V.len(V.sub(o.to, from)) < 1e-9) continue;
           prims.push({ kind: "arrow", a: from, b: o.to, color, width: o.width || 2.8, alpha: o.alpha ?? 1 });
-          if (o.label) labels.push({ p: o.labelAt || V.add(o.to, V.mul(V.norm(V.sub(o.to, from)), 0.28)), text: o.label, color, font: "700 14px Inter, sans-serif" });
+          if (o.label) labels.push({ p: o.labelAt || V.add(o.to, V.mul(V.norm(V.sub(o.to, from)), 0.28)), text: o.label, color, font: "700 14px 'LA Serif Latin', 'LA Serif SC', 'Songti SC', serif" });
         } else if (o.type === "point") {
           prims.push({ kind: "dot", p: o.p, color, r: o.r || 5, hollow: o.hollow });
           if (o.label) labels.push({ p: o.p, text: o.label, color, dx: 10, dy: -10 });

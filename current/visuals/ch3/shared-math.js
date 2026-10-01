@@ -487,7 +487,7 @@
       if (label) {
         ctx.save();
         ctx.fillStyle = color;
-        ctx.font = "750 12px ui-sans-serif, system-ui";
+        ctx.font = "750 12px 'LA Serif Latin', 'LA Serif SC', 'Songti SC', serif";
         ctx.fillText(label, x1 + 9, y1 - 9);
         ctx.restore();
       }
@@ -529,7 +529,7 @@
     }
 
     if (label) {
-      ctx.font = "760 12px ui-sans-serif, system-ui";
+      ctx.font = "760 12px 'LA Serif Latin', 'LA Serif SC', 'Songti SC', serif";
       const metrics = ctx.measureText(label);
       const padX = 7;
       const boxW = metrics.width + padX * 2;
@@ -569,7 +569,7 @@
     ctx.arc(x, y, radius, 0, Math.PI * 2);
     ctx.fill();
     if (label) {
-      ctx.font = "700 12px ui-sans-serif, system-ui";
+      ctx.font = "700 12px 'LA Serif Latin', 'LA Serif SC', 'Songti SC', serif";
       ctx.fillText(label, x + 8, y - 8);
     }
     ctx.restore();

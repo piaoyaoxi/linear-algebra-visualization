@@ -434,8 +434,8 @@
           ctx.stroke();
           ctx.restore();
           if (names) {
-            d.text([halfW() * 0.93, 0], names[0], "muted", { dy: -10, font: "600 12px Inter, sans-serif", isAxisName: true });
-            d.text([0, halfH() * 0.92], names[1], "muted", { dx: 8, font: "600 12px Inter, sans-serif", isAxisName: true });
+            d.text([halfW() * 0.93, 0], names[0], "muted", { dy: -10, font: "600 12px 'LA Serif Latin', 'LA Serif SC', 'Songti SC', serif", isAxisName: true });
+            d.text([0, halfH() * 0.92], names[1], "muted", { dx: 8, font: "600 12px 'LA Serif Latin', 'LA Serif SC', 'Songti SC', serif", isAxisName: true });
           }
         },
         line(p, dir, color, opts = {}) {
@@ -491,7 +491,7 @@
           if (opts.label) {
             const ux = Math.cos(ang);
             const uy = Math.sin(ang);
-            d.text(to, opts.label, color, { dx: ux * 16 + (opts.ldx || 0), dy: uy * 16 + (opts.ldy || 0), font: "700 14px Inter, 'PingFang SC', sans-serif", align: "center" });
+            d.text(to, opts.label, color, { dx: ux * 16 + (opts.ldx || 0), dy: uy * 16 + (opts.ldy || 0), font: "700 14px 'LA Serif Latin', 'LA Serif SC', 'Songti SC', serif", align: "center" });
           }
         },
         point(p, color, opts = {}) {
@@ -551,7 +551,7 @@
         text(p, str, color, opts = {}) {
           const [x, y] = P(p);
           ctx.save();
-          ctx.font = opts.font || "600 13px Inter, 'PingFang SC', sans-serif";
+          ctx.font = opts.font || "600 13px 'LA Serif Latin', 'LA Serif SC', 'Songti SC', serif";
           ctx.textAlign = opts.align || "left";
           ctx.textBaseline = "middle";
           let tx = x + (opts.dx ?? 0) + (opts.px ?? 0);

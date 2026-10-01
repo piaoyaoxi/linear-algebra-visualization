@@ -103,7 +103,7 @@
       ctx.strokeStyle = color; ctx.fillStyle = color; ctx.lineWidth = 2.6;
       ctx.beginPath(); ctx.moveTo(x0, y0); ctx.lineTo(x1 - Math.cos(a) * 8, y1 - Math.sin(a) * 8); ctx.stroke();
       ctx.beginPath(); ctx.moveTo(x1, y1); ctx.lineTo(x1 - Math.cos(a - 0.45) * 11, y1 - Math.sin(a - 0.45) * 11); ctx.lineTo(x1 - Math.cos(a + 0.45) * 11, y1 - Math.sin(a + 0.45) * 11); ctx.closePath(); ctx.fill();
-      ctx.font = "700 13px Inter, sans-serif"; ctx.fillText(label, x1 + 6, y1 - 6);
+      ctx.font = "700 13px 'LA Serif Latin', 'LA Serif SC', 'Songti SC', serif"; ctx.fillText(label, x1 + 6, y1 - 6);
     };
     arrow(P(1, 0), accent, opts.e1 || "Ee₁");
     arrow(P(0, 1), coral, opts.e2 || "Ee₂");

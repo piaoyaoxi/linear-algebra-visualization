@@ -61,7 +61,7 @@
       else d.line(p, u, color, { width: zero ? 1.8 : 1.1, alpha: zero ? 0.85 : 0.5 });
       if (zero && opts.zeroLabel) {
         const r = -Math.min(d.halfW, d.halfH) * 0.72;
-        d.text([u[0] * r, u[1] * r], opts.zeroLabel, opts.zeroColor || color, { dx: 10, align: "left", font: "700 12.5px Inter, 'PingFang SC', sans-serif" });
+        d.text([u[0] * r, u[1] * r], opts.zeroLabel, opts.zeroColor || color, { dx: 10, align: "left", font: "700 12.5px 'LA Serif Latin', 'LA Serif SC', 'Songti SC', serif" });
       }
     }
     if (!opts.label) return;
@@ -91,7 +91,7 @@
       labels = labelsOn(edge);
     }
     labels.forEach(({ k, q }) =>
-      d.text(q, `${opts.label}=${minus(k)}`, color, { align: edge === "right" ? "right" : "center", dy: -8, font: "650 12px Inter, 'PingFang SC', sans-serif" }),
+      d.text(q, `${opts.label}=${minus(k)}`, color, { align: edge === "right" ? "right" : "center", dy: -8, font: "650 12px 'LA Serif Latin', 'LA Serif SC', 'Songti SC', serif" }),
     );
   }
 

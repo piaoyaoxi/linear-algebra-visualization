@@ -34,7 +34,7 @@
     ctx.lineWidth = options.lineWidth || 1;
     ctx.stroke();
     ctx.fillStyle = options.textColor || palette.text;
-    ctx.font = `${options.weight || 650} ${options.fontSize || 13}px ui-sans-serif, system-ui, sans-serif`;
+    ctx.font = `${options.weight || 650} ${options.fontSize || 13}px 'LA Serif Latin', 'LA Serif SC', 'Songti SC', serif`;
     ctx.textAlign = "center";
     ctx.textBaseline = "middle";
     ctx.fillText(text, x + width / 2, y + height / 2 + 0.5);
@@ -99,7 +99,7 @@
     function drawDegreeLabels(ctx, geometry, y, palette) {
       ctx.save();
       ctx.fillStyle = palette.muted;
-      ctx.font = `${geometry.step < 72 ? 11 : 12}px ui-sans-serif, system-ui, sans-serif`;
+      ctx.font = `${geometry.step < 72 ? 11 : 12}px 'LA Serif Latin', 'LA Serif SC', 'Songti SC', serif`;
       ctx.textAlign = "center";
       ctx.textBaseline = "middle";
       for (let d = geometry.degree; d >= 0; d -= 1) {
@@ -122,7 +122,7 @@
       ctx.lineWidth = options.lineWidth || 1;
       ctx.stroke();
       ctx.fillStyle = options.textColor || palette.text;
-      ctx.font = `${options.weight || 680} ${geometry.step < 68 ? 12 : 14}px ui-sans-serif, system-ui, sans-serif`;
+      ctx.font = `${options.weight || 680} ${geometry.step < 68 ? 12 : 14}px 'LA Serif Latin', 'LA Serif SC', 'Songti SC', serif`;
       ctx.textAlign = "center";
       ctx.textBaseline = "middle";
       ctx.fillText(M().formatR(value), x, y + 0.5);
@@ -141,7 +141,7 @@
       ctx.save();
       ctx.globalAlpha = options.alpha ?? 1;
       ctx.fillStyle = options.labelColor || palette.muted;
-      ctx.font = `700 ${geometry.step < 68 ? 11 : 13}px ui-sans-serif, system-ui, sans-serif`;
+      ctx.font = `700 ${geometry.step < 68 ? 11 : 13}px 'LA Serif Latin', 'LA Serif SC', 'Songti SC', serif`;
       ctx.textAlign = "right";
       ctx.textBaseline = "middle";
       ctx.fillText(label, geometry.left - 14, y);
@@ -247,7 +247,7 @@
       ctx.save();
       ctx.globalAlpha = productAlpha;
       ctx.fillStyle = palette.muted;
-      ctx.font = `700 ${geometry.step < 68 ? 11 : 13}px ui-sans-serif, system-ui, sans-serif`;
+      ctx.font = `700 ${geometry.step < 68 ? 11 : 13}px 'LA Serif Latin', 'LA Serif SC', 'Songti SC', serif`;
       ctx.textAlign = "right";
       ctx.textBaseline = "middle";
       ctx.fillText("商项×g", geometry.left - 14, 220);
@@ -272,7 +272,7 @@
       ctx.save();
       ctx.globalAlpha = productAlpha;
       ctx.fillStyle = palette.coral;
-      ctx.font = `800 ${geometry.step < 68 ? 20 : 24}px ui-sans-serif, system-ui, sans-serif`;
+      ctx.font = `800 ${geometry.step < 68 ? 20 : 24}px 'LA Serif Latin', 'LA Serif SC', 'Songti SC', serif`;
       ctx.textAlign = "right";
       ctx.textBaseline = "middle";
       ctx.fillText("−", geometry.left - 20, 220);
@@ -604,7 +604,7 @@
       ctx.lineWidth = options.hollow ? 3 : 2;
       ctx.stroke();
       ctx.fillStyle = palette.text;
-      ctx.font = "700 13px ui-sans-serif, system-ui, sans-serif";
+      ctx.font = "700 13px 'LA Serif Latin', 'LA Serif SC', 'Songti SC', serif";
       ctx.textAlign = "left";
       ctx.textBaseline = "middle";
       ctx.fillText(label, point.x + 12, point.y + (options.labelBelow ? 16 : -12));
@@ -643,7 +643,7 @@
       drawArrow(ctx, cam.toScreen(bounds.xMin, 0), xEnd, palette.muted);
       drawArrow(ctx, cam.toScreen(0, bounds.yMin), yEnd, palette.muted);
       ctx.fillStyle = palette.muted;
-      ctx.font = "12px ui-sans-serif, system-ui, sans-serif";
+      ctx.font = "12px 'LA Serif Latin', 'LA Serif SC', 'Songti SC', serif";
       ctx.fillText("Re", xEnd.x - 24, xEnd.y - 10);
       ctx.fillText("Im", yEnd.x + 10, yEnd.y + 18);
 
@@ -677,7 +677,7 @@
         drawPoint(ctx, projection, "a", palette, { color: palette.muted, hollow: true, radius: 5, labelBelow: true });
         const midB = { x: projection.x + 8, y: (projection.y + alpha.y) / 2 };
         ctx.fillStyle = palette.muted;
-        ctx.font = "650 12px ui-sans-serif, system-ui, sans-serif";
+        ctx.font = "650 12px 'LA Serif Latin', 'LA Serif SC', 'Songti SC', serif";
         ctx.fillText("b", midB.x, midB.y);
         const radiusMid = { x: (origin.x + alpha.x) / 2, y: (origin.y + alpha.y) / 2 };
         ctx.fillText("|α|", radiusMid.x + 8, radiusMid.y - 8);
@@ -697,7 +697,7 @@
         const fontSize = width < 520 ? 11 : 12.5;
         const texts = [`α+ᾱ = 2a = ${formatNumber(2 * a)}`, `αᾱ = |α|² = ${formatNumber(modulusSquared)}`];
         ctx.save();
-        ctx.font = `650 ${fontSize}px ui-sans-serif, system-ui, sans-serif`;
+        ctx.font = `650 ${fontSize}px 'LA Serif Latin', 'LA Serif SC', 'Songti SC', serif`;
         const boxWidth = Math.min(width - 32, Math.max(...texts.map((t) => ctx.measureText(t).width)) + 28);
         ctx.restore();
         const y0 = height - 2 * 30 - 14;

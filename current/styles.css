@@ -668,7 +668,8 @@ body.dark .sidebar-foot {
   border-radius: var(--radius);
   background: rgba(7, 13, 18, 0.62);
   color: rgba(245, 251, 252, 0.9);
-  font-family: ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
+  font-family: var(--font-serif);
+  font-variant-numeric: tabular-nums;
   font-size: 13px;
   line-height: 1.45;
 }
@@ -988,7 +989,8 @@ body.dark canvas {
   border: 1px solid var(--line);
   border-radius: var(--radius);
   background: var(--surface-soft);
-  font-family: ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
+  font-family: var(--font-serif);
+  font-variant-numeric: tabular-nums;
   font-size: 14px;
   line-height: 1.6;
 }
@@ -1061,7 +1063,8 @@ body.dark .segmented button.is-active {
   border: 1px solid var(--line);
   border-radius: var(--radius);
   background: var(--surface-soft);
-  font-family: ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
+  font-family: var(--font-serif);
+  font-variant-numeric: tabular-nums;
   font-size: 14px;
   line-height: 1.7;
   white-space: nowrap;
@@ -1189,7 +1192,8 @@ body.dark .vector-plane {
   border-right: 1px solid var(--line);
   border-bottom: 1px solid var(--line);
   background: var(--surface-soft);
-  font-family: ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
+  font-family: var(--font-serif);
+  font-variant-numeric: tabular-nums;
   font-weight: 780;
 }
 
@@ -1293,7 +1297,8 @@ details[open] > .disclose-panel {
 }
 
 .formula {
-  font-family: ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
+  font-family: var(--font-serif);
+  font-variant-numeric: tabular-nums;
 }
 
 .page-toc {
@@ -2137,7 +2142,8 @@ h3 {
   border-radius: 7px;
   background: rgba(7, 139, 126, 0.1);
   color: #006f65;
-  font-family: ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
+  font-family: var(--font-serif);
+  font-variant-numeric: tabular-nums;
   font-size: 0.92em;
   font-weight: 760;
   line-height: 1.2;
@@ -3473,29 +3479,20 @@ input[type="range"] {
 }
 
 /*
- * Reading text is set in the serif (body); controls, navigation and small labels
- * stay in the sans, which is clearer at small sizes.
+ * The whole site is set in the serif. Controls get it explicitly (browsers give
+ * buttons and inputs a system font), and buttons a slightly heavier weight so they
+ * stay clear at small sizes.
  */
 button,
 input,
 select,
 textarea {
-  font-family: var(--font-sans) !important;
+  font-family: var(--font-serif) !important;
 }
 
-label,
-.topbar,
-.sidebar,
-nav,
-.nav-section,
-.nav-chapter,
-.tag,
-.eyebrow,
-.section-kicker,
-.meta-row,
-[class*="chip"],
-[class*="badge"],
-[class*="kicker"],
-[class*="toolbar"] {
-  font-family: var(--font-sans);
+button,
+[class*="chip"] {
+  font-weight: 600 !important;
 }
+
+

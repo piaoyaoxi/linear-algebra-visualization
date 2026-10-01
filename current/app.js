@@ -224,6 +224,17 @@ function init() {
   renderRoute();
   window.addEventListener("hashchange", renderRoute);
 
+  // Canvas text is drawn with whatever font is ready at that moment. If the serif web
+  // font arrives after the first paint and the student has not touched anything yet,
+  // draw the page again so canvas labels match the text.
+  if (document.fonts && !document.fonts.check('16px "LA Serif SC"')) {
+    let touched = false;
+    ["pointerdown", "keydown"].forEach((type) => window.addEventListener(type, () => { touched = true; }, { once: true, capture: true }));
+    document.fonts.load('16px "LA Serif SC"').then(() => {
+      if (!touched) renderRoute();
+    });
+  }
+
   // Enable expand transitions after the first open-state is applied (no boot pop).
   window.requestAnimationFrame(() => {
     window.requestAnimationFrame(() => {
@@ -1076,7 +1087,7 @@ function renderHeroVisual() {
           <circle cx="420" cy="96" r="6" />
           <circle cx="220" cy="250" r="5" />
         </g>
-        <g font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, monospace" font-size="22" fill="#f5fbfc" opacity="0.92">
+        <g font-family="'LA Serif Latin', 'LA Serif SC', serif" font-size="22" fill="#f5fbfc" opacity="0.92">
           <text x="82" y="82">A · v</text>
           <text x="336" y="250">rank A</text>
         </g>
@@ -1648,7 +1659,7 @@ function drawArrow(ctx, from, to, color, label, alpha = 1, width = 3) {
   ctx.closePath();
   ctx.fill();
   if (label) {
-    ctx.font = "700 13px Inter, 'PingFang SC', sans-serif";
+    ctx.font = "700 13px 'LA Serif Latin', 'LA Serif SC', 'Songti SC', serif";
     ctx.fillText(label, to.x + 8, to.y - 8);
   }
   ctx.restore();

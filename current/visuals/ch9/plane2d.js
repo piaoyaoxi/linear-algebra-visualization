@@ -110,7 +110,7 @@
 
     function text(str, x, y, color, font, align = "left") {
       ctx.save();
-      ctx.font = font || "650 13px Inter, 'PingFang SC', sans-serif";
+      ctx.font = font || "650 13px 'LA Serif Latin', 'LA Serif SC', 'Songti SC', serif";
       ctx.textAlign = align;
       ctx.textBaseline = "middle";
       // Keep labels inside the canvas on narrow screens.
@@ -189,19 +189,19 @@
       ctx.stroke();
       ctx.restore();
       const names = options.axisNames || ["x₁", "x₂"];
-      text(names[0], size.w - 10, o.y - 12, pal.muted, "600 12px Inter, sans-serif", "right");
-      text(names[1], o.x + 8, 12, pal.muted, "600 12px Inter, sans-serif");
+      text(names[0], size.w - 10, o.y - 12, pal.muted, "600 12px 'LA Serif Latin', 'LA Serif SC', 'Songti SC', serif", "right");
+      text(names[1], o.x + 8, 12, pal.muted, "600 12px 'LA Serif Latin', 'LA Serif SC', 'Songti SC', serif");
       if (options.ticks) {
         const step = options.ticks;
         for (let x = Math.ceil(f.view.x[0] / step) * step; x <= f.view.x[1]; x += step) {
           if (Math.abs(x) < 1e-9) continue;
           const q = f.toScreen([x, 0]);
-          text(String(Math.round(x * 100) / 100), q.x, Math.min(size.h - 10, o.y + 12), pal.faint, "500 11px Inter, sans-serif", "center");
+          text(String(Math.round(x * 100) / 100), q.x, Math.min(size.h - 10, o.y + 12), pal.faint, "500 11px 'LA Serif Latin', 'LA Serif SC', 'Songti SC', serif", "center");
         }
         for (let y = Math.ceil(f.view.y[0] / step) * step; y <= f.view.y[1]; y += step) {
           if (Math.abs(y) < 1e-9) continue;
           const q = f.toScreen([0, y]);
-          text(String(Math.round(y * 100) / 100), Math.max(14, o.x - 8), q.y, pal.faint, "500 11px Inter, sans-serif", "right");
+          text(String(Math.round(y * 100) / 100), Math.max(14, o.x - 8), q.y, pal.faint, "500 11px 'LA Serif Latin', 'LA Serif SC', 'Songti SC', serif", "right");
         }
       }
 
@@ -286,7 +286,7 @@
                 q: { x: b.x + Math.cos(ang) * 12, y: b.y + Math.sin(ang) * 12 },
                 text: obj.label,
                 color,
-                font: "700 14px Inter, sans-serif",
+                font: "700 14px 'LA Serif Latin', 'LA Serif SC', 'Songti SC', serif",
                 align: Math.cos(ang) < -0.3 ? "right" : "left",
               });
             }

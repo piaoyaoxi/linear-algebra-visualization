@@ -169,6 +169,7 @@
     lab.append(toolbar, gateHost, body, result);
     const plane = K.plane2d(stage, { extent: 3.2, hint: "拖动 x（每次四分之一格）", label: "线性函数的等值线" });
     let flow = null;
+    gateHost.addEventListener("click", () => redraw());
 
     controls.innerHTML = `<h4>f 在基上的值</h4>${rangeRow(`f(ε₁)`, "a1", 3, -3, 3)}${rangeRow(`f(ε₂)`, "a2", 1, -3, 3)}`;
     const sliders = [controls.querySelector("[data-a1]"), controls.querySelector("[data-a2]")];
@@ -185,10 +186,11 @@
       const x = fv(state.x);
       const value = dot(a, x);
       const zeroFn = a.every(isZero);
+      const open = Boolean(flow?.predicted);
       plane.setDraw((d) => {
         d.grid(undefined, { alpha: 0.4 });
         d.axes();
-        if (!zeroFn) {
+        if (open && !zeroFn) {
           levelLines(d, state.a, { label: "f", zeroColor: "gold", zeroLabel: "f=0（ker f）" });
           d.line(state.x, [-state.a[1], state.a[0]], "coral", { width: 1.6, dash: [6, 5], alpha: 0.75 });
         }
@@ -197,8 +199,12 @@
         d.segment([0, 0], [state.x[0], 0], "muted", { width: 1.2, dash: [3, 4] });
         d.segment([state.x[0], 0], state.x, "muted", { width: 1.2, dash: [3, 4] });
         d.arrow([0, 0], state.x, "coral", { width: 2.8 });
-        pointLabel(d, state.x, `f(x)=${minus(M().formatF(value))}`, "coral", -14);
+        if (open) pointLabel(d, state.x, `f(x)=${minus(M().formatF(value))}`, "coral", -14);
       });
+      if (!open) {
+        info.innerHTML = `<h4>读数</h4><p class="ch7l-muted">先在上方作出预测，等值线和读数随后出现。</p>`;
+        return;
+      }
       const sum = `${paren(x[0])}\\cdot${paren(a[0])}+${paren(x[1])}\\cdot${paren(a[1])}`;
       let html = `<h4>读数</h4><div>${texD(`f(x)=x_1f(\\varepsilon_1)+x_2f(\\varepsilon_2)`)}${texD(`=${sum}=${lf(value)}`)}</div>`;
       if (zeroFn) {
@@ -452,6 +458,7 @@
     lab.append(toolbar, modes, gateHost, body, result);
     const plane = K.plane2d(stage, { extent: 3.2, hint: "拖动 x、y（每次四分之一格）", label: "双线性函数的等值线" });
     let flow = null;
+    gateHost.addEventListener("click", () => redraw());
 
     const A = () => K.mat(BILINEAR_PRESETS[state.key].A);
 
@@ -463,13 +470,14 @@
       const coef = fixY ? K.matVec(a, y) : K.matVec(K.transpose(a), x);
       const value = dot(x, K.matVec(a, y));
       const free = fixY ? "x" : "y";
+      const open = Boolean(flow?.predicted);
       plane.setDraw((d) => {
         d.grid(undefined, { alpha: 0.35 });
         d.axes();
-        if (!K.isZeroVec(coef)) levelLines(d, coef.map(num), { label: "f", color: "blue", zeroColor: "gold", zeroLabel: "f=0" });
+        if (open && !K.isZeroVec(coef)) levelLines(d, coef.map(num), { label: "f", color: "blue", zeroColor: "gold", zeroLabel: "f=0" });
         d.arrow([0, 0], state.y, "coral", { width: fixY ? 3.4 : 2.4, label: "y" });
         d.arrow([0, 0], state.x, "accent", { width: fixY ? 2.4 : 3.4, label: "x" });
-        pointLabel(d, fixY ? state.x : state.y, `f(x,y)=${minus(M().formatF(value))}`, "text", 16);
+        if (open) pointLabel(d, fixY ? state.x : state.y, `f(x,y)=${minus(M().formatF(value))}`, "text", 16);
       });
       const fixedName = fixY ? "y" : "x";
       const coefTex = fixY ? "Ay" : "A^Tx";
@@ -479,7 +487,7 @@
         ? `<li class="ch7l-bad">${tex(coefTex)} 是零向量：对一切 ${free}，f(x,y)=0。</li>`
         : `<li>${tex(`f(x,y)=${formTex(coef, [`${free}_1`, `${free}_2`])}`)}</li>`;
       html += `<li>${tex(`f(x,y)=x^TAy=${lf(value)}`)}</li></ul>`;
-      readCard.innerHTML = html;
+      readCard.innerHTML = open ? html : `<h4>固定 ${fixedName}，f 是 ${free} 的线性函数</h4><p class="ch7l-muted">先在上方作出预测，等值线和读数随后出现。</p>`;
       const detA = K.det(a);
       matCard.innerHTML = `<h4>度量矩阵</h4><div>${texD(`A=${K.latexMatrix(a)},\\quad |A|=${lf(detA)}`)}</div>
         <p><span class="ch10l-badge${isZero(detA) ? " is-off" : ""}">${isZero(detA) ? "退化" : "非退化"}</span> <span class="ch7l-muted">${K.eqMat(a, K.transpose(a)) ? "A=Aᵀ，f 对称" : "A≠Aᵀ，f(x,y) 与 f(y,x) 一般不同"}</span></p>`;
@@ -567,6 +575,7 @@
     lab.append(toolbar, gateHost, body, result);
     const plane = K.plane2d(stage, { extent: 3.6, hint: "拖动 x、y（每次四分之一格）", label: "有向面积与线性变换" });
     let flow = null;
+    gateHost.addEventListener("click", () => redraw());
     let raf = 0;
 
     const omega = (u, v) => det2(u, v);
@@ -593,14 +602,16 @@
       const keeps = M().eq(detK, F(1));
       const kx = app(Kt, state.x);
       const ky = app(Kt, state.y);
+      const open = Boolean(flow?.predicted);
       plane.setDraw((d) => {
         d.grid(undefined, { alpha: 0.35 });
         d.axes();
         const sum = (u, v) => [u[0] + v[0], u[1] + v[1]];
         d.polyline([[0, 0], state.x, sum(state.x, state.y), state.y], "muted", { close: true, dash: [5, 5], width: 1.4 });
-        d.polygon([[0, 0], kx, sum(kx, ky), ky], keeps ? "accent" : "coral", { width: 1.8, fillAlpha: 0.16 });
-        d.arrow([0, 0], kx, keeps ? "accent" : "coral", { width: 2.6, label: "Kx" });
-        d.arrow([0, 0], ky, keeps ? "accent" : "coral", { width: 2.6, label: "Ky" });
+        const tone = open ? (keeps ? "accent" : "coral") : "blue";
+        d.polygon([[0, 0], kx, sum(kx, ky), ky], tone, { width: 1.8, fillAlpha: 0.16 });
+        d.arrow([0, 0], kx, tone, { width: 2.6, label: "Kx" });
+        d.arrow([0, 0], ky, tone, { width: 2.6, label: "Ky" });
         d.arrow([0, 0], state.x, "text", { width: 1.8, alpha: 0.75, label: "x" });
         d.arrow([0, 0], state.y, "text", { width: 1.8, alpha: 0.75, label: "y" });
       });
@@ -610,8 +621,12 @@
         <table class="ch7l-table"><thead><tr><th></th><th>x, y</th><th>Kx, Ky</th></tr></thead><tbody>
         <tr><td>长度</td><td>${fmt(len(state.x))}, ${fmt(len(state.y))}</td><td>${fmt(len(Kxn))}, ${fmt(len(Kyn))}</td></tr>
         <tr><td>夹角</td><td>${fmt(angle(state.x, state.y))}°</td><td>${fmt(angle(Kxn, Kyn))}°</td></tr>
-        <tr><td>ω</td><td>${minus(M().formatF(w0))}</td><td>${minus(M().formatF(w1))}</td></tr></tbody></table>
+        <tr><td>ω</td><td>${open ? minus(M().formatF(w0)) : "?"}</td><td>${open ? minus(M().formatF(w1)) : "?"}</td></tr></tbody></table>
         ${isZero(w0) ? `<p class="ch7l-muted">x、y 共线，平行四边形压扁，ω(x,y)=0。</p>` : ""}`;
+      if (!open) {
+        matCard.innerHTML = `<h4>变换矩阵</h4><div>${texD(`K=${K.latexMatrix(Kf)}`)}</div><p class="ch7l-muted">先在上方作出预测，ω 的读数随后出现。</p>`;
+        return;
+      }
       matCard.innerHTML = `<h4>变换矩阵</h4><div>${texD(`K=${K.latexMatrix(Kf)},\\quad |K|=${lf(detK)}`)}</div>
         <div>${texD(`\\omega(Kx,Ky)=|K|\\,\\omega(x,y)`)}</div>
         <p><span class="ch10l-badge${keeps ? "" : " is-off"}">${keeps ? "K 保持 ω" : "K 不保持 ω"}</span></p>`;

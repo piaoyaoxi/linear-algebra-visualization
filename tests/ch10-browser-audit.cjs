@@ -115,13 +115,13 @@ async function operateLab(page, route, label) {
     await page.waitForTimeout(150);
   };
   // Acting first must not open the conclusion.
-  const before = await lab.locator(".ch7l-side").innerText();
   await act();
   assert(await lab.locator(".ch7l-result").isHidden(), `${label}: conclusion opened without a prediction`);
-  assert((await lab.locator(".ch7l-side").innerText()) !== before || route.act.chip != null, `${label}: control did not change the readout`);
   await lab.locator(".ch7l-predict-options [data-i]").first().click();
   assert(await lab.locator(".ch7l-predict-feedback").isVisible(), `${label}: prediction feedback missing`);
+  const before = await lab.locator(".ch7l-side").innerText();
   await act();
+  assert((await lab.locator(".ch7l-side").innerText()) !== before || route.act.chip != null, `${label}: control did not change the readout`);
   assert(await lab.locator(".ch7l-result").isVisible(), `${label}: conclusion did not open after predicting and acting`);
 }
 

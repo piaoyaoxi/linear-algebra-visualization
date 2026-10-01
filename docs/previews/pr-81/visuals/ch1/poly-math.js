@@ -369,17 +369,24 @@
     return { ctx, width, height };
   }
 
-  function camera(width, height, bounds = { xMin: -4, xMax: 4, yMin: -4, yMax: 4 }) {
+  /*
+   * stretch: x and y get their own scale so a function graph fills the canvas;
+   * otherwise one scale for both (needed for the complex plane).
+   */
+  function camera(width, height, bounds = { xMin: -4, xMax: 4, yMin: -4, yMax: 4 }, opts = {}) {
     const pad = 34;
-    const scale = Math.min((width - 2 * pad) / (bounds.xMax - bounds.xMin), (height - 2 * pad) / (bounds.yMax - bounds.yMin));
-    const ox = width / 2 - ((bounds.xMin + bounds.xMax) / 2) * scale;
-    const oy = height / 2 + ((bounds.yMin + bounds.yMax) / 2) * scale;
-    /* the part of the plane actually on screen (wider than bounds on a wide canvas) */
-    const view = { xMin: (0 - ox) / scale, xMax: (width - ox) / scale, yMin: (oy - height) / scale, yMax: oy / scale };
+    const sxFit = (width - 2 * pad) / (bounds.xMax - bounds.xMin);
+    const syFit = (height - 2 * pad) / (bounds.yMax - bounds.yMin);
+    const scale = Math.min(sxFit, syFit);
+    const sx = opts.stretch ? sxFit : scale;
+    const sy = opts.stretch ? syFit : scale;
+    const ox = width / 2 - ((bounds.xMin + bounds.xMax) / 2) * sx;
+    const oy = height / 2 + ((bounds.yMin + bounds.yMax) / 2) * sy;
+    const view = { xMin: (0 - ox) / sx, xMax: (width - ox) / sx, yMin: (oy - height) / sy, yMax: oy / sy };
     return {
-      bounds, scale, view,
-      toScreen: (x, y) => ({ x: ox + x * scale, y: oy - y * scale }),
-      toWorld: (x, y) => ({ x: (x - ox) / scale, y: (oy - y) / scale }),
+      bounds, scale: sx, view,
+      toScreen: (x, y) => ({ x: ox + x * sx, y: oy - y * sy }),
+      toWorld: (x, y) => ({ x: (x - ox) / sx, y: (oy - y) / sy }),
     };
   }
 
@@ -412,7 +419,7 @@
   function drawPolynomial(canvas, p, options = {}) {
     const { ctx, width, height } = setupCanvas(canvas);
     const palette = getPalette();
-    const cam = camera(width, height, options.bounds);
+    const cam = camera(width, height, options.bounds, { stretch: true });
     drawAxes(ctx, width, height, cam, palette);
     const polys = options.series || [{ p, color: palette.accent, width: 2.5 }];
     for (const series of polys) {
@@ -443,6 +450,9 @@
     if (options.caption) {
       ctx.fillStyle = palette.muted;
       ctx.font = "12px ui-sans-serif, system-ui, sans-serif";
+      ctx.lineWidth = 4;
+      ctx.strokeStyle = palette.surface;
+      ctx.strokeText(options.caption, 14, height - 12);
       ctx.fillText(options.caption, 14, height - 12);
     }
     return cam;
@@ -451,7 +461,7 @@
   function drawRootAxis(canvas, roots, options = {}) {
     const { ctx, width, height } = setupCanvas(canvas);
     const palette = getPalette();
-    const cam = camera(width, height, options.bounds || { xMin: -4, xMax: 4, yMin: -1.4, yMax: 1.4 });
+    const cam = camera(width, height, options.bounds || { xMin: -4, xMax: 4, yMin: -1.4, yMax: 1.4 }, { stretch: true });
     drawAxes(ctx, width, height, cam, palette);
     roots.forEach((root) => {
       const base = cam.toScreen(root.x, 0);

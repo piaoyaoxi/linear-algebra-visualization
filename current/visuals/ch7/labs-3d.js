@@ -83,7 +83,7 @@
         question: "点 (a₀,a₁,a₂) 代表 a₀+a₁x+a₂x²。D 的核（常数）与值域（次数 ≤1 的多项式）是什么关系？",
         options: [
           { text: "核含在值域里，两者的和不是整个空间", correct: true },
-          { text: "两者互补，P[x]₃=DV⊕D⁻¹(0)", why: "看图：a₀ 轴躺在 a₀a₁ 平面里。" },
+          { text: "两者互补，P[x]₃=DV⊕D⁻¹(0)", why: "常数 1 在核里，同时 1=D(x) 也在值域里。" },
           { text: "两者只交于零向量", why: "常数 1 既在核里，也等于 D(x)。" },
           { text: "值域是整个 P[x]₃", why: "x² 不是任何次数 <3 的多项式的导数。" },
         ],
@@ -91,6 +91,19 @@
       },
     },
   };
+
+  /* n1 x1 + n2 x2 + n3 x3 without zero terms or unit coefficients. */
+  function planeLatex(n) {
+    const terms = [];
+    n.forEach((c, i) => {
+      if (M().isZero(c)) return;
+      const neg = c.n < 0;
+      const mag = M().absF(c);
+      const coef = M().eq(mag, M().F(1)) ? "" : lf(mag);
+      terms.push(`${terms.length ? (neg ? "-" : "+") : neg ? "-" : ""}${coef}x_${i + 1}`);
+    });
+    return terms.join("") || "0";
+  }
 
   function kernelLab(root) {
     const lab = K.labShell(root, {
@@ -141,8 +154,9 @@
         const objs = [];
         const imObj = spanObject(im, "accent", { label: state.key === "deriv" ? "DV" : "σV" });
         const kerObj = spanObject(ker, "coral", { label: state.key === "deriv" ? "D⁻¹(0)" : "σ⁻¹(0)" });
-        if (imObj) objs.push(imObj);
-        if (kerObj) objs.push(kerObj);
+        // The labelled spans are the answer to the prediction: draw them afterwards.
+        if (flow?.revealed && imObj) objs.push(imObj);
+        if (flow?.revealed && kerObj) objs.push(kerObj);
         // the fibre through x: x + ker
         if (ker.length === 1) objs.push({ type: "line", p: state.x, dir: numVec(ker[0]), color: "violet", width: 1.4, dash: [6, 5], alpha: 0.8 });
         if (ker.length === 2) {
@@ -163,9 +177,13 @@
       } else {
         html += `<p>${tex(`x=${K.latexRow(x)}`)}，${tex(`\\sigma x=${K.latexRow(sx)}`)}</p><p>${tex(`x'=${K.latexRow(xp)}`)}，${tex(`\\sigma x'=${K.latexRow(sxp)}`)}</p>`;
       }
-      html += same ? `<p class="ch7l-ok">σx′ = σx：x′ − x 在核里。</p>` : `<p class="ch7l-bad">σx′ ≠ σx</p>`;
+      const D = state.key === "deriv";
+      const s = D ? "D" : "\\sigma";
+      html += same
+        ? `<p class="ch7l-ok">${tex(D ? "Dg=Df" : "\\sigma x'=\\sigma x")}：${tex(D ? "g-f" : "x'-x")} 在核里。</p>`
+        : `<p class="ch7l-bad">${tex(D ? "Dg\\ne Df" : "\\sigma x'\\ne\\sigma x")}</p>`;
       if (flow?.revealed) {
-        html += `<p>${tex(`\\dim\\sigma^{-1}(0)=${ker.length}`)}（${dimName(ker.length)}），${tex(`\\dim\\sigma V=${im.length}`)}（${dimName(im.length)}），${tex(`\\dim(\\sigma V\\cap\\sigma^{-1}(0))=${cap}`)}</p>`;
+        html += `<p>${tex(`\\dim ${s}^{-1}(0)=${ker.length}`)}（${dimName(ker.length)}），${tex(`\\dim ${s}V=${im.length}`)}（${dimName(im.length)}），${tex(`\\dim(${s}V\\cap ${s}^{-1}(0))=${cap}`)}</p>`;
       }
       info.innerHTML = html;
     }
@@ -332,10 +350,11 @@
 
     function redraw() {
       const r = analyse();
+      const kind = state.kind; // the closure must match the analysis it was built from
       const W = r.inv ? "gold" : "accent";
       scene.setObjects(() => {
         const objs = [];
-        if (state.kind === "line") {
+        if (kind === "line") {
           const u = numVec(r.u);
           const Au = numVec(r.Au);
           objs.push({ type: "line", dir: u, color: W, width: 2.6, label: "W" });
@@ -362,7 +381,7 @@
         html += `<p>${tex(`W=L(${K.latexRow(r.u)}^{T})`)}，${tex(`Au=${K.latexRow(r.Au)}^{T}`)}</p>`;
         html += r.inv ? `<p class="ch7l-ok">AW=W：u 是特征向量</p>` : `<p class="ch7l-muted">AW 与 W 夹角 ${angleBetween(numVec(r.u), numVec(r.Au)).toFixed(1)}°</p>`;
       } else {
-        html += `<p>${tex(`W:\\ ${lf(r.n[0])}x_1${r.n[1].n < 0 ? "" : "+"}${lf(r.n[1])}x_2${r.n[2].n < 0 ? "" : "+"}${lf(r.n[2])}x_3=0`)}</p>`;
+        html += `<p>${tex(`W:\\ ${planeLatex(r.n)}=0`)}</p>`;
         if (r.inv) {
           html += `<p class="ch7l-ok">AW=W：W 是不变子空间</p>`;
           html += r.hasEig ? `<p class="ch7l-muted">W 中含有特征向量（x₃ 轴方向）。</p>` : `<p class="ch7l-muted">W 中没有实特征向量：每条直线都被转走，平面整体不动。</p>`;
@@ -403,8 +422,8 @@
     function setKind(kind) {
       state.kind = kind;
       kindBar.querySelectorAll("button").forEach((b) => b.classList.toggle("is-active", b.dataset.key === kind));
-      setHandles();
       redraw();
+      setHandles();
     }
 
     K.chips(kindBar, [["line", "候选直线"], ["plane", "候选平面"]], setKind, state.kind);

@@ -122,7 +122,7 @@
         const trB = M().add(B[0][0], B[1][1]);
         html += `<p>${tex(`\\operatorname{tr}A=${lf(tr)}`)}，${tex(`\\operatorname{tr}B=${lf(trB)}`)}；${tex(`|A|=${lf(K.det(A))}`)}，${tex(`|B|=${lf(K.det(B))}`)}。</p>`;
         html += K.isDiagonal(B)
-          ? `<p class="ch7l-ok">B 是对角矩阵：ση₁ 只沿 η₁，ση₂ 只沿 η₂。</p>`
+          ? `<p class="ch7l-ok">B 是对角矩阵：每个 ση_j 都是 η_j 的倍数。</p>`
           : `<p class="ch7l-muted">B 的第 j 列 = ση_j 在 η₁, η₂ 下的坐标（右图虚线）。</p>`;
       }
       strip.innerHTML = html;

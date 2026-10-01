@@ -1156,14 +1156,26 @@
         const [w, h] = size(d);
         const write = (x, y, str, color, opts = {}) =>
           d.text(at(d, x, y), str, color, { font: `${opts.weight || 650} ${opts.size || 13}px Inter, 'PingFang SC', sans-serif`, align: opts.align || "left" });
-        if (!open) {
-          write(w / 2, h / 2, "先在上方作出预测", "faint", { align: "center", size: 14 });
-          return;
-        }
         const narrow = w < 520;
         const towerW = narrow ? w * 0.58 : w * 0.56;
         const gapY = Math.min(96, (h - 110) / Math.max(top, 3));
         const baseY = h - 54;
+        if (!open) {
+          /* only the empty bottom layer: it says nothing about how many chains there are */
+          const yTop = baseY - 0.5 * gapY;
+          ctx.save();
+          roundRect(ctx, 12, yTop, towerW - 12, gapY - 8, 12);
+          ctx.fillStyle = d.alpha(d.color("accent"), 0.04);
+          ctx.fill();
+          ctx.setLineDash([5, 5]);
+          ctx.lineWidth = 1.2;
+          ctx.strokeStyle = d.alpha(d.color("accent"), 0.45);
+          ctx.stroke();
+          ctx.restore();
+          write(20, yTop + 14, "ker N", "faint", { size: 12, weight: 700 });
+          write(towerW / 2 + 6, yTop - 28, "先在上方作出预测，再一层层往上搭", "faint", { align: "center", size: 13 });
+          return;
+        }
         const dx = Math.min(86, (towerW - 70) / Math.max(chains.length, 2));
         const x0 = (narrow ? 64 : 92) + dx / 2;
         const R = narrow ? 13 : 16;

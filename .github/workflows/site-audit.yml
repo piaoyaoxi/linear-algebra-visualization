@@ -6,6 +6,7 @@ on:
       - "current/**"
       - ".github/scripts/site-audit.mjs"
       - ".github/workflows/site-audit.yml"
+      - ".github/scripts/check-font-coverage.py"
   workflow_dispatch:
 
 permissions:
@@ -21,6 +22,11 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 20
+
+      - name: Check serif font coverage
+        run: |
+          pip install --quiet fonttools brotli
+          python3 .github/scripts/check-font-coverage.py
 
       - name: Install Playwright
         run: |

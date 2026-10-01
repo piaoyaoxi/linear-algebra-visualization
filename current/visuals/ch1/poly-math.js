@@ -369,15 +369,24 @@
     return { ctx, width, height };
   }
 
-  function camera(width, height, bounds = { xMin: -4, xMax: 4, yMin: -4, yMax: 4 }) {
+  /*
+   * stretch: x and y get their own scale so a function graph fills the canvas;
+   * otherwise one scale for both (needed for the complex plane).
+   */
+  function camera(width, height, bounds = { xMin: -4, xMax: 4, yMin: -4, yMax: 4 }, opts = {}) {
     const pad = 34;
-    const scale = Math.min((width - 2 * pad) / (bounds.xMax - bounds.xMin), (height - 2 * pad) / (bounds.yMax - bounds.yMin));
-    const ox = width / 2 - ((bounds.xMin + bounds.xMax) / 2) * scale;
-    const oy = height / 2 + ((bounds.yMin + bounds.yMax) / 2) * scale;
+    const sxFit = (width - 2 * pad) / (bounds.xMax - bounds.xMin);
+    const syFit = (height - 2 * pad) / (bounds.yMax - bounds.yMin);
+    const scale = Math.min(sxFit, syFit);
+    const sx = opts.stretch ? sxFit : scale;
+    const sy = opts.stretch ? syFit : scale;
+    const ox = width / 2 - ((bounds.xMin + bounds.xMax) / 2) * sx;
+    const oy = height / 2 + ((bounds.yMin + bounds.yMax) / 2) * sy;
+    const view = { xMin: (0 - ox) / sx, xMax: (width - ox) / sx, yMin: (oy - height) / sy, yMax: oy / sy };
     return {
-      bounds, scale,
-      toScreen: (x, y) => ({ x: ox + x * scale, y: oy - y * scale }),
-      toWorld: (x, y) => ({ x: (x - ox) / scale, y: (oy - y) / scale }),
+      bounds, scale: sx, view,
+      toScreen: (x, y) => ({ x: ox + x * sx, y: oy - y * sy }),
+      toWorld: (x, y) => ({ x: (x - ox) / sx, y: (oy - y) / sy }),
     };
   }
 
@@ -392,10 +401,17 @@
     if (origin.y >= 0 && origin.y <= height) { ctx.moveTo(12, origin.y); ctx.lineTo(width - 12, origin.y); }
     if (origin.x >= 0 && origin.x <= width) { ctx.moveTo(origin.x, 12); ctx.lineTo(origin.x, height - 12); }
     ctx.stroke();
-    for (let x = Math.ceil(cam.bounds.xMin); x <= Math.floor(cam.bounds.xMax); x++) {
-      if (x === 0) continue;
+    const span = cam.view ? [cam.view.xMin + 0.3, cam.view.xMax - 0.3] : [cam.bounds.xMin, cam.bounds.xMax];
+    const tickStep = cam.scale < 22 ? 2 : 1;
+    for (let x = Math.ceil(span[0]); x <= Math.floor(span[1]); x++) {
+      if (x === 0 || x % tickStep) continue;
       const p = cam.toScreen(x, 0);
-      if (p.y >= 0 && p.y <= height) ctx.fillText(String(x), p.x - 3, p.y + 14);
+      if (p.y < 0 || p.y > height) continue;
+      ctx.textAlign = "center";
+      ctx.lineWidth = 3;
+      ctx.strokeStyle = palette.surface;
+      ctx.strokeText(String(x), p.x, p.y + 15);
+      ctx.fillText(String(x), p.x, p.y + 15);
     }
     ctx.restore();
   }
@@ -403,7 +419,7 @@
   function drawPolynomial(canvas, p, options = {}) {
     const { ctx, width, height } = setupCanvas(canvas);
     const palette = getPalette();
-    const cam = camera(width, height, options.bounds);
+    const cam = camera(width, height, options.bounds, { stretch: true });
     drawAxes(ctx, width, height, cam, palette);
     const polys = options.series || [{ p, color: palette.accent, width: 2.5 }];
     for (const series of polys) {
@@ -414,9 +430,10 @@
       let penDown = false;
       const samples = options.samples || Math.max(280, Math.round(width));
       for (let i = 0; i <= samples; i++) {
-        const x = cam.bounds.xMin + (i / samples) * (cam.bounds.xMax - cam.bounds.xMin);
+        const xr = options.clipToBounds ? cam.bounds : cam.view;
+        const x = xr.xMin + (i / samples) * (xr.xMax - xr.xMin);
         const y = evalPolyNum(series.p, x);
-        if (!Number.isFinite(y) || y < cam.bounds.yMin - 1 || y > cam.bounds.yMax + 1) { penDown = false; continue; }
+        if (!Number.isFinite(y) || y < cam.view.yMin - 1 || y > cam.view.yMax + 1) { penDown = false; continue; }
         const point = cam.toScreen(x, y);
         if (!penDown) { ctx.moveTo(point.x, point.y); penDown = true; } else ctx.lineTo(point.x, point.y);
       }
@@ -433,6 +450,9 @@
     if (options.caption) {
       ctx.fillStyle = palette.muted;
       ctx.font = "12px ui-sans-serif, system-ui, sans-serif";
+      ctx.lineWidth = 4;
+      ctx.strokeStyle = palette.surface;
+      ctx.strokeText(options.caption, 14, height - 12);
       ctx.fillText(options.caption, 14, height - 12);
     }
     return cam;
@@ -441,7 +461,7 @@
   function drawRootAxis(canvas, roots, options = {}) {
     const { ctx, width, height } = setupCanvas(canvas);
     const palette = getPalette();
-    const cam = camera(width, height, options.bounds || { xMin: -4, xMax: 4, yMin: -1.4, yMax: 1.4 });
+    const cam = camera(width, height, options.bounds || { xMin: -4, xMax: 4, yMin: -1.4, yMax: 1.4 }, { stretch: true });
     drawAxes(ctx, width, height, cam, palette);
     roots.forEach((root) => {
       const base = cam.toScreen(root.x, 0);
@@ -455,7 +475,10 @@
       }
       ctx.fillStyle = palette.text;
       ctx.font = "12px ui-sans-serif, system-ui, sans-serif";
-      if (root.label) ctx.fillText(root.label, base.x + 8, base.y + 18);
+      /* above the stacked dots, so it never lands on a tick number */
+      ctx.textAlign = "center";
+      if (root.label) ctx.fillText(root.label, base.x, base.y - ((root.m || 1) - 1) * 7 - 13);
+      ctx.textAlign = "left";
     });
     return cam;
   }

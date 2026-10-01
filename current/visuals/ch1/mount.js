@@ -11,7 +11,7 @@
   };
 
   addStylesheet("./visuals/ch1/refinement.css?v=ch1-final2");
-  addStylesheet("./visuals/ch1/learning-design.css?v=ch1-learning1");
+  addStylesheet("./visuals/ch1/learning-design.css?v=ch1-learning2");
 
   const math = window.Ch1Math;
   if (math) {

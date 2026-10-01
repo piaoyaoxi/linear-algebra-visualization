@@ -724,3 +724,6 @@
     transition: none;
   }
 }
+.ch1-result-band .ch1-status {
+  border-radius: 12px;
+}

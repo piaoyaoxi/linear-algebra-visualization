@@ -18,6 +18,10 @@ defineChapter3Section("solvability", {
     blocks: [
       {
         title: "有解判别定理",
+        ponder: {
+          q: "方程个数比未知量多（例如 5 个方程、3 个未知量），一定无解吗？",
+          a: "不一定。只要 b 落在列空间里就有解；例如 b=0 时总有零解。",
+        },
         tex: String.raw`Ax=b\ \text{有解}\iff b\in\operatorname{span}\{a_1,\dots,a_n\}\iff\operatorname{rank}A=\operatorname{rank}[A\mid b]`,
         text: "b 能由各列表出，加入 b 就不会增加新的方向，秩不变；b 不能由各列表出，它就是一个新方向，秩加 1。增广矩阵只比 A 多一列，所以秩最多多 1。",
       },

@@ -82,7 +82,7 @@ defineChapter2Section("n-order-determinant", {
     { question: "二阶定义中的两个排列分别是什么？", answer: "12 与 21。" },
     { question: "Sarrus 法可以直接推广到四阶吗？", answer: "不能，它只是一种三阶记忆方法。" },
     { question: "一个合法项含有零元素时，它会怎样？", answer: "它仍是定义中的合法项，但数值贡献为 0。" },
-    { question: "上三角矩阵为什么只剩主对角项？", answer: "任何非恒等排列都存在某个 i 使 σ(i)<i，从而选到主对角线下方的零。" },
+    { question: "上三角矩阵为什么只剩主对角项？", answer: "任何非恒等排列都存在某个 i 使 σ(i)&lt;i，从而选到主对角线下方的零。" },
     { question: "行列式在一般 n 维中的几何解释是什么？", answer: "绝对值是 n 维体积倍率，符号记录定向；严格结论以代数定义为基础。" },
   ],
   summary: [

@@ -89,7 +89,7 @@
 
   function renderFormal(section) {
     return `<div class="ch10-formal-flow">
-      <p class="ch10-formal-lead">对偶空间不是另一个几何平面，而是所有线性测量规则组成的空间。对偶基只是其中最精确的一组坐标读取器。</p>
+      <p class="ch10-formal-lead">对偶空间是所有线性测量规则组成的空间。对偶基只是其中最精确的一组坐标读取器。</p>
       <section class="ch10-module" aria-labelledby="dual-definition-title">
         ${renderModuleHeading("01", "对偶空间与自然配对", "先区分对象，再写配对。", "dual-definition-title")}
         <div class="ch10-concept-list">

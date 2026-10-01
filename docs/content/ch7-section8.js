@@ -20,7 +20,7 @@ defineChapter7Section("jordan-form-introduction", {
         title: "若尔当块就是一条链",
         tex: String.raw`J(\lambda,k)=\begin{pmatrix}\lambda&&&\\1&\lambda&&\\&\ddots&\ddots&\\&&1&\lambda\end{pmatrix},\qquad (\sigma-\lambda E)\varepsilon_1=\varepsilon_2,\ \dots,\ (\sigma-\lambda E)\varepsilon_k=0`,
         figure: "jordan-chain",
-        text: "第 j 列表示 σεⱼ=λεⱼ+εⱼ₊₁。链尾 ε_k 满足 σε_k=λε_k，是真正的特征向量；前面的向量要多作用几次 σ−λE 才变成 0。图中两条链给出 J(λ,3)⊕J(λ,1)：两个块，恰有两个线性无关的特征向量 ε₃、ε₄。k=1 时 J(λ,1)=(λ)，全由 1 阶块组成的若尔当形就是对角矩阵。",
+        text: "第 j 列表示 σεⱼ=λεⱼ+εⱼ₊₁。链尾 εₖ 满足 σεₖ=λεₖ，是真正的特征向量；前面的向量要多作用几次 σ−λE 才变成 0。图中两条链给出 J(λ,3)⊕J(λ,1)：两个块，恰有两个线性无关的特征向量 ε₃、ε₄。k=1 时 J(λ,1)=(λ)，全由 1 阶块组成的若尔当形就是对角矩阵。",
       },
       {
         title: "存在与唯一",

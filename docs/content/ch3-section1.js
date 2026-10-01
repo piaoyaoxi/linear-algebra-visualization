@@ -23,10 +23,15 @@ defineChapter3Section("elimination", {
       },
       {
         title: "倍加的几何含义",
+        ponder: {
+          q: `平面 1、2 平行（法向相同、右端 ${texInline("d_1\\ne d_2")}），做 ${texInline("R_2\\leftarrow R_2-R_1")} 会得到什么？`,
+          a: `得到 ${texInline("0=d_2-d_1\\ne0")}：两个平行平面没有交线，转不出新平面，只剩一个矛盾行，方程组无解。`,
+        },
         text: `新方程 ${texInline("R_i+cR_j")} 被所有同时满足 ${texInline("R_i")}、${texInline("R_j")} 的点满足，所以新平面始终含着这两个平面的交线；${texInline("c")} 变化时，新平面绕这条交线转动。选对 ${texInline("c")} 让某个系数变成 0，新平面就与对应的坐标轴平行，这就是“消去一个未知量”。`,
       },
       {
         title: "从阶梯形读出结果",
+        figure: "three-planes",
         tex: String.raw`\begin{array}{l}\text{出现 }[0\ \cdots\ 0\mid d],\ d\ne0\ \Rightarrow\ \text{无解}\\ \text{无矛盾行，每列都有主元}\ \Rightarrow\ \text{唯一解}\\ \text{无矛盾行，有非主元列}\ \Rightarrow\ \text{无穷多解}\end{array}`,
       },
     ],

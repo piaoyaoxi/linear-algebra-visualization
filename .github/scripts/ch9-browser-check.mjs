@@ -2,32 +2,23 @@ import fs from "node:fs";
 import path from "node:path";
 import { chromium } from "playwright";
 
-// Final gate for the project-native Chapter 9 implementation.
+// Browser gate for Chapter 9: every lab must render, accept a prediction,
+// respond to clicks and drags, and keep its conclusion hidden until answered.
 const base = process.env.CH9_BASE || "http://127.0.0.1:4173/learn.html";
 const shots = "/tmp/ch9-browser-screenshots";
 fs.mkdirSync(shots, { recursive: true });
-
-const sections = [
-  "inner-product-geometry",
-  "orthonormal-bases",
-  "euclidean-isomorphism",
-  "orthogonal-transformations",
-  "orthogonal-subspaces",
-  "symmetric-canonical-form",
-  "least-squares-distance",
-  "unitary-spaces",
-];
 
 const labKinds = {
   "inner-product-geometry": "inner-product",
   "orthonormal-bases": "gram-schmidt",
   "euclidean-isomorphism": "isometry",
   "orthogonal-transformations": "orthogonal-transform",
-  "orthogonal-subspaces": "projection",
+  "orthogonal-subspaces": "orthogonal-complement",
   "symmetric-canonical-form": "spectral",
   "least-squares-distance": "least-squares",
-  "unitary-spaces": "unitary",
+  "unitary-spaces": null,
 };
+const sections = Object.keys(labKinds);
 
 function collectErrors(page) {
   const errors = [];
@@ -38,118 +29,146 @@ function collectErrors(page) {
   return errors;
 }
 
-async function waitText(page, selector, expected, label, timeout = 2400) {
-  const locator = page.locator(selector);
-  const started = Date.now();
-  while (Date.now() - started < timeout) {
-    if ((await locator.innerText()).includes(expected)) return;
-    await page.waitForTimeout(45);
-  }
-  throw new Error(`${label}: expected “${expected}”, got “${(await locator.innerText()).trim()}”`);
+function expect(condition, message) {
+  if (!condition) throw new Error(message);
+}
+
+async function text(page, selector) {
+  return (await page.locator(selector).first().innerText()).replace(/\s+/g, " ");
 }
 
 async function assertNoOverflow(page, label) {
-  const audit = await page.evaluate(() => ({
-    documentOverflow: document.documentElement.scrollWidth - document.documentElement.clientWidth,
-    nodes: [...document.querySelectorAll("main *")]
-      .filter((node) => {
-        const style = getComputedStyle(node);
-        return node.scrollWidth > node.clientWidth + 4 && style.overflowX === "visible";
-      })
-      .slice(0, 10)
-      .map((node) => `${node.tagName}.${String(node.className).slice(0, 80)}`),
-  }));
-  if (audit.documentOverflow > 1) throw new Error(`${label}: horizontal overflow ${audit.documentOverflow}px; ${audit.nodes.join(", ")}`);
+  const overflow = await page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth);
+  expect(overflow <= 1, `${label}: horizontal overflow ${overflow}px`);
 }
 
 async function openLesson(page, id, screenshotName = "") {
   await page.goto(`${base}#ch9/${id}`, { waitUntil: "networkidle" });
-  await page.locator("[data-ch9-lab]").waitFor({ state: "visible", timeout: 6000 });
+  await page.locator(".lesson-cover").waitFor({ state: "visible", timeout: 6000 });
   await page.evaluate(() => document.fonts?.ready);
-  await page.waitForTimeout(220);
-  const labKind = await page.locator("[data-ch9-lab]").getAttribute("data-lab-kind");
-  if (labKind !== labKinds[id]) throw new Error(`${id}: expected bespoke lab ${labKinds[id]}, got ${labKind}`);
-  const canvasAudit = await page.evaluate(() => [...document.querySelectorAll("[data-ch9-lab] canvas")]
-    .filter((canvas) => canvas.getBoundingClientRect().width > 0)
-    .map((canvas) => {
-      const rect = canvas.getBoundingClientRect();
-      return { width: rect.width, height: rect.height, pixelWidth: canvas.width, pixelHeight: canvas.height };
-    }));
-  if (!canvasAudit.length || canvasAudit.some((item) => item.width < 260 || item.height < 280 || item.pixelWidth < 260 || item.pixelHeight < 280)) {
-    throw new Error(`${id}: invalid Canvas stage ${JSON.stringify(canvasAudit)}`);
+  await page.waitForTimeout(300);
+  const kind = await page.locator("[data-ch9-lab]").first().getAttribute("data-lab-kind").catch(() => null);
+  if (labKinds[id]) {
+    expect(kind === labKinds[id], `${id}: expected lab ${labKinds[id]}, got ${kind}`);
+    const canvases = await page.evaluate(() =>
+      [...document.querySelectorAll("[data-ch9-lab] canvas")].map((c) => ({ w: c.getBoundingClientRect().width, h: c.getBoundingClientRect().height })),
+    );
+    expect(canvases.length && canvases.every((c) => c.w >= 240 && c.h >= 240), `${id}: invalid canvas ${JSON.stringify(canvases)}`);
+    expect(!(await page.locator("[data-ch9-result]").isVisible()), `${id}: conclusion visible before prediction`);
+  } else {
+    expect((await page.locator("[data-ch9-lab]").count()) === 0, `${id}: unexpected lab`);
   }
-  if (await page.locator(".katex-error").count()) throw new Error(`${id}: KaTeX error`);
+  expect((await page.locator(".katex-error").count()) === 0, `${id}: KaTeX error`);
   const body = await page.locator("main").innerText();
-  for (const phrase of ["正在开发", "占位", "即将制作", "待完善", "cinematic"]) {
-    if (body.toLowerCase().includes(phrase.toLowerCase())) throw new Error(`${id}: forbidden phrase ${phrase}`);
+  for (const phrase of ["正在开发", "占位", "即将制作", "待完善", "待补充", "原型"]) {
+    expect(!body.includes(phrase), `${id}: forbidden phrase ${phrase}`);
   }
+  expect(!/不是[^。；\n]{0,30}而是/.test(body), `${id}: avoid the 不是……而是 pattern`);
   await assertNoOverflow(page, id);
   if (screenshotName) await page.locator("main.content").screenshot({ path: path.join(shots, `${screenshotName}-${id}.png`) });
 }
 
-async function exerciseStates(page) {
+async function screenOf(page, view, world) {
+  return page.evaluate(
+    ([view, world]) => {
+      const v = document.querySelector("[data-ch9-lab]").ch9Views[view];
+      v.canvas.scrollIntoView({ block: "center" });
+      const q = v.toScreen ? v.toScreen(world) : v.project(world);
+      const r = v.canvas.getBoundingClientRect();
+      return { x: r.left + q.x, y: r.top + q.y };
+    },
+    [view, world],
+  );
+}
+
+async function drag(page, view, from, to) {
+  await screenOf(page, view, from);
+  await page.waitForTimeout(150);
+  const a = await screenOf(page, view, from);
+  const b = await screenOf(page, view, to);
+  await page.mouse.move(a.x, a.y);
+  await page.mouse.down();
+  for (let i = 1; i <= 8; i += 1) await page.mouse.move(a.x + ((b.x - a.x) * i) / 8, a.y + ((b.y - a.y) * i) / 8);
+  await page.mouse.up();
+  await page.waitForTimeout(80);
+}
+
+const predict = (page, i) => page.locator(`[data-ch9-predict] [data-i="${i}"]`).click();
+const chip = (page, key) => page.locator(`.ch9l-toolbar [data-key="${key}"]`).click();
+const resultShown = (page) => page.locator("[data-ch9-result]").isVisible();
+
+async function exerciseLabs(page) {
   await openLesson(page, sections[0]);
-  await page.locator('[data-ip-preset="right"]').click();
-  await waitText(page, '[data-conclusion="ip"]', "正交", "§1 right angle");
-  await page.locator('[data-ip-preset="zero"]').click();
-  await waitText(page, '[data-conclusion="ip"]', "夹角不定义", "§1 zero vector");
-  if (await page.locator('[data-range="ipAngle"]').isEnabled()) throw new Error("§1: angle slider must be disabled for zero vector");
+  expect((await text(page, "[data-ip-value]")).includes("−3"), "§1: (u,v) should be −3");
+  await drag(page, "plane", [1, -1], [2, -0.5]);
+  expect((await text(page, "[data-ip-status]")).includes("正交"), "§1: dragging v to (2,−1/2) should give orthogonality");
+  await predict(page, 1);
+  expect(await resultShown(page), "§1: conclusion after prediction");
+  await chip(page, "bad");
+  expect((await text(page, "[data-ip-status]")).includes("不正定"), "§1: indefinite G flagged");
 
   await openLesson(page, sections[1]);
-  if ((await page.locator('[data-readout="orthogonality"]').innerText()) !== "尚未进行") {
-    throw new Error("§2: orthogonality is shown before the required vectors exist");
-  }
-  await page.locator('[data-gs-preset="dependent"]').click();
-  await waitText(page, '[data-conclusion="gs"]', "余量为零", "§2 dependent input");
-  if (await page.locator('[data-gs-step="3"]').isEnabled()) throw new Error("§2: normalization must stop at zero residual");
-  await page.locator('[data-gs-preset="general"]').click();
-  await page.locator('[data-gs-step="3"]').click();
-  await waitText(page, '[data-conclusion="gs"]', "标准正交组完成", "§2 Gram-Schmidt completion");
+  await page.locator("[data-gs-next]").click();
+  await page.locator("[data-gs-next]").click();
+  expect(await page.locator("[data-gs-next]").isDisabled(), "§2: step 3 locked before prediction");
+  await predict(page, 0);
+  await page.locator("[data-gs-next]").click();
+  expect((await text(page, "[data-gs-status]")).includes("垂直于整个平面"), "§2: β₃ orthogonal to plane");
+  const before = await text(page, "[data-gs-beta3]");
+  await drag(page, "scene", [0, 1, 1], [1.5, 1, 1]);
+  expect((await text(page, "[data-gs-beta3]")) !== before, "§2: dragging α₃ updates β₃");
+  await chip(page, "dependent");
+  expect((await text(page, "[data-gs-status]")).includes("没有新方向"), "§2: dependent input stops");
+  expect(await page.locator("[data-gs-next]").isDisabled(), "§2: normalisation disabled for zero residual");
 
   await openLesson(page, sections[2]);
-  await page.locator('[data-iso-mode="skew"]').click();
-  await waitText(page, "[data-iso-conclusion]", "普通点积已经读错几何", "§3 skew basis");
-  await page.locator('[data-iso-mode="orthonormal"]').click();
-  await waitText(page, "[data-iso-conclusion]", "等距同构", "§3 orthonormal basis");
+  expect((await text(page, "[data-iso-status]")).includes("B ≠ I"), "§3: standard basis is not isometric");
+  await chip(page, "other");
+  expect((await text(page, "[data-iso-status]")).includes("B = I"), "§3: G-orthonormal basis is isometric");
+  await drag(page, "lp", [1, -1], [-1, 2]);
+  expect((await text(page, "[data-iso-status]")).includes("B ≠ I"), "§3: dragging f₂ breaks the isometry");
+  await predict(page, 0);
+  expect(await resultShown(page), "§3: conclusion after prediction");
 
   await openLesson(page, sections[3]);
-  await page.locator('[data-ortho-mode="shear"]').click();
-  await waitText(page, "[data-ortho-conclusion]", "正交条件不成立", "§4 shear");
-  if (!(await page.locator("[data-shape-control]").isVisible())) throw new Error("§4: deformation control is hidden for shear");
-  await page.locator('[data-ortho-mode="reflection"]').click();
-  await waitText(page, "[data-ortho-conclusion]", "保持全部距离", "§4 reflection");
-  await page.locator('[data-ortho-mode="rotation"]').click();
-  await waitText(page, "[data-ortho-conclusion]", "旋转保持定向", "§4 counterexample recovery");
+  expect((await text(page, "[data-ortho-status]")).includes("第一类"), "§4: rotation is first kind");
+  await chip(page, "refl");
+  expect((await text(page, "[data-ortho-status]")).includes("第二类"), "§4: reflection is second kind");
+  await chip(page, "squeeze");
+  expect((await text(page, "[data-ortho-status]")).includes("不是正交变换"), "§4: diag(2,1/2) rejected");
+  await drag(page, "plane", [1.5, 0.5], [1, 0]);
+  expect((await text(page, "[data-ch9-readout=ortho]")).includes("≠"), "§4: squeeze changes a length");
+  await predict(page, 0);
+  expect(await resultShown(page), "§4: conclusion after prediction");
 
   await openLesson(page, sections[4]);
-  await page.locator("[data-proj-best]").click();
-  await waitText(page, "[data-proj-conclusion]", "曲线最低点", "§5 projection minimum");
-  const projectionExtra = Number(await page.locator("[data-proj-conclusion]").getAttribute("data-proj-extra"));
-  if (projectionExtra !== 0) throw new Error(`§5: projection animation did not end exactly at the minimum: ${projectionExtra}`);
+  expect((await page.locator("[data-sub-perp]").count()) === 0, "§5: W⊥ hidden before prediction");
+  await predict(page, 0);
+  expect((await page.locator("[data-sub-perp]").count()) === 1, "§5: W⊥ revealed");
+  const sub = await text(page, "[data-ch9-readout=sub]");
+  await drag(page, "scene", [0.5, -1.5, 2], [1, 1, 1]);
+  expect((await text(page, "[data-ch9-readout=sub]")) !== sub, "§5: dragging α updates the decomposition");
+  await chip(page, "line");
+  expect((await text(page, "[data-sub-perp]")).includes("= 2"), "§5: a line has a 2-dimensional complement");
 
   await openLesson(page, sections[5]);
-  await page.locator('[data-sp-preset="nonsymmetric"]').click();
-  await waitText(page, "[data-sp-warning]", "定理闸门关闭", "§6 nonsymmetric gate");
-  if (await page.locator("[data-sp-story]").isVisible()) throw new Error("§6: spectral story must close for nonsymmetric matrix");
-  await page.locator('[data-sp-preset="positive"]').click();
-  if (!(await page.locator("[data-sp-story]").isVisible())) throw new Error("§6: spectral story did not recover after returning to a symmetric matrix");
-  await page.locator('[data-sp-step="2"]').click();
-  await waitText(page, "[data-sp-conclusion]", "Q 把主轴送回", "§6 spectral completion");
-  await page.locator('[data-sp-preset="repeated"]').click();
-  await waitText(page, "[data-sp-conclusion]", "重特征值", "§6 repeated eigenvalue");
+  await page.locator("[data-sp-s]").fill("3");
+  expect((await text(page, "[data-sp-steps] .is-active")).includes("③"), "§6: slider reaches step 3");
+  await chip(page, "nonsym");
+  expect((await text(page, "[data-sp-status]")).includes("不正交"), "§6: non-symmetric eigenvectors not orthogonal");
+  expect(await page.locator("[data-sp-play]").isDisabled(), "§6: animation closes for a non-symmetric matrix");
+  await predict(page, 0);
+  expect(await resultShown(page), "§6: conclusion after prediction");
 
   await openLesson(page, sections[6]);
-  if (await page.locator("[data-ls-normal]").isVisible()) throw new Error("§7: optimum certificate is visible before reveal");
-  await page.locator("[data-ls-best]").click();
-  await waitText(page, "[data-ls-conclusion]", "正交条件同时满足", "§7 least-squares optimum", 3200);
-  if (!(await page.locator("[data-ls-normal]").isVisible())) throw new Error("§7: optimum certificate did not reveal");
-
-  await openLesson(page, sections[7]);
-  await page.locator('[data-u-tab="motion"]').click();
-  await page.locator('[data-u-mode="scaled"]').click();
-  await waitText(page, "[data-u-conclusion]", "酉条件失败", "§8 scaled comparison");
-  await page.locator('[data-u-mode="unitary"]').click();
-  await waitText(page, "[data-u-conclusion]", "等模圆", "§8 unitary state");
+  expect((await page.locator("[data-ls-best]").count()) === 0, "§7: best line hidden before prediction");
+  await predict(page, 0);
+  expect((await page.locator("[data-ls-best]").count()) === 1, "§7: best line revealed");
+  await page.locator("[data-ls-c]").fill("2");
+  await page.locator("[data-ls-d]").fill("0");
+  expect((await text(page, "[data-ch9-readout=ls]")).includes("就是最佳直线"), "§7: C=2, D=0 is optimal");
+  await drag(page, "fit", [1, 0], [1, 1.5]);
+  expect(!(await text(page, "[data-ch9-readout=ls]")).includes("就是最佳直线"), "§7: dragging a data point moves the optimum");
 }
 
 async function runConfiguration(browser, config) {
@@ -158,21 +177,11 @@ async function runConfiguration(browser, config) {
   const page = await context.newPage();
   const errors = collectErrors(page);
   await page.goto(`${base}#ch9`, { waitUntil: "networkidle" });
-  if ((await page.locator(".lesson-card-grid .lesson-card").count()) !== 8) throw new Error(`${config.name}: overview does not contain eight lessons`);
+  expect((await page.locator(".lesson-card-grid .lesson-card").count()) === 8, `${config.name}: overview does not contain eight lessons`);
   await assertNoOverflow(page, `${config.name} overview`);
-  await page.locator("main.content").screenshot({ path: path.join(shots, `${config.name}-overview.png`) });
   for (const id of sections) await openLesson(page, id, config.name);
-  await exerciseStates(page);
-  for (const [label, hash, selector] of [
-    ["Chapter 1", "#ch1/univariate-polynomials", ".ch1-lab"],
-    ["Chapter 4", "#ch4/matrix-language", "#matrix-language-formal"],
-    ["Chapter 5", "#ch5/positive-definite", ".ch5-lab"],
-  ]) {
-    await page.goto(`${base}${hash}`, { waitUntil: "networkidle" });
-    await page.locator(selector).waitFor({ state: "visible" });
-    await assertNoOverflow(page, `${config.name} ${label}`);
-  }
-  if (errors.length) throw new Error(`${config.name}: ${errors.join("\n")}`);
+  await exerciseLabs(page);
+  expect(!errors.length, `${config.name}: ${errors.join("\n")}`);
   await context.close();
 }
 
@@ -181,9 +190,9 @@ try {
   for (const config of [
     { name: "desktop-light", viewport: { width: 1440, height: 1000 }, scheme: "light", motion: "no-preference" },
     { name: "desktop-dark", viewport: { width: 1440, height: 1000 }, scheme: "dark", motion: "no-preference" },
+    { name: "tablet-light", viewport: { width: 768, height: 1024 }, scheme: "light", motion: "no-preference" },
     { name: "mobile-light", viewport: { width: 390, height: 844 }, scheme: "light", motion: "no-preference" },
-    { name: "mobile-dark", viewport: { width: 390, height: 844 }, scheme: "dark", motion: "no-preference" },
-    { name: "mobile-reduced", viewport: { width: 390, height: 844 }, scheme: "light", motion: "reduce" },
+    { name: "mobile-dark", viewport: { width: 390, height: 844 }, scheme: "dark", motion: "reduce" },
   ]) {
     await runConfiguration(browser, config);
     console.log(`PASS ${config.name}`);

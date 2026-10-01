@@ -401,3 +401,105 @@ body.dark .el6-stage {
   color: var(--text);
   font-weight: 650;
 }
+
+/* Chapter 4 §5 block-size lab (reuses the ch3l lab chrome). */
+.blk-cuts {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 10px 18px;
+}
+
+.blk-range {
+  grid-template-columns: 40px minmax(0, 1fr) 44px;
+}
+
+.blk-stage {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+  padding: 16px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: var(--surface-soft);
+}
+
+.blk-mat {
+  display: grid;
+  justify-items: center;
+  gap: 6px;
+}
+
+.blk-mat > span {
+  color: var(--muted);
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.blk-op {
+  color: var(--accent-strong);
+  font-size: 22px;
+}
+
+.blk-grid {
+  border-collapse: collapse;
+  font-variant-numeric: tabular-nums;
+}
+
+.blk-grid td {
+  width: 34px;
+  height: 32px;
+  border: 1px solid var(--line);
+  background: var(--surface-solid);
+  text-align: center;
+  transition: background 160ms ease;
+}
+
+.blk-grid tr.cut-below td {
+  border-bottom: 3px solid var(--coral);
+}
+
+.blk-grid td.cut-right {
+  border-right: 3px solid var(--coral);
+}
+
+.blk-grid td.is-hi {
+  background: var(--accent-soft);
+  color: var(--accent-strong);
+  font-weight: 750;
+}
+
+.blk-grid.is-result td.is-hi {
+  background: color-mix(in srgb, var(--violet, #7258ca) 16%, var(--surface-solid));
+  color: var(--violet, #7258ca);
+}
+
+.blk-readout {
+  display: grid;
+  gap: 6px;
+  padding: 12px 16px;
+  border-radius: 12px;
+  background: var(--surface-soft);
+}
+
+.blk-readout p {
+  margin: 0;
+  line-height: 1.75;
+}
+
+.blk-math {
+  overflow-x: auto;
+}
+
+@media (max-width: 760px) {
+  .blk-cuts {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .blk-grid td {
+    width: 26px;
+    height: 26px;
+    font-size: 13px;
+  }
+}

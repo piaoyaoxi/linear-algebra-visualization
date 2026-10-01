@@ -95,7 +95,7 @@ defineChapter4Section("matrix-inverse", {
     },
     {
       question: `若 ${texInline("A,B")} 都可逆，${texInline("(AB)^{-1}")} 是什么？`,
-      answer: `${texInline("(AB)^{-1}=B^{-1}A^{-1")}。撤销复合过程要从最后发生的作用开始。`,
+      answer: `${texInline("(AB)^{-1}=B^{-1}A^{-1}")}。撤销复合过程要从最后发生的作用开始。`,
     },
     {
       question: `方程 ${texInline("XA=C")} 应怎样消去右侧的 A？`,

@@ -11,3 +11,9 @@
 @media(max-width:1050px){.qv-same{grid-template-columns:1fr}.qv-equals{grid-template-columns:auto auto;justify-content:center}.qv-data{grid-template-columns:repeat(2,minmax(0,1fr))}.qv-data>.qv-values{grid-column:1/-1}.qv-three{grid-template-columns:repeat(2,minmax(0,1fr))}.qv-three aside{grid-column:1/-1}.qv-two{grid-template-columns:1fr}}
 @media(max-width:680px){.qv-lab{padding:15px;border-radius:18px}.qv-head h3{font-size:22px}.qv-same canvas{height:300px}.qv-data{grid-template-columns:1fr}.qv-data>.qv-values{grid-column:auto}.qv-values{grid-template-columns:1fr!important}.qv-main-canvas{height:340px}.qv-hero,.qv-hero canvas{height:430px;min-height:430px}.qv-hero>div{left:10px;bottom:10px;max-width:calc(100% - 20px);padding:12px}.qv-hero h4{font-size:17px}.qv-three{grid-template-columns:1fr}.qv-three aside{grid-column:auto}.qv-three canvas{height:250px}.qv-result{grid-template-columns:1fr}.qv-stepbar>span{width:100%;margin:0}.qv-stepbar button{flex:1}.qv-actions button{flex:1}.qv-lab .ch5-toolbar button{flex:1 1 42%;padding-inline:8px}.qv-lab .ch5-range{grid-template-columns:1fr}.qv-lab .ch5-range output{justify-self:start}}
 @media(prefers-reduced-motion:reduce){.qv-progress::before{transition:none}}
+
+/* Inline formulas in captions and value chips: keep them in the text flow. */
+.qv-same figcaption,
+.qv-three figcaption{display:block}
+.qv-values>span>.katex,
+.qv-values>span>.tex-inline{justify-self:start;max-width:100%}

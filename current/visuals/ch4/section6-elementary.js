@@ -253,12 +253,12 @@
     // Prediction before the first exploration result is explained.
     const gate = root.querySelector("[data-el-gate]");
     gate.innerHTML = `<div class="ch3l-predict"><div class="ch3l-predict-q"><span>先预测</span><p>${tex("R_2\\leftarrow R_2+2R_1")} 对应的 ${tex("E=\\begin{pmatrix}1&0\\\\2&1\\end{pmatrix}")} 会把单位正方形变成什么？</p></div>
-      <div class="ch3l-predict-options">${[
+      <div class="ch3l-predict-options">${(window.LAStableShuffle || ((a) => a))([
         ["沿竖直方向剪切，面积不变", true, ""],
         ["沿水平方向剪切，面积不变", false, "E 改变的是第 2 个坐标：(x,y) 变成 (x, 2x+y)。"],
         ["竖直方向拉长 2 倍，面积变为 2 倍", false, "det E=1，面积不变。"],
         ["绕原点旋转", false, "e₁ 被送到 (1,2)，e₂ 保持不动，长度变了，所以不是旋转。"],
-      ].map(([t, ok, why], i) => `<button type="button" data-i="${i}" data-ok="${ok}" data-why="${why}">${t}</button>`).join("")}</div><p class="ch3l-predict-feedback" hidden></p></div>`;
+      ], "visuals/ch4/section6-elementary.js").map(([t, ok, why], i) => `<button type="button" data-i="${i}" data-ok="${ok}" data-why="${why}">${t}</button>`).join("")}</div><p class="ch3l-predict-feedback" hidden></p></div>`;
     gate.querySelectorAll("[data-i]").forEach((b) => b.addEventListener("click", () => {
       gate.querySelectorAll("[data-i]").forEach((x) => x.classList.remove("is-right", "is-wrong"));
       const ok = b.dataset.ok === "true";

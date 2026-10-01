@@ -401,7 +401,7 @@
       root.querySelector("[data-b]").innerHTML = tex(M().formatPolyTex(step.b || M().zeroPoly()));
       root.querySelector("[data-q]").innerHTML = step.q ? tex(M().formatPolyTex(step.q)) : "—";
       root.querySelector("[data-r]").innerHTML = step.remainder ? tex(M().formatPolyTex(step.remainder)) : "—";
-      root.querySelector("[data-note]").innerHTML = stepMarkup(step);
+      root.querySelector("[data-note]").hidden = true;
       root.querySelector("[data-gcd]").innerHTML = tex(M().formatPolyTex(final.d || final.a));
       root.querySelector("[data-s]").innerHTML = tex(M().formatPolyTex(final.s || M().zeroPoly()));
       root.querySelector("[data-t]").innerHTML = tex(M().formatPolyTex(final.t || M().zeroPoly()));

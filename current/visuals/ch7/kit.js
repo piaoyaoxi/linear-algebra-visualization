@@ -231,6 +231,7 @@
    * has predicted and then acted on the picture at least once.
    */
   function predictFlow(gateHost, resultBox, spec) {
+    spec = { ...spec, options: window.LAStableShuffle ? window.LAStableShuffle(spec.options, spec.question) : spec.options };
     gateHost.innerHTML = "";
     resultBox.hidden = true;
     resultBox.innerHTML = "";
@@ -353,6 +354,7 @@
     host.append(wrap);
     const ctx = canvas.getContext("2d");
     let size = { w: 0, h: 0, dpr: 1 };
+    let axisNameBoxes = [];
 
     const scale = () => Math.min(size.w, size.h) / (2 * extent);
     const P = ([x, y]) => [size.w / 2 + x * scale(), size.h / 2 - y * scale()];
@@ -432,8 +434,8 @@
           ctx.stroke();
           ctx.restore();
           if (names) {
-            d.text([halfW() * 0.93, 0], names[0], "muted", { dy: -10, font: "600 12px Inter, sans-serif" });
-            d.text([0, halfH() * 0.92], names[1], "muted", { dx: 8, font: "600 12px Inter, sans-serif" });
+            d.text([halfW() * 0.93, 0], names[0], "muted", { dy: -10, font: "600 12px Inter, sans-serif", isAxisName: true });
+            d.text([0, halfH() * 0.92], names[1], "muted", { dx: 8, font: "600 12px Inter, sans-serif", isAxisName: true });
           }
         },
         line(p, dir, color, opts = {}) {
@@ -552,8 +554,22 @@
           ctx.font = opts.font || "600 13px Inter, 'PingFang SC', sans-serif";
           ctx.textAlign = opts.align || "left";
           ctx.textBaseline = "middle";
-          const tx = x + (opts.dx ?? 0) + (opts.px ?? 0);
-          const ty = y + (opts.dy ?? 0) - (opts.py ?? 0);
+          let tx = x + (opts.dx ?? 0) + (opts.px ?? 0);
+          let ty = y + (opts.dy ?? 0) - (opts.py ?? 0);
+          /* keep every label inside the canvas, and off the axis names */
+          const tw = ctx.measureText(str).width;
+          const left = () => (ctx.textAlign === "center" ? tx - tw / 2 : ctx.textAlign === "right" ? tx - tw : tx);
+          if (left() < 4) tx += 4 - left();
+          if (left() + tw > size.w - 4) tx -= left() + tw - (size.w - 4);
+          ty = Math.max(10, Math.min(size.h - 10, ty));
+          if (!opts.isAxisName) {
+            const hit = (r) => left() < r.x + r.w && left() + tw > r.x && Math.abs(ty - r.y) < 14;
+            const r = axisNameBoxes.find(hit);
+            if (r) ty = r.y + (ty <= r.y ? -16 : 16);
+            ty = Math.max(10, Math.min(size.h - 10, ty));
+          } else {
+            axisNameBoxes.push({ x: left(), y: ty, w: tw });
+          }
           ctx.lineWidth = 4;
           ctx.strokeStyle = pal.dark ? "rgba(14,18,27,.85)" : "rgba(255,255,255,.9)";
           ctx.strokeText(str, tx, ty);
@@ -570,6 +586,7 @@
       const pal = palette(host);
       ctx.setTransform(size.dpr, 0, 0, size.dpr, 0, 0);
       ctx.clearRect(0, 0, size.w, size.h);
+      axisNameBoxes = [];
       drawFn(api(pal));
       handles.forEach((h) => {
         if (h.hidden?.()) return;

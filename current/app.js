@@ -1504,7 +1504,9 @@ function drawTransformCanvas(matrixOverride, options = {}) {
   const text = styles.getPropertyValue("--text").trim() || "#071512";
 
   const origin = { x: cssW / 2, y: cssH / 2 };
-  const scale = Math.min(cssW, cssH) / 9.2;
+  /* zoom in on the unit square, but keep both column vectors on screen */
+  const reachCol = Math.max(Math.hypot(matrix.a, matrix.c), Math.hypot(matrix.b, matrix.d), Math.hypot(matrix.a + matrix.b, matrix.c + matrix.d));
+  const scale = Math.min(cssW, cssH) / Math.max(6.4, 2 * reachCol + 1.4);
   const halfW = cssW / (2 * scale);
   const halfH = cssH / (2 * scale);
   const screenReach = Math.hypot(halfW, halfH) + 1.25;
@@ -1603,10 +1605,12 @@ function drawTransformCanvas(matrixOverride, options = {}) {
   }
 
   // Layer 4 — basis before / after.
-  drawArrow(ctx, origin, point(1, 0), muted, "e1", 0.3, 2.2);
-  drawArrow(ctx, origin, point(0, 1), muted, "e2", 0.3, 2.2);
-  drawArrow(ctx, origin, point(1, 0, true), accentStrong, "Ae1", 1, 3.05);
-  drawArrow(ctx, origin, point(0, 1, true), coral, "Ae2", 1, 3.05);
+  /* the faint e1, e2 labels are dropped while Ae1, Ae2 sit on top of them */
+  const near = (a, b) => Math.hypot(a.x - b.x, a.y - b.y) < 22;
+  drawArrow(ctx, origin, point(1, 0), muted, near(point(1, 0), point(1, 0, true)) ? "" : "e₁", 0.3, 2.2);
+  drawArrow(ctx, origin, point(0, 1), muted, near(point(0, 1), point(0, 1, true)) ? "" : "e₂", 0.3, 2.2);
+  drawArrow(ctx, origin, point(1, 0, true), accentStrong, "Ae₁", 1, 3.05);
+  drawArrow(ctx, origin, point(0, 1, true), coral, "Ae₂", 1, 3.05);
 
   ctx.save();
   ctx.fillStyle = text;
@@ -1643,8 +1647,10 @@ function drawArrow(ctx, from, to, color, label, alpha = 1, width = 3) {
   ctx.lineTo(to.x - head * Math.cos(angle + Math.PI / 6), to.y - head * Math.sin(angle + Math.PI / 6));
   ctx.closePath();
   ctx.fill();
-  ctx.font = "700 12px ui-monospace, SFMono-Regular, Menlo, Consolas, monospace";
-  ctx.fillText(label, to.x + 8, to.y - 8);
+  if (label) {
+    ctx.font = "700 13px Inter, 'PingFang SC', sans-serif";
+    ctx.fillText(label, to.x + 8, to.y - 8);
+  }
   ctx.restore();
 }
 

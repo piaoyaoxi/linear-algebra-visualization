@@ -31,9 +31,11 @@
     const formal = page?.querySelector("#block-matrices-formal");
     if (formal && formal.compareDocumentPosition(root) & Node.DOCUMENT_POSITION_FOLLOWING) formal.before(root);
     const state = { aRow: 1, aCol: 2, bRow: 1, bCol: 2, target: "11" };
+    let predicted = false;
     root.innerHTML = `<h2>交互实验</h2>
       <section class="ch3l-lab blk-lab">
         <header class="ch3l-head"><h3>怎样切，块乘法才有定义</h3><p>A 是 3×4 矩阵，B 是 4×3 矩阵。拖动滑块决定切口，再点选输出块 ${tex("C_{ij}")}，用数字核对块乘法。</p></header>
+        <div data-gate></div>
         <div class="blk-cuts">
           <label class="ch3l-range blk-range"><span>A 行</span><input type="range" min="1" max="2" step="1" data-cut="aRow" /><b data-v="aRow"></b></label>
           <label class="ch3l-range blk-range"><span>A 列</span><input type="range" min="1" max="3" step="1" data-cut="aCol" /><b data-v="aCol"></b></label>
@@ -43,7 +45,6 @@
         <div class="blk-stage" data-stage></div>
         <div class="ch3l-toolbar" data-targets></div>
         <div class="blk-readout" data-readout></div>
-        <div data-gate></div>
       </section>`;
     const stage = root.querySelector("[data-stage]");
     const readout = root.querySelector("[data-readout]");
@@ -69,7 +70,7 @@
       const p = state.aCol;
       const q = state.bRow;
       if (!ok) {
-        readout.innerHTML = `<p class="ch3l-bad">块乘积没有定义</p><p>${tex(`A_{11}`)} 是 ${state.aRow}×${p} 矩阵，${tex(`B_{11}`)} 是 ${q}×${state.bCol} 矩阵。${tex(`A_{11}B_{11}`)} 要求 ${tex(`A_{11}`)} 的列数等于 ${tex(`B_{11}`)} 的行数，而 ${p}≠${q}。把 A 的列切口和 B 的行切口对齐。</p>`;
+        readout.innerHTML = `<p class="ch3l-bad">块乘积没有定义</p><p>${tex(`A_{11}`)} 是 ${state.aRow}×${p} 矩阵，${tex(`B_{11}`)} 是 ${q}×${state.bCol} 矩阵。${tex(`A_{11}B_{11}`)} 要求 ${tex(`A_{11}`)} 的列数等于 ${tex(`B_{11}`)} 的行数，而 ${p}≠${q}。${predicted ? "把 A 的列切口和 B 的行切口对齐。" : ""}</p>`;
         return;
       }
       const r0 = i === 1 ? 0 : state.aRow;
@@ -98,16 +99,18 @@
 
     const gate = root.querySelector("[data-gate]");
     gate.innerHTML = `<div class="ch3l-predict"><div class="ch3l-predict-q"><span>先预测</span><p>把 A 的列切成 2+2。B 的行要怎样切，${tex("AB")} 才能按块相乘？B 的列切口有没有限制？</p></div>
-      <div class="ch3l-predict-options">${[
+      <div class="ch3l-predict-options">${(window.LAStableShuffle || ((a) => a))([
         ["B 的行切成 2+2；B 的列可以任意切", true, ""],
         ["B 的行切成 2+2，B 的列也必须切成 2+2", false, "B 的列切口决定 C 的列怎样分块，与能否相乘无关。"],
         ["B 的行怎么切都可以", false, "试着把 B 的行切成 1+3，看看块乘积还有没有定义。"],
         ["B 的行切法要和 A 的行切法一样", false, "相乘时配对的是 A 的列和 B 的行。"],
-      ].map(([t, okk, why], k) => `<button type="button" data-i="${k}" data-ok="${okk}" data-why="${why}">${t}</button>`).join("")}</div><p class="ch3l-predict-feedback" hidden></p></div>`;
+      ], "visuals/ch4/section5-blocks.js").map(([t, okk, why], k) => `<button type="button" data-i="${k}" data-ok="${okk}" data-why="${why}">${t}</button>`).join("")}</div><p class="ch3l-predict-feedback" hidden></p></div>`;
     gate.querySelectorAll("[data-i]").forEach((b) => b.addEventListener("click", () => {
       gate.querySelectorAll("[data-i]").forEach((x) => x.classList.remove("is-right", "is-wrong"));
       const okk = b.dataset.ok === "true";
       b.classList.add(okk ? "is-right" : "is-wrong");
+      predicted = true;
+      paint();
       const fb = gate.querySelector(".ch3l-predict-feedback");
       fb.hidden = false;
       fb.innerHTML = okk

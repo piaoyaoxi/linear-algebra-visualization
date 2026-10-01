@@ -164,7 +164,7 @@
     const toolbar = el("div", "ch9l-toolbar");
     lab.append(toolbar);
     const { stage, side } = stageLayout(lab);
-    const plane = P().create(stage, { range: 2.6, label: "内积的单位圆与两个向量", hint: "拖动圆点改变 u、v" });
+    const plane = P().create(stage, { range: 2.5, label: "内积的单位圆与两个向量", hint: "拖动圆点改变 u、v" });
     lab.ch9Views = { plane };
     const info = el("div", "ch9l-card");
     info.dataset.ch9Readout = "ip";
@@ -272,7 +272,7 @@
     const toolbar = el("div", "ch9l-toolbar");
     lab.append(toolbar);
     const { stage, side } = stageLayout(lab);
-    const scene = S().create(stage, { range: 1.7, label: "施密特正交化的三维图", yaw: -0.55, pitch: 0.38, hint: "拖动空白处旋转 · 拖动圆点改变 α₃" });
+    const scene = S().create(stage, { range: 2, label: "施密特正交化的三维图", yaw: -0.55, pitch: 0.38, hint: "拖动空白处旋转 · 拖动圆点改变 α₃" });
     lab.ch9Views = { scene };
     const stepCard = el("div", "ch9l-card");
     stepCard.innerHTML = `<div class="ch9l-steps" data-gs-steps></div>
@@ -417,7 +417,8 @@
   const ISO_PRESETS = {
     std: { label: "标准基 ε₁, ε₂", f: [[1, 0], [0, 1]] },
     dotperp: { label: "(1,1), (1,−1)", f: [[1, 1], [1, -1]] },
-    other: { label: "(0,1), (1,−1)", f: [[0, 1], [1, -1]] },
+    other: { label: "(3/5,1/5), (−4/5,7/5)", f: [[0.6, 0.2], [-0.8, 1.4]] },
+    scaled: { label: "(1,0), (−1,2)", f: [[1, 0], [-1, 2]] },
   };
 
   function isometryLab(root) {
@@ -502,7 +503,7 @@
           { text: "任意一组基都可以", why: "看右图：标准基的像是一个椭圆，长度被改变了。" },
           { text: `只有 ${tex("f_1=\\varepsilon_1,\\ f_2=\\varepsilon_2")}`, why: `${tex("(\\varepsilon_1,\\varepsilon_1)=2")}，标准基在 V 里不是单位向量。` },
         ],
-        right: `例如 ${tex("f_1=(0,1),\\ f_2=(1,-1)")}：${tex("B=I")}，右边的金色曲线与虚线单位圆重合。`,
+        right: `例如 ${tex("f_1=(\\tfrac35,\\tfrac15),\\ f_2=(-\\tfrac45,\\tfrac75)")}：${tex("B=I")}，右边的金色曲线与虚线单位圆重合。`,
       },
       () => {
         result.hidden = false;
@@ -535,7 +536,7 @@
     const toolbar = el("div", "ch9l-toolbar");
     lab.append(toolbar);
     const { stage, side } = stageLayout(lab);
-    const plane = P().create(stage, { range: 2.6, label: "单位圆与小旗在变换下的像", hint: "拖动圆点改变 x、y" });
+    const plane = P().create(stage, { range: 2.5, label: "单位圆与小旗在变换下的像", hint: "拖动圆点改变 x、y" });
     lab.ch9Views = { plane };
     const info = el("div", "ch9l-card");
     info.dataset.ch9Readout = "ortho";
@@ -637,7 +638,7 @@
     const toolbar = el("div", "ch9l-toolbar");
     lab.append(toolbar);
     const { stage, side } = stageLayout(lab);
-    const scene = S().create(stage, { range: 2.2, label: "子空间 W 与正交补", yaw: 0.8, pitch: 0.3, hint: "拖动空白处旋转 · 拖动圆点改变 w、α" });
+    const scene = S().create(stage, { range: 2.5, label: "子空间 W 与正交补", yaw: 0.8, pitch: 0.3, hint: "拖动空白处旋转 · 拖动圆点改变 w、α" });
     lab.ch9Views = { scene };
     const tools = el("div", "ch9l-actions");
     tools.innerHTML = `${btn("沿 W⊥ 看", "data-sub-look")}${btn("侧面看 W", "data-sub-side")}${btn("默认视角", "data-sub-reset")}`;
@@ -833,7 +834,7 @@
         objs.push({ type: "curve", pts: circle.map((p) => p && ap(T, p)), closed: true, color: "accent", width: 2.8, fill: true, fillAlpha: 0.07 });
         const flag = [[0.35, 0.1], [0.75, 0.1], [0.75, 0.32]].map((p) => ap(T, p));
         objs.push({ type: "polygon", pts: flag, color: "violet", fillAlpha: 0.3, width: 1.2 });
-        pre.eig.forEach(([l, v], i) => objs.push({ type: "arrow", to: ap(T, unit2(v)), color: i ? "coral" : "blue", width: 3, label: `q${"₁₂"[i]}` }));
+        if (state.revealed) pre.eig.forEach(([l, v], i) => objs.push({ type: "arrow", to: ap(T, unit2(v)), color: i ? "coral" : "blue", width: 3, label: `q${"₁₂"[i]}` }));
         return objs;
       });
       const stepIdx = state.s < 1 ? 0 : state.s < 2 ? 1 : 2;
@@ -842,9 +843,15 @@
         .join("");
       ctrl.querySelector("[data-sp-sv]").textContent = state.s.toFixed(2);
       ctrl.querySelector("[data-sp-s]").value = String(state.s);
-      ctrl.querySelectorAll("input,button").forEach((x) => (x.disabled = !e.sym));
+      // Playing the steps would draw the answer, so it waits for the prediction.
+      ctrl.querySelectorAll("input,button").forEach((x) => (x.disabled = !e.sym || !state.revealed));
 
       const lines = [`<h4>当前读数</h4>`, `<p>${tex(`A=${M().latexMatrix(e.A)}`)}${e.sym ? "，对称" : `，${tex("A^T\\ne A")}`}</p>`];
+      if (!state.revealed) {
+        lines.push(`<p class="ch9l-muted">先预测椭圆长轴的方向，再播放三步。</p>`);
+        info.innerHTML = lines.join("");
+        return;
+      }
       e.eig.forEach((x, i) => lines.push(`<p>${tex(`A${vtex(x.v)}=${lf(x.l)}\\cdot${vtex(x.v)}`)}${x.ok ? "" : "（核对失败）"}</p>`));
       lines.push(
         e.perp

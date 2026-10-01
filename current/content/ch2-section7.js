@@ -23,7 +23,7 @@ defineChapter2Section("cramer-rule", {
     { label: "最后检查分母", text: "只有 det(A)≠0 才能相除；D=0 时必须回到列空间或消元判断相容性。" },
   ],
   intro:
-    `方程 ${texInline("Ax=b")} 表示常数向量 b 是 A 的列向量的线性组合。当 ${texInline("\\det(A)\\ne0")} 时，这组列向量构成一组基，坐标唯一。把第 i 列替换成 b 后，行列式的分别线性会自动留下系数 ${texInline("x_i")}。公式中的分母不是技术细节，而是唯一解存在的结构条件。`,
+    `方程 ${texInline("Ax=b")} 表示常数向量 b 是 A 的列向量的线性组合。当 ${texInline("\\det(A)\\ne0")} 时，这组列向量构成一组基，坐标唯一。把第 i 列替换成 b 后，行列式的分别线性会自动留下系数 ${texInline("x_i")}。公式中的分母正是唯一解存在的结构条件。`,
   videoPlan: {
     title: "克拉默法则为什么是有向体积比",
     duration: "约 2 分钟",

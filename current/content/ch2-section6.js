@@ -22,7 +22,7 @@ defineChapter2Section("cofactor-expansion", {
     { label: "最后选择路线", text: "所有行列都能展开，但零越多，需要计算的低阶行列式越少。" },
   ],
   intro:
-    `选中 ${texInline("a_{ij}")} 后删去第 i 行与第 j 列，剩余矩阵的行列式记为 ${texInline("M_{ij}")}；再乘位置符号 ${texInline("(-1)^{i+j}")} 得到代数余子式 ${texInline("C_{ij}")}。一行或一列中的元素与对应代数余子式配对求和，就得到原行列式。这里最容易混淆的不是计算，而是三个对象的类型与符号。`,
+    `选中 ${texInline("a_{ij}")} 后删去第 i 行与第 j 列，剩余矩阵的行列式记为 ${texInline("M_{ij}")}；再乘位置符号 ${texInline("(-1)^{i+j}")} 得到代数余子式 ${texInline("C_{ij}")}。一行或一列中的元素与对应代数余子式配对求和，就得到原行列式。这里最容易混淆的是三个对象的类型与符号。`,
   concepts: [
     { label: "余子矩阵", text: "删去第 i 行、第 j 列后得到的 (n−1) 阶矩阵。" },
     { label: "余子式", text: `${texInline("M_{ij}")} 是余子矩阵的行列式，是标量。` },

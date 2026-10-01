@@ -113,6 +113,11 @@
       ctx.font = font || "650 13px Inter, 'PingFang SC', sans-serif";
       ctx.textAlign = align;
       ctx.textBaseline = "middle";
+      // Keep labels inside the canvas on narrow screens.
+      const width = ctx.measureText(str).width;
+      const left = align === "center" ? x - width / 2 : align === "right" || align === "end" ? x - width : x;
+      x += Math.max(4 - left, 0) - Math.max(left + width - (size.w - 4), 0);
+      y = Math.min(Math.max(y, 9), size.h - 9);
       ctx.lineWidth = 4;
       ctx.strokeStyle = palette(host).dark ? "rgba(14,18,27,.85)" : "rgba(255,255,255,.92)";
       ctx.strokeText(str, x, y);

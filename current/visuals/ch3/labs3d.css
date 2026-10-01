@@ -503,3 +503,92 @@ body.dark .el6-stage {
     font-size: 13px;
   }
 }
+
+/* Static figures and "停一下" questions inside theorem blocks. */
+.ch3l-figure {
+  margin-top: 14px;
+}
+
+.ch3l-mini-row {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.ch3l-mini {
+  display: grid;
+  gap: 6px;
+  min-width: 0;
+  margin: 0;
+}
+
+.ch3l-mini .la3d-canvas {
+  height: 150px;
+}
+
+.ch3l-mini .la3d-hint {
+  display: none;
+}
+
+.ch3l-mini figcaption {
+  display: grid;
+  gap: 2px;
+  text-align: center;
+  font-size: 13px;
+}
+
+.ch3l-mini figcaption span {
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.ch3l-ponder {
+  margin-top: 12px;
+  border-top: 1px dashed var(--line-strong);
+  padding-top: 10px;
+}
+
+.ch3l-ponder summary {
+  display: flex;
+  gap: 10px;
+  align-items: baseline;
+  cursor: pointer;
+  list-style: none;
+  color: var(--text);
+  line-height: 1.7;
+}
+
+.ch3l-ponder summary::-webkit-details-marker {
+  display: none;
+}
+
+.ch3l-ponder summary > span {
+  flex: none;
+  padding: 1px 8px;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--gold) 16%, transparent);
+  color: color-mix(in srgb, var(--gold) 80%, var(--text));
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.ch3l-ponder[open] summary > span {
+  background: var(--accent-soft);
+  color: var(--accent-strong);
+}
+
+.ch3l-ponder > p {
+  margin: 8px 0 0 52px;
+  color: var(--muted);
+  line-height: 1.8;
+}
+
+@media (max-width: 760px) {
+  .ch3l-mini-row {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .ch3l-ponder > p {
+    margin-left: 0;
+  }
+}

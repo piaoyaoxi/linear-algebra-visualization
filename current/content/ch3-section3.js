@@ -23,6 +23,10 @@ defineChapter3Section("linear-dependence", {
       },
       {
         title: "多的由少的线性表出，必然相关",
+        ponder: {
+          q: `${texInline("\\mathbb R^3")} 中任意四个向量一定线性相关吗？`,
+          a: `一定。它们都能由 ${texInline("e_1,e_2,e_3")} 线性表出，而 4>3。`,
+        },
         text: `若 ${texInline("\\alpha_1,\\dots,\\alpha_r")} 都能由 ${texInline("\\beta_1,\\dots,\\beta_s")} 线性表出，并且 ${texInline("r>s")}，那么 ${texInline("\\alpha_1,\\dots,\\alpha_r")} 线性相关（教材 §3 定理 2）。直观地说，s 个向量最多提供 s 个方向，多出来的向量不可能都是新方向。特别地，${texInline("F^n")} 中任意 n+1 个向量都相关。`,
       },
       {

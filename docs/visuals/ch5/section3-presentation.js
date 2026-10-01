@@ -152,7 +152,7 @@
         status.className = "ch5-status is-warn";
         status.textContent = "合同停止";
         root.querySelector("[data-s3-title]").textContent = "惯性定理的前提已经失效";
-        root.querySelector("[data-s3-copy]").textContent = "det C=0，两个新变量方向被压到同一条线上。B 的秩和惯性可以下降，但这不是合同改变了惯性，而是替换已经不可逆。";
+        root.querySelector("[data-s3-copy]").textContent = "det C=0，两个新变量方向被压到同一条线上。B 的秩和惯性可以下降，原因是替换已经不可逆，不再是合同变换。";
       }
 
       M().drawContours(root.querySelector("[data-s3-a-canvas]"), A, { caption: "A：原来的等高线" });

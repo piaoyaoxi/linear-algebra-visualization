@@ -59,7 +59,7 @@
     root.innerHTML = `
       <h2>交互实验</h2>
       <div class="ch5-lab ch5s2-lab">
-        <div class="ch5-lab-head"><h3>配方步进器</h3><p>一次只看一步。你的任务不是拖参数，而是沿着配方逻辑走到最后，并在终点核对三件事：替换可逆、交叉项为 0、秩没有改变。</p></div>
+        <div class="ch5-lab-head"><h3>配方步进器</h3><p>一次只看一步。你的任务是沿着配方逻辑走到最后，并在终点核对三件事：替换可逆、交叉项为 0、秩没有改变。</p></div>
         <div class="ch5-task"><span>1</span><div><strong>选择一个典型例子</strong><p>建议先走“含交叉项”，再看“只有交叉项”为什么必须先做和差替换。</p></div></div>
         <div class="ch5-toolbar" role="group" aria-label="选择配方例子">
           <button type="button" class="is-active" data-s2-preset="regular">含交叉项</button>
@@ -178,7 +178,7 @@
         status.textContent = ok ? "标准形完成" : "还需检查";
         root.querySelector("[data-s2-result-title]").textContent = ok ? "三个条件同时通过" : "结果尚未闭环";
         root.querySelector("[data-s2-result-copy]").textContent = ok
-          ? "det C≠0，替换可逆；新矩阵的交叉项为 0；合同前后秩相同。因此这不是形式上的改写，而是一次合法的标准形变换。"
+          ? "det C≠0，替换可逆；新矩阵的交叉项为 0；合同前后秩相同。因此这是一次合法的标准形变换。"
           : "请检查变量替换、合同矩阵和交叉项是否完全一致。";
       } else {
         result.className = "ch5-result-card";

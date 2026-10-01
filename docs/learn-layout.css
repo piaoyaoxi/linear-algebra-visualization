@@ -58,19 +58,19 @@
 }
 
 /* Keep the fixed chapter drawer from covering the lesson column at common
-   laptop widths. Translate only by the overlap amount; wide screens return
-   naturally to the centered position. */
+   laptop widths, without pushing the column under the right-hand page rail.
+   Free band: from the drawer's right edge (30px + sidebar + 18px gap) to the
+   rail's left edge (18px + 58px rail + 10px gap). The column shrinks to fit
+   that band when needed and is shifted only by the remaining overlap. */
 @media (min-width: 1280px) {
   body:not(.sidebar-collapsed):not([data-route="home"]) .content {
+    --lesson-band-left: calc(var(--sidebar-width) + 48px);
+    --lesson-band-right: 86px;
+    --lesson-width: min(var(--content-max), calc(100vw - var(--lesson-band-left) - var(--lesson-band-right)));
+    width: var(--lesson-width);
+    justify-self: center;
     transform: translateX(
-      clamp(
-        0px,
-        calc(
-          var(--sidebar-width) + 48px -
-            ((100vw - var(--content-max)) / 2)
-        ),
-        166px
-      )
+      clamp(0px, calc(var(--lesson-band-left) - (100vw - var(--lesson-width)) / 2), 200px)
     );
   }
 }

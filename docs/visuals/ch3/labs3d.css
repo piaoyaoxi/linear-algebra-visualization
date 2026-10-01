@@ -356,3 +356,48 @@ body.dark .ch3l-predict-q > span {
     grid-template-columns: 1fr;
   }
 }
+
+/* Chapter 4 §6 elementary-matrix lab (reuses the ch3l lab chrome). */
+.el6-stage {
+  min-width: 0;
+  overflow: hidden;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: linear-gradient(180deg, var(--canvas-paper-top, #fbfcfb), var(--canvas-paper-bottom, #f3f6f4));
+}
+
+body.dark .el6-stage {
+  background: linear-gradient(180deg, rgba(205, 215, 240, 0.05), rgba(205, 215, 240, 0.02));
+}
+
+.el6-canvas {
+  display: block;
+  width: 100%;
+  height: clamp(300px, 40vw, 420px);
+}
+
+.el6-steps {
+  display: grid;
+  gap: 6px;
+  margin: 0;
+  padding-left: 20px;
+}
+
+.el6-steps li {
+  color: var(--muted);
+  line-height: 1.6;
+}
+
+.el6-steps .el6-why {
+  display: block;
+  font-size: 13px;
+}
+
+.el6-steps li.is-done {
+  color: var(--accent-strong);
+}
+
+.el6-steps li.is-next {
+  color: var(--text);
+  font-weight: 650;
+}

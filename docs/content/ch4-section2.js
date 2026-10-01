@@ -19,7 +19,7 @@ defineChapter4Section("matrix-operations", {
       "切到行乘列：一个输出位置由 A 的一行与 B 的一列配对得到。",
       "让三种画面使用同一组矩阵和颜色，最后合并为同一个乘积。",
     ],
-    ttsDraft: "矩阵乘法记录两个过程的复合。ABx 先读右边的 B，再读左边的 A。复合、看列和行乘列不是三套互不相干的规则，而是同一个乘积的三种观察方式。",
+    ttsDraft: "矩阵乘法记录两个过程的复合。ABx 先读右边的 B，再读左边的 A。复合、看列和行乘列是同一个乘积的三种观察方式。",
   },
   concepts: [
     { label: "同型相加", text: `若 ${texInline("A,B")} 都是 ${texInline("m\\times n")} 矩阵，则 ${texInline("(A+B)_{ij}=a_{ij}+b_{ij}")}。` },

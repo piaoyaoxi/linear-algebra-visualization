@@ -22,6 +22,10 @@ defineChapter3Section("matrix-rank", {
       },
       {
         title: "在阶梯形上读出行秩 = 列秩",
+        ponder: {
+          q: "行空间和列空间可能是同一个平面吗？",
+          a: `可能。A 对称时，第 i 行就是第 i 列的转置，行空间与列空间在同一个 ${texInline("\\mathbb R^n")} 里重合；一般情况下两者不同，只是维数相同。`,
+        },
         tex: String.raw`\operatorname{rank}A=\text{阶梯形中非零行的个数}=\text{主元列的个数}`,
         text: `阶梯形的非零行线性无关，主元列也线性无关，两者个数都等于主元个数 r。回到原矩阵：行秩 = 列秩 = r。<strong>A 中</strong>与主元列同位置的列，就是 A 的列向量组的一个极大无关组。`,
       },

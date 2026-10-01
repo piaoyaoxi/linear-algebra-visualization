@@ -41,6 +41,7 @@
    * opens. Wrong picks stay visible so the student can compare with the picture.
    */
   function predictGate(host, spec, onAnswered) {
+    spec = { ...spec, options: window.LAStableShuffle ? window.LAStableShuffle(spec.options, spec.question) : spec.options };
     const box = el("div", "ch3l-predict");
     box.innerHTML = `<div class="ch3l-predict-q"><span>先预测</span><p>${spec.question}</p></div>
       <div class="ch3l-predict-options">${spec.options.map((o, i) => `<button type="button" data-i="${i}">${o.text}</button>`).join("")}</div>

@@ -20,23 +20,7 @@
 
   /* ---------- shared pieces ---------- */
 
-  /* Stable shuffle of the prediction options, seeded by the question text. */
-  function shuffled(options, key) {
-    let seed = 2166136261;
-    for (const ch of String(key)) seed = Math.imul(seed ^ ch.codePointAt(0), 16777619) >>> 0;
-    const rand = () => {
-      seed = (Math.imul(seed, 1664525) + 1013904223) >>> 0;
-      return seed / 4294967296;
-    };
-    const out = options.slice();
-    for (let i = out.length - 1; i > 0; i -= 1) {
-      const j = Math.floor(rand() * (i + 1));
-      [out[i], out[j]] = [out[j], out[i]];
-    }
-    return out;
-  }
-
-  const gate = (gateHost, result, spec) => K.predictFlow(gateHost, result, { ...spec, options: shuffled(spec.options, spec.question) });
+  const gate = (gateHost, result, spec) => K.predictFlow(gateHost, result, spec);
 
   /* Lab skeleton: toolbar, gate, stage + side cards, result. */
   function skeleton(root, { title, task, cards = 2, toolbars = 1 }) {

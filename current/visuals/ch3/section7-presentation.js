@@ -124,7 +124,7 @@
     root.innerHTML = `
       <h2>交互实验</h2>
       <div class="ch3-lab" data-ch3-lab="resultant">
-        <div class="ch3-lab-head"><span class="ch3-lab-kicker">目标 · 区分“结式候选”和“原方程组真解”</span><h3>从曲线交点到一元方程</h3><p>一次只推进一个代数动作。左侧曲线说明我们正在寻找什么，右侧公式说明这一步保留了哪些信息。</p></div><div class="ch3-mission"><strong>你来试一试</strong><span>选择“抛物线与切线”，逐步推进到回代，观察二重根为何对应相切。</span><span class="ch3-mission-result">观察：结式给候选，回代确认真解</span></div>
+        <div class="ch3-lab-head"><h3>从曲线交点到一元方程</h3><p>每点一次“下一步”只做一个代数动作：整理、写 Sylvester 矩阵、求结式、解候选根、回代。选“抛物线与切线”，看二重根怎样对应相切。</p></div>
         <div class="ch3-presets">
           <button type="button" class="is-active" data-preset="crossing">圆与割线</button>
           <button type="button" data-preset="tangent">抛物线与切线</button>

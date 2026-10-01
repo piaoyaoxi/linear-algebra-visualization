@@ -3476,3 +3476,8 @@ body.dark .button.mark-button.is-done {
 .katex span:not([class*="bf"]):not([class*="bold"]) {
   font-weight: inherit !important;
 }
+
+/* Native range inputs follow the site accent (some older labs use them unstyled). */
+input[type="range"] {
+  accent-color: var(--accent);
+}

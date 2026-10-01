@@ -693,17 +693,16 @@
       if (state.mode === "R" && !state.locking) {
         const a = state.alpha.re;
         const modulusSquared = state.alpha.re ** 2 + state.alpha.im ** 2;
-        const boxWidth = Math.min(260, width - 32);
-        drawPill(ctx, width - boxWidth - 16, 18, boxWidth, 34, `α+ᾱ = 2a = ${formatNumber(2 * a)}`, palette, {
-          stroke: palette.accent,
-          textColor: palette.text,
-          fontSize: width < 520 ? 11 : 13,
-        });
-        drawPill(ctx, width - boxWidth - 16, 60, boxWidth, 34, `αᾱ = |α|² = ${formatNumber(modulusSquared)}`, palette, {
-          stroke: palette.line,
-          textColor: palette.text,
-          fontSize: width < 520 ? 11 : 13,
-        });
+        /* compact pills in the lower-left corner, clear of the Im axis label and of α */
+        const fontSize = width < 520 ? 11 : 12.5;
+        const texts = [`α+ᾱ = 2a = ${formatNumber(2 * a)}`, `αᾱ = |α|² = ${formatNumber(modulusSquared)}`];
+        ctx.save();
+        ctx.font = `650 ${fontSize}px ui-sans-serif, system-ui, sans-serif`;
+        const boxWidth = Math.min(width - 32, Math.max(...texts.map((t) => ctx.measureText(t).width)) + 28);
+        ctx.restore();
+        const y0 = height - 2 * 30 - 14;
+        drawPill(ctx, 14, y0, boxWidth, 26, texts[0], palette, { stroke: palette.accent, textColor: palette.text, fontSize });
+        drawPill(ctx, 14, y0 + 32, boxWidth, 26, texts[1], palette, { stroke: palette.line, textColor: palette.text, fontSize });
       }
     }
 

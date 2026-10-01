@@ -374,8 +374,10 @@
     const scale = Math.min((width - 2 * pad) / (bounds.xMax - bounds.xMin), (height - 2 * pad) / (bounds.yMax - bounds.yMin));
     const ox = width / 2 - ((bounds.xMin + bounds.xMax) / 2) * scale;
     const oy = height / 2 + ((bounds.yMin + bounds.yMax) / 2) * scale;
+    /* the part of the plane actually on screen (wider than bounds on a wide canvas) */
+    const view = { xMin: (0 - ox) / scale, xMax: (width - ox) / scale, yMin: (oy - height) / scale, yMax: oy / scale };
     return {
-      bounds, scale,
+      bounds, scale, view,
       toScreen: (x, y) => ({ x: ox + x * scale, y: oy - y * scale }),
       toWorld: (x, y) => ({ x: (x - ox) / scale, y: (oy - y) / scale }),
     };
@@ -392,10 +394,17 @@
     if (origin.y >= 0 && origin.y <= height) { ctx.moveTo(12, origin.y); ctx.lineTo(width - 12, origin.y); }
     if (origin.x >= 0 && origin.x <= width) { ctx.moveTo(origin.x, 12); ctx.lineTo(origin.x, height - 12); }
     ctx.stroke();
-    for (let x = Math.ceil(cam.bounds.xMin); x <= Math.floor(cam.bounds.xMax); x++) {
-      if (x === 0) continue;
+    const span = cam.view ? [cam.view.xMin + 0.3, cam.view.xMax - 0.3] : [cam.bounds.xMin, cam.bounds.xMax];
+    const tickStep = cam.scale < 22 ? 2 : 1;
+    for (let x = Math.ceil(span[0]); x <= Math.floor(span[1]); x++) {
+      if (x === 0 || x % tickStep) continue;
       const p = cam.toScreen(x, 0);
-      if (p.y >= 0 && p.y <= height) ctx.fillText(String(x), p.x - 3, p.y + 14);
+      if (p.y < 0 || p.y > height) continue;
+      ctx.textAlign = "center";
+      ctx.lineWidth = 3;
+      ctx.strokeStyle = palette.surface;
+      ctx.strokeText(String(x), p.x, p.y + 15);
+      ctx.fillText(String(x), p.x, p.y + 15);
     }
     ctx.restore();
   }
@@ -414,9 +423,10 @@
       let penDown = false;
       const samples = options.samples || Math.max(280, Math.round(width));
       for (let i = 0; i <= samples; i++) {
-        const x = cam.bounds.xMin + (i / samples) * (cam.bounds.xMax - cam.bounds.xMin);
+        const xr = options.clipToBounds ? cam.bounds : cam.view;
+        const x = xr.xMin + (i / samples) * (xr.xMax - xr.xMin);
         const y = evalPolyNum(series.p, x);
-        if (!Number.isFinite(y) || y < cam.bounds.yMin - 1 || y > cam.bounds.yMax + 1) { penDown = false; continue; }
+        if (!Number.isFinite(y) || y < cam.view.yMin - 1 || y > cam.view.yMax + 1) { penDown = false; continue; }
         const point = cam.toScreen(x, y);
         if (!penDown) { ctx.moveTo(point.x, point.y); penDown = true; } else ctx.lineTo(point.x, point.y);
       }
@@ -455,7 +465,10 @@
       }
       ctx.fillStyle = palette.text;
       ctx.font = "12px ui-sans-serif, system-ui, sans-serif";
-      if (root.label) ctx.fillText(root.label, base.x + 8, base.y + 18);
+      /* above the stacked dots, so it never lands on a tick number */
+      ctx.textAlign = "center";
+      if (root.label) ctx.fillText(root.label, base.x, base.y - ((root.m || 1) - 1) * 7 - 13);
+      ctx.textAlign = "left";
     });
     return cam;
   }

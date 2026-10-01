@@ -592,3 +592,13 @@ body.dark .el6-stage {
     margin-left: 0;
   }
 }
+
+.ch3l-predict-options button.is-picked {
+  border-color: var(--gold);
+  background: color-mix(in srgb, var(--gold) 14%, var(--surface-solid));
+  font-weight: 700;
+}
+
+.ch3l-predict.is-done .ch3l-predict-options button {
+  cursor: default;
+}

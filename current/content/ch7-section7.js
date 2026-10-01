@@ -24,7 +24,7 @@ defineChapter7Section("invariant-subspaces", {
       {
         title: "不变子空间让矩阵分块",
         tex: String.raw`V=W_1\oplus W_2,\ \ \sigma W_i\subseteq W_i\ \Longrightarrow\ \sigma(\varepsilon_1,\dots,\varepsilon_n)=(\varepsilon_1,\dots,\varepsilon_n)\begin{pmatrix}A_1&0\\0&A_2\end{pmatrix}`,
-        text: "ε₁,…,ε_k 是 W₁ 的基，ε_{k+1},…,εₙ 是 W₂ 的基，A₁、A₂ 是 σ 限制在 W₁、W₂ 上的矩阵。只有 W₁ 不变时，把 W₁ 的基扩充成 V 的基，矩阵是右上角带一块的分块上三角形。实验中 A 的不变平面配上不变直线，得到 2 阶块和 1 阶块。",
+        text: "ε₁,…,εₖ 是 W₁ 的基，εₖ₊₁,…,εₙ 是 W₂ 的基，A₁、A₂ 是 σ 限制在 W₁、W₂ 上的矩阵。只有 W₁ 不变时，把 W₁ 的基扩充成 V 的基，矩阵是右上角带一块的分块上三角形。实验中 A 的不变平面配上不变直线，得到 2 阶块和 1 阶块。",
       },
       {
         title: "按特征值分解",

@@ -61,7 +61,7 @@ defineChapter7Section("linear-map-definition", {
     },
     {
       question: `若 ${texInline(String.raw`\sigma\alpha_1,\dots,\sigma\alpha_s`)} 线性无关，${texInline(String.raw`\alpha_1,\dots,\alpha_s`)} 一定线性无关吗？`,
-      answer: "一定。若 α₁,…,α_s 线性相关，由线性关系被保持，σα₁,…,σα_s 也线性相关，矛盾。",
+      answer: "一定。若 α₁,…,αₛ 线性相关，由线性关系被保持，σα₁,…,σαₛ 也线性相关，矛盾。",
     },
     {
       question: "一个变换把每条直线都映成直线，能推出它是线性变换吗？",

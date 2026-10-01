@@ -302,14 +302,14 @@ _dev/research/3b1b_eola_chapter10.py
 - 共享组件：`visuals/shared/scene3d.js`（3D 场景）；各章实验外壳为 ch3l/ch6l/ch7l/ch9l（同一套样式）；定理块可带 `figure` 与 `ponder`（第三章已用）。
 - CI：`.github/workflows/site-audit.yml` 逐节检查报错、横向滚动、KaTeX 错误、裸 `<`、内部用语、“不是……而是”、页面样式渗进公式。新增内容必须通过。
 - 写 CSS 时不要用 `.xxx span {…}` 这类后代选择器：会命中 KaTeX 内部 span。用 `> span` 或类名。
+- 预测门不能被画面泄底：学生选择预测之前，隐藏会直接给出答案的等值线、读数或计数（见 `visuals/ch10/labs.js` 中的 `open = Boolean(flow?.predicted)`）。测试“操作会改变读数”要放在预测之后。
 
 待办：
-- 第一、二、四、五章的定理块可补 `figure` / `ponder`（参考 3Blue1Brown：图紧贴文字，正文中穿插短问题）。
-- 第八章已按同一标准重做（分支 `ui/ch8-rebuild`）：删除 `ch8-entry.js` 的全局路由覆盖，改走标准 `renderLessonPage`（`content/ch8-section*.js` + registry/assemble），实验复用 `Ch7Kit`（`visuals/ch8/labs.js`），λ 的多项式用精确有理系数（`visuals/ch8/poly.js`，`Ch8Poly`）。§4 无交互，只有定理块小图。记号：单位矩阵 E，行列式因子 Dₖ(λ)，不变因子 dₖ(λ)，初等变换 [i,j]、[i(c)]、[i+j(φ)]（列用花括号），若尔当块下三角，伴随矩阵最后一列为 −a₀,…,−aₙ₋₁。导学页“从第一节开始”现在指向第一章 §1（原先被 ch8-entry 改成第四章 §1）。
-- 第十章已按同一标准重做（分支 `ui/ch10-rebuild`）：改走标准 `renderLessonPage`，复用第七章实验外壳 `Ch7Kit`（`visuals/ch10/labs.js`），不再注册结构化渲染器；对偶基记作 g₁,…,gₙ，过渡公式 (g)=(f)(Aᵀ)⁻¹，双线性函数换基 B=CᵀAC。
+- 第一、二、四、五章的“停一下”问题与小图已加（#74），数据在 `content/lesson-extras.js`，图在 `visuals/shared/lesson-figures.js`；以后可继续补。
+- 第八章已按同一标准重做并合并（#77）：删除 `ch8-entry.js` 的全局路由覆盖，改走标准 `renderLessonPage`（`content/ch8-section*.js` + registry/assemble），实验复用 `Ch7Kit`（`visuals/ch8/labs.js`），λ 的多项式用精确有理系数（`visuals/ch8/poly.js`，`Ch8Poly`）。§4 无交互，只有定理块小图。记号：单位矩阵 E，行列式因子 Dₖ(λ)，不变因子 dₖ(λ)，初等变换 [i,j]、[i(c)]、[i+j(φ)]（列用花括号），若尔当块下三角，伴随矩阵最后一列为 −a₀,…,−aₙ₋₁。导学页“从第一节开始”现在指向第一章 §1（原先被 ch8-entry 改成第四章 §1）。
+- 第十章已按同一标准重做并合并（#76）：改走标准 `renderLessonPage`，复用第七章实验外壳 `Ch7Kit`（`visuals/ch10/labs.js`），不再注册结构化渲染器；对偶基记作 g₁,…,gₙ，过渡公式 (g)=(f)(Aᵀ)⁻¹，双线性函数换基 B=CᵀAC。
 - 草稿 PR #44–#52、#33、#34 是旧方案，等用户决定是否关闭。
 ## 下一步
 
-- 内容线：从最新 `main` 建立短期分支，继续核对 §2、§3 与北大版教材正文、页码和术语的一致性，再推进 §4“矩阵的逆”。
-- UI 线：从最新 `main` 建立短期分支，优先处理已完成小节的交互细节、响应式与主题一致性；交互归 UI 线。
-- 下一轮进入概念短片制作前，先确定 §2 的 1—3 分钟 Manim 镜头脚本。
+- 十章已全部按以可视化为核心的标准重做。之后的工作以打磨为主：逐节对照北大正文核对术语与表述，补充定理块小图和“停一下”问题，修手机端标签重叠等细节。
+- 新改动仍需通过 `site-audit` 与各章浏览器检查。

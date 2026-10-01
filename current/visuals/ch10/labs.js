@@ -79,7 +79,9 @@
       return ks
         .filter((k) => (k !== 0 || !opts.zeroLabel) && (k / step) % every === 0)
         .map((k) => ({ k, q: edge === "right" ? [X0, (k - c[0] * X0) / c[1]] : [(k - c[1] * Y0) / c[0], Y0] }))
-        .filter(({ q }) => Math.abs(q[1]) <= d.halfH * 0.92 && (edge === "right" || Math.abs(q[0]) <= d.halfW - 26 / d.scale));
+        .filter(({ q }) => Math.abs(q[1]) <= d.halfH * 0.92 && (edge === "right" || Math.abs(q[0]) <= d.halfW - 26 / d.scale))
+        /* keep clear of the axis names x₁ (right end of the x₁ axis) and x₂ (top of the x₂ axis) */
+        .filter(({ q }) => (edge === "right" ? Math.abs(q[1]) * d.scale > 22 : Math.abs(q[0]) * d.scale > 34));
     };
     const first = opts.edge || (Math.abs(c[1]) <= Math.abs(c[0]) ? "right" : "top");
     let edge = first;

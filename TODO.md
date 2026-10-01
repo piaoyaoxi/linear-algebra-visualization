@@ -308,7 +308,7 @@ _dev/research/3b1b_eola_chapter10.py
 - 第一、二、四、五章的“停一下”问题与小图已加（#74），数据在 `content/lesson-extras.js`，图在 `visuals/shared/lesson-figures.js`；以后可继续补。
 - 第八章已按同一标准重做并合并（#77）：删除 `ch8-entry.js` 的全局路由覆盖，改走标准 `renderLessonPage`（`content/ch8-section*.js` + registry/assemble），实验复用 `Ch7Kit`（`visuals/ch8/labs.js`），λ 的多项式用精确有理系数（`visuals/ch8/poly.js`，`Ch8Poly`）。§4 无交互，只有定理块小图。记号：单位矩阵 E，行列式因子 Dₖ(λ)，不变因子 dₖ(λ)，初等变换 [i,j]、[i(c)]、[i+j(φ)]（列用花括号），若尔当块下三角，伴随矩阵最后一列为 −a₀,…,−aₙ₋₁。导学页“从第一节开始”现在指向第一章 §1（原先被 ch8-entry 改成第四章 §1）。
 - 第十章已按同一标准重做并合并（#76）：改走标准 `renderLessonPage`，复用第七章实验外壳 `Ch7Kit`（`visuals/ch10/labs.js`），不再注册结构化渲染器；对偶基记作 g₁,…,gₙ，过渡公式 (g)=(f)(Aᵀ)⁻¹，双线性函数换基 B=CᵀAC。
-- 草稿 PR #44–#52、#33、#34 是旧方案，等用户决定是否关闭。
+- 旧方案的草稿 PR #33、#34、#44–#52 已按用户决定关闭（分支保留）。
 ## 下一步
 
 - 十章已全部按以可视化为核心的标准重做。之后的工作以打磨为主：逐节对照北大正文核对术语与表述，补充定理块小图和“停一下”问题，修手机端标签重叠等细节。

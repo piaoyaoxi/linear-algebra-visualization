@@ -185,7 +185,6 @@
 
           <section class="ch1-multivariate-module" data-support-module>
             <header class="ch1-multivariate-module-head">
-              <span>HOMOGENEOUS LAYERS</span>
               <h4>按总次数查看齐次分层</h4>
               <p>选择一个 d，只保留位于斜线 i+j=d 上的项；下方同步列出完整齐次分解。</p>
             </header>
@@ -201,7 +200,6 @@
 
           <section class="ch1-multivariate-module" data-multiply-module hidden>
             <header class="ch1-multivariate-module-head">
-              <span>MONOMIAL PRODUCT</span>
               <h4>用两个指数向量合成乘积格点</h4>
               <p>先选第一项和第二项，再回到主图观察两个向量怎样相加到结果位置。</p>
             </header>

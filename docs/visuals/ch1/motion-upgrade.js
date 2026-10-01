@@ -458,7 +458,6 @@
     el.innerHTML = `<h2>交互实验</h2>
       <div class="ch1-lab ch1-motion-lab ch1-division-motion">
         <header class="ch1-motion-head">
-          <span>POLYNOMIAL DIVISION</span>
           <h3>让除式滑到最高次项下方，再看这一列怎样被消去</h3>
           <p>${section.interactive.description}</p>
         </header>
@@ -871,7 +870,6 @@
     el.innerHTML = `<h2>交互实验</h2>
       <div class="ch1-lab ch1-motion-lab ch1-conjugate-motion">
         <header class="ch1-motion-head">
-          <span>CONJUGATE ROOTS</span>
           <h3>拖动一个复根，直接看“镜像”怎样把系数拉回实数轴</h3>
           <p>${section.interactive.description}</p>
         </header>

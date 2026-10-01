@@ -71,6 +71,7 @@
 
   /* The student commits to an answer before the conclusion opens. */
   function predictGate(host, spec, onAnswered) {
+    spec = { ...spec, options: window.LAStableShuffle ? window.LAStableShuffle(spec.options, spec.question) : spec.options };
     const box = el("div", "ch9l-predict");
     box.dataset.ch9Predict = "";
     box.innerHTML = `<div class="ch9l-predict-q"><span>先预测</span><p>${spec.question}</p></div>

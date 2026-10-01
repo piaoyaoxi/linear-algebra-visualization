@@ -95,6 +95,8 @@
     );
   }
 
+  const waitNote = (what) => `<p class="ch7l-muted">先在上方作出预测，${what}随后出现。</p>`;
+
   /* A reading next to a point, flipped to the left side near the right edge. */
   function pointLabel(d, p, text, color, dy) {
     const left = p[0] > d.halfW * 0.25;
@@ -286,6 +288,7 @@
     lab.append(toolbar, gateHost, body, result);
     const plane = K.plane2d(stage, { extent: 3.2, hint: "拖动 η₁、η₂（每次半格）与 x", label: "对偶基的等值线" });
     let flow = null;
+    gateHost.addEventListener("click", () => redraw());
 
     function compute() {
       const X = [[F(state.eta[0][0]), F(state.eta[1][0])], [F(state.eta[0][1]), F(state.eta[1][1])]];
@@ -298,10 +301,11 @@
       const x = fv(state.x);
       const [e1, e2] = state.eta;
       const reads = rows ? rows.map((r) => dot(r, x)) : null;
+      const open = Boolean(flow?.predicted);
       plane.setDraw((d) => {
         d.grid(undefined, { alpha: 0.3 });
         d.axes();
-        if (rows) {
+        if (rows && open) {
           const rn = rows.map((r) => r.map(num));
           const both = state.view === "both";
           if (state.view !== "g2") levelLines(d, rn[0], { label: "g₁", color: "accent", zeroColor: both ? null : "gold", zeroLabel: both ? null : "g₁=0", edge: both ? "right" : undefined });
@@ -314,8 +318,13 @@
         d.arrow([0, 0], e1, "accent", { width: 3, label: "η₁" });
         d.arrow([0, 0], e2, "blue", { width: 3, label: "η₂" });
         d.point(state.x, "coral", { r: 4 });
-        if (reads) pointLabel(d, state.x, `(${minus(M().formatF(reads[0]))}, ${minus(M().formatF(reads[1]))})`, "coral", -14);
+        if (reads && open) pointLabel(d, state.x, `(${minus(M().formatF(reads[0]))}, ${minus(M().formatF(reads[1]))})`, "coral", -14);
       });
+      if (rows && !open) {
+        readCard.innerHTML = `<h4>读数</h4>${waitNote("等值线和读数")}`;
+        matCard.innerHTML = `<h4>对偶基的过渡矩阵</h4><div>${texD(`A=${K.latexMatrix(X)}`)}</div>`;
+        return;
+      }
       if (!rows) {
         readCard.innerHTML = `<h4>读数</h4><p class="ch7l-bad">η₁、η₂ 共线，不构成基，没有对偶基。</p>`;
         matCard.innerHTML = `<h4>过渡矩阵</h4><div>${texD(`A=${K.latexMatrix(X)},\\quad |A|=0`)}</div>`;

@@ -62,7 +62,7 @@ defineChapter10Section("linear-functional", {
     steps: [
       `设 ${texInline("f(x)=a_1x_1+a_2x_2+a_3x_3")}，P³ 上的线性函数都是这种形状。`,
       `代入三个基向量：${texInline("a_1+a_2=1,\\ a_2+a_3=2,\\ a_1+a_3=3")}。`,
-      `三式相加得 ${texInline("a_1+a_2+a_3=3")}，于是 ${texInline("a_3=2,\\ a_1=1,\\ a_2=0")}。`,
+      `三式相加得 ${texInline("2(a_1+a_2+a_3)=6")}，于是 ${texInline("a_3=2,\\ a_1=1,\\ a_2=0")}。`,
       `所以 ${texInline("f=x_1+2x_3")}。检验：${texInline("f(\\alpha_1)=1,\\ f(\\alpha_2)=2,\\ f(\\alpha_3)=3")}。基上的值唯一决定 f。`,
       `系数取 1, 2, 3 时 ${texInline("f(\\alpha_1)=3")}；系数取 2, 0, 1 时 ${texInline("f(\\alpha_1)=2")}，都与条件不符。`,
     ],

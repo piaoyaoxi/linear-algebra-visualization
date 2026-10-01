@@ -210,7 +210,7 @@
       } else {
         drawCurve(sized.ctx, frame, (x) => x, frame.p.coral);
         sized.ctx.fillStyle = frame.p.muted;
-        sized.ctx.font = "600 13px ui-sans-serif, system-ui";
+        sized.ctx.font = "600 13px 'LA Serif Latin', 'LA Serif SC', 'Songti SC', serif";
         sized.ctx.fillText("x²+y²+1=0 在实平面中没有轨迹", 16, 28);
       }
       if (state.step >= 4) {

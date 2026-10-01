@@ -167,7 +167,7 @@
     ctx.closePath();
     ctx.fill();
     if (label) {
-      ctx.font = "700 12px ui-sans-serif, system-ui, sans-serif";
+      ctx.font = "700 12px 'LA Serif Latin', 'LA Serif SC', 'Songti SC', serif";
       const maxX = (ctx.canvas.clientWidth || 400) - 40;
       ctx.fillText(label, Math.min(to.x + 8, maxX), Math.max(to.y - 8, 16));
     }

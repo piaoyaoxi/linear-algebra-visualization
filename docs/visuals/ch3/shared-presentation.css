@@ -145,7 +145,8 @@
 .ch3-meter-card > span {
   min-width: 0;
   overflow-wrap: anywhere;
-  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-family: var(--font-serif);
+  font-variant-numeric: tabular-nums;
   font-size: 1rem;
   font-weight: 750;
 }
@@ -509,7 +510,8 @@
 
 .ch3-matrix-editor input {
   text-align: center;
-  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-family: var(--font-serif);
+  font-variant-numeric: tabular-nums;
 }
 
 .ch3-verification-grid {

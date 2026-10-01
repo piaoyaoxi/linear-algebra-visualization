@@ -462,7 +462,7 @@
     ctx.lineTo(origin.x, height - 12);
     ctx.stroke();
     ctx.fillStyle = palette.muted;
-    ctx.font = "11px ui-sans-serif, system-ui, sans-serif";
+    ctx.font = "11px 'LA Serif Latin', 'LA Serif SC', 'Songti SC', serif";
     ctx.fillText("x₁", width - 22, origin.y - 8);
     ctx.fillText("x₂", origin.x + 8, 18);
 
@@ -523,7 +523,7 @@
 
     if (options.caption) {
       ctx.fillStyle = palette.muted;
-      ctx.font = "12px ui-sans-serif, system-ui, sans-serif";
+      ctx.font = "12px 'LA Serif Latin', 'LA Serif SC', 'Songti SC', serif";
       ctx.fillText(options.caption, 12, height - 12);
     }
   }
@@ -604,7 +604,7 @@
     ctx.stroke();
 
     ctx.fillStyle = palette.muted;
-    ctx.font = "12px ui-sans-serif, system-ui, sans-serif";
+    ctx.font = "12px 'LA Serif Latin', 'LA Serif SC', 'Songti SC', serif";
     ctx.fillText(options.caption || "单位圆方向值 q(θ) = x(θ)ᵀ A x(θ)", 12, 16);
     ctx.fillText(`min ${formatNum(Math.min(...values), 3)} · max ${formatNum(Math.max(...values), 3)}`, 12, height - 10);
     ctx.fillText("0", 8, yAt(0) + 4);
@@ -673,7 +673,7 @@
 
     if (options.caption) {
       ctx.fillStyle = palette.muted;
-      ctx.font = "12px ui-sans-serif, system-ui, sans-serif";
+      ctx.font = "12px 'LA Serif Latin', 'LA Serif SC', 'Songti SC', serif";
       ctx.fillText(options.caption, 12, height - 12);
     }
   }

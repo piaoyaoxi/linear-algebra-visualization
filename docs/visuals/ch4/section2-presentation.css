@@ -772,7 +772,7 @@
 
 #matrix-operations-interactive .s2-vector-stage text {
   fill: currentColor;
-  font-family: ui-sans-serif, system-ui, sans-serif;
+  font-family: var(--font-serif);
   font-size: 12px;
   font-weight: 800;
 }

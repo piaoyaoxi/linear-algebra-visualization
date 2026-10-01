@@ -462,12 +462,12 @@ body.dark .ch7p {
 
 .ch7f-text {
   fill: var(--text);
-  font: 600 15px Inter, "PingFang SC", sans-serif;
+  font: 600 15px var(--font-serif);
 }
 
 .ch7f-small {
   fill: var(--muted);
-  font: 600 13px Inter, "PingFang SC", sans-serif;
+  font: 600 13px var(--font-serif);
 }
 
 .ch7f-box {

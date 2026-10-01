@@ -200,7 +200,7 @@
 }
 
 #matrix-language-formal .basis-label text {
-  font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+  font-family: var(--font-serif);
   font-size: 12px;
   font-weight: 780;
   letter-spacing: 0.01em;
@@ -325,7 +325,7 @@ body.dark #matrix-language-formal .basis-label-two rect {
   border-radius: 10px;
   background: transparent;
   color: var(--text);
-  font: 700 16px ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font: 700 16px var(--font-serif);
   cursor: pointer;
   transition: opacity 150ms ease, border-color 150ms ease, background 150ms ease, transform 150ms ease;
 }

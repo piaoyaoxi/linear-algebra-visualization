@@ -120,7 +120,7 @@
     ctx.closePath();
     ctx.fill();
     if (label) {
-      ctx.font = "700 12px ui-sans-serif, system-ui, sans-serif";
+      ctx.font = "700 12px 'LA Serif Latin', 'LA Serif SC', 'Songti SC', serif";
       ctx.fillText(label, to.x + 8, to.y - 8);
     }
     ctx.restore();

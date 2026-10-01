@@ -1,21 +1,17 @@
-/* Chapter 9 renderer registry, matching the Chapter 5 lifecycle pattern. */
+/* Chapter 9 presentation registry with deterministic teardown. */
 (() => {
   const renderers = new Map();
-  let activeCleanups = [];
+  let activeCleanup = null;
 
-  function collectCleanup(value) {
-    if (typeof value === "function") activeCleanups.push(value);
-    if (Array.isArray(value)) value.forEach(collectCleanup);
-  }
-
-  function cleanupActiveLesson() {
-    activeCleanups.splice(0).forEach((cleanup) => {
+  function runCleanup() {
+    if (typeof activeCleanup === "function") {
       try {
-        cleanup();
+        activeCleanup();
       } catch (error) {
-        console.warn("Chapter 9 cleanup failed", error);
+        console.warn("Chapter 9 teardown failed", error);
       }
-    });
+    }
+    activeCleanup = null;
   }
 
   window.defineChapter9Renderer = function defineChapter9Renderer(sectionId, renderer) {
@@ -25,16 +21,22 @@
     renderers.set(sectionId, renderer);
   };
 
-  window.cleanupChapter9Lesson = cleanupActiveLesson;
+  window.teardownChapter9Lesson = runCleanup;
 
   window.mountChapter9Lesson = function mountChapter9Lesson(section, root) {
-    cleanupActiveLesson();
+    runCleanup();
     if (!section?.id || !root) return;
     const renderer = renderers.get(section.id);
     if (!renderer) return;
+    const cleanups = [];
     const formal = root.querySelector(`#${CSS.escape(section.id)}-formal`);
     const interactive = root.querySelector(`#${CSS.escape(section.id)}-interactive`);
-    collectCleanup(renderer.formal?.(formal, section, root));
-    collectCleanup(renderer.interactive?.(interactive, section, root));
+    [renderer.formal?.(formal, section, root), renderer.interactive?.(interactive, section, root)].forEach((cleanup) => {
+      if (typeof cleanup === "function") cleanups.push(cleanup);
+    });
+    activeCleanup = () => cleanups.splice(0).reverse().forEach((cleanup) => cleanup());
   };
+
+  window.addEventListener("hashchange", runCleanup);
+  window.addEventListener("pagehide", runCleanup);
 })();

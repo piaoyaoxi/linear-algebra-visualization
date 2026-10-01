@@ -68,8 +68,8 @@ defineChapter6Section("basis-coordinates", {
       answer: `任取有限个多项式，设最高次数为 ${texInline("m")}，它们的线性组合次数都不超过 ${texInline("m")}，表不出 ${texInline("x^{m+1}")}。`,
     },
     {
-      question: `实验中把 ${texInline("p_3")} 的坐标点拖到 ${texInline("(5,1,7)")}，三个多项式还是基吗？`,
-      answer: `不是。${texInline("(5,1,7)=(1,0,2)+(4,1,5)")}，即 ${texInline("p_3=p_1+p_2")}，三个坐标点与原点共面。`,
+      question: `实验中把 ${texInline("p_3")} 的坐标点拖到 ${texInline("(-1,-\\tfrac12,-\\tfrac12)")}，三个多项式还是基吗？`,
+      answer: `不是。${texInline("(-1,-\\tfrac12,-\\tfrac12)=(1,0,2)-\\tfrac12(4,1,5)")}，即 ${texInline("p_3=p_1-\\tfrac12p_2")}，三个坐标点与原点共面。`,
     },
   ],
   summary: [

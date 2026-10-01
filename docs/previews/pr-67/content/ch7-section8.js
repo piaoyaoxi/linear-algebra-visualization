@@ -30,7 +30,7 @@ defineChapter7Section("jordan-form-introduction", {
       {
         title: "用秩读出块的结构",
         tex: String.raw`\#\{\lambda\ \text{的块}\}=n-\operatorname{rank}(A-\lambda E),\qquad \#\{\lambda\ \text{的块中阶数}\ge k\ \text{的}\}=\operatorname{rank}(A-\lambda E)^{k-1}-\operatorname{rank}(A-\lambda E)^{k}`,
-        text: "每个块恰好贡献一个特征向量（链尾），所以块数等于特征子空间的维数；所有属于 λ 的块的阶数之和等于 λ 的重数。阶数 ≤3 时这两条信息已够定出若尔当形，更高阶时要用第二个公式。",
+        text: "每个块恰好贡献一个特征向量（链尾），所以块数等于特征子空间的维数；所有属于 λ 的块的阶数之和等于 λ 的重数。λ 的重数 ≤3 时这两条信息已够定出属于 λ 的若尔当块，更高阶时要用第二个公式。",
       },
     ],
     pitfalls: [

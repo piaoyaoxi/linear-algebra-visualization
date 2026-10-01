@@ -1,22 +1,18 @@
 import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
 
+import { readdir } from "node:fs/promises";
 const files = [
-  "current/visuals/ch7/story-section1.js",
-  "current/visuals/ch7/story-section2.js",
-  "current/visuals/ch7/story-section3.js",
-  "current/visuals/ch7/story-section4.js",
-  "current/visuals/ch7/story-section5.js",
-  "current/visuals/ch7/story-section6.js",
-  "current/visuals/ch7/story-section7.js",
-  "current/visuals/ch7/story-section8.js",
-  "current/visuals/ch7/story-section9.js",
+  ...(await readdir("current/content")).filter((f) => /^ch7[-.]/.test(f)).map((f) => `current/content/${f}`),
+  ...(await readdir("current/visuals/ch7")).filter((f) => f.endsWith(".js")).map((f) => `current/visuals/ch7/${f}`),
 ];
 
 const nativeEscapes = new Set(["b", "f", "n", "r", "t", "v", "x", "u", "0"]);
 const malformed = [];
 for (const file of files) {
-  const source = await readFile(file, "utf8");
+  // String.raw`...` templates keep single backslashes on purpose; blank them out
+  // (keeping line breaks so reported line numbers stay right).
+  const source = (await readFile(file, "utf8")).replace(/String\.raw`[^`]*`|\/\*[\s\S]*?\*\//g, (m) => m.replace(/[^\n]/g, " "));
   const pattern = /(?<!\\)\\([A-Za-z]+)/g;
   for (const match of source.matchAll(pattern)) {
     if (nativeEscapes.has(match[1])) continue;

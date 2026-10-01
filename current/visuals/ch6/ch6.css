@@ -329,13 +329,13 @@ body.dark .ch6l-predict-q > span {
 .ch6p-tick {
   fill: var(--faint);
   font-size: 11px;
-  font-family: Inter, "PingFang SC", sans-serif;
+  font-family: var(--font-serif);
 }
 
 .ch6p-label {
   font-size: 13px;
   font-weight: 700;
-  font-family: Inter, "PingFang SC", sans-serif;
+  font-family: var(--font-serif);
   paint-order: stroke;
   stroke: var(--surface-solid);
   stroke-width: 4px;
@@ -476,7 +476,7 @@ body.dark .ch6l-predict-q > span {
   fill: var(--text);
   font-size: 13px;
   font-weight: 700;
-  font-family: Inter, "PingFang SC", sans-serif;
+  font-family: var(--font-serif);
 }
 
 .ch6m-edge {

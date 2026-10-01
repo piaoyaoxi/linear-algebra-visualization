@@ -309,7 +309,7 @@ body .ch1-lab .tex .katex * {
 
 .ch1-ld-label {
   fill: var(--muted);
-  font: 650 14px ui-sans-serif, system-ui, sans-serif;
+  font: 650 14px var(--font-serif);
 }
 
 .ch1-ld-divisor-text,
@@ -336,12 +336,12 @@ body .ch1-lab .tex .katex * {
 
 .ch1-ld-product-label {
   fill: var(--muted);
-  font: 600 13px ui-sans-serif, system-ui, sans-serif;
+  font: 600 13px var(--font-serif);
 }
 
 .ch1-ld-minus {
   fill: var(--coral);
-  font: 700 25px ui-sans-serif, system-ui, sans-serif;
+  font: 700 25px var(--font-serif);
 }
 
 .ch1-ld-side {

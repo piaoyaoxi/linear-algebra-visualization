@@ -44,7 +44,8 @@ body.dark .usage-card {
 
 .usage-step {
   color: var(--accent-strong);
-  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-family: var(--font-serif);
+  font-variant-numeric: tabular-nums;
   font-size: 12px;
   font-weight: 800;
   letter-spacing: 0.16em;

@@ -302,7 +302,7 @@ _dev/research/3b1b_eola_chapter10.py
 - 共享组件：`visuals/shared/scene3d.js`（3D 场景）；各章实验外壳为 ch3l/ch6l/ch7l/ch9l（同一套样式）；定理块可带 `figure` 与 `ponder`（第三章已用）。
 - CI：`.github/workflows/site-audit.yml` 逐节检查报错、横向滚动、KaTeX 错误、裸 `<`、内部用语、“不是……而是”、页面样式渗进公式。新增内容必须通过。
 - 写 CSS 时不要用 `.xxx span {…}` 这类后代选择器：会命中 KaTeX 内部 span。用 `> span` 或类名。
-- 字体：正文与标题用自带的衬线字体（`current/fonts.css`：Noto Serif 负责西文与希腊字母，思源宋体负责中文，均为 OFL 开源授权），按钮、输入框等控件强制用黑体。字体是裁剪过的子集；新增内容用到字体里没有的汉字时，CI 的 `check-font-coverage.py` 会失败，用 `.github/scripts/build-font-subset.py` 重新生成。纯文字里的下标用 Unicode（εₖ），不要写 ε_k。
+- 字体：正文与标题用自带的衬线字体（`current/fonts.css`：Noto Serif 负责西文与希腊字母，思源宋体负责中文，均为 OFL 开源授权），全站（包括按钮、输入框和画布上的文字）都用这套衬线字体，不再用黑体或等宽字体；画布字体写 `'LA Serif Latin', 'LA Serif SC', 'Songti SC', serif`，矩阵和读数的数字用 `font-variant-numeric: tabular-nums` 对齐。字体是裁剪过的子集；新增内容用到字体里没有的汉字时，CI 的 `check-font-coverage.py` 会失败，用 `.github/scripts/build-font-subset.py` 重新生成。纯文字里的下标用 Unicode（εₖ），不要写 ε_k。
 - 预测门不能被画面泄底：学生选择预测之前，隐藏会直接给出答案的等值线、读数或计数（见 `visuals/ch10/labs.js` 中的 `open = Boolean(flow?.predicted)`）。测试“操作会改变读数”要放在预测之后。
 
 待办：

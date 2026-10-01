@@ -395,7 +395,7 @@
     ctx.strokeStyle = palette.line;
     ctx.fillStyle = palette.muted;
     ctx.lineWidth = 1;
-    ctx.font = "11px ui-sans-serif, system-ui, sans-serif";
+    ctx.font = "11px 'LA Serif Latin', 'LA Serif SC', 'Songti SC', serif";
     const origin = cam.toScreen(0, 0);
     ctx.beginPath();
     if (origin.y >= 0 && origin.y <= height) { ctx.moveTo(12, origin.y); ctx.lineTo(width - 12, origin.y); }
@@ -449,7 +449,7 @@
     });
     if (options.caption) {
       ctx.fillStyle = palette.muted;
-      ctx.font = "12px ui-sans-serif, system-ui, sans-serif";
+      ctx.font = "12px 'LA Serif Latin', 'LA Serif SC', 'Songti SC', serif";
       ctx.lineWidth = 4;
       ctx.strokeStyle = palette.surface;
       ctx.strokeText(options.caption, 14, height - 12);
@@ -474,7 +474,7 @@
         ctx.stroke();
       }
       ctx.fillStyle = palette.text;
-      ctx.font = "12px ui-sans-serif, system-ui, sans-serif";
+      ctx.font = "12px 'LA Serif Latin', 'LA Serif SC', 'Songti SC', serif";
       /* above the stacked dots, so it never lands on a tick number */
       ctx.textAlign = "center";
       if (root.label) ctx.fillText(root.label, base.x, base.y - ((root.m || 1) - 1) * 7 - 13);
@@ -489,7 +489,7 @@
     const cam = camera(width, height, options.bounds || { xMin: -3, xMax: 3, yMin: -3, yMax: 3 });
     drawAxes(ctx, width, height, cam, palette);
     ctx.fillStyle = palette.muted;
-    ctx.font = "11px ui-sans-serif, system-ui, sans-serif";
+    ctx.font = "11px 'LA Serif Latin', 'LA Serif SC', 'Songti SC', serif";
     const re = cam.toScreen(cam.bounds.xMax - 0.25, 0);
     const im = cam.toScreen(0, cam.bounds.yMax - 0.25);
     ctx.fillText("Re", re.x - 12, re.y - 7);
@@ -501,7 +501,7 @@
       ctx.arc(p.x, p.y, point.r || 7, 0, Math.PI * 2);
       ctx.fill();
       ctx.fillStyle = palette.text;
-      ctx.font = "12px ui-sans-serif, system-ui, sans-serif";
+      ctx.font = "12px 'LA Serif Latin', 'LA Serif SC', 'Songti SC', serif";
       if (point.label) ctx.fillText(point.label, p.x + 9, p.y - 7);
     });
     return cam;
@@ -515,7 +515,7 @@
     const pad = 44;
     const sx = (width - 2 * pad) / Math.max(1, maxI);
     const sy = (height - 2 * pad) / Math.max(1, maxJ);
-    ctx.font = "11px ui-sans-serif, system-ui, sans-serif";
+    ctx.font = "11px 'LA Serif Latin', 'LA Serif SC', 'Songti SC', serif";
     for (let i = 0; i <= maxI; i++) {
       for (let j = 0; j <= maxJ; j++) {
         const x = pad + i * sx;

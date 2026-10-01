@@ -119,7 +119,7 @@
 
 #quadratic-matrix-formal .ch5s1-matrix-map button {
   min-height: 58px;
-  font: 800 17px ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font: 800 17px var(--font-serif);
 }
 
 #quadratic-matrix-formal .ch5s1-map-copy {

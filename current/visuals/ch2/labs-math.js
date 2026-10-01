@@ -261,12 +261,12 @@
 
     ctx.save();
     ctx.fillStyle = palette.text;
-    ctx.font = "600 12px ui-sans-serif, system-ui, sans-serif";
+    ctx.font = "600 12px 'LA Serif Latin', 'LA Serif SC', 'Songti SC', serif";
     ctx.fillText(options.firstLabel || "Ae₁", p1.x + 8, p1.y - 7);
     ctx.fillText(options.secondLabel || "Ae₂", p3.x + 8, p3.y - 7);
     if (options.caption) {
       ctx.fillStyle = palette.muted;
-      ctx.font = "12px ui-sans-serif, system-ui, sans-serif";
+      ctx.font = "12px 'LA Serif Latin', 'LA Serif SC', 'Songti SC', serif";
       ctx.fillText(options.caption, 15, height - 14);
     }
     ctx.restore();

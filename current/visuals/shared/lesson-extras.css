@@ -70,8 +70,8 @@
 }
 
 /* SVG figure tokens */
-.lx-svg-text { fill: var(--text); font: 600 13px Inter, "PingFang SC", sans-serif; }
-.lx-svg-muted { fill: var(--muted); font: 500 12px Inter, "PingFang SC", sans-serif; }
+.lx-svg-text { fill: var(--text); font: 600 13px var(--font-serif); }
+.lx-svg-muted { fill: var(--muted); font: 500 12px var(--font-serif); }
 .lx-svg-line { stroke: var(--line-strong); fill: none; }
 .lx-svg-cell { fill: var(--surface-soft); stroke: var(--line); }
 .lx-svg-hi { fill: var(--accent-soft); stroke: var(--accent); }

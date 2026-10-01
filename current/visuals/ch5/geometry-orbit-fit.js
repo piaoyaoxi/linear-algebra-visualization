@@ -255,7 +255,7 @@
     arrow(ctx, origin, yAxis, palette.text);
     arrow(ctx, origin, zAxis, palette.text);
     ctx.fillStyle = palette.muted;
-    ctx.font = "600 12px ui-sans-serif, system-ui, sans-serif";
+    ctx.font = "600 12px 'LA Serif Latin', 'LA Serif SC', 'Songti SC', serif";
     ctx.fillText("x₁", xAxis.x + 5, xAxis.y + 2);
     ctx.fillText("x₂", yAxis.x - 18, yAxis.y + 2);
     ctx.fillText("q", zAxis.x + 6, zAxis.y + 2);
@@ -305,11 +305,11 @@
     const maximum = Math.max(...values);
     const state = minimum > EPS ? "全部 > 0" : minimum < -EPS ? "出现 < 0" : "接触 0";
     ctx.fillStyle = palette.text;
-    ctx.font = "800 22px ui-sans-serif, system-ui, sans-serif";
+    ctx.font = "800 22px 'LA Serif Latin', 'LA Serif SC', 'Songti SC', serif";
     ctx.textAlign = "center";
     ctx.fillText(state, cx, cy - 2);
     ctx.fillStyle = palette.muted;
-    ctx.font = "12px ui-sans-serif, system-ui, sans-serif";
+    ctx.font = "12px 'LA Serif Latin', 'LA Serif SC', 'Songti SC', serif";
     ctx.fillText(`min ${M().formatNum(minimum, 3)} · max ${M().formatNum(maximum, 3)}`, cx, cy + 22);
     ctx.textAlign = "left";
   }

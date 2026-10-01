@@ -833,12 +833,58 @@
 
   /* ---------- formal sections: compact theorem blocks from content data ---------- */
 
+  /* Static figures for theorem blocks: { html, mount(el) -> cleanup }. */
+  const FIGURES = {
+    "three-planes": () => {
+      const cases = [
+        { label: "交于一点", sub: "唯一解", rows: [[1, 0, 0, 0], [0, 1, 0, 0], [0, 0, 1, 0]] },
+        { label: "交于一条直线", sub: "无穷多解", rows: [[1, 0, -1, 0], [0, 1, -1, 0], [1, 1, -2, 0]] },
+        { label: "三棱柱", sub: "两两相交，无公共点", rows: [[1, 0, -1, 0.8], [0, 1, -1, -0.8], [1, 1, -2, 0.8]], view: [1, 0.94, 1.04] },
+        { label: "两个平面平行", sub: "无解", rows: [[0, 0, 1, -1], [0, 0, 1, 1], [1, -1, 0, 0]] },
+        { label: "三个平面重合", sub: "解集是一个平面", rows: [[1, 1, 1, 0], [2, 2, 2, 0], [-1, -1, -1, 0]] },
+      ];
+      return {
+        html: `<div class="ch3l-mini-row">${cases.map((c, i) => `<figure class="ch3l-mini" data-mini="${i}"><figcaption><strong>${c.label}</strong><span>${c.sub}</span></figcaption></figure>`).join("")}</div>`,
+        mount(el) {
+          const scenes = cases.map((c, i) => {
+            const host = el.querySelector(`[data-mini="${i}"]`);
+            const scene = S().create(host, { range: 2.2, yaw: -0.75, pitch: 0.42, hint: "", frame: false, label: c.label });
+            host.prepend(scene.element);
+            if (c.view) scene.lookAlong(c.view, false);
+            const aug = c.rows.map((r) => r.map(F));
+            scene.setObjects(() => [
+              ...c.rows.map((r, j) => ({ type: "plane", n: r.slice(0, 3), d: r[3], color: PLANE_COLORS[j], alpha: 0.16, width: 1 })),
+              ...solutionObjects(aug).map((o) => ({ ...o, label: undefined })),
+            ]);
+            return scene;
+          });
+          return () => scenes.forEach((sc) => sc.destroy());
+        },
+      };
+    },
+  };
+
   function renderFormal(root, section) {
     const f = section.lesson3d;
-    if (!root || !f) return;
+    if (!root || !f) return undefined;
+    const mounts = [];
+    const figureHtml = (key, i) => {
+      const make = FIGURES[key];
+      if (!make) return "";
+      const fig = make();
+      mounts.push({ i, fig });
+      return `<div class="ch3l-figure" data-figure="${i}">${fig.html}</div>`;
+    };
+    const ponder = (p) =>
+      p ? `<details class="ch3l-ponder"><summary><span>停一下</span>${p.q}</summary><p>${p.a}</p></details>` : "";
     root.innerHTML = `<h2>定理与方法</h2><div class="ch3l-formal">${f.blocks
-      .map((b) => `<article class="ch3l-theorem"><h3>${b.title}</h3>${b.tex ? `<div class="ch3l-theorem-math">${texD(b.tex)}</div>` : ""}${b.text ? `<p>${b.text}</p>` : ""}</article>`)
+      .map(
+        (b, i) =>
+          `<article class="ch3l-theorem"><h3>${b.title}</h3>${b.tex ? `<div class="ch3l-theorem-math">${texD(b.tex)}</div>` : ""}${b.text ? `<p>${b.text}</p>` : ""}${b.figure ? figureHtml(b.figure, i) : ""}${ponder(b.ponder)}</article>`,
+      )
       .join("")}${f.pitfalls?.length ? `<div class="ch3l-pitfalls"><h3>容易错在哪里</h3><ul>${f.pitfalls.map((p) => `<li>${p}</li>`).join("")}</ul></div>` : ""}</div>`;
+    const cleanups = mounts.map(({ i, fig }) => fig.mount(root.querySelector(`[data-figure="${i}"]`)));
+    return () => cleanups.forEach((c) => c?.());
   }
 
   const LABS = {

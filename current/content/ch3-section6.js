@@ -23,6 +23,10 @@ defineChapter3Section("solution-structure", {
       },
       {
         title: "非齐次方程组：特解 + 解空间",
+        ponder: {
+          q: "解空间是子空间，非齐次方程组的解集为什么不是？",
+          a: "b≠0 时解集不含零向量，两个解之和也不再是解。它是把子空间整体平移后的结果，几何上是一条不过原点的直线或一个不过原点的平面。",
+        },
         tex: String.raw`Ax_0=b\ \Longrightarrow\ \{x:Ax=b\}=\{x_0+\eta:\ A\eta=0\}`,
         text: `若 ${texInline("Ax=b")}，则 ${texInline("A(x-x_0)=0")}，所以 ${texInline("x-x_0")} 是齐次解；反过来，${texInline("A(x_0+\\eta)=b+0=b")}。b≠0 时，原点不是解。解集是把 n−r 维解空间平移到 x₀ 处得到的（三维里可能是一个点、一条直线或一个平面），它与解空间平行。`,
       },

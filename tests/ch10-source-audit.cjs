@@ -8,6 +8,7 @@ const roots = [
   "current/content/ch10-section3.js",
   "current/content/ch10-section4.js",
   "current/content/ch10.js",
+  "current/content/ch10-assemble.js",
   "current/visuals/ch10",
   "current/structured-learning.js",
 ];
@@ -59,7 +60,8 @@ function visit(target) {
   }
   if (!target.endsWith(".js")) return;
   const lines = fs.readFileSync(target, "utf8").split(/\r?\n/);
-  lines.forEach((line, index) => inspectLine(target, line, index + 1));
+  // String.raw templates keep single backslashes on purpose; check everything else.
+  lines.forEach((line, index) => inspectLine(target, line.replace(/String\.raw`[^`]*`/g, "``"), index + 1));
 }
 
 roots.forEach((root) => visit(root));
@@ -84,6 +86,18 @@ for (const file of collectFiles("current/visuals/ch10")) {
 
 const learnSource = fs.readFileSync("current/learn.html", "utf8");
 if (/cinematic\.css|cinematic\.js/.test(learnSource)) visualFindings.push({ file: "current/learn.html", rule: "cinematic-resource" });
+for (const resource of ["visuals/ch10/labs.css", "visuals/ch10/labs.js", "visuals/ch10/registry.js", "visuals/ch10/mount.js", "content/ch10-assemble.js"]) {
+  if (!learnSource.includes(resource)) visualFindings.push({ file: "current/learn.html", rule: "missing-resource", value: resource });
+}
+if (/visuals\/ch10\/(base|section\d-presentation|shared)\./.test(learnSource)) visualFindings.push({ file: "current/learn.html", rule: "retired-ch10-resource" });
+
+// Chapter 10 now renders through the standard lesson page; the structured renderer must stay retired.
+for (const file of collectFiles("current/visuals/ch10")) {
+  const source = fs.readFileSync(file, "utf8");
+  if (/defineStructuredChapterRenderer/.test(source)) visualFindings.push({ file, rule: "structured-renderer-registration" });
+  // Descendant selectors such as ".foo span" reach into KaTeX internals.
+  if (file.endsWith(".css") && /[.#][\w-]+[^{,]*\s(span|li span)\s*[{,]/.test(source)) visualFindings.push({ file, rule: "descendant-span-selector" });
+}
 
 console.log(JSON.stringify({ findings, visualFindings }, null, 2));
 if (findings.length || visualFindings.length) process.exitCode = 1;

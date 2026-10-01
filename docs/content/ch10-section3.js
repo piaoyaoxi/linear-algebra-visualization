@@ -1,171 +1,88 @@
-defineChapter10Section({
-  id: "bilinear-form",
+defineChapter10Section("bilinear-form", {
   number: "§3",
   textbookSection: "双线性函数",
   title: "双线性函数",
   navTitle: "双线性函数",
-  question: "两个向量怎样共同进入一个函数，并让每个输入槽都保持线性？",
-  goal: "理解双输入槽、配对矩阵、两条等价计算路径、合同换基、对称与交错分解、退化根空间以及二次型连接。",
-  tags: ["双线性函数", "配对矩阵", "合同变换"],
+  question: "两个向量怎样一起读出一个数？",
+  goal: "理解双线性函数与度量矩阵 aᵢⱼ=f(εᵢ,εⱼ)，会用 f(α,β)=XᵀAY 计算；掌握换基公式 B=CᵀAC，会判断非退化，能把双线性函数分成对称与反对称两部分。",
+  tags: ["双线性函数", "度量矩阵", "合同", "非退化", "对称与反对称"],
   intro:
-    "双线性函数不是把向量对整体当成一个普通向量。固定右槽时，左槽得到一个线性函数；固定左槽时，右槽也得到一个线性函数。矩阵记录的是基向量之间所有可能的配对读数。",
-  interactive: {
-    type: "bilinear-mixer",
-    title: "双输入机器",
-    question: "固定一个输入槽后，另一个输入槽为什么变成线性函数？",
-    instruction:
-      "先固定右槽，沿左侧等值线移动 x；再固定左槽，沿右侧等值线移动 y。切换计算路径，确认两条路线得到同一个标量。",
-    presets: [
-      { id: "symmetric", label: "对称", matrix: [2, 1, 1, 2] },
-      { id: "alternating", label: "交错", matrix: [0, 1, -1, 0] },
-      { id: "general", label: "一般", matrix: [2, 1, -1, 3] },
-      { id: "degenerate", label: "退化", matrix: [1, 2, 2, 4] },
-    ],
-    tasks: [
-      "固定 y，把 x 放大 2 倍，观察输出是否放大 2 倍。",
-      "交换 x 与 y，比较对称、交错和一般预设的读数关系。",
-      "切换两条计算路径：先算 Ay 再由 x 读取，或先算 Aᵀx 再由 y 读取。",
-      "在退化预设中锁定左根方向，再任意改变 y，确认输出始终为 0。",
-    ],
-  },
+    "双线性函数 f(α,β) 同时读两个向量，对每个变量都是线性的。固定 β，f(·,β) 就是一个线性函数，画出来是一族平行线；β 一动，这族线跟着转动，疏密也变。取定基后，f 的全部信息记在度量矩阵 A 里。",
   concepts: [
-    {
-      label: "分别线性",
-      text: `${texInline("B:V\\times W\\to F")} 对左右两个输入槽分别满足可加性与齐次性。`,
-    },
-    {
-      label: "配对矩阵",
-      text: `${texInline("a_{ij}=B(e_i,f_j)")}，因此 ${texInline("B(x,y)=x^TAy")}。`,
-    },
-    {
-      label: "合同换基",
-      text: `同一空间同时换基时，${texInline("A'=P^TAP")}。`,
-    },
-    {
-      label: "退化",
-      text: "存在非零方向与另一槽所有向量配对都为 0 时，双线性函数退化。",
-    },
+    { label: "度量矩阵", text: texInline(String.raw`f(\alpha,\beta)=X^TAY,\ a_{ij}=f(\varepsilon_i,\varepsilon_j)`) },
+    { label: "换基", text: texInline(String.raw`(\eta)=(\varepsilon)C\Rightarrow B=C^TAC`) },
   ],
-  pairingMatrix: {
-    title: "矩阵是一张基向量配对表",
-    matrix: [
-      [2, 1],
-      [-1, 3],
-    ],
-    rowLabels: [texInline("e_1"), texInline("e_2")],
-    columnLabels: [texInline("e_1"), texInline("e_2")],
-    task: "点击一个矩阵格子，观察对应的两支基向量进入双输入机器；再从一对基向量反向定位格子。",
-  },
-  rebuild: {
-    title: "从基配对值重建一般输入",
-    steps: [
-      { label: "拆开左输入", formula: texInline("x=\\sum_i x_i e_i") },
-      { label: "拆开右输入", formula: texInline("y=\\sum_j y_j f_j") },
-      { label: "形成所有配对", formula: texInline("B(e_i,f_j)=a_{ij}") },
-      { label: "按坐标加权汇总", formula: texInline("B(x,y)=\\sum_{i,j}x_i a_{ij}y_j") },
-    ],
-  },
-  congruence: {
-    title: "合同舞台",
-    text: "换基改变配对矩阵的记录方式，但同一对几何向量的配对值不变。",
-    matrix: [2, 1, -1, 3],
-    basisChange: [1, 1, 0, 1],
-    vectorX: [1, 2],
-    vectorY: [2, -1],
-  },
-  symmetrySplit: {
-    title: "交换两个输入会发生什么",
-    matrix: [2, 3, -1, 1],
-    tabs: [
+  textbook: { reference: "北大版《高等代数》第十章 §3", items: ["双线性函数与度量矩阵", "换基与合同", "非退化双线性函数", "对称与反对称双线性函数"] },
+  interactive: { type: "slot", title: "固定一个变量，得到一个线性函数" },
+  lesson3d: {
+    blocks: [
       {
-        id: "symmetric",
-        label: "对称部分",
-        formula: texInline("S=(A+A^T)/2"),
-        relation: texInline("B_S(x,y)=B_S(y,x)"),
+        title: "度量矩阵",
+        tex: String.raw`f(\alpha,\beta)=X^TAY,\qquad A=\big(f(\varepsilon_i,\varepsilon_j)\big)_{n\times n}`,
+        text: "f 对每个变量都线性：f(k₁α₁+k₂α₂,β)=k₁f(α₁,β)+k₂f(α₂,β)，对 β 同样成立。X、Y 是 α、β 的坐标。固定 β，f(α,β) 是 α 的线性函数，系数是 AY；固定 α，系数是 AᵀX。",
+        ponder: {
+          q: "a₁₂ 与 a₂₁ 分别读的是什么？",
+          a: "a₁₂=f(ε₁,ε₂)，a₂₁=f(ε₂,ε₁)。f 不对称时两者可以不同，下标的次序不能交换。",
+        },
       },
       {
-        id: "skew",
-        label: "斜对称部分",
-        formula: texInline("K=(A-A^T)/2"),
-        relation: texInline("B_K(x,y)=-B_K(y,x)"),
+        title: "换基与合同",
+        tex: String.raw`(\eta_1,\dots,\eta_n)=(\varepsilon_1,\dots,\varepsilon_n)C\ \Longrightarrow\ B=C^TAC`,
+        text: "B 的 (i,j) 元是 f(ηᵢ,ηⱼ)。同一个双线性函数在不同基下的度量矩阵彼此合同，秩相同。f 称为非退化的，指 f(α,β)=0 对一切 β 成立时必有 α=0；这当且仅当度量矩阵满足 |A|≠0。",
+        ponder: {
+          q: "B=CᵀAC 与第七章线性变换的换基公式 X⁻¹AX 为什么不同？",
+          a: "双线性函数的两个变量都要换坐标：把 X=CX′、Y=CY′ 代入 XᵀAY，得到 X′ᵀ(CᵀAC)Y′。",
+        },
       },
       {
-        id: "whole",
-        label: "重新叠加",
-        formula: texInline("A=S+K"),
-        relation: "一般配对同时包含两种结构。",
+        title: "对称与反对称",
+        tex: String.raw`A=\tfrac12\left(A+A^T\right)+\tfrac12\left(A-A^T\right)`,
+        text: "f(α,β)=f(β,α) 时称 f 对称，度量矩阵对称，并且可以选基使它成为对角矩阵；f(α,β)=−f(β,α) 时称 f 反对称，此时 f(α,α)=0。每个双线性函数都唯一地写成对称部分与反对称部分之和。",
+        ponder: {
+          q: "f(α,β)=x₁y₂ 的对称部分与反对称部分各是什么？",
+          a: "对称部分 ½(x₁y₂+x₂y₁)，反对称部分 ½(x₁y₂−x₂y₁)。",
+        },
       },
     ],
-  },
-  radical: {
-    title: "隐身方向测试",
-    fullRank: [2, 1, -1, 2],
-    degenerate: [1, 2, 2, 4],
-    nonsymmetricDegenerate: [1, 2, 0, 0],
-    text: "左根中的非零向量对所有右槽输入都读数为 0；右根则交换两个输入槽。",
-  },
-  quadraticMerge: {
-    title: "把两个输入合并为同一个向量",
-    symmetric: [2, 1, 1, 3],
-    skew: [0, 2, -2, 0],
-    vector: [1, 2],
-    conclusion: `${texInline("x^TAx=x^T((A+A^T)/2)x")}；斜对称部分在对角输入中消失。`,
+    pitfalls: [
+      "换基时写成 C⁻¹AC。双线性函数的度量矩阵按合同 CᵀAC 变化。",
+      "把 aᵢⱼ 记成 f(εⱼ,εᵢ)。f 不对称时，次序一换矩阵就成了 Aᵀ。",
+      "以为 A≠0 就非退化。非退化要求 |A|≠0。",
+    ],
   },
   example: {
-    title: "由基配对值写出矩阵并计算",
-    question: `已知 ${texInline("B(e_1,e_1)=2")}、${texInline("B(e_1,e_2)=1")}、${texInline("B(e_2,e_1)=-1")}、${texInline("B(e_2,e_2)=3")}。计算 ${texInline("B((1,2)^T,(3,-1)^T)")} 并判断结构。`,
+    title: "例题：换基后的度量矩阵",
+    question: `双线性函数 f 在基 ε₁, ε₂ 下的度量矩阵是 ${texInline(String.raw`A=\begin{pmatrix}1&2\\0&3\end{pmatrix}`)}。新基 ${texInline(String.raw`\eta_1=\varepsilon_1,\ \eta_2=\varepsilon_1+\varepsilon_2`)} 下的度量矩阵是什么？`,
+    choices: [
+      { correct: true, text: texInline(String.raw`\begin{pmatrix}1&3\\1&6\end{pmatrix}`) },
+      { text: texInline(String.raw`\begin{pmatrix}1&0\\0&3\end{pmatrix}`) },
+      { text: texInline(String.raw`\begin{pmatrix}1&3\\0&3\end{pmatrix}`) },
+      { text: texInline(String.raw`\begin{pmatrix}1&2\\0&3\end{pmatrix}`) },
+    ],
     steps: [
-      {
-        title: "把配对值放进正确格子",
-        text: `${texInline("A=\\begin{bmatrix}2&1\\\\-1&3\\end{bmatrix}")}。`,
-      },
-      {
-        title: "先让右输入经过矩阵",
-        text: `${texInline("Ay=\\begin{bmatrix}5\\\\-6\\end{bmatrix}")}。`,
-      },
-      {
-        title: "由左输入读取结果",
-        text: `${texInline("x^T(Ay)=5-12=-7")}。`,
-      },
-      {
-        title: "检查交换关系",
-        text: "矩阵既不对称也不斜对称，因此交换输入后一般既不相等也不互为相反数。",
-      },
-      {
-        title: "检查退化性",
-        text: `${texInline("\\det A=7\\ne0")}，所以左根与右根都只有零向量。`,
-      },
+      `过渡矩阵 ${texInline(String.raw`C=\begin{pmatrix}1&1\\0&1\end{pmatrix}`)}，新矩阵 ${texInline("B=C^TAC")}。`,
+      `逐个读出：${texInline(String.raw`f(\eta_1,\eta_1)=a_{11}=1`)}，${texInline(String.raw`f(\eta_1,\eta_2)=a_{11}+a_{12}=3`)}，${texInline(String.raw`f(\eta_2,\eta_1)=a_{11}+a_{21}=1`)}，${texInline(String.raw`f(\eta_2,\eta_2)=1+2+0+3=6`)}。`,
+      `所以 ${texInline(String.raw`B=\begin{pmatrix}1&3\\1&6\end{pmatrix}`)}，与 ${texInline("C^TAC")} 相符。`,
+      `${texInline(String.raw`\begin{pmatrix}1&0\\0&3\end{pmatrix}`)} 是 ${texInline("C^{-1}AC")}，那是线性变换的换基公式；${texInline(String.raw`\begin{pmatrix}1&3\\0&3\end{pmatrix}`)} 是 ${texInline("AC")}，只换了第二个变量；A 本身是旧基下的矩阵。`,
     ],
   },
   quiz: [
     {
-      question: "双线性是否意味着对向量对整体线性？",
-      answer: "不是。它要求固定任意一个槽后，对另一个槽线性。",
+      question: `${texInline("P^2")} 上 ${texInline("f(x,y)=x_1y_2")} 的度量矩阵是什么？f 非退化吗？`,
+      answer: "A=(0 1; 0 0)，|A|=0，f 退化：例如 f(ε₂,β)=0 对一切 β 成立，而 ε₂≠0。",
     },
     {
-      question: `矩阵元素 ${texInline("a_{ij}")} 表示什么？`,
-      answer: `${texInline("a_{ij}=B(e_i,f_j)")}。`,
+      question: "为什么同一个双线性函数在不同基下的度量矩阵秩相同？",
+      answer: "B=CᵀAC，C 可逆，乘可逆矩阵不改变秩。所以“非退化”与基的选取无关。",
     },
     {
-      question: "同一空间换基时为什么得到合同而不是相似？",
-      answer: "两个输入坐标都改变，一侧产生转置因子，因此矩阵按 PᵀAP 变化。",
-    },
-    {
-      question: `若 ${texInline("A^T=-A")} 且数域特征不为 2，${texInline("B(x,x)")} 等于什么？`,
-      answer: "恒等于 0。",
-    },
-    {
-      question: "二次型为什么不能恢复一般双线性函数？",
-      answer: "因为斜对称部分代入同一个向量两次时恒为 0。",
-    },
-    {
-      question: "左根与右根一定相同吗？",
-      answer: "不一定；一般矩阵的左核与右核可能不同，只有在特殊结构下才会重合。",
+      question: "欧氏空间的内积 (α,β) 是双线性函数吗？它的度量矩阵有什么特点？",
+      answer: "是，并且是对称的；它的度量矩阵对称正定，就是第九章的度量矩阵。",
     },
   ],
   summary: [
-    "双线性函数有两个分别线性的输入槽，矩阵记录基向量之间的全部配对。",
-    "换基按合同改变记录；对称、斜对称和退化性描述不同结构。",
-    "辛形式将从交错且非退化的双线性函数中产生。",
+    "取定基后 f(α,β)=XᵀAY，aᵢⱼ=f(εᵢ,εⱼ)；固定一个变量，就得到另一个变量的线性函数。",
+    "换基 (η)=(ε)C 时度量矩阵变成 CᵀAC，彼此合同；f 非退化当且仅当 |A|≠0。",
+    "每个双线性函数唯一地分成对称部分与反对称部分。",
   ],
 });

@@ -1,214 +1,88 @@
-defineChapter10Section({
-  id: "symplectic-space",
+defineChapter10Section("symplectic-space", {
   number: "＊§4",
   textbookSection: "辛空间",
   title: "辛空间",
   navTitle: "辛空间",
-  question: "如果一种双线性结构测量的是成对方向之间的有向面积，它还需要满足什么条件？",
-  goal: "从二维有向面积进入交错与非退化，理解标准辛矩阵、偶数维、辛基、辛变换和辛正交补。",
-  tags: ["辛形式", "有向面积", "辛变换"],
+  question: "什么样的双线性函数可以当作“有向面积”？",
+  goal: "知道辛空间是带有非退化反对称双线性函数的线性空间，维数是偶数，存在辛基；知道辛变换保持 ω，在平面上就是行列式为 1 的线性变换。",
+  tags: ["选学", "辛内积", "有向面积", "辛基", "辛变换"],
   intro:
-    "二维中，标准辛配对就是两个向量张成的有向面积。交换顺序会变号，共线时为 0。但仅有交错还不够：辛形式还要非退化，任何非零方向都必须能找到一个搭档产生非零配对。",
-  interactive: {
-    type: "symplectic-area",
-    title: "有向面积配对",
-    question: "哪些操作改变向量，却不改变它们的辛配对？",
-    instruction:
-      "拖动两支向量，先完成交换、共线、缩放和加倍数四个观察任务。随后进入变换对照，比较长度、面积与辛配对分别是否保持。",
-    tasks: [
-      "交换 x 与 y，确认面积绝对值不变而符号反转。",
-      "令 y 与 x 共线，确认配对精确变为 0。",
-      "把 x 放大 λ 倍，确认配对也放大 λ 倍。",
-      "把 y 替换为 y+tx，确认有向面积不变。",
-    ],
-  },
+    "平面上 ω(x,y)=x₁y₂−x₂y₁ 是 x、y 张成的平行四边形的有向面积。它是反对称的双线性函数，ω(x,x)=0，并且非退化。下面对 x、y 施加几种线性变换：剪切改变长度和角度，ω 却保持不变。",
   concepts: [
-    {
-      label: "交错",
-      text: `${texInline("\\omega(x,x)=0")}；在特征不为 2 时等价于交换变号。`,
-    },
-    {
-      label: "非退化",
-      text: `若 ${texInline("\\omega(x,y)=0")} 对所有 ${texInline("y")} 都成立，则 ${texInline("x=0")}。`,
-    },
-    {
-      label: "标准矩阵",
-      text: `${texInline("J=\\begin{bmatrix}0&I\\\\-I&0\\end{bmatrix}")}，${texInline("\\omega(x,y)=x^TJy")}。`,
-    },
-    {
-      label: "辛变换",
-      text: `${texInline("S^TJS=J")}，等价于保持所有辛配对。`,
-    },
+    { label: "辛内积", text: `${texInline(String.raw`\omega(\alpha,\beta)=-\omega(\beta,\alpha)`)}，且 ω 非退化` },
+    { label: "辛变换", text: texInline(String.raw`K^TJK=J`) },
   ],
-  jLens: {
-    title: "标准矩阵 J 怎样计算有向面积",
-    matrix: [0, 1, -1, 0],
-    vectorX: [2, 1],
-    vectorY: [-1, 2],
-    steps: [
-      { label: "输入右向量", formula: texInline("y") },
-      { label: "由 J 改写测量方向", formula: texInline("Jy") },
-      { label: "由左向量读取", formula: texInline("x^T(Jy)") },
-      { label: "回到几何", formula: texInline("\\det[x\\;y]") },
+  textbook: { reference: "北大版《高等代数》第十章 ＊§4", items: ["辛空间与辛内积", "辛基", "辛变换"] },
+  interactive: { type: "slot", title: "保持有向面积的变换" },
+  lesson3d: {
+    blocks: [
+      {
+        title: "辛空间",
+        tex: String.raw`\omega(\alpha,\beta)=-\omega(\beta,\alpha),\qquad \omega(\alpha,\alpha)=0`,
+        text: "数域 P 上的线性空间 V 带有一个非退化的反对称双线性函数 ω，称为辛空间，ω 称为辛内积。反对称矩阵满足 |A|=|Aᵀ|=|−A|=(−1)ⁿ|A|，n 为奇数时 |A|=0，所以辛空间的维数是偶数。",
+        ponder: {
+          q: "平面上 ω(x,y)=0 说明 x、y 是什么关系？",
+          a: "x、y 共线：平行四边形压成一条线段，有向面积为 0。",
+        },
+      },
+      {
+        title: "辛基",
+        tex: String.raw`\omega(\varepsilon_i,\varepsilon_{-i})=1,\quad \omega(\varepsilon_i,\varepsilon_j)=0\ (i+j\ne0),\qquad J=\begin{pmatrix}0&E_n\\-E_n&0\end{pmatrix}`,
+        text: "2n 维辛空间中存在满足上式的基 ε₁,…,εₙ,ε₋₁,…,ε₋ₙ，称为辛基，ω 在辛基下的矩阵是 J。平面上 ε₁=(1,0)、ε₋₁=(0,1) 就是一组辛基。",
+        ponder: {
+          q: "平面上给定 ε₁=(1,0)，满足 ω(ε₁,ε₋₁)=1 的 ε₋₁ 唯一吗？",
+          a: "不唯一。ε₋₁=(t,1) 对任意 t 都满足 ω(ε₁,ε₋₁)=1。",
+        },
+      },
+      {
+        title: "辛变换",
+        tex: String.raw`\omega(\sigma\alpha,\sigma\beta)=\omega(\alpha,\beta)\iff K^TJK=J`,
+        text: "保持辛内积的线性变换称为辛变换，K 是它在辛基下的矩阵。平面上 ω(Kx,Ky)=|K|ω(x,y)，所以辛变换就是 |K|=1 的变换，例如剪切与旋转。高维时辛变换的行列式仍是 1，但 |K|=1 不能保证 K 是辛变换。",
+        ponder: {
+          q: "P⁴ 中取辛基 ε₁, ε₂, ε₋₁, ε₋₂，K=diag(2,1,1,½)。|K|=1，K 是辛变换吗？",
+          a: "不是。ω(Kε₁,Kε₋₁)=ω(2ε₁,ε₋₁)=2≠1。",
+        },
+      },
     ],
-  },
-  structureTests: {
-    title: "交错与非退化是两个不同测试",
-    alternating: {
-      label: "交错测试",
-      text: "把两个输入逐渐合并，平行四边形收缩为 0；这对每个向量都成立。",
-      formula: texInline("\\omega(x,x)=0"),
-    },
-    nondegenerate: {
-      label: "非退化测试",
-      text: "固定非零 x，让 y 绕一圈；必须能找到某个 y 使配对不为 0。",
-      formula: texInline("\\omega(x,y)\\ne0"),
-    },
-    degenerateContrast: {
-      label: "退化对照",
-      text: "存在一个非零隐身方向，它与所有 y 的配对都为 0，因此不能构成辛空间。",
-    },
-  },
-  evenDimension: {
-    title: "为什么方向必须成对出现",
-    visualPairs: [
-      { label: texInline("(e_1,f_1)"), value: 1 },
-      { label: texInline("(e_2,f_2)"), value: 1 },
+    pitfalls: [
+      "以为辛变换保持长度和角度。剪切保持 ω，却改变长度与夹角。",
+      "把 ω 当作内积。ω(x,x)=0 对一切 x 成立，它不衡量长度。",
+      "以为高维时 |K|=1 就够了。辛变换的条件是 KᵀJK=J。",
     ],
-    algebra: [
-      "交错形式的矩阵是斜对称矩阵。",
-      "奇数阶斜对称矩阵的行列式必为 0。",
-      "非退化要求矩阵可逆。",
-      "因此辛空间维数必须是偶数。",
-    ],
-  },
-  symplecticBasis: {
-    title: "辛基拼装器",
-    order: [texInline("e_1"), texInline("e_2"), texInline("f_1"), texInline("f_2")],
-    pairings: [
-      [0, 0, 1, 0],
-      [0, 0, 0, 1],
-      [-1, 0, 0, 0],
-      [0, -1, 0, 0],
-    ],
-    task: "点击配对矩阵中的非零格子，查看哪一对基向量形成一个标准面积单元，以及顺序怎样决定正负号。",
-  },
-  transformLab: {
-    title: "辛变换实验室",
-    presets: [
-      { id: "identity", label: "原始", kind: "identity" },
-      { id: "shear", label: "剪切", kind: "shear" },
-      { id: "reciprocal", label: "互补缩放", kind: "reciprocal" },
-      { id: "rotation", label: "旋转", kind: "rotation" },
-      { id: "uniform", label: "均匀缩放", kind: "uniform" },
-    ],
-    vectorX: [2, 1],
-    vectorY: [-1, 2],
-    tasks: [
-      "比较变换前后的平行四边形与配对值。",
-      "观察剪切与互补缩放怎样改变长度，却保持配对。",
-      "选择均匀缩放，说明为什么面积与配对一起改变。",
-      "查看矩阵差 SᵀJS−J，而不是只看行列式。",
-    ],
-  },
-  preservationCompare: [
-    {
-      id: "orthogonal",
-      title: "正交",
-      keeps: "长度与角度",
-      condition: texInline("Q^TQ=I"),
-      visual: "圆仍是圆",
-    },
-    {
-      id: "symplectic",
-      title: "辛",
-      keeps: "辛配对",
-      condition: texInline("S^TJS=J"),
-      visual: "配对面积保持",
-    },
-    {
-      id: "volume",
-      title: "体积保持",
-      keeps: "总体积",
-      condition: texInline("\\det S=1"),
-      visual: "高维总体积不变",
-    },
-    {
-      id: "invertible",
-      title: "一般可逆",
-      keeps: "可恢复性",
-      condition: texInline("\\det S\\ne0"),
-      visual: "不一定保度量或配对",
-    },
-  ],
-  highDimCounterexample: {
-    title: "行列式为 1 仍可能不辛",
-    matrix: texInline("D=\\operatorname{diag}(2,1/2,1,1)"),
-    determinant: texInline("\\det D=1"),
-    failure: texInline("D^TJD\\ne J"),
-    text: "二维中的特殊等价关系不能直接推广到高维。",
-  },
-  complement: {
-    title: "二维直线的辛正交补",
-    definition: texInline("U^\\omega=\\{v:\\omega(v,u)=0,\\forall u\\in U\\}"),
-    vector: [2, 1],
-    conclusion: "在二维标准辛空间中，与一条非零直线辛正交的向量恰好仍在这条直线上。",
   },
   example: {
-    title: "判断三类二维变换是否辛",
-    question: `比较剪切 ${texInline("S_1=\\begin{bmatrix}1&t\\\\0&1\\end{bmatrix}")}、互补缩放 ${texInline("S_2=\\begin{bmatrix}s&0\\\\0&1/s\\end{bmatrix}")} 与均匀缩放 ${texInline("S_3=sI")}。`,
+    title: "例题：哪个变换保持 ω",
+    question: `平面上 ${texInline(String.raw`\omega(x,y)=x_1y_2-x_2y_1`)}。哪个矩阵 K 使 ${texInline(String.raw`\omega(Kx,Ky)=\omega(x,y)`)} 对一切 x, y 成立？`,
+    choices: [
+      { correct: true, text: texInline(String.raw`\begin{pmatrix}1&3\\0&1\end{pmatrix}`) },
+      { text: texInline(String.raw`\begin{pmatrix}2&0\\0&2\end{pmatrix}`) },
+      { text: texInline(String.raw`\begin{pmatrix}0&1\\1&0\end{pmatrix}`) },
+      { text: texInline(String.raw`\begin{pmatrix}2&0\\0&1\end{pmatrix}`) },
+    ],
     steps: [
-      {
-        title: "检查剪切",
-        text: `${texInline("S_1^TJS_1=J")}，因此剪切保持辛配对。`,
-      },
-      {
-        title: "检查互补缩放",
-        text: `${texInline("S_2^TJS_2=J")}；一个方向放大时，配对方向按倒数缩小。`,
-      },
-      {
-        title: "检查均匀缩放",
-        text: `${texInline("S_3^TJS_3=s^2J")}。`,
-      },
-      {
-        title: "提炼条件",
-        text: `均匀缩放只有在 ${texInline("s^2=1")} 时才辛。`,
-      },
-      {
-        title: "标明二维边界",
-        text: `二维中可用 ${texInline("S^TJS=(\\det S)J")} 快速判断，但高维不能只检查行列式。`,
-      },
+      `${texInline(String.raw`\omega(x,y)=\det(x,y)`)}，所以 ${texInline(String.raw`\omega(Kx,Ky)=\det\big(K(x,y)\big)=|K|\,\omega(x,y)`)}。`,
+      `保持 ω 当且仅当 ${texInline("|K|=1")}。`,
+      `剪切 ${texInline(String.raw`\begin{pmatrix}1&3\\0&1\end{pmatrix}`)} 的行列式是 1。其余三个都不保持 ω：${texInline(String.raw`\begin{pmatrix}2&0\\0&2\end{pmatrix}`)} 的行列式是 4，面积放大 4 倍；${texInline(String.raw`\begin{pmatrix}0&1\\1&0\end{pmatrix}`)} 的行列式是 −1，有向面积变号；${texInline(String.raw`\begin{pmatrix}2&0\\0&1\end{pmatrix}`)} 的行列式是 2，面积加倍。`,
+      `剪切把 ${texInline(String.raw`\varepsilon_2`)} 送到 (3,1)，长度从 1 变成 ${texInline(String.raw`\sqrt{10}`)}，ω 仍不变。`,
     ],
   },
   quiz: [
     {
-      question: `为什么 ${texInline("\\omega(x,x)=0")} 不推出 ${texInline("x=0")}？`,
-      answer: "交错形式对每个向量的自配对都为 0；非退化考察它与所有其他向量的配对。",
+      question: "为什么奇数维空间上没有非退化的反对称双线性函数？",
+      answer: "度量矩阵满足 Aᵀ=−A，于是 |A|=|Aᵀ|=(−1)ⁿ|A|。n 为奇数时 |A|=−|A|，只能 |A|=0。",
     },
     {
-      question: "一对共线向量配对为 0，是否说明形式退化？",
-      answer: "不说明。退化要求某个非零向量与所有向量都配对为 0。",
+      question: "ω(y,x) 与 ω(x,y) 有什么关系？由此 ω(x,x) 等于多少？",
+      answer: "ω(y,x)=−ω(x,y)。取 y=x 得 ω(x,x)=−ω(x,x)，所以 ω(x,x)=0。",
     },
     {
-      question: "辛空间维数为什么必须为偶数？",
-      answer: "奇数阶斜对称矩阵行列式为 0，不能满足非退化。",
-    },
-    {
-      question: "辛变换的矩阵判据是什么？",
-      answer: `${texInline("S^TJS=J")}。`,
-    },
-    {
-      question: "高维中行列式为 1 是否足以保证辛？",
-      answer: "不足。它只保证总体积，辛条件要求全部配对结构保持。",
-    },
-    {
-      question: "二维非零直线的辛正交补是什么？",
-      answer: "在标准二维辛空间中，它等于这条直线本身。",
+      question: "平面上保持 ω 的线性变换一定保持面积吗？一定保持长度吗？",
+      answer: "一定保持有向面积，因而保持面积；不一定保持长度，例如剪切。",
     },
   ],
   summary: [
-    "辛形式是交错且非退化的双线性函数；二维标准模型是有向面积。",
-    "方向按二维面积单元成对组织，因此辛空间维数必须为偶数。",
-    "辛变换保持 xᵀJy，不必保持长度、角度，也不能用高维体积保持代替。",
+    "辛空间带有非退化的反对称双线性函数 ω，维数为偶数，存在辛基使 ω 的矩阵为 J。",
+    "平面上 ω(x,y)=x₁y₂−x₂y₁ 是有向面积，ω(x,x)=0。",
+    "辛变换保持 ω，矩阵满足 KᵀJK=J；平面上就是 |K|=1，长度和角度可以改变。",
   ],
 });

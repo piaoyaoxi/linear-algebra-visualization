@@ -2,23 +2,13 @@ registerAlgebraChapter({
   id: "ch10",
   icon: "10",
   title: "第十章 双线性函数与辛空间",
-  subtitle: "测量、对偶与辛结构",
-  overviewTitle: "从一次测量走向双线性配对",
+  subtitle: "把向量读成数",
   summary:
-    "本章沿一条连续的几何主线展开：线性函数用等值层把向量测量成标量；所有线性测量方法组成对偶空间；双线性函数让两个向量共同产生标量；辛形式进一步保留交错且非退化的面积配对结构。",
-  overviewCards: [
-    {
-      title: "一个输入",
-      text: "线性函数读取一个向量；核与等值层把整个空间组织起来。",
-    },
-    {
-      title: "所有读取器",
-      text: "线性函数可以相加和缩放，因此它们组成对偶空间。",
-    },
-    {
-      title: "两个输入",
-      text: "双线性函数记录两个方向的配对；辛形式把方向组织成面积单元。",
-    },
+    "线性函数把一个向量读成一个数，在平面上画出来是一族平行的等值线。全体线性函数组成对偶空间，对偶基就是读坐标的工具。双线性函数同时读两个向量，取定基后写成 XᵀAY，换基时度量矩阵变成合同的矩阵。辛空间带有非退化的反对称双线性函数，在平面上就是有向面积。",
+  sections: [
+    { id: "linear-functional", number: "§1", title: "线性函数", navTitle: "线性函数" },
+    { id: "dual-space", number: "§2", title: "对偶空间", navTitle: "对偶空间" },
+    { id: "bilinear-form", number: "§3", title: "双线性函数", navTitle: "双线性函数" },
+    { id: "symplectic-space", number: "＊§4", title: "辛空间", navTitle: "辛空间" },
   ],
-  sections: getChapter10Sections(),
 });

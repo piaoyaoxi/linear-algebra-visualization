@@ -1,0 +1,163 @@
+/* Desktop-only magnetic page-section rail.
+   Viewport-fixed; independent of the left chapter sidebar.
+   Idle scroll position: deep gray. Hover: length + color follow the pointer. */
+
+.page-toc {
+  position: fixed;
+  top: 50%;
+  right: 18px;
+  z-index: 38;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  width: 58px;
+  height: auto;
+  max-height: none;
+  padding: 0;
+  border: 0;
+  border-left: 0;
+  background: transparent;
+  box-shadow: none;
+  overflow: visible;
+  transform: translateY(-50%);
+}
+
+.page-toc.has-toc-rail,
+body.sidebar-collapsed .page-toc.has-toc-rail,
+body[data-route="home"] .page-toc.has-toc-rail {
+  display: flex !important;
+  visibility: visible;
+}
+
+.page-toc:not(.has-toc-rail) {
+  display: none !important;
+  visibility: hidden;
+}
+
+.toc-rail-list {
+  display: grid;
+  justify-items: end;
+  gap: 4px;
+  width: 58px;
+  padding: 8px 0;
+}
+
+.page-toc .toc-rail-item {
+  --toc-rail-width: 14px;
+  --toc-rail-color: color-mix(in srgb, var(--muted) 56%, transparent);
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  width: 58px;
+  height: 14px;
+  padding: 0;
+  color: color-mix(in srgb, var(--muted) 56%, transparent);
+  line-height: 1;
+  cursor: pointer;
+  outline: none;
+}
+
+/* Scroll position: deep gray only when the pointer is not on the rail. */
+.page-toc .toc-rail-item.is-active {
+  --toc-rail-color: color-mix(in srgb, var(--text) 76%, transparent);
+  color: color-mix(in srgb, var(--text) 76%, transparent);
+}
+
+/* While hovering, scroll-active green/gray yields to the pointer wave
+   (inline --toc-rail-color from JS wins for the bar fill). */
+.page-toc.is-hovering .toc-rail-item.is-active {
+  color: color-mix(in srgb, var(--muted) 56%, transparent);
+}
+
+.toc-rail-bar {
+  display: block;
+  width: var(--toc-rail-width);
+  height: 2px;
+  border-radius: 999px;
+  background: var(--toc-rail-color, currentColor);
+  transform-origin: right center;
+  transition:
+    width 115ms cubic-bezier(0.22, 0.8, 0.3, 1),
+    background-color 130ms ease,
+    color 130ms ease;
+  will-change: width;
+}
+
+.page-toc .toc-rail-item:focus-visible .toc-rail-bar {
+  box-shadow: 0 0 0 3px rgba(74, 80, 78, 0.18);
+}
+
+/* Frosted section title, appears to the left of the hot bar. */
+.toc-rail-label {
+  position: absolute;
+  right: calc(100% + 10px);
+  top: 50%;
+  z-index: 2;
+  max-width: min(42vw, 220px);
+  padding: 6px 10px;
+  border: 1px solid var(--line-strong);
+  border-radius: 10px;
+  background: color-mix(in srgb, var(--surface-solid) 78%, transparent);
+  box-shadow: var(--shadow-soft);
+  backdrop-filter: blur(16px) saturate(160%);
+  -webkit-backdrop-filter: blur(16px) saturate(160%);
+  color: var(--text);
+  font-size: 12px;
+  font-weight: 650;
+  line-height: 1.35;
+  letter-spacing: 0.01em;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  pointer-events: none;
+  opacity: 0;
+  transform: translate(6px, -50%);
+  transition:
+    opacity 140ms ease,
+    transform 140ms cubic-bezier(0.22, 0.8, 0.3, 1);
+}
+
+.page-toc .toc-rail-item.is-hot .toc-rail-label {
+  opacity: 1;
+  transform: translate(0, -50%);
+}
+
+body.dark .page-toc .toc-rail-item {
+  --toc-rail-color: color-mix(in srgb, var(--muted) 56%, transparent);
+  color: color-mix(in srgb, var(--muted) 56%, transparent);
+}
+
+body.dark .page-toc .toc-rail-item.is-active {
+  --toc-rail-color: color-mix(in srgb, var(--text) 76%, transparent);
+  color: color-mix(in srgb, var(--text) 76%, transparent);
+}
+
+body.dark .page-toc.is-hovering .toc-rail-item.is-active {
+  color: color-mix(in srgb, var(--muted) 56%, transparent);
+}
+
+body.dark .toc-rail-label {
+  border-color: var(--line-strong);
+  background: color-mix(in srgb, var(--surface-solid) 78%, transparent);
+  box-shadow: var(--shadow-soft);
+  backdrop-filter: blur(16px) saturate(160%);
+  -webkit-backdrop-filter: blur(16px) saturate(160%);
+  color: var(--text);
+}
+
+@media (max-width: 920px), (hover: none), (pointer: coarse) {
+  .page-toc,
+  .page-toc.has-toc-rail,
+  body.sidebar-collapsed .page-toc.has-toc-rail,
+  body[data-route="home"] .page-toc.has-toc-rail {
+    display: none !important;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .toc-rail-bar,
+  .toc-rail-label {
+    transition: none;
+  }
+}

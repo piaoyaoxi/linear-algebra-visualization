@@ -31,15 +31,13 @@ jobs:
       - name: Validate Chapter 7 source
         run: |
           set -euo pipefail
-          node --check current/content/ch7.js
-          node --check current/visuals/ch7/story-core.js
-          for file in current/visuals/ch7/story-section{1..9}.js; do
+          for file in current/content/ch7*.js current/visuals/ch7/*.js; do
             node --check "$file"
           done
           node --check .github/scripts/ch7-browser-check.mjs
           node .github/scripts/ch7-source-lint.mjs
           git diff --check
-          grep -Eq 'story-section9\.js\?v=[0-9]+[a-z]+' current/learn.html
+          grep -Eq 'visuals/ch7/labs-3d\.js' current/learn.html
 
       - name: Install Playwright and Chromium
         run: |

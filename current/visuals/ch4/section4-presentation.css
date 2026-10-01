@@ -182,7 +182,7 @@ body.dark .inverse-transform-lab {
   border-left: 2px solid color-mix(in srgb, var(--accent) 58%, var(--line));
 }
 
-.inverse-core-rule span {
+.inverse-core-rule > span {
   color: var(--muted);
   font-size: 9px;
   font-weight: 800;

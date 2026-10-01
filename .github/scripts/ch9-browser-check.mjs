@@ -125,7 +125,7 @@ async function exerciseLabs(page) {
   expect((await text(page, "[data-iso-status]")).includes("B ≠ I"), "§3: standard basis is not isometric");
   await chip(page, "other");
   expect((await text(page, "[data-iso-status]")).includes("B = I"), "§3: G-orthonormal basis is isometric");
-  await drag(page, "lp", [1, -1], [-1, 2]);
+  await drag(page, "lp", [-0.8, 1.4], [-1, 2]);
   expect((await text(page, "[data-iso-status]")).includes("B ≠ I"), "§3: dragging f₂ breaks the isometry");
   await predict(page, 0);
   expect(await resultShown(page), "§3: conclusion after prediction");
@@ -152,13 +152,15 @@ async function exerciseLabs(page) {
   expect((await text(page, "[data-sub-perp]")).includes("= 2"), "§5: a line has a 2-dimensional complement");
 
   await openLesson(page, sections[5]);
+  expect(await page.locator("[data-sp-play]").isDisabled(), "§6: animation waits for the prediction");
+  expect((await page.locator("[data-sp-status]").count()) === 0, "§6: eigen readout hidden before the prediction");
+  await predict(page, 0);
+  expect(await resultShown(page), "§6: conclusion after prediction");
   await page.locator("[data-sp-s]").fill("3");
   expect((await text(page, "[data-sp-steps] .is-active")).includes("③"), "§6: slider reaches step 3");
   await chip(page, "nonsym");
   expect((await text(page, "[data-sp-status]")).includes("不正交"), "§6: non-symmetric eigenvectors not orthogonal");
   expect(await page.locator("[data-sp-play]").isDisabled(), "§6: animation closes for a non-symmetric matrix");
-  await predict(page, 0);
-  expect(await resultShown(page), "§6: conclusion after prediction");
 
   await openLesson(page, sections[6]);
   expect((await page.locator("[data-ls-best]").count()) === 0, "§7: best line hidden before prediction");

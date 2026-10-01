@@ -3452,3 +3452,27 @@ body.dark .button.mark-button.is-done {
   background: var(--accent);
   color: color-mix(in srgb, var(--surface-solid) 94%, white);
 }
+
+/* Keep page typography out of formulas. KaTeX never sets these itself, so
+   inherited letter/word spacing or text-transform from a card or label would
+   otherwise stretch the math. */
+.katex {
+  letter-spacing: normal;
+  word-spacing: normal;
+  text-transform: none;
+  font-variant-numeric: normal;
+}
+
+/* KaTeX's own stylesheet sets the root to normal-weight KaTeX_Main; bold or
+   monospace label rules written as "... span" also match the .katex span and
+   would otherwise switch the whole formula to a wrong font. Bold math still
+   works through KaTeX's inner classes (\mathbf, \boldsymbol). */
+.katex {
+  font-family: KaTeX_Main, "Times New Roman", serif !important;
+  font-style: normal !important;
+  font-weight: normal !important;
+}
+
+.katex span:not([class*="bf"]):not([class*="bold"]) {
+  font-weight: inherit !important;
+}

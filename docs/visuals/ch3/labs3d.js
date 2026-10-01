@@ -48,20 +48,42 @@
       <p class="ch3l-predict-feedback" hidden></p>`;
     host.append(box);
     const feedback = box.querySelector(".ch3l-predict-feedback");
-    let answered = false;
+    /*
+     * Predict -> act -> reveal, as in the other chapters: the verdict and the
+     * conclusion open only after the student has also acted on the picture.
+     */
+    let choice = null;
+    let revealed = false;
+    function reveal() {
+      if (revealed || choice == null) return;
+      revealed = true;
+      const o = spec.options[choice];
+      feedback.innerHTML = o.correct ? `✓ ${spec.right}` : `和图中看到的不一致：${o.why || spec.hint || "再对照图形想一想。"}`;
+      box.querySelectorAll("[data-i]").forEach((x, i) => {
+        x.classList.remove("is-picked");
+        x.classList.toggle(spec.options[i].correct ? "is-right" : "is-wrong", i === choice);
+      });
+      box.classList.add("is-done");
+      onAnswered?.();
+    }
     box.querySelectorAll("[data-i]").forEach((b) =>
       b.addEventListener("click", () => {
-        const o = spec.options[Number(b.dataset.i)];
-        box.querySelectorAll("[data-i]").forEach((x) => x.classList.remove("is-right", "is-wrong"));
-        b.classList.add(o.correct ? "is-right" : "is-wrong");
+        if (revealed) return;
+        choice = Number(b.dataset.i);
+        box.querySelectorAll("[data-i]").forEach((x) => x.classList.toggle("is-picked", x === b));
         feedback.hidden = false;
-        feedback.innerHTML = o.correct ? `✓ ${spec.right}` : `再对照图形想一想：${o.why || spec.hint || "动手操作后看看发生了什么。"}`;
-        if (!answered) {
-          answered = true;
-          onAnswered?.();
-        }
+        feedback.textContent = "已记下你的预测。现在在图上动手操作一次，结论随后出现。";
       }),
     );
+    const lab = host.closest(".ch3l-lab") || host.parentElement;
+    const acted = (event) => {
+      if (choice == null || revealed || box.contains(event.target)) return;
+      reveal();
+    };
+    ["pointerup", "input", "change", "keyup"].forEach((type) => lab?.addEventListener(type, acted));
+    lab?.addEventListener("click", (event) => {
+      if (event.target.closest("button")) acted(event);
+    });
     return box;
   }
 

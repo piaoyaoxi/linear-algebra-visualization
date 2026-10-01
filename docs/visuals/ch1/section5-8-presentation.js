@@ -81,7 +81,8 @@
       root.querySelector("[data-eval-poly]").innerHTML = tex(M().formatPolyTex(state.p));
       root.querySelector("[data-a-value]").textContent = state.a;
       root.querySelector("[data-fa]").innerHTML = tex(M().formatRTex(h.value));
-      root.querySelector("[data-horner]").innerHTML = h.steps.map((s, i) => `<div class="${i === h.steps.length - 1 ? "is-current" : ""}"><span>${i + 1}</span><p>(${tex(M().formatRTex(s.before))})·${state.a}+${tex(M().formatRTex(s.coefficient))}=${tex(M().formatRTex(s.after))}</p></div>`).join("");
+      const signed = (t) => (t.startsWith("-") ? `−${tex(t.slice(1))}` : `+${tex(t)}`);
+      root.querySelector("[data-horner]").innerHTML = h.steps.map((s, i) => `<div class="${i === h.steps.length - 1 ? "is-current" : ""}"><span>${i + 1}</span><p>(${tex(M().formatRTex(s.before))})·${state.a}${signed(M().formatRTex(s.coefficient))}=${tex(M().formatRTex(s.after))}</p></div>`).join("");
       const isRoot = M().rIsZero(h.value);
       const st = root.querySelector("[data-factor]"); st.className = `ch1-status ${isRoot ? "is-ok" : "is-warn"}`; st.textContent = isRoot ? `f(${state.a})=0，x−${state.a} 是因式` : `余式 f(${state.a})≠0`;
       M().drawPolynomial(root.querySelector("[data-canvas]"), state.p, { bounds, points: [{ x: state.a, y: M().rToNum(h.value) }], caption: "评价点 (a,f(a))" });

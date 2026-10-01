@@ -657,3 +657,16 @@
   color: var(--surface-solid);
   font-weight: 700;
 }
+
+/* show that the graph card opens */
+.ch1-graph-details summary::after {
+  content: "展开 ▾";
+  justify-self: end;
+  color: var(--accent-strong, var(--accent));
+  font-size: 13px;
+  font-weight: 650;
+}
+
+.ch1-graph-details[open] summary::after {
+  content: "收起 ▴";
+}

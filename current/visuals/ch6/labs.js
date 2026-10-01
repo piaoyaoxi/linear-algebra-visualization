@@ -511,6 +511,9 @@
     const W1 = [1, 0, 0];
     const W2 = [0, 1, 0];
 
+    // A line needs a nonzero direction vector: refuse to drag it onto the origin.
+    const nonzero = (p, prev) => (p.every((x) => Math.abs(x) < 1e-12) ? prev : p);
+
     function drawSplit() {
       const u = fv(state.u);
       const v = fv(state.v);
@@ -538,7 +541,7 @@
         return objs;
       });
       scene.setHandles([
-        { color: "accent", snap: 0.5, get: () => state.u, set: (p) => ((state.u = p), redraw()) },
+        { color: "accent", snap: 0.5, get: () => state.u, set: (p) => ((state.u = nonzero(p, state.u)), redraw()) },
         { color: "gold", snap: 0.5, get: () => state.v, set: (p) => ((state.v = p), redraw()) },
       ]);
       const inter = ok ? 0 : 1;
@@ -583,7 +586,7 @@
         }
         return objs;
       });
-      scene.setHandles([{ color: "blue", snap: 0.5, get: () => state.w3, set: (p) => ((state.w3 = p), redraw()) }]);
+      scene.setHandles([{ color: "blue", snap: 0.5, get: () => state.w3, set: (p) => ((state.w3 = nonzero(p, state.w3)), redraw()) }]);
       const pairsText = pairOk.every(Boolean) ? "两两交为 {0}" : "有两条直线重合";
       let html = `<h4>读数</h4><p>${pairsText}</p>`;
       if (state.revealed) {

@@ -69,6 +69,9 @@
       accentStrong: style.getPropertyValue("--accent-strong").trim() || "#08736e",
       coral: style.getPropertyValue("--coral").trim() || "#d9835f",
       warning: style.getPropertyValue("--warning").trim() || "#9a6a12",
+      v1: style.getPropertyValue("--cv-v1").trim() || "#2a64a8",
+      v2: style.getPropertyValue("--cv-v2").trim() || "#c4552f",
+      image: style.getPropertyValue("--cv-image").trim() || "#8c4f86",
     };
   }
 
@@ -243,21 +246,23 @@
     const p2 = map(a + b, c + d);
     const p3 = map(b, d);
     const nearZero = Math.abs(det) < 1e-7;
-    const statusColor = nearZero ? palette.warning : det > 0 ? palette.accent : palette.coral;
+    // the area is a result (purple); a negative orientation is drawn dashed, zero area grey
+    const statusColor = nearZero ? palette.muted : palette.image;
     ctx.save();
     ctx.beginPath();
     ctx.moveTo(p0.x, p0.y); ctx.lineTo(p1.x, p1.y); ctx.lineTo(p2.x, p2.y); ctx.lineTo(p3.x, p3.y); ctx.closePath();
     ctx.fillStyle = statusColor;
-    ctx.globalAlpha = 0.18;
+    ctx.globalAlpha = det < 0 ? 0.08 : 0.14;
     ctx.fill();
     ctx.globalAlpha = 1;
     ctx.strokeStyle = statusColor;
-    ctx.lineWidth = 2;
+    ctx.lineWidth = 1.6;
+    if (det < 0 && !nearZero) ctx.setLineDash([6, 4]);
     ctx.stroke();
     ctx.restore();
 
-    drawArrow(ctx, p0, p1, palette.accentStrong, 3);
-    drawArrow(ctx, p0, p3, palette.coral, 3);
+    drawArrow(ctx, p0, p1, palette.v1, 3);
+    drawArrow(ctx, p0, p3, palette.v2, 3);
 
     ctx.save();
     ctx.fillStyle = palette.text;

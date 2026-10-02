@@ -1513,6 +1513,8 @@ function drawTransformCanvas(matrixOverride, options = {}) {
   const accentStrong = styles.getPropertyValue("--accent-strong").trim() || "#006f65";
   const coral = styles.getPropertyValue("--coral").trim() || "#d69a48";
   const text = styles.getPropertyValue("--text").trim() || "#071512";
+  const v1 = styles.getPropertyValue("--cv-v1").trim() || "#2a64a8";
+  const v2 = styles.getPropertyValue("--cv-v2").trim() || "#c4552f";
 
   const origin = { x: cssW / 2, y: cssH / 2 };
   /* zoom in on the unit square, but keep both column vectors on screen */
@@ -1620,8 +1622,8 @@ function drawTransformCanvas(matrixOverride, options = {}) {
   const near = (a, b) => Math.hypot(a.x - b.x, a.y - b.y) < 22;
   drawArrow(ctx, origin, point(1, 0), muted, near(point(1, 0), point(1, 0, true)) ? "" : "e₁", 0.3, 2.2);
   drawArrow(ctx, origin, point(0, 1), muted, near(point(0, 1), point(0, 1, true)) ? "" : "e₂", 0.3, 2.2);
-  drawArrow(ctx, origin, point(1, 0, true), accentStrong, "Ae₁", 1, 3.05);
-  drawArrow(ctx, origin, point(0, 1, true), coral, "Ae₂", 1, 3.05);
+  drawArrow(ctx, origin, point(1, 0, true), v1, "Ae₁", 1, 3.05);
+  drawArrow(ctx, origin, point(0, 1, true), v2, "Ae₂", 1, 3.05);
 
   ctx.save();
   ctx.fillStyle = text;

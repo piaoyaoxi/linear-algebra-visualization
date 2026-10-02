@@ -507,7 +507,7 @@
             <div class="s2c-stage-copy">
               <span class="s2c-stage-kicker">核心画面</span>
               <h4>同一张网格，先经过 B，再经过 A</h4>
-              <p>蓝向量是输入 <span class="s2c-math-plain">x</span> 在当前变换下的像；整张青色网格随矩阵连续变形。</p>
+              <p>蓝向量是输入 <span class="s2c-math-plain">x</span> 在当前变换下的像；整张绿色网格随矩阵连续变形。</p>
             </div>
             <div class="s2c-canvas-shell">
               <canvas class="s2c-main-canvas" data-s2c-compose-canvas aria-label="矩阵复合连续动画"></canvas>

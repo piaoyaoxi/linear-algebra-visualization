@@ -65,13 +65,16 @@
       text: style.getPropertyValue("--text").trim() || "#071512",
       muted: style.getPropertyValue("--muted").trim() || "#66717f",
       line: style.getPropertyValue("--line-strong").trim() || "rgba(28,43,61,.2)",
-      accent: style.getPropertyValue("--accent").trim() || "#0f8f88",
-      accentStrong: style.getPropertyValue("--accent-strong").trim() || "#08736e",
+      accent: style.getPropertyValue("--accent").trim() || "#2c5e4a",
+      accentStrong: style.getPropertyValue("--accent-strong").trim() || "#1f4a39",
       coral: style.getPropertyValue("--coral").trim() || "#d9835f",
       warning: style.getPropertyValue("--warning").trim() || "#9a6a12",
       v1: style.getPropertyValue("--cv-v1").trim() || "#2a64a8",
       v2: style.getPropertyValue("--cv-v2").trim() || "#c4552f",
       image: style.getPropertyValue("--cv-image").trim() || "#8c4f86",
+      paper: style.getPropertyValue("--cv-paper").trim() || "#fdfcf8",
+      gridMajor: style.getPropertyValue("--cv-grid-major").trim() || "#e2ddd0",
+      axis: style.getPropertyValue("--cv-axis").trim() || "#8a8d84",
     };
   }
 
@@ -193,15 +196,13 @@
     const map = (x, y) => ({ x: origin.x + x * scale, y: origin.y - y * scale });
 
     ctx.save();
-    ctx.fillStyle = palette.soft;
-    ctx.globalAlpha = 0.24;
+    ctx.fillStyle = palette.paper;
     ctx.fillRect(0, 0, width, height);
     ctx.restore();
 
     ctx.save();
-    ctx.strokeStyle = palette.line;
+    ctx.strokeStyle = palette.gridMajor;
     ctx.lineWidth = 1;
-    ctx.globalAlpha = 0.22;
     const halfX = Math.ceil(width / scale) + 2;
     const halfY = Math.ceil(height / scale) + 2;
     for (let i = -halfX; i <= halfX; i += 1) {
@@ -219,9 +220,8 @@
     ctx.restore();
 
     ctx.save();
-    ctx.strokeStyle = palette.muted;
-    ctx.globalAlpha = 0.62;
-    ctx.lineWidth = 1.25;
+    ctx.strokeStyle = palette.axis;
+    ctx.lineWidth = 1;
     ctx.beginPath();
     ctx.moveTo(0, origin.y); ctx.lineTo(width, origin.y);
     ctx.moveTo(origin.x, 0); ctx.lineTo(origin.x, height);

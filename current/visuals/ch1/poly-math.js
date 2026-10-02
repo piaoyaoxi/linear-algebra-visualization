@@ -346,9 +346,18 @@
       text: style.getPropertyValue("--text").trim() || "#10201d",
       muted: style.getPropertyValue("--muted").trim() || "#66717f",
       line: style.getPropertyValue("--line-strong").trim() || "rgba(30,50,48,.22)",
-      accent: style.getPropertyValue("--accent").trim() || "#0f8f88",
-      coral: style.getPropertyValue("--coral").trim() || "#d9835f",
-      blue: style.getPropertyValue("--blue").trim() || "#547ec8",
+      accent: style.getPropertyValue("--accent").trim() || "#2c5e4a",
+      coral: style.getPropertyValue("--coral").trim() || "#c4552f",
+      blue: style.getPropertyValue("--blue").trim() || "#2a64a8",
+      paper: style.getPropertyValue("--cv-paper").trim() || "#fdfcf8",
+      grid: style.getPropertyValue("--cv-grid").trim() || "#f0ece2",
+      gridMajor: style.getPropertyValue("--cv-grid-major").trim() || "#e2ddd0",
+      axis: style.getPropertyValue("--cv-axis").trim() || "#8a8d84",
+      v1: style.getPropertyValue("--cv-v1").trim() || "#2a64a8",
+      v2: style.getPropertyValue("--cv-v2").trim() || "#c4552f",
+      drag: style.getPropertyValue("--cv-drag").trim() || "#a87a12",
+      image: style.getPropertyValue("--cv-image").trim() || "#8c4f86",
+      subspace: style.getPropertyValue("--cv-subspace").trim() || "#2c5e4a",
     };
   }
 
@@ -392,7 +401,7 @@
 
   function drawAxes(ctx, width, height, cam, palette = getPalette()) {
     ctx.save();
-    ctx.strokeStyle = palette.line;
+    ctx.strokeStyle = palette.axis;
     ctx.fillStyle = palette.muted;
     ctx.lineWidth = 1;
     ctx.font = "11px 'LA Serif Latin', 'LA Serif SC', 'Songti SC', serif";
@@ -409,7 +418,7 @@
       if (p.y < 0 || p.y > height) continue;
       ctx.textAlign = "center";
       ctx.lineWidth = 3;
-      ctx.strokeStyle = palette.surface;
+      ctx.strokeStyle = palette.paper;
       ctx.strokeText(String(x), p.x, p.y + 15);
       ctx.fillText(String(x), p.x, p.y + 15);
     }
@@ -421,10 +430,10 @@
     const palette = getPalette();
     const cam = camera(width, height, options.bounds, { stretch: true });
     drawAxes(ctx, width, height, cam, palette);
-    const polys = options.series || [{ p, color: palette.accent, width: 2.5 }];
+    const polys = options.series || [{ p, color: palette.text, width: 2.4 }];
     for (const series of polys) {
       ctx.save();
-      ctx.strokeStyle = series.color || palette.accent;
+      ctx.strokeStyle = series.color || palette.text;
       ctx.lineWidth = series.width || 2.2;
       ctx.beginPath();
       let penDown = false;
@@ -443,7 +452,7 @@
     (options.points || []).forEach((point) => {
       const pnt = cam.toScreen(point.x, point.y);
       ctx.beginPath();
-      ctx.fillStyle = point.color || palette.coral;
+      ctx.fillStyle = point.color || palette.drag;
       ctx.arc(pnt.x, pnt.y, point.r || 5, 0, Math.PI * 2);
       ctx.fill();
     });
@@ -451,7 +460,7 @@
       ctx.fillStyle = palette.muted;
       ctx.font = "12px 'LA Serif Latin', 'LA Serif SC', 'Songti SC', serif";
       ctx.lineWidth = 4;
-      ctx.strokeStyle = palette.surface;
+      ctx.strokeStyle = palette.paper;
       ctx.strokeText(options.caption, 14, height - 12);
       ctx.fillText(options.caption, 14, height - 12);
     }
@@ -467,7 +476,7 @@
       const base = cam.toScreen(root.x, 0);
       for (let i = 0; i < (root.m || 1); i++) {
         ctx.beginPath();
-        ctx.fillStyle = root.color || palette.accent;
+        ctx.fillStyle = root.color || palette.drag;
         ctx.arc(base.x, base.y - i * 7, 6, 0, Math.PI * 2);
         ctx.fill();
         ctx.strokeStyle = palette.surface;
@@ -521,12 +530,12 @@
         const x = pad + i * sx;
         const y = height - pad - j * sy;
         ctx.beginPath();
-        ctx.fillStyle = palette.muted;
+        ctx.fillStyle = palette.axis;
         ctx.arc(x, y, 2.4, 0, Math.PI * 2);
         ctx.fill();
       }
     }
-    ctx.strokeStyle = palette.line;
+    ctx.strokeStyle = palette.subspace;
     for (const d of options.layers || []) {
       ctx.beginPath();
       const a = { x: pad + Math.min(d, maxI) * sx, y: height - pad - Math.max(0, d - maxI) * sy };
@@ -537,7 +546,7 @@
       const x = pad + term.i * sx;
       const y = height - pad - term.j * sy;
       ctx.beginPath();
-      ctx.fillStyle = term.active ? palette.accent : term.color || palette.coral;
+      ctx.fillStyle = term.active ? term.color || palette.accent : term.color || palette.v1;
       ctx.arc(x, y, term.active ? 8 : 6, 0, Math.PI * 2);
       ctx.fill();
       if (term.label) { ctx.fillStyle = palette.text; ctx.fillText(term.label, x + 9, y - 7); }

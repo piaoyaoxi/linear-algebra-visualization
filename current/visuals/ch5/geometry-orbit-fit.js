@@ -176,7 +176,7 @@
 
     const background = ctx.createLinearGradient(0, 0, width, height);
     background.addColorStop(0, palette.soft);
-    background.addColorStop(1, palette.surface);
+    background.addColorStop(1, palette.soft);
     ctx.fillStyle = background;
     ctx.fillRect(0, 0, width, height);
 

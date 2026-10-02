@@ -161,7 +161,7 @@
     }
 
     function drawCanvasBackground(ctx, width, height, palette) {
-      ctx.fillStyle = palette.soft;
+      ctx.fillStyle = palette.paper;
       ctx.fillRect(0, 0, width, height);
       ctx.save();
       ctx.globalAlpha = 0.5;
@@ -598,7 +598,18 @@
       ctx.save();
       ctx.beginPath();
       ctx.arc(point.x, point.y, options.radius || 8, 0, Math.PI * 2);
-      ctx.fillStyle = options.hollow ? palette.surface : options.color || palette.accent;
+      if (options.halo) {
+        ctx.save();
+        ctx.globalAlpha = 0.14;
+        ctx.fillStyle = options.color;
+        ctx.beginPath();
+        ctx.arc(point.x, point.y, (options.radius || 8) + 8, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.restore();
+        ctx.beginPath();
+        ctx.arc(point.x, point.y, options.radius || 8, 0, Math.PI * 2);
+      }
+      ctx.fillStyle = options.hollow ? palette.paper : options.color || palette.accent;
       ctx.fill();
       ctx.strokeStyle = options.color || palette.accent;
       ctx.lineWidth = options.hollow ? 3 : 2;
@@ -616,13 +627,12 @@
       const palette = M().getPalette();
       const cam = mapFor(width, height);
       state.cam = cam;
-      ctx.fillStyle = palette.soft;
+      ctx.fillStyle = palette.paper;
       ctx.fillRect(0, 0, width, height);
 
       ctx.save();
-      ctx.strokeStyle = palette.line;
+      ctx.strokeStyle = palette.gridMajor;
       ctx.lineWidth = 1;
-      ctx.globalAlpha = 0.55;
       for (let k = -2; k <= 2; k += 1) {
         const verticalA = cam.toScreen(k, bounds.yMin);
         const verticalB = cam.toScreen(k, bounds.yMax);
@@ -640,8 +650,8 @@
       const origin = cam.toScreen(0, 0);
       const xEnd = cam.toScreen(bounds.xMax, 0);
       const yEnd = cam.toScreen(0, bounds.yMax);
-      drawArrow(ctx, cam.toScreen(bounds.xMin, 0), xEnd, palette.muted);
-      drawArrow(ctx, cam.toScreen(0, bounds.yMin), yEnd, palette.muted);
+      drawArrow(ctx, cam.toScreen(bounds.xMin, 0), xEnd, palette.axis);
+      drawArrow(ctx, cam.toScreen(0, bounds.yMin), yEnd, palette.axis);
       ctx.fillStyle = palette.muted;
       ctx.font = "12px 'LA Serif Latin', 'LA Serif SC', 'Songti SC', serif";
       ctx.fillText("Re", xEnd.x - 24, xEnd.y - 10);
@@ -654,7 +664,7 @@
       if (state.mode === "R" || state.locking) {
         ctx.save();
         ctx.setLineDash([5, 6]);
-        ctx.strokeStyle = palette.accent;
+        ctx.strokeStyle = palette.axis;
         ctx.globalAlpha = 0.55;
         ctx.lineWidth = 1.5;
         ctx.beginPath();
@@ -664,8 +674,9 @@
         ctx.restore();
 
         ctx.save();
-        ctx.strokeStyle = palette.line;
-        ctx.lineWidth = 1.5;
+        ctx.strokeStyle = palette.axis;
+        ctx.setLineDash([2, 3]);
+        ctx.lineWidth = 1;
         ctx.beginPath();
         ctx.moveTo(origin.x, origin.y);
         ctx.lineTo(projection.x, projection.y);
@@ -674,7 +685,7 @@
         ctx.stroke();
         ctx.restore();
 
-        drawPoint(ctx, projection, "a", palette, { color: palette.muted, hollow: true, radius: 5, labelBelow: true });
+        drawPoint(ctx, projection, "a", palette, { color: palette.axis, hollow: true, radius: 5, labelBelow: true });
         const midB = { x: projection.x + 8, y: (projection.y + alpha.y) / 2 };
         ctx.fillStyle = palette.muted;
         ctx.font = "650 12px 'LA Serif Latin', 'LA Serif SC', 'Songti SC', serif";
@@ -683,9 +694,9 @@
         ctx.fillText("|α|", radiusMid.x + 8, radiusMid.y - 8);
       }
 
-      drawPoint(ctx, alpha, "α", palette, { color: palette.accent });
+      drawPoint(ctx, alpha, "α", palette, { color: palette.drag, halo: true });
       drawPoint(ctx, beta, state.mode === "R" || state.locking ? "ᾱ" : "β", palette, {
-        color: state.mode === "C" && !state.locking ? palette.coral : palette.accent,
+        color: state.mode === "C" && !state.locking ? palette.v2 : palette.image,
         hollow: state.mode === "R" || state.locking,
         labelBelow: true,
       });
@@ -701,7 +712,7 @@
         const boxWidth = Math.min(width - 32, Math.max(...texts.map((t) => ctx.measureText(t).width)) + 28);
         ctx.restore();
         const y0 = height - 2 * 30 - 14;
-        drawPill(ctx, 14, y0, boxWidth, 26, texts[0], palette, { stroke: palette.accent, textColor: palette.text, fontSize });
+        drawPill(ctx, 14, y0, boxWidth, 26, texts[0], palette, { stroke: palette.line, textColor: palette.text, fontSize });
         drawPill(ctx, 14, y0 + 32, boxWidth, 26, texts[1], palette, { stroke: palette.line, textColor: palette.text, fontSize });
       }
     }

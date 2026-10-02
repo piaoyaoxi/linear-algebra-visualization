@@ -51,7 +51,7 @@
       const ctx = canvas.getContext("2d");
       const palette = M().getPalette();
       const target = { x: view.origin.x + b[0] * view.scale, y: view.origin.y - b[1] * view.scale };
-      M().drawArrow(ctx, view.origin, target, palette.accentStrong, 3.2);
+      M().drawArrow(ctx, view.origin, target, palette.image, 3.2);
       const map = (vector) => ({ x: view.origin.x + vector[0] * view.scale, y: view.origin.y - vector[1] * view.scale });
 
       if (Math.abs(D) > 1e-8) {
@@ -64,11 +64,11 @@
         ctx.beginPath();
         currentArea.forEach((point, index) => index ? ctx.lineTo(point.x, point.y) : ctx.moveTo(point.x, point.y));
         ctx.closePath();
-        ctx.fillStyle = palette.accent;
+        ctx.fillStyle = palette.image;
         ctx.globalAlpha = .09;
         ctx.fill();
         ctx.globalAlpha = .78;
-        ctx.strokeStyle = palette.accentStrong;
+        ctx.strokeStyle = palette.image;
         ctx.lineWidth = 1.4;
         ctx.stroke();
         ctx.beginPath();
@@ -81,7 +81,7 @@
         ctx.beginPath();
         ctx.moveTo(target.x, target.y);
         ctx.lineTo(slid.x, slid.y);
-        ctx.strokeStyle = palette.accentStrong;
+        ctx.strokeStyle = palette.image;
         ctx.lineWidth = 1.4;
         ctx.stroke();
         ctx.setLineDash([]);

@@ -9,7 +9,7 @@
   ];
 
   const pixelColors = [
-    "#edf7f4", "#cfe9e2", "#8ecfc2", "#4eaa9d", "#28796f",
+    "#e7ece3", "#c3d4c6", "#8fb19c", "#5b8a72", "#2c5e4a",
     "#dbe9f7", "#b6d1ee", "#85addf", "#6387c7", "#516cae",
     "#f3e1da", "#e7b8a7", "#d98d74", "#c8674f", "#a64f3c",
     "#eee9f6", "#d3c4e9", "#af95d5", "#8b6bbe", "#684b99",

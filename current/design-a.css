@@ -555,3 +555,74 @@ body .lesson-page-section > h2 {
   margin-top: 0;
   margin-bottom: 24px;
 }
+
+/* ---------- 10 Lab layout (spec §6, with visuals/shared/lab-layout.js) ---------- */
+
+/* title and the segmented control share the first row */
+body :is(.ch3l-lab, .ch6l-lab, .ch7l-lab, .ch9l-lab).la-laid-out {
+  grid-template-columns: minmax(0, 1fr) auto;
+  column-gap: 22px;
+}
+
+body :is(.ch3l-lab, .ch6l-lab, .ch7l-lab, .ch9l-lab).la-laid-out > * {
+  grid-column: 1 / -1;
+  min-width: 0;
+}
+
+body :is(.ch3l-lab, .ch6l-lab, .ch7l-lab, .ch9l-lab).la-laid-out > :is(.ch3l-head, .ch6l-head, .ch7l-head, .ch9l-head) {
+  grid-column: 1;
+}
+
+body :is(.ch3l-lab, .ch6l-lab, .ch7l-lab, .ch9l-lab).la-laid-out > :is(.ch3l-head, .ch6l-head, .ch7l-head, .ch9l-head) + :is(.ch3l-toolbar, .ch6l-toolbar, .ch7l-toolbar, .ch9l-toolbar) {
+  grid-column: 2;
+  align-self: end;
+  justify-self: end;
+}
+
+/* canvas column sets the height; the side column stretches to it */
+body :is(.ch3l-body, .ch6l-body, .ch7l-body, .ch9l-body) {
+  align-items: stretch;
+  column-gap: 22px;
+}
+
+body :is(.ch3l-side, .ch6l-side, .ch7l-side, .ch9l-side) {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+body :is(.ch3l-side, .ch6l-side, .ch7l-side, .ch9l-side) > .la-fill {
+  flex: 1 1 auto;
+  align-content: start;
+}
+
+body :is(.ch7p-hint, .ch9p-hint, .la3d-hint)[hidden] {
+  display: none;
+}
+
+body .la-figcaption {
+  margin: 8px 0 0;
+  color: var(--muted);
+  font-size: 13px;
+  line-height: 1.6;
+}
+
+body .la-figcaption > b {
+  margin-right: 10px;
+  color: var(--text);
+  font-weight: 600;
+}
+
+@media (max-width: 900px) {
+  body :is(.ch3l-lab, .ch6l-lab, .ch7l-lab, .ch9l-lab).la-laid-out > :is(.ch3l-head, .ch6l-head, .ch7l-head, .ch9l-head) + :is(.ch3l-toolbar, .ch6l-toolbar, .ch7l-toolbar, .ch9l-toolbar) {
+    grid-column: 1 / -1;
+    justify-self: start;
+  }
+}
+
+@media (max-width: 720px) {
+  /* a wrapped segmented control reads better as a box than as a pill */
+  body :is(.ch3l-toolbar, .ch6l-toolbar, .ch7l-toolbar, .ch9l-toolbar) {
+    border-radius: 14px;
+  }
+}

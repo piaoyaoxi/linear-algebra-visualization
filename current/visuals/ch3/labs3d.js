@@ -745,7 +745,7 @@
         label: "两个方程",
         A: [[1, 1, 1], [1, 2, -1]],
         b: [3, 4],
-        task: "实线平面是两个方程，它们的交线是全部解；虚线平面是对应的齐次方程，交线是零空间。改变 b，或者沿解线移动 t，比较两条直线。",
+        task: "实线平面是两个方程，它们的交线是全部解；虚线平面是对应的齐次方程，交线是零空间。改变 b，或者沿解线移动 t，比较两条直线。蓝色箭头是一个特解 x₀，金色点 x 是解线上的任意一个解。",
         predict: {
           question: `改变 ${tex("b_1")} 或 ${tex("b_2")}，金色的解线会怎样？`,
           options: [
@@ -761,7 +761,7 @@
         label: "一个方程",
         A: [[1, 1, 1]],
         b: [2],
-        task: "只有一个方程 x₁+x₂+x₃=b₁：全部解是一个平面，零空间是过原点的平行平面，由两个基础解向量张成。用 s、t 在解平面上移动点 x。",
+        task: "只有一个方程 x₁+x₂+x₃=b₁：全部解是一个平面，零空间是过原点的平行平面，由两个基础解向量张成。用 s、t 在解平面上移动点 x；蓝色箭头是一个特解 x₀。",
         predict: {
           question: `这个方程有 3 个未知量、秩为 1。基础解系含几个向量？`,
           options: [
@@ -808,7 +808,9 @@
           objs.push({ type: "line", dir: ns[0], color: "subspace", width: 2, dash: [7, 5], label: "零空间" });
           objs.push({ type: "line", p: xp, dir: ns[0], color: "drag", width: 3.4, label: "解集" });
         }
-        objs.push({ type: "arrow", to: xp, color: "v1", width: 2.4, label: "特解" });
+        // the blue arrow is the particular solution (named in the task text); an on-canvas
+        // label would sit on the gold x, which starts at the arrow tip
+        objs.push({ type: "arrow", to: xp, color: "v1", width: 2.4 });
         if (S().vec.len(S().vec.sub(x, xp)) > 1e-9) objs.push({ type: "arrow", from: xp, to: x, color: "subspace", width: 2.4 });
         objs.push({ type: "point", p: x, color: "drag", r: 6, label: "x" });
         return objs;

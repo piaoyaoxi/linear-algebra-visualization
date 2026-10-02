@@ -1,0 +1,557 @@
+/*
+ * Design direction A “松烟” (docs/design-spec.md). Loaded last on the learning
+ * page so it overrides the older theme in one place: tokens first, then the
+ * page surface, the glass chrome and the shared lesson components.
+ */
+
+/* ---------- 1 Interface tokens ---------- */
+
+:root {
+  --bg: #f5f2ea;
+  --bg-grid: transparent;
+  --surface: #fbf9f4;
+  --surface-solid: #fbf9f4;
+  --surface-sidebar: #faf8f2;
+  --surface-soft: #f0ede3;
+  --text: #1d211e;
+  --text-2: #4a4f49;
+  --muted: #5d625c;
+  --faint: #8f938b;
+  --line: #e1dccf;
+  --line-strong: #d6d1c3;
+  --accent: #2c5e4a;
+  --accent-strong: #1f4a39;
+  --accent-soft: #e7ece3;
+  --on-accent: #f7f5ee;
+  --predict-text: #8a630c;
+  --predict-bg: #f8f2e2;
+  --predict-line: #e8dcb8;
+  --ok-text: #2c7a55;
+  --ok-bg: #eef3ec;
+  --ok-line: #b9d2bf;
+  --bad-text: #a3402a;
+  --bad-bg: #f6ebe4;
+  --bad-line: #e3c2b4;
+  /* hue names used by older canvases now point at the colour roles */
+  --blue: var(--cv-v1);
+  --coral: var(--cv-v2);
+  --gold: var(--cv-drag);
+  --violet: var(--cv-image);
+  --shadow: none;
+  --shadow-soft: none;
+  --canvas-paper-top: var(--cv-paper);
+  --canvas-paper-bottom: var(--cv-paper);
+  --canvas-paper-glow: transparent;
+  --glass-fill: rgba(250, 247, 240, 0.72);
+  --glass-edge: rgba(60, 52, 30, 0.12);
+  --glass-shadow: 0 4px 14px rgba(50, 42, 20, 0.06);
+  --glass-panel-fill: rgba(250, 247, 240, 0.8);
+  --glass-scrim: rgba(40, 36, 24, 0.16);
+}
+
+body.dark {
+  --bg: #131614;
+  --surface: #1a1d1a;
+  --surface-solid: #1a1d1a;
+  --surface-sidebar: #171a17;
+  --surface-soft: #1e221e;
+  --text: #e7e5dd;
+  --text-2: #c4c3ba;
+  --muted: #a6a89f;
+  --faint: #7d8178;
+  --line: #2a2e2a;
+  --line-strong: #3a3f3a;
+  --accent: #93c2a6;
+  --accent-strong: #b9d9c4;
+  --accent-soft: #1f2a23;
+  --on-accent: #10140f;
+  --predict-text: #dcb661;
+  --predict-bg: #1f1d16;
+  --predict-line: rgba(220, 182, 97, 0.3);
+  --ok-text: #9fd0b3;
+  --ok-bg: #18241d;
+  --ok-line: rgba(159, 208, 179, 0.35);
+  --bad-text: #f0a98e;
+  --bad-bg: #241a16;
+  --bad-line: #3d2a22;
+  --blue: var(--cv-v1);
+  --coral: var(--cv-v2);
+  --gold: var(--cv-drag);
+  --violet: var(--cv-image);
+  --shadow: none;
+  --shadow-soft: none;
+  --canvas-paper-top: var(--cv-paper);
+  --canvas-paper-bottom: var(--cv-paper);
+  --canvas-paper-glow: transparent;
+  --glass-fill: rgba(30, 34, 31, 0.62);
+  --glass-edge: rgba(255, 255, 255, 0.09);
+  --glass-shadow: 0 4px 14px rgba(0, 0, 0, 0.3);
+  --glass-panel-fill: rgba(30, 34, 31, 0.7);
+  --glass-scrim: rgba(0, 0, 0, 0.35);
+}
+
+/* ---------- 2 Page surface: plain paper, no grid or glow ---------- */
+
+body,
+body.dark {
+  background-color: var(--bg);
+  background-image: none;
+}
+
+body::before,
+body.dark::before {
+  background: none;
+}
+
+/* ---------- 3 Glass: only the three top controls, the search panel, the phone sidebar ---------- */
+
+body .icon-button,
+body.dark .icon-button,
+body .topbar-search,
+body.dark .topbar-search {
+  border: 1px solid var(--glass-edge);
+  background: var(--glass-fill);
+  box-shadow: var(--glass-shadow);
+  -webkit-backdrop-filter: blur(14px) saturate(120%);
+  backdrop-filter: blur(14px) saturate(120%);
+}
+
+.lg-refract body .icon-button[data-lg-filter],
+.lg-refract body .topbar-search[data-lg-filter] {
+  backdrop-filter: blur(14px) saturate(120%);
+}
+
+body .icon-button:hover,
+body.dark .icon-button:hover,
+body .topbar-search:hover,
+body.dark .topbar-search:hover {
+  border-color: var(--line-strong);
+  background: var(--glass-panel-fill);
+  box-shadow: var(--glass-shadow);
+}
+
+/* no specular rims or sheen: a quiet frosted surface */
+body .icon-button::before,
+body .topbar-search::before,
+body .topbar-search::after,
+body .sidebar::before,
+body .toc-rail-label::before,
+body .search-results-panel::before {
+  content: none;
+}
+
+body .search-results-panel,
+body.dark .search-results-panel {
+  border: 1px solid var(--glass-edge);
+  background: var(--glass-panel-fill);
+  box-shadow: var(--glass-shadow);
+  -webkit-backdrop-filter: blur(18px) saturate(120%);
+  backdrop-filter: blur(18px) saturate(120%);
+}
+
+/* desktop sidebar is paper */
+body .sidebar,
+body.dark .sidebar {
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  background: var(--surface-sidebar);
+  box-shadow: none;
+  -webkit-backdrop-filter: none;
+  backdrop-filter: none;
+}
+
+@media (max-width: 1080px) {
+  body .sidebar,
+  body.dark .sidebar {
+    background: var(--glass-panel-fill);
+    box-shadow: var(--glass-shadow);
+    -webkit-backdrop-filter: blur(18px) saturate(120%);
+    backdrop-filter: blur(18px) saturate(120%);
+  }
+}
+
+/* ---------- 4 Lesson page rhythm ---------- */
+
+body main {
+  counter-reset: la-section;
+}
+
+body .lesson-cover {
+  border: 0;
+  background: none;
+  box-shadow: none;
+  padding-inline: 0;
+}
+
+body .lesson-cover::before,
+body .lesson-cover::after {
+  content: none;
+}
+
+body .lesson-cover h1 {
+  font-size: 46px;
+  font-weight: 700;
+  line-height: 1.15;
+  letter-spacing: 0.04em;
+}
+
+body .lesson-cover p {
+  color: var(--text-2);
+}
+
+body .lesson-page-section {
+  counter-increment: la-section;
+  border-top: 1px solid var(--line);
+  padding-top: 56px;
+}
+
+body .lesson-page-section > h2 {
+  display: flex;
+  align-items: baseline;
+  gap: 0;
+  margin-bottom: 28px;
+  font-size: 28px;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+}
+
+body .lesson-page-section > h2::before {
+  flex: 0 0 62px;
+  content: counter(la-section, decimal-leading-zero);
+  color: var(--faint);
+  font-size: 13px;
+  font-weight: 400;
+  letter-spacing: 0;
+}
+
+/* prose sits on the heading's text column; labs and cards use the full width */
+body .lesson-page-section > p,
+body .lesson-page-section > ul,
+body .lesson-page-section > .lead {
+  padding-left: 62px;
+}
+
+body .lesson-page-section > .lead {
+  color: var(--accent);
+  font-size: 18px;
+  line-height: 1.7;
+}
+
+body .lesson-page-section > p:not(.lead) {
+  color: var(--text);
+  font-size: 16.5px;
+  line-height: 1.95;
+}
+
+@media (max-width: 720px) {
+  body .lesson-cover h1 {
+    font-size: 34px;
+  }
+
+  body .lesson-page-section > h2 {
+    font-size: 23px;
+  }
+
+  body .lesson-page-section > h2::before {
+    flex-basis: 36px;
+  }
+
+  body .lesson-page-section > p,
+  body .lesson-page-section > ul,
+  body .lesson-page-section > .lead {
+    padding-left: 0;
+  }
+
+  body .lesson-page-section > p:not(.lead) {
+    font-size: 15.5px;
+  }
+}
+
+/* ---------- 5 Lab shell (ch3l / ch6l / ch7l / ch9l share one look) ---------- */
+
+body :is(.ch3l-lab, .ch6l-lab, .ch7l-lab, .ch9l-lab) {
+  gap: 20px;
+  padding: 28px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: var(--surface-solid);
+  box-shadow: none;
+}
+
+body :is(.ch3l-head, .ch6l-head, .ch7l-head, .ch9l-head) > h3 {
+  font-size: 21px;
+  font-weight: 600;
+}
+
+body :is(.ch3l-head, .ch6l-head, .ch7l-head, .ch9l-head) > p {
+  color: var(--text-2);
+  font-size: 15.5px;
+  line-height: 1.8;
+}
+
+/* toolbars read as one segmented control */
+body :is(.ch3l-toolbar, .ch6l-toolbar, .ch7l-toolbar, .ch9l-toolbar) {
+  width: fit-content;
+  max-width: 100%;
+  padding: 3px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: var(--surface-soft);
+  gap: 2px;
+}
+
+body :is(.ch3l-chip, .ch6l-chip, .ch7l-chip, .ch9l-chip) {
+  border: 1px solid transparent;
+  border-radius: 999px;
+  background: transparent;
+  color: var(--muted);
+  font-size: 14px;
+}
+
+body :is(.ch3l-chip, .ch6l-chip, .ch7l-chip, .ch9l-chip):hover {
+  color: var(--text);
+}
+
+body :is(.ch3l-chip, .ch6l-chip, .ch7l-chip, .ch9l-chip).is-active {
+  border-color: var(--line);
+  background: var(--surface-solid);
+  color: var(--accent-strong);
+}
+
+body :is(.ch3l-btn, .ch6l-btn, .ch7l-btn, .ch9l-btn) {
+  border: 1px solid var(--line-strong);
+  border-radius: 8px;
+  background: var(--surface-solid);
+  color: var(--text);
+  box-shadow: none;
+}
+
+body :is(.ch3l-btn, .ch6l-btn, .ch7l-btn, .ch9l-btn):hover {
+  border-color: var(--accent);
+}
+
+body :is(.ch3l-btn, .ch6l-btn, .ch7l-btn, .ch9l-btn):active {
+  transform: translateY(1px);
+  background: var(--accent-soft);
+}
+
+body :is(.ch3l-btn, .ch6l-btn, .ch7l-btn, .ch9l-btn).is-primary {
+  border-color: var(--accent);
+  background: var(--accent);
+  color: var(--on-accent);
+}
+
+body :is(.ch3l-btn, .ch6l-btn, .ch7l-btn, .ch9l-btn).is-primary:hover {
+  border-color: var(--accent-strong);
+  background: var(--accent-strong);
+}
+
+body :is(.ch3l-btn, .ch6l-btn, .ch7l-btn, .ch9l-btn):disabled {
+  opacity: 0.4;
+}
+
+/* the prediction box */
+body :is(.ch3l-predict, .ch6l-predict, .ch7l-predict, .ch9l-predict) {
+  border: 1px solid var(--predict-line);
+  border-radius: 10px;
+  background: var(--predict-bg);
+}
+
+body :is(.ch3l-predict-q, .ch6l-predict-q, .ch7l-predict-q, .ch9l-predict-q) > span,
+body.dark :is(.ch3l-predict-q, .ch6l-predict-q, .ch7l-predict-q, .ch9l-predict-q) > span {
+  background: none;
+  color: var(--predict-text);
+  padding: 0;
+}
+
+body :is(.ch3l-predict-q, .ch6l-predict-q, .ch7l-predict-q, .ch9l-predict-q) > span::before {
+  content: "● ";
+}
+
+body :is(.ch3l-predict-options, .ch6l-predict-options, .ch7l-predict-options, .ch9l-predict-options) > button {
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--surface-solid);
+  color: var(--text);
+}
+
+body :is(.ch3l-predict-options, .ch6l-predict-options, .ch7l-predict-options, .ch9l-predict-options) > button.is-picked {
+  border-color: var(--cv-drag);
+  box-shadow: inset 0 0 0 1px var(--cv-drag);
+}
+
+body :is(.ch3l-predict-options, .ch6l-predict-options, .ch7l-predict-options, .ch9l-predict-options) > button.is-right {
+  border-color: var(--ok-line);
+  background: var(--ok-bg);
+  color: var(--ok-text);
+}
+
+body :is(.ch3l-predict-options, .ch6l-predict-options, .ch7l-predict-options, .ch9l-predict-options) > button.is-wrong {
+  border-color: var(--bad-line);
+  background: var(--bad-bg);
+  color: var(--bad-text);
+}
+
+body :is(.ch3l-predict-feedback, .ch6l-predict-feedback, .ch7l-predict-feedback, .ch9l-predict-feedback) {
+  color: var(--predict-text);
+}
+
+/* readout cards, canvas frames, conclusions */
+body :is(.ch3l-card, .ch6l-card, .ch7l-card, .ch9l-card) {
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: var(--surface-solid);
+  box-shadow: none;
+}
+
+/* the canvas frame lives on the plane / scene wrapper, not on the stage */
+body :is(.ch3l-stage, .ch6l-stage, .ch7l-stage, .ch9l-stage) {
+  border: 0;
+  background: none;
+  box-shadow: none;
+}
+
+body :is(.ch7p, .ch9p, .la3d),
+body.dark :is(.ch7p, .ch9p, .la3d) {
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--cv-paper);
+}
+
+body :is(.ch3l-result, .ch6l-result, .ch7l-result, .ch9l-result) {
+  border: 1px solid var(--ok-line);
+  border-radius: 10px;
+  background: var(--ok-bg);
+}
+
+body :is(.ch3l-ok, .ch6l-ok, .ch7l-ok, .ch9l-ok) {
+  color: var(--ok-text);
+}
+
+body :is(.ch3l-bad, .ch6l-bad, .ch7l-bad, .ch9l-bad) {
+  color: var(--bad-text);
+}
+
+@media (max-width: 720px) {
+  body :is(.ch3l-lab, .ch6l-lab, .ch7l-lab, .ch9l-lab) {
+    padding: 16px;
+  }
+}
+
+/* ---------- 6 Theorems, pitfalls ---------- */
+
+body :is(.ch3l-theorem, .ch6l-theorem, .ch7l-theorem, .ch9l-theorem) {
+  padding: 22px 0 22px 62px;
+  border: 0;
+  border-top: 1px solid var(--line);
+  border-radius: 0;
+  background: none;
+  box-shadow: none;
+}
+
+body :is(.ch3l-theorem, .ch6l-theorem, .ch7l-theorem, .ch9l-theorem) > h3 {
+  font-size: 17px;
+  font-weight: 600;
+}
+
+body :is(.ch3l-theorem, .ch6l-theorem, .ch7l-theorem, .ch9l-theorem) > p {
+  color: var(--text-2);
+  font-size: 15.5px;
+  line-height: 1.85;
+}
+
+body :is(.ch3l-theorem-math, .ch6l-theorem-math, .ch7l-theorem-math, .ch9l-theorem-math) {
+  border: 0;
+  border-radius: 6px;
+  background: var(--surface-soft);
+}
+
+body :is(.ch3l-pitfalls, .ch6l-pitfalls, .ch7l-pitfalls, .ch9l-pitfalls) {
+  border: 1px solid var(--bad-line);
+  border-radius: 10px;
+  background: var(--bad-bg);
+  box-shadow: none;
+}
+
+body :is(.ch3l-pitfalls, .ch6l-pitfalls, .ch7l-pitfalls, .ch9l-pitfalls) > h3 {
+  color: var(--bad-text);
+  font-size: 12.5px;
+  letter-spacing: 0.08em;
+}
+
+@media (max-width: 720px) {
+  body :is(.ch3l-theorem, .ch6l-theorem, .ch7l-theorem, .ch9l-theorem) {
+    padding-left: 0;
+  }
+}
+
+/* ---------- 7 Example, self-test, summary ---------- */
+
+body .example-challenge {
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: var(--surface-solid);
+  box-shadow: none;
+}
+
+body .example-choice {
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--surface-solid);
+  box-shadow: none;
+}
+
+body .example-choice:has(input:checked) {
+  border-color: var(--accent);
+  background: var(--accent-soft);
+}
+
+body .self-test-list {
+  gap: 0;
+  border-top: 1px solid var(--line);
+}
+
+body .self-test-item {
+  border: 0;
+  border-bottom: 1px solid var(--line);
+  border-radius: 0;
+  background: none;
+  box-shadow: none;
+}
+
+/* ---------- 8 Formulas: ink, no chips ---------- */
+
+body .tex,
+body.dark .tex {
+  color: var(--text);
+}
+
+body .tex-inline,
+body.dark .tex-inline {
+  margin: 0 1px;
+  padding: 0 1px;
+  border-color: transparent;
+  background: none;
+  color: var(--text);
+}
+
+body .tex .katex {
+  font-size: 1.02em;
+}
+
+/* ---------- 9 Fixes from the first pass ---------- */
+
+body .lesson-cover p {
+  font-weight: 400;
+  font-size: 17px;
+  line-height: 1.8;
+}
+
+body .lesson-page-section {
+  padding-top: 40px;
+}
+
+body .lesson-page-section > h2 {
+  margin-top: 0;
+  margin-bottom: 24px;
+}

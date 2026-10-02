@@ -27,6 +27,13 @@
       blue: token("--blue", "#335eea"),
       gold: token("--gold", "#b78a1b"),
       violet: token("--violet", "#7258ca"),
+      // colour roles (tokens.css): labs should prefer these to hue names
+      v1: token("--cv-v1", "#2a64a8"),
+      v2: token("--cv-v2", "#c4552f"),
+      drag: token("--cv-drag", "#a87a12"),
+      image: token("--cv-image", "#8c4f86"),
+      subspace: token("--cv-subspace", "#2c5e4a"),
+      axis: token("--cv-axis", "#8a8d84"),
     };
   }
 

@@ -441,6 +441,39 @@
           ctx.moveTo(b[0], b[1]);
           ctx.lineTo(t[0], t[1]);
           ctx.stroke();
+          // light integer ticks (6px); numbers only on the positive half, up to 3
+          ctx.strokeStyle = pal.axis || withAlpha(pal.muted, 0.6);
+          ctx.fillStyle = pal.faint;
+          ctx.font = "11px 'LA Serif Latin', 'LA Serif SC', serif";
+          ctx.lineWidth = 1;
+          const kx = Math.floor(halfW() - 0.15);
+          const ky = Math.floor(halfH() - 0.15);
+          ctx.beginPath();
+          for (let k = -kx; k <= kx; k += 1) {
+            if (!k) continue;
+            const [x, y] = P([k, 0]);
+            ctx.moveTo(x, y - 3);
+            ctx.lineTo(x, y + 3);
+          }
+          for (let k = -ky; k <= ky; k += 1) {
+            if (!k) continue;
+            const [x, y] = P([0, k]);
+            ctx.moveTo(x - 3, y);
+            ctx.lineTo(x + 3, y);
+          }
+          ctx.stroke();
+          ctx.textAlign = "center";
+          ctx.textBaseline = "top";
+          for (let k = 1; k <= Math.min(3, kx - 1); k += 1) {
+            const [x, y] = P([k, 0]);
+            ctx.fillText(String(k), x, y + 6);
+          }
+          ctx.textAlign = "right";
+          ctx.textBaseline = "middle";
+          for (let k = 1; k <= Math.min(3, ky - 1); k += 1) {
+            const [x, y] = P([0, k]);
+            ctx.fillText(String(k), x - 6, y);
+          }
           ctx.restore();
           if (names) {
             d.text([halfW() * 0.93, 0], names[0], "muted", { dy: -10, font: "600 12px 'LA Serif Latin', 'LA Serif SC', 'Songti SC', serif", isAxisName: true });

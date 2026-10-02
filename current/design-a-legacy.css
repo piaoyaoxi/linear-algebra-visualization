@@ -316,8 +316,12 @@
   color: var(--predict-text);
 }
 
+/* the “当前结论” is the lab's answer: give it reading size, not pill size */
 :is(main, #la) .ch1-result-band .ch1-status {
+  padding: 8px 12px;
   border-radius: 8px;
+  font-size: 15px;
+  line-height: 1.6;
 }
 
 /* canvas frames */
@@ -1644,4 +1648,23 @@ body.dark :is(main, #la) :is(.lesson-page-section, #lb) .basis-label rect {
   border: 0;
   border-radius: 10px;
   background: var(--surface-soft);
+}
+
+/* ch4 §3: the canvas grows with its card instead of leaving a blank block under it */
+:is(main, #la) #matrix-product-determinant-rank-interactive .s3-canvas-card {
+  display: flex;
+  flex-direction: column;
+}
+
+:is(main, #la) #matrix-product-determinant-rank-interactive .s3-canvas-card > canvas {
+  flex: 1 1 auto;
+  height: auto;
+  min-height: 360px;
+}
+
+/* long display formulas in theorem rows shrink a little on phones instead of scrolling */
+@media (max-width: 420px) {
+  :is(main, #la) :is(.ch3l-theorem-math, .ch6l-theorem-math, .ch7l-theorem-math, .ch9l-theorem-math) .katex-display > .katex {
+    font-size: 0.86em;
+  }
 }

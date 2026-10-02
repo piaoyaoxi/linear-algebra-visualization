@@ -263,16 +263,31 @@
         ["竖直方向拉长 2 倍，面积变为 2 倍", false, "det E=1，面积不变。"],
         ["绕原点旋转", false, "e₁ 被送到 (1,2)，e₂ 保持不动，长度变了，所以不是旋转。"],
       ], "visuals/ch4/section6-elementary.js").map(([t, ok, why], i) => `<button type="button" data-i="${i}" data-ok="${ok}" data-why="${why}">${t}</button>`).join("")}</div><p class="ch3l-predict-feedback" hidden></p></div>`;
-    gate.querySelectorAll("[data-i]").forEach((b) => b.addEventListener("click", () => {
-      gate.querySelectorAll("[data-i]").forEach((x) => x.classList.remove("is-right", "is-wrong"));
-      const ok = b.dataset.ok === "true";
-      b.classList.add(ok ? "is-right" : "is-wrong");
-      const fb = gate.querySelector(".ch3l-predict-feedback");
-      fb.hidden = false;
+    // predict → act → reveal: the verdict opens only after the student also acts on the lab
+    let picked = null;
+    let revealed = false;
+    const fb = gate.querySelector(".ch3l-predict-feedback");
+    const reveal = () => {
+      if (revealed || !picked) return;
+      revealed = true;
+      const ok = picked.dataset.ok === "true";
+      gate.querySelectorAll("[data-i]").forEach((x) => x.classList.remove("is-picked"));
+      picked.classList.add(ok ? "is-right" : "is-wrong");
+      gate.querySelector(".ch3l-predict").classList.add("is-done");
       fb.innerHTML = ok
         ? "✓ 每个点的 y 坐标加上 2x，x 坐标不变：竖直方向的剪切。倍加矩阵的行列式为 1，所以面积不变，这正是第二章“倍加不改变行列式”的几何原因。"
-        : `再对照图形想一想：${b.dataset.why}`;
+        : `和图中看到的不一致：${picked.dataset.why}`;
+    };
+    gate.querySelectorAll("[data-i]").forEach((b) => b.addEventListener("click", () => {
+      if (revealed) return;
+      picked = b;
+      gate.querySelectorAll("[data-i]").forEach((x) => x.classList.toggle("is-picked", x === b));
+      fb.hidden = false;
+      fb.textContent = "已记下你的预测。现在动手操作一次，结论随后出现。";
     }));
+    const acted = (e) => { if (!gate.contains(e.target)) reveal(); };
+    ["input", "change", "pointerup"].forEach((t) => root.addEventListener(t, acted));
+    root.addEventListener("click", (e) => { if (e.target.closest("button") && !gate.contains(e.target)) reveal(); });
 
     ro = new ResizeObserver(() => paint(state.shown));
     ro.observe(canvas);

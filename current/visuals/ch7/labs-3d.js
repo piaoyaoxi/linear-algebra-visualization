@@ -108,7 +108,7 @@
   function kernelLab(root) {
     const lab = K.labShell(root, {
       title: "沿核滑动，像不动",
-      task: "金色点是 x，蓝绿点是它的像 σx。紫色点 x′ 只能在 x+σ⁻¹(0) 里移动：拖动它，看 σx′ 会不会离开 σx。",
+      task: "金色圆点 x 可以随意拖动，紫色点是它的像 σx。金色圆点 x′ 只能沿绿色虚线 x+σ⁻¹(0) 移动：拖动它，看 σx′ 会不会离开 σx。",
     });
     const toolbar = el("div", "ch7l-toolbar");
     const body = el("div", "ch7l-body");
@@ -152,21 +152,24 @@
       const sxN = numVec(sx);
       scene.setObjects(() => {
         const objs = [];
-        const imObj = spanObject(im, "accent", { label: state.key === "deriv" ? "DV" : "σV" });
-        const kerObj = spanObject(ker, "coral", { label: state.key === "deriv" ? "D⁻¹(0)" : "σ⁻¹(0)" });
+        const imObj = spanObject(im, "image", { label: state.key === "deriv" ? "DV" : "σV" });
+        const kerObj = spanObject(ker, "subspace", { label: state.key === "deriv" ? "D⁻¹(0)" : "σ⁻¹(0)" });
         // The labelled spans are the answer to the prediction: draw them afterwards.
         if (flow?.revealed && imObj) objs.push(imObj);
         if (flow?.revealed && kerObj) objs.push(kerObj);
         // the fibre through x: x + ker
-        if (ker.length === 1) objs.push({ type: "line", p: state.x, dir: numVec(ker[0]), color: "violet", width: 1.4, dash: [6, 5], alpha: 0.8 });
+        if (ker.length === 1) objs.push({ type: "line", p: state.x, dir: numVec(ker[0]), color: "subspace", width: 1.4, dash: [6, 5], alpha: 0.8 });
         if (ker.length === 2) {
           const n = V().cross(numVec(ker[0]), numVec(ker[1]));
-          objs.push({ type: "plane", n, d: V().dot(n, state.x), color: "violet", alpha: 0.06, dash: [6, 5], strokeAlpha: 0.5 });
+          objs.push({ type: "plane", n, d: V().dot(n, state.x), color: "subspace", alpha: 0.06, dash: [6, 5], strokeAlpha: 0.5 });
         }
-        objs.push({ type: "segment", a: state.x, b: sxN, color: "muted", dash: [4, 4], width: 1.3 });
-        objs.push({ type: "segment", a: xPrime(), b: sxN, color: "muted", dash: [4, 4], width: 1.3 });
-        objs.push({ type: "point", p: sxN, color: "accent", r: 6.5, label: same ? "σx = σx′" : "σx" });
-        if (!same) objs.push({ type: "point", p: numVec(sxp), color: "violet", r: 5, label: "σx′" });
+        objs.push({ type: "segment", a: state.x, b: sxN, color: "axis", dash: [4, 4], width: 1.3 });
+        objs.push({ type: "segment", a: xPrime(), b: sxN, color: "axis", dash: [4, 4], width: 1.3 });
+        // x and x′ are both gold drag handles: name them on the picture.
+        objs.push({ type: "point", p: state.x, color: "drag", r: 0.01, label: "x" });
+        objs.push({ type: "point", p: xPrime(), color: "drag", r: 0.01, label: "x′" });
+        objs.push({ type: "point", p: sxN, color: "image", r: 6.5, label: same ? "σx = σx′" : "σx" });
+        if (!same) objs.push({ type: "point", p: numVec(sxp), color: "image", r: 5, hollow: true, label: "σx′" });
         return objs;
       });
       const poly = (v) => K.polyLatex(v, "x");
@@ -192,7 +195,7 @@
       const { ker } = structure();
       const kerN = ker.map(numVec);
       const xHandle = {
-        color: "gold",
+        color: "drag",
         snap: 0.5,
         get: () => state.x,
         set: (p) => {
@@ -204,7 +207,7 @@
         end: () => flow?.acted(),
       };
       const xpHandle = {
-        color: "violet",
+        color: "drag",
         get: xPrime,
         set: (p) => {
           const d = p.map((v, i) => v - state.x[i]);
@@ -234,7 +237,7 @@
       const { ker } = structure();
       state.w = ker.length === 1 ? numVec(ker[0]).map((c) => (key === "deriv" ? -c : -0.5 * c)) : [-1, 1, 0];
       scene?.destroy();
-      scene = S().create(stage, { range: 3, label: "核、值域与一个点的像", hint: "拖动空白处旋转 · 拖动金色 x 或紫色 x′", yaw: -0.9, pitch: 0.35, axisNames: mode().axes });
+      scene = S().create(stage, { range: 3, label: "核、值域与一个点的像", hint: "拖动空白处旋转 · 拖动金色圆点 x 或 x′", yaw: -0.9, pitch: 0.35, axisNames: mode().axes });
       handles();
       flow = K.predictFlow(gateHost, result, { ...mode().predict, onReveal: redraw });
       redraw();
@@ -299,7 +302,7 @@
   function invariantLab(root) {
     const lab = K.labShell(root, {
       title: "σW 有没有离开 W",
-      task: "蓝绿色是候选子空间 W，珊瑚色是它的像 AW。拖动圆点改变候选直线的方向或候选平面的法向，W 变成金色时就是不变子空间。",
+      task: "绿色是候选子空间 W，紫色是它的像 AW。拖动金色圆点改变候选直线的方向或候选平面的法向；AW 与 W 重合、W 加深时，W 就是不变子空间。",
     });
     const state = { key: "standard", kind: "plane", u: [1, 0.5, 1], n: [0.5, 1, 1.5] };
     const toolbar = el("div", "ch7l-toolbar");
@@ -351,28 +354,30 @@
     function redraw() {
       const r = analyse();
       const kind = state.kind; // the closure must match the analysis it was built from
-      const W = r.inv ? "gold" : "accent";
+      const W = "subspace";
       scene.setObjects(() => {
         const objs = [];
         if (kind === "line") {
           const u = numVec(r.u);
           const Au = numVec(r.Au);
+          // Highlight when invariant: the same colour with a glow underneath.
+          if (r.inv) objs.push({ type: "line", dir: u, color: W, width: 7, alpha: 0.16 });
           objs.push({ type: "line", dir: u, color: W, width: 2.6, label: "W" });
-          if (!r.inv) objs.push({ type: "line", dir: Au, color: "coral", width: 1.8, dash: [6, 5], label: "AW" });
-          objs.push({ type: "arrow", to: u, color: W, label: "u" });
-          objs.push({ type: "arrow", to: scaled(Au, Math.min(2.4, V().len(Au))), color: "coral", width: 2.4, label: "Au" });
+          if (!r.inv) objs.push({ type: "line", dir: Au, color: "image", width: 1.8, dash: [6, 5], label: "AW" });
+          objs.push({ type: "arrow", to: u, color: "drag", label: "u" });
+          objs.push({ type: "arrow", to: scaled(Au, Math.min(2.4, V().len(Au))), color: "image", width: 2.4, label: "Au" });
         } else {
           const n = numVec(r.n);
-          objs.push({ type: "plane", n, d: 0, color: W, alpha: 0.16, label: "W" });
+          objs.push({ type: "plane", n, d: 0, color: W, alpha: r.inv ? 0.26 : 0.14, width: r.inv ? 2.2 : 1.3, label: "W" });
           const imgs = r.images.map(numVec);
           const nImg = V().cross(imgs[0], imgs[1]);
-          if (!r.inv && V().len(nImg) > 1e-9) objs.push({ type: "plane", n: nImg, d: 0, color: "coral", alpha: 0.08, dash: [6, 5], strokeAlpha: 0.6, label: "AW" });
+          if (!r.inv && V().len(nImg) > 1e-9) objs.push({ type: "plane", n: nImg, d: 0, color: "image", alpha: 0.08, dash: [6, 5], strokeAlpha: 0.6, label: "AW" });
           r.basis.map(numVec).forEach((w, i) => {
             objs.push({ type: "arrow", to: scaled(w, 1.4), color: W, width: 2.2, label: `w${"₁₂"[i]}` });
-            objs.push({ type: "arrow", to: scaled(imgs[i], 1.4 * (V().len(imgs[i]) / V().len(w))), color: "coral", width: 2.2, label: `Aw${"₁₂"[i]}` });
+            objs.push({ type: "arrow", to: scaled(imgs[i], 1.4 * (V().len(imgs[i]) / V().len(w))), color: "image", width: 2.2, label: `Aw${"₁₂"[i]}` });
           });
-          objs.push({ type: "segment", a: [0, 0, 0], b: n, color: "muted", width: 1.4, dash: [3, 3] });
-          objs.push({ type: "label", p: n, text: "法向 n", color: "muted" });
+          objs.push({ type: "segment", a: [0, 0, 0], b: n, color: "drag", width: 1.4, dash: [3, 3] });
+          objs.push({ type: "label", p: n, text: "法向 n", color: "drag" });
         }
         return objs;
       });
@@ -405,7 +410,7 @@
     function setHandles() {
       scene.setHandles([
         {
-          color: "accent",
+          color: "drag",
           snap: 0.5,
           get: () => (state.kind === "line" ? state.u : state.n),
           set: (p) => {
@@ -522,7 +527,10 @@
     side.append(gateHost, tools, info, result, polyBox);
     let flow = null;
     const preset = () => KRYLOV_PRESETS[state.key];
-    const COLORS = ["accent", "blue", "violet", "coral"];
+    // v is dragged; Av, A²v, A³v are images under A (fading so they stay apart).
+    const COLORS = ["drag", "image", "image", "image"];
+    const ALPHAS = [1, 1, 0.75, 0.55];
+    const TEXT_VARS = ["--cv-drag-text", "--cv-image", "--cv-image", "--cv-image"];
     const NAMES = ["v", "Av", "A²v", "A³v"];
     const NAMES_TEX = ["v", "Av", "A^2v", "A^3v"];
 
@@ -553,14 +561,19 @@
       scene.setObjects(() => {
         const objs = [];
         const d = indep.map((_, i) => dirs[i]);
-        if (indep.length === 1) objs.push({ type: "line", dir: d[0], color: "accent", width: 1.4, alpha: 0.5, dash: [5, 5] });
-        if (indep.length === 2) objs.push({ type: "plane", n: V().cross(d[0], d[1]), d: 0, color: "accent", alpha: 0.13, label: "张成" });
-        if (indep.length === 3) objs.push({ type: "box", vectors: d, color: "accent", alpha: 0.06 });
-        dirs.forEach((p, i) => objs.push({ type: "arrow", to: p, color: stop && i === vs.length - 1 ? "gold" : COLORS[i], width: 2.6, label: NAMES[i] }));
+        if (indep.length === 1) objs.push({ type: "line", dir: d[0], color: "subspace", width: 1.4, alpha: 0.5, dash: [5, 5] });
+        if (indep.length === 2) objs.push({ type: "plane", n: V().cross(d[0], d[1]), d: 0, color: "subspace", alpha: 0.13, label: "张成" });
+        if (indep.length === 3) objs.push({ type: "box", vectors: d, color: "subspace", alpha: 0.06 });
+        dirs.forEach((p, i) => {
+          const fell = stop && i === vs.length - 1;
+          // The vector that falls back is highlighted with a glow of its own colour.
+          if (fell) objs.push({ type: "segment", a: [0, 0, 0], b: p, color: COLORS[i], width: 8, alpha: 0.18 });
+          objs.push({ type: "arrow", to: p, color: COLORS[i], width: 2.6, alpha: fell ? 1 : ALPHAS[i], label: NAMES[i] });
+        });
         return objs;
       });
       const rows = vs
-        .map((v, i) => `<li><span style="color:var(--${COLORS[i]})">${NAMES[i]}</span> ${tex(K.latexRow(v))}</li>`)
+        .map((v, i) => `<li><span style="color:var(${TEXT_VARS[i]})">${NAMES[i]}</span> ${tex(K.latexRow(v))}</li>`)
         .join("");
       let html = `<h4>序列（张成维数 ${indep.length}）</h4><ul class="ch7l-seq">${rows}</ul>`;
       if (stop) {
@@ -590,7 +603,7 @@
 
     scene.setHandles([
       {
-        color: "accent",
+        color: "drag",
         snap: 0.5,
         get: () => state.v,
         set: (p) => {

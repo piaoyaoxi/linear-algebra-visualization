@@ -378,16 +378,17 @@
     const g = (name, fb) => style.getPropertyValue(name).trim() || fb;
     return {
       surface: g("--surface-solid", "#ffffff"),
-      soft: g("--surface-soft", "#eef4f6"),
+      /* canvas paper; surfaces and level sets use the subspace green */
+      soft: g("--cv-paper", "#fdfcf8"),
       text: g("--text", "#071512"),
       muted: g("--muted", "#66717f"),
-      line: g("--line-strong", "rgba(28,43,61,.2)"),
-      accent: g("--accent", "#0f8f88"),
-      accentStrong: g("--accent-strong", "#08736e"),
-      coral: g("--coral", "#d9835f"),
-      blue: g("--blue", "#547ec8"),
-      pos: g("--accent", "#0f8f88"),
-      neg: g("--blue", "#3d5a9e"),
+      line: g("--cv-axis", "#8a8d84"),
+      accent: g("--cv-subspace", "#2c5e4a"),
+      accentStrong: g("--cv-subspace", "#2c5e4a"),
+      coral: g("--cv-v2", "#c4552f"),
+      blue: g("--cv-v1", "#2a64a8"),
+      pos: g("--cv-subspace", "#2c5e4a"),
+      neg: g("--cv-v1", "#2a64a8"),
       zero: g("--muted", "#8892a0"),
     };
   }
@@ -428,7 +429,7 @@
 
     // soft background
     ctx.fillStyle = palette.soft;
-    ctx.globalAlpha = 0.45;
+    ctx.globalAlpha = 1;
     ctx.fillRect(0, 0, width, height);
     ctx.globalAlpha = 1;
 
@@ -621,7 +622,7 @@
     const scale = Math.min(width, height) * 0.2;
 
     ctx.fillStyle = palette.soft;
-    ctx.globalAlpha = 0.35;
+    ctx.globalAlpha = 1;
     ctx.fillRect(0, 0, width, height);
     ctx.globalAlpha = 1;
 

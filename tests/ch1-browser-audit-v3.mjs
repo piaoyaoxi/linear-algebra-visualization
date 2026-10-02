@@ -205,8 +205,8 @@ async function operate(page, section, viewport, theme) {
     await checkMultivariateLayout(page, viewport);
     if (detail) await page.locator("#multivariate-polynomials-interactive .ch1-lab").screenshot({ path: path.join(outputDir, `${viewport.name}-${theme}-multivariate-support.png`) });
     await clickIf(page, '[data-lattice-mode="multiply"]');
-    await clickIf(page, '[data-first="{\"i\":1,\"j\":2}"]');
-    await clickIf(page, '[data-second="{\"i\":0,\"j\":1}"]');
+    await clickIf(page, `[data-first='{"i":1,"j":2}']`);
+    await clickIf(page, `[data-second='{"i":0,"j":1}']`);
     ensure(!(await page.locator("[data-multiply-module]").getAttribute("hidden")), "§10: multiply module did not open");
   }
   await page.waitForTimeout(100);

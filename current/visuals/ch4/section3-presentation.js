@@ -58,10 +58,15 @@
       text: style.getPropertyValue("--text").trim() || "#071512",
       muted: style.getPropertyValue("--muted").trim() || "#5f6965",
       line: style.getPropertyValue("--line-strong").trim() || "rgba(21,52,45,.22)",
-      accent: style.getPropertyValue("--accent").trim() || "#078b7e",
-      accentStrong: style.getPropertyValue("--accent-strong").trim() || "#006f65",
-      coral: style.getPropertyValue("--coral").trim() || "#d9835f",
-      blue: style.getPropertyValue("--blue").trim() || "#547ec8",
+      accent: style.getPropertyValue("--accent").trim() || "#2c5e4a",
+      accentStrong: style.getPropertyValue("--accent-strong").trim() || "#1f4a39",
+      coral: style.getPropertyValue("--coral").trim() || "#c4552f",
+      blue: style.getPropertyValue("--blue").trim() || "#2a64a8",
+      paper: style.getPropertyValue("--cv-paper").trim() || "#fdfcf8",
+      axis: style.getPropertyValue("--cv-axis").trim() || "#8a8d84",
+      v1: style.getPropertyValue("--cv-v1").trim() || "#2a64a8",
+      v2: style.getPropertyValue("--cv-v2").trim() || "#c4552f",
+      image: style.getPropertyValue("--cv-image").trim() || "#8c4f86",
     };
   }
 
@@ -140,14 +145,14 @@
       return { x: origin.x + px * scale, y: origin.y - py * scale };
     };
 
-    ctx.fillStyle = palette.surface;
+    ctx.fillStyle = palette.paper;
     ctx.fillRect(0, 0, width, height);
 
     for (let i = Math.floor(-reachY); i <= Math.ceil(reachY); i += 1) {
-      drawLine(ctx, point(-reachX, i), point(reachX, i), palette.line, i === 0 ? 1.2 : 1, i === 0 ? 0.26 : 0.08);
+      drawLine(ctx, point(-reachX, i), point(reachX, i), palette.axis, i === 0 ? 1.2 : 1, i === 0 ? 0.26 : 0.08);
     }
     for (let i = Math.floor(-reachX); i <= Math.ceil(reachX); i += 1) {
-      drawLine(ctx, point(i, -reachY), point(i, reachY), palette.line, i === 0 ? 1.2 : 1, i === 0 ? 0.26 : 0.08);
+      drawLine(ctx, point(i, -reachY), point(i, reachY), palette.axis, i === 0 ? 1.2 : 1, i === 0 ? 0.26 : 0.08);
     }
 
     const columnLengths = [Math.hypot(matrix[0][0], matrix[1][0]), Math.hypot(matrix[0][1], matrix[1][1])];
@@ -156,8 +161,8 @@
     const domain = Math.min(45, Math.max(10, Math.hypot(reachX, reachY) / minLength + 2));
     if (nonZero) {
       for (let i = -Math.ceil(domain); i <= Math.ceil(domain); i += 1) {
-        drawLine(ctx, point(-domain, i, true), point(domain, i, true), palette.coral, i === 0 ? 1.4 : 1.05, i === 0 ? 0.58 : 0.24);
-        drawLine(ctx, point(i, -domain, true), point(i, domain, true), palette.accent, i === 0 ? 1.4 : 1.05, i === 0 ? 0.58 : 0.24);
+        drawLine(ctx, point(-domain, i, true), point(domain, i, true), palette.image, i === 0 ? 1.4 : 1.05, i === 0 ? 0.5 : 0.2);
+        drawLine(ctx, point(i, -domain, true), point(i, domain, true), palette.image, i === 0 ? 1.4 : 1.05, i === 0 ? 0.5 : 0.2);
       }
     }
 
@@ -174,11 +179,13 @@
       ctx.lineTo(p11.x, p11.y);
       ctx.lineTo(p01.x, p01.y);
       ctx.closePath();
-      ctx.fillStyle = signedArea > 0 ? palette.accent : palette.blue;
-      ctx.globalAlpha = 0.14;
+      /* the cell is a result (purple); a reversed orientation is drawn dashed */
+      ctx.fillStyle = palette.image;
+      ctx.globalAlpha = signedArea > 0 ? 0.12 : 0.07;
       ctx.fill();
-      ctx.globalAlpha = 0.56;
-      ctx.strokeStyle = signedArea > 0 ? palette.accentStrong : palette.blue;
+      ctx.globalAlpha = 0.8;
+      if (signedArea < 0) ctx.setLineDash([6, 4]);
+      ctx.strokeStyle = palette.image;
       ctx.lineWidth = 1.8;
       ctx.stroke();
       ctx.restore();
@@ -186,8 +193,8 @@
 
     const firstEnd = point(1, 0, true);
     const secondEnd = point(0, 1, true);
-    drawArrow(ctx, origin, firstEnd, palette.accentStrong, options.firstLabel ?? "第 1 列", 3.1);
-    drawArrow(ctx, origin, secondEnd, palette.coral, options.secondLabel ?? "第 2 列", 3.1);
+    drawArrow(ctx, origin, firstEnd, palette.v1, options.firstLabel ?? "第 1 列", 3.1);
+    drawArrow(ctx, origin, secondEnd, palette.v2, options.secondLabel ?? "第 2 列", 3.1);
 
     ctx.save();
     ctx.fillStyle = palette.text;

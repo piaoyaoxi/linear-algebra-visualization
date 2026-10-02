@@ -58,10 +58,11 @@
     ctx.clearRect(0, 0, w, h);
     const style = getComputedStyle(canvas);
     const col = (name, fb) => style.getPropertyValue(name).trim() || fb;
-    const accent = col("--accent", "#0f8f88");
-    const coral = col("--coral", "#d46b4f");
-    const line = col("--line", "rgba(28,43,61,.12)");
-    const muted = col("--muted", "#66717f");
+    const v1 = col("--cv-v1", "#2a64a8");
+    const v2 = col("--cv-v2", "#c4552f");
+    const image = col("--cv-image", "#8c4f86");
+    const line = col("--cv-grid-major", "#e2ddd0");
+    const muted = col("--cv-axis", "#8a8d84");
     const s = Math.min(w, h) / 8.4;
     const cx = w / 2;
     const cy = h / 2;
@@ -75,7 +76,7 @@
       ctx.beginPath(); ctx.moveTo(...Praw(-8, k)); ctx.lineTo(...Praw(8, k)); ctx.stroke();
     }
     // transformed grid
-    ctx.strokeStyle = `color-mix(in srgb, ${accent} 38%, transparent)`;
+    ctx.strokeStyle = `color-mix(in srgb, ${image} 34%, transparent)`;
     ctx.lineWidth = 1.1;
     for (let k = -8; k <= 8; k += 1) {
       ctx.beginPath(); ctx.moveTo(...P(k, -8)); ctx.lineTo(...P(k, 8)); ctx.stroke();
@@ -90,11 +91,14 @@
     ctx.beginPath();
     sq.forEach((p, i) => (i ? ctx.lineTo(...p) : ctx.moveTo(...p)));
     ctx.closePath();
-    ctx.fillStyle = `color-mix(in srgb, ${det(M) < 0 ? coral : accent} 20%, transparent)`;
+    // the image of the unit square is a result; a reversed orientation is dashed
+    ctx.fillStyle = `color-mix(in srgb, ${image} ${det(M) < 0 ? 7 : 12}%, transparent)`;
     ctx.fill();
-    ctx.strokeStyle = det(M) < 0 ? coral : accent;
+    ctx.strokeStyle = image;
     ctx.lineWidth = 1.6;
+    if (det(M) < 0) ctx.setLineDash([6, 4]);
     ctx.stroke();
+    ctx.setLineDash([]);
     // basis images
     const arrow = (to, color, label) => {
       const [x0, y0] = P(0, 0);
@@ -105,8 +109,8 @@
       ctx.beginPath(); ctx.moveTo(x1, y1); ctx.lineTo(x1 - Math.cos(a - 0.45) * 11, y1 - Math.sin(a - 0.45) * 11); ctx.lineTo(x1 - Math.cos(a + 0.45) * 11, y1 - Math.sin(a + 0.45) * 11); ctx.closePath(); ctx.fill();
       ctx.font = "700 13px 'LA Serif Latin', 'LA Serif SC', 'Songti SC', serif"; ctx.fillText(label, x1 + 6, y1 - 6);
     };
-    arrow(P(1, 0), accent, opts.e1 || "Ee₁");
-    arrow(P(0, 1), coral, opts.e2 || "Ee₂");
+    arrow(P(1, 0), v1, opts.e1 || "Ee₁");
+    arrow(P(0, 1), v2, opts.e2 || "Ee₂");
   }
 
   function animate(from, to, paint, done) {

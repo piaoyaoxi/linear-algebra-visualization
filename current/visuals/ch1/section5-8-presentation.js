@@ -151,7 +151,7 @@
     function paint() {
       const c = coefficients();
       cam = M().drawComplexPlane(root.querySelector("canvas"), [
-        { ...state.alpha, label: "α", color: M().getPalette().coral },
+        { ...state.alpha, label: "α", color: M().getPalette().drag },
         { ...c.beta, label: state.mode === "R" ? "ᾱ" : "β", color: M().getPalette().accent },
       ], { bounds });
       root.querySelector("[data-alpha]").textContent = formatComplex(state.alpha);

@@ -1,11 +1,12 @@
 /* 首页：index.html */
 :root {
-  --paper: #f4f1e8;
-  --ink: #14201c;
-  --ink-2: #414c47;
-  --muted: #7a827d;
-  --line: rgba(20, 32, 28, 0.12);
-  --accent: #087d71;
+  /* direction A “松烟” (docs/design-spec.md), same values as the learning page */
+  --paper: #f5f2ea;
+  --ink: #1d211e;
+  --ink-2: #4a4f49;
+  --muted: #5d625c;
+  --line: #e1dccf;
+  --accent: #2c5e4a;
   --on-image: #fffdf8;
   --serif: "LA Serif Latin", "LA Serif SC", "Songti SC", "STSong", "Source Han Serif SC", "Noto Serif SC", "Noto Serif CJK SC", "SimSun", serif;
   --ease-out: cubic-bezier(0.2, 0.7, 0.2, 1);
@@ -13,12 +14,12 @@
 }
 
 :root[data-theme="dark"] {
-  --paper: #0e121b;
-  --ink: #e9ebf1;
-  --ink-2: #b9bfcc;
-  --muted: #8a91a2;
-  --line: rgba(205, 215, 240, 0.12);
-  --accent: #8fb8ee;
+  --paper: #131614;
+  --ink: #e7e5dd;
+  --ink-2: #c4c3ba;
+  --muted: #a6a89f;
+  --line: #2a2e2a;
+  --accent: #93c2a6;
   color-scheme: dark;
 }
 

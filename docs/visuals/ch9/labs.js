@@ -279,7 +279,7 @@
     lab.ch9Views = { scene };
     const stepCard = el("div", "ch9l-card");
     stepCard.innerHTML = `<div class="ch9l-steps" data-gs-steps></div>
-      <div class="ch9l-actions">${btn("上一步", "data-gs-prev")}${btn("下一步", "data-gs-next", "is-primary")}${btn("沿平面看", "data-gs-look")}${btn("默认视角", "data-gs-reset")}</div>
+      <div class="ch9l-actions">${btn("上一步", "data-gs-prev")}${btn("下一步", "data-gs-next data-la-free", "is-primary")}${btn("沿平面看", "data-gs-look")}${btn("默认视角", "data-gs-reset")}</div>
       <p class="ch9l-note" data-gs-note hidden>先回答下面的预测，再执行第三步。</p>`;
     const info = el("div", "ch9l-card");
     info.dataset.ch9Readout = "gs";

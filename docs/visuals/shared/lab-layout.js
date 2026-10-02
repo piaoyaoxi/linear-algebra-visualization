@@ -70,13 +70,49 @@
       const row = canvasRow(lab);
       placePrediction(lab, row);
       captions(lab, prefix, counter);
-      // the last readout card in the side column takes the spare height
+      // The last readout card stretches to the canvas bottom only when little space
+      // is left over; a short readout keeps its natural height (no empty box).
       lab.querySelectorAll(SIDE).forEach((side) => {
-        const cards = [...side.children].filter((c) => c.matches(CARD));
-        cards.forEach((c, i) => c.classList.toggle("la-fill", i === cards.length - 1));
+        const cards = [...side.children].filter((c) => c.matches(CARD) && !c.hidden);
+        cards.forEach((c) => c.classList.remove("la-fill"));
+        const last = cards[cards.length - 1];
+        if (!last) return;
+        const spare = side.getBoundingClientRect().bottom - last.getBoundingClientRect().bottom;
+        if (spare > 0 && spare < 120) last.classList.add("la-fill");
       });
+      gatePrimary(lab);
       lab.classList.add("la-laid-out");
     });
+  }
+
+  /*
+   * Until the student has picked a prediction, the lab's primary action stays
+   * disabled (spec: “选中前主按钮不可用”); dragging and presets stay free to explore.
+   */
+  const PICKED = ".is-picked, .is-right, .is-wrong";
+  function gatePrimary(lab) {
+    const box = lab.querySelector(PREDICT);
+    // data-la-free: the lab locks its own later steps, so the early steps stay usable
+    const primaries = [...lab.querySelectorAll("button.is-primary:not([data-la-free])")].filter((b) => !box || !box.contains(b));
+    if (!box || !primaries.length) return;
+    const open = box.classList.contains("is-done") || Boolean(box.querySelector(PICKED));
+    primaries.forEach((b) => {
+      if (!open && !b.disabled) {
+        b.disabled = true;
+        b.dataset.laGated = "1";
+        b.title = "先在上方作出预测";
+      } else if (open && b.dataset.laGated) {
+        b.disabled = false;
+        delete b.dataset.laGated;
+        b.removeAttribute("title");
+      }
+    });
+    if (!lab.dataset.laGateWatch) {
+      lab.dataset.laGateWatch = "1";
+      lab.addEventListener("click", (e) => {
+        if (e.target.closest(PREDICT)) requestAnimationFrame(() => gatePrimary(lab));
+      });
+    }
   }
 
   let queued = false;
@@ -92,6 +128,7 @@
   const start = () => {
     const main = document.querySelector("main") || document.body;
     new MutationObserver(schedule).observe(main, { childList: true, subtree: true });
+    window.addEventListener("resize", schedule, { passive: true });
     schedule();
   };
   if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", start);

@@ -147,7 +147,7 @@
 
     const gradient = ctx.createLinearGradient(0, 0, width, height);
     gradient.addColorStop(0, palette.soft);
-    gradient.addColorStop(1, palette.surface);
+    gradient.addColorStop(1, palette.soft);
     ctx.fillStyle = gradient;
     ctx.fillRect(0, 0, width, height);
 

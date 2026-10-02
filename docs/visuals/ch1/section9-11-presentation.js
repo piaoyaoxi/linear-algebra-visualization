@@ -150,9 +150,9 @@
       } else {
         const sum = { i: state.first.i + state.second.i, j: state.first.j + state.second.j };
         lattice = M().drawLattice(canvas, [
-          { ...state.first, label: `α=(${state.first.i},${state.first.j})` },
-          { ...state.second, label: `β=(${state.second.i},${state.second.j})` },
-          { ...sum, label: `α+β=(${sum.i},${sum.j})`, active: true },
+          { ...state.first, label: `α=(${state.first.i},${state.first.j})`, color: M().getPalette().v1 },
+          { ...state.second, label: `β=(${state.second.i},${state.second.j})`, color: M().getPalette().v2 },
+          { ...sum, label: `α+β=(${sum.i},${sum.j})`, active: true, color: M().getPalette().image },
         ], { maxI: 5, maxJ: 5 });
         root.querySelector("[data-lattice-readout]").innerHTML =
           `${tex(`(${state.first.i},${state.first.j})+(${state.second.i},${state.second.j})=(${sum.i},${sum.j})`)}，对应单项式指数逐坐标相加。`;

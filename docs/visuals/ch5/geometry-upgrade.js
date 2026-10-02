@@ -29,7 +29,7 @@
     const p = M().getPalette(), half = 1.7, res = width < 520 ? 22 : 30;
     const origin = { x: width * 0.5, y: height * 0.59 }, scale = Math.min(width * 0.255, height * 0.29), zScale = scale * 0.55;
     const project = (x, y, z) => ({ x: origin.x + (x - y) * scale * 0.92, y: origin.y + (x + y) * scale * 0.34 - Math.max(-3.6, Math.min(3.6, z)) * zScale, depth: x + y + z * 0.1 });
-    const bg = ctx.createLinearGradient(0, 0, width, height); bg.addColorStop(0, p.soft); bg.addColorStop(1, p.surface);
+    const bg = ctx.createLinearGradient(0, 0, width, height); bg.addColorStop(0, p.soft); bg.addColorStop(1, p.soft);
     ctx.fillStyle = bg; ctx.fillRect(0, 0, width, height);
     ctx.save(); ctx.globalAlpha = 0.34; ctx.strokeStyle = p.line; ctx.lineWidth = 1;
     for (let k = -1.5; k <= 1.5; k += 0.5) {

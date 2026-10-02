@@ -92,11 +92,13 @@
     return {
       text: styles.getPropertyValue("--text").trim() || "#10211d",
       muted: styles.getPropertyValue("--muted").trim() || "#68736f",
-      line: styles.getPropertyValue("--line-strong").trim() || "rgba(16, 40, 34, .22)",
-      teal: styles.getPropertyValue("--accent").trim() || "#078b7e",
-      tealStrong: styles.getPropertyValue("--accent-strong").trim() || "#006f65",
-      coral: styles.getPropertyValue("--coral").trim() || "#d69a48",
-      blue: "#4f72c9",
+      line: styles.getPropertyValue("--cv-axis").trim() || "#8a8d84",
+      /* transformed grid and cells are results; the two columns are v1 / v2 */
+      teal: styles.getPropertyValue("--cv-image").trim() || "#8c4f86",
+      tealStrong: styles.getPropertyValue("--cv-image").trim() || "#8c4f86",
+      v1: styles.getPropertyValue("--cv-v1").trim() || "#2a64a8",
+      coral: styles.getPropertyValue("--cv-v2").trim() || "#c4552f",
+      blue: styles.getPropertyValue("--cv-image").trim() || "#8c4f86",
     };
   }
 
@@ -264,7 +266,7 @@
       ctx.restore();
     }
 
-    drawArrow(ctx, origin, pointFor(matrix, 1, 0, origin, scale), palette.tealStrong, options.firstLabel || "Ae₁", 3);
+    drawArrow(ctx, origin, pointFor(matrix, 1, 0, origin, scale), palette.v1, options.firstLabel || "Ae₁", 3);
     drawArrow(ctx, origin, pointFor(matrix, 0, 1, origin, scale), palette.coral, options.secondLabel || "Ae₂", 3);
 
     if (options.vector !== false) {
@@ -420,7 +422,7 @@
 
     const label1 = t < 0.08 ? "b₁" : t > 0.92 ? "Ab₁" : "列₁";
     const label2 = t < 0.08 ? "b₂" : t > 0.92 ? "Ab₂" : "列₂";
-    drawArrow(ctx, origin, p1, palette.tealStrong, label1, 3.2);
+    drawArrow(ctx, origin, p1, palette.v1, label1, 3.2);
     drawArrow(ctx, origin, p3, palette.coral, label2, 3.2);
 
     ctx.save();
@@ -507,7 +509,7 @@
             <div class="s2c-stage-copy">
               <span class="s2c-stage-kicker">核心画面</span>
               <h4>同一张网格，先经过 B，再经过 A</h4>
-              <p>蓝向量是输入 <span class="s2c-math-plain">x</span> 在当前变换下的像；整张绿色网格随矩阵连续变形。</p>
+              <p>紫色向量是输入 <span class="s2c-math-plain">x</span> 在当前变换下的像；整张浅紫网格随矩阵连续变形。</p>
             </div>
             <div class="s2c-canvas-shell">
               <canvas class="s2c-main-canvas" data-s2c-compose-canvas aria-label="矩阵复合连续动画"></canvas>

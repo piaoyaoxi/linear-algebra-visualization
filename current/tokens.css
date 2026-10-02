@@ -1,35 +1,32 @@
 /*
- * Visualization colour roles (design direction A, “松烟”). Each mathematical role
- * keeps one colour everywhere: canvases read these through the lab kits'
- * palette() functions, so a lab asks for "v1" or "subspace", never for a hue.
- *   v1        first vector / first basis vector / η₁
- *   v2        second vector / η₂
- *   handle    anything the student can drag (input)
- *   image     result of applying a map: Ax, σ(v)
- *   subspace  planes, spans, kernels
+ * Canvas colour roles (docs/design-spec.md §2, direction A “松烟”). Each
+ * mathematical role keeps one colour everywhere; canvases read these through the
+ * lab kits' palette() as v1 / v2 / drag / image / subspace, never by hue.
  */
 :root {
-  --viz-paper: #fdfcf8;
-  --viz-v1: #2a64a8;
-  --viz-v2: #c4552f;
-  --viz-handle: #a87a12;
-  --viz-image: #8c4f86;
-  --viz-subspace: #2c5e4a;
-  --viz-axis: #8a8d84;
-  --viz-grid-major: #e2ddd0;
-  --viz-grid-minor: #f0ece2;
-  --viz-glow-alpha: 0.16;
+  --cv-paper: #fdfcf8;
+  --cv-grid: #f0ece2;
+  --cv-grid-major: #e2ddd0;
+  --cv-axis: #8a8d84;
+  --cv-v1: #2a64a8;
+  --cv-v2: #c4552f;
+  --cv-drag: #a87a12;
+  --cv-drag-text: #8a630c;
+  --cv-image: #8c4f86;
+  --cv-subspace: #2c5e4a;
+  --cv-glow-alpha: 0.16;
 }
 
 body.dark {
-  --viz-paper: #161916;
-  --viz-v1: #7eaee6;
-  --viz-v2: #ec8d6b;
-  --viz-handle: #dcb661;
-  --viz-image: #cc93c2;
-  --viz-subspace: #93c2a6;
-  --viz-axis: #7d8178;
-  --viz-grid-major: #2a2f2a;
-  --viz-grid-minor: #1d211d;
-  --viz-glow-alpha: 0.2;
+  --cv-paper: #161916;
+  --cv-grid: #1d211d;
+  --cv-grid-major: #2a2f2a;
+  --cv-axis: #7d8178;
+  --cv-v1: #7eaee6;
+  --cv-v2: #ec8d6b;
+  --cv-drag: #dcb661;
+  --cv-drag-text: #dcb661;
+  --cv-image: #cc93c2;
+  --cv-subspace: #93c2a6;
+  --cv-glow-alpha: 0.2;
 }

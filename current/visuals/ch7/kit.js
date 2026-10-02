@@ -305,14 +305,14 @@
       gold: cssColor(style, "--gold", "#b78a1b"),
       violet: cssColor(style, "--violet", "#7258ca"),
       // colour roles (tokens.css): labs should prefer these to hue names
-      v1: cssColor(style, "--viz-v1", "#2a64a8"),
-      v2: cssColor(style, "--viz-v2", "#c4552f"),
-      handle: cssColor(style, "--viz-handle", "#a87a12"),
-      image: cssColor(style, "--viz-image", "#8c4f86"),
-      subspace: cssColor(style, "--viz-subspace", "#2c5e4a"),
-      axis: cssColor(style, "--viz-axis", "#8a8d84"),
-      gridMajor: cssColor(style, "--viz-grid-major", "#e2ddd0"),
-      gridMinor: cssColor(style, "--viz-grid-minor", "#f0ece2"),
+      v1: cssColor(style, "--cv-v1", "#2a64a8"),
+      v2: cssColor(style, "--cv-v2", "#c4552f"),
+      drag: cssColor(style, "--cv-drag", "#a87a12"),
+      image: cssColor(style, "--cv-image", "#8c4f86"),
+      subspace: cssColor(style, "--cv-subspace", "#2c5e4a"),
+      axis: cssColor(style, "--cv-axis", "#8a8d84"),
+      gridMajor: cssColor(style, "--cv-grid-major", "#e2ddd0"),
+      grid: cssColor(style, "--cv-grid", "#f0ece2"),
     };
   }
 

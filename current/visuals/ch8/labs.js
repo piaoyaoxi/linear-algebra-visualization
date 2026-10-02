@@ -154,9 +154,9 @@
       const yScale = 0.42;
       plane.setDraw((d) => {
         const X = (lam) => lam - MID;
-        d.segment([X(LO) - 0.3, AXIS], [X(HI) + 0.3, AXIS], "muted", { width: 1.3 });
+        d.segment([X(LO) - 0.3, AXIS], [X(HI) + 0.3, AXIS], "axis", { width: 1.3 });
         for (let t = LO; t <= HI; t += 1) {
-          d.segment([X(t), AXIS - 0.06], [X(t), AXIS + 0.06], "muted", { width: 1.2 });
+          d.segment([X(t), AXIS - 0.06], [X(t), AXIS + 0.06], "axis", { width: 1.2 });
           d.text([X(t), AXIS], minus(t), "muted", { dy: 14, align: "center", font: "600 12px 'LA Serif Latin', 'LA Serif SC', 'Songti SC', serif" });
         }
         d.text([X(HI) + 0.3, AXIS], "λ₀", "muted", { dy: -12, align: "right", font: "650 13px 'LA Serif Latin', 'LA Serif SC', 'Songti SC', serif" });
@@ -169,25 +169,25 @@
           const lam = LO + ((HI - LO) * i) / 240;
           pts.push([X(lam), AXIS + yScale * M().toNumber(P.evalAt(det, F(`${Math.round(lam * 400)}/400`)))]);
         }
-        d.polyline(pts, "accent", { width: 2.4 });
-        d.text([X(HI) - 0.2, Math.min(d.halfH - 0.3, pts[pts.length - 1][1])], `|M(λ)|`, "accent", { align: "right", dy: -10, font: "700 13px 'LA Serif Latin', 'LA Serif SC', 'Songti SC', serif" });
+        d.polyline(pts, "v1", { width: 2.4 });
+        d.text([X(HI) - 0.2, Math.min(d.halfH - 0.3, pts[pts.length - 1][1])], `|M(λ)|`, "v1", { align: "right", dy: -10, font: "700 13px 'LA Serif Latin', 'LA Serif SC', 'Songti SC', serif" });
         /* rank track below the axis */
         const TRACK = AXIS - 0.55;
         d.text([X(LO), TRACK], `秩 ${n}`, "muted", { align: "left", dy: 16, font: "650 12px 'LA Serif Latin', 'LA Serif SC', 'Songti SC', serif" });
-        d.segment([X(LO), TRACK], [X(HI), TRACK], "accent", { width: 3, alpha: 0.55 });
+        d.segment([X(LO), TRACK], [X(HI), TRACK], "v1", { width: 3, alpha: 0.55 });
         roots.forEach((root) => {
           const rr = M().rankOf(P.evalMatrix(Mx, root));
           const rx = X(M().toNumber(root));
-          d.point([rx, TRACK], "coral", { r: 5 });
-          d.point([rx, AXIS], "coral", { r: 4 });
-          d.text([rx, TRACK], `秩 ${rr}`, "coral", { dy: 16, align: "center", font: "700 12px 'LA Serif Latin', 'LA Serif SC', 'Songti SC', serif" });
+          d.point([rx, TRACK], "v2", { r: 5 });
+          d.point([rx, AXIS], "v2", { r: 4 });
+          d.text([rx, TRACK], `秩 ${rr}`, "v2", { dy: 16, align: "center", font: "700 12px 'LA Serif Latin', 'LA Serif SC', 'Songti SC', serif" });
         });
         const xv = X(M().toNumber(x0));
         const yv = AXIS + yScale * M().toNumber(P.evalAt(det, x0));
-        d.segment([xv, AXIS], [xv, yv], "coral", { width: 1.4, dash: [5, 4] });
-        d.point([xv, yv], "coral", { r: 4.5 });
+        d.segment([xv, AXIS], [xv, yv], "drag", { width: 1.4, dash: [5, 4] });
+        d.point([xv, yv], "drag", { r: 4.5 });
         const right = xv > d.halfW * 0.3;
-        d.text([xv, yv], `|M(λ₀)|=${minus(M().formatF(P.evalAt(det, x0)))}`, "coral", { dx: right ? -12 : 12, dy: -12, align: right ? "right" : "left" });
+        d.text([xv, yv], `|M(λ₀)|=${minus(M().formatF(P.evalAt(det, x0)))}`, "drag", { dx: right ? -12 : 12, dy: -12, align: right ? "right" : "left" });
       });
       matCard.innerHTML = `<h4>λ-矩阵</h4><div>${texD(`M(\\lambda)=${P.latexMatrix(Mx)}`)}</div>${
         open ? `<p>${tex(`|M(\\lambda)|=${pfac(det)}`)}</p>` : ""
@@ -206,7 +206,7 @@
 
     plane.setHandles([
       {
-        color: "coral",
+        color: "drag",
         snap: 0.25,
         limit: 3,
         hidden: () => !flow?.predicted,
@@ -745,12 +745,12 @@
 
   /* Irreducible factors over the reals; "q" splits over the complex numbers. */
   const PRIMES = {
-    a: { tex: "\\lambda-1", text: "λ−1", deg: 1, color: "accent" },
-    b: { tex: "\\lambda+2", text: "λ+2", deg: 1, color: "coral" },
-    c: { tex: "\\lambda+1", text: "λ+1", deg: 1, color: "coral" },
-    q: { tex: "\\lambda^2+1", text: "λ²+1", deg: 2, color: "violet", split: ["ip", "im"] },
-    ip: { tex: "\\lambda-\\mathrm{i}", text: "λ−i", deg: 1, color: "violet" },
-    im: { tex: "\\lambda+\\mathrm{i}", text: "λ+i", deg: 1, color: "gold" },
+    a: { tex: "\\lambda-1", text: "λ−1", deg: 1, color: "v1" },
+    b: { tex: "\\lambda+2", text: "λ+2", deg: 1, color: "v2" },
+    c: { tex: "\\lambda+1", text: "λ+1", deg: 1, color: "v2" },
+    q: { tex: "\\lambda^2+1", text: "λ²+1", deg: 2, color: "subspace", split: ["ip", "im"] },
+    ip: { tex: "\\lambda-\\mathrm{i}", text: "λ−i", deg: 1, color: "subspace" },
+    im: { tex: "\\lambda+\\mathrm{i}", text: "λ+i", deg: 1, color: "image" },
   };
   const SUPS = ["", "", "²", "³", "⁴"];
 
@@ -1149,11 +1149,11 @@
           const yTop = baseY - 0.5 * gapY;
           ctx.save();
           roundRect(ctx, 12, yTop, towerW - 12, gapY - 8, 12);
-          ctx.fillStyle = d.alpha(d.color("accent"), 0.04);
+          ctx.fillStyle = d.alpha(d.color("subspace"), 0.04);
           ctx.fill();
           ctx.setLineDash([5, 5]);
           ctx.lineWidth = 1.2;
-          ctx.strokeStyle = d.alpha(d.color("accent"), 0.45);
+          ctx.strokeStyle = d.alpha(d.color("subspace"), 0.45);
           ctx.stroke();
           ctx.restore();
           write(20, yTop + 14, "ker N", "faint", { size: 12, weight: 700 });
@@ -1169,15 +1169,15 @@
           const on = j <= k;
           ctx.save();
           roundRect(ctx, 12, yTop, towerW - 12, baseY + gapY * 0.5 - yTop - 8 + (j === 1 ? 0 : 0), 12);
-          ctx.fillStyle = d.alpha(d.color("accent"), on ? 0.07 : 0.02);
+          ctx.fillStyle = d.alpha(d.color("subspace"), on ? 0.07 : 0.02);
           ctx.fill();
           if (j === k) {
             ctx.lineWidth = 1.6;
-            ctx.strokeStyle = d.alpha(d.color("accent"), 0.7);
+            ctx.strokeStyle = d.alpha(d.color("subspace"), 0.7);
             ctx.stroke();
           }
           ctx.restore();
-          write(20, yTop + 14, `ker N${j > 1 ? "²³⁴"[j - 2] : ""}`, on ? "accent" : "faint", { size: 12, weight: 700 });
+          write(20, yTop + 14, `ker N${j > 1 ? "²³⁴"[j - 2] : ""}`, on ? "subspace" : "faint", { size: 12, weight: 700 });
         }
         /* chains: level 1 at the bottom is the eigenvector; the generator sits on top */
         chains.forEach((len, c) => {
@@ -1206,10 +1206,10 @@
             ctx.save();
             ctx.beginPath();
             ctx.arc(x, y, R, 0, Math.PI * 2);
-            ctx.fillStyle = on ? d.color("accent") : d.alpha(d.color("muted"), 0.12);
+            ctx.fillStyle = on ? d.color("subspace") : d.alpha(d.color("muted"), 0.12);
             ctx.fill();
             ctx.lineWidth = 1.6;
-            ctx.strokeStyle = on ? d.color("accent") : d.alpha(d.color("muted"), 0.5);
+            ctx.strokeStyle = on ? d.color("subspace") : d.alpha(d.color("muted"), 0.5);
             ctx.stroke();
             ctx.restore();
             const idx = len - lv + 1;
@@ -1234,21 +1234,21 @@
           const hh = nu[j] * unitH;
           ctx.save();
           roundRect(ctx, x, baseY + R - hh, bw, hh, 6);
-          ctx.fillStyle = on ? d.alpha(d.color("accent"), 0.22) : d.alpha(d.color("muted"), 0.06);
+          ctx.fillStyle = on ? d.alpha(d.color("subspace"), 0.22) : d.alpha(d.color("muted"), 0.06);
           ctx.fill();
           ctx.lineWidth = 1.4;
-          ctx.strokeStyle = on ? d.color("accent") : d.alpha(d.color("muted"), 0.35);
+          ctx.strokeStyle = on ? d.color("subspace") : d.alpha(d.color("muted"), 0.35);
           ctx.stroke();
           if (on && j > 1) {
             const prev = nu[j - 1] * unitH;
-            ctx.fillStyle = d.alpha(d.color("coral"), 0.35);
+            ctx.fillStyle = d.alpha(d.color("subspace"), 0.35);
             roundRect(ctx, x, baseY + R - hh, bw, hh - prev, 6);
             ctx.fill();
           }
           ctx.restore();
           write(x + bw / 2, baseY + R + 14, `ν${SUB[j]}`, on ? "text" : "faint", { align: "center", size: 12, weight: 700 });
-          if (on) write(x + bw / 2, baseY + R - hh - 12, `${nu[j]}`, "accent", { align: "center", size: 13, weight: 750 });
-          if (on) write(x + bw / 2, baseY + R - hh - 28, `+${b[j]}`, "coral", { align: "center", size: 11.5, weight: 750 });
+          if (on) write(x + bw / 2, baseY + R - hh - 12, `${nu[j]}`, "subspace", { align: "center", size: 13, weight: 750 });
+          if (on) write(x + bw / 2, baseY + R - hh - 28, `+${b[j]}`, "subspace", { align: "center", size: 11.5, weight: 750 });
         }
       });
 
@@ -1375,7 +1375,7 @@
         const coef = [-state.a[0], -state.a[1], -state.a[2]];
         [0, 1].forEach((i) => {
           const c = coef[i];
-          const color = c === 0 ? d.alpha(d.color("muted"), 0.35) : d.color("coral");
+          const color = c === 0 ? d.alpha(d.color("muted"), 0.35) : d.color("image");
           const depth = (i === 0 ? 0.36 : 0.22) * h;
           const x1 = xs[2] - R * 0.4;
           const x2 = xs[i] + R * 0.4;
@@ -1390,11 +1390,11 @@
           ctx.setLineDash([]);
           arrowHead(x2, y + R + 2, -Math.PI / 2, color);
           ctx.restore();
-          write((x1 + x2) / 2, y + depth * 0.78 + 14, minus(c), c === 0 ? "faint" : "coral", { size: 13 });
+          write((x1 + x2) / 2, y + depth * 0.78 + 14, minus(c), c === 0 ? "faint" : "image", { size: 13 });
         });
         {
           const c = coef[2];
-          const color = c === 0 ? d.alpha(d.color("muted"), 0.35) : d.color("coral");
+          const color = c === 0 ? d.alpha(d.color("muted"), 0.35) : d.color("image");
           ctx.save();
           ctx.strokeStyle = color;
           ctx.lineWidth = c === 0 ? 1.4 : 1.6 + Math.abs(c) * 1.1;
@@ -1403,16 +1403,16 @@
           ctx.arc(xs[2], y - R - 18, 18, Math.PI * 0.85, Math.PI * 2.15);
           ctx.stroke();
           ctx.restore();
-          write(xs[2], y - R - 50, `${minus(c)}`, c === 0 ? "faint" : "coral", { size: 13 });
+          write(xs[2], y - R - 50, `${minus(c)}`, c === 0 ? "faint" : "image", { size: 13 });
         }
         ["e₁", "e₂", "e₃"].forEach((name, i) => {
           ctx.save();
           ctx.beginPath();
           ctx.arc(xs[i], y, R, 0, Math.PI * 2);
-          ctx.fillStyle = d.alpha(d.color("accent"), 0.16);
+          ctx.fillStyle = d.alpha(d.color("subspace"), 0.16);
           ctx.fill();
           ctx.lineWidth = 2;
-          ctx.strokeStyle = d.color("accent");
+          ctx.strokeStyle = d.color("subspace");
           ctx.stroke();
           ctx.restore();
           write(xs[i], y, name, "text", { size: narrow ? 14 : 16 });

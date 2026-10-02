@@ -17,7 +17,12 @@
   const el = (...a) => K().el(...a);
   const vecTex = (v) => K().vecTex(v);
   const SUB = "₁₂₃";
-  const COLORS = ["accent", "coral", "blue"];
+  /*
+   * Colour roles (docs/design-spec.md §2): the first and second vector take v1
+   * and v2; a third vector takes drag when the student moves it, else subspace.
+   */
+  const COLORS = ["v1", "v2", "subspace"];
+  const COLORS_DRAG3 = ["v1", "v2", "drag"];
 
   function pairViews(lab, leftTitle, rightTitle) {
     const pair = el("div", "ch6l-pair");
@@ -89,34 +94,34 @@
       const qF = fv(Q);
       const hit = cm.every((x, k) => M().eq(x, qF[k]));
       const anyC = state.c.some((c) => !M().isZero(c));
-      const curves = ps.map((p, i) => ({ f: (x) => K().polyEval(p, x), color: COLORS[i], width: 2.2 }));
+      const curves = ps.map((p, i) => ({ f: (x) => K().polyEval(p, x), color: COLORS_DRAG3[i], width: 2.2 }));
       curves.unshift({ f: (x) => K().polyEval(qF, x), color: "faint", width: 5, opacity: 0.45 });
-      if (anyC) curves.push({ f: (x) => K().polyEval(cm, x), color: "gold", width: 3 });
+      if (anyC) curves.push({ f: (x) => K().polyEval(cm, x), color: "image", width: 3 });
       plotBox.innerHTML =
         K().plot({ x: [-2.5, 2.5], y: [-6, 12], ystep: 2, curves, label: "三个多项式与组合的图像" }) +
         K().legend([
-          ...ps.map((p, i) => [COLORS[i], tex(`p_${i + 1}=${K().polyTex(p)}`)]),
+          ...ps.map((p, i) => [COLORS_DRAG3[i], tex(`p_${i + 1}=${K().polyTex(p)}`)]),
           ["faint", tex("q=1+2x+3x^2")],
-          ...(anyC ? [["gold", "组合"]] : []),
+          ...(anyC ? [["image", "组合"]] : []),
         ]);
 
       scene.setObjects(() => {
         const vs = ps.map((p) => p.map(num));
-        const objs = state.revealed ? [...K().spanObjects(ps, "accent", { alpha: 0.1 })] : [];
-        vs.forEach((v, i) => objs.push({ type: "arrow", to: v, color: COLORS[i], width: 2.2, label: `p${SUB[i]}` }));
+        const objs = state.revealed ? [...K().spanObjects(ps, "subspace", { alpha: 0.1 })] : [];
+        vs.forEach((v, i) => objs.push({ type: "arrow", to: v, color: COLORS_DRAG3[i], width: 2.2, label: `p${SUB[i]}` }));
         let tail = [0, 0, 0];
         ps.forEach((p, i) => {
           if (M().isZero(state.c[i])) return;
           const head = S().vec.add(tail, p.map((x) => num(M().mul(x, state.c[i]))));
-          objs.push({ type: "arrow", from: tail, to: head, color: "gold", width: 3 });
+          objs.push({ type: "arrow", from: tail, to: head, color: "image", width: 3 });
           tail = head;
         });
-        objs.push({ type: "point", p: Q, color: hit ? "gold" : "muted", r: 6.5, hollow: !hit, label: "q" });
+        objs.push({ type: "point", p: Q, color: hit ? "image" : "axis", r: 6.5, hollow: !hit, label: "q" });
         return objs;
       });
       scene.setHandles(
         state.polys.map((_, i) => ({
-          color: COLORS[i],
+          color: "drag",
           snap: 0.5,
           get: () => state.polys[i],
           set: (p) => {
@@ -254,27 +259,27 @@
       const { p, a, Y, A, X } = data();
       const an = num(a);
       const curves = [
-        { f: () => 1, color: "accent", width: 1.6, opacity: 0.45 },
-        { f: (x) => x - an, color: "coral", width: 1.6, opacity: 0.45 },
-        { f: (x) => (x - an) ** 2, color: "blue", width: 1.6, opacity: 0.45 },
+        { f: () => 1, color: COLORS[0], width: 1.6, opacity: 0.45 },
+        { f: (x) => x - an, color: COLORS[1], width: 1.6, opacity: 0.45 },
+        { f: (x) => (x - an) ** 2, color: COLORS[2], width: 1.6, opacity: 0.45 },
         { f: (x) => K().polyEval(p, x), color: "text", width: 3.2 },
       ];
-      if (state.revealed) curves.push({ f: (x) => num(Y[0]) + num(Y[1]) * (x - an), color: "gold", width: 2.4 });
+      if (state.revealed) curves.push({ f: (x) => num(Y[0]) + num(Y[1]) * (x - an), color: "image", width: 2.4 });
       plotBox.innerHTML =
         K().plot({
           x: [-3, 3],
           y: [-3, 5],
           curves,
-          vlines: [{ x: an, color: "gold", opacity: 0.5 }],
-          points: [{ x: an, y: num(Y[0]), color: "gold", r: 5.5 }],
+          vlines: [{ x: an, color: "drag", opacity: 0.5 }],
+          points: [{ x: an, y: num(Y[0]), color: "drag", r: 5.5 }],
           label: "固定曲线与新基函数",
         }) +
         K().legend([
           ["text", tex(`p=${K().polyTex(p)}`)],
-          ["accent", tex("\\eta_1=1")],
-          ["coral", tex("\\eta_2=x-a")],
-          ["blue", tex("\\eta_3=(x-a)^2")],
-          ...(state.revealed ? [["gold", "前两项（切线）"]] : []),
+          [COLORS[0], tex("\\eta_1=1")],
+          [COLORS[1], tex("\\eta_2=x-a")],
+          [COLORS[2], tex("\\eta_3=(x-a)^2")],
+          ...(state.revealed ? [["image", "前两项（切线）"]] : []),
         ]);
 
       scene.setObjects(() => {
@@ -288,7 +293,7 @@
             tail = head;
           });
         }
-        objs.push({ type: "point", p: X.map(num), color: "gold", r: 7, label: "X" });
+        objs.push({ type: "point", p: X.map(num), color: "text", r: 7, label: "X" });
         return objs;
       });
 
@@ -401,15 +406,15 @@
       const { U, W, Bu, Bw, basis, sum } = compute();
       const inter = basis.length;
       scene.setObjects(() => {
-        const objs = [...K().spanObjects(Bu, "accent", { label: "U" }), ...K().spanObjects(Bw, "coral", { label: "W", alpha: 0.12 })];
-        if (state.revealed && inter === 1) objs.push({ type: "line", dir: basis[0].map(num), color: "gold", width: 4.2, label: "U∩W" });
-        U.forEach((v, i) => objs.push({ type: "arrow", to: v.map(num), color: "accent", width: 2.4, label: `u${SUB[i]}` }));
-        W.forEach((v, i) => objs.push({ type: "arrow", to: v.map(num), color: "coral", width: 2.4, label: `w${SUB[i]}` }));
+        const objs = [...K().spanObjects(Bu, "v1", { label: "U" }), ...K().spanObjects(Bw, "v2", { label: "W", alpha: 0.12 })];
+        if (state.revealed && inter === 1) objs.push({ type: "line", dir: basis[0].map(num), color: "subspace", width: 4.2, label: "U∩W" });
+        U.forEach((v, i) => objs.push({ type: "arrow", to: v.map(num), color: "v1", width: 2.4, label: `u${SUB[i]}` }));
+        W.forEach((v, i) => objs.push({ type: "arrow", to: v.map(num), color: "v2", width: 2.4, label: `w${SUB[i]}` }));
         return objs;
       });
       scene.setHandles([
-        ...state.u.map((_, i) => ({ color: "accent", snap: 0.5, get: () => state.u[i], set: (p) => ((state.u[i] = p), redraw()) })),
-        ...state.w.map((_, i) => ({ color: "coral", snap: 0.5, get: () => state.w[i], set: (p) => ((state.w[i] = p), redraw()) })),
+        ...state.u.map((_, i) => ({ color: "drag", snap: 0.5, get: () => state.u[i], set: (p) => ((state.u[i] = p), redraw()) })),
+        ...state.w.map((_, i) => ({ color: "drag", snap: 0.5, get: () => state.w[i], set: (p) => ((state.w[i] = p), redraw()) })),
       ]);
       const dU = Bu.length;
       const dW = Bw.length;
@@ -446,7 +451,7 @@
       {
         question: `${tex("\\mathbb R^3")} 中两个不同的过原点平面，交可以只有零向量吗？`,
         options: [
-          { text: "可以，只要两个平面错开得足够开", why: "拖动 w₁、w₂ 试试：只要两个平面不重合，金色交线就一直在。" },
+          { text: "可以，只要两个平面错开得足够开", why: "拖动 w₁、w₂ 试试：只要两个平面不重合，绿色交线就一直在。" },
           { text: "可以，两个平面互相垂直时", why: "xy 平面与 xz 平面互相垂直，仍交于 x 轴。" },
           { text: "不可以，交至少是一条直线", correct: true },
           { text: "取决于观察角度", why: "交是两个集合的公共部分，与怎么看无关。" },
@@ -488,7 +493,7 @@
         predict: {
           question: `三条直线都在水平面里，两两只交于原点。${tex("W_1+W_2+W_3")} 是直和吗？`,
           options: [
-            { text: "是，两两交为零就够了", why: "看金色箭头：零向量有一种非零分解。" },
+            { text: "是，两两交为零就够了", why: "看紫色箭头：零向量有一种非零分解。" },
             { text: "要看三条直线是否互相垂直", why: "直和与夹角无关，只看维数。" },
             { text: "不是，零向量有非零的分解", correct: true },
           ],
@@ -524,25 +529,25 @@
       const wc = ok ? v.map((x, k) => M().sub(x, uc[k])) : null;
       scene.setObjects(() => {
         const objs = [
-          { type: "plane", n: [0, 0, 1], d: 0, color: "coral", alpha: 0.12, label: "W" },
-          { type: "line", dir: state.u, color: "accent", width: 2, alpha: 0.7, label: "U" },
-          { type: "arrow", to: state.u, color: "accent", width: 2, alpha: 0.7, label: "u" },
+          { type: "plane", n: [0, 0, 1], d: 0, color: "v2", alpha: 0.12, label: "W" },
+          { type: "line", dir: state.u, color: "v1", width: 2, alpha: 0.7, label: "U" },
+          { type: "arrow", to: state.u, color: "v1", width: 2, alpha: 0.7, label: "u" },
         ];
         if (ok) {
           const ucn = uc.map(num);
           const wcn = wc.map(num);
-          objs.push({ type: "polygon", pts: [[0, 0, 0], ucn, state.v, wcn], color: "gold", alpha: 0.07, strokeAlpha: 0 });
-          objs.push({ type: "segment", a: ucn, b: state.v, color: "muted", dash: [5, 4], width: 1.4 });
-          objs.push({ type: "segment", a: wcn, b: state.v, color: "muted", dash: [5, 4], width: 1.4 });
-          objs.push({ type: "arrow", to: ucn, color: "accent", width: 3.4, label: "u′" });
-          objs.push({ type: "arrow", to: wcn, color: "coral", width: 3.4, label: "w′" });
+          objs.push({ type: "polygon", pts: [[0, 0, 0], ucn, state.v, wcn], color: "drag", alpha: 0.07, strokeAlpha: 0 });
+          objs.push({ type: "segment", a: ucn, b: state.v, color: "axis", dash: [5, 4], width: 1.4 });
+          objs.push({ type: "segment", a: wcn, b: state.v, color: "axis", dash: [5, 4], width: 1.4 });
+          objs.push({ type: "arrow", to: ucn, color: "v1", width: 3.4, label: "u′" });
+          objs.push({ type: "arrow", to: wcn, color: "v2", width: 3.4, label: "w′" });
         }
-        objs.push({ type: "arrow", to: state.v, color: "gold", width: 3.4, label: "v" });
+        objs.push({ type: "arrow", to: state.v, color: "drag", width: 3.4, label: "v" });
         return objs;
       });
       scene.setHandles([
-        { color: "accent", snap: 0.5, get: () => state.u, set: (p) => ((state.u = nonzero(p, state.u)), redraw()) },
-        { color: "gold", snap: 0.5, get: () => state.v, set: (p) => ((state.v = p), redraw()) },
+        { color: "drag", snap: 0.5, get: () => state.u, set: (p) => ((state.u = nonzero(p, state.u)), redraw()) },
+        { color: "drag", snap: 0.5, get: () => state.v, set: (p) => ((state.v = p), redraw()) },
       ]);
       const inter = ok ? 0 : 1;
       const sum = ok ? 3 : 2;
@@ -573,20 +578,20 @@
         vs.forEach((v, i) => {
           const vn = v.map(num);
           if (S().vec.len(vn) < 1e-9) return;
-          objs.push({ type: "line", dir: vn, color: COLORS[i], width: 1.8, alpha: 0.65, label: `W${SUB[i]}` });
-          objs.push({ type: "arrow", to: vn, color: COLORS[i], width: 2.6, label: `w${SUB[i]}` });
+          objs.push({ type: "line", dir: vn, color: COLORS_DRAG3[i], width: 1.8, alpha: 0.65, label: `W${SUB[i]}` });
+          objs.push({ type: "arrow", to: vn, color: COLORS_DRAG3[i], width: 2.6, label: `w${SUB[i]}` });
         });
         if (state.revealed && cert.dependent && rank === 2) {
           let tail = [0, 0, 0];
           vs.forEach((v, i) => {
             const head = S().vec.add(tail, v.map((x) => num(M().mul(x, cert.coeffs[i]))));
-            if (S().vec.len(S().vec.sub(head, tail)) > 1e-9) objs.push({ type: "arrow", from: tail, to: head, color: "gold", width: 3.2 });
+            if (S().vec.len(S().vec.sub(head, tail)) > 1e-9) objs.push({ type: "arrow", from: tail, to: head, color: "image", width: 3.2 });
             tail = head;
           });
         }
         return objs;
       });
-      scene.setHandles([{ color: "blue", snap: 0.5, get: () => state.w3, set: (p) => ((state.w3 = nonzero(p, state.w3)), redraw()) }]);
+      scene.setHandles([{ color: "drag", snap: 0.5, get: () => state.w3, set: (p) => ((state.w3 = nonzero(p, state.w3)), redraw()) }]);
       const pairsText = pairOk.every(Boolean) ? "两两交为 {0}" : "有两条直线重合";
       let html = `<h4>读数</h4><p>${pairsText}</p>`;
       if (state.revealed) {
@@ -699,9 +704,9 @@
       const pts = [];
       if (state.mode === "value") {
         [0, 1, 2].forEach((k) => {
-          pts.push({ x: k, y: num(ip[k]), color: "accent", r: 4.5 });
-          pts.push({ x: k, y: num(iq[k]), color: "coral", r: 4.5 });
-          pts.push({ x: k, y: num(is[k]), color: "gold", r: 5 });
+          pts.push({ x: k, y: num(ip[k]), color: "v1", r: 4.5 });
+          pts.push({ x: k, y: num(iq[k]), color: "v2", r: 4.5 });
+          pts.push({ x: k, y: num(is[k]), color: "image", r: 5 });
         });
       }
       plotBox.innerHTML =
@@ -709,36 +714,36 @@
           x: [-1.5, 3],
           y: [-3, 4],
           curves: [
-            { f: (x) => K().polyEval(state.p, x), color: "accent", width: 2.2 },
-            { f: (x) => K().polyEval(state.q, x), color: "coral", width: 2.2 },
-            { f: (x) => K().polyEval(s, x), color: "gold", width: 3 },
+            { f: (x) => K().polyEval(state.p, x), color: "v1", width: 2.2 },
+            { f: (x) => K().polyEval(state.q, x), color: "v2", width: 2.2 },
+            { f: (x) => K().polyEval(s, x), color: "image", width: 3 },
           ],
           vlines: state.mode === "value" ? [0, 1, 2].map((x) => ({ x, color: "faint", opacity: 0.5 })) : [],
           points: pts,
           label: "p、q 与 p+q 的图像",
         }) +
         K().legend([
-          ["accent", tex(`p=${K().polyTex(state.p)}`)],
-          ["coral", tex(`q=${K().polyTex(state.q)}`)],
-          ["gold", tex(`p+q=${K().polyTex(s)}`)],
+          ["v1", tex(`p=${K().polyTex(state.p)}`)],
+          ["v2", tex(`q=${K().polyTex(state.q)}`)],
+          ["image", tex(`p+q=${K().polyTex(s)}`)],
         ]);
       const name = MODES[state.mode].name;
       scene.setObjects(() => {
         const [P, Q, Sn, C] = [ip, iq, is, corner].map((v) => v.map(num));
         const objs = [
-          { type: "polygon", pts: [[0, 0, 0], P, C, Q], color: "gold", alpha: 0.08, strokeAlpha: 0.5, dash: [5, 4] },
-          { type: "arrow", to: P, color: "accent", width: 2.8, label: `${name}(p)` },
-          { type: "arrow", to: Q, color: "coral", width: 2.8, label: `${name}(q)` },
-          { type: "arrow", to: Sn, color: "gold", width: 3.2, label: `${name}(p+q)` },
+          { type: "polygon", pts: [[0, 0, 0], P, C, Q], color: "axis", alpha: 0.06, strokeAlpha: 0.6, dash: [5, 4] },
+          { type: "arrow", to: P, color: "v1", width: 2.8, label: `${name}(p)` },
+          { type: "arrow", to: Q, color: "v2", width: 2.8, label: `${name}(q)` },
+          { type: "arrow", to: Sn, color: "image", width: 3.2, label: `${name}(p+q)` },
         ];
-        if (!closes) objs.push({ type: "point", p: C, color: "muted", r: 5.5, hollow: true, label: "第四个顶点" });
+        if (!closes) objs.push({ type: "point", p: C, color: "axis", r: 5.5, hollow: true, label: "第四个顶点" });
         return objs;
       });
       scene.setHandles(
         state.mode === "square"
           ? []
           : ["p", "q"].map((key) => ({
-              color: key === "p" ? "accent" : "coral",
+              color: "drag",
               snap: 0.5,
               get: () => image(state[key]).map(num),
               set: (pt) => {

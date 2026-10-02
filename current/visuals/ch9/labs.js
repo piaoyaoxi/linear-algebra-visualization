@@ -137,8 +137,8 @@
     const b = V.add(a, W);
     const c = V.add(at, W);
     return [
-      { type: "segment", a, b, color: "muted", width: 1.4 },
-      { type: "segment", a: b, b: c, color: "muted", width: 1.4 },
+      { type: "segment", a, b, color: "axis", width: 1.4 },
+      { type: "segment", a: b, b: c, color: "axis", width: 1.4 },
     ];
   }
 
@@ -190,19 +190,21 @@
       const orth = pd && !isZeroVec(u) && !isZeroVec(v) && M().isZero(uv);
       plane.setObjects(() => {
         const objs = [];
-        if (state.key !== "dot") objs.push({ type: "curve", pts: P().conic([[1, 0], [0, 1]]), closed: true, color: "muted", dash: [5, 5], width: 1.3 });
-        objs.push({ type: "curve", pts: P().conic(Gn, 1, 6), closed: pd, color: "accent", width: 2.6, fill: pd, fillAlpha: 0.07 });
-        if (!pd) objs.push({ type: "curve", pts: P().conic(Gn.map((r) => r.map((x) => -x)), 1, 6), color: "accent", width: 1.4, dash: [3, 4] });
+        if (state.key !== "dot") objs.push({ type: "curve", pts: P().conic([[1, 0], [0, 1]]), closed: true, color: "axis", dash: [5, 5], width: 1.3 });
+        objs.push({ type: "curve", pts: P().conic(Gn, 1, 6), closed: pd, color: "subspace", width: 2.6, fill: pd, fillAlpha: 0.07 });
+        if (!pd) objs.push({ type: "curve", pts: P().conic(Gn.map((r) => r.map((x) => -x)), 1, 6), color: "subspace", width: 1.4, dash: [3, 4] });
         if (state.revealed && pd && !isZeroVec(u)) {
-          objs.push({ type: "line", dir: perpDir, color: "violet", width: 1.8, dash: [7, 5], label: "与 u 正交" });
+          objs.push({ type: "line", dir: perpDir, color: "subspace", width: 1.8, dash: [7, 5], label: "与 u 正交" });
           const r = Math.sqrt(num(uu));
           const t0 = [state.u[0] / r, state.u[1] / r];
           const d = unit2(perpDir);
-          objs.push({ type: "segment", a: [t0[0] - d[0] * 0.9, t0[1] - d[1] * 0.9], b: [t0[0] + d[0] * 0.9, t0[1] + d[1] * 0.9], color: "gold", width: 2.2 });
-          objs.push({ type: "point", p: t0, color: "gold", r: 4 });
+          objs.push({ type: "segment", a: [t0[0] - d[0] * 0.9, t0[1] - d[1] * 0.9], b: [t0[0] + d[0] * 0.9, t0[1] + d[1] * 0.9], color: "axis", width: 2.2 });
+          objs.push({ type: "point", p: t0, color: "axis", r: 4 });
         }
-        objs.push({ type: "arrow", to: state.u, color: "accent", label: "u" });
-        objs.push({ type: "arrow", to: state.v, color: orth ? "gold" : "coral", label: "v" });
+        objs.push({ type: "arrow", to: state.u, color: "v1", label: "u" });
+        // Highlight when orthogonal: the same colour with a glow underneath.
+        if (orth) objs.push({ type: "segment", a: [0, 0], b: state.v, color: "v2", width: 8, alpha: 0.18 });
+        objs.push({ type: "arrow", to: state.v, color: "v2", label: "v" });
         return objs;
       });
       let status;
@@ -231,8 +233,8 @@
       redraw();
     }, state.key);
     plane.setHandles([
-      { color: "accent", snap: 0.5, get: () => state.u, set: (p) => ((state.u = p), redraw()) },
-      { color: "coral", snap: 0.5, get: () => state.v, set: (p) => ((state.v = p), redraw()) },
+      { color: "drag", snap: 0.5, get: () => state.u, set: (p) => ((state.u = p), redraw()) },
+      { color: "drag", snap: 0.5, get: () => state.v, set: (p) => ((state.v = p), redraw()) },
     ]);
     predictGate(
       gateHost,
@@ -244,7 +246,7 @@
           { text: tex("(1,-4)"), why: `${tex("(u,v)=1\\cdot1+4\\cdot1\\cdot(-4)=-15")}。` },
           { text: "没有与 u 正交的方向", why: "二维欧氏空间里，每个非零向量都有正交方向。" },
         ],
-        right: `${tex("(u,v)=4-4=0")}。把 v 拖到 ${tex("(2,-\\tfrac12)")} 验证：紫色虚线上的向量都与 u 正交，它平行于椭圆在 u 方向那一点的切线。`,
+        right: `${tex("(u,v)=4-4=0")}。把 v 拖到 ${tex("(2,-\\tfrac12)")} 验证：绿色虚线上的向量都与 u 正交，它平行于椭圆在 u 方向那一点的切线。`,
       },
       () => {
         state.revealed = true;
@@ -287,7 +289,7 @@
     );
     side.append(stepCard, info, gateHost, result);
     const state = { key: "general", a: GS_PRESETS.general.a.map((v) => v.slice()), step: 0, predicted: false };
-    const colors = ["accent", "coral", "blue"];
+    const colors = ["v1", "v2", "drag"]; // α₃ is the dragged vector
 
     function compute() {
       const a = state.a.map(toF);
@@ -310,34 +312,34 @@
       scene.setObjects(() => {
         const objs = [];
         const faded = step >= 4 ? 0.3 : step >= 1 ? 0.55 : 1;
-        if (step >= 3) objs.push({ type: "plane", n: V.cross(b1, b2), d: 0, color: "accent", alpha: 0.13, label: "span{β₁,β₂}" });
+        if (step >= 3) objs.push({ type: "plane", n: V.cross(b1, b2), d: 0, color: "subspace", alpha: 0.13, label: "span{β₁,β₂}" });
         state.a.forEach((v, i) => objs.push({ type: "arrow", to: v, color: colors[i], alpha: faded, width: 2.2, label: step >= 4 ? undefined : `α${"₁₂₃"[i]}` }));
-        if (step >= 1 && step < 4) objs.push({ type: "arrow", to: b1, color: "accent", width: 3.2, label: "β₁" });
+        if (step >= 1 && step < 4) objs.push({ type: "arrow", to: b1, color: "v1", width: 3.2, label: "β₁" });
         if (step >= 2 && step < 4) {
-          objs.push({ type: "segment", a: state.a[1], b: p2, color: "coral", dash: [5, 4], width: 1.6 });
-          objs.push({ type: "point", p: p2, color: "coral", r: 4 });
+          objs.push({ type: "segment", a: state.a[1], b: p2, color: "axis", dash: [5, 4], width: 1.6 });
+          objs.push({ type: "point", p: p2, color: "axis", r: 4 });
           objs.push(...rightAngle3(p2, V.mul(b1, -1), b2, 0.22));
-          objs.push({ type: "arrow", to: b2, color: "coral", width: 3.2, label: "β₂" });
+          objs.push({ type: "arrow", to: b2, color: "v2", width: 3.2, label: "β₂" });
         }
         if (step >= 3 && step < 4) {
-          objs.push({ type: "arrow", to: p3, color: "gold", width: 2, label: "投影" });
-          objs.push({ type: "segment", a: state.a[2], b: p3, color: "blue", dash: [5, 4], width: 1.8 });
-          objs.push({ type: "point", p: p3, color: "gold", r: 4.5 });
+          objs.push({ type: "arrow", to: p3, color: "image", width: 2, label: "投影" });
+          objs.push({ type: "segment", a: state.a[2], b: p3, color: "axis", dash: [5, 4], width: 1.8 });
+          objs.push({ type: "point", p: p3, color: "image", r: 4.5 });
           if (!dep) {
             objs.push(...rightAngle3(p3, V.len(p3) > 1e-9 ? V.mul(p3, -1) : b1, b3, 0.25));
-            objs.push({ type: "arrow", to: b3, color: "blue", width: 3.4, label: "β₃" });
+            objs.push({ type: "arrow", to: b3, color: "drag", width: 3.4, label: "β₃" });
           }
         }
         if (step >= 4) {
           const qs = [b1, b2, b3].map((v) => V.norm(v));
-          objs.push({ type: "box", vectors: qs, color: "accent", alpha: 0.06 });
+          objs.push({ type: "box", vectors: qs, color: "image", alpha: 0.06 });
           qs.forEach((q, i) => objs.push({ type: "arrow", to: q, color: colors[i], width: 3.4, label: `η${"₁₂₃"[i]}` }));
         }
         return objs;
       });
       scene.setHandles([
         {
-          color: "blue",
+          color: "drag",
           snap: 0.5,
           get: () => state.a[2],
           set: (p) => {
@@ -454,14 +456,14 @@
       const det = det2(C);
       const alpha = toF(state.alpha);
       lp.setObjects(() => [
-        { type: "curve", pts: P().conic(matN(G)), closed: true, color: "accent", width: 2.6, fill: true, fillAlpha: 0.07, label: "" },
-        { type: "polygon", pts: [[0, 0], state.f[0], [state.f[0][0] + state.f[1][0], state.f[0][1] + state.f[1][1]], state.f[1]], color: "muted", fillAlpha: 0.05, width: 1 },
-        { type: "arrow", to: state.f[0], color: "accent", label: "f₁" },
-        { type: "arrow", to: state.f[1], color: "coral", label: "f₂" },
-        { type: "arrow", to: state.alpha, color: "gold", width: 2.2, label: "α" },
+        { type: "curve", pts: P().conic(matN(G)), closed: true, color: "subspace", width: 2.6, fill: true, fillAlpha: 0.07, label: "" },
+        { type: "polygon", pts: [[0, 0], state.f[0], [state.f[0][0] + state.f[1][0], state.f[0][1] + state.f[1][1]], state.f[1]], color: "axis", fillAlpha: 0.05, width: 1 },
+        { type: "arrow", to: state.f[0], color: "v1", label: "f₁" },
+        { type: "arrow", to: state.f[1], color: "v2", label: "f₂" },
+        { type: "arrow", to: state.alpha, color: "drag", width: 2.2, label: "α" },
       ]);
       if (M().isZero(det)) {
-        rp.setObjects(() => [{ type: "curve", pts: P().conic([[1, 0], [0, 1]]), closed: true, color: "muted", dash: [5, 5], width: 1.3 }]);
+        rp.setObjects(() => [{ type: "curve", pts: P().conic([[1, 0], [0, 1]]), closed: true, color: "axis", dash: [5, 5], width: 1.3 }]);
         status.innerHTML = `<p class="ch9l-bad">${tex("f_1,f_2")} 共线，不是基，σ 无法定义。</p>`;
         return;
       }
@@ -469,11 +471,13 @@
       const x = M().particularSolution([[C[0][0], C[0][1], alpha[0]], [C[1][0], C[1][1], alpha[1]]]).x;
       const iso = isIdentity(B);
       rp.setObjects(() => [
-        { type: "curve", pts: P().conic([[1, 0], [0, 1]]), closed: true, color: "muted", dash: [5, 5], width: 1.3 },
-        { type: "curve", pts: P().conic(matN(B), 1, 8), closed: true, color: iso ? "gold" : "accent", width: 2.6, fill: true, fillAlpha: 0.07 },
-        { type: "arrow", to: [1, 0], color: "accent", label: "σf₁" },
-        { type: "arrow", to: [0, 1], color: "coral", label: "σf₂" },
-        { type: "arrow", to: toN(x), color: "gold", width: 2.2, label: "σα" },
+        { type: "curve", pts: P().conic([[1, 0], [0, 1]]), closed: true, color: "axis", dash: [5, 5], width: 1.3 },
+        // Highlight when σ keeps the inner product: the same colour with a glow.
+        ...(iso ? [{ type: "curve", pts: P().conic(matN(B), 1, 8), closed: true, color: "image", width: 8, alpha: 0.18 }] : []),
+        { type: "curve", pts: P().conic(matN(B), 1, 8), closed: true, color: "image", width: 2.6, fill: true, fillAlpha: 0.07 },
+        { type: "arrow", to: [1, 0], color: "v1", label: "σf₁" },
+        { type: "arrow", to: [0, 1], color: "v2", label: "σf₂" },
+        { type: "arrow", to: toN(x), color: "image", width: 2.2, label: "σα" },
       ]);
       const aa = quadF(G, alpha, alpha);
       const xx = dotF(x, x);
@@ -490,9 +494,9 @@
       redraw();
     }, "std");
     lp.setHandles([
-      { color: "accent", snap: 0.5, get: () => state.f[0], set: (p) => ((state.f[0] = p), redraw()) },
-      { color: "coral", snap: 0.5, get: () => state.f[1], set: (p) => ((state.f[1] = p), redraw()) },
-      { color: "gold", snap: 0.5, get: () => state.alpha, set: (p) => ((state.alpha = p), redraw()) },
+      { color: "drag", snap: 0.5, get: () => state.f[0], set: (p) => ((state.f[0] = p), redraw()) },
+      { color: "drag", snap: 0.5, get: () => state.f[1], set: (p) => ((state.f[1] = p), redraw()) },
+      { color: "drag", snap: 0.5, get: () => state.alpha, set: (p) => ((state.alpha = p), redraw()) },
     ]);
     predictGate(
       gateHost,
@@ -504,7 +508,7 @@
           { text: "任意一组基都可以", why: "看右图：标准基的像是一个椭圆，长度被改变了。" },
           { text: `只有 ${tex("f_1=\\varepsilon_1,\\ f_2=\\varepsilon_2")}`, why: `${tex("(\\varepsilon_1,\\varepsilon_1)=2")}，标准基在 V 里不是单位向量。` },
         ],
-        right: `例如 ${tex("f_1=(\\tfrac35,\\tfrac15),\\ f_2=(-\\tfrac45,\\tfrac75)")}：${tex("B=I")}，右边的金色曲线与虚线单位圆重合。`,
+        right: `例如 ${tex("f_1=(\\tfrac35,\\tfrac15),\\ f_2=(-\\tfrac45,\\tfrac75)")}：${tex("B=I")}，右边的紫色曲线与虚线单位圆重合。`,
       },
       () => {
         result.hidden = false;
@@ -563,16 +567,18 @@
       }
       plane.setObjects(() => {
         const objs = [
-          { type: "curve", pts: circle, closed: true, color: "muted", dash: [5, 5], width: 1.3 },
-          { type: "polygon", pts: FLAG, color: "muted", fillAlpha: 0.06, width: 1, dash: [4, 4] },
-          { type: "curve", pts: circle.map((p) => p && ap(p)), closed: true, color: orth ? "gold" : "accent", width: 2.6 },
-          { type: "polygon", pts: FLAG.map(ap), color: "coral", fillAlpha: 0.16, width: 1.6 },
+          { type: "curve", pts: circle, closed: true, color: "axis", dash: [5, 5], width: 1.3 },
+          { type: "polygon", pts: FLAG, color: "axis", fillAlpha: 0.06, width: 1, dash: [4, 4] },
+          // Highlight when orthogonal: the same colour with a glow.
+          ...(orth ? [{ type: "curve", pts: circle.map((p) => p && ap(p)), closed: true, color: "image", width: 8, alpha: 0.18 }] : []),
+          { type: "curve", pts: circle.map((p) => p && ap(p)), closed: true, color: "image", width: 2.6 },
+          { type: "polygon", pts: FLAG.map(ap), color: "image", fillAlpha: 0.16, width: 1.6 },
         ];
-        if (mirror) objs.push({ type: "line", dir: mirror, color: "violet", dash: [7, 5], width: 1.6, label: "反射轴" });
-        objs.push({ type: "arrow", to: state.x, color: "muted", width: 1.8, alpha: 0.7, label: "x" });
-        objs.push({ type: "arrow", to: state.y, color: "muted", width: 1.8, alpha: 0.7, label: "y" });
-        objs.push({ type: "arrow", to: ap(state.x), color: "accent", width: 3, label: "Qx" });
-        objs.push({ type: "arrow", to: ap(state.y), color: "blue", width: 3, label: "Qy" });
+        if (mirror) objs.push({ type: "line", dir: mirror, color: "subspace", dash: [7, 5], width: 1.6, label: "反射轴" });
+        objs.push({ type: "arrow", to: state.x, color: "v1", width: 1.8, alpha: 0.7, label: "x" });
+        objs.push({ type: "arrow", to: state.y, color: "v2", width: 1.8, alpha: 0.7, label: "y" });
+        objs.push({ type: "arrow", to: ap(state.x), color: "image", width: 3, label: "Qx" });
+        objs.push({ type: "arrow", to: ap(state.y), color: "image", width: 3, label: "Qy" });
         return objs;
       });
       const x = toF(state.x);
@@ -581,7 +587,7 @@
       const Qy = M().matVec(Q, y);
       const cmp = (a, b) => (M().eq(a, b) ? "=" : "\\ne");
       let verdict;
-      if (orth) verdict = `<p class="ch9l-ok" data-ortho-status>${tex("Q^TQ=I")}，正交变换，${det.n > 0 ? "第一类（旋转）" : "第二类（关于紫色直线的反射）"}。</p>`;
+      if (orth) verdict = `<p class="ch9l-ok" data-ortho-status>${tex("Q^TQ=I")}，正交变换，${det.n > 0 ? "第一类（旋转）" : "第二类（关于绿色虚线的反射）"}。</p>`;
       else {
         const c1 = [Q[0][0], Q[1][0]];
         const c2 = [Q[0][1], Q[1][1]];
@@ -600,8 +606,8 @@
       redraw();
     }, state.key);
     plane.setHandles([
-      { color: "muted", snap: 0.5, clampX: [-2, 2], clampY: [-2, 2], get: () => state.x, set: (p) => ((state.x = p), redraw()) },
-      { color: "muted", snap: 0.5, clampX: [-2, 2], clampY: [-2, 2], get: () => state.y, set: (p) => ((state.y = p), redraw()) },
+      { color: "drag", snap: 0.5, clampX: [-2, 2], clampY: [-2, 2], get: () => state.x, set: (p) => ((state.x = p), redraw()) },
+      { color: "drag", snap: 0.5, clampX: [-2, 2], clampY: [-2, 2], get: () => state.y, set: (p) => ((state.y = p), redraw()) },
     ]);
     predictGate(
       gateHost,
@@ -682,31 +688,31 @@
       const a2 = toN(c.a2);
       scene.setObjects(() => {
         const objs = [];
-        if (c.r === 2) objs.push({ type: "plane", n: normalOf(c), d: 0, color: "accent", alpha: 0.14, label: "W" });
-        if (c.r === 1) objs.push({ type: "line", dir: toN(c.basis[0]), color: "accent", width: 2.6, label: "W" });
+        if (c.r === 2) objs.push({ type: "plane", n: normalOf(c), d: 0, color: "subspace", alpha: 0.14, label: "W" });
+        if (c.r === 1) objs.push({ type: "line", dir: toN(c.basis[0]), color: "subspace", width: 2.6, label: "W" });
         if (state.revealed) {
-          if (c.perp.length === 1) objs.push({ type: "line", dir: toN(c.perp[0]), color: "coral", width: 2.6, label: "W⊥" });
-          if (c.perp.length === 2) objs.push({ type: "plane", n: V.cross(toN(c.perp[0]), toN(c.perp[1])), d: 0, color: "coral", alpha: 0.12, label: "W⊥" });
+          if (c.perp.length === 1) objs.push({ type: "line", dir: toN(c.perp[0]), color: "v2", width: 2.6, label: "W⊥" });
+          if (c.perp.length === 2) objs.push({ type: "plane", n: V.cross(toN(c.perp[0]), toN(c.perp[1])), d: 0, color: "v2", alpha: 0.12, label: "W⊥" });
         }
         state.w.forEach((w, i) => {
           if (state.key === "line" && i > 0) return;
-          objs.push({ type: "arrow", to: w, color: "accent", width: 2, alpha: 0.75, label: `w${"₁₂"[i]}` });
+          objs.push({ type: "arrow", to: w, color: "subspace", width: 2, alpha: 0.75, label: `w${"₁₂"[i]}` });
         });
-        objs.push({ type: "arrow", to: state.alpha, color: "gold", width: 3.2, label: "α" });
+        objs.push({ type: "arrow", to: state.alpha, color: "drag", width: 3.2, label: "α" });
         if (state.revealed) {
-          if (V.len(a1) > 1e-9) objs.push({ type: "arrow", to: a1, color: "accent", width: 3, label: "α₁" });
+          if (V.len(a1) > 1e-9) objs.push({ type: "arrow", to: a1, color: "image", width: 3, label: "α₁" });
           if (V.len(a2) > 1e-9) {
-            objs.push({ type: "arrow", from: a1, to: state.alpha, color: "coral", width: 3, label: "α₂" });
-            objs.push({ type: "segment", a: [0, 0, 0], b: a2, color: "coral", dash: [4, 4], width: 1.4 });
-            objs.push({ type: "segment", a: a2, b: state.alpha, color: "accent", dash: [4, 4], width: 1.4 });
+            objs.push({ type: "arrow", from: a1, to: state.alpha, color: "v2", width: 3, label: "α₂" });
+            objs.push({ type: "segment", a: [0, 0, 0], b: a2, color: "v2", dash: [4, 4], width: 1.4 });
+            objs.push({ type: "segment", a: a2, b: state.alpha, color: "image", dash: [4, 4], width: 1.4 });
             objs.push(...rightAngle3(a1, V.len(a1) > 1e-9 ? V.mul(a1, -1) : c.basis[0] ? toN(c.basis[0]) : [1, 0, 0], a2, 0.22));
           }
         }
         return objs;
       });
       scene.setHandles([
-        { color: "gold", snap: 0.5, get: () => state.alpha, set: (p) => ((state.alpha = p), redraw()) },
-        ...state.w.map((_, i) => ({ color: "accent", snap: 0.5, hidden: () => !state.w[i], get: () => state.w[i] || [0, 0, 0], set: (p) => ((state.w[i] = p), redraw()) })),
+        { color: "drag", snap: 0.5, get: () => state.alpha, set: (p) => ((state.alpha = p), redraw()) },
+        ...state.w.map((_, i) => ({ color: "drag", snap: 0.5, hidden: () => !state.w[i], get: () => state.w[i] || [0, 0, 0], set: (p) => ((state.w[i] = p), redraw()) })),
       ]);
 
       const lines = [`<h4>当前读数</h4>`];
@@ -824,18 +830,18 @@
       const circle = P().conic([[1, 0], [0, 1]]);
       const An = pre.A;
       plane.setObjects(() => {
-        const objs = [{ type: "curve", pts: circle, closed: true, color: "muted", dash: [5, 5], width: 1.2 }];
+        const objs = [{ type: "curve", pts: circle, closed: true, color: "axis", dash: [5, 5], width: 1.2 }];
         if (!e.sym) {
-          objs.push({ type: "curve", pts: circle.map((p) => p && ap(An, p)), closed: true, color: "accent", width: 2.6, fill: true, fillAlpha: 0.06 });
-          pre.eig.forEach(([l, v], i) => objs.push({ type: "line", dir: v, color: i ? "coral" : "blue", dash: [6, 5], width: 1.6, label: `λ=${l}` }));
+          objs.push({ type: "curve", pts: circle.map((p) => p && ap(An, p)), closed: true, color: "image", width: 2.6, fill: true, fillAlpha: 0.06 });
+          pre.eig.forEach(([l, v]) => objs.push({ type: "line", dir: v, color: "subspace", dash: [6, 5], width: 1.6, label: `λ=${l}` }));
           return objs;
         }
-        if (state.revealed) objs.push({ type: "curve", pts: circle.map((p) => p && ap(An, p)), closed: true, color: "gold", dash: [3, 5], width: 1.6 });
+        if (state.revealed) objs.push({ type: "curve", pts: circle.map((p) => p && ap(An, p)), closed: true, color: "image", dash: [3, 5], width: 1.6 });
         const T = transformAt(state.s, pre);
-        objs.push({ type: "curve", pts: circle.map((p) => p && ap(T, p)), closed: true, color: "accent", width: 2.8, fill: true, fillAlpha: 0.07 });
+        objs.push({ type: "curve", pts: circle.map((p) => p && ap(T, p)), closed: true, color: "image", width: 2.8, fill: true, fillAlpha: 0.07 });
         const flag = [[0.35, 0.1], [0.75, 0.1], [0.75, 0.32]].map((p) => ap(T, p));
-        objs.push({ type: "polygon", pts: flag, color: "violet", fillAlpha: 0.3, width: 1.2 });
-        if (state.revealed) pre.eig.forEach(([l, v], i) => objs.push({ type: "arrow", to: ap(T, unit2(v)), color: i ? "coral" : "blue", width: 3, label: `q${"₁₂"[i]}` }));
+        objs.push({ type: "polygon", pts: flag, color: "image", fillAlpha: 0.3, width: 1.2 });
+        if (state.revealed) pre.eig.forEach(([l, v], i) => objs.push({ type: "arrow", to: ap(T, unit2(v)), color: i ? "v2" : "v1", width: 3, label: `q${"₁₂"[i]}` }));
         return objs;
       });
       const stepIdx = state.s < 1 ? 0 : state.s < 2 ? 1 : 2;
@@ -914,7 +920,7 @@
           { text: `沿 ${tex("(2,1)")}，长 ${tex("\\sqrt5")}`, why: `${tex("(2,1)=A\\varepsilon_1")} 只是椭圆上的一点，不在主轴上。` },
           { text: `沿 ${tex("(1,-1)")}，长 1`, why: "那是短轴：λ=1 的特征方向。" },
         ],
-        right: `${tex("(1,1)")} 是属于 3 的特征向量，${tex("(-1,1)")} 是属于 1 的特征向量，两者正交。播放三步，金色虚线是 A 直接作用的结果。`,
+        right: `${tex("(1,1)")} 是属于 3 的特征向量，${tex("(-1,1)")} 是属于 1 的特征向量，两者正交。播放三步，紫色虚线是 A 直接作用的结果。`,
       },
       () => {
         state.revealed = true;
@@ -982,35 +988,35 @@
       const n = [1, -2, 1];
       scene.setObjects(() => {
         const objs = [
-          { type: "plane", n, d: 0, color: "accent", alpha: 0.12, label: "W=列空间" },
-          { type: "arrow", to: [1, 1, 1], color: "accent", width: 1.8, alpha: 0.7, label: "a₁" },
-          { type: "arrow", to: [0, 1, 2], color: "accent", width: 1.8, alpha: 0.7, label: "a₂" },
-          { type: "point", p: Ax, color: "muted", r: 5, hollow: true, label: "Ax" },
-          { type: "segment", a: state.b, b: Ax, color: "muted", dash: [4, 5], width: 1.4 },
-          { type: "arrow", to: state.b, color: "gold", width: 3, label: "b" },
+          { type: "plane", n, d: 0, color: "subspace", alpha: 0.12, label: "W=列空间" },
+          { type: "arrow", to: [1, 1, 1], color: "subspace", width: 1.8, alpha: 0.7, label: "a₁" },
+          { type: "arrow", to: [0, 1, 2], color: "subspace", width: 1.8, alpha: 0.7, label: "a₂" },
+          { type: "point", p: Ax, color: "image", r: 5, hollow: true, label: "Ax" },
+          { type: "segment", a: state.b, b: Ax, color: "axis", dash: [4, 5], width: 1.4 },
+          { type: "arrow", to: state.b, color: "drag", width: 3, label: "b" },
         ];
         if (state.revealed) {
-          objs.push({ type: "arrow", to: p, color: "accent", width: 3, label: "p" });
+          objs.push({ type: "arrow", to: p, color: "image", width: 3, label: "p" });
           if (V().len(V().sub(state.b, p)) > 1e-9) {
-            objs.push({ type: "arrow", from: p, to: state.b, color: "coral", width: 3, label: "e" });
+            objs.push({ type: "arrow", from: p, to: state.b, color: "v2", width: 3, label: "e" });
             objs.push(...rightAngle3(p, V().len(p) > 1e-9 ? V().mul(p, -1) : [1, 1, 1], V().sub(state.b, p), 0.3));
           }
         }
         return objs;
       });
-      scene.setHandles([{ color: "gold", snap: 0.5, get: () => state.b, set: (q) => ((state.b = q), redraw()) }]);
+      scene.setHandles([{ color: "drag", snap: 0.5, get: () => state.b, set: (q) => ((state.b = q), redraw()) }]);
       const xh = toN(s.xh);
       fit.setObjects(() => {
-        const objs = [{ type: "line", p: [0, state.C], dir: [1, state.D], color: "muted", dash: [6, 5], width: 1.8, label: "试的直线" }];
-        [0, 1, 2].forEach((t) => objs.push({ type: "segment", a: [t, state.b[t]], b: [t, Ax[t]], color: "muted", width: 1.4, dash: [3, 3] }));
+        const objs = [{ type: "line", p: [0, state.C], dir: [1, state.D], color: "image", dash: [6, 5], width: 1.8, label: "试的直线" }];
+        [0, 1, 2].forEach((t) => objs.push({ type: "segment", a: [t, state.b[t]], b: [t, Ax[t]], color: "axis", width: 1.4, dash: [3, 3] }));
         if (state.revealed) {
-          objs.push({ type: "line", p: [0, xh[0]], dir: [1, xh[1]], color: "accent", width: 2.6, label: "最佳直线" });
-          [0, 1, 2].forEach((t) => objs.push({ type: "segment", a: [t + 0.04, state.b[t]], b: [t + 0.04, p[t]], color: "coral", width: 2.6 }));
+          objs.push({ type: "line", p: [0, xh[0]], dir: [1, xh[1]], color: "image", width: 2.6, label: "最佳直线" });
+          [0, 1, 2].forEach((t) => objs.push({ type: "segment", a: [t + 0.04, state.b[t]], b: [t + 0.04, p[t]], color: "v2", width: 2.6 }));
         }
         return objs;
       });
       fit.setHandles([0, 1, 2].map((t) => ({
-        color: "gold",
+        color: "drag",
         snap: 0.5,
         axis: "y",
         clampY: [-3.5, 3.5],

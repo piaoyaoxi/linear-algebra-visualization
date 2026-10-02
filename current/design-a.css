@@ -176,16 +176,69 @@ body main {
   counter-reset: la-section;
 }
 
-body .lesson-cover {
-  border: 0;
-  background: none;
-  box-shadow: none;
-  padding-inline: 0;
+/* section opener: a lit paper card (soft light top-right, warm bottom-left, top rim, low shadow) */
+body .lesson-cover,
+body.dark .lesson-cover {
+  position: relative;
+  overflow: hidden;
+  padding: 40px 44px 36px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  -webkit-backdrop-filter: none;
+  backdrop-filter: none;
 }
 
-body .lesson-cover::before,
-body .lesson-cover::after {
+body .lesson-cover {
+  background:
+    radial-gradient(120% 140% at 92% -10%, color-mix(in srgb, var(--accent) 10%, transparent), transparent 46%),
+    radial-gradient(80% 120% at 0% 110%, color-mix(in srgb, var(--cv-drag) 6%, transparent), transparent 50%),
+    linear-gradient(180deg, var(--surface-solid), color-mix(in srgb, var(--surface-solid) 82%, var(--surface-soft)));
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.75),
+    0 1px 2px rgba(50, 42, 20, 0.04),
+    0 18px 40px -18px rgba(50, 42, 20, 0.16);
+}
+
+body.dark .lesson-cover {
+  background:
+    radial-gradient(120% 140% at 92% -10%, color-mix(in srgb, var(--accent) 12%, transparent), transparent 46%),
+    radial-gradient(80% 120% at 0% 110%, color-mix(in srgb, var(--cv-drag) 5%, transparent), transparent 50%),
+    linear-gradient(180deg, color-mix(in srgb, var(--surface-solid), white 3%), var(--surface-solid));
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.06),
+    0 18px 40px -18px rgba(0, 0, 0, 0.5);
+}
+
+body .lesson-cover::before {
   content: none;
+}
+
+/* a short pine-green mark on the top edge */
+body .lesson-cover::after {
+  position: absolute;
+  top: 0;
+  left: 44px;
+  width: 56px;
+  height: 2px;
+  content: "";
+  background: var(--accent);
+}
+
+/* the card already separates the opener; the first section needs no top rule */
+body .lesson-cover + .lesson-page-section {
+  border-top: 0;
+  padding-top: 24px;
+}
+
+@media (max-width: 720px) {
+  body .lesson-cover,
+  body.dark .lesson-cover {
+    padding: 28px 20px 24px;
+  }
+
+  body .lesson-cover::after {
+    left: 20px;
+  }
 }
 
 body .lesson-cover h1 {
@@ -621,8 +674,161 @@ body .la-figcaption > b {
 }
 
 @media (max-width: 720px) {
-  /* a wrapped segmented control reads better as a box than as a pill */
+  /* on phones the presets wrap, so they become separate small chips instead of one segmented bar */
   body :is(.ch3l-toolbar, .ch6l-toolbar, .ch7l-toolbar, .ch9l-toolbar) {
-    border-radius: 14px;
+    gap: 6px;
+    padding: 0;
+    border: 0;
+    border-radius: 0;
+    background: none;
   }
+
+  body :is(.ch3l-chip, .ch6l-chip, .ch7l-chip, .ch9l-chip) {
+    border-color: var(--line);
+    background: var(--surface-solid);
+  }
+
+  body :is(.ch3l-chip, .ch6l-chip, .ch7l-chip, .ch9l-chip).is-active {
+    border-color: var(--accent);
+    background: var(--accent-soft);
+  }
+}
+
+/* ---------- 11 Component states (spec 组件状态) ---------- */
+
+/* example choices: right / wrong use the ok / bad tokens, never colour alone */
+body .example-choice.is-correct.is-correct,
+body .example-challenge[data-state="correct"] .example-choice.is-correct:hover {
+  border-color: var(--ok-line);
+  background: var(--ok-bg);
+  box-shadow: inset 0 0 0 1px var(--ok-line);
+}
+
+body .example-choice.is-wrong.is-wrong,
+body .example-challenge[data-state="wrong"] .example-choice.is-wrong:hover {
+  border-color: var(--bad-line);
+  background: var(--bad-bg);
+  box-shadow: inset 0 0 0 1px var(--bad-line);
+}
+
+body .example-choice.is-correct .example-choice-result {
+  color: var(--ok-text);
+}
+
+body .example-choice.is-wrong .example-choice-result {
+  color: var(--bad-text);
+}
+
+body .example-explanation {
+  border-color: var(--line);
+  background: var(--surface-soft);
+}
+
+/* self-test: hairline list; the opened answer hangs on a pine-green rule */
+body .self-test-item > summary {
+  padding-block: 16px;
+}
+
+body .self-test-item[open] > summary {
+  color: var(--text);
+}
+
+body .self-test-item .disclose-panel-inner > * {
+  border-left: 2px solid var(--accent);
+  padding-left: 14px;
+}
+
+body .self-test-item[open] {
+  padding-bottom: 14px;
+}
+
+/* “停一下”: lighter than a lab card, a short pine-green bar on the left */
+body :is(.ch3l-ponder, .lx-ponder) {
+  position: relative;
+  padding: 14px 18px 14px 20px;
+  border: 0;
+  border-radius: 8px;
+  background: var(--surface-soft);
+}
+
+body :is(.ch3l-ponder, .lx-ponder)::before {
+  position: absolute;
+  top: 14px;
+  left: 0;
+  width: 2px;
+  height: 22px;
+  content: "";
+  background: var(--accent);
+}
+
+body :is(.ch3l-ponder, .lx-ponder) > summary > span:first-child,
+body :is(.ch3l-ponder, .lx-ponder)[open] > summary > span:first-child {
+  padding: 0;
+  border-radius: 0;
+  background: none;
+  color: var(--accent);
+  font-size: 12.5px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+}
+
+body :is(.ch3l-ponder, .lx-ponder):not([open]) > summary::after {
+  margin-left: auto;
+  flex: none;
+  content: "想好了，看答案 ↓";
+  color: var(--accent);
+  font-size: 13px;
+}
+
+body :is(.ch3l-ponder, .lx-ponder)[open] > p {
+  margin-top: 10px;
+  padding-top: 10px;
+  border-top: 1px solid var(--line);
+  color: var(--text-2);
+}
+
+/* sidebar: the current section is the only filled item; its chapter only colours the number */
+body .nav-section.is-active,
+body.dark .nav-section.is-active {
+  background: var(--accent-soft);
+  color: var(--accent-strong);
+  font-weight: 600;
+}
+
+body .nav-section:hover:not(.is-active),
+body.dark .nav-section:hover:not(.is-active) {
+  background: color-mix(in srgb, var(--surface-soft) 70%, transparent);
+}
+
+/* only the “停一下” label is a label; inline formulas in the question stay in the text */
+body .ch3l-ponder > summary > span:not(:first-child),
+body .ch3l-ponder[open] > summary > span:not(:first-child) {
+  flex: initial;
+  padding: 0;
+  border-radius: 0;
+  background: none;
+  color: inherit;
+  font-size: inherit;
+  font-weight: inherit;
+}
+
+body :is(.ch3l-ponder, .lx-ponder) > summary {
+  flex-wrap: wrap;
+  row-gap: 4px;
+}
+
+body :is(.ch3l-ponder, .lx-ponder) > p {
+  margin-left: 0;
+}
+
+body .example-choice.is-wrong > .example-choice-marker {
+  border-color: var(--bad-text);
+  background: var(--bad-text);
+  color: var(--bad-bg);
+}
+
+body .example-choice.is-correct > .example-choice-marker {
+  border-color: var(--ok-text);
+  background: var(--ok-text);
+  color: var(--ok-bg);
 }

@@ -105,18 +105,33 @@
         ["B 的行怎么切都可以", false, "试着把 B 的行切成 1+3，看看块乘积还有没有定义。"],
         ["B 的行切法要和 A 的行切法一样", false, "相乘时配对的是 A 的列和 B 的行。"],
       ], "visuals/ch4/section5-blocks.js").map(([t, okk, why], k) => `<button type="button" data-i="${k}" data-ok="${okk}" data-why="${why}">${t}</button>`).join("")}</div><p class="ch3l-predict-feedback" hidden></p></div>`;
-    gate.querySelectorAll("[data-i]").forEach((b) => b.addEventListener("click", () => {
-      gate.querySelectorAll("[data-i]").forEach((x) => x.classList.remove("is-right", "is-wrong"));
-      const okk = b.dataset.ok === "true";
-      b.classList.add(okk ? "is-right" : "is-wrong");
-      predicted = true;
-      paint();
-      const fb = gate.querySelector(".ch3l-predict-feedback");
-      fb.hidden = false;
+    // predict → act → reveal: the verdict opens only after the student also acts on the lab
+    let picked = null;
+    let revealed = false;
+    const fb = gate.querySelector(".ch3l-predict-feedback");
+    const reveal = () => {
+      if (revealed || !picked) return;
+      revealed = true;
+      const okk = picked.dataset.ok === "true";
+      gate.querySelectorAll("[data-i]").forEach((x) => x.classList.remove("is-picked"));
+      picked.classList.add(okk ? "is-right" : "is-wrong");
+      gate.querySelector(".ch3l-predict").classList.add("is-done");
       fb.innerHTML = okk
         ? "✓ 块乘法只要求 A 的列分法与 B 的行分法一致。A 的行切口和 B 的列切口可以自由选择，它们只决定结果 C 怎样分块。"
-        : `再对照实验想一想：${b.dataset.why}`;
+        : `和图中看到的不一致：${picked.dataset.why}`;
+    };
+    gate.querySelectorAll("[data-i]").forEach((b) => b.addEventListener("click", () => {
+      if (revealed) return;
+      picked = b;
+      predicted = true;
+      paint();
+      gate.querySelectorAll("[data-i]").forEach((x) => x.classList.toggle("is-picked", x === b));
+      fb.hidden = false;
+      fb.textContent = "已记下你的预测。现在动手操作一次，结论随后出现。";
     }));
+    const acted = (e) => { if (!gate.contains(e.target)) reveal(); };
+    ["input", "change", "pointerup"].forEach((t) => root.addEventListener(t, acted));
+    root.addEventListener("click", (e) => { if (e.target.closest("button") && !gate.contains(e.target)) reveal(); });
     paint();
   }
 

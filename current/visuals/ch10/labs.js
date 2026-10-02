@@ -99,7 +99,8 @@
 
   /* A reading next to a point, flipped to the left side near the right edge. */
   function pointLabel(d, p, text, color, dy) {
-    const left = p[0] > d.halfW * 0.25;
+    // stay on the right of the point unless it is close to the right edge
+    const left = p[0] > d.halfW * 0.6;
     d.text(p, text, color, { dx: left ? -14 : 14, dy, align: left ? "right" : "left" });
   }
 

@@ -46,7 +46,7 @@
   function levelLines(d, c, opts = {}) {
     const len = Math.hypot(c[0], c[1]);
     if (len < 1e-9) return;
-    const color = opts.color || "accent";
+    const color = opts.color || "subspace";
     const R = Math.hypot(d.halfW, d.halfH);
     const step = Math.max(1, Math.ceil((opts.minGap || 0.22) * len));
     const kMax = Math.floor((R * len) / step) * step;
@@ -157,7 +157,7 @@
   function functionalLab(root) {
     const lab = K.labShell(root, {
       title: "等值线读出 f(x)",
-      task: "每条直线上 f 取同一个值，金色直线是 f=0，也就是 ker f。拖动珊瑚色的 x 读出 f(x)；用滑块改变 f(ε₁)、f(ε₂)，看整族直线怎样跟着变。",
+      task: "每条绿色直线上 f 取同一个值，加粗的那条是 f=0，也就是 ker f。拖动金色的 x 读出 f(x)；用滑块改变 f(ε₁)、f(ε₂)，看整族直线怎样跟着变。",
     });
     const state = { key: "p31", a: [3, 1], x: [1, 0.5] };
     const toolbar = el("div", "ch7l-toolbar");
@@ -195,15 +195,15 @@
         d.grid(undefined, { alpha: 0.4 });
         d.axes();
         if (open && !zeroFn) {
-          levelLines(d, state.a, { label: "f", zeroColor: "gold", zeroLabel: "f=0（ker f）" });
-          d.line(state.x, [-state.a[1], state.a[0]], "coral", { width: 1.6, dash: [6, 5], alpha: 0.75 });
+          levelLines(d, state.a, { label: "f", zeroColor: "subspace", zeroLabel: "f=0（ker f）" });
+          d.line(state.x, [-state.a[1], state.a[0]], "drag", { width: 1.6, dash: [6, 5], alpha: 0.75 });
         }
-        d.arrow([0, 0], [1, 0], "text", { width: 2.4, label: "ε₁", ldy: 6 });
-        d.arrow([0, 0], [0, 1], "text", { width: 2.4, label: "ε₂", ldx: -8 });
-        d.segment([0, 0], [state.x[0], 0], "muted", { width: 1.2, dash: [3, 4] });
-        d.segment([state.x[0], 0], state.x, "muted", { width: 1.2, dash: [3, 4] });
-        d.arrow([0, 0], state.x, "coral", { width: 2.8 });
-        if (open) pointLabel(d, state.x, `f(x)=${minus(M().formatF(value))}`, "coral", -14);
+        d.arrow([0, 0], [1, 0], "v1", { width: 2.4, label: "ε₁", ldy: 6 });
+        d.arrow([0, 0], [0, 1], "v2", { width: 2.4, label: "ε₂", ldx: -8 });
+        d.segment([0, 0], [state.x[0], 0], "axis", { width: 1.2, dash: [3, 4] });
+        d.segment([state.x[0], 0], state.x, "axis", { width: 1.2, dash: [3, 4] });
+        d.arrow([0, 0], state.x, "drag", { width: 2.8 });
+        if (open) pointLabel(d, state.x, `f(x)=${minus(M().formatF(value))}`, "drag", -14);
       });
       if (!open) {
         info.innerHTML = `<h4>读数</h4><p class="ch7l-muted">先在上方作出预测，等值线和读数随后出现。</p>`;
@@ -217,14 +217,14 @@
         html += `<p>${tex(`f(x)=${formTex(a, ["x_1", "x_2"])}`)}，${tex(`\\ker f:\\ ${formTex(a, ["x_1", "x_2"])}=0`)}</p>`;
         html += isZero(value)
           ? `<p class="ch7l-ok">x 落在 ker f 上。</p>`
-          : `<p class="ch7l-muted">x 所在的等值线（珊瑚色虚线）与 ker f 平行。</p>`;
+          : `<p class="ch7l-muted">x 所在的等值线（金色虚线）与 ker f 平行。</p>`;
       }
       info.innerHTML = html;
     }
 
     plane.setHandles([
       {
-        color: "coral",
+        color: "drag",
         snap: 0.25,
         limit: 3,
         get: () => state.x,
@@ -272,7 +272,7 @@
   function dualLab(root) {
     const lab = K.labShell(root, {
       title: "斜基与它的对偶基",
-      task: "η₁、η₂ 是一组斜的基，g₁、g₂ 是它的对偶基：g₁(η₁)=1，g₁(η₂)=0，g₂ 反过来。拖动 η₁、η₂ 看等值线族怎样跟着变；拖动珊瑚色的 x，读出它的两个坐标。",
+      task: "η₁、η₂ 是一组斜的基，g₁、g₂ 是它的对偶基：g₁(η₁)=1，g₁(η₂)=0，g₂ 反过来。拖动 η₁、η₂ 看等值线族怎样跟着变（蓝线属于 g₁，朱线属于 g₂）；拖动金色的 x，读出它的两个坐标。",
     });
     const state = { view: "g1", eta: [[1.5, 0.5], [0.5, 1.5]], x: [1.75, 1.25] };
     const toolbar = el("div", "ch7l-toolbar");
@@ -308,17 +308,17 @@
         if (rows && open) {
           const rn = rows.map((r) => r.map(num));
           const both = state.view === "both";
-          if (state.view !== "g2") levelLines(d, rn[0], { label: "g₁", color: "accent", zeroColor: both ? null : "gold", zeroLabel: both ? null : "g₁=0", edge: both ? "right" : undefined });
-          if (state.view !== "g1") levelLines(d, rn[1], { label: "g₂", color: "blue", zeroColor: both ? null : "gold", zeroLabel: both ? null : "g₂=0", edge: both ? "top" : undefined });
+          if (state.view !== "g2") levelLines(d, rn[0], { label: "g₁", color: "v1", zeroColor: both ? null : "v1", zeroLabel: both ? null : "g₁=0", edge: both ? "right" : undefined });
+          if (state.view !== "g1") levelLines(d, rn[1], { label: "g₂", color: "v2", zeroColor: both ? null : "v2", zeroLabel: both ? null : "g₂=0", edge: both ? "top" : undefined });
           const r = reads.map(num);
           const corner = [r[0] * e1[0], r[0] * e1[1]];
-          d.segment([0, 0], corner, "accent", { width: 1.4, dash: [4, 4] });
-          d.segment(corner, state.x, "blue", { width: 1.4, dash: [4, 4] });
+          d.segment([0, 0], corner, "v1", { width: 1.4, dash: [4, 4] });
+          d.segment(corner, state.x, "v2", { width: 1.4, dash: [4, 4] });
         }
-        d.arrow([0, 0], e1, "accent", { width: 3, label: "η₁" });
-        d.arrow([0, 0], e2, "blue", { width: 3, label: "η₂" });
-        d.point(state.x, "coral", { r: 4 });
-        if (reads && open) pointLabel(d, state.x, `(${minus(M().formatF(reads[0]))}, ${minus(M().formatF(reads[1]))})`, "coral", -14);
+        d.arrow([0, 0], e1, "v1", { width: 3, label: "η₁" });
+        d.arrow([0, 0], e2, "v2", { width: 3, label: "η₂" });
+        d.point(state.x, "drag", { r: 4 });
+        if (reads && open) pointLabel(d, state.x, `(${minus(M().formatF(reads[0]))}, ${minus(M().formatF(reads[1]))})`, "drag", -14);
       });
       if (rows && !open) {
         readCard.innerHTML = `<h4>读数</h4>${waitNote("等值线和读数")}`;
@@ -353,10 +353,10 @@
       end: () => flow?.acted(),
     });
     plane.setHandles([
-      etaHandle(0, "accent"),
-      etaHandle(1, "blue"),
+      etaHandle(0, "drag"),
+      etaHandle(1, "drag"),
       {
-        color: "coral",
+        color: "drag",
         snap: 0.25,
         limit: 3,
         get: () => state.x,
@@ -452,7 +452,7 @@
   function bilinearLab(root) {
     const lab = K.labShell(root, {
       title: "固定一个变量，得到一个线性函数",
-      task: "f(x,y)=xᵀAy。固定珊瑚色的 y，f(·,y) 就是 x 的线性函数，蓝色直线是它的等值线。拖动 y 看这族直线怎样转动，拖动 x 读出 f(x,y)。",
+      task: "f(x,y)=xᵀAy。固定朱色的 y，f(·,y) 就是 x 的线性函数，绿色直线是它的等值线。拖动 y 看这族直线怎样转动，拖动 x 读出 f(x,y)。",
     });
     const state = { key: "ns", mode: "fixY", x: [1, 1], y: [1, 0] };
     const toolbar = el("div", "ch7l-toolbar");
@@ -485,9 +485,9 @@
       plane.setDraw((d) => {
         d.grid(undefined, { alpha: 0.35 });
         d.axes();
-        if (open && !K.isZeroVec(coef)) levelLines(d, coef.map(num), { label: "f", color: "blue", zeroColor: "gold", zeroLabel: "f=0" });
-        d.arrow([0, 0], state.y, "coral", { width: fixY ? 3.4 : 2.4, label: "y" });
-        d.arrow([0, 0], state.x, "accent", { width: fixY ? 2.4 : 3.4, label: "x" });
+        if (open && !K.isZeroVec(coef)) levelLines(d, coef.map(num), { label: "f", color: "subspace", zeroColor: "subspace", zeroLabel: "f=0" });
+        d.arrow([0, 0], state.y, "v2", { width: fixY ? 3.4 : 2.4, label: "y" });
+        d.arrow([0, 0], state.x, "v1", { width: fixY ? 2.4 : 3.4, label: "x" });
         if (open) pointLabel(d, fixY ? state.x : state.y, `f(x,y)=${minus(M().formatF(value))}`, "text", 16);
       });
       const fixedName = fixY ? "y" : "x";
@@ -515,7 +515,7 @@
       },
       end: () => flow?.acted(),
     });
-    plane.setHandles([handle("x", "accent"), handle("y", "coral")]);
+    plane.setHandles([handle("x", "drag"), handle("y", "drag")]);
 
     function newFlow() {
       flow = K.predictFlow(gateHost, result, {
@@ -618,13 +618,14 @@
         d.grid(undefined, { alpha: 0.35 });
         d.axes();
         const sum = (u, v) => [u[0] + v[0], u[1] + v[1]];
-        d.polyline([[0, 0], state.x, sum(state.x, state.y), state.y], "muted", { close: true, dash: [5, 5], width: 1.4 });
-        const tone = open ? (keeps ? "accent" : "coral") : "blue";
+        d.polyline([[0, 0], state.x, sum(state.x, state.y), state.y], "axis", { close: true, dash: [5, 5], width: 1.4 });
+        // Kx, Ky and their parallelogram are images; whether ω is kept shows in the readout, not in a hue.
+        const tone = "image";
         d.polygon([[0, 0], kx, sum(kx, ky), ky], tone, { width: 1.8, fillAlpha: 0.16 });
         d.arrow([0, 0], kx, tone, { width: 2.6, label: "Kx" });
         d.arrow([0, 0], ky, tone, { width: 2.6, label: "Ky" });
-        d.arrow([0, 0], state.x, "text", { width: 1.8, alpha: 0.75, label: "x" });
-        d.arrow([0, 0], state.y, "text", { width: 1.8, alpha: 0.75, label: "y" });
+        d.arrow([0, 0], state.x, "v1", { width: 1.8, alpha: 0.75, label: "x" });
+        d.arrow([0, 0], state.y, "v2", { width: 1.8, alpha: 0.75, label: "y" });
       });
       const Kxn = Kx.map(num);
       const Kyn = Ky.map(num);
@@ -671,7 +672,7 @@
       },
       end: () => flow?.acted(),
     });
-    plane.setHandles([handle("x", "text"), handle("y", "text")]);
+    plane.setHandles([handle("x", "drag"), handle("y", "drag")]);
 
     K.chips(
       toolbar,

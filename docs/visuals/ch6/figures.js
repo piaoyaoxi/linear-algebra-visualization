@@ -50,8 +50,8 @@
     const g = (x) => 1.2 - 0.5 * x * x;
     const h = (x) => f(x) + g(x);
     const bars = [-1.2, 0.9].flatMap((x) => [
-      { a: [x - 0.05, 0], b: [x - 0.05, f(x)], color: "accent", width: 4 },
-      { a: [x + 0.05, f(x)], b: [x + 0.05, h(x)], color: "coral", width: 4 },
+      { a: [x - 0.05, 0], b: [x - 0.05, f(x)], color: "v1", width: 4 },
+      { a: [x + 0.05, f(x)], b: [x + 0.05, h(x)], color: "v2", width: 4 },
     ]);
     return K().plot({
       x: [-2.2, 2.2],
@@ -61,15 +61,15 @@
       label: "两个函数逐点相加",
       vlines: [{ x: -1.2, color: "faint", opacity: 0.4 }, { x: 0.9, color: "faint", opacity: 0.4 }],
       curves: [
-        { f, color: "accent", width: 2 },
-        { f: g, color: "coral", width: 2 },
-        { f: h, color: "gold", width: 3 },
+        { f, color: "v1", width: 2 },
+        { f: g, color: "v2", width: 2 },
+        { f: h, color: "image", width: 3 },
       ],
       segments: bars,
       labels: [
-        { x: 1.75, y: f(1.75) + 0.3, text: "f", color: "accent" },
-        { x: -2.1, y: g(-2.1) + 0.55, text: "g", color: "coral" },
-        { x: 1.45, y: h(1.45) + 0.45, text: "f+g", color: "gold" },
+        { x: 1.75, y: f(1.75) + 0.3, text: "f", color: "v1" },
+        { x: -2.1, y: g(-2.1) + 0.55, text: "g", color: "v2" },
+        { x: 1.45, y: h(1.45) + 0.45, text: "f+g", color: "image" },
       ],
     });
   }
@@ -91,10 +91,10 @@
       const mid = (x1 + x2) / 2;
       return `<path d="M ${x1} ${y - 8} Q ${mid} ${y - 8 - lift} ${x2} ${y - 8}" fill="none" style="stroke:var(--${color});stroke-width:2.4"/><circle cx="${x2}" cy="${y - 8}" r="3.6" style="fill:var(--${color})"/><text x="${mid}" y="${y - 12 - lift / 2}" text-anchor="middle" class="ch6p-label" style="fill:var(--${color})">${label}</text>`;
     };
-    parts.push(arrow(1, 2, 34, "accent", "2"));
-    parts.push(arrow(2, 6, 46, "coral", "⊕3"));
-    parts.push(arrow(1, 0.5, 30, "blue", "2 的负向量"));
-    parts.push(`<circle cx="${L(1)}" cy="${y}" r="6" style="fill:var(--surface-solid);stroke:var(--gold);stroke-width:2.4"/><text x="${L(1)}" y="${y + 40}" text-anchor="middle" class="ch6p-label" style="fill:var(--gold)">零向量 1</text>`);
+    parts.push(arrow(1, 2, 34, "cv-v1", "2"));
+    parts.push(arrow(2, 6, 46, "cv-v2", "⊕3"));
+    parts.push(arrow(1, 0.5, 30, "cv-image", "2 的负向量"));
+    parts.push(`<circle cx="${L(1)}" cy="${y}" r="6" style="fill:var(--surface-solid);stroke:var(--text);stroke-width:2.4"/><text x="${L(1)}" y="${y + 40}" text-anchor="middle" class="ch6p-label" style="fill:var(--text)">零向量 1</text>`);
     return `<svg class="ch6p-plot" viewBox="0 0 ${W} ${H}" role="img" aria-label="正实数在对数刻度上的加法">${parts.join("")}</svg>`;
   }
 
@@ -114,15 +114,15 @@
       label: "满足 p(1)=0 的多项式",
       vlines: [{ x: 1, color: "faint", opacity: 0.45 }],
       curves: [
-        { f: (x) => x - 1, color: "accent", width: 2 },
-        { f: (x) => 1 - x * x, color: "blue", width: 2 },
-        { f: (x) => x - x * x, color: "gold", width: 3 },
+        { f: (x) => x - 1, color: "v1", width: 2 },
+        { f: (x) => 1 - x * x, color: "v2", width: 2 },
+        { f: (x) => x - x * x, color: "image", width: 3 },
       ],
-      points: [{ x: 1, y: 0, color: "gold", r: 5.5, label: "(1,0)", dx: 8, dy: 16 }],
+      points: [{ x: 1, y: 0, color: "image", r: 5.5, label: "(1,0)", dx: 8, dy: 16 }],
       labels: [
-        { x: 2.05, y: 1.45, text: "p", color: "accent" },
-        { x: -1.9, y: -2.4, text: "q", color: "blue" },
-        { x: 1.72, y: -0.7, text: "p+q", color: "gold" },
+        { x: 2.05, y: 1.45, text: "p", color: "v1" },
+        { x: -1.9, y: -2.4, text: "q", color: "v2" },
+        { x: 1.72, y: -0.7, text: "p+q", color: "image" },
       ],
     });
     const one = K().plot({
@@ -133,18 +133,18 @@
       label: "满足 p(1)=1 的多项式",
       vlines: [{ x: 1, color: "faint", opacity: 0.45 }],
       curves: [
-        { f: (x) => x, color: "accent", width: 2 },
-        { f: (x) => x * x, color: "blue", width: 2 },
-        { f: (x) => x + x * x, color: "coral", width: 3 },
+        { f: (x) => x, color: "v1", width: 2 },
+        { f: (x) => x * x, color: "v2", width: 2 },
+        { f: (x) => x + x * x, color: "image", width: 3 },
       ],
       points: [
         { x: 1, y: 1, color: "muted", r: 5, hollow: true, label: "(1,1)", dx: 10, dy: 14 },
-        { x: 1, y: 2, color: "coral", r: 5.5, label: "(1,2)", dx: -8, dy: -8, anchor: "end" },
+        { x: 1, y: 2, color: "image", r: 5.5, label: "(1,2)", dx: -8, dy: -8, anchor: "end" },
       ],
       labels: [
-        { x: 2.2, y: 1.7, text: "p", color: "accent" },
-        { x: -1.95, y: 3.2, text: "q", color: "blue" },
-        { x: 1.55, y: 4.4, text: "p+q", color: "coral" },
+        { x: 2.2, y: 1.7, text: "p", color: "v1" },
+        { x: -1.95, y: 3.2, text: "q", color: "v2" },
+        { x: 1.55, y: 4.4, text: "p+q", color: "image" },
       ],
     });
     return `<div class="ch6f-grid">
@@ -162,21 +162,21 @@
       width: 520,
       height: 250,
       label: "同时过 (1,0) 与 (-1,0) 的多项式",
-      vlines: [{ x: 1, color: "accent", opacity: 0.35 }, { x: -1, color: "coral", opacity: 0.35 }],
+      vlines: [{ x: 1, color: "v1", opacity: 0.35 }, { x: -1, color: "v2", opacity: 0.35 }],
       curves: [
-        { f: (x) => 0.5 * (x - 1) * (x + 2), color: "accent", width: 2 },
-        { f: (x) => 0.5 * (x + 1) * (x - 2), color: "coral", width: 2 },
-        { f: (x) => x * x - 1, color: "gold", width: 3 },
-        { f: (x) => x * (x * x - 1), color: "gold", width: 3, opacity: 0.6 },
+        { f: (x) => 0.5 * (x - 1) * (x + 2), color: "v1", width: 2 },
+        { f: (x) => 0.5 * (x + 1) * (x - 2), color: "v2", width: 2 },
+        { f: (x) => x * x - 1, color: "subspace", width: 3 },
+        { f: (x) => x * (x * x - 1), color: "subspace", width: 3, opacity: 0.6 },
       ],
       points: [
         { x: 1, y: 0, color: "text", r: 4.5 },
         { x: -1, y: 0, color: "text", r: 4.5 },
       ],
       labels: [
-        { x: 1.6, y: 2.25, text: "U 中", color: "accent" },
-        { x: -2.1, y: 2.25, text: "W 中", color: "coral" },
-        { x: 1.55, y: -1.1, text: "U∩W 中", color: "gold" },
+        { x: 1.6, y: 2.25, text: "U 中", color: "v1" },
+        { x: -2.1, y: 2.25, text: "W 中", color: "v2" },
+        { x: 1.55, y: -1.1, text: "U∩W 中", color: "subspace" },
       ],
     });
     return `<div class="ch6f-card is-wide">${svg}<p>${tex("P[x]_4")} 中 ${tex("U=\\{p:p(1)=0\\}")}，${tex("W=\\{p:p(-1)=0\\}")}。交里的曲线同时过两个点，恰好是 ${tex("(x^2-1)(a+bx)")}。</p></div>`;
@@ -194,13 +194,13 @@
       label: "e^x 分解为偶函数与奇函数",
       curves: [
         { f: Math.exp, color: "text", width: 3 },
-        { f: Math.cosh, color: "accent", width: 2.2 },
-        { f: Math.sinh, color: "coral", width: 2.2 },
+        { f: Math.cosh, color: "v1", width: 2.2 },
+        { f: Math.sinh, color: "v2", width: 2.2 },
       ],
       labels: [
         { x: 1.25, y: 5.3, text: "eˣ", color: "text" },
-        { x: -2.15, y: 4.9, text: "cosh x（偶）", color: "accent" },
-        { x: -2.1, y: -3.4, text: "sinh x（奇）", color: "coral" },
+        { x: -2.15, y: 4.9, text: "cosh x（偶）", color: "v1" },
+        { x: -2.1, y: -3.4, text: "sinh x（奇）", color: "v2" },
       ],
     });
     return `<div class="ch6f-card is-wide">${svg}<p>全体实函数构成的空间，是偶函数子空间与奇函数子空间的直和：${tex("f(x)=\\frac{f(x)+f(-x)}2+\\frac{f(x)-f(-x)}2")}。既偶又奇的函数只有 0，所以分解唯一；${tex("e^x=\\cosh x+\\sinh x")}。</p></div>`;

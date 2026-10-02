@@ -137,7 +137,9 @@
   /* ---------- SVG function plot ---------- */
 
   let plotId = 0;
-  const cssColor = (c) => (c && /^[a-z-]+$/.test(c) ? `var(--${c})` : c || "var(--text)");
+  // Colour roles (v1, v2, drag, image, subspace, axis) map to the canvas tokens.
+  const ROLE_VARS = { v1: "cv-v1", v2: "cv-v2", drag: "cv-drag", image: "cv-image", subspace: "cv-subspace", axis: "cv-axis" };
+  const cssColor = (c) => (ROLE_VARS[c] ? `var(--${ROLE_VARS[c]})` : c && /^[a-z-]+$/.test(c) ? `var(--${c})` : c || "var(--text)");
 
   function plot(spec) {
     const W = spec.width || 520;

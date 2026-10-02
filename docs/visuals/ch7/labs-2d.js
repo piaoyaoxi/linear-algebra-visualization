@@ -46,7 +46,7 @@
   function basisLab(root) {
     const lab = K.labShell(root, {
       title: "同一个 σ，换一组基记录",
-      task: "左图用标准基 ε₁, ε₂ 记录 σ，右图用你拖动的 η₁, η₂ 记录同一个 σ。珊瑚色箭头是基向量的像，它在网格里的坐标就是矩阵的一列。",
+      task: "左图用标准基 ε₁, ε₂ 记录 σ，右图用你拖动的 η₁, η₂ 记录同一个 σ。紫色箭头是基向量的像，它在网格里的坐标就是矩阵的一列。",
     });
     const state = { key: "stretch", eta: [[1, 0.5], [-0.5, 1]] };
     const toolbar = el("div", "ch7l-toolbar");
@@ -74,7 +74,7 @@
 
     function drawEigen(d) {
       if (!flow?.revealed) return;
-      preset().eigen.forEach((v) => d.line([0, 0], v, "gold", { width: 1.4, dash: [6, 5], alpha: 0.9 }));
+      preset().eigen.forEach((v) => d.line([0, 0], v, "subspace", { width: 1.4, dash: [6, 5], alpha: 0.9 }));
     }
 
     function redraw() {
@@ -85,15 +85,15 @@
         d.grid(undefined, { alpha: 0.7 });
         d.axes();
         drawEigen(d);
-        d.arrow([0, 0], e1, "accent", { width: 1.4, alpha: 0.35, dash: [4, 4] });
-        d.arrow([0, 0], e2, "blue", { width: 1.4, alpha: 0.35, dash: [4, 4] });
-        d.arrow([0, 0], [1, 0], "text", { width: 2.4, label: "ε₁" });
-        d.arrow([0, 0], [0, 1], "text", { width: 2.4, label: "ε₂" });
-        d.arrow([0, 0], [An[0][0], An[1][0]], "coral", { width: 2.6, label: "σε₁" });
-        d.arrow([0, 0], [An[0][1], An[1][1]], "coral", { width: 2.6, label: "σε₂", ldy: 4 });
+        d.arrow([0, 0], e1, "v1", { width: 1.4, alpha: 0.35, dash: [4, 4] });
+        d.arrow([0, 0], e2, "v2", { width: 1.4, alpha: 0.35, dash: [4, 4] });
+        d.arrow([0, 0], [1, 0], "v1", { width: 2.4, label: "ε₁" });
+        d.arrow([0, 0], [0, 1], "v2", { width: 2.4, label: "ε₂" });
+        d.arrow([0, 0], [An[0][0], An[1][0]], "image", { width: 2.6, label: "σε₁" });
+        d.arrow([0, 0], [An[0][1], An[1][1]], "image", { width: 2.6, label: "σε₂", ldy: 4 });
       });
       R.setDraw((d) => {
-        if (B) d.grid(state.eta, { color: "accent", alpha: 0.28 });
+        if (B) d.grid(state.eta, { color: "subspace", alpha: 0.28 });
         d.axes(null);
         drawEigen(d);
         if (B) {
@@ -102,14 +102,14 @@
             const img = apply2(An, state.eta[j]);
             const c1 = Bn[0][j];
             const corner = [c1 * e1[0], c1 * e1[1]];
-            d.segment([0, 0], corner, "coral", { width: 1.2, dash: [3, 4], alpha: 0.7 });
-            d.segment(corner, img, "coral", { width: 1.2, dash: [3, 4], alpha: 0.7 });
+            d.segment([0, 0], corner, "image", { width: 1.2, dash: [3, 4], alpha: 0.7 });
+            d.segment(corner, img, "image", { width: 1.2, dash: [3, 4], alpha: 0.7 });
           });
         }
-        d.arrow([0, 0], e1, "accent", { width: 2.8, label: "η₁" });
-        d.arrow([0, 0], e2, "blue", { width: 2.8, label: "η₂" });
-        d.arrow([0, 0], apply2(An, e1), "coral", { width: 2.6, label: "ση₁" });
-        d.arrow([0, 0], apply2(An, e2), "coral", { width: 2.6, label: "ση₂", ldy: 4 });
+        d.arrow([0, 0], e1, "v1", { width: 2.8, label: "η₁" });
+        d.arrow([0, 0], e2, "v2", { width: 2.8, label: "η₂" });
+        d.arrow([0, 0], apply2(An, e1), "image", { width: 2.6, label: "ση₁" });
+        d.arrow([0, 0], apply2(An, e2), "image", { width: 2.6, label: "ση₂", ldy: 4 });
       });
       const tr = M().add(A[0][0], A[1][1]);
       let html = `<div class="ch7l-matrix-row">
@@ -140,7 +140,7 @@
       },
       end: () => flow?.acted(),
     });
-    R.setHandles([handle(0, "accent"), handle(1, "blue")]);
+    R.setHandles([handle(0, "drag"), handle(1, "drag")]);
 
     function newFlow() {
       flow = K.predictFlow(gateHost, result, {
@@ -151,7 +151,7 @@
           { text: "只有 η 等于 ε 时", why: "η=ε 时 B=A，A 本身不一定是对角的。" },
           { text: "永远不会，换基不改变矩阵", why: "换基不改变 σ，矩阵却会变。" },
         ],
-        conclusion: `B 的第 j 列是 ${tex("\\sigma\\eta_j")} 在新基下的坐标。B 是对角矩阵，当且仅当 ${tex("\\sigma\\eta_j=\\lambda_j\\eta_j")}，即每个 ${tex("\\eta_j")} 都在 σ 保持的直线上（图中金色虚线）。无论怎样换基，迹与行列式都不变，因为 B 与 A 相似。${preset().note}${state.key === "shear" ? "剪切只有一条这样的直线，B 最多化成三角形。" : ""}`,
+        conclusion: `B 的第 j 列是 ${tex("\\sigma\\eta_j")} 在新基下的坐标。B 是对角矩阵，当且仅当 ${tex("\\sigma\\eta_j=\\lambda_j\\eta_j")}，即每个 ${tex("\\eta_j")} 都在 σ 保持的直线上（图中绿色虚线）。无论怎样换基，迹与行列式都不变，因为 B 与 A 相似。${preset().note}${state.key === "shear" ? "剪切只有一条这样的直线，B 最多化成三角形。" : ""}`,
         onReveal: redraw,
       });
     }
@@ -267,7 +267,7 @@
   function eigenLab(root) {
     const lab = K.labShell(root, {
       title: "哪些方向只被伸缩",
-      task: "珊瑚色曲线是单位圆上所有方向经过 A 以后的终点。转动 v，看 Av 何时与 v 落在同一条直线上。",
+      task: "紫色曲线是单位圆上所有方向经过 A 以后的终点。转动金色的 v，看 Av 何时与 v 落在同一条直线上。",
     });
     const modeBar = el("div", "ch7l-toolbar ch7l-modes");
     lab.append(modeBar);
@@ -286,7 +286,7 @@
   }
 
   function planeMode(host, lab) {
-    lab.querySelector(".ch7l-head p").textContent = "珊瑚色曲线是单位圆上所有方向经过 A 以后的终点。转动 v，看 Av 何时与 v 落在同一条直线上。";
+    lab.querySelector(".ch7l-head p").textContent = "紫色曲线是单位圆上所有方向经过 A 以后的终点。转动金色的 v，看 Av 何时与 v 落在同一条直线上。";
     const state = { key: "sym", theta: 20 };
     const toolbar = el("div", "ch7l-toolbar");
     const body = el("div", "ch7l-body");
@@ -332,21 +332,23 @@
           const t = (i / 96) * Math.PI * 2;
           circle.push([r * Math.cos(t), r * Math.sin(t)]);
         }
-        d.polyline(circle, "muted", { dash: [4, 5], width: 1.2, alpha: 0.7 });
-        d.polyline(ring.map(([x, y]) => [x * r, y * r]), "coral", { close: true, fill: "coral", fillAlpha: 0.06, width: 1.6, alpha: 0.75 });
-        if (flow?.revealed) P.eigen.forEach((e) => d.line([0, 0], e.v, "gold", { width: 1.4, dash: [6, 5] }));
-        d.line([0, 0], v, h ? "accent" : "gold", { width: h ? 2.2 : 1.2, alpha: h ? 0.8 : 0.55, dash: h ? undefined : [3, 5] });
+        d.polyline(circle, "axis", { dash: [4, 5], width: 1.2, alpha: 0.7 });
+        d.polyline(ring.map(([x, y]) => [x * r, y * r]), "image", { close: true, fill: "image", fillAlpha: 0.06, width: 1.6, alpha: 0.75 });
+        if (flow?.revealed) P.eigen.forEach((e) => d.line([0, 0], e.v, "subspace", { width: 1.4, dash: [6, 5] }));
+        d.line([0, 0], v, h ? "subspace" : "drag", { width: h ? 2.2 : 1.2, alpha: h ? 0.8 : 0.55, dash: h ? undefined : [3, 5] });
         const avLen = Math.hypot(Av[0], Av[1]);
         if (!h && avLen > 1e-9) {
           const a0 = th;
           let a1 = Math.atan2(Av[1], Av[0]);
           while (a1 - a0 > Math.PI) a1 -= 2 * Math.PI;
           while (a1 - a0 < -Math.PI) a1 += 2 * Math.PI;
-          d.arc(36, a0, a1, "coral", { width: 2 });
+          d.arc(36, a0, a1, "image", { width: 2 });
         }
-        d.arrow([0, 0], v, "accent", { label: "v" });
-        if (avLen > 1e-9) d.arrow([0, 0], Av, h ? "accent" : "coral", { label: "Av", width: 2.6, ldy: 4 });
-        else d.point([0, 0], "coral", { r: 5, label: "Av=0" });
+        // Highlight on a hit: the same colours with a glow underneath.
+        if (h && avLen > 1e-9) d.segment([0, 0], Av, "image", { width: 7, alpha: 0.16 });
+        d.arrow([0, 0], v, "drag", { label: "v" });
+        if (avLen > 1e-9) d.arrow([0, 0], Av, "image", { label: "Av", width: 2.6, ldy: 4 });
+        else d.point([0, 0], "image", { r: 5, label: "Av=0" });
       });
       control.querySelector("[data-theta-v]").textContent = `${state.theta}°`;
       control.querySelector("[data-theta]").value = String(state.theta);
@@ -362,7 +364,7 @@
 
     plane.setHandles([
       {
-        color: "accent",
+        color: "drag",
         get: () => {
           const P = preset();
           const A = P.A.map((rr) => rr.map((x) => num(F(x))));
@@ -445,12 +447,14 @@
       scene.setObjects(() => {
         const objs = [];
         if (flow?.revealed) {
-          objs.push({ type: "plane", n: [1, 1, 1], d: 0, color: "blue", alpha: 0.12, label: "V₋₁" });
-          objs.push({ type: "line", dir: [1, 1, 1], color: "gold", width: 2.2, label: "V₅" });
+          objs.push({ type: "plane", n: [1, 1, 1], d: 0, color: "subspace", alpha: 0.12, label: "V₋₁" });
+          objs.push({ type: "line", dir: [1, 1, 1], color: "subspace", width: 2.2, label: "V₅" });
         }
-        objs.push({ type: "line", dir: v, color: s.parallel ? "accent" : "muted", width: 1.2, dash: [4, 5], alpha: 0.6 });
-        objs.push({ type: "arrow", to: v, color: "accent", label: "v" });
-        objs.push({ type: "arrow", to: Av, color: s.parallel ? "accent" : "coral", width: 2.6, label: "Av" });
+        objs.push({ type: "line", dir: v, color: "drag", width: 1.2, dash: [4, 5], alpha: s.parallel ? 0.9 : 0.5 });
+        objs.push({ type: "arrow", to: v, color: "drag", label: "v" });
+        // Highlight when collinear: the same colour with a glow underneath.
+        if (s.parallel) objs.push({ type: "segment", a: [0, 0, 0], b: Av, color: "image", width: 7, alpha: 0.16 });
+        objs.push({ type: "arrow", to: Av, color: "image", width: 2.6, label: "Av" });
         return objs;
       });
       info.innerHTML = `<h4>读数</h4><p>v 的方向 ${tex(K.latexRow(s.u))}，${tex(`Av\\ \\text{的方向}\\ ${K.latexRow(s.Au)}`)}</p>${
@@ -462,7 +466,7 @@
 
     scene.setHandles([
       {
-        color: "accent",
+        color: "drag",
         get: dir,
         set: (p) => {
           const q = p.map((x) => Math.round(x * 2) / 2);
@@ -586,7 +590,7 @@
   function iterationLab(root) {
     const lab = K.labShell(root, {
       title: "反复作用 A，点跑向哪里",
-      task: "拖动金色的 x₀，然后按“作用一次”。蓝绿与蓝色箭头是 xₖ 的两个特征分量，每按一次各乘自己的 λ。",
+      task: "拖动金色的 x₀，然后按“作用一次”。蓝、朱两支箭头是 xₖ 的两个特征分量，每按一次各乘自己的 λ；紫色折线是轨迹。",
     });
     const state = { key: "attract", x0: [2.5, 2], k: 0 };
     const toolbar = el("div", "ch7l-toolbar");
@@ -626,7 +630,7 @@
       const xk = pts[pts.length - 1];
       const c = exactCoeffs();
       const lam = P.lambdas.map((x) => num(F(x)));
-      const colors = ["accent", "blue"];
+      const colors = ["v1", "v2"];
       plane.setDraw((d) => {
         d.grid(undefined, { alpha: 0.5 });
         d.axes();
@@ -640,20 +644,21 @@
             const s = num(c[i]) * lam[i] ** state.k;
             return [P.vecs[i][0] * s, P.vecs[i][1] * s];
           });
-          d.segment(parts[0], xk, "blue", { width: 1, dash: [3, 4], alpha: 0.7 });
-          d.segment(parts[1], xk, "accent", { width: 1, dash: [3, 4], alpha: 0.7 });
-          d.arrow([0, 0], parts[0], "accent", { width: 2.6 });
-          d.arrow([0, 0], parts[1], "blue", { width: 2.6 });
+          d.segment(parts[0], xk, "v2", { width: 1, dash: [3, 4], alpha: 0.7 });
+          d.segment(parts[1], xk, "v1", { width: 1, dash: [3, 4], alpha: 0.7 });
+          d.arrow([0, 0], parts[0], "v1", { width: 2.6 });
+          d.arrow([0, 0], parts[1], "v2", { width: 2.6 });
         }
-        d.polyline(pts, "gold", { width: 1.6, alpha: 0.85 });
-        pts.forEach((p, i) => d.point(p, "gold", { r: i === pts.length - 1 ? 5.5 : 3, alpha: i === pts.length - 1 ? 1 : 0.7 }));
-        d.text(xk, state.k ? `x${toSub(state.k)}` : "x₀", "gold", { dx: 10, dy: 12 });
+        // x₀ is the dragged point; x₁, x₂, … are images under A.
+        d.polyline(pts, "image", { width: 1.6, alpha: 0.85 });
+        pts.forEach((p, i) => d.point(p, i ? "image" : "drag", { r: i === pts.length - 1 ? 5.5 : 3, alpha: i === pts.length - 1 ? 1 : 0.7 }));
+        d.text(xk, state.k ? `x${toSub(state.k)}` : "x₀", state.k ? "image" : "drag", { dx: 10, dy: 12 });
       });
       let html = `<h4>k = ${state.k}</h4><p>${tex(`x_{${state.k}}=`)} ${vecText(xk, 3)}</p>`;
       if (c) {
         html += `<p>${tex(`x_0=${lf(c[0])}\\eta_1${c[1].n < 0 ? "" : "+"}${lf(c[1])}\\eta_2`)}</p>
           <table class="ch7l-table"><thead><tr><th>分量</th><th>${tex("\\lambda")}</th><th>${tex("c_i\\lambda_i^{k}")}</th></tr></thead><tbody>
-          ${[0, 1].map((i) => `<tr><td style="color:var(--${i ? "blue" : "accent"})">η${"₁₂"[i]}</td><td>${tex(lf(F(P.lambdas[i])))}</td><td>${fmt(num(c[i]) * lam[i] ** state.k, 4)}</td></tr>`).join("")}
+          ${[0, 1].map((i) => `<tr><td style="color:var(--${i ? "cv-v2" : "cv-v1"})">η${"₁₂"[i]}</td><td>${tex(lf(F(P.lambdas[i])))}</td><td>${fmt(num(c[i]) * lam[i] ** state.k, 4)}</td></tr>`).join("")}
           </tbody></table>`;
         const onLine = c.findIndex((x) => M().isZero(x));
         if (onLine >= 0) html += `<p class="ch7l-ok">x₀ 在 η${"₁₂"[1 - onLine]} 所在直线上：c${"₁₂"[onLine]}=0，点永远不离开这条直线。</p>`;
@@ -676,7 +681,7 @@
 
     plane.setHandles([
       {
-        color: "gold",
+        color: "drag",
         snap: 0.5,
         limit: 3,
         get: () => state.x0,

@@ -114,7 +114,7 @@
   }
 
   /* Solution set of a 3-variable system as drawable objects. */
-  function solutionObjects(aug, color = "gold") {
+  function solutionObjects(aug, color = "drag") {
     const part = M().particularSolution(aug);
     if (!part.ok) return [];
     const ns = M().nullspaceBasis(aug.map((r) => r.slice(0, 3))).basis.map(vecNum);
@@ -139,7 +139,12 @@
     return `无穷多解：${free.length} 个自由变量，解集是${free.length === 1 ? "一条直线" : "一个平面"}`;
   }
 
-  const PLANE_COLORS = ["accent", "coral", "blue"];
+  /*
+   * Colour roles (docs/design-spec.md §2): the first and second equation / row /
+   * column take v1 and v2; the third takes the subspace green. Solution sets are
+   * gold because they are where the student's x can sit.
+   */
+  const PLANE_COLORS = ["v1", "v2", "subspace"];
 
   /* ================= §1 消元法 ================= */
 
@@ -206,7 +211,7 @@
         });
         if (state.target !== state.source) {
           const hinge = planeLine(state.rows[state.target], state.rows[state.source]);
-          if (hinge) objs.push({ type: "line", ...hinge, color: "violet", width: 2, dash: [7, 5], label: "铰链" });
+          if (hinge) objs.push({ type: "line", ...hinge, color: "axis", width: 2, dash: [7, 5], label: "铰链" });
         }
         objs.push(...solutionObjects(rows));
         return objs;
@@ -372,7 +377,7 @@
       const aug = A.map((r, i) => [...r, bb[i]]);
       rowScene.setObjects(() => [
         ...aug.map((r, i) => planeObj(r, PLANE_COLORS[i], { alpha: 0.12 })),
-        { type: "point", p: state.x, color: hit ? "gold" : "text", r: hit ? 7 : 5.5, label: "x" },
+        { type: "point", p: state.x, color: "drag", r: hit ? 7 : 5.5, label: "x" },
       ]);
       colScene.setObjects(() => {
         const objs = [];
@@ -384,8 +389,8 @@
           if (state.x[j] !== 0) objs.push({ type: "arrow", from: tail, to: head, color: PLANE_COLORS[j], width: 3 });
           tail = head;
         });
-        objs.push({ type: "point", p: vecNum(bb), color: "gold", r: 7, hollow: !hit, label: "b" });
-        if (!hit) objs.push({ type: "segment", a: tail, b: vecNum(bb), color: "muted", dash: [4, 5] });
+        objs.push({ type: "point", p: vecNum(bb), color: "image", r: 7, hollow: !hit, label: "b" });
+        if (!hit) objs.push({ type: "segment", a: tail, b: vecNum(bb), color: "axis", dash: [4, 5] });
         return objs;
       });
       controls.querySelectorAll("[data-xv]").forEach((n) => (n.textContent = String(state.x[Number(n.dataset.xv)])));
@@ -446,7 +451,7 @@
     result.hidden = true;
     side.append(info, tools, gateHost, result);
 
-    const colors = ["accent", "coral", "blue"];
+    const colors = ["v1", "v2", "drag"];
 
     function redraw() {
       const vs = state.v.slice(0, state.stage);
@@ -454,15 +459,15 @@
       const planeOk = state.stage >= 2 && S().vec.len(cross) > 1e-9;
       scene.setObjects(() => {
         const objs = [];
-        if (state.stage === 1) objs.push({ type: "line", dir: state.v[0], color: "accent", width: 1.6, alpha: 0.6, label: "span{v₁}" });
-        if (planeOk) objs.push({ type: "plane", n: cross, d: 0, color: "accent", alpha: 0.12, label: "span{v₁,v₂}" });
+        if (state.stage === 1) objs.push({ type: "line", dir: state.v[0], color: "subspace", width: 1.6, alpha: 0.6, label: "span{v₁}" });
+        if (planeOk) objs.push({ type: "plane", n: cross, d: 0, color: "subspace", alpha: 0.12, label: "span{v₁,v₂}" });
         if (state.stage === 3) {
-          objs.push({ type: "box", vectors: state.v, color: "coral", alpha: 0.07 });
+          objs.push({ type: "box", vectors: state.v, color: "image", alpha: 0.07 });
           if (state.showDrop && planeOk && Math.abs(cross[2]) > 1e-9) {
             // Where the vertical line through v3 meets the plane: no inner product needed.
             const [x, y] = state.v[2];
             const z = -(cross[0] * x + cross[1] * y) / cross[2];
-            objs.push({ type: "segment", a: state.v[2], b: [x, y, z], color: "muted", dash: [4, 4], width: 1.4 });
+            objs.push({ type: "segment", a: state.v[2], b: [x, y, z], color: "axis", dash: [4, 4], width: 1.4 });
           }
         }
         vs.forEach((v, i) => objs.push({ type: "arrow", to: v, color: colors[i], label: `v${"₁₂₃"[i]}` }));
@@ -470,7 +475,7 @@
       });
       scene.setHandles(
         state.v.slice(0, state.stage).map((_, i) => ({
-          color: colors[i],
+          color: "drag",
           snap: 0.5,
           get: () => state.v[i],
           set: (p) => {
@@ -595,11 +600,11 @@
       const cols = [0, 1, 2].map((j) => A.map((r) => r[j]));
       const r = M().rankOf(A);
       rowScene.setObjects(() => [
-        ...spanObjects(rows, "accent"),
+        ...spanObjects(rows, "subspace"),
         ...rows.map((v, i) => ({ type: "arrow", to: vecNum(v), color: PLANE_COLORS[i], label: `r${"₁₂₃"[i]}` })),
       ]);
       colScene.setObjects(() => [
-        ...spanObjects(cols, "coral"),
+        ...spanObjects(cols, "subspace"),
         ...cols.map((v, i) => ({ type: "arrow", to: vecNum(v), color: PLANE_COLORS[i], label: `c${"₁₂₃"[i]}` })),
       ]);
       const list = ops();
@@ -675,14 +680,14 @@
       const onPlane = M().isZero(h);
       const cols = [0, 1, 2].map((j) => A.map((r) => r[j]));
       colScene.setObjects(() => [
-        { type: "plane", n: [1, 1, -1], d: 0, color: "accent", alpha: 0.12, label: "Col(A)" },
-        ...cols.map((c, i) => ({ type: "arrow", to: vecNum(c), color: "accent", width: 1.6, alpha: 0.6, label: `a${"₁₂₃"[i]}` })),
-        { type: "segment", a: state.b, b: [state.b[0], state.b[1], state.b[0] + state.b[1]], color: "coral", dash: [5, 4], width: 1.8 },
-        { type: "arrow", to: state.b, color: onPlane ? "gold" : "coral", width: 3, label: "b" },
+        { type: "plane", n: [1, 1, -1], d: 0, color: "subspace", alpha: 0.12, label: "Col(A)" },
+        ...cols.map((c, i) => ({ type: "arrow", to: vecNum(c), color: PLANE_COLORS[i], width: 1.6, alpha: 0.6, label: `a${"₁₂₃"[i]}` })),
+        { type: "segment", a: state.b, b: [state.b[0], state.b[1], state.b[0] + state.b[1]], color: "axis", dash: [5, 4], width: 1.8 },
+        { type: "arrow", to: state.b, color: "drag", width: 3, label: "b" },
       ]);
       colScene.setHandles([
         {
-          color: onPlane ? "gold" : "coral",
+          color: "drag",
           snap: 0.5,
           get: () => state.b,
           set: (p) => {
@@ -697,7 +702,7 @@
         else
           [[0, 1], [1, 2], [0, 2]].forEach(([i, j]) => {
             const l = planeLine(aug[i], aug[j]);
-            if (l) objs.push({ type: "line", ...l, color: "muted", width: 1.6, dash: [6, 5] });
+            if (l) objs.push({ type: "line", ...l, color: "axis", width: 1.6, dash: [6, 5] });
           });
         return objs;
       });
@@ -797,15 +802,15 @@
       const x = ns.reduce((acc, v, i) => S().vec.add(acc, S().vec.mul(v, params[i] || 0)), xp);
       scene.setObjects(() => {
         const objs = [];
-        aug.forEach((r, i) => objs.push(planeObj(r, ns.length === 2 ? "gold" : PLANE_COLORS[i], { alpha: ns.length === 2 ? 0.2 : 0.1, label: ns.length === 2 ? "解集" : undefined })));
-        hom.forEach((r, i) => objs.push(planeObj(r, ns.length === 2 ? "muted" : PLANE_COLORS[i], { alpha: 0.03, dash: [5, 5], strokeAlpha: 0.45, label: ns.length === 2 ? "零空间" : undefined })));
+        aug.forEach((r, i) => objs.push(planeObj(r, ns.length === 2 ? "drag" : PLANE_COLORS[i], { alpha: ns.length === 2 ? 0.2 : 0.1, label: ns.length === 2 ? "解集" : undefined })));
+        hom.forEach((r, i) => objs.push(planeObj(r, ns.length === 2 ? "subspace" : PLANE_COLORS[i], { alpha: 0.03, dash: [5, 5], strokeAlpha: 0.45, label: ns.length === 2 ? "零空间" : undefined })));
         if (ns.length === 1) {
-          objs.push({ type: "line", dir: ns[0], color: "muted", width: 2, dash: [7, 5], label: "零空间" });
-          objs.push({ type: "line", p: xp, dir: ns[0], color: "gold", width: 3.4, label: "解集" });
+          objs.push({ type: "line", dir: ns[0], color: "subspace", width: 2, dash: [7, 5], label: "零空间" });
+          objs.push({ type: "line", p: xp, dir: ns[0], color: "drag", width: 3.4, label: "解集" });
         }
-        objs.push({ type: "arrow", to: xp, color: "violet", width: 2.4, label: "特解" });
-        if (S().vec.len(S().vec.sub(x, xp)) > 1e-9) objs.push({ type: "arrow", from: xp, to: x, color: "blue", width: 2.4 });
-        objs.push({ type: "point", p: x, color: "gold", r: 6, label: "x" });
+        objs.push({ type: "arrow", to: xp, color: "v1", width: 2.4, label: "特解" });
+        if (S().vec.len(S().vec.sub(x, xp)) > 1e-9) objs.push({ type: "arrow", from: xp, to: x, color: "subspace", width: 2.4 });
+        objs.push({ type: "point", p: x, color: "drag", r: 6, label: "x" });
         return objs;
       });
       const Ax = M().matVec(A, x.map(F));

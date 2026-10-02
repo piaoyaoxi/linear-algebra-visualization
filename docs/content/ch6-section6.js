@@ -52,7 +52,7 @@ defineChapter6Section("intersection-sum", {
       `${texInline("\\dim U=\\dim W=3")}，例如 ${texInline("U")} 有基 ${texInline("x-1,(x-1)^2,(x-1)^3")}。`,
       `${texInline("p")} 同时以 1 和 −1 为根，当且仅当 ${texInline("x^2-1")} 整除 ${texInline("p")}。${texInline("p")} 的次数不超过 3，所以 ${texInline("p=(x^2-1)(a+bx)")}，${texInline("\\dim(U\\cap W)=2")}。`,
       `维数公式：${texInline("\\dim(U+W)=3+3-2=4=\\dim P[x]_4")}，所以 ${texInline("U+W=P[x]_4")}。`,
-      `${texInline("3+3>4")} 本身就说明交非零。“定理与方法”的图中，金色曲线同时过 ${texInline("(1,0)")} 与 ${texInline("(-1,0)")}。`,
+      `${texInline("3+3>4")} 本身就说明交非零。“定理与方法”的图中，绿色曲线同时过 ${texInline("(1,0)")} 与 ${texInline("(-1,0)")}。`,
     ],
   },
   quiz: [

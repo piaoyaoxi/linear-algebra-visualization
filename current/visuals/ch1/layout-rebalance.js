@@ -46,6 +46,7 @@
     };
     const canvas = root.querySelector("canvas");
     let lattice = null;
+    let gate = null;
 
     function setActive(selector, value, key) {
       root.querySelectorAll(selector).forEach((button) => {
@@ -83,13 +84,66 @@
         "当前多项式的总次数、x 次数和 y 次数都等于 3；数值相同只是巧合，定义并不相同。";
     }
 
+    function arrow(ctx, from, to, color, { width = 2.4, dashed = false, alpha = 1 } = {}) {
+      const dx = to.x - from.x;
+      const dy = to.y - from.y;
+      const len = Math.hypot(dx, dy);
+      if (len < 1) return;
+      const ux = dx / len;
+      const uy = dy / len;
+      const tip = { x: to.x - ux * 7, y: to.y - uy * 7 };
+      ctx.save();
+      ctx.globalAlpha = alpha;
+      ctx.strokeStyle = color; ctx.fillStyle = color; ctx.lineWidth = width;
+      if (dashed) ctx.setLineDash([5, 5]);
+      ctx.beginPath(); ctx.moveTo(from.x, from.y); ctx.lineTo(tip.x - ux * 3, tip.y - uy * 3); ctx.stroke();
+      ctx.setLineDash([]);
+      ctx.beginPath();
+      ctx.moveTo(tip.x + ux * 7, tip.y + uy * 7);
+      ctx.lineTo(tip.x - ux * 3 - uy * 4.5, tip.y - uy * 3 + ux * 4.5);
+      ctx.lineTo(tip.x - ux * 3 + uy * 4.5, tip.y - uy * 3 - ux * 4.5);
+      ctx.closePath(); ctx.fill();
+      ctx.restore();
+    }
+
+    /*
+     * x^a y^b · x^c y^d = x^{a+c} y^{b+d}: draw α from the origin, then β from the tip of α
+     * (head to tail), landing on the product point α+β; β's ghost stays at the origin.
+     */
     function renderMultiply() {
       const sum = { i: state.first.i + state.second.i, j: state.first.j + state.second.j };
+      const pal = M().getPalette();
       lattice = M().drawLattice(canvas, [
-        { ...state.first, label: `α=(${state.first.i},${state.first.j})`, color: M().getPalette().v1 },
-        { ...state.second, label: `β=(${state.second.i},${state.second.j})`, color: M().getPalette().v2 },
-        { ...sum, label: `α+β=(${sum.i},${sum.j})`, active: true, color: M().getPalette().image },
-      ], { maxI: 5, maxJ: 5 });
+        { ...state.first, color: pal.v1 },
+        { ...sum, active: true, color: pal.image },
+      ], { maxI: 5, maxJ: 5, layers: [sum.i + sum.j] });
+      const ctx = canvas.getContext("2d");
+      const at = (e) => ({ x: lattice.pad + e.i * lattice.sx, y: lattice.height - lattice.pad - e.j * lattice.sy });
+      const o = at({ i: 0, j: 0 });
+      const a = at(state.first);
+      const ghost = at(state.second);
+      const tipP = at(sum);
+      arrow(ctx, o, ghost, pal.v2, { dashed: true, alpha: 0.35 });
+      arrow(ctx, o, a, pal.v1);
+      arrow(ctx, a, tipP, pal.v2);
+      ctx.save();
+      ctx.globalAlpha = 0.18; ctx.fillStyle = pal.image;
+      ctx.beginPath(); ctx.arc(tipP.x, tipP.y, 15, 0, Math.PI * 2); ctx.fill();
+      ctx.restore();
+      ctx.save();
+      ctx.font = "italic 600 14px 'LA Serif Latin', 'LA Serif SC', 'Songti SC', serif";
+      ctx.lineWidth = 4; ctx.strokeStyle = pal.paper;
+      const put = (text, p, color, dx, dy, align = "left") => { ctx.textAlign = align; ctx.fillStyle = color; ctx.strokeText(text, p.x + dx, p.y + dy); ctx.fillText(text, p.x + dx, p.y + dy); };
+      const midA = { x: (o.x + a.x) / 2, y: (o.y + a.y) / 2 };
+      const midB = { x: (a.x + tipP.x) / 2, y: (a.y + tipP.y) / 2 };
+      put(`α=(${state.first.i},${state.first.j})`, midA, pal.v1, -10, -8, "right");
+      put(`β=(${state.second.i},${state.second.j})`, midB, pal.v2, state.second.j ? 10 : 0, state.second.j ? 4 : 22, state.second.j ? "left" : "center");
+      put(`α+β=(${sum.i},${sum.j})`, tipP, pal.image, 12, -12);
+      ctx.font = "600 12.5px 'LA Serif Latin', 'LA Serif SC', 'Songti SC', serif";
+      const layerEnd = { x: lattice.pad + Math.min(sum.i + sum.j, 5) * lattice.sx, y: lattice.height - lattice.pad - Math.max(0, sum.i + sum.j - 5) * lattice.sy };
+      put(`i+j=${sum.i + sum.j}`, layerEnd, pal.subspace, 6, -6);
+      ctx.restore();
+      gate?.acted();
       root.querySelector("[data-lattice-readout]").innerHTML = `
         <span>指数向量相加</span>
         <strong>${tex(`(${state.first.i},${state.first.j})+(${state.second.i},${state.second.j})=(${sum.i},${sum.j})`)}</strong>
@@ -151,6 +205,23 @@
       render();
     }));
 
+    // multiplication mode waits for a prediction; the support view stays free to explore
+    const lockables = [...root.querySelectorAll('[data-lattice-mode="multiply"], [data-first], [data-second]')];
+    gate = window.LAPredictGate?.mount(root.querySelector("[data-lattice-gate]"), {
+      root,
+      manual: true,
+      key: "visuals/ch1/layout-rebalance.js#exponent-add",
+      question: `${tex("x^2y")} 在格点 (2,1)，${tex("x")} 在格点 (1,0)。乘积 ${tex("x^2y\\cdot x")} 落在哪个格点，总次数是多少？`,
+      options: [
+        ["(3,1)，总次数 4", true, ""],
+        ["(2,0)，总次数 2", false, `指数要相加：${tex("x^2\\cdot x=x^3")}，不是 ${tex("x^{2\\cdot1}")}。`],
+        ["(3,1)，总次数仍是 3", false, "总次数是两个指数之和 3+1=4，乘上一次项后升高 1。"],
+        ["(2,1)，乘 x 不改变位置", false, `${tex("x^2y\\cdot x=x^3y")}，x 的指数从 2 变成 3。`],
+      ],
+      right: `✓ 单项式相乘，指数向量相加：(2,1)+(1,0)=(3,1)，首尾相接正好到达乘积格点；总次数也相加，3+1=4，乘积落在斜线 i+j=4 上。`,
+      onPick: () => lockables.forEach((node) => { node.disabled = false; }),
+    });
+    if (gate) lockables.forEach((node) => { node.disabled = true; });
     observe(root.querySelector(".ch1-multivariate-stage"), render);
     render();
   }
@@ -162,6 +233,7 @@
           <h3>指数格点：先看位置，再看分层与乘法</h3>
           <p>${section.interactive.description}</p>
         </div>
+        <div data-lattice-gate></div>
         <div class="ch1-controls" role="group" aria-label="选择指数格点观察模式">
           <button type="button" class="is-active" data-lattice-mode="support" aria-pressed="true">支撑与齐次层</button>
           <button type="button" data-lattice-mode="multiply" aria-pressed="false">乘法合成</button>
@@ -201,7 +273,7 @@
           <section class="ch1-multivariate-module" data-multiply-module hidden>
             <header class="ch1-multivariate-module-head">
               <h4>用两个指数向量合成乘积格点</h4>
-              <p>先选第一项和第二项，再回到主图观察两个向量怎样相加到结果位置。</p>
+              <p>主图中 α 从原点出发，β 接在 α 的末端，终点就是乘积的指数。</p>
             </header>
             <div class="ch1-multivariate-product-grid">
               <div class="ch1-multivariate-product-controls">

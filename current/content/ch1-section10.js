@@ -38,7 +38,7 @@ defineChapter1Section("multivariate-polynomials", {
     type: "slot",
     title: "指数格点",
     description: "点击格点读取单项式，按次数分层，观察乘法。",
-    task: "点击格点读出单项式和它的次数；按 d=0,1,2,3 查看齐次成分；切到“乘法合成”，看两个指数向量相加落在哪一点。",
+    task: "点击格点读出单项式和它的次数，按 d=0,1,2,3 查看齐次成分；先预测，再切到“乘法合成”，看两个指数向量首尾相接落在哪一点。",
   },
   example: {
     title: "例题：次数与齐次成分",

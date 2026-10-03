@@ -15,6 +15,63 @@
   const svgEsc = (value) => String(value).replace(/[&<>"']/g, (char) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&apos;" })[char]);
   const superscripts = ["", "", "²", "³", "⁴", "⁵", "⁶", "⁷", "⁸", "⁹"];
 
+  /*
+   * Degree staircase shared by §3 (long division) and §4 (Euclid).
+   * bars: [{ label, deg (null for the zero polynomial), role: "f" | "g" | "r" }]
+   * line: { deg, label } draws a dashed level (deg g in §3); highlight: index of the glowing bar.
+   * Only bars already reached are passed in, so earlier steps stay as the staircase.
+   */
+  function degreeStairs(bars, { maxDeg, line = null, highlight = -1, highlightLabel = "" } = {}) {
+    const unit = 24;
+    const top = 26;
+    const left = 46;
+    const step = 54;
+    const barW = 28;
+    const levels = Math.max(1, maxDeg);
+    const y = (d) => top + (levels - d) * unit;
+    const base = y(0) + 14;
+    const width = Math.max(280, left + bars.length * step + 100);
+    const height = base + (highlightLabel ? 52 : 30);
+    const out = [`<svg class="ch1-stairs-svg" width="${width}" height="${height}" viewBox="0 0 ${width} ${height}" role="img" aria-label="余式次数逐步下降">`];
+    for (let d = 0; d <= levels; d += 1) {
+      out.push(`<line class="ch1-stairs-grid" x1="${left - 8}" x2="${width - 8}" y1="${y(d)}" y2="${y(d)}"></line>`);
+      out.push(`<text class="ch1-stairs-tick" x="${left - 14}" y="${y(d) + 4}" text-anchor="end">${d}</text>`);
+    }
+    out.push(`<text class="ch1-stairs-axis" x="6" y="${top - 12}">次数</text>`);
+    if (line) {
+      out.push(`<line class="ch1-stairs-level" x1="${left - 8}" x2="${width - 8}" y1="${y(line.deg)}" y2="${y(line.deg)}"></line>`);
+      out.push(`<text class="ch1-stairs-level-label" x="${width - 10}" y="${y(line.deg) - 6}" text-anchor="end">${svgEsc(line.label)}</text>`);
+    }
+    bars.forEach((bar, i) => {
+      const x = left + 10 + i * step;
+      const cx = x + barW / 2;
+      const role = `is-${bar.role}`;
+      if (bar.deg == null) {
+        out.push(`<rect class="ch1-stairs-zero ${role}" x="${x}" y="${base - 10}" width="${barW}" height="10" rx="2"></rect>`);
+        out.push(`<text class="ch1-stairs-value ${role}" x="${cx}" y="${base - 16}" text-anchor="middle">0</text>`);
+      } else {
+        const h = base - y(bar.deg);
+        if (i === highlight) out.push(`<rect class="ch1-stairs-glow ${role}" x="${x - 4}" y="${y(bar.deg) - 4}" width="${barW + 8}" height="${h + 4}" rx="5"></rect>`);
+        out.push(`<rect class="ch1-stairs-bar ${role}" x="${x}" y="${y(bar.deg)}" width="${barW}" height="${h}" rx="3"></rect>`);
+        out.push(`<text class="ch1-stairs-value ${role}" x="${cx}" y="${y(bar.deg) - 7}" text-anchor="middle">${bar.deg}</text>`);
+      }
+      out.push(`<text class="ch1-stairs-name ${role}" x="${cx}" y="${base + 20}" text-anchor="middle">${svgEsc(bar.label)}</text>`);
+      if (i > 0) {
+        const prev = bars[i - 1];
+        const from = prev.deg == null ? base - 10 : y(prev.deg);
+        const to = bar.deg == null ? base - 10 : y(bar.deg);
+        out.push(`<path class="ch1-stairs-step" d="M${x - step + barW} ${from} H${x}${to !== from ? ` V${to}` : ""}"></path>`);
+      }
+      if (i === highlight && highlightLabel) {
+        out.push(`<text class="ch1-stairs-callout ${role}" x="${x - 6}" y="${base + 42}">↑ ${svgEsc(highlightLabel)}</text>`);
+      }
+    });
+    out.push("</svg>");
+    return out.join("");
+  }
+  const sub = (k) => String(k).split("").map((c) => "₀₁₂₃₄₅₆₇₈₉"[Number(c)]).join("");
+  window.Ch1Stairs = { degreeStairs, sub };
+
   function selectButtons(root, selector, selected) {
     root.querySelectorAll(selector).forEach((button) => {
       const active = button === selected;
@@ -378,6 +435,28 @@
     let current = presets.default;
     let steps = M().extendedEuclidSteps(current.f, current.g);
     let index = 0;
+    let gate = null;
+
+    // f, g, then one bar per remainder reached so far; the last nonzero one glows at the end
+    function stairs(done) {
+      const bars = [
+        { label: "f", deg: M().deg(current.f), role: "f" },
+        { label: "g", deg: M().deg(current.g), role: "g" },
+      ];
+      let k = 0;
+      steps.forEach((entry, stepIndex) => {
+        if (entry.kind !== "divide" || stepIndex > index) return;
+        k += 1;
+        bars.push({ label: `r${window.Ch1Stairs.sub(k)}`, deg: M().isZeroPoly(entry.remainder) ? null : M().deg(entry.remainder), role: "r" });
+      });
+      let highlight = -1;
+      if (done) bars.forEach((bar, i) => { if (bar.deg != null) highlight = i; });
+      return window.Ch1Stairs.degreeStairs(bars, {
+        maxDeg: Math.max(M().deg(current.f), M().deg(current.g)),
+        highlight,
+        highlightLabel: done ? "最后一个非零余式" : "",
+      });
+    }
 
     function stepMarkup(step) {
       if (step.kind === "divide") {
@@ -402,16 +481,24 @@
       root.querySelector("[data-q]").innerHTML = step.q ? tex(M().formatPolyTex(step.q)) : "—";
       root.querySelector("[data-r]").innerHTML = step.remainder ? tex(M().formatPolyTex(step.remainder)) : "—";
       root.querySelector("[data-note]").hidden = true;
-      root.querySelector("[data-gcd]").innerHTML = tex(M().formatPolyTex(final.d || final.a));
-      root.querySelector("[data-s]").innerHTML = tex(M().formatPolyTex(final.s || M().zeroPoly()));
-      root.querySelector("[data-t]").innerHTML = tex(M().formatPolyTex(final.t || M().zeroPoly()));
+      // the gcd, s, t and the verdict appear only once the last step is reached
+      const done = index === steps.length - 1;
+      const wait = `<small class="ch1-muted">做完最后一步后显示</small>`;
+      root.querySelector("[data-gcd]").innerHTML = done ? tex(M().formatPolyTex(final.d || final.a)) : wait;
+      root.querySelector("[data-s]").innerHTML = done ? tex(M().formatPolyTex(final.s || M().zeroPoly())) : "—";
+      root.querySelector("[data-t]").innerHTML = done ? tex(M().formatPolyTex(final.t || M().zeroPoly())) : "—";
       const verify = M().polyAdd(M().polyMul(final.s, current.f), M().polyMul(final.t, current.g));
-      root.querySelector("[data-verify]").innerHTML = tex(`(${M().formatPolyTex(final.s)})(${M().formatPolyTex(current.f)})+(${M().formatPolyTex(final.t)})(${M().formatPolyTex(current.g)})=${M().formatPolyTex(verify)}`);
+      root.querySelector("[data-verify]").innerHTML = done ? tex(`(${M().formatPolyTex(final.s)})(${M().formatPolyTex(current.f)})+(${M().formatPolyTex(final.t)})(${M().formatPolyTex(current.g)})=${M().formatPolyTex(verify)}`) : wait;
       const coprime = M().polyEq(final.d, M().onePoly());
       const status = root.querySelector("[data-coprime]");
-      status.className = `ch1-status ${coprime ? "is-ok" : "is-warn"}`;
-      status.textContent = coprime ? "互素" : "有非常数公共因式";
-      root.querySelector("[data-ledger]").innerHTML = steps.map((entry, stepIndex) => `<div class="${stepIndex === index ? "is-current" : ""}"><span>${stepIndex + 1}</span>${stepMarkup(entry)}</div>`).join("");
+      status.className = `ch1-status ${done ? (coprime ? "is-ok" : "is-warn") : "is-warn"}`;
+      status.textContent = done ? (coprime ? "互素" : "有非常数公共因式") : "取余进行中";
+      root.querySelector("[data-ledger]").innerHTML = steps.filter((_, stepIndex) => stepIndex <= index).map((entry, stepIndex) => `<div class="${stepIndex === index ? "is-current" : ""}"><span>${stepIndex + 1}</span>${stepMarkup(entry)}</div>`).join("");
+      root.querySelector("[data-stairs]").innerHTML = stairs(done);
+      root.querySelector("[data-stairs-note]").textContent = done
+        ? `次数 ${M().deg(current.f)} → ${M().deg(current.g)} → ${steps.filter((e) => e.kind === "divide").map((e) => (M().isZeroPoly(e.remainder) ? "0 多项式" : M().deg(e.remainder))).join(" → ")}，降到 0 多项式就停；它前面那一个就是公因式。`
+        : "每取一次余，余式次数严格下降，所以一定会停。";
+      if (done) gate?.acted();
       root.querySelector("[data-prev]").disabled = index === 0;
       root.querySelector("[data-next]").disabled = index === steps.length - 1;
       root.querySelector("[data-reset]").disabled = index === 0;
@@ -426,16 +513,30 @@
       selectButtons(root, "[data-preset]", button);
       paint();
     }));
+    gate = window.LAPredictGate?.mount(root.querySelector("[data-gcd-gate]"), {
+      root,
+      manual: true,
+      key: "visuals/ch1/repair-pass.js#euclid",
+      question: `对 ${tex("f=x^4-1")}、${tex("g=x^3-1")} 反复做带余除法，余式次数一路下降。最大公因式在哪里读出？`,
+      options: [
+        ["最后一个非零余式（化成首一）", true, ""],
+        ["余式变成 0 的那一步：0 就是最大公因式", false, "余式为 0 只说明除法停了；公因式是它前面那个非零余式。"],
+        ["余式变成非零常数时的那个常数", false, `这里余式从 ${tex("x-1")} 直接变成 0，没有经过常数；余式是非零常数时，最大公因式是 1。`],
+        ["必须先把 f、g 分解因式才能读出", false, "整个过程只做带余除法，没有分解因式。"],
+      ],
+      right: `✓ 每一步 ${tex("\\gcd(f,g)=\\gcd(g,r)")}，公因式在取余中保持不变；余式次数严格下降，到 0 多项式为止，前一个非零余式化成首一就是 ${tex("\\gcd(f,g)")}。对 ${tex("x^4-1")} 与 ${tex("x^3-1")}，它是 ${tex("x-1")}。`,
+    });
     paint();
   }
 
   function interactiveEuclidRepair(el, section) {
     el.innerHTML = `<h2>交互实验</h2>
       <div class="ch1-lab">
-        <div class="ch1-lab-head"><h3>欧几里得算法与 Bézout 证书</h3><p>${section.interactive.description}</p></div>
+        <div class="ch1-lab-head"><h3>辗转相除：余式次数降到哪里停</h3><p>${section.interactive.description}</p></div>
+        <div data-gcd-gate></div>
         <div class="ch1-controls">
           <button type="button" data-prev>上一步</button>
-          <button type="button" data-next>下一步</button>
+          <button type="button" class="is-primary" data-next>下一步</button>
           <button type="button" data-reset>重置</button>
           <span class="ch1-control-separator"></span>
           <button type="button" data-preset="default" class="is-active" aria-pressed="true">x⁴−1 与 x³−1</button>
@@ -453,6 +554,11 @@
           <div><span>商 q</span><strong data-q></strong></div>
           <div><span>余式 r</span><strong data-r></strong></div>
         </div>
+        <section class="ch1-stairs-card">
+          <h4>余式次数</h4>
+          <div class="ch1-stairs" data-stairs></div>
+          <p class="ch1-stairs-note" data-stairs-note></p>
+        </section>
         <div class="ch1-euclid-layout">
           <section class="ch1-euclid-panel">
             <h4>欧几里得账本</h4>

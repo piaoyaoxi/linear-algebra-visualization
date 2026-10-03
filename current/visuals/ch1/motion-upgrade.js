@@ -506,10 +506,11 @@
   }
 
   function mountConjugateMotion(root) {
+    // starts unlocked: the student predicts where the second root goes, then drags β there
     const state = {
-      mode: "R",
+      mode: "C",
       alpha: { re: 1, im: 1.5 },
-      beta: { re: 1, im: -1.5 },
+      beta: { re: -1, im: 0.75 },
       dragging: null,
       tween: null,
       raf: 0,
@@ -519,10 +520,21 @@
     const bounds = { xMin: -3, xMax: 3, yMin: -3, yMax: 3 };
     const canvas = root.querySelector("[data-complex-canvas]");
 
+    // positions sit on a 0.05 grid, so sums and products are exact with four decimals
     function formatNumber(value) {
       const rounded = Math.abs(value) < 1e-10 ? 0 : value;
-      return Number(rounded.toFixed(2)).toString();
+      return Number(rounded.toFixed(4)).toString().replace("-", "−");
     }
+    let gate = null;
+    // a+bi without a zero part: 2i, 2.5, 1−1.5i
+    function shortComplex(z) {
+      if (Math.abs(z.im) < 1e-10) return formatNumber(z.re);
+      const im = formatNumber(Math.abs(z.im));
+      const imPart = `${im === "1" ? "" : im}i`;
+      if (Math.abs(z.re) < 1e-10) return `${z.im < 0 ? "−" : ""}${imPart}`;
+      return `${formatNumber(z.re)}${z.im < 0 ? "−" : "+"}${imPart}`;
+    }
+    const isConjugate = () => Math.abs(state.beta.re - state.alpha.re) < 1e-9 && Math.abs(state.beta.im + state.alpha.im) < 1e-9;
 
     function formatComplex(z) {
       const re = formatNumber(z.re);
@@ -661,47 +673,67 @@
       const beta = cam.toScreen(state.beta.re, state.beta.im);
       const projection = cam.toScreen(state.alpha.re, 0);
 
-      if (state.mode === "R" || state.locking) {
-        ctx.save();
-        ctx.setLineDash([5, 6]);
-        ctx.strokeStyle = palette.axis;
-        ctx.globalAlpha = 0.55;
-        ctx.lineWidth = 1.5;
-        ctx.beginPath();
-        ctx.moveTo(alpha.x, alpha.y);
-        ctx.lineTo(beta.x, beta.y);
-        ctx.stroke();
-        ctx.restore();
+      const open = Boolean(!gate || gate.picked);
+      const locked = state.mode === "R" || state.locking;
+      const mid = cam.toScreen((state.alpha.re + state.beta.re) / 2, (state.alpha.im + state.beta.im) / 2);
+      const midOnAxis = Math.abs(state.alpha.im + state.beta.im) < 1e-9;
+      const halo = (text, x, y, color, align = "left") => {
+        ctx.save(); ctx.font = "600 12.5px 'LA Serif Latin', 'LA Serif SC', 'Songti SC', serif"; ctx.textAlign = align; ctx.textBaseline = "middle";
+        ctx.lineWidth = 4; ctx.strokeStyle = palette.paper; ctx.strokeText(text, x, y);
+        ctx.fillStyle = color; ctx.fillText(text, x, y); ctx.restore();
+      };
 
+      if (open) {
+        // circle |z| = |α|: ᾱ lies on it, and αᾱ = |α|²
+        const radius = Math.hypot(state.alpha.re, state.alpha.im);
+        if (radius > 1e-9) {
+          const edge = cam.toScreen(radius, 0);
+          ctx.save();
+          ctx.strokeStyle = palette.image; ctx.globalAlpha = 0.55; ctx.lineWidth = 1.2; ctx.setLineDash([5, 5]);
+          ctx.beginPath(); ctx.arc(origin.x, origin.y, Math.abs(edge.x - origin.x), 0, Math.PI * 2); ctx.stroke();
+          ctx.restore();
+          ctx.save(); ctx.strokeStyle = palette.axis; ctx.setLineDash([2, 3]); ctx.lineWidth = 1;
+          ctx.beginPath(); ctx.moveTo(origin.x, origin.y); ctx.lineTo(alpha.x, alpha.y); ctx.stroke(); ctx.restore();
+          // name the circle at its lower-left, away from the roots and the midpoint
+          const r = Math.abs(edge.x - origin.x);
+          halo("|z| = |α|", Math.max(76, origin.x - r * 0.72 - 6), Math.min(height - 20, origin.y + r * 0.72 + 12), palette.image, "right");
+        }
+        // the segment between the two roots, and its midpoint (α+β)/2
         ctx.save();
-        ctx.strokeStyle = palette.axis;
-        ctx.setLineDash([2, 3]);
-        ctx.lineWidth = 1;
-        ctx.beginPath();
-        ctx.moveTo(origin.x, origin.y);
-        ctx.lineTo(projection.x, projection.y);
-        ctx.lineTo(alpha.x, alpha.y);
-        ctx.closePath();
-        ctx.stroke();
+        ctx.setLineDash([5, 6]); ctx.strokeStyle = palette.axis; ctx.globalAlpha = 0.7; ctx.lineWidth = 1.5;
+        ctx.beginPath(); ctx.moveTo(alpha.x, alpha.y); ctx.lineTo(beta.x, beta.y); ctx.stroke();
         ctx.restore();
-
-        drawPoint(ctx, projection, "a", palette, { color: palette.axis, hollow: true, radius: 5, labelBelow: true });
-        const midB = { x: projection.x + 8, y: (projection.y + alpha.y) / 2 };
-        ctx.fillStyle = palette.muted;
-        ctx.font = "650 12px 'LA Serif Latin', 'LA Serif SC', 'Songti SC', serif";
-        ctx.fillText("b", midB.x, midB.y);
-        const radiusMid = { x: (origin.x + alpha.x) / 2, y: (origin.y + alpha.y) / 2 };
-        ctx.fillText("|α|", radiusMid.x + 8, radiusMid.y - 8);
+        if (!midOnAxis) {
+          const foot = cam.toScreen((state.alpha.re + state.beta.re) / 2, 0);
+          ctx.save(); ctx.strokeStyle = palette.image; ctx.setLineDash([2, 3]); ctx.lineWidth = 1;
+          ctx.beginPath(); ctx.moveTo(mid.x, mid.y); ctx.lineTo(foot.x, foot.y); ctx.stroke(); ctx.restore();
+        } else {
+          ctx.save(); ctx.globalAlpha = 0.18; ctx.fillStyle = palette.image;
+          ctx.beginPath(); ctx.arc(mid.x, mid.y, 13, 0, Math.PI * 2); ctx.fill(); ctx.restore();
+        }
+        ctx.save(); ctx.fillStyle = palette.image; ctx.strokeStyle = palette.paper; ctx.lineWidth = 1.5;
+        ctx.beginPath(); ctx.arc(mid.x, mid.y, 5.5, 0, Math.PI * 2); ctx.fill(); ctx.stroke(); ctx.restore();
+        const midText = locked ? "(α+ᾱ)/2 = a" : midOnAxis ? "(α+β)/2 在实轴上" : "(α+β)/2 离开实轴";
+        // label on the side away from α, so it never sits on the root
+        const leftSide = alpha.x > mid.x + 6;
+        halo(midText, mid.x + (leftSide ? -12 : 12), mid.y + (mid.y >= origin.y - 4 ? 16 : -14), palette.image, leftSide ? "right" : "left");
+        // ghost of ᾱ once the prediction has been checked, so β can be compared with it
+        if (!locked && gate?.revealed && !isConjugate()) {
+          const ghost = cam.toScreen(state.alpha.re, -state.alpha.im);
+          ctx.save(); ctx.globalAlpha = 0.35; ctx.strokeStyle = palette.image; ctx.lineWidth = 2; ctx.setLineDash([3, 3]);
+          ctx.beginPath(); ctx.arc(ghost.x, ghost.y, 8, 0, Math.PI * 2); ctx.stroke(); ctx.restore();
+          halo("ᾱ", ghost.x + 12, ghost.y + 14, palette.muted);
+        }
       }
 
       drawPoint(ctx, alpha, "α", palette, { color: palette.drag, halo: true });
-      drawPoint(ctx, beta, state.mode === "R" || state.locking ? "ᾱ" : "β", palette, {
+      if (open) drawPoint(ctx, beta, state.mode === "R" || state.locking ? "ᾱ" : "β", palette, {
         color: state.mode === "C" && !state.locking ? palette.v2 : palette.image,
         hollow: state.mode === "R" || state.locking,
         labelBelow: true,
       });
 
-      if (state.mode === "R" && !state.locking) {
+      if (state.mode === "R" && !state.locking && open) {
         const a = state.alpha.re;
         const modulusSquared = state.alpha.re ** 2 + state.alpha.im ** 2;
         /* compact pills in the lower-left corner, clear of the Im axis label and of α */
@@ -721,18 +753,27 @@
       const c = coefficients();
       root.querySelector("[data-alpha]").textContent = formatComplex(state.alpha);
       root.querySelector("[data-beta]").textContent = formatComplex(state.beta);
-      root.querySelector("[data-sum]").textContent = formatComplex(c.sum);
-      root.querySelector("[data-product]").textContent = formatComplex(c.product);
+      root.querySelector("[data-sum]").textContent = shortComplex(c.sum);
+      root.querySelector("[data-product]").textContent = shortComplex(c.product);
       const exactReal = Math.abs(c.sum.im) < 1e-9 && Math.abs(c.product.im) < 1e-9;
       const status = root.querySelector("[data-real-status]");
+      const open = Boolean(!gate || gate.picked);
+      status.hidden = !open;
       status.className = `ch1-status ${state.locking ? "is-warn" : exactReal ? "is-ok" : "is-bad"}`;
-      status.textContent = state.locking ? "共轭点正在沿镜像位置归位" : exactReal ? "根之和与根之积都是实数" : "两个根未成共轭对，系数出现虚部";
+      status.textContent = state.locking ? "β 正在移到 α 关于实轴的对称点" : exactReal ? "根之和与根之积都是实数" : `系数出现虚部：Im(α+β)=${formatNumber(c.sum.im)}，Im(αβ)=${formatNumber(c.product.im)}`;
       root.querySelector("[data-factor]").innerHTML = exactReal
         ? tex(realQuadraticTex(c.sum.re, c.product.re))
-        : tex(`x^2-(${formatComplex(c.sum)})x+(${formatComplex(c.product)})`);
+        : tex(`x^2-(${shortComplex(c.sum)})x+(${shortComplex(c.product)})`);
       root.querySelector("[data-geometry-copy]").textContent = state.mode === "R"
-        ? "横坐标 a 决定根之和 2a；从原点到 α 的距离平方决定根之积 |α|²。"
-        : "解锁后 β 可以独立移动；镜像关系一旦破坏，和与积通常带有虚部。";
+        ? "中点 a 在实轴上，根之和 2a 是实数；ᾱ 在半径 |α| 的圆上，根之积 |α|² 是实数。"
+        : "拖动 β，让根之和与根之积都变成实数。紫色点是中点 (α+β)/2，虚线圆的半径是 |α|。";
+      if (!open) {
+        root.querySelector("[data-beta]").textContent = "预测后显示";
+        root.querySelector("[data-sum]").textContent = "—";
+        root.querySelector("[data-product]").textContent = "—";
+        root.querySelector("[data-factor]").textContent = "—";
+      }
+      if (gate?.picked && !state.locking && exactReal && Math.abs(state.alpha.im) > 1e-9) gate.acted();
       root.querySelector("[data-beta-controls]").hidden = state.mode === "R";
       root.querySelector("[data-re]").value = state.alpha.re;
       root.querySelector("[data-im]").value = state.alpha.im;
@@ -742,9 +783,11 @@
       root.querySelector("[data-im-value]").textContent = formatNumber(state.alpha.im);
       root.querySelector("[data-bre-value]").textContent = formatNumber(state.beta.re);
       root.querySelector("[data-bim-value]").textContent = formatNumber(state.beta.im);
-      root.querySelector("[data-canvas-hint]").textContent = state.mode === "R"
-        ? "拖动 α：共轭点会关于实轴连续镜像跟随"
-        : "拖动离指针最近的根，观察系数何时出现虚部";
+      root.querySelector("[data-canvas-hint]").textContent = !open
+        ? "先在上方作出预测，再拖动 β"
+        : state.mode === "R"
+          ? "拖动 α：ᾱ 关于实轴镜像跟随，中点始终在实轴上"
+          : "拖动离指针最近的根，看中点何时落到实轴上";
       draw();
     }
 
@@ -822,10 +865,13 @@
       target.re = clamp(Math.round(world.x * 20) / 20, -2.5, 2.5);
       target.im = clamp(Math.round(world.y * 20) / 20, -2.5, 2.5);
       if (state.mode === "R" && target === state.alpha) state.beta = exactConjugate();
+      // β snaps onto ᾱ when it is within about one grid step of it
+      if (target === state.beta && Math.hypot(state.beta.re - state.alpha.re, state.beta.im + state.alpha.im) < 0.11) state.beta = exactConjugate();
       updateDom();
     }
 
     canvas.addEventListener("pointerdown", (event) => {
+      if (gate && !gate.picked) return;
       cancelTween();
       const world = pointerWorld(event);
       const da = Math.hypot(world.x - state.alpha.re, world.y - state.alpha.im);
@@ -857,6 +903,22 @@
       setPoint(state.alpha, next);
     });
 
+    const lockables = [...root.querySelectorAll("[data-mode], [data-preset], [data-re], [data-im], [data-bre], [data-bim]")];
+    gate = window.LAPredictGate?.mount(root.querySelector("[data-conj-gate]"), {
+      root,
+      manual: true,
+      key: "visuals/ch1/motion-upgrade.js#conjugate",
+      question: `实系数二次多项式 ${tex("x^2+px+q")} 有一个根 ${tex("\\alpha=1+1.5i")}。另一个根 ${tex("\\beta")} 在哪里？`,
+      options: [
+        [`${tex("\\bar\\alpha=1-1.5i")}：与 α 关于实轴对称`, true, ""],
+        [`${tex("-\\alpha=-1-1.5i")}：与 α 关于原点对称`, false, `这时 ${tex("\\alpha\\beta=-\\alpha^2=1.25-3i")}，常数项不是实数。`],
+        ["实轴上的某一点", false, `β 是实数时 ${tex("\\alpha+\\beta")} 的虚部仍是 1.5，一次项系数不是实数。`],
+        [`${tex("-\\bar\\alpha=-1+1.5i")}：与 α 关于虚轴对称`, false, `这时 ${tex("\\alpha+\\beta=3i")}，一次项系数不是实数。`],
+      ],
+      right: `✓ 根之和 ${tex("-p")} 是实数，中点 ${tex("\\tfrac{\\alpha+\\beta}{2}")} 就在实轴上；根之积 ${tex("q")} 是实数，β 又落在半径 ${tex("|\\alpha|")} 的圆上。两条同时成立，只有 ${tex("\\beta=\\bar\\alpha")}，此时 ${tex("q=\\alpha\\bar\\alpha=|\\alpha|^2")}。`,
+      onPick: () => { lockables.forEach((node) => { node.disabled = false; }); updateDom(); },
+    });
+    if (gate) lockables.forEach((node) => { node.disabled = true; });
     root.querySelectorAll("[data-mode]").forEach((button) => button.addEventListener("click", () => setMode(button.dataset.mode, button)));
     root.querySelectorAll("[data-preset]").forEach((button) => button.addEventListener("click", () => choosePreset(button.dataset.preset)));
     [["re", "alpha", "re"], ["im", "alpha", "im"], ["bre", "beta", "re"], ["bim", "beta", "im"]].forEach(([key, object, prop]) => {
@@ -880,12 +942,13 @@
     el.innerHTML = `<h2>交互实验</h2>
       <div class="ch1-lab ch1-motion-lab ch1-conjugate-motion">
         <header class="ch1-motion-head">
-          <h3>拖动一个复根，直接看“镜像”怎样把系数拉回实数轴</h3>
+          <h3>另一个根放在哪里，系数才是实数</h3>
           <p>${section.interactive.description}</p>
         </header>
+        <div data-conj-gate></div>
         <div class="ch1-controls ch1-motion-toolbar" role="group" aria-label="选择系数模式与根的预设">
-          <button type="button" data-mode="R" class="is-active" aria-pressed="true">实系数：共轭锁</button>
-          <button type="button" data-mode="C" aria-pressed="false">复系数：解锁</button>
+          <button type="button" data-mode="C" class="is-active" aria-pressed="true">自由移动 β</button>
+          <button type="button" data-mode="R" aria-pressed="false">实系数：共轭锁</button>
           <span class="ch1-control-separator"></span>
           <button type="button" data-preset="pair">一般共轭对</button>
           <button type="button" data-preset="imag">纯虚根</button>

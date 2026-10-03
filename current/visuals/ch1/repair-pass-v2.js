@@ -92,6 +92,27 @@
     };
 
     const svgNode = () => root.querySelector("[data-division-svg]");
+    let gate = null;
+
+    // f, then one bar per remainder reached; the dashed level is deg g, where the division stops
+    function stairs(index) {
+      const bars = [{ label: "f", deg: M().deg(state.example.f), role: "f" }];
+      let k = 0;
+      state.steps.forEach((entry, stepIndex) => {
+        if (entry.kind !== "eliminate" || stepIndex > index) return;
+        k += 1;
+        bars.push({ label: `r${window.Ch1Stairs.sub(k)}`, deg: M().isZeroPoly(entry.r) ? null : M().deg(entry.r), role: "r" });
+      });
+      const done = state.steps[index]?.kind === "done";
+      const last = bars.at(-1);
+      const degG = M().deg(state.example.g);
+      return window.Ch1Stairs.degreeStairs(bars, {
+        maxDeg: M().deg(state.example.f),
+        line: { deg: degG, label: `deg g = ${degG}` },
+        highlight: done ? bars.length - 1 : -1,
+        highlightLabel: done ? (last.deg == null ? "r = 0，停止" : `${last.deg} < ${degG}，停止`) : "",
+      });
+    }
     const eliminations = () => state.steps
       .map((step, index) => ({ step, index }))
       .filter(({ step }) => step.kind === "eliminate");
@@ -162,6 +183,11 @@
         root.querySelector("[data-focus]").textContent = divides ? "余式归零，除法结束。" : "余式次数已经低于除式次数，除法结束。";
         root.querySelector("[data-note]").textContent = divides ? "因此 f(x)=q(x)g(x)。" : `最终 deg r=${M().deg(step.r)}<deg g=${M().deg(state.example.g)}。`;
       }
+      root.querySelector("[data-stairs]").innerHTML = stairs(index);
+      root.querySelector("[data-stairs-note]").textContent = done
+        ? (divides ? "余式降成 0 多项式，g 整除 f。" : `余式次数降到 ${M().deg(step.r)}，低于 deg g = ${M().deg(state.example.g)}，不能再用 g 的首项去除了。`)
+        : "每一步消去当前最高次项，余式次数严格下降。";
+      if (done) gate?.acted();
       root.querySelector("[data-progress]").innerHTML = state.steps.map((_, stepIndex) => `<span class="${stepIndex < index ? "is-done" : stepIndex === index ? "is-current" : ""}" aria-label="第 ${stepIndex + 1} 步"></span>`).join("");
     }
 
@@ -171,6 +197,10 @@
       root.querySelector("[data-next]").disabled = busy || state.index === state.steps.length - 1;
       root.querySelector("[data-reset]").disabled = busy || state.index === 0;
       root.querySelector("[data-play]").textContent = state.playing ? "暂停" : "自动播放";
+      // stepping waits for a prediction; the gate itself unlocks the primary button
+      if (gate && !gate.picked) root.querySelector("[data-play]").disabled = true;
+      else if (!busy) root.querySelector("[data-play]").disabled = false;
+      gate?.relock?.();
     }
 
     function render() {
@@ -289,6 +319,20 @@
       stop();
       cancelAnimationFrame(state.raf);
     });
+    gate = window.LAPredictGate?.mount(root.querySelector("[data-division-gate]"), {
+      root,
+      manual: true,
+      key: "visuals/ch1/repair-pass-v2.js#stop",
+      question: `用 ${tex("g=x^2+x+1")} 去除 ${tex("f=x^4-1")}，每一步余式次数都下降。长除法做到什么时候停？`,
+      options: [
+        [`余式次数低于 ${tex("\\deg g=2")}，或余式为 0`, true, ""],
+        ["只有余式变成 0 才停", false, `不整除时余式永远不会是 0：这里停在 ${tex("r=x-1")}。`],
+        ["余式变成常数时才停", false, `${tex("x-1")} 的次数是 1，已经低于 2，不必等到常数。`],
+        [`一共做 ${tex("\\deg f=4")} 步`, false, `商 ${tex("x^2-x")} 只有两项，消去两次就停了。`],
+      ],
+      right: `✓ 每次用余式首项除以 ${tex("g")} 的首项；一旦 ${tex("\\deg r<\\deg g")}，就无法再除。停下时 ${tex("f=qg+r")}，且 ${tex("r=0")} 或 ${tex("\\deg r<\\deg g")}。`,
+      onPick: () => updateButtons(),
+    });
     choose("default", root.querySelector('[data-preset="default"]'));
   }
 
@@ -296,9 +340,10 @@
     el.innerHTML = `<h2>交互实验</h2>
       <div class="ch1-lab ch1-long-division-lab">
         <div class="ch1-lab-head">
-          <h3>标准多项式长除法</h3>
+          <h3>长除法：余式次数降到哪里停</h3>
           <p>${section.interactive.description}</p>
         </div>
+        <div data-division-gate></div>
         <div class="ch1-controls" role="group" aria-label="长除法示例与播放控制">
           <button type="button" data-preset="default" class="is-active" aria-pressed="true">非整除</button>
           <button type="button" data-preset="divides" aria-pressed="false">整除</button>
@@ -306,7 +351,7 @@
           <span class="ch1-control-separator"></span>
           <button type="button" data-prev>上一步</button>
           <button type="button" data-play>自动播放</button>
-          <button type="button" data-next>下一步</button>
+          <button type="button" class="is-primary" data-next>下一步</button>
           <button type="button" data-reset>重置</button>
         </div>
         <div class="ch1-ld-progress" data-progress aria-label="长除法步骤进度"></div>
@@ -326,6 +371,11 @@
               <div><span>q(x)</span><strong data-q></strong></div>
               <div><span>r(x)</span><strong data-r></strong></div>
             </div>
+            <section class="ch1-stairs-card">
+              <h4>余式次数</h4>
+              <div class="ch1-stairs" data-stairs></div>
+              <p class="ch1-stairs-note" data-stairs-note></p>
+            </section>
             <div data-status class="ch1-status"></div>
             <div class="ch1-ld-focus"><span>当前只看这一件事</span><strong data-focus></strong><p data-note></p></div>
             <div class="ch1-ld-invariant"><span>全过程保持不变</span><strong data-invariant></strong></div>

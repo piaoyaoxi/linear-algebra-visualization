@@ -433,16 +433,18 @@
           const Au = numVec(r.Au);
           // Highlight when invariant: the same colour with a glow underneath.
           if (r.inv) objs.push({ type: "line", dir: u, color: W, width: 7, alpha: 0.16 });
-          objs.push({ type: "line", dir: u, color: W, width: 2.6, label: "W" });
-          if (!r.inv) objs.push({ type: "line", dir: Au, color: "image", width: 1.8, dash: [6, 5], label: "AW" });
+          objs.push({ type: "line", dir: u, color: W, width: 2.6, label: r.inv ? "AW=W" : "W" });
+          // AW stays on the picture as a ghost, also when it lands on W
+          objs.push({ type: "line", dir: Au, color: "image", width: 1.8, ghost: true, alpha: 0.6, label: r.inv ? undefined : "AW" });
           objs.push({ type: "arrow", to: u, color: "drag", label: "u" });
           objs.push({ type: "arrow", to: scaled(Au, Math.min(2.4, V().len(Au))), color: "image", width: 2.4, label: "Au" });
         } else {
           const n = numVec(r.n);
-          objs.push({ type: "plane", n, d: 0, color: W, alpha: r.inv ? 0.26 : 0.14, width: r.inv ? 2.2 : 1.3, label: "W" });
+          objs.push({ type: "plane", n, d: 0, color: W, alpha: r.inv ? 0.26 : 0.14, width: r.inv ? 2.2 : 1.3, label: r.inv ? "AW=W" : "W" });
           const imgs = r.images.map(numVec);
           const nImg = V().cross(imgs[0], imgs[1]);
-          if (!r.inv && V().len(nImg) > 1e-9) objs.push({ type: "plane", n: nImg, d: 0, color: "image", alpha: 0.08, dash: [6, 5], strokeAlpha: 0.6, label: "AW" });
+          // AW stays on the picture as a ghost, also when it lands on W
+          if (V().len(nImg) > 1e-9) objs.push({ type: "plane", n: nImg, d: 0, color: "image", ghost: true, alpha: r.inv ? 0.03 : 0.06, strokeAlpha: 0.6, width: 1.4, label: r.inv ? undefined : "AW" });
           r.basis.map(numVec).forEach((w, i) => {
             objs.push({ type: "arrow", to: scaled(w, 1.4), color: W, width: 2.2, label: `w${"₁₂"[i]}` });
             objs.push({ type: "arrow", to: scaled(imgs[i], 1.4 * (V().len(imgs[i]) / V().len(w))), color: "image", width: 2.2, label: `Aw${"₁₂"[i]}` });

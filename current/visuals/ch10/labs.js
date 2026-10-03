@@ -685,9 +685,9 @@
   function symplecticLab(root) {
     const lab = K.labShell(root, {
       title: "保持有向面积的变换",
-      task: "ω(x,y)=x₁y₂−x₂y₁ 是 x、y 张成的平行四边形的有向面积。选一个线性变换 K，比较虚线框（x、y）与实色框（Kx、Ky）：长度、夹角、ω 各变了没有。",
+      task: "ω(x,y)=x₁y₂−x₂y₁ 是 x、y 张成的平行四边形的有向面积。选一个线性变换 K，比较虚线框（x、y）与实色框（Kx、Ky）：长度、夹角、ω 各变了没有。剪切时可以拖动滑块 s，让上边沿水平线滑动。",
     });
-    const state = { key: "shear", x: [1.5, 0.25], y: [0.5, 1.25], t: 1 };
+    const state = { key: "shear", x: [1.5, 0], y: [0.5, 1.25], t: 1, s: 1 };
     const toolbar = el("div", "ch7l-toolbar");
     const gateHost = el("div");
     const body = el("div", "ch7l-body");
@@ -695,7 +695,9 @@
     const side = el("aside", "ch7l-side");
     const readCard = el("div", "ch7l-card");
     const matCard = el("div", "ch7l-card");
-    side.append(readCard, matCard);
+    const shearCard = el("div", "ch7l-card");
+    shearCard.innerHTML = `<label class="ch10l-range"><span>剪切量 s</span><input type="range" min="-2" max="2" step="0.25" value="1" data-shear aria-label="剪切量 s" /><b data-shear-v>1</b></label>`;
+    side.append(shearCard, readCard, matCard);
     body.append(stage, side);
     const result = el("div", "ch7l-result");
     lab.append(toolbar, gateHost, body, result);
@@ -712,8 +714,12 @@
     };
     const fmt = (v) => (Math.round(v * 100) / 100).toString();
 
+    const shearOn = () => state.key === "shear";
+    const shearK = () => [[1, fq(state.s)], [0, 1]].map((r) => r.map((v) => (typeof v === "number" ? F(v) : v)));
+
     function redraw() {
-      const Kf = K.mat(SYMPLECTIC_MAPS[state.key].K);
+      shearCard.hidden = !shearOn();
+      const Kf = shearOn() ? shearK() : K.mat(SYMPLECTIC_MAPS[state.key].K);
       const Kn = Kf.map((r) => r.map(num));
       const t = state.t;
       const Kt = Kn.map((r, i) => r.map((v, j) => (1 - t) * (i === j ? 1 : 0) + t * v));
@@ -733,11 +739,13 @@
         d.grid(undefined, { alpha: 0.35 });
         d.axes();
         const sum = (u, v) => [u[0] + v[0], u[1] + v[1]];
-        d.polyline([[0, 0], state.x, sum(state.x, state.y), state.y], "axis", { close: true, dash: [5, 5], width: 1.4 });
+        // the parallelogram of x, y: the ghost of the image (same colour, dashed, light fill)
+        d.polygon([[0, 0], state.x, sum(state.x, state.y), state.y], "image", { dash: [5, 5], width: 1.4, alpha: 0.6, fillAlpha: 0.07 });
+        if (open && shearOn()) shearGuides(d, kx, ky);
         // Kx, Ky and their parallelogram are images; whether ω is kept shows in the readout, not in a hue.
         const tone = "image";
         d.polygon([[0, 0], kx, sum(kx, ky), ky], tone, { width: 1.8, fillAlpha: 0.16 });
-        d.arrow([0, 0], kx, tone, { width: 2.6, label: "Kx" });
+        d.arrow([0, 0], kx, tone, { width: 2.6, label: "Kx", ldy: 14 });
         d.arrow([0, 0], ky, tone, { width: 2.6, label: "Ky" });
         d.arrow([0, 0], state.x, "v1", { width: 1.8, alpha: 0.75, label: "x" });
         d.arrow([0, 0], state.y, "v2", { width: 1.8, alpha: 0.75, label: "y" });
@@ -754,9 +762,32 @@
         matCard.innerHTML = `<h4>变换矩阵</h4><div>${texD(`K=${K.latexMatrix(Kf)}`)}</div><p class="ch7l-muted">先在上方作出预测，ω 的读数随后出现。</p>`;
         return;
       }
+      const base = shearOn()
+        ? state.x[1] === 0 && state.y[1] !== 0
+          ? `<p class="ch7l-muted" data-sym-base>底边 x 不动，上边沿水平虚线滑动，高 h 不变：同底同高，面积相等。</p>`
+          : `<p class="ch7l-muted" data-sym-base>每个点沿水平虚线滑动。把 x 拖回 x₁ 轴，可以看到同底同高。</p>`
+        : "";
       matCard.innerHTML = `<h4>变换矩阵</h4><div>${texD(`K=${K.latexMatrix(Kf)},\\quad |K|=${lf(detK)}`)}</div>
         <div>${texD(`\\omega(Kx,Ky)=|K|\\,\\omega(x,y)`)}</div>
-        <p><span class="ch10l-badge${keeps ? "" : " is-off"}">${keeps ? "K 保持 ω" : "K 不保持 ω"}</span></p>`;
+        <p><span class="ch10l-badge${keeps ? "" : " is-off"}">${keeps ? "K 保持 ω" : "K 不保持 ω"}</span></p>${base}`;
+    }
+
+    /*
+     * A shear moves every point along its horizontal line. With x on the x₁ axis
+     * the base Ox stays put and the top edge slides along the line x₂ = y₂: same
+     * base, same height, same area.
+     */
+    function shearGuides(d, kx, ky) {
+      const [x, y] = [state.x, state.y];
+      const tops = [y, [x[0] + y[0], x[1] + y[1]]];
+      tops.forEach((q) => d.line([0, q[1]], [1, 0], "axis", { width: 1, dash: [2, 3] }));
+      if (x[1] !== 0) d.line([0, x[1]], [1, 0], "axis", { width: 1, dash: [2, 3] });
+      if (x[1] === 0 && y[1] !== 0) {
+        d.segment([0, 0], x, "v1", { width: 8, alpha: 0.18 });
+        [y, ky].forEach((q, i) => d.segment([q[0], 0], q, "axis", { width: 1.3, dash: [4, 3] }));
+        const h = M().formatF(fq(y[1])).replace("-", "−");
+        d.text([ky[0], ky[1] / 2], `h=${h}`, "axis", { dx: 8, align: "left", font: "600 12px 'LA Serif Latin', 'LA Serif SC', 'Songti SC', serif" });
+      }
     }
 
     function animate() {
@@ -788,6 +819,16 @@
       end: () => flow?.acted(),
     });
     plane.setHandles([handle("x", "drag"), handle("y", "drag")]);
+
+    const shearIn = shearCard.querySelector("[data-shear]");
+    shearIn.addEventListener("input", () => {
+      cancelAnimationFrame(raf);
+      state.s = Number(shearIn.value);
+      state.t = 1;
+      shearCard.querySelector("[data-shear-v]").textContent = M().formatF(fq(state.s)).replace("-", "−");
+      redraw();
+      flow?.acted();
+    });
 
     K.chips(
       toolbar,

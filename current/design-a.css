@@ -855,3 +855,83 @@ body :is(.ch3l-lab, .ch6l-lab, .ch7l-lab, .ch9l-lab).la-laid-out.la-stack > :is(
   grid-column: 1 / -1;
   justify-self: start;
 }
+
+/* ch8 §2 standard-form workbench: degree pips on each tile and the corner-degree staircase */
+body .ch8l-tile > .ch8l-pips {
+  display: flex;
+  gap: 3px;
+  min-height: 7px;
+}
+
+body .ch8l-pips > .ch8l-pip {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--cv-axis);
+}
+
+body .ch8l-pips > .ch8l-pip.is-zero-deg {
+  box-sizing: border-box;
+  border: 1.5px solid var(--cv-axis);
+  background: transparent;
+}
+
+body .ch8l-tile.is-corner > .ch8l-pips > .ch8l-pip:not(.is-zero-deg) {
+  background: var(--accent);
+}
+
+body .ch8l-tile.is-corner > .ch8l-pips > .ch8l-pip.is-zero-deg {
+  border-color: var(--accent);
+}
+
+body .ch8l-trail {
+  margin-top: 12px;
+}
+
+body .ch8l-trail > .ch8l-trail-title {
+  margin: 0 0 6px;
+  color: var(--muted);
+  font-size: 13px;
+}
+
+body .ch8l-trail > .ch8l-trail-bars {
+  display: flex;
+  align-items: flex-end;
+  gap: 6px;
+  height: 76px;
+  overflow-x: auto;
+  overflow-y: hidden;
+}
+
+body .ch8l-trail-bars > .ch8l-trail-bar {
+  position: relative;
+  flex: 0 0 18px;
+  height: calc(10px + 44px * var(--h, 0));
+  border-radius: 4px 4px 0 0;
+  background: color-mix(in srgb, var(--accent) 55%, transparent);
+  font-style: normal;
+}
+
+body .ch8l-trail-bars > .ch8l-trail-bar.is-done {
+  background: color-mix(in srgb, var(--cv-axis) 40%, transparent);
+}
+
+body .ch8l-trail-bars > .ch8l-trail-bar.is-now {
+  background: var(--accent);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 18%, transparent);
+}
+
+body .ch8l-trail-bars > .ch8l-trail-bar.is-new-stage {
+  margin-left: 10px;
+}
+
+body .ch8l-trail-bar > b {
+  position: absolute;
+  top: -16px;
+  left: 0;
+  right: 0;
+  color: var(--muted);
+  font-size: 11px;
+  font-weight: 650;
+  text-align: center;
+}

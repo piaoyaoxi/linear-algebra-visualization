@@ -196,6 +196,23 @@
     throw new RangeError("charPolynomial supports n = 2, 3");
   }
 
+  /*
+   * Highlight part of a formula in a lab readout: same colour role + soft glow.
+   * KaTeX (trust off) only accepts literal colours, so hlTex marks the box with
+   * sentinel colours and hlHtml swaps them for theme variables after rendering.
+   */
+  const HL_BOX = "#0a0b0c";
+  const HL_INK = "#0a0b0d";
+  const hlTex = (x) => `\\colorbox{${HL_BOX}}{$\\textcolor{${HL_INK}}{${x}}$}`;
+  function hlHtml(html, role = "subspace") {
+    const v = `var(--cv-${role})`;
+    return String(html)
+      .split(`background-color:${HL_BOX}`)
+      .join(`background-color:color-mix(in srgb, ${v} 18%, transparent);box-shadow:0 0 0 3px color-mix(in srgb, ${v} 14%, transparent);border-radius:3px`)
+      .split(`color:${HL_INK}`)
+      .join(`color:${v};font-weight:700`);
+  }
+
   /* ---------- DOM helpers ---------- */
 
   function el(tag, cls, html) {
@@ -821,6 +838,8 @@
     coordinatesIn,
     nullspace,
     latexMatrix,
+    hlTex,
+    hlHtml,
     latexVec,
     latexRow,
     polyLatex,

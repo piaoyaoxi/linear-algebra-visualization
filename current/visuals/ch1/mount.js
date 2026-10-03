@@ -80,6 +80,17 @@
     conclusion.className = "ch1-live-conclusion";
     conclusion.innerHTML = takeaway();
     lab.append(conclusion);
+    // with a prediction box, the conclusion waits until the prediction is checked
+    const gate = lab.querySelector(".ch3l-predict");
+    if (!gate || gate.classList.contains("is-done")) return;
+    conclusion.hidden = true;
+    const observer = new MutationObserver(() => {
+      if (!gate.classList.contains("is-done")) return;
+      conclusion.hidden = false;
+      observer.disconnect();
+    });
+    observer.observe(gate, { attributes: true, attributeFilter: ["class"] });
+    window.ch1UseCleanup?.(() => observer.disconnect());
   }
 
   function installCoefficientHighlights(lab) {

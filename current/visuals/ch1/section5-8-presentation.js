@@ -8,66 +8,191 @@
   const lab = (...args) => U().lab(...args);
   const selectButtons = (...args) => U().selectButtons(...args);
 
-  // §6 — multiplicity and root merge
+  /*
+   * §6 — root merge, read through f′.
+   * Upper canvas y = f(x), lower canvas y = f′(x) on the same x-scale.
+   * Merge mode: f = (x−u)(x−v), f′ = 2x − (u+v); f′ vanishes at (u+v)/2, between the roots,
+   *   and at a root of f only when u = v (then gcd(f, f′) = x − u).
+   * Multiplicity mode: f = (x−a)^m (x+1), f′ = (x−a)^{m−1}[(m+1)x + m − a];
+   *   a = −1 gives f = (x+1)^{m+1}, f′ = (m+1)(x+1)^m.
+   * Every value shown is exact (slider steps are decimals, read as rationals).
+   */
   function mountMultiplicity(root) {
-    const state = { mode: "merge", a: 1, m: 2, u: -0.7, v: 0.7 };
-    const graphBounds = { xMin: -3, xMax: 3, yMin: -4, yMax: 6 };
+    const state = { mode: "merge", a: 1, m: 2, u: "-0.7", v: "0.7" };
+    const fBounds = { xMin: -3, xMax: 3, yMin: -4, yMax: 6 };
+    const dBounds = { xMin: -3, xMax: 3, yMin: -6, yMax: 6 };
+    const R = (s) => M().parseR(s);
+    const dec = (r) => String(Number(M().rToNum(r).toFixed(4))).replace("-", "−");
+    const merged = () => state.mode === "merge" && M().rEq(R(state.u), R(state.v));
     const currentPoly = () => state.mode === "multiplicity"
       ? M().polyMul(M().polyPow(M().poly([-state.a, 1]), state.m), M().poly([1, 1]))
-      : M().polyMul(M().poly([-state.u, 1]), M().poly([-state.v, 1]));
-    // In multiplicity mode f=(x-a)^m(x+1); when a=-1 the two factors merge into (x+1)^{m+1}.
+      : M().polyMul(M().poly([M().rNeg(R(state.u)), 1]), M().poly([M().rNeg(R(state.v)), 1]));
     const effectiveM = () => (state.mode === "multiplicity" && state.a === -1 ? state.m + 1 : state.m);
-    function rootData() {
+    // real roots of f with multiplicity
+    function fRoots() {
       if (state.mode === "multiplicity") {
-        if (state.a === -1) return [{ x: -1, m: state.m + 1, label: "a=−1" }];
-        return [{ x: state.a, m: state.m, label: `a=${state.a}` }, { x: -1, m: 1, label: "−1" }];
+        if (state.a === -1) return [{ x: R(-1), m: state.m + 1 }];
+        return [{ x: R(state.a), m: state.m }, { x: R(-1), m: 1 }];
       }
-      const equal = Math.abs(state.u - state.v) < 1e-12;
-      return equal ? [{ x: state.u, m: 2, label: "二重根" }] : [{ x: state.u, m: 1, label: "u" }, { x: state.v, m: 1, label: "v" }];
+      return merged() ? [{ x: R(state.u), m: 2 }] : [{ x: R(state.u), m: 1 }, { x: R(state.v), m: 1 }];
     }
+    // real zeros of f′
+    function dRoots() {
+      if (state.mode === "multiplicity") {
+        if (state.a === -1) return [R(-1)];
+        const other = M().R(state.a - state.m, state.m + 1);
+        return state.m >= 2 ? [R(state.a), other] : [other];
+      }
+      return [M().rDiv(M().rAdd(R(state.u), R(state.v)), M().R(2))];
+    }
+    const shared = () => fRoots().filter((r) => r.m >= 2).map((r) => r.x);
+    let gate = null;
+
+    function glow(ctx, p, color) {
+      ctx.save();
+      ctx.fillStyle = color;
+      ctx.globalAlpha = 0.18;
+      ctx.beginPath(); ctx.arc(p.x, p.y, 15, 0, Math.PI * 2); ctx.fill();
+      ctx.globalAlpha = 0.5;
+      ctx.strokeStyle = color; ctx.lineWidth = 1.2;
+      ctx.beginPath(); ctx.arc(p.x, p.y, 10, 0, Math.PI * 2); ctx.stroke();
+      ctx.restore();
+    }
+    function dot(ctx, p, color, paper, r = 5.5) {
+      ctx.beginPath(); ctx.fillStyle = color; ctx.arc(p.x, p.y, r, 0, Math.PI * 2); ctx.fill();
+      ctx.strokeStyle = paper; ctx.lineWidth = 1.5; ctx.stroke();
+    }
+    function guide(ctx, cam, x, height, color) {
+      const s = cam.toScreen(x, 0);
+      ctx.save(); ctx.strokeStyle = color; ctx.lineWidth = 1; ctx.setLineDash([2, 3]);
+      ctx.beginPath(); ctx.moveTo(s.x, 6); ctx.lineTo(s.x, height - 6); ctx.stroke(); ctx.restore();
+    }
+    const font = (size, weight = 600, italic = false) => `${italic ? "italic " : ""}${weight} ${size}px 'LA Serif Latin', 'LA Serif SC', 'Songti SC', serif`;
+
+    function draw(p, dp) {
+      const pal = M().getPalette();
+      const open = Boolean(gate?.picked || !gate);
+      const common = open ? shared() : [];
+      const fCanvas = root.querySelector("[data-graph]");
+      const dCanvas = root.querySelector("[data-deriv-graph]");
+      // upper: f
+      const fc = M().drawPolynomial(fCanvas, p, { bounds: fBounds, series: [{ p, color: pal.v1, width: 2.4 }] });
+      let ctx = fCanvas.getContext("2d");
+      const fh = fCanvas.getBoundingClientRect().height;
+      common.forEach((x) => guide(ctx, fc, M().rToNum(x), fh, pal.axis));
+      dRoots().forEach((x) => {
+        const s = fc.toScreen(M().rToNum(x), 0);
+        ctx.save(); ctx.strokeStyle = pal.v2; ctx.lineWidth = 2; ctx.beginPath(); ctx.moveTo(s.x, s.y - 7); ctx.lineTo(s.x, s.y + 7); ctx.stroke(); ctx.restore();
+      });
+      fRoots().forEach((r) => {
+        const s = fc.toScreen(M().rToNum(r.x), 0);
+        if (r.m >= 2 && open) glow(ctx, s, pal.v1);
+        dot(ctx, s, pal.v1, pal.paper);
+      });
+      ctx.save(); ctx.font = font(14, 600, true); ctx.fillStyle = pal.v1; ctx.fillText("y = f(x)", 14, 22); ctx.restore();
+      if (state.mode === "merge" && !merged()) {
+        ctx.save(); ctx.font = font(13, 600, true); ctx.textAlign = "center"; ctx.fillStyle = pal.v1;
+        [["u", state.u], ["v", state.v]].forEach(([name, val]) => { const s = fc.toScreen(Number(val), 0); ctx.fillText(name, s.x, s.y - 12); });
+        ctx.restore();
+      }
+      // lower: f′ on the same x-scale
+      const dc = M().drawPolynomial(dCanvas, dp, { bounds: dBounds, series: [{ p: dp, color: pal.v2, width: 2.4 }] });
+      ctx = dCanvas.getContext("2d");
+      const dh = dCanvas.getBoundingClientRect().height;
+      common.forEach((x) => guide(ctx, dc, M().rToNum(x), dh, pal.axis));
+      fRoots().forEach((r) => {
+        const s = dc.toScreen(M().rToNum(r.x), 0);
+        ctx.save(); ctx.strokeStyle = pal.v1; ctx.lineWidth = 2; ctx.beginPath(); ctx.moveTo(s.x, s.y - 7); ctx.lineTo(s.x, s.y + 7); ctx.stroke(); ctx.restore();
+      });
+      dRoots().forEach((x) => {
+        const s = dc.toScreen(M().rToNum(x), 0);
+        const isShared = common.some((c) => M().rEq(c, x));
+        if (isShared) glow(ctx, s, pal.v2);
+        dot(ctx, s, pal.v2, pal.paper);
+        if (isShared) {
+          ctx.save(); ctx.font = font(13); ctx.fillStyle = pal.text; ctx.textAlign = s.x > dCanvas.getBoundingClientRect().width - 150 ? "right" : "left";
+          ctx.lineWidth = 4; ctx.strokeStyle = pal.paper;
+          const label = "f 与 f′ 同为 0";
+          // beside the top of the dotted guide, clear of the axis numbers
+          const lx = ctx.textAlign === "right" ? s.x - 8 : s.x + 8;
+          ctx.strokeText(label, lx, 44); ctx.fillText(label, lx, 44); ctx.restore();
+        }
+      });
+      ctx.save(); ctx.font = font(14, 600, true); ctx.fillStyle = pal.v2; ctx.fillText("y = f′(x)", 14, 22); ctx.restore();
+    }
+
     function paint() {
       const p = currentPoly();
       const dp = M().polyDerivative(p);
       const gcd = M().polyGcd(p, dp);
-      const focus = state.mode === "multiplicity" ? M().parseR(state.a) : M().parseR(state.u);
+      const coprime = M().polyEq(gcd, M().onePoly());
+      const open = Boolean(gate?.picked || !gate);
+      const focus = state.mode === "multiplicity" ? M().R(state.a) : R(state.u);
       const derivatives = [];
-      const maxOrder = state.mode === "multiplicity" ? effectiveM() : (Math.abs(state.u - state.v) < 1e-12 ? 2 : 1);
+      const maxOrder = state.mode === "multiplicity" ? effectiveM() : (merged() ? 2 : 1);
       for (let order = 0; order <= maxOrder; order++) derivatives.push({ order, value: M().evalPoly(M().polyDerivative(p, order), focus) });
       root.querySelector("[data-poly]").innerHTML = tex(M().formatPolyTex(p));
       root.querySelector("[data-derivative]").innerHTML = tex(M().formatPolyTex(dp));
-      root.querySelector("[data-gcd]").innerHTML = tex(M().formatPolyTex(gcd));
-      root.querySelector("[data-derivatives]").innerHTML = derivatives.map((row) => `<tr><td>${row.order === 0 ? "f" : `f<sup>(${row.order})</sup>`}</td><td>${M().formatR(row.value)}</td><td><span class="ch1-status ${M().rIsZero(row.value) ? "is-warn" : "is-ok"}">${M().rIsZero(row.value) ? "0" : "非零"}</span></td></tr>`).join("");
+      const gcdCell = root.querySelector("[data-gcd]");
+      gcdCell.innerHTML = open ? tex(M().formatPolyTex(gcd)) : `<small class="ch1-muted">预测后显示</small>`;
+      gcdCell.closest("div").classList.toggle("is-shared", open && !coprime);
+      root.querySelector("[data-focus-label]").textContent = state.mode === "multiplicity" ? `x=${dec(focus)}` : `x=u=${dec(focus)}`;
+      root.querySelector("[data-derivatives]").innerHTML = derivatives.map((row) => `<tr><td>${row.order === 0 ? "f" : row.order === 1 ? "f′" : `f<sup>(${row.order})</sup>`}</td><td>${M().formatR(row.value).replace("-", "−")}</td><td><b class="ch1-status ${M().rIsZero(row.value) ? "is-warn" : "is-ok"}">${M().rIsZero(row.value) ? "0" : "非零"}</b></td></tr>`).join("");
       const status = root.querySelector("[data-status]");
       if (state.mode === "multiplicity") {
         const m = effectiveM();
-        status.textContent = `${state.a === -1 ? "−1" : state.a} 是 ${m} 重根${state.a === -1 ? "（与因式 x+1 合并）" : ""} · ${m % 2 ? "穿过横轴" : "与横轴相切后返回"}`;
-        root.querySelector("[data-m-controls]").hidden = false; root.querySelector("[data-merge-controls]").hidden = true;
+        const a = state.a === -1 ? "−1" : state.a;
+        status.textContent = m >= 2
+          ? `${a} 是 ${m} 重根${state.a === -1 ? "（与 x+1 合并）" : ""}，也是 f′ 的 ${m - 1} 重根`
+          : `${a} 是单根，f′(${a})≠0`;
       } else {
-        const equal = Math.abs(state.u - state.v) < 1e-12;
-        status.textContent = equal ? "u=v：合并为二重根，曲线与横轴相切" : `u≠v：两个单根，曲线穿过横轴两次（间距 ${Math.abs(state.u - state.v).toFixed(2)}）`;
-        root.querySelector("[data-m-controls]").hidden = true; root.querySelector("[data-merge-controls]").hidden = false;
+        status.textContent = merged()
+          ? `u=v：二重根，f 与 f′ 在 x=${dec(R(state.u))} 同为 0`
+          : `u≠v：两个单根（相距 ${dec(M().rAbs(M().rSub(R(state.u), R(state.v))))}），f′ 的零点 ${dec(dRoots()[0])} 在两根之间`;
       }
-      status.className = `ch1-status ${M().polyEq(gcd, M().onePoly()) ? "is-ok" : "is-warn"}`;
-      M().drawPolynomial(root.querySelector("[data-graph]"), p, { bounds: graphBounds, points: rootData().map((r) => ({ x: r.x, y: 0 })), caption: "y = f(x)" });
-      M().drawRootAxis(root.querySelector("[data-roots]"), rootData(), { bounds: { xMin: -3, xMax: 3, yMin: -1.2, yMax: 1.2 } });
-      root.querySelector("[data-a-value]").textContent = state.a; root.querySelector("[data-m-value]").textContent = state.m;
-      root.querySelector("[data-u-value]").textContent = state.u.toFixed(2); root.querySelector("[data-v-value]").textContent = state.v.toFixed(2);
+      root.querySelector("[data-m-controls]").hidden = state.mode !== "multiplicity";
+      root.querySelector("[data-merge-controls]").hidden = state.mode !== "merge";
+      status.className = `ch1-status ${coprime ? "is-ok" : "is-warn"}`;
+      draw(p, dp);
+      root.querySelector("[data-a-value]").textContent = String(state.a).replace("-", "−"); root.querySelector("[data-m-value]").textContent = state.m;
+      root.querySelector("[data-u-value]").textContent = dec(R(state.u)); root.querySelector("[data-v-value]").textContent = dec(R(state.v));
+      if (gate?.picked && !coprime) gate.acted();
     }
+    const locked = [...root.querySelectorAll("[data-u], [data-v], [data-a], [data-m], [data-preset-m], [data-mode]")];
+    const setLocked = (on) => locked.forEach((node) => { node.disabled = on; });
+    gate = window.LAPredictGate?.mount(root.querySelector("[data-merge-gate]"), {
+      root,
+      manual: true,
+      key: "visuals/ch1/section5-8-presentation.js#merge-derivative",
+      question: `让两个单根 u、v 合并成一个根。合并后，下方 ${tex("f'")} 的图像在这一点会怎样？`,
+      options: [
+        [`${tex("f'")} 也在这一点为 0：${tex("f")} 与 ${tex("f'")} 有公共零点，${tex("\\gcd(f,f')\\ne1")}`, true, ""],
+        [`${tex("f'")} 在这一点不为 0，${tex("\\gcd(f,f')")} 仍是 1`, false, `合并后 ${tex("f=(x-u)^2")}，${tex("f'=2(x-u)")} 在 ${tex("x=u")} 处为 0。`],
+        [`两根足够近时，${tex("\\gcd(f,f')")} 就已经不是 1`, false, `${tex("u\\ne v")} 时 ${tex("f'")} 的零点在 ${tex("\\tfrac{u+v}{2}")}，夹在两根之间，与它们错开，${tex("\\gcd(f,f')=1")}。`],
+        [`${tex("f'")} 在这一点有二重根`, false, `重数降一：二重根 u 只是 ${tex("f'")} 的单根。`],
+      ],
+      right: `✓ ${tex("f'")} 的零点原来夹在两根之间；两根合并时三点重合，${tex("f")} 与 ${tex("f'")} 同时为 0，公因式 ${tex("x-u")} 出现在 ${tex("\\gcd(f,f')")} 中。所以 ${tex("f")} 有重因式当且仅当 ${tex("\\gcd(f,f')\\ne1")}。`,
+      onPick: () => { setLocked(false); paint(); },
+    });
+    if (gate) setLocked(true);
     root.querySelectorAll("[data-mode]").forEach((button) => button.addEventListener("click", () => { state.mode = button.dataset.mode; selectButtons(root, "[data-mode]", button); paint(); }));
     root.querySelector("[data-a]").addEventListener("input", (e) => { state.a = Number(e.target.value); paint(); });
     root.querySelector("[data-m]").addEventListener("input", (e) => { state.m = Math.round(Number(e.target.value)); paint(); });
-    root.querySelector("[data-u]").addEventListener("input", (e) => { state.u = Number(e.target.value); paint(); });
-    root.querySelector("[data-v]").addEventListener("input", (e) => { state.v = Number(e.target.value); paint(); });
+    root.querySelector("[data-u]").addEventListener("input", (e) => { state.u = e.target.value; paint(); });
+    root.querySelector("[data-v]").addEventListener("input", (e) => { state.v = e.target.value; paint(); });
     root.querySelectorAll("[data-preset-m]").forEach((button) => button.addEventListener("click", () => { state.mode = "multiplicity"; state.m = Number(button.dataset.presetM); root.querySelector("[data-m]").value = state.m; root.querySelectorAll("[data-mode]").forEach((b) => b.classList.toggle("is-active", b.dataset.mode === "multiplicity")); paint(); }));
-    root.querySelector("[data-merge-exact]").addEventListener("click", () => { state.mode = "merge"; state.v = state.u; root.querySelector("[data-v]").value = state.v; paint(); });
-    M().observeCanvas(root.querySelector(".ch1-stage"), paint);
+    root.querySelector("[data-merge-exact]").addEventListener("click", () => { state.mode = "merge"; state.v = state.u; root.querySelector("[data-v]").value = state.v; root.querySelectorAll("[data-mode]").forEach((b) => b.classList.toggle("is-active", b.dataset.mode === "merge")); paint(); });
+    M().observeCanvas(root.querySelector(".ch1-merge-stages"), paint);
     paint();
   }
 
   function interactive6(el, section) {
-    lab(el, "重数与根合并实验室", section.interactive.description,
+    lab(el, "两根合并时的 f′", section.interactive.description,
       `<button type="button" data-mode="merge" class="is-active">两根合并</button><button type="button" data-mode="multiplicity">单根重数</button><span class="ch1-control-separator"></span><button type="button" data-preset-m="1">m=1</button><button type="button" data-preset-m="2">m=2</button><button type="button" data-preset-m="3">m=3</button><button type="button" data-preset-m="4">m=4</button>`,
-      `<div class="ch1-two-col"><div><div class="ch1-stage"><canvas data-graph aria-label="重数多项式图像"></canvas></div><div class="ch1-stage is-short"><canvas data-roots aria-label="实根与重数轴"></canvas></div></div><div class="ch1-panel"><div data-m-controls hidden><label class="ch1-slider-row"><span>根 a</span><input data-a type="range" min="-2" max="2" step="1" value="1"><output data-a-value></output></label><label class="ch1-slider-row"><span>重数 m</span><input data-m type="range" min="1" max="4" step="1" value="2"><output data-m-value></output></label></div><div data-merge-controls><label class="ch1-slider-row"><span>根 u</span><input data-u type="range" min="-2" max="2" step="0.05" value="-0.7"><output data-u-value></output></label><label class="ch1-slider-row"><span>根 v</span><input data-v type="range" min="-2" max="2" step="0.05" value="0.7"><output data-v-value></output></label><button type="button" class="ch1-btn ch1-merge-exact" data-merge-exact>令 v=u，两根合并</button></div><div class="ch1-result-band"><div><span>当前结论</span><strong data-status class="ch1-status"></strong></div></div><div class="ch1-equation-grid"><div><span>f</span><strong data-poly></strong></div><div><span>f′</span><strong data-derivative></strong></div><div><span>gcd(f,f′)</span><strong data-gcd></strong></div></div><h4>根处各阶导数的值</h4><div class="ch1-table-wrap"><table class="ch1-table"><thead><tr><th>导数</th><th>值</th><th>状态</th></tr></thead><tbody data-derivatives></tbody></table></div></div></div>`);
+      `<div class="ch1-two-col"><div class="ch1-merge-stages"><div class="ch1-stage"><canvas data-graph aria-label="y = f(x) 的图像"></canvas></div><div class="ch1-stage is-short"><canvas data-deriv-graph aria-label="同一横轴上 y = f′(x) 的图像"></canvas></div><p class="ch1-merge-legend"><b class="is-f">● f 的根</b><b class="is-d">● f′ 的零点</b><b class="is-glow">◎ 公共零点</b></p></div><div class="ch1-panel"><div data-merge-controls><label class="ch1-slider-row"><span>根 u</span><input data-u type="range" min="-2" max="2" step="0.05" value="-0.7"><output data-u-value></output></label><label class="ch1-slider-row"><span>根 v</span><input data-v type="range" min="-2" max="2" step="0.05" value="0.7"><output data-v-value></output></label><button type="button" class="ch3l-btn is-primary ch1-merge-exact" data-merge-exact>令 v=u，两根合并</button></div><div data-m-controls hidden><label class="ch1-slider-row"><span>根 a</span><input data-a type="range" min="-2" max="2" step="1" value="1"><output data-a-value></output></label><label class="ch1-slider-row"><span>重数 m</span><input data-m type="range" min="1" max="4" step="1" value="2"><output data-m-value></output></label></div><div class="ch1-result-band"><div><span>当前结论</span><strong data-status class="ch1-status"></strong></div></div><div class="ch1-equation-grid"><div><span>f</span><strong data-poly></strong></div><div><span>f′</span><strong data-derivative></strong></div><div class="ch1-gcd-cell"><span>gcd(f,f′)</span><strong data-gcd></strong></div></div><h4>在 <b data-focus-label></b> 处各阶导数的值</h4><div class="ch1-table-wrap"><table class="ch1-table"><thead><tr><th>导数</th><th>值</th><th>状态</th></tr></thead><tbody data-derivatives></tbody></table></div></div></div>`);
+    const gateBox = document.createElement("div");
+    gateBox.dataset.mergeGate = "";
+    el.querySelector(".ch1-controls")?.before(gateBox);
     mountMultiplicity(el);
   }
 

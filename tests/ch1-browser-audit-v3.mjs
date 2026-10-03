@@ -101,6 +101,8 @@ async function division(page, verifyAnimation) {
     }, null, { timeout: 2800 });
   }
   ensure(/整除成立|不整除/.test((await lab.locator("[data-status]").textContent()) || ""), "§3: no final division conclusion");
+  ensure(await lab.locator(".ch3l-predict.is-done").count(), "§3: finishing the division did not reveal the prediction");
+  ensure((await lab.locator(".ch1-stairs-bar").count()) >= 2 && (await lab.locator(".ch1-stairs-glow").count()) === 1, "§3: staircase did not mark the final remainder");
   if (verifyAnimation) {
     await lab.locator('[data-preset="divides"]').click();
     ensure((await lab.locator("[data-step]").textContent())?.startsWith("1/"), "§3: preset did not reset the process");
@@ -182,14 +184,30 @@ async function operate(page, section, viewport, theme) {
     await clickIf(page, '[data-preset="fraction"]'); await clickIf(page, '[data-mode="mul"]');
   } else if (section === "polynomial-divisibility") {
     await checkDivisionSummary(page, viewport);
+    ensure(await page.locator("#polynomial-divisibility-interactive [data-next]").isDisabled(), "§3: stepping must wait for a prediction");
+    ensure(await page.locator("#polynomial-divisibility-interactive .ch1-live-conclusion").isHidden(), "§3: conclusion shown before predicting");
+    await page.locator('[data-division-gate] [data-ok="true"]').click();
+    ensure((await page.locator("#polynomial-divisibility-interactive .ch1-stairs-bar").count()) === 1, "§3: staircase should start with f only");
     await division(page, viewport.name === "desktop" && theme === "light");
   } else if (section === "gcd-polynomials") {
+    ensure(!(await page.locator("[data-gcd] .katex").count()), "§4: gcd shown before the last step");
+    ensure((await page.locator("#gcd-polynomials-interactive [data-ledger] > div").count()) === 1, "§4: future ledger rows shown");
+    await page.locator('[data-gcd-gate] [data-ok="true"]').click();
     const next = page.locator("[data-next]"); for (let i = 0; i < 8 && !(await next.isDisabled()); i += 1) await next.click();
+    ensure(await page.locator("#gcd-polynomials-interactive .ch3l-predict.is-done").count(), "§4: the last step did not reveal the prediction");
+    ensure((await page.locator("#gcd-polynomials-interactive .ch1-stairs-glow").count()) === 1, "§4: last nonzero remainder not marked");
     ensure((await page.locator("[data-verify] .tex-inline").count()) === 1, "§4: Bezout identity is fragmented");
   } else if (section === "multiple-factors") {
     if (detail) await page.locator("#multiple-factors-interactive .ch1-lab").screenshot({ path: path.join(outputDir, `${viewport.name}-${theme}-multiple-factors-formulas.png`) });
     ensure(await page.locator('[data-mode="merge"].is-active').count(), "§6: root-merge mode is not the default");
+    ensure(await page.locator("[data-merge-exact]").isDisabled(), "§6: merge must wait for a prediction");
+    ensure(await page.locator("#multiple-factors-interactive .ch1-live-conclusion").isHidden(), "§6: conclusion shown before predicting");
+    await page.locator('[data-merge-gate] [data-ok="true"]').click();
+    ensure(await page.locator("#multiple-factors-interactive .ch1-live-conclusion").isHidden(), "§6: conclusion shown before acting");
     await clickIf(page, "[data-merge-exact]");
+    ensure(await page.locator("#multiple-factors-interactive .ch3l-predict.is-done").count(), "§6: merge did not reveal the prediction");
+    ensure(await page.locator("#multiple-factors-interactive .ch1-live-conclusion").isVisible(), "§6: conclusion missing after merge");
+    ensure((await page.locator("[data-gcd] .katex").count()) === 1, "§6: gcd(f,f′) not shown after merge");
     ensure(/二重根/.test((await page.locator("[data-status]").textContent()) || ""), "§6: exact merge did not produce a double root");
     await clickIf(page, '[data-preset-m="3"]');
     await page.locator("[data-a]").fill("-1");
@@ -198,13 +216,24 @@ async function operate(page, section, viewport, theme) {
     if (detail) await page.locator("#polynomial-functions-interactive .ch1-lab").screenshot({ path: path.join(outputDir, `${viewport.name}-${theme}-horner.png`) });
     await clickIf(page, '[data-mode="roots"]'); await clickIf(page, '[data-mode="interp"]');
   } else if (section === "complex-real-factorization") {
+    ensure((await page.locator("[data-beta]").textContent())?.includes("预测后"), "§8: second root shown before predicting");
+    ensure(await page.locator("#complex-real-factorization-interactive .ch1-live-conclusion").isHidden(), "§8: conclusion shown before predicting");
+    await page.locator('[data-conj-gate] [data-ok="true"]').click();
+    ensure(!(await page.locator("#complex-real-factorization-interactive .ch3l-predict.is-done").count()), "§8: revealed before acting");
+    await page.locator("[data-bre]").fill("1"); await page.locator("[data-bim]").fill("-1.5");
+    ensure(await page.locator("#complex-real-factorization-interactive .ch3l-predict.is-done").count(), "§8: β = ᾱ did not reveal the prediction");
+    ensure(await page.locator("#complex-real-factorization-interactive .ch1-live-conclusion").isVisible(), "§8: conclusion missing after acting");
+    await clickIf(page, '[data-mode="R"]'); await page.waitForTimeout(700);
     if (detail) await dragConjugate(page); await clickIf(page, '[data-mode="C"]');
     if (await page.locator("[data-re]").count()) await page.locator("[data-re]").fill("1.5");
     ensure(/虚部/.test((await page.locator("[data-real-status]").textContent()) || ""), "§8: unlocked coefficient explanation missing");
   } else if (section === "multivariate-polynomials") {
     await checkMultivariateLayout(page, viewport);
     if (detail) await page.locator("#multivariate-polynomials-interactive .ch1-lab").screenshot({ path: path.join(outputDir, `${viewport.name}-${theme}-multivariate-support.png`) });
+    ensure(await page.locator('[data-lattice-mode="multiply"]').isDisabled(), "§10: multiplication must wait for a prediction");
+    await page.locator('[data-lattice-gate] [data-ok="true"]').click();
     await clickIf(page, '[data-lattice-mode="multiply"]');
+    ensure(await page.locator("#multivariate-polynomials-interactive .ch3l-predict.is-done").count(), "§10: multiplication did not reveal the prediction");
     await clickIf(page, `[data-first='{"i":1,"j":2}']`);
     await clickIf(page, `[data-second='{"i":0,"j":1}']`);
     ensure(!(await page.locator("[data-multiply-module]").getAttribute("hidden")), "§10: multiply module did not open");

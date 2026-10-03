@@ -1011,6 +1011,15 @@ body.dark :is(main, #la) .ch2-meter-card {
   background: var(--surface-soft);
 }
 
+/* §7 the action (b₂ − 1/10) heads the readout column, full width */
+:is(main, #la) .ch2-cramer-act {
+  margin: 0;
+}
+
+:is(main, #la) .ch2-cramer-act > button {
+  flex: 1 1 auto;
+}
+
 /* permutation tiles */
 :is(main, #la) .ch2-perm-item {
   border: 1px solid var(--line-strong);

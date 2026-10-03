@@ -13,6 +13,13 @@
  *   scene.setHandles([...]);            // draggable points
  *   scene.render();
  *   scene.destroy();
+ *
+ * Optional object flags (all backward compatible):
+ *   ghost: true     the previous state of an object: same colour, dashed, ~35% alpha
+ *   glow: true | k  highlight: a wide underlay in the same colour (k scales its strength)
+ * Optional scene options:
+ *   spreadLabels    nudge overlapping labels apart in screen space
+ *   scene.setRange(L, animate) zooms the viewing cube.
  */
 (() => {
   const V = {
@@ -145,8 +152,19 @@
     return [V.add(p, V.mul(dir, t0)), V.add(p, V.mul(dir, t1))];
   }
 
+  const GHOST_DASH = [5, 5];
+  const glowOf = (o) => (o.glow ? (typeof o.glow === "number" ? o.glow : 1) : 0);
+  /* Stroke style of a line-like object: ghosts are dashed and faint. */
+  function lineStyle(o) {
+    return {
+      dash: o.dash || (o.ghost ? GHOST_DASH : undefined),
+      alpha: o.alpha ?? (o.ghost ? 0.35 : 1),
+      glow: glowOf(o),
+    };
+  }
+
   function create(host, options = {}) {
-    const L = options.range || 4;
+    let L = options.range || 4;
     const defaults = { yaw: options.yaw ?? -0.95, pitch: options.pitch ?? 0.42 };
     const camera = { yaw: defaults.yaw, pitch: defaults.pitch };
     let objectsFn = () => [];
@@ -254,11 +272,11 @@
         if (o.type === "plane") {
           const poly = clipPlane(o.n, o.d || 0, L);
           if (poly.length) {
-            prims.push({ kind: "poly", pts: poly, fill: withAlpha(color, o.alpha ?? 0.16), stroke: withAlpha(color, o.strokeAlpha ?? 0.7), width: o.width || 1.3, dash: o.dash });
+            prims.push({ kind: "poly", pts: poly, fill: withAlpha(color, o.alpha ?? (o.ghost ? 0.035 : 0.16)), stroke: withAlpha(color, o.strokeAlpha ?? (o.ghost ? 0.35 : 0.7)), width: o.width || 1.3, dash: o.dash || (o.ghost ? GHOST_DASH : undefined), glow: glowOf(o), color });
             if (o.label) labels.push({ p: o.labelAt || poly[0], text: o.label, color });
           }
         } else if (o.type === "polygon") {
-          prims.push({ kind: "poly", pts: o.pts, fill: withAlpha(color, o.alpha ?? 0.18), stroke: withAlpha(color, o.strokeAlpha ?? 0.8), width: o.width || 1.2, dash: o.dash });
+          prims.push({ kind: "poly", pts: o.pts, fill: withAlpha(color, o.alpha ?? (o.ghost ? 0.035 : 0.18)), stroke: withAlpha(color, o.strokeAlpha ?? (o.ghost ? 0.35 : 0.8)), width: o.width || 1.2, dash: o.dash || (o.ghost ? GHOST_DASH : undefined), glow: glowOf(o), color });
         } else if (o.type === "box") {
           const [u, v, w] = o.vectors;
           const O = o.origin || [0, 0, 0];
@@ -275,15 +293,16 @@
         } else if (o.type === "line") {
           const seg = clipLine(o.p || [0, 0, 0], o.dir, L);
           if (seg) {
-            prims.push({ kind: "seg", a: seg[0], b: seg[1], color, width: o.width || 2.4, dash: o.dash, alpha: o.alpha ?? 1 });
+            prims.push({ kind: "seg", a: seg[0], b: seg[1], color, width: o.width || 2.4, ...lineStyle(o) });
             if (o.label) labels.push({ p: o.labelAt || seg[1], text: o.label, color });
           }
         } else if (o.type === "segment") {
-          prims.push({ kind: "seg", a: o.a, b: o.b, color, width: o.width || 1.6, dash: o.dash, alpha: o.alpha ?? 1 });
+          prims.push({ kind: "seg", a: o.a, b: o.b, color, width: o.width || 1.6, ...lineStyle(o) });
+          if (o.label) labels.push({ p: o.labelAt || V.mul(V.add(o.a, o.b), 0.5), text: o.label, color, font: o.font });
         } else if (o.type === "arrow") {
           const from = o.from || [0, 0, 0];
           if (V.len(V.sub(o.to, from)) < 1e-9) continue;
-          prims.push({ kind: "arrow", a: from, b: o.to, color, width: o.width || 2.8, alpha: o.alpha ?? 1 });
+          prims.push({ kind: "arrow", a: from, b: o.to, color, width: o.width || 2.8, ...lineStyle(o) });
           if (o.label) labels.push({ p: o.labelAt || V.add(o.to, V.mul(V.norm(V.sub(o.to, from)), 0.28)), text: o.label, color, font: "700 14px 'LA Serif Latin', 'LA Serif SC', 'Songti SC', serif" });
         } else if (o.type === "point") {
           prims.push({ kind: "dot", p: o.p, color, r: o.r || 5, hollow: o.hollow });
@@ -313,6 +332,12 @@
           ctx.closePath();
           ctx.fillStyle = prim.fill;
           ctx.fill();
+          if (prim.glow) {
+            ctx.strokeStyle = withAlpha(prim.color, (pal.dark ? 0.2 : 0.16) * prim.glow);
+            ctx.lineWidth = prim.width + 7;
+            ctx.lineJoin = "round";
+            ctx.stroke();
+          }
           if (prim.dash) ctx.setLineDash(prim.dash);
           ctx.strokeStyle = prim.stroke;
           ctx.lineWidth = prim.width;
@@ -320,6 +345,17 @@
         } else if (prim.kind === "seg" || prim.kind === "arrow") {
           const a = project(prim.a, b);
           const q = project(prim.b, b);
+          if (prim.glow) {
+            ctx.save();
+            ctx.strokeStyle = withAlpha(prim.color, (pal.dark ? 0.2 : 0.16) * prim.glow);
+            ctx.lineWidth = prim.width + 7;
+            ctx.lineCap = "round";
+            ctx.beginPath();
+            ctx.moveTo(a.x, a.y);
+            ctx.lineTo(q.x, q.y);
+            ctx.stroke();
+            ctx.restore();
+          }
           ctx.globalAlpha = prim.alpha ?? 1;
           ctx.strokeStyle = prim.color;
           ctx.lineWidth = prim.width;
@@ -382,10 +418,60 @@
         ctx.restore();
       });
 
+      const placed = [];
+      // arrow shafts in screen space, so spread labels also keep off other arrows
+      const shafts = options.spreadLabels ? prims.filter((p) => p.kind === "arrow").map((p) => [project(p.a, b), project(p.b, b)]) : [];
       labels.forEach((lab) => {
         const q = project(lab.p, b);
-        drawText(lab.text, q.x + (lab.dx || 6), q.y + (lab.dy || -6), lab.color, lab.font);
+        let x = q.x + (lab.dx || 6);
+        let y = q.y + (lab.dy || -6);
+        if (options.spreadLabels) {
+          ctx.save();
+          ctx.font = lab.font || "600 13px 'LA Serif Latin', 'LA Serif SC', 'Songti SC', serif";
+          const w = ctx.measureText(lab.text).width + 4;
+          ctx.restore();
+          const h = 16;
+          const nearShaft = (cx, cy) =>
+            shafts.some(([p, q]) => {
+              const mx = cx + w / 2;
+              const vx = q.x - p.x;
+              const vy = q.y - p.y;
+              const t = Math.max(0, Math.min(1, ((mx - p.x) * vx + (cy - p.y) * vy) / (vx * vx + vy * vy || 1)));
+              return Math.hypot(p.x + vx * t - mx, p.y + vy * t - cy) < Math.min(w / 2, 14);
+            });
+          const hits = (cx, cy) => placed.some((r) => cx < r.x + r.w && cx + w > r.x && Math.abs(cy - r.y) < h) || nearShaft(cx, cy);
+          const tries = [[0, 0], [0, -h], [0, h], [w * 0.6, 0], [-w * 0.6, 0], [0, -2 * h], [0, 2 * h], [w * 0.6, -h], [-w * 0.6, h]];
+          const ok = tries.find(([ox, oy]) => !hits(x + ox, y + oy));
+          if (ok) {
+            x += ok[0];
+            y += ok[1];
+          }
+          x = Math.max(4, Math.min(size.w - w, x));
+          y = Math.max(10, Math.min(size.h - 10, y));
+          placed.push({ x, y, w });
+        }
+        drawText(lab.text, x, y, lab.color, lab.font);
       });
+    }
+
+    /* ---------- zoom ---------- */
+    let zoomAnim = 0;
+    function setRange(target, animate = true) {
+      cancelAnimationFrame(zoomAnim);
+      const from = L;
+      if (!animate || reduceMotion() || Math.abs(target - from) < 1e-9) {
+        L = target;
+        render();
+        return;
+      }
+      const start = performance.now();
+      const step = (now) => {
+        const t = Math.min(1, (now - start) / 420);
+        L = from + (target - from) * (1 - (1 - t) ** 3);
+        render();
+        if (t < 1) zoomAnim = requestAnimationFrame(step);
+      };
+      zoomAnim = requestAnimationFrame(step);
     }
 
     /* ---------- camera ---------- */
@@ -573,7 +659,10 @@
       canvas,
       element: wrap,
       camera,
-      range: L,
+      get range() {
+        return L;
+      },
+      setRange,
       render,
       resize,
       project: (p) => project(p),
@@ -594,6 +683,7 @@
       destroy() {
         destroyed = true;
         cancelAnimationFrame(animation);
+        cancelAnimationFrame(zoomAnim);
         ro.disconnect();
         themeObserver.disconnect();
         wrap.remove();

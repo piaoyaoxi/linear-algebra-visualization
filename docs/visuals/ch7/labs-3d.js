@@ -460,34 +460,38 @@
   /* ================= §9 最小多项式：Krylov 序列 ================= */
 
   const KRYLOV_PRESETS = {
-    diag: {
-      label: "diag(1,2,3)",
-      A: [[1, 0, 0], [0, 2, 0], [0, 0, 3]],
-      v: [1, 1, 1],
-      predict: {
-        question: "取 v=(1,1,1)ᵀ。v, Av, A²v, A³v 中，第一个落回前面张成的是哪一个？",
-        options: [
-          { text: "A³v", correct: true },
-          { text: "Av", why: "(1,2,3)ᵀ 与 (1,1,1)ᵀ 不共线。" },
-          { text: "A²v", why: "(1,4,9)ᵀ 不在 (1,1,1)ᵀ、(1,2,3)ᵀ 张成的平面里。" },
-          { text: "永远不会落回", why: "ℝ³ 里至多 3 个线性无关的向量。" },
-        ],
-        conclusion: "v, Av, A²v 是 (1,1,1)ᵀ,(1,2,3)ᵀ,(1,4,9)ᵀ，线性无关，张满 ℝ³；A³v 必然落回，给出 mᵥ=(λ−1)(λ−2)(λ−3)=m。把 v 拖到 ε₁ 方向：第一步就停，mᵥ=λ−1，它整除 m。",
-      },
-    },
     j21: {
       label: "J(2,2)⊕J(2,1)",
       A: [[2, 0, 0], [1, 2, 0], [0, 0, 2]],
       v: [1, 0, 1],
+      // look at L(v, Av) (normal (−1,0,1)) from slightly off its normal
+      camera: { yaw: 2.75, pitch: 0.62 },
       predict: {
-        question: "A=J(2,2)⊕J(2,1)。能不能选到 v，使 v, Av, A²v 张满整个空间？",
+        question: "A=J(2,2)⊕J(2,1)，特征多项式是 (λ−2)³。A 的最小多项式是什么？",
         options: [
-          { text: "不能，A²v 总落回 L(v, Av)", correct: true },
-          { text: "能，取一个“一般”的 v 就行", why: "多拖几个 v 试试，张成最多是平面。" },
-          { text: "能，取 v=ε₃", why: "ε₃ 是特征向量，第一步就停。" },
-          { text: "不能，因为 Av 总落回 L(v)", why: "v=ε₁ 时 Av=(2,1,0)ᵀ 与 v 不共线。" },
+          { text: "(λ−2)²", correct: true },
+          { text: "λ−2", why: "A≠2E：从 v=(1,0,1)ᵀ 出发，Av 与 v 不共线。" },
+          { text: "(λ−2)³", why: "多拖几个 v：A²v 总落回平面 L(v,Av)，2 次多项式已经零化 A。" },
+          { text: "(λ−2)²(λ−1)", why: "1 不是 A 的特征值，最小多项式的根都是特征值。" },
         ],
-        conclusion: "(A−2E)²=O，所以对每个 v 都有 A²v=4Av−4v：张成最多是平面。m=(λ−2)²，次数 2，低于特征多项式 (λ−2)³。",
+        conclusion: "(A−2E)²=O，所以对每个 v 都有 A²v=4Av−4v，张成最多是平面：m=(λ−2)²。它有重因式，A 不能对角化。对照 diag(2,2,1)：A²v 同样在第 2 步落回平面，关系式却是 A²v=3Av−2v，最小多项式 (λ−1)(λ−2) 没有重因式。",
+      },
+    },
+    d221: {
+      label: "diag(2,2,1)",
+      A: [[2, 0, 0], [0, 2, 0], [0, 0, 1]],
+      v: [1, 1, 1],
+      // L(v, Av) has normal (−1,1,0)
+      camera: { yaw: 2.05, pitch: 0.3 },
+      predict: {
+        question: "A=diag(2,2,1)，从 v=(1,1,1)ᵀ 出发。A²v 落回 L(v,Av) 时，得到的 mᵥ 是什么？",
+        options: [
+          { text: "(λ−1)(λ−2)", correct: true },
+          { text: "(λ−2)²", why: "落回的关系是 A²v=3Av−2v，对应 λ²−3λ+2。" },
+          { text: "(λ−2)²(λ−1)", why: "这是特征多项式；A²v 已经落回平面，mᵥ 只有 2 次。" },
+          { text: "λ−2", why: "v 不是特征向量，Av 与 v 不共线。" },
+        ],
+        conclusion: "A²v=3Av−2v，mᵥ=(λ−1)(λ−2)，它也是 A 的最小多项式：没有重因式，A 可以对角化。J(2,2)⊕J(2,1) 也在第 2 步落回平面，但那里的关系式给出 (λ−2)²，有重因式，不能对角化。",
       },
     },
     j3: {
@@ -502,24 +506,32 @@
           { text: "2 次", why: "从 v=ε₁ 出发，看 A²v 是否落回。" },
           { text: "4 次", why: "最小多项式整除特征多项式。" },
         ],
-        conclusion: "v=ε₁ 时 v, Av, A²v 线性无关，所以没有 2 次多项式零化 A，m=(λ−2)³ 与特征多项式相同。v=ε₃ 是特征向量，一步就停：mᵥ=λ−2。",
+        conclusion: "v=ε₁ 时 v, Av, A²v 线性无关，所以没有 2 次多项式零化 A，m=(λ−2)³ 与特征多项式相同，有重因式，不能对角化。v=ε₃ 是特征向量，一步就停：mᵥ=λ−2。",
       },
     },
   };
+
+  /* A polynomial with integer roots has a repeated factor iff some root also kills its derivative. */
+  function hasRepeatedFactor(coeffs) {
+    const deriv = coeffs.slice(1).map((c, k) => M().mul(c, F(k + 1)));
+    const at = (p, r) => p.reduceRight((acc, c) => M().add(M().mul(acc, r), c), F(0));
+    for (let r = -12; r <= 12; r += 1) if (M().isZero(at(coeffs, F(r))) && M().isZero(at(deriv, F(r)))) return true;
+    return false;
+  }
 
   function krylovLab(root) {
     const lab = K.labShell(root, {
       title: "v, Av, A²v, … 第几步落回",
       task: "拖动 v 选一个起点，然后逐个加入 Av, A²v, …。张成从直线长成平面，再长满空间；新向量第一次落回已有张成时，得到 v 的最小多项式 mᵥ。",
     });
-    const state = { key: "diag", v: [1, 1, 1], seq: null };
+    const state = { key: "j21", v: [1, 0, 1], seq: null, flash: 0 };
     const toolbar = el("div", "ch7l-toolbar");
     const body = el("div", "ch7l-body");
     const stage = el("div", "ch7l-stage");
     const side = el("aside", "ch7l-side");
     body.append(stage, side);
     lab.append(toolbar, body);
-    const scene = S().create(stage, { range: 2.4, label: "Krylov 序列与它的张成", hint: "拖动空白处旋转 · 拖动圆点改变 v（箭头只画方向）", yaw: -0.85, pitch: 0.4 });
+    const scene = S().create(stage, { range: 2.4, label: "Krylov 序列与它的张成", hint: "拖动空白处旋转 · 拖动圆点改变 v（箭头只画方向）", yaw: -0.85, pitch: 0.4, spreadLabels: true });
     const gateHost = el("div");
     const tools = el("div", "ch7l-actions");
     tools.innerHTML = `<button type="button" class="ch7l-btn is-primary" data-next>加入下一个</button><button type="button" class="ch7l-btn" data-restart>只留 v</button><button type="button" class="ch7l-btn" data-e1>v=ε₁</button><button type="button" class="ch7l-btn" data-e3>v=ε₃</button>`;
@@ -539,6 +551,26 @@
 
     function reset() {
       state.seq = { vs: [K.vec(state.v)], stop: null };
+      state.flash = 0;
+    }
+
+    /* The span that Aᵏv falls into pulses three times, then keeps a steady glow. */
+    let flashAnim = 0;
+    function flash() {
+      cancelAnimationFrame(flashAnim);
+      if (window.matchMedia?.("(prefers-reduced-motion: reduce)").matches) {
+        state.flash = 1;
+        scene.render();
+        return;
+      }
+      const t0 = performance.now();
+      const step = (now) => {
+        const t = Math.min(1, (now - t0) / 1500);
+        state.flash = t < 1 ? 1 + 1.6 * Math.abs(Math.sin(t * Math.PI * 3)) : 1;
+        scene.render();
+        if (t < 1) flashAnim = requestAnimationFrame(step);
+      };
+      flashAnim = requestAnimationFrame(step);
     }
 
     function next() {
@@ -550,6 +582,7 @@
       seq.vs.push(w);
       if (c) seq.stop = { k: seq.vs.length - 1, c };
       redraw();
+      if (c) flash();
       flow?.acted();
     }
 
@@ -564,8 +597,11 @@
       scene.setObjects(() => {
         const objs = [];
         const d = indep.map((_, i) => dirs[i]);
-        if (indep.length === 1) objs.push({ type: "line", dir: d[0], color: "subspace", width: 1.4, alpha: 0.5, dash: [5, 5] });
-        if (indep.length === 2) objs.push({ type: "plane", n: V().cross(d[0], d[1]), d: 0, color: "subspace", alpha: 0.13, label: "张成" });
+        // once Aᵏv has fallen back, the span it fell into is highlighted (pulse, then steady glow)
+        const glow = stop ? state.flash : 0;
+        const spanName = ["", "L(v)", "L(v, Av)", ""][indep.length];
+        if (indep.length === 1) objs.push({ type: "line", dir: d[0], color: "subspace", width: glow ? 2 : 1.4, alpha: glow ? 0.9 : 0.5, dash: [5, 5], glow, label: stop ? spanName : "" });
+        if (indep.length === 2) objs.push({ type: "plane", n: V().cross(d[0], d[1]), d: 0, color: "subspace", alpha: 0.13 + 0.05 * glow, width: glow ? 2 : 1.3, glow, label: spanName });
         if (indep.length === 3) objs.push({ type: "box", vectors: d, color: "subspace", alpha: 0.06 });
         dirs.forEach((p, i) => {
           const fell = stop && i === vs.length - 1;
@@ -591,7 +627,7 @@
           })
           .join("") || "0";
         const mv = [...c.map((x) => M().neg(x)), F(1)];
-        html += `<p class="ch7l-ok">${NAMES[k]} 落回了前面的张成：</p><p>${tex(`${NAMES_TEX[k]}=${rhs}`)}</p><p>${tex(`m_v(\\lambda)=${K.polyFactorLatex(mv)}`)}</p>`;
+        html += `<p class="ch7l-ok">${NAMES[k]} 落回了${["", "直线 L(v)", "平面 L(v, Av)", "前面的张成"][k]}：</p><p>${tex(`${NAMES_TEX[k]}=${rhs}`)}</p><p>${tex(`m_v(\\lambda)=${K.polyFactorLatex(mv)}`)}</p>`;
       } else {
         html += `<p class="ch7l-muted">${vs.length === 1 ? "先按“加入下一个”。" : "还没有落回，继续加入。"}</p>`;
       }
@@ -600,7 +636,7 @@
       if (flow?.revealed) {
         const A = K.mat(preset().A);
         polyBox.hidden = false;
-        polyBox.innerHTML = `<h4>整个矩阵</h4><p>${tex(`m_A(\\lambda)=${K.polyFactorLatex(K.minimalPolynomial(A))}`)}</p><p>${tex(`f(\\lambda)=|\\lambda E-A|=${K.polyFactorLatex(K.charPolynomial(A))}`)}</p><p class="ch7l-muted">每个 m_v 都整除 m_A，m_A 又整除 f。</p>`;
+        polyBox.innerHTML = `<h4>整个矩阵</h4><p>${tex(`m_A(\\lambda)=${K.polyFactorLatex(K.minimalPolynomial(A))}`)}</p><p>${tex(`f(\\lambda)=|\\lambda E-A|=${K.polyFactorLatex(K.charPolynomial(A))}`)}</p><p class="${hasRepeatedFactor(K.minimalPolynomial(A)) ? "ch7l-bad" : "ch7l-ok"}">${tex("m_A")} ${hasRepeatedFactor(K.minimalPolynomial(A)) ? "有重因式，A 不能对角化" : "没有重因式，A 可以对角化"}。</p><p class="ch7l-muted">每个 ${tex("m_v")} 都整除 ${tex("m_A")}，${tex("m_A")} 又整除 f。</p>`;
       } else polyBox.hidden = true;
     }
 
@@ -636,13 +672,17 @@
     function load(key) {
       state.key = key;
       state.v = preset().v.slice();
+      scene.setCamera(preset().camera || { yaw: -0.85, pitch: 0.4 });
       reset();
       flow = K.predictFlow(gateHost, result, { ...preset().predict, onReveal: redraw });
       redraw();
     }
     K.chips(toolbar, Object.entries(KRYLOV_PRESETS).map(([k, v]) => [k, v.label]), load, state.key);
-    load("diag");
-    return () => scene.destroy();
+    load("j21");
+    return () => {
+      cancelAnimationFrame(flashAnim);
+      scene.destroy();
+    };
   }
 
   K.register("image-and-kernel", kernelLab);

@@ -73,6 +73,7 @@
         box.querySelectorAll("[data-i]").forEach((x) => x.classList.toggle("is-picked", x === b));
         feedback.hidden = false;
         feedback.textContent = "已记下你的预测。现在在图上动手操作一次，结论随后出现。";
+        spec.onPick?.();
       }),
     );
     const lab = host.closest(".ch3l-lab") || host.parentElement;
@@ -578,12 +579,61 @@
     return ["原点", "一条直线", "一个平面", "整个空间"][r];
   }
 
+  /*
+   * Linear relations among the columns, read once from the preset and solved for
+   * the free column: c₃ = c₁ + c₂ for the rank-2 preset. Row operations multiply
+   * every column by the same invertible P, so each relation survives every step.
+   */
+  function columnRelations(A) {
+    const SUB = "₁₂₃";
+    return M()
+      .nullspaceBasis(A)
+      .basis.map((v) => {
+        const free = v.findIndex((x, i) => !M().isZero(x) && v.slice(i + 1).every((y) => M().isZero(y)));
+        const terms = v
+          .map((x, i) => ({ i, c: M().neg(x) }))
+          .filter(({ i, c }) => i !== free && !M().isZero(c));
+        const text = terms
+          .map(({ i, c }, k) => {
+            const abs = M().absF(c);
+            const coef = M().eq(abs, F(1)) ? "" : M().formatF(abs);
+            return `${c.n < 0 ? "−" : k ? "+" : ""}${coef}c${SUB[i]}`;
+          })
+          .join("");
+        return { free, terms, text: `c${SUB[free]}=${text || "0"}` };
+      });
+  }
+
+  function relationHolds(A, rel) {
+    const col = (j) => A.map((r) => r[j]);
+    const rhs = rel.terms.reduce((acc, { i, c }) => acc.map((x, k) => M().add(x, M().mul(c, col(i)[k]))), [F(0), F(0), F(0)]);
+    return rhs.every((x, k) => M().eq(x, col(rel.free)[k]));
+  }
+
+  /* Arrows for a list of vectors; identical vectors share one merged label (c₁=c₃). */
+  function labelledArrows(vectors, letter, colors) {
+    const SUB = "₁₂₃";
+    const same = (u, v) => u.every((x, k) => M().eq(x, v[k]));
+    return vectors.map((v, i) => {
+      const first = vectors.findIndex((u) => same(u, v));
+      const twins = vectors.map((u, j) => (same(u, v) ? j : -1)).filter((j) => j >= 0);
+      const label = first === i ? twins.map((j) => `${letter}${SUB[j]}`).join("=") : "";
+      return { type: "arrow", to: vecNum(v), color: colors[i], label, width: first === i ? 2.8 : 2 };
+    });
+  }
+
+  /* Zoom so the longest vector fills the view without leaving it. */
+  function fitRange(vectors) {
+    const longest = Math.max(...vectors.map((v) => S().vec.len(vecNum(v))), 1);
+    return Math.max(1.6, Math.min(5, longest / 1.3));
+  }
+
   function rankLab(root) {
     const lab = labShell(root, {
       title: "行变换：行空间不动，列空间在动，维数都不变",
-      task: "左图是三个行向量在输入空间里张成的行空间，右图是三个列向量在输出空间里张成的列空间。逐步做行变换化到阶梯形，比较两边的变化。",
+      task: "左图是三个行向量在输入空间里张成的行空间，右图是三个列向量在输出空间里张成的列空间。逐步做行变换化到阶梯形：虚线平面是上一步的位置，虚线平行四边形检验列之间的关系。",
     });
-    const state = { key: "r2", A: null, step: 0 };
+    const state = { key: "r2", A: null, prev: null, step: 0, relations: [] };
     const toolbar = el("div", "ch3l-toolbar");
     lab.append(toolbar);
     const pair = el("div", "ch3l-pair");
@@ -593,8 +643,8 @@
     right.innerHTML = `<div class="ch3l-view-title">列空间（输出空间）</div>`;
     pair.append(left, right);
     lab.append(pair);
-    const rowScene = S().create(left, { range: 4, hint: "拖动旋转", label: "行向量与行空间", yaw: 0.4, pitch: 0.35 });
-    const colScene = S().create(right, { range: 4, hint: "拖动旋转", label: "列向量与列空间", yaw: 0.2, pitch: 0.35, axisNames: ["y₁", "y₂", "y₃"] });
+    const rowScene = S().create(left, { range: 4, hint: "拖动旋转", label: "行向量与行空间", yaw: 0.4, pitch: 0.35, spreadLabels: true });
+    const colScene = S().create(right, { range: 4, hint: "拖动旋转", label: "列向量与列空间", yaw: -0.55, pitch: 0.7, axisNames: ["y₁", "y₂", "y₃"], spreadLabels: true });
     const strip = el("div", "ch3l-strip");
     lab.append(strip);
     const gateHost = el("div");
@@ -604,27 +654,60 @@
       return RANK_PRESETS[state.key].ops;
     }
 
+    const rowsOf = (A) => A.map((r) => r);
+    const colsOf = (A) => [0, 1, 2].map((j) => A.map((r) => r[j]));
+
+    /* Dashed parallelogram: c_i and c_j (scaled) close exactly on the dependent column. */
+    function relationObjects(A) {
+      const cols = colsOf(A);
+      const objs = [];
+      state.relations.forEach((rel) => {
+        if (rel.terms.length !== 2) return;
+        const [p, q] = rel.terms.map(({ i, c }) => cols[i].map((x) => num(M().mul(c, x))));
+        const tip = S().vec.add(p, q);
+        const [ci, cj] = rel.terms.map(({ i }) => PLANE_COLORS[i]);
+        objs.push(
+          { type: "polygon", pts: [[0, 0, 0], p, tip, q], color: "axis", alpha: 0.06, strokeAlpha: 0 },
+          { type: "segment", a: p, b: tip, color: cj, width: 1.2, dash: [2, 3] },
+          { type: "segment", a: q, b: tip, color: ci, width: 1.2, dash: [2, 3] },
+        );
+        if (relationHolds(A, rel)) objs.push({ type: "point", p: tip, color: PLANE_COLORS[rel.free], r: 4.5 });
+      });
+      return objs;
+    }
+
     function redraw() {
       const A = state.A;
-      const rows = A.map((r) => r);
-      const cols = [0, 1, 2].map((j) => A.map((r) => r[j]));
+      const rows = rowsOf(A);
+      const cols = colsOf(A);
       const r = M().rankOf(A);
+      const prev = state.prev;
       rowScene.setObjects(() => [
+        ...(prev ? spanObjects(rowsOf(prev), "subspace").map((o) => ({ ...o, ghost: true })) : []),
         ...spanObjects(rows, "subspace"),
-        ...rows.map((v, i) => ({ type: "arrow", to: vecNum(v), color: PLANE_COLORS[i], label: `r${"₁₂₃"[i]}` })),
+        ...labelledArrows(rows, "r", PLANE_COLORS),
       ]);
       colScene.setObjects(() => [
+        ...(prev ? spanObjects(colsOf(prev), "subspace").map((o) => ({ ...o, ghost: true })) : []),
         ...spanObjects(cols, "subspace"),
-        ...cols.map((v, i) => ({ type: "arrow", to: vecNum(v), color: PLANE_COLORS[i], label: `c${"₁₂₃"[i]}` })),
+        ...relationObjects(A),
+        ...labelledArrows(cols, "c", PLANE_COLORS),
       ]);
+      rowScene.setRange(fitRange(rows));
+      colScene.setRange(fitRange(cols));
       const list = ops();
       const next = list[state.step];
       const label = next === "swap12" ? "R_2\\leftrightarrow R_3" : next ? `R_${next[0] + 1}\\leftarrow R_${next[0] + 1}${num(F(next[2])) < 0 ? "-" : "+"}${Math.abs(next[2]) === 1 ? "" : Math.abs(next[2])}R_${next[1] + 1}` : "";
+      const relText = state.relations.length
+        ? state.relations.map((rel) => `${rel.text}${state.step ? (relationHolds(A, rel) ? " ✓" : " ×") : ""}`).join("，")
+        : "三列线性无关";
       strip.innerHTML = `<div class="ch3l-matrix">${texD(`A=${M().latexMatrix(A)}`)}</div>
         <div class="ch3l-strip-info"><p>行空间：${spanName(r)}　列空间：${spanName(r)}</p><p>${tex(`\\dim\\text{行空间}=\\dim\\text{列空间}=${r}`)}</p>
+        <p>列的关系：${relText}${state.step ? `（第 ${state.step} 步后）` : ""}</p>
         <div class="ch3l-actions">${next ? `<button type="button" class="ch3l-btn is-primary" data-next>下一步 ${tex(label)}</button>` : `<span class="ch3l-ok">已化到阶梯形</span>`}<button type="button" class="ch3l-btn" data-restart>重来</button></div></div>`;
       strip.querySelector("[data-next]")?.addEventListener("click", () => {
         const op = list[state.step];
+        state.prev = state.A;
         state.A = op === "swap12" ? M().rowSwap(state.A, 1, 2) : M().rowAdd(state.A, op[0], op[1], F(op[2]));
         state.step += 1;
         redraw();
@@ -635,20 +718,22 @@
     function load(key) {
       state.key = key;
       state.A = RANK_PRESETS[key].A.map((r) => r.map(F));
+      state.prev = null;
       state.step = 0;
+      state.relations = columnRelations(state.A);
       redraw();
     }
 
     buttons(toolbar, Object.entries(RANK_PRESETS).map(([k, v]) => [k, v.label]), load, "r2");
     predictGate(gateHost, {
-      question: `对秩 2 的 A 做第一步 ${tex("R_2\\leftarrow R_2-2R_1")}，哪一边的平面会动？`,
+      question: `对秩 2 的 A 做第一步 ${tex("R_2\\leftarrow R_2-2R_1")}。右图的列空间平面和关系 ${tex("c_3=c_1+c_2")} 会怎样？`,
       options: [
-        { text: "只有列空间动", correct: true },
-        { text: "只有行空间动", why: "新行是旧行的组合，还在原来的行空间里。" },
-        { text: "两边都动", why: "看左图：行向量变了，它们张成的平面没变。" },
-        { text: "两边都不动", why: "看右图：三个列向量都变了。" },
+        { text: "平面换了位置，c₃=c₁+c₂ 仍成立", correct: true },
+        { text: "平面不动，c₃=c₁+c₂ 仍成立", why: "看右图：新平面离开了虚线留下的旧平面。" },
+        { text: "平面换了位置，c₃=c₁+c₂ 不再成立", why: "看虚线平行四边形：c₁+c₂ 的顶点仍落在 c₃ 的箭头尖上。" },
+        { text: "平面不动，关系也不再成立", why: "两处都和图不符：平面动了，平行四边形仍闭合。" },
       ],
-      right: "行变换可逆，行空间不变；列空间会变，但列之间的线性关系（例如 c₃=c₁+c₂）不变，所以列空间的维数也不变。",
+      right: "行变换把每一列都左乘同一个可逆矩阵 P，Pc₃=Pc₁+Pc₂，所以列之间的线性关系每一步都成立。列空间换了位置，维数却不变；左图的行空间始终是同一个平面（虚线与实线重合）。",
     });
     load("r2");
     return () => {
@@ -662,10 +747,12 @@
   function solvabilityLab(root) {
     const lab = labShell(root, {
       title: "把 b 拖离列空间，三个平面失去公共线",
-      task: "A 的第三列等于前两列之和，列空间是平面 b₃=b₁+b₂。拖动 b：它在平面上时方程组有解，一离开就无解。右图同步显示三个方程对应的平面。",
+      task: "A 的第三列等于前两列之和，列空间是平面 b₃=b₁+b₂。拖动 b：它在平面上时方程组有解，一离开就无解。虚线竖段是偏离量 b₃−b₁−b₂。右图同步显示三个方程对应的平面。",
     });
     const A = [[1, 1, 2], [1, 2, 3], [2, 3, 5]].map((r) => r.map(F));
-    const state = { b: [1, 2, 3] };
+    // every pair of the three planes meets along this direction (n₁×n₂ = (−1,−1,1))
+    const LINE_DIR = [-1, -1, 1];
+    const state = { b: [1, 2, 3], picked: false, revealed: false, endOn: false };
     const pair = el("div", "ch3l-pair");
     const left = el("div", "ch3l-view");
     const right = el("div", "ch3l-view");
@@ -673,12 +760,22 @@
     right.innerHTML = `<div class="ch3l-view-title">三个方程的平面（输入空间）</div>`;
     pair.append(left, right);
     lab.append(pair);
-    const colScene = S().create(left, { range: 5, label: "列空间平面与可拖动的 b", hint: "拖动 b 或旋转", yaw: 0.4, pitch: 0.35, axisNames: ["b₁", "b₂", "b₃"] });
+    const colScene = S().create(left, { range: 5, label: "列空间平面与可拖动的 b", hint: "拖动 b 或旋转", yaw: 0.4, pitch: 0.35, axisNames: ["b₁", "b₂", "b₃"], spreadLabels: true });
     const rowScene = S().create(right, { range: 3.5, label: "三个平面", hint: "拖动旋转", yaw: 0.35, pitch: 0.3 });
+    rowScene.on("camera", () => {
+      // any orbit away from the end-on view gives the button back its first meaning
+      const d = S().vec.norm(LINE_DIR);
+      const cp = Math.cos(rowScene.camera.pitch);
+      const view = [cp * Math.cos(rowScene.camera.yaw), cp * Math.sin(rowScene.camera.yaw), Math.sin(rowScene.camera.pitch)];
+      state.endOn = Math.abs(S().vec.dot(view, d)) > 0.999;
+      lookBtn.textContent = state.endOn ? "转回斜视" : "沿交线方向看";
+      redraw();
+    });
     const status = el("div", "ch3l-status");
     const tools = el("div", "ch3l-actions");
-    tools.innerHTML = `<button type="button" class="ch3l-btn" data-on>b=(1,2,3)</button><button type="button" class="ch3l-btn" data-off>b=(1,2,4)</button><button type="button" class="ch3l-btn" data-look>沿列空间平面看</button>`;
+    tools.innerHTML = `<button type="button" class="ch3l-btn" data-on>b=(1,2,3)</button><button type="button" class="ch3l-btn" data-off>b=(1,2,4)</button><button type="button" class="ch3l-btn" data-look>沿列空间平面看</button><button type="button" class="ch3l-btn" data-along disabled>沿交线方向看</button>`;
     lab.append(tools, status);
+    const lookBtn = tools.querySelector("[data-along]");
     const gateHost = el("div");
     lab.append(gateHost);
 
@@ -689,10 +786,16 @@
       const h = M().sub(M().sub(b[2], b[0]), b[1]);
       const onPlane = M().isZero(h);
       const cols = [0, 1, 2].map((j) => A.map((r) => r[j]));
+      const foot = [state.b[0], state.b[1], state.b[0] + state.b[1]];
       colScene.setObjects(() => [
         { type: "plane", n: [1, 1, -1], d: 0, color: "subspace", alpha: 0.12, label: "Col(A)" },
         ...cols.map((c, i) => ({ type: "arrow", to: vecNum(c), color: PLANE_COLORS[i], width: 1.6, alpha: 0.6, label: `a${"₁₂₃"[i]}` })),
-        { type: "segment", a: state.b, b: [state.b[0], state.b[1], state.b[0] + state.b[1]], color: "axis", dash: [5, 4], width: 1.8 },
+        ...(onPlane
+          ? []
+          : [
+              { type: "segment", a: state.b, b: foot, color: "axis", dash: [5, 4], width: 1.8, label: `b₃−b₁−b₂=${M().formatF(h).replace("-", "−")}` },
+              { type: "point", p: foot, color: "subspace", r: 3.5 },
+            ]),
         { type: "arrow", to: state.b, color: "drag", width: 3, label: "b" },
       ]);
       colScene.setHandles([
@@ -707,18 +810,33 @@
         },
       ]);
       rowScene.setObjects(() => {
-        const objs = aug.map((r, i) => planeObj(r, PLANE_COLORS[i], { alpha: 0.12 }));
+        const objs = aug.map((r, i) => planeObj(r, PLANE_COLORS[i], { alpha: 0.12, width: state.endOn ? 2.4 : 1.2 }));
         if (onPlane) objs.push(...solutionObjects(aug));
-        else
+        else if (state.revealed) {
+          const corners = [];
           [[0, 1], [1, 2], [0, 2]].forEach(([i, j]) => {
             const l = planeLine(aug[i], aug[j]);
             if (l) objs.push({ type: "line", ...l, color: "axis", width: 1.6, dash: [6, 5] });
+            // where this pairwise line pierces the plane through 0 normal to it: a corner of the end-on triangle
+            const hit = M().particularSolution([aug[i], aug[j], [...LINE_DIR.map(F), F(0)]]);
+            if (hit.ok) corners.push(vecNum(hit.x));
           });
+          if (state.endOn && corners.length === 3) {
+            objs.push({ type: "polygon", pts: corners, color: "axis", alpha: 0.2, strokeAlpha: 0.5 });
+            corners.forEach((p) => objs.push({ type: "point", p, color: "axis", r: 3.5 }));
+          }
+        }
         return objs;
       });
+      rowScene.setRange(state.endOn && !onPlane && state.revealed ? 1.8 : 3.5);
+      const picture = !state.revealed
+        ? ""
+        : onPlane
+          ? "三个平面交于一条直线。"
+          : "三个平面两两相交成三条平行线，沿交线方向看是一个三角形，没有公共点。";
       status.innerHTML = `${tex(`b=(${b.map(fmt).join(",")})`)}，偏离量 ${tex(`b_3-b_1-b_2=${fmt(h)}`)}。
         ${tex(`\\operatorname{rank}A=${info.rankA}`)}，${tex(`\\operatorname{rank}[A\\mid b]=${info.rankAug}`)}：
-        ${onPlane ? `<span class="ch3l-ok">有解</span>，三个平面交于一条直线。` : `<span class="ch3l-bad">无解</span>，三个平面两两相交成三条平行线，没有公共点。`}`;
+        ${onPlane ? `<span class="ch3l-ok">有解</span>` : `<span class="ch3l-bad">无解</span>`}${picture ? `，${picture}` : "。"}`;
     }
 
     tools.querySelector("[data-on]").addEventListener("click", () => {
@@ -730,6 +848,10 @@
       redraw();
     });
     tools.querySelector("[data-look]").addEventListener("click", () => colScene.lookAlong([1, 0, 1]));
+    lookBtn.addEventListener("click", () => {
+      if (state.endOn) rowScene.resetView();
+      else rowScene.lookAlong(LINE_DIR);
+    });
     predictGate(gateHost, {
       question: `把 ${tex("b")} 从 ${tex("(1,2,3)")} 拉到 ${tex("(1,2,4)")}，右边三个平面会变成什么样？`,
       options: [
@@ -738,7 +860,14 @@
         { text: "出现两个平行平面", why: "三个法向两两不平行，任意两个平面都相交。" },
         { text: "交于一个点", why: "rank A=2，任何 b 都不会给出唯一解。" },
       ],
-      right: "没有两个平面平行，却没有公共点。此时化简后最后一行是 [0 0 0 | 1]，增广矩阵的秩比 A 的秩多 1。",
+      right: "没有两个平面平行，却没有公共点：沿交线方向看，三个平面围成一个三角形（三棱柱）。此时化简后最后一行是 [0 0 0 | b₃−b₁−b₂]，偏离量不为 0，增广矩阵的秩比 A 的秩多 1。",
+      onPick: () => {
+        state.picked = true;
+        lookBtn.disabled = false;
+      },
+    }, () => {
+      state.revealed = true;
+      redraw();
     });
     redraw();
     return () => {

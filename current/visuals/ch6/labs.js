@@ -586,6 +586,13 @@
       const t = ok ? M().div(v[2], uz) : null;
       const uc = ok ? u.map((x) => M().mul(x, t)) : null;
       const wc = ok ? v.map((x, k) => M().sub(x, uc[k])) : null;
+      const splits = ok
+        ? []
+        : [1, -1].map((s) => {
+            const ucS = u.map((x) => M().mul(x, F(s)));
+            return { t: s, uc: ucS, wc: v.map((x, k) => M().sub(x, ucS[k])) };
+          });
+      tools.querySelector("[data-vflat]")?.toggleAttribute("hidden", ok || M().isZero(v[2]));
       scene.setObjects(() => {
         const objs = [
           { type: "plane", n: [0, 0, 1], d: 0, color: "v2", alpha: 0.12, label: "W" },
@@ -600,6 +607,18 @@
           objs.push({ type: "segment", a: wcn, b: state.v, color: "axis", dash: [5, 4], width: 1.4 });
           objs.push({ type: "arrow", to: ucn, color: "v1", width: 3.4, label: "u′" });
           objs.push({ type: "arrow", to: wcn, color: "v2", width: 3.4, label: "w′" });
+        } else if (state.revealed && M().isZero(v[2])) {
+          // U ⊂ W and v ∈ W: two different parallelograms give the same v.
+          splits.forEach(({ uc: ucF, wc: wcF }, k) => {
+            const ucn = ucF.map(num);
+            const wcn = wcF.map(num);
+            const ghost = k === 1;
+            objs.push({ type: "polygon", pts: [[0, 0, 0], ucn, state.v, wcn], color: "drag", alpha: ghost ? 0.04 : 0.08, strokeAlpha: 0 });
+            objs.push({ type: "segment", a: ucn, b: state.v, color: "axis", dash: [5, 4], width: 1.2 });
+            objs.push({ type: "segment", a: wcn, b: state.v, color: "axis", dash: [5, 4], width: 1.2 });
+            objs.push({ type: "arrow", to: ucn, color: "v1", width: 3, ghost, label: ghost ? "u″" : "u′" });
+            objs.push({ type: "arrow", to: wcn, color: "v2", width: 3, ghost, label: ghost ? "w″" : "w′" });
+          });
         }
         objs.push({ type: "arrow", to: state.v, color: "drag", width: 3.4, label: "v" });
         return objs;
@@ -617,6 +636,7 @@
           html += `<p>${tex(`u'=${fmt(t)}\\,u=${vecTex(uc)}`)}</p><p>${tex(`w'=v-u'=${vecTex(wc)}`)}</p><p class="ch6l-ok">${tex("\\mathbb R^3=U\\oplus W")}，分解唯一</p>`;
         } else if (M().isZero(v[2])) {
           html += `<p class="ch6l-bad">${tex("U\\subset W")}：v 在 W 内，分解有无穷多种</p>`;
+          html += splits.map(({ uc: a, wc: b }, k) => `<p>${tex(`v=${vecTex(a)}+${vecTex(b)}`)}${k ? "（虚线）" : ""}</p>`).join("");
         } else {
           html += `<p class="ch6l-bad">${tex("U\\subset W")}：v 不在 ${tex("U+W=W")} 中，无法分解</p>`;
         }
@@ -673,7 +693,7 @@
     function setTools() {
       tools.innerHTML =
         state.mode === "split"
-          ? `<button type="button" class="ch6l-btn" data-low>把 u 压低</button><button type="button" class="ch6l-btn" data-flat>让 u 落进平面</button><button type="button" class="ch6l-btn" data-reset>回到默认视角</button>`
+          ? `<button type="button" class="ch6l-btn" data-low>把 u 压低</button><button type="button" class="ch6l-btn" data-flat>让 u 落进平面</button><button type="button" class="ch6l-btn" data-vflat hidden>让 v 也落进平面</button><button type="button" class="ch6l-btn" data-reset>回到默认视角</button>`
           : `<button type="button" class="ch6l-btn" data-lift>把 w₃ 抬出平面</button><button type="button" class="ch6l-btn" data-top>从上方看</button><button type="button" class="ch6l-btn" data-reset>回到默认视角</button>`;
       tools.querySelector("[data-reset]").addEventListener("click", () => scene.resetView());
       tools.querySelector("[data-low]")?.addEventListener("click", () => {
@@ -683,6 +703,12 @@
       tools.querySelector("[data-flat]")?.addEventListener("click", () => {
         state.u = [state.u[0], state.u[1], 0];
         redraw();
+      });
+      tools.querySelector("[data-vflat]")?.addEventListener("click", () => {
+        state.v = [state.v[0], state.v[1], 0];
+        redraw();
+        // look nearly straight down so both parallelograms in W are open
+        scene.lookAlong([0.2, -0.3, 1]);
       });
       tools.querySelector("[data-lift]")?.addEventListener("click", () => {
         state.w3 = [state.w3[0], state.w3[1], 1.5];

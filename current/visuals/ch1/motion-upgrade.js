@@ -835,6 +835,8 @@
         return;
       }
       state.locking = Boolean(options.locking);
+      // the readouts show where the roots are going, not the frames in between
+      state.tween = { alpha: { ...alphaTarget }, beta: { ...betaTarget } };
       const start = performance.now();
       const frame = (now) => {
         const t = ease((now - start) / duration);
@@ -849,6 +851,7 @@
         }
         state.raf = 0;
         state.locking = false;
+        state.tween = null;
         options.after?.();
         updateDom();
       };
@@ -859,7 +862,7 @@
       const targets = {
         pair: { re: 1, im: 1.5 },
         imag: { re: 0, im: 2 },
-        real: { re: 1.4, im: 0 },
+        real: { re: 1.5, im: 0 },
       };
       const alpha = targets[key] || targets.pair;
       const beta = state.mode === "R" ? { re: alpha.re, im: -alpha.im } : { ...state.beta };
@@ -886,8 +889,8 @@
     }
 
     function setPoint(target, world) {
-      target.re = clamp(Math.round(world.x * 20) / 20, -2.5, 2.5);
-      target.im = clamp(Math.round(world.y * 20) / 20, -2.5, 2.5);
+      target.re = clamp(snap(world.x), -2.5, 2.5);
+      target.im = clamp(snap(world.y), -2.5, 2.5);
       if (state.mode === "R" && target === state.alpha) state.beta = exactConjugate();
       // β snaps onto ᾱ when it is within about one grid step of it
       if (target === state.beta && Math.hypot(state.beta.re - state.alpha.re, state.beta.im + state.alpha.im) < 0.11) state.beta = exactConjugate();
@@ -916,7 +919,7 @@
     canvas.addEventListener("pointercancel", release);
 
     canvas.addEventListener("keydown", (event) => {
-      const delta = event.shiftKey ? 0.25 : 0.1;
+      const delta = event.shiftKey ? 0.5 : 0.25;
       if (!["ArrowLeft", "ArrowRight", "ArrowUp", "ArrowDown"].includes(event.key)) return;
       event.preventDefault();
       const next = { ...state.alpha };
@@ -936,7 +939,7 @@
       options: [
         [`${tex("\\bar\\alpha=1-\\tfrac32 i")}：与 α 关于实轴对称`, true, ""],
         [`${tex("-\\alpha=-1-\\tfrac32 i")}：与 α 关于原点对称`, false, `这时 ${tex("\\alpha\\beta=-\\alpha^2=\\tfrac54-3i")}，常数项不是实数。`],
-        ["实轴上的某一点", false, `β 是实数时 ${tex("\\alpha+\\beta")} 的虚部仍是 1.5，一次项系数不是实数。`],
+        ["实轴上的某一点", false, `β 是实数时 ${tex("\\alpha+\\beta")} 的虚部仍是 ${tex("\\tfrac32")}，一次项系数不是实数。`],
         [`${tex("-\\bar\\alpha=-1+\\tfrac32 i")}：与 α 关于虚轴对称`, false, `这时 ${tex("\\alpha+\\beta=3i")}，一次项系数不是实数。`],
       ],
       right: `✓ 根之和 ${tex("-p")} 是实数，中点 ${tex("\\tfrac{\\alpha+\\beta}{2}")} 就在实轴上；根之积 ${tex("q")} 是实数，β 又落在半径 ${tex("|\\alpha|")} 的圆上。两条同时成立，只有 ${tex("\\beta=\\bar\\alpha")}，此时 ${tex("q=\\alpha\\bar\\alpha=|\\alpha|^2")}。`,
@@ -988,11 +991,11 @@
               <span>图上真正要看懂的关系</span>
               <strong data-geometry-copy></strong>
             </div>
-            <label class="ch1-slider-row"><span>Re(α)</span><input data-re type="range" min="-2.5" max="2.5" step="0.05"><output data-re-value></output></label>
-            <label class="ch1-slider-row"><span>Im(α)</span><input data-im type="range" min="-2.5" max="2.5" step="0.05"><output data-im-value></output></label>
+            <label class="ch1-slider-row"><span>Re(α)</span><input data-re type="range" min="-2.5" max="2.5" step="0.25"><output data-re-value></output></label>
+            <label class="ch1-slider-row"><span>Im(α)</span><input data-im type="range" min="-2.5" max="2.5" step="0.25"><output data-im-value></output></label>
             <div data-beta-controls hidden>
-              <label class="ch1-slider-row"><span>Re(β)</span><input data-bre type="range" min="-2.5" max="2.5" step="0.05"><output data-bre-value></output></label>
-              <label class="ch1-slider-row"><span>Im(β)</span><input data-bim type="range" min="-2.5" max="2.5" step="0.05"><output data-bim-value></output></label>
+              <label class="ch1-slider-row"><span>Re(β)</span><input data-bre type="range" min="-2.5" max="2.5" step="0.25"><output data-bre-value></output></label>
+              <label class="ch1-slider-row"><span>Im(β)</span><input data-bim type="range" min="-2.5" max="2.5" step="0.25"><output data-bim-value></output></label>
             </div>
             <div class="ch1-equation-grid is-compact">
               <div><span>α</span><strong data-alpha></strong></div>

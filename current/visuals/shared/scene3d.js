@@ -419,6 +419,14 @@
       });
 
       const placed = [];
+      // drag handles are obstacles too: a label never sits on a handle
+      if (options.spreadLabels) {
+        handles.forEach((h) => {
+          if (h.hidden?.()) return;
+          const q = project(h.get(), b);
+          placed.push({ x: q.x - 11, y: q.y + 5, w: 22 });
+        });
+      }
       // arrow shafts in screen space, so spread labels also keep off other arrows
       const shafts = options.spreadLabels ? prims.filter((p) => p.kind === "arrow").map((p) => [project(p.a, b), project(p.b, b)]) : [];
       labels.forEach((lab) => {
@@ -439,8 +447,10 @@
               const t = Math.max(0, Math.min(1, ((mx - p.x) * vx + (cy - p.y) * vy) / (vx * vx + vy * vy || 1)));
               return Math.hypot(p.x + vx * t - mx, p.y + vy * t - cy) < Math.min(w / 2, 14);
             });
-          const hits = (cx, cy) => placed.some((r) => cx < r.x + r.w && cx + w > r.x && Math.abs(cy - r.y) < h) || nearShaft(cx, cy);
-          const tries = [[0, 0], [0, -h], [0, h], [w * 0.6, 0], [-w * 0.6, 0], [0, -2 * h], [0, 2 * h], [w * 0.6, -h], [-w * 0.6, h]];
+          // a small gap, so two labels never touch
+          const gap = 6;
+          const hits = (cx, cy) => placed.some((r) => cx < r.x + r.w + gap && cx + w + gap > r.x && Math.abs(cy - r.y) < h) || nearShaft(cx, cy);
+          const tries = [[0, 0], [0, -h], [0, h], [w * 0.6, 0], [-w * 0.6, 0], [w + gap, 0], [w + gap, h], [0, -2 * h], [0, 2 * h], [w * 0.6, -h], [-w * 0.6, h]];
           const ok = tries.find(([ox, oy]) => !hits(x + ox, y + oy));
           if (ok) {
             x += ok[0];

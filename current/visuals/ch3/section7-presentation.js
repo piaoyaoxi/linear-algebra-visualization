@@ -349,7 +349,12 @@
           : "结式没有实根，因此原系统没有实公共点；在复数域中仍存在候选。";
       M().pulse(root.querySelector("[data-stage-card]"));
       draw();
-      if (state.step === 5) gate?.acted();
+      // the prediction is about the circle and the secant: only that example answers it
+      if (state.step === 5 && state.key === "crossing") gate?.acted();
+      else if (state.step === 5 && gate?.picked && !gate.revealed) {
+        const note = root.querySelector("[data-resultant-gate] .ch3l-predict-feedback");
+        if (note) note.textContent = "这道预测问的是“圆与割线”：切回它，走完五步，结论随后出现。";
+      }
     }
 
     root.querySelectorAll("[data-preset]").forEach((button) => scope.listen(button, "click", () => {

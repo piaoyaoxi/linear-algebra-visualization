@@ -868,6 +868,36 @@
     },
   };
 
+  /* Seam of a cracking block, as offsets across its middle (top to bottom). */
+  const SEAM = [0, 0.9, -0.75, 0.85, -0.9, 0.7, 0];
+
+  /* Closed path through corners [x, y, r]; r is the rounding at that corner. */
+  function cornerPath(ctx, pts) {
+    const n = pts.length;
+    ctx.beginPath();
+    ctx.moveTo((pts[n - 1][0] + pts[0][0]) / 2, (pts[n - 1][1] + pts[0][1]) / 2);
+    pts.forEach((p, i) => {
+      const q = pts[(i + 1) % n];
+      ctx.arcTo(p[0], p[1], q[0], q[1], p[2]);
+    });
+    ctx.closePath();
+  }
+
+  /*
+   * One half of a cracked block. The inner edge follows the seam with amplitude
+   * `amp`; the inner corners round off (radius `r`) as the halves settle.
+   */
+  function halfPath(ctx, b, side, amp, r) {
+    const seam = SEAM.slice(1, -1).map((z, i) => [z * amp, (b.h * (i + 1)) / (SEAM.length - 1), 0]);
+    if (side === "L") {
+      const xi = b.x + b.w;
+      cornerPath(ctx, [[b.x, b.y, 9], [xi, b.y, r], ...seam.map(([dx, dy]) => [xi + dx, b.y + dy, 0]), [xi, b.y + b.h, r], [b.x, b.y + b.h, 9]]);
+    } else {
+      const xi = b.x;
+      cornerPath(ctx, [[xi, b.y, r], [b.x + b.w, b.y, 9], [b.x + b.w, b.y + b.h, 9], [xi, b.y + b.h, r], ...seam.reverse().map(([dx, dy]) => [xi + dx, b.y + dy, 0])]);
+    }
+  }
+
   function divisorLab(root) {
     const ui = skeleton(root, {
       title: "初等因子积木",
@@ -879,70 +909,144 @@
     let flow = null;
     let anim = { from: new Map(), t: 1, raf: 0 };
     let last = new Map();
+    /*
+     * ℝ→ℂ runs split.s from 0 to 1: λ²+1 lights up (0–0.2), a seam runs down its
+     * middle while the label turns into λ−i | λ+i (0.2–0.5), then the halves part
+     * and take their own colours (0.5–1). ℂ→ℝ runs the same path back.
+     */
+    const SPLIT_MS = 1800;
+    const NOTE_HOLD = 1300;
+    const NOTE_FADE = 450;
+    let split = { s: 0, target: 0, raf: 0, timer: 0, note: null };
+    const reduced = () => Boolean(window.matchMedia?.("(prefers-reduced-motion: reduce)").matches);
+    const clamp01 = (x) => Math.max(0, Math.min(1, x));
+    const easeOut = (t) => 1 - (1 - t) ** 3;
+    const easeInOut = (t) => (t < 0.5 ? 4 * t ** 3 : 1 - (-2 * t + 2) ** 3 / 2);
+    const lerpBox = (a, b, t) => ({ x: a.x + (b.x - a.x) * t, y: a.y + (b.y - a.y) * t, w: a.w + (b.w - a.w) * t, h: a.h + (b.h - a.h) * t });
     ui.gateHost.addEventListener("click", () => redraw());
     const plane = K.plane2d(ui.stage, { extent: 3, hint: "", label: "不变因子与初等因子的积木" });
 
-    /* Blocks of the current preset under the current field: one per (row, prime). */
-    function blocks() {
+    /* Blocks of the current preset over a field: one per (row, prime). */
+    function blocks(field = state.field) {
       const { rows } = DIVISOR_PRESETS[state.key];
       const out = [];
       rows.forEach((row, r) =>
         Object.entries(row).forEach(([p, e]) => {
           const prime = PRIMES[p];
-          if (state.field === "C" && prime.split) prime.split.forEach((s) => out.push({ id: `${r}-${s}`, parent: `${r}-${p}`, r, p: s, e }));
+          if (field === "C" && prime.split) prime.split.forEach((s) => out.push({ id: `${r}-${s}`, parent: `${r}-${p}`, r, p: s, e }));
           else out.push({ id: `${r}-${p}`, r, p, e });
         }),
       );
       return out;
     }
+    const hasSplit = () => blocks("R").some((b) => PRIMES[b.p].split);
+
+    /* Elementary-divisor view: one line per prime, powers in increasing order. */
+    function edLines(list) {
+      const groups = new Map();
+      list.forEach((b) => groups.set(b.p, [...(groups.get(b.p) || []), b]));
+      return [...groups.values()].map((g) => g.sort((p, q) => p.e - q.e));
+    }
 
     const label = (b) => (b.e > 1 ? `(${PRIMES[b.p].text})${SUPS[b.e]}` : PRIMES[b.p].text);
     const btex = (b) => (b.e > 1 ? `(${PRIMES[b.p].tex})^{${b.e}}` : PRIMES[b.p].tex);
 
-    function layout(d) {
+    function layout(d, field = state.field) {
       const [w, h] = size(d);
-      const list = blocks();
       const { rows } = DIVISOR_PRESETS[state.key];
       const firstRow = rows.findIndex((row) => Object.keys(row).length);
       const shown = rows.length - firstRow;
-      const maxDeg = Math.max(...rows.map((row) => Object.entries(row).reduce((s, [p, e]) => s + PRIMES[p].deg * e, 0)));
       const left = w < 520 ? 74 : 110;
-      const unit = Math.min(112, (w - left - 40) / Math.max(maxDeg, 3));
+      const room = w - left - 40;
+      const units = (list) => list.reduce((s, b) => s + PRIMES[b.p].deg * b.e, 0);
+      /* One width per degree in both views and both fields, so a block keeps its size while it moves. */
+      const unit = Math.min(
+        112,
+        ...rows.map((row, r) => room / Math.max(units(blocks("R").filter((b) => b.r === r)), 3)),
+        ...["R", "C"].flatMap((f) => edLines(blocks(f)).map((g) => (room - 10 * (g.length - 1)) / Math.max(units(g), 3))),
+      );
       const bh = Math.min(62, (h - 120) / Math.max(shown, 3));
       const pos = new Map();
       if (state.view === "inv") {
         const top = h / 2 - (shown * (bh + 14)) / 2 + 20;
-        list.forEach((b) => {
-          const row = rows[b.r];
-          const order = Object.keys(row);
+        rows.forEach((row, r) => {
           let x = left;
-          const y = top + (b.r - firstRow) * (bh + 14);
-          for (const p of order) {
-            const prime = PRIMES[p];
-            const parts = state.field === "C" && prime.split ? prime.split : [p];
-            for (const s of parts) {
-              const bw = PRIMES[s].deg * row[p] * unit;
-              if (`${b.r}-${s}` === b.id) pos.set(b.id, { x, y, w: bw - 6, h: bh });
+          const y = top + (r - firstRow) * (bh + 14);
+          Object.entries(row).forEach(([p, e]) => {
+            const parts = field === "C" && PRIMES[p].split ? PRIMES[p].split : [p];
+            parts.forEach((s) => {
+              const bw = PRIMES[s].deg * e * unit;
+              pos.set(`${r}-${s}`, { x, y, w: bw - 6, h: bh });
               x += bw;
-            }
-          }
+            });
+          });
         });
         return { pos, top, firstRow, left, bh };
       }
-      /* elementary-divisor view: one flowing line per prime, sorted by power */
-      const groups = new Map();
-      list.forEach((b) => groups.set(b.p, [...(groups.get(b.p) || []), b]));
-      const lines = [...groups.values()];
+      const lines = edLines(blocks(field));
       const top = h / 2 - (lines.length * (bh + 14)) / 2 + 20;
       lines.forEach((g, li) => {
         let x = left;
-        g.sort((p, q) => p.e - q.e).forEach((b) => {
+        g.forEach((b) => {
           const bw = PRIMES[b.p].deg * b.e * unit;
           pos.set(b.id, { x, y: top + li * (bh + 14), w: bw - 6, h: bh });
           x += bw + 10;
         });
       });
-      return { pos, top, firstRow, left, bh, lines };
+      return { pos, top, firstRow, left, bh };
+    }
+
+    /* Opacity of the factorisation label λ²+1=(λ−i)(λ+i) shown with each field switch. */
+    function noteAlpha(now) {
+      const n = split.note;
+      if (!n) return 0;
+      if (n.still) return 1;
+      const fadeIn = clamp01((now - n.t0) / 260);
+      return n.done == null ? fadeIn : fadeIn * (1 - clamp01((now - n.done - NOTE_HOLD) / NOTE_FADE));
+    }
+
+    function playSplit(target) {
+      cancelAnimationFrame(split.raf);
+      clearTimeout(split.timer);
+      split.target = target;
+      if (!hasSplit()) {
+        split.s = target;
+        split.note = null;
+        return;
+      }
+      const t0 = performance.now();
+      if (reduced()) {
+        /* No motion: jump to the end and keep the label on screen for a moment. */
+        split.s = target;
+        split.note = { t0, done: t0, still: true };
+        split.timer = setTimeout(() => {
+          split.note = null;
+          plane.render();
+        }, 2600);
+        return;
+      }
+      split.note = { t0, done: null, still: false };
+      let prev = t0;
+      const tick = (now) => {
+        const step = Math.max(0, now - prev) / SPLIT_MS;
+        prev = now;
+        split.s = split.target > split.s ? Math.min(split.target, split.s + step) : Math.max(split.target, split.s - step);
+        if (split.s === split.target && split.note.done == null) split.note.done = now;
+        plane.render();
+        if (split.s !== split.target || noteAlpha(now) > 0) split.raf = requestAnimationFrame(tick);
+        else {
+          split.note = null;
+          plane.render();
+        }
+      };
+      split.raf = requestAnimationFrame(tick);
+    }
+
+    function finishSplit() {
+      cancelAnimationFrame(split.raf);
+      clearTimeout(split.timer);
+      split.s = split.target;
+      split.note = null;
     }
 
     function animate() {
@@ -950,7 +1054,7 @@
       anim.from = new Map(last);
       anim.t = 0;
       const t0 = performance.now();
-      const reduce = window.matchMedia?.("(prefers-reduced-motion: reduce)").matches;
+      const reduce = reduced();
       const step = (now) => {
         anim.t = reduce ? 1 : Math.min(1, (now - t0) / 650);
         plane.render();
@@ -959,80 +1063,216 @@
       anim.raf = requestAnimationFrame(step);
     }
 
+    function draw(d, open, preset) {
+      const ctx = d.ctx;
+      const [w, h] = size(d);
+      const now = performance.now();
+      const font = (px, wt = 650) => `${wt} ${px}px 'LA Serif Latin', 'LA Serif SC', 'Songti SC', serif`;
+      const write = (x, y, str, color, opts = {}) => {
+        ctx.save();
+        ctx.globalAlpha = opts.alpha ?? 1;
+        d.text(at(d, x, y), str, color, { font: font(opts.size || 13, opts.weight), align: opts.align || "left" });
+        ctx.restore();
+      };
+      const blockSize = w < 520 ? 12.5 : 14;
+      const glowAlpha = d.pal.dark ? 0.2 : 0.16;
+      const Lr = layout(d, "R");
+      const Lc = layout(d, "C");
+      const L = state.field === "C" ? Lc : Lr;
+      const s = split.s;
+      const p1 = clamp01(s / 0.2);
+      const p2 = clamp01((s - 0.2) / 0.3);
+      const p3 = clamp01((s - 0.5) / 0.5);
+      /* Phase 3: the gap opens in place; in the divisor view the pieces then drop to their lines and slide along them. */
+      const eOpen = easeInOut(clamp01(p3 / (state.view === "inv" ? 1 : 0.4)));
+      const eDrop = easeInOut(clamp01((p3 - 0.4) / 0.32));
+      const eSlide = easeInOut(clamp01((p3 - 0.62) / 0.38));
+      const travel = (a, b) => ({ x: a.x + (b.x - a.x) * eSlide, y: a.y + (b.y - a.y) * eDrop, w: a.w + (b.w - a.w) * eSlide, h: a.h + (b.h - a.h) * eDrop });
+      const note = noteAlpha(now);
+      const glow = split.note?.still ? note : p1 * (1 - p3);
+      const viewT = easeOut(anim.t);
+      const drawn = new Set();
+      /* Follow a view switch: from the box drawn last to the box of this frame. */
+      const place = (id, box) => {
+        const from = anim.t < 1 && anim.from.get(id);
+        const out = from ? lerpBox(from, box, viewT) : box;
+        last.set(id, out);
+        drawn.add(id);
+        return out;
+      };
+      const paint = (path, color, alpha = 1) => {
+        const c = d.color(color);
+        ctx.save();
+        path();
+        ctx.fillStyle = d.alpha(c, 0.2 * alpha);
+        ctx.fill();
+        ctx.globalAlpha = alpha;
+        ctx.lineWidth = 1.8;
+        ctx.strokeStyle = c;
+        ctx.stroke();
+        ctx.restore();
+      };
+      const halo = (path, color, k) => {
+        if (k <= 0) return;
+        ctx.save();
+        path();
+        ctx.lineWidth = 9;
+        ctx.lineJoin = "round";
+        ctx.strokeStyle = d.alpha(d.color(color), glowAlpha * k);
+        ctx.stroke();
+        ctx.restore();
+      };
+      const rect = (b) => () => roundRect(ctx, b.x, b.y, Math.max(8, b.w), b.h, 9);
+
+      if (state.view === "inv") {
+        preset.rows.forEach((row, r) => {
+          if (r < Lr.firstRow) return;
+          write(Lr.left - 14, Lr.top + (r - Lr.firstRow) * (Lr.bh + 14) + Lr.bh / 2, `d${"₁₂₃₄₅"[r]}`, "muted", { align: "right", size: 14, weight: 700 });
+        });
+        if (Lr.firstRow > 0) write(Lr.left, Lr.top - 24, `d₁${Lr.firstRow > 1 ? `=…=d${"₁₂₃₄₅"[Lr.firstRow - 1]}` : ""}=1`, "faint", { size: 12.5 });
+      } else {
+        const top = Lr.top + (Lc.top - Lr.top) * eDrop;
+        write(Lr.left, top - 24, `初等因子（${state.field === "C" ? "复数域" : "实数域"}上共 ${blocks().length} 个）`, "muted", { size: 13, weight: 700 });
+      }
+
+      if (!open && state.view === "inv") {
+        /* Before the prediction each row is one unfactored block. */
+        preset.rows.forEach((row, r) => {
+          const mine = blocks().filter((b) => b.r === r);
+          if (!mine.length) return;
+          const boxes = mine.map((b) => L.pos.get(b.id));
+          mine.forEach((b, i) => last.set(b.id, boxes[i]));
+          const x = Math.min(...boxes.map((q) => q.x));
+          const x2 = Math.max(...boxes.map((q) => q.x + q.w));
+          const y = boxes[0].y;
+          ctx.save();
+          roundRect(ctx, x, y, x2 - x, L.bh, 9);
+          ctx.fillStyle = d.alpha(d.color("muted"), 0.1);
+          ctx.fill();
+          ctx.lineWidth = 1.6;
+          ctx.strokeStyle = d.color("muted");
+          ctx.stroke();
+          ctx.restore();
+          const text = mine.map((b) => (mine.length > 1 && b.e === 1 ? `(${label(b)})` : label(b))).join("");
+          write((x + x2) / 2, y + L.bh / 2, text, "text", { align: "center", size: blockSize, weight: 700 });
+        });
+        return;
+      }
+
+      let noteRuns = null;
+      blocks("R").forEach((b) => {
+        const prime = PRIMES[b.p];
+        const R = Lr.pos.get(b.id);
+        if (!prime.split) {
+          const box = place(b.id, travel(R, Lc.pos.get(b.id)));
+          paint(rect(box), prime.color);
+          write(box.x + box.w / 2, box.y + box.h / 2, label(b), "text", { align: "center", size: blockSize, weight: 700 });
+          return;
+        }
+        const kids = prime.split.map((k) => ({ id: `${b.r}-${k}`, r: b.r, p: k, e: b.e }));
+        noteRuns = noteRuns || [
+          [label(b), prime.color],
+          [" = ", "muted"],
+          ...kids.map((k) => [`(${PRIMES[k.p].text})${k.e > 1 ? SUPS[k.e] : ""}`, PRIMES[k.p].color]),
+        ];
+        const amp = Math.min(4.5, R.w * 0.04);
+        if (s <= 0.5) {
+          /* Still one block: it lights up, then a seam runs down from the top. */
+          const box = place(b.id, R);
+          halo(rect(box), prime.color, glow);
+          paint(rect(box), prime.color);
+          /* the old label fades before the seam reaches it; the two new ones follow */
+          const fadeOld = 1 - clamp01((s - 0.2) / 0.1);
+          const fadeNew = clamp01((s - 0.36) / 0.12);
+          if (p2 > 0) {
+            const xm = box.x + box.w / 2;
+            const yEnd = box.y + box.h * p2;
+            const pts = SEAM.map((z, i) => [xm + z * amp, box.y + (box.h * i) / (SEAM.length - 1)]);
+            ctx.save();
+            ctx.beginPath();
+            ctx.moveTo(pts[0][0], pts[0][1]);
+            for (let i = 1; i < pts.length; i += 1) {
+              const [x0, y0] = pts[i - 1];
+              const [x1, y1] = pts[i];
+              if (y1 <= yEnd) ctx.lineTo(x1, y1);
+              else {
+                const f = (yEnd - y0) / (y1 - y0);
+                ctx.lineTo(x0 + (x1 - x0) * f, yEnd);
+                break;
+              }
+            }
+            ctx.lineWidth = 1.8;
+            ctx.lineCap = "round";
+            ctx.lineJoin = "round";
+            ctx.strokeStyle = d.color(prime.color);
+            ctx.stroke();
+            ctx.restore();
+          }
+          if (fadeOld > 0) write(box.x + box.w / 2, box.y + box.h / 2, label(b), "text", { align: "center", size: blockSize, weight: 700, alpha: fadeOld });
+          if (fadeNew > 0) {
+            write(box.x + box.w / 4, box.y + box.h / 2, label(kids[0]), "text", { align: "center", size: blockSize, weight: 700, alpha: fadeNew });
+            write(box.x + (3 * box.w) / 4, box.y + box.h / 2, label(kids[1]), "text", { align: "center", size: blockSize, weight: 700, alpha: fadeNew });
+          }
+          return;
+        }
+        /* Two halves: the gap opens, the seam straightens, each takes its own colour. */
+        const half = R.w / 2;
+        const slots = [
+          { x: R.x, y: R.y, w: half, h: R.h },
+          { x: R.x + half, y: R.y, w: half, h: R.h },
+        ];
+        /* parted by the ordinary 6px gap between blocks */
+        const parted = [
+          { x: R.x, y: R.y, w: half - 3, h: R.h },
+          { x: R.x + half + 3, y: R.y, w: half - 3, h: R.h },
+        ];
+        const tint = eOpen;
+        kids.forEach((k, i) => {
+          const box = place(k.id, travel(lerpBox(slots[i], parted[i], eOpen), Lc.pos.get(k.id)));
+          const side = i ? "R" : "L";
+          const path = eOpen >= 1 ? rect(box) : () => halfPath(ctx, box, side, amp * (1 - eOpen), 9 * eOpen);
+          const own = PRIMES[k.p].color;
+          if (own === prime.color) {
+            halo(path, own, glow);
+            paint(path, own);
+          } else {
+            halo(path, prime.color, glow * (1 - tint));
+            halo(path, own, glow * tint);
+            paint(path, prime.color, 1 - tint);
+            paint(path, own, tint);
+          }
+          write(box.x + box.w / 2, box.y + box.h / 2, label(k), "text", { align: "center", size: blockSize, weight: 700 });
+        });
+      });
+      [...last.keys()].forEach((id) => drawn.has(id) || last.delete(id));
+
+      if (noteRuns && note > 0) {
+        /* λ²+1 = (λ−i)(λ+i), each factor in the colour of its block, under the stack. */
+        const boxes = [...Lr.pos.values(), ...Lc.pos.values()];
+        const y = Math.min(h - 14, Math.max(...boxes.map((b) => b.y + b.h)) + 30);
+        ctx.save();
+        ctx.font = font(w < 520 ? 14 : 15, 700);
+        ctx.textBaseline = "middle";
+        ctx.textAlign = "left";
+        const widths = noteRuns.map(([str]) => ctx.measureText(str).width);
+        let x = Math.max(4, Math.min(Lr.left, w - 4 - widths.reduce((a, b) => a + b, 0)));
+        ctx.globalAlpha = note;
+        ctx.lineWidth = 4;
+        ctx.strokeStyle = d.pal.dark ? "rgba(14,18,27,.85)" : "rgba(255,255,255,.9)";
+        noteRuns.forEach(([str, color], i) => {
+          ctx.strokeText(str, x, y);
+          ctx.fillStyle = d.color(color);
+          ctx.fillText(str, x, y);
+          x += widths[i];
+        });
+        ctx.restore();
+      }
+    }
+
     function redraw() {
       const open = Boolean(flow?.predicted);
       const preset = DIVISOR_PRESETS[state.key];
-      plane.setDraw((d) => {
-        const ctx = d.ctx;
-        const [w] = size(d);
-        const L = layout(d);
-        const ease = (t) => 1 - (1 - t) ** 3;
-        const t = ease(anim.t);
-        const font = (px, wt = 650) => `${wt} ${px}px 'LA Serif Latin', 'LA Serif SC', 'Songti SC', serif`;
-        const write = (x, y, str, color, opts = {}) => d.text(at(d, x, y), str, color, { font: font(opts.size || 13, opts.weight), align: opts.align || "left" });
-        if (state.view === "inv") {
-          const { rows } = preset;
-          rows.forEach((row, r) => {
-            if (r < L.firstRow) return;
-            const y = L.top + (r - L.firstRow) * (L.bh + 14) + L.bh / 2;
-            write(L.left - 14, y, `d${"₁₂₃₄₅"[r]}`, "muted", { align: "right", size: 14, weight: 700 });
-          });
-          if (L.firstRow > 0) write(L.left, L.top - 24, `d₁${L.firstRow > 1 ? `=…=d${"₁₂₃₄₅"[L.firstRow - 1]}` : ""}=1`, "faint", { size: 12.5 });
-        } else {
-          write(L.left, L.top - 24, `初等因子（${state.field === "C" ? "复数域" : "实数域"}上共 ${blocks().length} 个）`, "muted", { size: 13, weight: 700 });
-        }
-        if (!open && state.view === "inv") {
-          /* Before the prediction each row is one unfactored block. */
-          preset.rows.forEach((row, r) => {
-            const mine = blocks().filter((b) => b.r === r);
-            if (!mine.length) return;
-            const boxes = mine.map((b) => L.pos.get(b.id));
-            mine.forEach((b, i) => last.set(b.id, boxes[i]));
-            const x = Math.min(...boxes.map((q) => q.x));
-            const x2 = Math.max(...boxes.map((q) => q.x + q.w));
-            const y = boxes[0].y;
-            ctx.save();
-            roundRect(ctx, x, y, x2 - x, L.bh, 9);
-            ctx.fillStyle = d.alpha(d.color("muted"), 0.1);
-            ctx.fill();
-            ctx.lineWidth = 1.6;
-            ctx.strokeStyle = d.color("muted");
-            ctx.stroke();
-            ctx.restore();
-            const text = mine.map((b) => (mine.length > 1 && b.e === 1 ? `(${label(b)})` : label(b))).join("");
-            write((x + x2) / 2, y + L.bh / 2, text, "text", { align: "center", size: w < 520 ? 12.5 : 14, weight: 700 });
-          });
-          return;
-        }
-        blocks().forEach((b) => {
-          const to = L.pos.get(b.id);
-          let from = anim.from.get(b.id);
-          if (!from && b.parent && anim.from.get(b.parent)) {
-            const pf = anim.from.get(b.parent);
-            const half = PRIMES[b.p] === PRIMES[PRIMES.q.split[0]] ? 0 : 1;
-            from = { x: pf.x + (half * (pf.w + 6)) / 2, y: pf.y, w: pf.w / 2 - 3, h: pf.h };
-          }
-          if (!from) {
-            const kids = PRIMES[b.p].split;
-            const child = kids && anim.from.get(`${b.r}-${kids[0]}`);
-            const child2 = kids && anim.from.get(`${b.r}-${kids[1]}`);
-            from = child && child2 ? { x: child.x, y: child.y, w: child2.x + child2.w - child.x, h: child.h } : to;
-          }
-          const box = { x: from.x + (to.x - from.x) * t, y: from.y + (to.y - from.y) * t, w: from.w + (to.w - from.w) * t, h: from.h + (to.h - from.h) * t };
-          last.set(b.id, box);
-          const color = d.color(PRIMES[b.p].color);
-          ctx.save();
-          roundRect(ctx, box.x, box.y, Math.max(8, box.w), box.h, 9);
-          ctx.fillStyle = d.alpha(color, 0.2);
-          ctx.fill();
-          ctx.lineWidth = 1.8;
-          ctx.strokeStyle = color;
-          ctx.stroke();
-          ctx.restore();
-          write(box.x + box.w / 2, box.y + box.h / 2, label(b), "text", { align: "center", size: w < 520 ? 12.5 : 14, weight: 700 });
-        });
-        [...last.keys()].forEach((id) => blocks().some((b) => b.id === id) || last.delete(id));
-      });
+      plane.setDraw((d) => draw(d, open, preset));
 
       const rowsTex = preset.rows.map((row) => {
         const list = Object.entries(row).flatMap(([p, e]) =>
@@ -1053,8 +1293,16 @@
 
     function setView(v) {
       if (v === state.view) return;
+      finishSplit();
       state.view = v;
       animate();
+      redraw();
+    }
+
+    function setField(f) {
+      if (f === state.field) return;
+      state.field = f;
+      playSplit(f === "C" ? 1 : 0);
       redraw();
     }
 
@@ -1083,9 +1331,7 @@
           ["C", "复数域"],
         ],
         (f) => {
-          state.field = f;
-          animate();
-          redraw();
+          setField(f);
           flow?.acted();
         },
         state.field,
@@ -1093,11 +1339,15 @@
     }
 
     function load(key) {
+      cancelAnimationFrame(anim.raf);
+      cancelAnimationFrame(split.raf);
+      clearTimeout(split.timer);
       state.key = key;
       state.view = DIVISOR_PRESETS[key].start;
       state.field = "R";
       last = new Map();
       anim = { from: new Map(), t: 1, raf: 0 };
+      split = { s: 0, target: 0, raf: 0, timer: 0, note: null };
       viewChips();
       flow = gate(ui.gateHost, ui.result, { ...DIVISOR_PRESETS[key].predict, actHint: "已记下你的预测。切换排法或数域，结论随后出现。" });
       redraw();
@@ -1112,6 +1362,8 @@
     load("split");
     return () => {
       cancelAnimationFrame(anim.raf);
+      cancelAnimationFrame(split.raf);
+      clearTimeout(split.timer);
       plane.destroy();
     };
   }

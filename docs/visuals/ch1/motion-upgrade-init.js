@@ -5,7 +5,7 @@
   if (!document.querySelector('link[href*="repair-pass-final.css"]')) {
     const link = document.createElement("link");
     link.rel = "stylesheet";
-    link.href = "./visuals/ch1/repair-pass-final.css?v=ch1-repair-final1";
+    link.href = "./visuals/ch1/repair-pass-final.css?v=ch1-repair-final6";
     document.head.append(link);
   }
 

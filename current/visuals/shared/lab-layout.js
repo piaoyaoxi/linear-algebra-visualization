@@ -82,6 +82,12 @@
       });
       gatePrimary(lab);
       lab.classList.add("la-laid-out");
+      // a wide row of presets would squeeze the title: put it on its own row instead
+      const head = lab.querySelector(":scope > .ch3l-head, :scope > .ch6l-head, :scope > .ch7l-head, :scope > .ch9l-head");
+      if (head) {
+        lab.classList.remove("la-stack");
+        if (head.getBoundingClientRect().width < 360) lab.classList.add("la-stack");
+      }
     });
   }
 

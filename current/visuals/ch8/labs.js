@@ -1129,7 +1129,8 @@
     }
 
     const SUB = "₀₁₂₃₄₅";
-    const NAMES = ["ε", "η", "ζ", "ξ"];
+    // chain vectors get their own letters so they are not read as the standard basis ε
+    const NAMES = ["α", "β", "γ", "δ"];
 
     function redraw() {
       const open = Boolean(flow?.predicted);
@@ -1259,15 +1260,15 @@
         return;
       }
       controls.innerHTML = `<button type="button" class="ch7l-btn" data-down${k <= 1 ? " disabled" : ""}>往下一层</button><button type="button" class="ch7l-btn is-primary" data-up${k >= top ? " disabled" : ""}>往上一层</button><span class="ch7l-muted">当前：ker N${k > 1 ? "²³⁴"[k - 2] : ""}，维数 ${nu[k]}</span>`;
+      // the conclusion (all block sizes) opens only once the tower reaches the top layer
       controls.querySelector("[data-up]").addEventListener("click", () => {
         state.k = Math.min(top, k + 1);
+        if (state.k >= top) flow?.acted();
         redraw();
-        flow?.acted();
       });
       controls.querySelector("[data-down]").addEventListener("click", () => {
         state.k = Math.max(1, k - 1);
         redraw();
-        flow?.acted();
       });
       const rows = [];
       for (let j = 1; j <= k; j += 1)
@@ -1432,18 +1433,19 @@
       const minimal = K.minimalPolynomial(C);
       const mp = P.make(minimal.map((x) => x));
       const inv = P.invariantFactors(P.charMatrix(companion()));
+      const shown = Boolean(flow?.revealed);
       readCard.innerHTML = `<h4>伴随矩阵</h4><div>${texD(`C=${numMatrix(C)}`)}</div>
         <ul class="ch8l-list"><li>${tex(`|\\lambda E-C|=${pfac(P.det(P.charMatrix(companion())))}`)}</li>
-        <li>最小多项式 ${tex(pfac(mp))}</li>
-        <li>不变因子 ${tex(inv.map(pfac).join(",\\ "))}</li></ul>
-        <p class="ch7l-muted">${P.eq(mp, dpoly()) ? "最小多项式就是 d(λ)。" : ""}e₁, Ce₁, C²e₁ 恰好是 e₁, e₂, e₃。</p>`;
+        ${shown ? `<li>最小多项式 ${tex(pfac(mp))}</li>
+        <li>不变因子 ${tex(inv.map(pfac).join(",\\ "))}</li>` : ""}</ul>
+        ${shown ? `<p class="ch7l-muted">${P.eq(mp, dpoly()) ? "最小多项式就是 d(λ)。" : ""}e₁, Ce₁, C²e₁ 恰好是 e₁, e₂, e₃。</p>` : `<p class="ch7l-muted">拖动滑块或换一个 d(λ)，最小多项式与不变因子随后出现。</p>`}`;
     }
 
     sliders.forEach((s) =>
       s.addEventListener("input", () => {
         state.a[Number(s.dataset.a)] = Number(s.value);
-        redraw();
         flow?.acted();
+        redraw();
       }),
     );
     K.chips(
@@ -1451,8 +1453,8 @@
       Object.entries(COMPANION_PRESETS).map(([key, v]) => [key, `d(λ)=${v.label}`]),
       (key) => {
         state.a = COMPANION_PRESETS[key].a.slice();
-        redraw();
         flow?.acted();
+        redraw();
       },
       "p1",
     );

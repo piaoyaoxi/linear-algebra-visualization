@@ -683,8 +683,9 @@
     const stageDrawOptions = (stage) => ({
       vector: true,
       vectorLabel: vectorLabelForCompose(stage),
-      firstLabel: "Ae₁",
-      secondLabel: "Ae₂",
+      // the columns are images of e₁, e₂ under what has been applied so far: I, B, then AB
+      firstLabel: ["e₁", "Be₁", "ABe₁"][stage] || "ABe₁",
+      secondLabel: ["e₂", "Be₂", "ABe₂"][stage] || "ABe₂",
     });
     const reset = () => {
       cancelCanvasAnimation(canvas);
@@ -850,7 +851,7 @@
     if (!root.isConnected) return;
     const compose = root.querySelector("[data-s2c-compose-canvas]");
     if (compose && compose.offsetParent !== null) {
-      const opts = compose._s2cDrawOptions || { vectorLabel: "x", firstLabel: "Ae₁", secondLabel: "Ae₂" };
+      const opts = compose._s2cDrawOptions || { vectorLabel: "x", firstLabel: "e₁", secondLabel: "e₂" };
       drawTransformScene(compose, currentMatrices.get(compose) || MODEL.I, opts);
     }
     const column = root.querySelector("[data-s2c-column-canvas]");

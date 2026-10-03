@@ -80,8 +80,14 @@ const routes = [
   {
     id: "jordan-derivation",
     canvas: true,
+    // the conclusion opens only once the tower reaches the top layer
     async act(page, lab) {
-      await lab.locator("[data-up]").click();
+      for (let i = 0; i < 6; i += 1) {
+        const up = lab.locator("[data-up]");
+        if (!(await up.count()) || !(await up.isEnabled())) break;
+        await up.click();
+        await page.waitForTimeout(80);
+      }
     },
   },
   {

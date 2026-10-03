@@ -845,3 +845,13 @@ body .ch7l-iter > :is(thead, tbody) > tr > :is(th, td):not(:first-child) {
   text-align: right;
   font-variant-numeric: tabular-nums;
 }
+
+/* lab-layout.js: when the title would be squeezed, the presets get their own row */
+body :is(.ch3l-lab, .ch6l-lab, .ch7l-lab, .ch9l-lab).la-laid-out.la-stack > :is(.ch3l-head, .ch6l-head, .ch7l-head, .ch9l-head) {
+  grid-column: 1 / -1;
+}
+
+body :is(.ch3l-lab, .ch6l-lab, .ch7l-lab, .ch9l-lab).la-laid-out.la-stack > :is(.ch3l-head, .ch6l-head, .ch7l-head, .ch9l-head) + :is(.ch3l-toolbar, .ch6l-toolbar, .ch7l-toolbar, .ch9l-toolbar) {
+  grid-column: 1 / -1;
+  justify-self: start;
+}

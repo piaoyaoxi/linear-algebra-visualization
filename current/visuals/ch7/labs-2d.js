@@ -656,9 +656,26 @@
       });
       let html = `<h4>k = ${state.k}</h4><p>${tex(`x_{${state.k}}=`)} ${vecText(xk, 3)}</p>`;
       if (c) {
-        html += `<p>${tex(`x_0=${lf(c[0])}\\eta_1${c[1].n < 0 ? "" : "+"}${lf(c[1])}\\eta_2`)}</p>
-          <table class="ch7l-table"><thead><tr><th>分量</th><th>${tex("\\lambda")}</th><th>${tex("c_i\\lambda_i^{k}")}</th></tr></thead><tbody>
-          ${[0, 1].map((i) => `<tr><td style="color:var(--${i ? "cv-v2" : "cv-v1"})">η${"₁₂"[i]}</td><td>${tex(lf(F(P.lambdas[i])))}</td><td>${fmt(num(c[i]) * lam[i] ** state.k, 4)}</td></tr>`).join("")}
+        const co = (x) => { const t = lf(x); return t === "1" ? "" : t === "-1" ? "-" : t; };
+        html += `<p>${tex(`x_0=${co(c[0])}\\eta_1${c[1].n < 0 ? "" : "+"}${co(c[1])}\\eta_2`)}</p>`;
+        // last five steps: each component is multiplied by its own λ; the ratio column
+        // (weaker over stronger component) shows which one dies out
+        const strong = Math.abs(lam[1]) >= Math.abs(lam[0]) ? 1 : 0;
+        const weak = 1 - strong;
+        const comp = (i, k) => num(c[i]) * lam[i] ** k;
+        const rows = [];
+        for (let k = Math.max(0, state.k - 4); k <= state.k; k += 1) rows.push(k);
+        const ratioHead = `η${"₁₂"[weak]} / η${"₁₂"[strong]}`;
+        html += `<table class="ch7l-table ch7l-iter"><thead><tr><th>k</th>
+          <th style="color:var(--cv-v1)">η₁ 分量 ×${P.lambdas[0]}</th>
+          <th style="color:var(--cv-v2)">η₂ 分量 ×${P.lambdas[1]}</th>
+          <th>${ratioHead}</th></tr></thead><tbody>
+          ${rows.map((k) => {
+            const a = comp(0, k), b = comp(1, k);
+            const st = comp(strong, k), wk = comp(weak, k);
+            const ratio = Math.abs(st) < 1e-12 ? "—" : fmt(wk / st, 3);
+            return `<tr${k === state.k ? ' class="is-now"' : ""}><td>${k}</td><td>${fmt(a, 3)}</td><td>${fmt(b, 3)}</td><td>${ratio}</td></tr>`;
+          }).join("")}
           </tbody></table>`;
         const onLine = c.findIndex((x) => M().isZero(x));
         if (onLine >= 0) html += `<p class="ch7l-ok">x₀ 在 η${"₁₂"[1 - onLine]} 所在直线上：c${"₁₂"[onLine]}=0，点永远不离开这条直线。</p>`;

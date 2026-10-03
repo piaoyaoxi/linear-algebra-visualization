@@ -269,6 +269,53 @@
     drawArrow(ctx, origin, pointFor(matrix, 1, 0, origin, scale), palette.v1, options.firstLabel || "Ae₁", 3);
     drawArrow(ctx, origin, pointFor(matrix, 0, 1, origin, scale), palette.coral, options.secondLabel || "Ae₂", 3);
 
+    // trail: the points x has already reached (plane coordinates), kept as dashed ghosts
+    // and joined by a dotted path that ends at the current tip
+    if (options.vector !== false && Array.isArray(options.trail) && options.trail.length) {
+      const toScreen = ([px, py]) => ({ x: origin.x + px * scale, y: origin.y - py * scale });
+      const tip = pointFor(matrix, MODEL.x[0], MODEL.x[1], origin, scale);
+      ctx.save();
+      ctx.strokeStyle = palette.blue;
+      ctx.fillStyle = palette.blue;
+      ctx.lineWidth = 2;
+      ctx.globalAlpha = 0.35;
+      ctx.setLineDash([6, 5]);
+      options.trail.forEach((point) => {
+        const p = toScreen(point.at);
+        if (Math.hypot(p.x - tip.x, p.y - tip.y) < 4) return;
+        ctx.beginPath();
+        ctx.moveTo(origin.x, origin.y);
+        ctx.lineTo(p.x, p.y);
+        ctx.stroke();
+      });
+      ctx.globalAlpha = 0.85;
+      ctx.lineWidth = 1.4;
+      ctx.setLineDash([2, 4]);
+      ctx.beginPath();
+      options.trail.forEach((point, i) => {
+        const p = toScreen(point.at);
+        if (i === 0) ctx.moveTo(p.x, p.y);
+        else ctx.lineTo(p.x, p.y);
+      });
+      ctx.lineTo(tip.x, tip.y);
+      ctx.stroke();
+      ctx.setLineDash([]);
+      ctx.font = "italic 600 13px 'LA Serif Latin', 'LA Serif SC', 'Songti SC', serif";
+      options.trail.forEach((point) => {
+        const p = toScreen(point.at);
+        ctx.globalAlpha = 0.85;
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, 3.2, 0, Math.PI * 2);
+        ctx.fill();
+        if (point.label && Math.hypot(p.x - tip.x, p.y - tip.y) >= 4) {
+          ctx.globalAlpha = 0.75;
+          const [dx, dy] = point.offset || [-8, -10];
+          ctx.fillText(point.label, p.x + dx, p.y + dy);
+        }
+      });
+      ctx.restore();
+    }
+
     if (options.vector !== false) {
       drawArrow(
         ctx,
@@ -309,7 +356,7 @@
     if (reducedMotion() || keyframes.length < 2) {
       const final = keyframes[keyframes.length - 1];
       const finalStage = keyframes.length - 1;
-      drawTransformScene(canvas, final.matrix, stageDraw?.(finalStage) || baseDraw);
+      drawTransformScene(canvas, final.matrix, stageDraw?.(finalStage, finalStage) || baseDraw);
       onStage?.(finalStage, final, 1);
       return Promise.resolve();
     }
@@ -320,7 +367,8 @@
       let pauseUntil = 0;
       let activeStage = 0;
 
-      const drawOpts = () => stageDraw?.(activeStage) || baseDraw;
+      // second argument: index of the last keyframe already reached
+      const drawOpts = () => stageDraw?.(activeStage, index) || baseDraw;
 
       const frame = (now) => {
         const state = animationState.get(canvas);
@@ -509,8 +557,9 @@
             <div class="s2c-stage-copy">
               <span class="s2c-stage-kicker">核心画面</span>
               <h4>同一张网格，先经过 B，再经过 A</h4>
-              <p>紫色向量是输入 <span class="s2c-math-plain">x</span> 在当前变换下的像；整张浅紫网格随矩阵连续变形。</p>
+              <p>紫色向量是输入 <span class="s2c-math-plain">x</span> 在当前变换下的像；虚线留下它经过的位置。</p>
             </div>
+            <div data-s2c-compose-gate></div>
             <div class="s2c-canvas-shell">
               <canvas class="s2c-main-canvas" data-s2c-compose-canvas aria-label="矩阵复合连续动画"></canvas>
               <div class="s2c-stage-badge" data-s2c-compose-badge>初始：单位网格与 x</div>
@@ -521,11 +570,11 @@
               <button type="button" data-s2c-compose-reset>重置</button>
             </div>
             <div class="s2c-process-track" data-s2c-process-track>
-              <span class="is-active">x</span><i>经过 B</i><span>Bx</span><i>再经过 A</i><span>A(Bx)=ABx</span>
+              <span class="is-active" data-s2c-pt="0">x=(1, 1)ᵀ</span><i>经过 B</i><span data-s2c-pt="1">Bx</span><i>再经过 A</i><span data-s2c-pt="2">A(Bx)</span>
             </div>
-            <div class="s2c-conclusion">
-              <strong>${texInline("ABx=A(Bx)")}</strong>
-              <p>矩阵乘法把两个连续过程压成一个过程，而不是把两张表硬拼在一起。</p>
+            <div class="s2c-conclusion" data-s2c-compose-conclusion hidden>
+              <strong>${texInline("A(Bx)=(AB)x")}</strong>
+              <p>两步的终点 (4, 1)ᵀ 正是乘积矩阵 AB 作用在 x 上的结果。矩阵乘法 AB 就是“先做 B，再做 A”这个复合变换的矩阵。</p>
             </div>
           </section>
 
@@ -677,33 +726,72 @@
   }
 
   function bindComposition(root, signal) {
+    const panel = root.querySelector('[data-s2c-panel="compose"]');
     const canvas = root.querySelector("[data-s2c-compose-canvas]");
     const badge = root.querySelector("[data-s2c-compose-badge]");
-    const labels = ["初始：单位网格与 x", "第一步：B 完成剪切 → Bx", "第二步：A 继续拉伸 → ABx"];
-    const stageDrawOptions = (stage) => ({
-      vector: true,
-      vectorLabel: vectorLabelForCompose(stage),
-      // the columns are images of e₁, e₂ under what has been applied so far: I, B, then AB
-      firstLabel: ["e₁", "Be₁", "ABe₁"][stage] || "ABe₁",
-      secondLabel: ["e₂", "Be₂", "ABe₂"][stage] || "ABe₂",
+    const conclusion = root.querySelector("[data-s2c-compose-conclusion]");
+    const points = [...root.querySelectorAll("[data-s2c-pt]")];
+    const Bx = multiplyMatrixVector(MODEL.B, MODEL.x);
+    const ABx = multiplyMatrixVector(MODEL.AB, MODEL.x);
+    const labels = ["初始：单位网格与 x", "第一步：B 完成剪切 → Bx", "第二步：A 继续拉伸 → A(Bx)"];
+    const vec = (v) => `(${v[0]}, ${v[1]})ᵀ`;
+    const gate = window.LAPredictGate?.mount(root.querySelector("[data-s2c-compose-gate]"), {
+      root: panel,
+      manual: true,
+      key: "visuals/ch4/section2-continuous.js#compose",
+      question: `x 先经过 B 到达 Bx，再经过 A 到达 A(Bx)。这个终点和乘积矩阵 AB 一次作用得到的 (AB)x 相比会怎样？`,
+      options: [
+        ["两者是同一个点", true, ""],
+        ["不同：两步走得更远", false, "两步的终点 (4, 1)ᵀ 和 (AB)x 完全重合。"],
+        ["只有 x 是 e₁ 或 e₂ 时才相同", false, "对任意 x 都有 A(Bx)=(AB)x，AB 的每一列正是 A 作用在 B 的列上。"],
+        ["和 (BA)x 是同一个点", false, "(BA)x=(3, 1)ᵀ，那是先 A 后 B 的结果。"],
+      ],
+      right: `✓ 两步的终点 A(Bx)=(4, 1)ᵀ，与 (AB)x 重合。AB 就是“先 B 后 A”的复合变换的矩阵。`,
+      onReveal: () => {
+        conclusion.hidden = false;
+        points[2].textContent = `A(Bx)=(AB)x=${vec(ABx)}`;
+      },
     });
+    // stage = label stage, done = index of the last keyframe reached
+    const stageDrawOptions = (stage, done = stage) => {
+      const trail = [{ at: MODEL.x, label: "x", offset: [-16, -8] }];
+      if (done >= 1) trail.push({ at: Bx, label: "Bx", offset: [-26, -8] });
+      if (done >= 2) trail.push({ at: ABx, label: "" });
+      return {
+        vector: true,
+        vectorLabel: vectorLabelForCompose(stage),
+        trail,
+        // the columns are images of e₁, e₂ under what has been applied so far: I, B, then AB
+        firstLabel: ["e₁", "Be₁", "ABe₁"][stage] || "ABe₁",
+        secondLabel: ["e₂", "Be₂", "ABe₂"][stage] || "ABe₂",
+      };
+    };
     const reset = () => {
       cancelCanvasAnimation(canvas);
       drawTransformScene(canvas, MODEL.I, stageDrawOptions(0));
       badge.textContent = labels[0];
       setProcessStep(root, 0);
+      points[1].textContent = "Bx";
+      if (!gate?.revealed) points[2].textContent = "A(Bx)";
     };
     root.querySelector("[data-s2c-compose-play]")?.addEventListener(
       "click",
-      () => {
-        animateCanvasSequence(canvas, [{ matrix: MODEL.I }, { matrix: MODEL.B }, { matrix: MODEL.AB }], {
+      async () => {
+        points[1].textContent = "Bx";
+        await animateCanvasSequence(canvas, [{ matrix: MODEL.I }, { matrix: MODEL.B }, { matrix: MODEL.AB }], {
           stageDrawOptions,
-          onStage: (index) => {
+          onStage: (index, _frame, t) => {
             const stage = Math.min(index, 2);
             badge.textContent = labels[stage];
             setProcessStep(root, stage);
+            if (stage >= 1 && t === 1) points[1].textContent = `Bx=${vec(Bx)}`;
           },
         });
+        if (currentMatrices.get(canvas) === MODEL.AB) {
+          points[1].textContent = `Bx=${vec(Bx)}`;
+          gate?.acted();
+          if (!gate) conclusion.hidden = false;
+        }
       },
       { signal },
     );
@@ -711,9 +799,9 @@
       "click",
       () => {
         animateCanvasSequence(canvas, [{ matrix: MODEL.I }, { matrix: MODEL.AB }], {
-          stageDrawOptions: (stage) => stageDrawOptions(stage === 0 ? 0 : 2),
+          stageDrawOptions: (stage, done) => ({ ...stageDrawOptions(stage === 0 ? 0 : 2, 0), vectorLabel: stage === 0 ? "x" : "(AB)x" }),
           onStage: (index) => {
-            badge.textContent = index === 0 ? labels[0] : "一次完成：AB 与两步复合终点相同";
+            badge.textContent = index === 0 ? labels[0] : "一次完成：AB 直接把 x 送到终点";
             setProcessStep(root, index === 0 ? 0 : 2);
           },
         });

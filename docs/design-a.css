@@ -394,9 +394,11 @@ body :is(.ch3l-btn, .ch6l-btn, .ch7l-btn, .ch9l-btn).is-primary {
   color: var(--on-accent);
 }
 
-body :is(.ch3l-btn, .ch6l-btn, .ch7l-btn, .ch9l-btn).is-primary:hover {
+body :is(.ch3l-btn, .ch6l-btn, .ch7l-btn, .ch9l-btn).is-primary:hover,
+body :is(.ch3l-btn, .ch6l-btn, .ch7l-btn, .ch9l-btn).is-primary:active {
   border-color: var(--accent-strong);
   background: var(--accent-strong);
+  color: var(--on-accent);
 }
 
 body :is(.ch3l-btn, .ch6l-btn, .ch7l-btn, .ch9l-btn):disabled {
@@ -831,4 +833,15 @@ body .example-choice.is-correct > .example-choice-marker {
   border-color: var(--ok-text);
   background: var(--ok-text);
   color: var(--ok-bg);
+}
+
+/* ch7 §5 iteration table: the current step is the highlighted row */
+body .ch7l-iter tr.is-now > td {
+  background: var(--accent-soft);
+  font-weight: 600;
+}
+
+body .ch7l-iter > :is(thead, tbody) > tr > :is(th, td):not(:first-child) {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
 }

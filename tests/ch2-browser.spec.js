@@ -104,7 +104,13 @@ test.describe("Chapter 2 desktop visual system", () => {
 
   test("§1 synchronizes geometry, sign and collapse", async ({ page }) => {
     await openLesson(page, "determinant-intro");
+    await expect(page.locator("[data-det]")).toHaveText("7/8");
+    // predict, then act: the verdict waits for the first action
+    const gate = page.locator("#determinant-intro-interactive .ch3l-predict");
+    await gate.locator(".ch3l-predict-options > button", { hasText: /^负$/ }).click();
+    await expect(gate.locator(".ch3l-predict-feedback")).toContainText("已记下");
     await page.locator('[data-preset="shear"]').click();
+    await expect(gate.locator(".ch3l-predict-feedback")).toContainText("顺时针为负");
     await expect(page.locator("[data-det]")).toHaveText("1");
     await page.locator('[data-preset="collinear"]').click();
     await expect(page.locator("[data-status]")).toContainText("维度塌缩");

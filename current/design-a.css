@@ -1066,3 +1066,10 @@ body .ch7l-anglestrip .ch7s-eigen-label {
   font-style: italic;
   font-weight: 600;
 }
+
+/* ---------- score-4 tweaks: chapters 9 and 10 ---------- */
+
+/* the canvas frame keeps its own height when the side column grows after the reveal */
+body .ch9l-body > .ch9l-stage {
+  align-content: start;
+}

@@ -69,7 +69,12 @@
     return (key) => all.forEach((x) => x.classList.toggle("is-active", x.dataset.key === key));
   }
 
-  /* The student commits to an answer before the conclusion opens. */
+  /*
+   * The student commits to an answer before the conclusion opens. With
+   * spec.defer = lab, picking only records the prediction (spec.onPick); the
+   * verdict and onAnswered wait for the first action in the lab (a drag, a
+   * slider, a preset or a button outside the gate).
+   */
   function predictGate(host, spec, onAnswered) {
     spec = { ...spec, options: window.LAStableShuffle ? window.LAStableShuffle(spec.options, spec.question) : spec.options };
     const box = el("div", "ch9l-predict");
@@ -80,20 +85,43 @@
     host.append(box);
     const feedback = box.querySelector(".ch9l-predict-feedback");
     let answered = false;
+    let picked = null;
+
+    function verdict(b) {
+      const o = spec.options[Number(b.dataset.i)];
+      box.querySelectorAll("[data-i]").forEach((x) => x.classList.remove("is-right", "is-wrong", "is-picked"));
+      b.classList.add(o.correct ? "is-right" : "is-wrong");
+      feedback.hidden = false;
+      feedback.innerHTML = o.correct ? `✓ ${spec.right}` : `再对照图形想一想：${o.why || "动手操作后看看发生了什么。"}`;
+      if (!answered) {
+        answered = true;
+        box.dataset.answered = "true";
+        if (spec.defer) box.classList.add("is-done");
+        onAnswered?.();
+      }
+    }
+
     box.querySelectorAll("[data-i]").forEach((b) =>
       b.addEventListener("click", () => {
-        const o = spec.options[Number(b.dataset.i)];
-        box.querySelectorAll("[data-i]").forEach((x) => x.classList.remove("is-right", "is-wrong"));
-        b.classList.add(o.correct ? "is-right" : "is-wrong");
+        if (!spec.defer || answered) return verdict(b);
+        const first = !picked;
+        picked = b;
+        box.dataset.picked = "true";
+        box.querySelectorAll("[data-i]").forEach((x) => x.classList.toggle("is-picked", x === b));
         feedback.hidden = false;
-        feedback.innerHTML = o.correct ? `✓ ${spec.right}` : `再对照图形想一想：${o.why || "动手操作后看看发生了什么。"}`;
-        if (!answered) {
-          answered = true;
-          box.dataset.answered = "true";
-          onAnswered?.();
-        }
+        feedback.textContent = spec.actHint || "已记下你的预测。现在动手操作一次，结论随后出现。";
+        if (first) spec.onPick?.();
       }),
     );
+
+    if (spec.defer) {
+      const act = (e) => {
+        if (!picked || answered || box.contains(e.target)) return;
+        if (e.type === "click" && !e.target.closest("button")) return;
+        verdict(picked);
+      };
+      ["input", "change", "pointerup", "click"].forEach((t) => spec.defer.addEventListener(t, act));
+    }
     return box;
   }
 
@@ -448,16 +476,50 @@
     );
     lab.append(status, gateHost, result);
     const G = matF(ISO_G);
-    const state = { f: ISO_PRESETS.std.f.map((v) => v.slice()), alpha: [1, 1] };
+    const Gn = matN(G);
+    const state = { f: ISO_PRESETS.std.f.map((v) => v.slice()), alpha: [1, 1], revealed: false };
+
+    /*
+     * G-orthogonality drawn on the ellipse: t₁ is where the ray of f₁ meets the
+     * G-unit ellipse, and the tangent there has direction J·Gf₁. f₂ is
+     * G-orthogonal to f₁ exactly when it is parallel to that tangent; a dashed
+     * copy of f₂'s direction through t₁ shows how far off it is.
+     */
+    function tangentMark(f, b12) {
+      const [f1, f2] = state.f;
+      const q = Gn[0][0] * f1[0] * f1[0] + 2 * Gn[0][1] * f1[0] * f1[1] + Gn[1][1] * f1[1] * f1[1];
+      if (q < 1e-9 || Math.hypot(f2[0], f2[1]) < 1e-9) return [];
+      const t1 = [f1[0] / Math.sqrt(q), f1[1] / Math.sqrt(q)];
+      const Gf1 = [Gn[0][0] * f1[0] + Gn[0][1] * f1[1], Gn[1][0] * f1[0] + Gn[1][1] * f1[1]];
+      const tan = unit2([-Gf1[1], Gf1[0]]);
+      const d2 = unit2(f2);
+      const orth = M().isZero(b12);
+      const L = 1.05;
+      const objs = [];
+      if (orth) objs.push({ type: "segment", a: [t1[0] - tan[0] * L, t1[1] - tan[1] * L], b: [t1[0] + tan[0] * L, t1[1] + tan[1] * L], color: "subspace", width: 8, alpha: 0.18 });
+      objs.push({ type: "segment", a: [t1[0] - tan[0] * L, t1[1] - tan[1] * L], b: [t1[0] + tan[0] * L, t1[1] + tan[1] * L], color: "subspace", width: 2 });
+      objs.push({ type: "label", p: [t1[0] + tan[0] * L, t1[1] + tan[1] * L], text: "切线", color: "subspace", dx: 4, dy: -10, font: "600 12px 'LA Serif Latin', 'LA Serif SC', 'Songti SC', serif" });
+      // f₂ moved to the point of tangency (dashed copy)
+      const s = Math.min(1, 1.2 / Math.hypot(f2[0], f2[1]));
+      objs.push({ type: "arrow", from: t1, to: [t1[0] + f2[0] * s, t1[1] + f2[1] * s], color: "v2", width: 1.8, dash: [5, 4], alpha: 0.55 });
+      if (!orth) objs.push({ type: "segment", a: [t1[0] - d2[0] * 0.5, t1[1] - d2[1] * 0.5], b: t1, color: "v2", width: 1.6, dash: [5, 4], alpha: 0.55 });
+      objs.push({ type: "point", p: t1, color: "subspace", r: 4 });
+      return objs;
+    }
 
     function redraw() {
       const f = state.f.map(toF);
       const C = [[f[0][0], f[1][0]], [f[0][1], f[1][1]]];
       const det = det2(C);
       const alpha = toF(state.alpha);
+      const b12 = quadF(G, f[0], f[1]);
+      const onEllipse = f.map((v) => M().eq(quadF(G, v, v), F(1)));
       lp.setObjects(() => [
-        { type: "curve", pts: P().conic(matN(G)), closed: true, color: "subspace", width: 2.6, fill: true, fillAlpha: 0.07, label: "" },
+        { type: "curve", pts: P().conic(Gn), closed: true, color: "subspace", width: 2.6, fill: true, fillAlpha: 0.07, label: "" },
         { type: "polygon", pts: [[0, 0], state.f[0], [state.f[0][0] + state.f[1][0], state.f[0][1] + state.f[1][1]], state.f[1]], color: "axis", fillAlpha: 0.05, width: 1 },
+        ...(state.revealed && !M().isZero(det) ? tangentMark(f, b12) : []),
+        // a basis vector of G-length 1 ends on the ellipse: its tip glows
+        ...(state.revealed ? state.f.map((p, i) => (onEllipse[i] ? { type: "point", p, color: i ? "v2" : "v1", r: 14, alpha: 0.2 } : null)) : []),
         { type: "arrow", to: state.f[0], color: "v1", label: "f₁" },
         { type: "arrow", to: state.f[1], color: "v2", label: "f₂" },
         { type: "arrow", to: state.alpha, color: "drag", width: 2.2, label: "α" },
@@ -481,7 +543,12 @@
       ]);
       const aa = quadF(G, alpha, alpha);
       const xx = dotF(x, x);
-      status.innerHTML = `<p>${tex(`B=C^TGC=${M().latexMatrix(B)}`)}　${tex(`|\\alpha|^2=${lf(aa)}`)}，${tex(`|\\sigma\\alpha|^2=${lf(xx)}`)}</p>
+      const marks = state.revealed
+        ? `<p class="ch9l-muted" data-iso-tangent>${tex(`(f_1,f_2)=${lf(b12)}`)}：${
+            M().isZero(b12) ? "f₂ 平行于椭圆在 f₁ 方向上那一点的切线，f₁、f₂ 按 G 正交。" : "f₂（朱色虚线方向）偏离切线，f₁、f₂ 按 G 不正交。"
+          }${onEllipse.every(Boolean) ? "两个端点都在单位椭圆上，长度都是 1。" : ""}</p>`
+        : "";
+      status.innerHTML = `<p>${tex(`B=C^TGC=${M().latexMatrix(B)}`)}　${tex(`|\\alpha|^2=${lf(aa)}`)}，${tex(`|\\sigma\\alpha|^2=${lf(xx)}`)}</p>${marks}
         <p data-iso-status class="${iso ? "ch9l-ok" : "ch9l-muted"}">${
           iso
             ? "B = I：σ 把 V 的单位椭圆送成单位圆，保持全部内积，是欧氏空间的同构。"
@@ -508,10 +575,14 @@
           { text: "任意一组基都可以", why: "看右图：标准基的像是一个椭圆，长度被改变了。" },
           { text: `只有 ${tex("f_1=\\varepsilon_1,\\ f_2=\\varepsilon_2")}`, why: `${tex("(\\varepsilon_1,\\varepsilon_1)=2")}，标准基在 V 里不是单位向量。` },
         ],
-        right: `例如 ${tex("f_1=(\\tfrac35,\\tfrac15),\\ f_2=(-\\tfrac45,\\tfrac75)")}：${tex("B=I")}，右边的紫色曲线与虚线单位圆重合。`,
+        right: `例如 ${tex("f_1=(\\tfrac35,\\tfrac15),\\ f_2=(-\\tfrac45,\\tfrac75)")}：两个端点都在单位椭圆上，f₂ 平行于 f₁ 处的切线；${tex("B=I")}，右边的紫色曲线与虚线单位圆重合。`,
+        defer: lab,
+        actHint: "已记下你的预测。换一组基或拖动 f₁、f₂，结论随后出现。",
       },
       () => {
+        state.revealed = true;
         result.hidden = false;
+        redraw();
       },
     );
     redraw();
@@ -550,7 +621,42 @@
       `<p>保持内积 ⇔ 保持长度 ⇔ 把标准正交基变成标准正交基 ⇔ 矩阵满足 ${tex("Q^TQ=I")}。${tex("\\det Q=\\pm1")} 只是必要条件：${tex("\\operatorname{diag}(2,\\tfrac12)")} 保持面积，却把 ${tex("\\varepsilon_1")} 拉长一倍。${tex("\\det Q=1")} 的是旋转（第一类），${tex("\\det Q=-1")} 的是反射（第二类）。</p>`,
     );
     side.append(info, gateHost, result);
-    const state = { key: "rot", x: [1.5, 0.5], y: [0, 1] };
+    const state = { key: "rot", x: [1.5, 0.5], y: [0, 1], revealed: false };
+
+    /*
+     * Equal-length ticks and matching angle arcs: x and Qx carry one tick, y and
+     * Qy two, the image carrying them only when the length is kept exactly; the
+     * arc of ∠(Qx,Qy) is solid when it equals ∠(x,y) and dashed otherwise.
+     */
+    function marks(Q, ap) {
+      const x = toF(state.x);
+      const y = toF(state.y);
+      const Qx = M().matVec(Q, x);
+      const Qy = M().matVec(Q, y);
+      const [nx, ny, mx, my] = [dotF(x, x), dotF(y, y), dotF(Qx, Qx), dotF(Qy, Qy)];
+      const keepX = M().eq(nx, mx);
+      const keepY = M().eq(ny, my);
+      const objs = [];
+      if (!M().isZero(nx)) {
+        objs.push({ type: "ticks", a: [0, 0], b: state.x, n: 1, color: "v1", at: 0.55 });
+        if (keepX) objs.push({ type: "ticks", a: [0, 0], b: ap(state.x), n: 1, color: "image", at: 0.55 });
+      }
+      if (!M().isZero(ny)) {
+        objs.push({ type: "ticks", a: [0, 0], b: state.y, n: 2, color: "v2", at: 0.55 });
+        if (keepY) objs.push({ type: "ticks", a: [0, 0], b: ap(state.y), n: 2, color: "image", at: 0.55 });
+      }
+      let sameAngle = false;
+      const hasAngle = [nx, ny, mx, my].every((v) => !M().isZero(v));
+      if (hasAngle) {
+        const a = dotF(x, y);
+        const b = dotF(Qx, Qy);
+        // cos∠(x,y) = cos∠(Qx,Qy) exactly: same sign and a²·|Qx|²|Qy|² = b²·|x|²|y|²
+        sameAngle = Math.sign(a.n) === Math.sign(b.n) && M().eq(M().mul(M().mul(a, a), M().mul(mx, my)), M().mul(M().mul(b, b), M().mul(nx, ny)));
+        objs.push({ type: "arc", from: state.x, to: state.y, r: 22, color: "axis", width: 1.5 });
+        objs.push({ type: "arc", from: ap(state.x), to: ap(state.y), r: 34, color: "image", width: 1.8, dash: sameAngle ? undefined : [3, 4] });
+      }
+      return { objs, keepX, keepY, sameAngle, hasAngle };
+    }
 
     function redraw() {
       const Q = matF(ORTHO_PRESETS[state.key].Q);
@@ -575,10 +681,13 @@
           { type: "polygon", pts: FLAG.map(ap), color: "image", fillAlpha: 0.16, width: 1.6 },
         ];
         if (mirror) objs.push({ type: "line", dir: mirror, color: "subspace", dash: [7, 5], width: 1.6, label: "反射轴" });
+        const mk = state.revealed ? marks(Q, ap) : null;
+        if (mk) objs.push(...mk.objs.filter((o) => o.type === "arc"));
         objs.push({ type: "arrow", to: state.x, color: "v1", width: 1.8, alpha: 0.7, label: "x" });
         objs.push({ type: "arrow", to: state.y, color: "v2", width: 1.8, alpha: 0.7, label: "y" });
         objs.push({ type: "arrow", to: ap(state.x), color: "image", width: 3, label: "Qx" });
         objs.push({ type: "arrow", to: ap(state.y), color: "image", width: 3, label: "Qy" });
+        if (mk) objs.push(...mk.objs.filter((o) => o.type === "ticks"));
         return objs;
       });
       const x = toF(state.x);
@@ -598,7 +707,13 @@
         <p>${tex(`Q^TQ=${M().latexMatrix(QtQ)}`)}</p>
         <p>${tex(`|x|^2=${lf(dotF(x, x))}\\ ${cmp(dotF(x, x), dotF(Qx, Qx))}\\ |Qx|^2=${lf(dotF(Qx, Qx))}`)}</p>
         <p>${tex(`(x,y)=${lf(dotF(x, y))}\\ ${cmp(dotF(x, y), dotF(Qx, Qy))}\\ (Qx,Qy)=${lf(dotF(Qx, Qy))}`)}</p>
-        ${verdict}`;
+        ${verdict}${state.revealed ? marksNote(marks(Q, () => [0, 0])) : ""}`;
+    }
+
+    function marksNote(mk) {
+      const len = mk.keepX && mk.keepY ? "Qx、Qy 带着与 x、y 相同的刻痕：长度不变" : "像上缺了刻痕：有长度被改变";
+      const ang = !mk.hasAngle ? "零向量没有夹角" : mk.sameAngle ? "两段弧都是实线：夹角不变" : "紫色弧是虚线：夹角变了";
+      return `<p class="ch9l-muted" data-ortho-marks>${len}；${ang}。</p>`;
     }
 
     chips(toolbar, Object.entries(ORTHO_PRESETS).map(([k, p]) => [k, p.label]), (k) => {
@@ -619,10 +734,14 @@
           { text: "是：单位圆的像面积不变", why: "面积不变，形状却变了：长度和夹角都可能改变。" },
           { text: "要看 x 取在哪里", why: "正交变换要求对所有 x 保持长度；只要有一个 x 被拉长就不是。" },
         ],
-        right: `单位圆变成半轴为 2 和 ${tex("\\tfrac12")} 的椭圆；${tex("Q^TQ=\\operatorname{diag}(4,\\tfrac14)\\ne I")}。`,
+        right: `单位圆变成半轴为 2 和 ${tex("\\tfrac12")} 的椭圆；${tex("Q^TQ=\\operatorname{diag}(4,\\tfrac14)\\ne I")}。对默认的 x、y，像上没有刻痕，∠(Qx,Qy) 的弧是虚线。`,
+        defer: lab,
+        actHint: "已记下你的预测。选一个矩阵或拖动 x、y，结论随后出现。",
       },
       () => {
+        state.revealed = true;
         result.hidden = false;
+        redraw();
       },
     );
     redraw();
@@ -640,7 +759,7 @@
     const lab = labShell(root, {
       kind: "orthogonal-complement",
       title: "W 与它的正交补 W⊥",
-      task: "W 由 w₁（和 w₂）张成，三个圆点都能拖动（每次半格）。回答预测后，图中出现 W⊥，以及 α 沿 W 与 W⊥ 的分解。",
+      task: "W 由 w₁（和 w₂）张成，三个圆点都能拖动（每次半格）。作出预测并动手操作后，图中出现 W⊥，以及 α 沿 W 与 W⊥ 的分解。",
     });
     const toolbar = el("div", "ch9l-toolbar");
     lab.append(toolbar);
@@ -681,6 +800,25 @@
       return [0, 0, 1];
     }
 
+    /*
+     * α₂ ⊥ W at the foot α₁: a right-angle mark with each of two orthogonal
+     * directions of W (one when W is a line), and a small tile of W under it.
+     */
+    function footMark(c, a1, a2) {
+      const V = V3();
+      if (!c.r) return [];
+      const u = V.norm(V.len(a1) > 1e-9 ? a1 : toN(c.basis[0]));
+      const s = 0.36;
+      const objs = [...rightAngle3(a1, u, a2, s)];
+      if (c.r === 2) {
+        const v = V.norm(V.cross(normalOf(c), u));
+        objs.push(...rightAngle3(a1, v, a2, s));
+        const P = (x, y) => V.add(a1, V.add(V.mul(u, x), V.mul(v, y)));
+        objs.push({ type: "polygon", pts: [P(0, 0), P(s, 0), P(s, s), P(0, s)], color: "subspace", alpha: 0.45, strokeAlpha: 0.9 });
+      }
+      return objs.map((o) => (o.type === "segment" ? { ...o, width: 1.8 } : o));
+    }
+
     function redraw() {
       const V = V3();
       const c = compute();
@@ -702,10 +840,10 @@
         if (state.revealed) {
           if (V.len(a1) > 1e-9) objs.push({ type: "arrow", to: a1, color: "image", width: 3, label: "α₁" });
           if (V.len(a2) > 1e-9) {
-            objs.push({ type: "arrow", from: a1, to: state.alpha, color: "v2", width: 3, label: "α₂" });
+            objs.push({ type: "arrow", from: a1, to: state.alpha, color: "v2", width: 3, label: "α₂", labelAt: V.add(V.mul(V.add(a1, state.alpha), 0.5), V.mul(V.norm(a1.some((x) => Math.abs(x) > 1e-9) ? a1 : [1, 0, 0]), 0.3)) });
             objs.push({ type: "segment", a: [0, 0, 0], b: a2, color: "v2", dash: [4, 4], width: 1.4 });
             objs.push({ type: "segment", a: a2, b: state.alpha, color: "image", dash: [4, 4], width: 1.4 });
-            objs.push(...rightAngle3(a1, V.len(a1) > 1e-9 ? V.mul(a1, -1) : c.basis[0] ? toN(c.basis[0]) : [1, 0, 0], a2, 0.22));
+            objs.push(...footMark(c, a1, a2));
           }
         }
         return objs;
@@ -724,7 +862,7 @@
         if (checks.length) lines.push(`<p class="ch9l-ok">${checks.map((v, i) => tex(`(\\alpha_2,${vtex(c.basis[i])})=${v}`)).join("，")}：${tex("\\alpha_2\\in W^\\perp")}。</p>`);
         lines.push(`<p class="ch9l-muted">${tex(`\\dim W+\\dim W^\\perp=${c.r}+${c.perp.length}=${c.r + c.perp.length}`)}</p>`);
       } else {
-        lines.push(`<p class="ch9l-muted">回答预测后显示 W⊥ 和 α 的分解。</p>`);
+        lines.push(`<p class="ch9l-muted">作出预测并动手操作后，显示 W⊥ 和 α 的分解。</p>`);
       }
       info.innerHTML = lines.join("");
       tools.querySelector("[data-sub-look]").textContent = c.r === 1 ? "沿 W 看" : "沿 W⊥ 看";
@@ -751,7 +889,9 @@
           { text: `方向为 ${tex("(1,1,1)")} 的直线`, why: `${tex("(1,1,1)\\cdot(1,1,0)=2\\ne0")}。` },
           { text: "另一个平面", why: "W⊥ 的维数是 3−2=1。" },
         ],
-        right: `${tex("(1,-1,1)")} 与 ${tex("(1,1,0)")}、${tex("(0,1,1)")} 的内积都是 0。现在拖动 α，看它怎样拆成两部分。`,
+        right: `${tex("(1,-1,1)")} 与 ${tex("(1,1,0)")}、${tex("(0,1,1)")} 的内积都是 0。α 拆成 W 里的 α₁ 与 W⊥ 里的 α₂；在垂足 α₁ 处，α₂ 与 W 中两个互相垂直的方向都成直角。`,
+        defer: lab,
+        actHint: "已记下你的预测。拖动 α 或旋转画面，W⊥ 随后出现。",
       },
       () => {
         state.revealed = true;
@@ -950,7 +1090,7 @@
     const right = el("div", "ch9l-view", `<div class="ch9l-view-title">数据点与直线 ${tex("y=C+Dt")}</div>`);
     pair.append(left, right);
     lab.append(pair);
-    const scene = S().create(left, { range: 3.5, label: "b 在列空间上的投影", yaw: 0.3, pitch: 0.35, axisNames: ["b₁", "b₂", "b₃"], hint: "拖动 b 或旋转" });
+    const scene = S().create(left, { range: 3.5, label: "b 在列空间上的投影", yaw: 0.3, pitch: 0.35, axisNames: ["b₁", "b₂", "b₃"], hint: "拖动 b 或旋转", spreadLabels: true });
     const fit = P().create(right, { bounds: { x: [-0.5, 2.6], y: [-3.8, 3.8] }, equal: false, label: "数据点与拟合直线", hint: "上下拖动数据点", axisNames: ["t", "y"], ticks: 1, grid: true });
     lab.ch9Views = { scene, fit };
     const controls = el("div", "ch9l-controls");
@@ -992,14 +1132,23 @@
           { type: "arrow", to: [1, 1, 1], color: "subspace", width: 1.8, alpha: 0.7, label: "a₁" },
           { type: "arrow", to: [0, 1, 2], color: "subspace", width: 1.8, alpha: 0.7, label: "a₂" },
           { type: "point", p: Ax, color: "image", r: 5, hollow: true, label: "Ax" },
-          { type: "segment", a: state.b, b: Ax, color: "axis", dash: [4, 5], width: 1.4 },
+          state.revealed ? null : { type: "segment", a: state.b, b: Ax, color: "axis", dash: [4, 5], width: 1.4 },
           { type: "arrow", to: state.b, color: "drag", width: 3, label: "b" },
         ];
         if (state.revealed) {
           objs.push({ type: "arrow", to: p, color: "image", width: 3, label: "p" });
-          if (V().len(V().sub(state.b, p)) > 1e-9) {
-            objs.push({ type: "arrow", from: p, to: state.b, color: "v2", width: 3, label: "e" });
-            objs.push(...rightAngle3(p, V().len(p) > 1e-9 ? V().mul(p, -1) : [1, 1, 1], V().sub(state.b, p), 0.3));
+          const eLen = V().len(V().sub(state.b, p));
+          const gLen = V().len(V().sub(Ax, p));
+          // the right triangle b–p–Ax: legs e (⊥ W) and p−Ax (in W), hypotenuse b−Ax
+          if (eLen > 1e-9 && gLen > 1e-9) {
+            objs.push({ type: "polygon", pts: [state.b, p, Ax], color: "image", alpha: 0.1, strokeAlpha: 0 });
+            objs.push({ type: "segment", a: p, b: Ax, color: "image", width: 2.2 });
+            objs.push({ type: "segment", a: state.b, b: Ax, color: "axis", width: 1.6 });
+            objs.push(...rightAngle3(p, V().sub(state.b, p), V().sub(Ax, p), 0.32).map((o) => ({ ...o, width: 1.8 })));
+          }
+          if (eLen > 1e-9) {
+            objs.push({ type: "arrow", from: p, to: state.b, color: "v2", width: 3, label: "e", labelAt: V().mul(V().add(p, state.b), 0.5) });
+            if (gLen <= 1e-9) objs.push(...rightAngle3(p, V().len(p) > 1e-9 ? V().mul(p, -1) : [1, 1, 1], V().sub(state.b, p), 0.3));
           }
         }
         return objs;
@@ -1008,7 +1157,8 @@
       const xh = toN(s.xh);
       fit.setObjects(() => {
         const objs = [{ type: "line", p: [0, state.C], dir: [1, state.D], color: "image", dash: [6, 5], width: 1.8, label: "试的直线" }];
-        [0, 1, 2].forEach((t) => objs.push({ type: "segment", a: [t, state.b[t]], b: [t, Ax[t]], color: "axis", width: 1.4, dash: [3, 3] }));
+        // residuals of the trial line: faint, in the colour of that line
+        [0, 1, 2].forEach((t) => objs.push({ type: "segment", a: [t - 0.04, state.b[t]], b: [t - 0.04, Ax[t]], color: "image", width: 2, dash: [3, 3], alpha: 0.45 }));
         if (state.revealed) {
           objs.push({ type: "line", p: [0, xh[0]], dir: [1, xh[1]], color: "image", width: 2.6, label: "最佳直线" });
           [0, 1, 2].forEach((t) => objs.push({ type: "segment", a: [t + 0.04, state.b[t]], b: [t + 0.04, p[t]], color: "v2", width: 2.6 }));
@@ -1034,9 +1184,10 @@
       ];
       if (state.revealed) {
         parts.push(`<p data-ls-best>${tex(`\\hat x=${vtex(s.xh)},\\ p=A\\hat x=${vtex(s.p)},\\ e=${vtex(s.e)}`)}</p>`);
-        parts.push(`<p class="ch9l-ok">${tex(`(e,a_1)=${lf(dotF(s.e, A.map((r) => r[0])))},\\ (e,a_2)=${lf(dotF(s.e, A.map((r) => r[1])))}`)}；${tex(`|b-Ax|^2=${lf(s.sse)}=|e|^2+|p-Ax|^2=${lf(s.best)}+${lf(s.gap)}`)}</p>`);
+        parts.push(`<p class="ch9l-ok">${tex(`(e,a_1)=${lf(dotF(s.e, A.map((r) => r[0])))},\\ (e,a_2)=${lf(dotF(s.e, A.map((r) => r[1])))}`)}：e 垂直于 W。</p>`);
+        parts.push(`<p data-ls-tri>${M().isZero(s.gap) || M().isZero(s.best) ? "" : "直角三角形 b–p–Ax（直角在 p）："}${tex(`|b-Ax|^2=${lf(s.sse)}=|e|^2+|p-Ax|^2=${lf(s.best)}+${lf(s.gap)}`)}</p>`);
         if (M().isZero(s.gap)) parts.push(`<p class="ch9l-ok">试的直线就是最佳直线。</p>`);
-      } else parts.push(`<p class="ch9l-muted">调 C、D 让 ${tex("|b-Ax|^2")} 尽量小；回答预测后显示最佳直线与投影。</p>`);
+      } else parts.push(`<p class="ch9l-muted">调 C、D 让 ${tex("|b-Ax|^2")} 尽量小；作出预测并动手操作后，显示最佳直线与投影。</p>`);
       status.innerHTML = parts.join("");
     }
 
@@ -1057,7 +1208,9 @@
           { text: "e 与 b 正交", why: "与 e 正交的是 p=Ax̂，b 本身不一定。" },
           { text: "e 的三个分量相等", why: "那样 e 平行于 (1,1,1)，在平面 W 里，不会垂直于 W。" },
         ],
-        right: `这里 ${tex("\\hat x=(2,0)")}，最佳直线是 ${tex("y=2")}，${tex("e=(1,-2,1)")}，正好沿 W 的法向。点“沿 e 的方向看”，b 与 p 重合。`,
+        right: `这里 ${tex("\\hat x=(2,0)")}，最佳直线是 ${tex("y=2")}，${tex("e=(1,-2,1)")}，正好沿 W 的法向。b、p、Ax 围成直角三角形，直角在 p：${tex("|b-Ax|^2=|e|^2+|p-Ax|^2")}，所以 Ax 取 p 时最小。`,
+        defer: lab,
+        actHint: "已记下你的预测。调 C、D 或拖动 b，结论随后出现。",
       },
       () => {
         state.revealed = true;

@@ -56,7 +56,7 @@ test.describe("Chapter 2 desktop visual system", () => {
       const errors = browserErrors(page);
       await openLesson(page, id);
       await expect(page.locator("#mainContent .lesson-cover h1")).toHaveText(title);
-      await expect(page.locator(`#${id}-interactive .ch2-lab`)).toHaveCount(id === "laplace-and-product" ? 2 : 1);
+      await expect(page.locator(`#${id}-interactive .ch2-lab`)).toHaveCount(1);
       const box = await page.locator(`#${id}-interactive .ch2-lab`).first().boundingBox();
       expect(box.width).toBeGreaterThan(620);
       await noOverflow(page);
@@ -93,7 +93,6 @@ test.describe("Chapter 2 desktop visual system", () => {
     for (const [id, mainSelector, followSelector] of [
       ["cofactor-expansion", ".ch2-cofactor-top", ".ch2-route-explorer"],
       ["cramer-rule", ".ch2-cramer-main", ".ch2-cramer-explanation"],
-      ["laplace-and-product", ".ch2-laplace-main", ".ch2-laplace-meter"],
     ]) {
       await openLesson(page, id);
       const main = await box(mainSelector);
@@ -174,8 +173,12 @@ test.describe("Chapter 2 desktop visual system", () => {
 
   test("§8 pairs complementary minors and composes I to B to AB", async ({ page }) => {
     await openLesson(page, "laplace-and-product");
-    await expect(page.locator("[data-pair-list] button")).toHaveCount(6);
+    // the six minor pairs are a worked example in the theorem block
+    await expect(page.locator("#laplace-and-product-formal [data-pair-row]")).toHaveCount(6);
     await expect(page.locator("[data-pair-sum]")).toHaveText(await page.locator("[data-pair-det]").innerText());
+    // predict first: before that det(AB) stays hidden
+    await expect(page.locator("[data-dab]")).toHaveText("?");
+    await page.locator('[data-prod-lab] .ch3l-predict-options > button').first().click();
     await page.locator('[data-prod-preset="project"]').click();
     await expect(page.locator("[data-dab]")).toHaveText("0");
     await expect(page.locator("[data-rule-status]")).toContainText("验证完成");
@@ -184,6 +187,7 @@ test.describe("Chapter 2 desktop visual system", () => {
   test("route teardown removes Chapter 2 and keeps Chapter 4 usable", async ({ page }) => {
     const errors = browserErrors(page);
     await openLesson(page, "laplace-and-product");
+    await page.locator('[data-prod-lab] .ch3l-predict-options > button').first().click();
     await page.locator('[data-prod-preset="doubleMirror"]').click();
     await page.goto("http://127.0.0.1:4173/learn.html#ch4/matrix-language", { waitUntil: "networkidle" });
     await expect(page.locator("#mainContent .lesson-cover h1")).toContainText("矩阵概念");
@@ -216,12 +220,6 @@ test.describe("Chapter 2 mobile and dark appearance", () => {
       (element) => getComputedStyle(element).gridTemplateColumns.split(" ").length,
     );
     expect(cramerColumns).toBe(3);
-
-    await openLesson(page, "laplace-and-product");
-    const pairColumns = await page.locator(".ch2-pair-list").evaluate(
-      (element) => getComputedStyle(element).gridTemplateColumns.split(" ").length,
-    );
-    expect(pairColumns).toBe(2);
   });
 
   test("saves the four geometry-heavy mobile pages", async ({ page }) => {

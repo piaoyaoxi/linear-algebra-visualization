@@ -87,18 +87,119 @@
       const st = root.querySelector("[data-factor]"); st.className = `ch1-status ${isRoot ? "is-ok" : "is-warn"}`; st.textContent = isRoot ? `f(${state.a})=0，x−${state.a} 是因式` : `余式 f(${state.a})≠0`;
       M().drawPolynomial(root.querySelector("[data-canvas]"), state.p, { bounds, points: [{ x: state.a, y: M().rToNum(h.value) }], caption: "评价点 (a,f(a))" });
     }
+    // (x − r) as TeX, with an optional power
+    const factorTex = (r, k = 1) => {
+      const base = r === 0 ? "x" : `(x${r < 0 ? "+" : "-"}${Math.abs(r)})`;
+      return k > 1 ? `${base}^{${k}}` : base;
+    };
+    const productOf = (roots) => roots.reduce((p, r) => M().polyMul(p, M().poly([-r, 1])), M().onePoly());
+
+    /*
+     * Root bound: m distinct integer roots, degree n.
+     * m ≤ n: p = (x − r₀)^{n−m+1} ∏_{i≥1}(x − rᵢ) has degree n and exactly these m roots.
+     * m > n: the degree-n attempt q = ∏_{i<n}(x − rᵢ) is nonzero at the remaining roots,
+     *        so only the zero polynomial vanishes at all m points.
+     * The curve is scaled vertically to fit (same roots); values in the text are exact.
+     */
+    function drawRootBound(canvas, info) {
+      const { ctx, width, height } = M().setupCanvas(canvas);
+      const pal = M().getPalette();
+      const cam = M().camera(width, height, { xMin: -4, xMax: 4, yMin: -1.5, yMax: 1.5 }, { stretch: true });
+      M().drawAxes(ctx, width, height, cam, pal);
+      // scale by the peak near the roots, so the crossings stay visible
+      const lo = Math.min(...info.roots) - 0.8;
+      const hi = Math.max(...info.roots) + 0.8;
+      const scaleOf = (p) => {
+        let peak = 0;
+        for (let i = 0; i <= 200; i++) peak = Math.max(peak, Math.abs(M().evalPolyNum(p, lo + ((hi - lo) * i) / 200)));
+        return peak > 0 ? 1.2 / peak : 1;
+      };
+      const curve = (p, color, dashed) => {
+        const c = scaleOf(p);
+        ctx.save();
+        ctx.strokeStyle = color; ctx.lineWidth = 2.4;
+        if (dashed) ctx.setLineDash([7, 5]);
+        ctx.beginPath();
+        let down = false;
+        for (let i = 0; i <= 320; i++) {
+          const x = cam.view.xMin + (i / 320) * (cam.view.xMax - cam.view.xMin);
+          const y = c * M().evalPolyNum(p, x);
+          if (Math.abs(y) > 2.2) { down = false; continue; }
+          const s = cam.toScreen(x, y);
+          if (!down) { ctx.moveTo(s.x, s.y); down = true; } else ctx.lineTo(s.x, s.y);
+        }
+        ctx.stroke();
+        ctx.restore();
+        return c;
+      };
+      ctx.font = "600 12px 'LA Serif Latin', 'LA Serif SC', 'Songti SC', serif";
+      ctx.textAlign = "center";
+      if (info.possible) {
+        curve(info.p, pal.v1, false);
+      } else {
+        // only y = 0 vanishes at every root: a result, drawn thick
+        const a = cam.toScreen(cam.view.xMin, 0);
+        const b = cam.toScreen(cam.view.xMax, 0);
+        ctx.save(); ctx.strokeStyle = pal.image; ctx.lineWidth = 3.4;
+        ctx.beginPath(); ctx.moveTo(a.x, a.y); ctx.lineTo(b.x, b.y); ctx.stroke(); ctx.restore();
+        ctx.save(); ctx.fillStyle = pal.image; ctx.textAlign = "left"; ctx.font = "600 13px 'LA Serif Latin', 'LA Serif SC', 'Songti SC', serif";
+        ctx.fillText("只有 y = 0", a.x + 12, a.y - 12); ctx.restore();
+        const c = curve(info.q, pal.v1, true);
+        info.missed.forEach(({ r, value }) => {
+          const base = cam.toScreen(r, 0);
+          const top = cam.toScreen(r, Math.max(-1.45, Math.min(1.45, c * M().rToNum(value))));
+          ctx.save(); ctx.strokeStyle = pal.v2; ctx.lineWidth = 1.4; ctx.setLineDash([2, 3]);
+          ctx.beginPath(); ctx.moveTo(base.x, base.y); ctx.lineTo(top.x, top.y); ctx.stroke(); ctx.restore();
+          ctx.fillStyle = pal.v2;
+          ctx.beginPath(); ctx.arc(top.x, top.y, 4, 0, Math.PI * 2); ctx.fill();
+          ctx.fillText(M().formatR(value).replace("-", "−"), top.x + 18, top.y + 4);
+        });
+      }
+      info.roots.forEach((r, i) => {
+        const s = cam.toScreen(r, 0);
+        const missed = !info.possible && i >= info.n;
+        ctx.beginPath();
+        ctx.fillStyle = missed ? pal.v2 : pal.subspace;
+        ctx.arc(s.x, s.y, 5.5, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.strokeStyle = pal.paper; ctx.lineWidth = 1.5; ctx.stroke();
+        // the tick numbers already name the roots; only a multiple root gets a label
+        if (info.possible && i === 0 && info.n > info.m) {
+          ctx.fillStyle = pal.text;
+          ctx.fillText(`${info.n - info.m + 1} 重`, s.x, s.y - 12);
+        }
+      });
+      ctx.textAlign = "left";
+    }
+
     function paintRoots() {
       root.querySelector("[data-eval-panel]").hidden = true; root.querySelector("[data-root-panel]").hidden = false; root.querySelector("[data-interp-panel]").hidden = true;
-      root.querySelector("[data-degree-value]").textContent = state.degree;
-      root.querySelector("[data-roots-value]").textContent = state.roots;
-      const possible = state.roots <= state.degree;
-      const status = root.querySelector("[data-root-status]"); status.className = `ch1-status ${possible ? "is-ok" : "is-bad"}`; status.textContent = possible ? "可以构造非零多项式" : "超过次数上界：只能是零多项式";
-      const roots = Array.from({ length: Math.min(state.roots, state.degree + 1) }, (_, i) => i - Math.floor(state.roots / 2));
-      let p = M().onePoly();
-      roots.forEach((r) => { p = M().polyMul(p, M().poly([-r, 1])); });
-      while (M().deg(p) < state.degree) p = M().polyMul(p, M().poly([1, 1]));
-      root.querySelector("[data-root-poly]").innerHTML = possible ? tex(M().formatPolyTex(p)) : "—";
-      M().drawRootAxis(root.querySelector("[data-canvas]"), roots.map((x) => ({ x, m: 1, label: String(x) })), { bounds: { xMin: -4, xMax: 4, yMin: -1.4, yMax: 1.4 } });
+      const n = state.degree;
+      const m = state.roots;
+      root.querySelector("[data-degree-value]").textContent = n;
+      root.querySelector("[data-roots-value]").textContent = m;
+      const roots = Array.from({ length: m }, (_, i) => i - Math.floor(m / 2));
+      const possible = m <= n;
+      const status = root.querySelector("[data-root-status]");
+      const out = root.querySelector("[data-root-poly]");
+      const title = root.querySelector("[data-root-title]");
+      if (possible) {
+        const p = M().polyMul(productOf(roots.slice(1)), M().polyPow(M().poly([-roots[0], 1]), n - m + 1));
+        status.className = "ch1-status is-ok";
+        status.textContent = `${m} 个不同的根，次数 ${n}：可以`;
+        title.textContent = "构造结果";
+        out.innerHTML = `${tex(`${factorTex(roots[0], n - m + 1)}${roots.slice(1).map((r) => factorTex(r)).join("")}`)}<br><span class="ch1-muted">每个根贡献一个一次因式，共 ${n} 个，次数正好是 ${n}。</span>`;
+        drawRootBound(root.querySelector("[data-canvas]"), { possible, p, roots, n, m });
+      } else {
+        const q = productOf(roots.slice(0, n));
+        const missed = roots.slice(n).map((r) => ({ r, value: M().evalPoly(q, M().R(r)) }));
+        status.className = "ch1-status is-bad";
+        status.textContent = `${m} 个不同的根，次数 ${n}：只有零多项式`;
+        title.textContent = `次数为 ${n} 的尝试`;
+        out.innerHTML = `${tex(`q(x)=${roots.slice(0, n).map((r) => factorTex(r)).join("")}`)} 已经用掉 ${n} 个一次因式，在 ${missed.map(({ r, value }) => tex(`q(${r})=${M().formatRTex(value)}`)).join("，")}，不为 0。<br><span class="ch1-muted">要在 ${m} 个点都为 0，就要含 ${m} 个不同的一次因式，次数至少是 ${m}。所以次数不超过 ${n} 的多项式只能是 0。</span>`;
+        drawRootBound(root.querySelector("[data-canvas]"), { possible, q, missed, roots, n, m });
+        gate?.acted();
+      }
     }
     function readNodes() {
       return [0, 1, 2].map((i) => ({ x: M().parseR(root.querySelector(`[data-node-x="${i}"]`).value), y: M().parseR(root.querySelector(`[data-node-y="${i}"]`).value) }));
@@ -125,6 +226,29 @@
     root.querySelector("[data-root-count]").addEventListener("input", (e) => { state.roots = Math.round(Number(e.target.value)); paintRoots(); });
     root.querySelectorAll("[data-node-x], [data-node-y]").forEach((input) => input.addEventListener("change", paintInterpolation));
     root.querySelectorAll("[data-eval-preset]").forEach((button) => button.addEventListener("click", () => { state.p = button.dataset.evalPreset === "root" ? M().poly([-2, 1, 1]) : M().poly([1, -2, 0, 1]); paintEval(); }));
+    const countInput = root.querySelector("[data-root-count]");
+    const degreeInput = root.querySelector("[data-degree]");
+    const gate = window.LAPredictGate?.mount(root.querySelector("[data-root-gate]"), {
+      root,
+      manual: true,
+      key: "visuals/ch1/section5-8-presentation.js#root-bound",
+      question: "次数 n=3。要让多项式有 4 个不同的根，还能找到一个次数不超过 3 的非零多项式吗？",
+      options: [
+        ["不能：在 4 个点都为 0 的，只有零多项式", true, ""],
+        ["能：把系数取得合适就行", false, "每个根 a 都给出一个因式 x−a。4 个不同的一次因式乘起来，次数已经是 4。"],
+        ["能：取重根就可以", false, "重根让不同的根更少，不会更多。"],
+        ["能，但要用复系数", false, "在复数域中同样至多 3 个根：上界只依赖次数。"],
+      ],
+      right: `✓ 每个根贡献一个一次因式，n 次多项式至多容纳 n 个，所以至多有 n 个根。反过来，次数不超过 n 的多项式若有 n+1 个根，它就是零多项式；这正是“函数相等就是多项式相等”的理由。`,
+      onPick: () => {
+        countInput.disabled = false;
+        degreeInput.disabled = false;
+        root.querySelector('[data-mode="roots"]')?.click();
+      },
+    });
+    // m and n stay fixed until a prediction exists (either one could reach m > n)
+    countInput.disabled = true;
+    degreeInput.disabled = true;
     M().observeCanvas(root.querySelector(".ch1-stage"), paint);
     paint();
   }
@@ -132,7 +256,11 @@
   function interactive7(el, section) {
     lab(el, "评价、根数与插值", section.interactive.description,
       `<button type="button" data-mode="eval" class="is-active">评价 / Horner</button><button type="button" data-mode="roots">根数上界</button><button type="button" data-mode="interp">Lagrange 插值</button>`,
-      `<div class="ch1-two-col"><div class="ch1-stage"><canvas data-canvas aria-label="多项式函数实验图"></canvas></div><div class="ch1-panel"><section data-eval-panel><div class="ch1-controls"><button type="button" data-eval-preset="default">三次示例</button><button type="button" data-eval-preset="root">有整数根示例</button></div><label class="ch1-slider-row"><span>a</span><input data-a type="range" min="-2" max="3" step="1" value="1"><output data-a-value></output></label><div class="ch1-equation-grid"><div><span>f</span><strong data-eval-poly></strong></div><div><span>f(a)</span><strong data-fa></strong></div></div><div data-factor class="ch1-status"></div><div class="ch1-ledger" data-horner></div></section><section data-root-panel hidden><label class="ch1-slider-row"><span>次数 n</span><input data-degree type="range" min="1" max="6" value="3"><output data-degree-value></output></label><label class="ch1-slider-row"><span>不同根数 m</span><input data-root-count type="range" min="0" max="7" value="2"><output data-roots-value></output></label><div data-root-status class="ch1-status"></div><div class="ch1-callout"><strong>构造结果</strong><p data-root-poly></p></div></section><section data-interp-panel hidden><div class="ch1-node-grid">${[0,1,2].map((i) => `<label>节点 ${i}<span>x</span><input type="text" value="${i}" data-node-x="${i}"><span>y</span><input type="text" value="${[1,2,5][i]}" data-node-y="${i}"></label>`).join("")}</div><p class="ch1-error" data-interp-error aria-live="polite"></p><div class="ch1-result-band"><div><span>插值多项式</span><strong data-interp-poly></strong></div></div><div class="ch1-compare" data-bases></div></section></div></div>`);
+      `<div class="ch1-two-col"><div class="ch1-stage"><canvas data-canvas aria-label="多项式函数实验图"></canvas></div><div class="ch1-panel"><section data-eval-panel><div class="ch1-controls"><button type="button" data-eval-preset="default">三次示例</button><button type="button" data-eval-preset="root">有整数根示例</button></div><label class="ch1-slider-row"><span>a</span><input data-a type="range" min="-2" max="3" step="1" value="1"><output data-a-value></output></label><div class="ch1-equation-grid"><div><span>f</span><strong data-eval-poly></strong></div><div><span>f(a)</span><strong data-fa></strong></div></div><div data-factor class="ch1-status"></div><div class="ch1-ledger" data-horner></div></section><section data-root-panel hidden><label class="ch1-slider-row"><span>次数 n</span><input data-degree type="range" min="1" max="6" value="3"><output data-degree-value></output></label><label class="ch1-slider-row"><span>不同根数 m</span><input data-root-count type="range" min="1" max="7" value="2"><output data-roots-value></output></label><div data-root-status class="ch1-status"></div><div class="ch1-callout"><strong data-root-title>构造结果</strong><p data-root-poly></p></div></section><section data-interp-panel hidden><div class="ch1-node-grid">${[0,1,2].map((i) => `<label>节点 ${i}<span>x</span><input type="text" value="${i}" data-node-x="${i}"><span>y</span><input type="text" value="${[1,2,5][i]}" data-node-y="${i}"></label>`).join("")}</div><p class="ch1-error" data-interp-error aria-live="polite"></p><div class="ch1-result-band"><div><span>插值多项式</span><strong data-interp-poly></strong></div></div><div class="ch1-compare" data-bases></div></section></div></div>`);
+    // the prediction sits above the mode buttons, right under the title
+    const gateBox = document.createElement("div");
+    gateBox.dataset.rootGate = "";
+    el.querySelector(".ch1-controls")?.before(gateBox);
     mountPolynomialFunctions(el);
   }
 

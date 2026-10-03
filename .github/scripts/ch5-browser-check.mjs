@@ -155,7 +155,12 @@ async function exerciseChapter(page) {
 
   // §3: a one-parameter invertible path locks inertia; a singular button stops the theorem.
   await openLesson(page, "quadratic-uniqueness");
-  await setRange(page, "[data-s3-h]", 1.2);
+  // predict → act → reveal: the verdict and B's counters appear only after a prediction and a move of h
+  if (!(await page.locator("[data-s3-b-counts]").innerText()).includes("?")) {
+    throw new Error("§3 B's counters are visible before the prediction");
+  }
+  await page.locator('#quadratic-uniqueness-interactive .ch3l-predict-options > button[data-ok="true"]').click();
+  await setRange(page, "[data-s3-h]", 1);
   if (!(await page.locator("[data-s3-status]").innerText()).includes("惯性锁定")) {
     throw new Error("§3 inertia was not locked along the invertible shear path");
   }

@@ -114,6 +114,9 @@
     const explanationPair = pairs[1];
     const sourcePanel = sourcePair?.querySelector(":scope > .ch1-panel");
     const stage = sourcePair?.querySelector(":scope > .ch1-stage");
+    // the opening “middle 0” module keeps number 01; the workbench follows it
+    const opener = lab.querySelector(":scope > [data-zero-module]");
+    const n = (k) => String(k + (opener ? 1 : 0)).padStart(2, "0");
     const resultBand = lab.querySelector(":scope > .ch1-result-band");
     const fStrip = lab.querySelector("[data-f-strip]");
     const gStrip = lab.querySelector("[data-g-strip]");
@@ -129,7 +132,7 @@
 
     const editor = document.createElement("section");
     editor.className = "ch1-learning-module ch1-coeff-editor";
-    editor.append(moduleHeading("01", "输入系数"));
+    editor.append(moduleHeading(n(1), "输入系数"));
     const editorGrid = document.createElement("div");
     editorGrid.className = "ch1-coeff-pair-grid";
     fBlock.classList.add("ch1-coeff-card", "is-f");
@@ -139,7 +142,7 @@
 
     const operation = document.createElement("section");
     operation.className = "ch1-learning-module ch1-coeff-operation";
-    operation.append(moduleHeading("02", "选择运算"));
+    operation.append(moduleHeading(n(2), "选择运算"));
     operation.append(controls);
     const parameterRow = document.createElement("div");
     parameterRow.className = "ch1-coeff-parameters";
@@ -149,12 +152,12 @@
 
     const result = document.createElement("section");
     result.className = "ch1-learning-module ch1-coeff-result";
-    result.append(moduleHeading("03", "结果"));
+    result.append(moduleHeading(n(3), "结果"));
     result.append(resultBand);
 
     const explanation = document.createElement("section");
     explanation.className = "ch1-learning-module ch1-coeff-analysis";
-    explanation.append(moduleHeading("04", "指定次数的全部贡献"));
+    explanation.append(moduleHeading(n(4), "乘积中指定次数的全部贡献"));
     const analysisGrid = document.createElement("div");
     analysisGrid.className = "ch1-coeff-analysis-grid";
     [...explanationPair.children].forEach((child) => analysisGrid.append(child));
@@ -167,7 +170,7 @@
     graph.append(stage);
 
     workflow.append(editor, operation, result, explanation, graph);
-    lab.querySelector(":scope > .ch1-lab-head").after(workflow);
+    (opener || lab.querySelector(":scope > .ch1-lab-head")).after(workflow);
     sourcePair.remove();
     explanationPair.remove();
     sourcePanel.remove();

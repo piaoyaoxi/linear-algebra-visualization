@@ -8,7 +8,7 @@
   const HOME = Object.freeze({ yaw: -0.72, pitch: 0.46 });
 
   const matrixFrom = (root, selector) => {
-    const cells = $$(root, `${selector} .ch5-cell`).map((cell) => Number(cell.textContent));
+    const cells = $$(root, `${selector} .ch5-cell`).map((cell) => Number(cell.dataset.v ?? cell.textContent));
     if (cells.length !== 4 || cells.some((value) => !Number.isFinite(value))) return null;
     return [[cells[0], cells[1]], [cells[2], cells[3]]];
   };
@@ -397,10 +397,6 @@
         if (!A || !B) return;
         drawSurface(left, A, camera, { frameMatrices: [A, B] });
         drawSurface(right, B, camera, { frameMatrices: [A, B] });
-        const polyA = $(root, "[data-s3-poly-a]");
-        const polyB = $(root, "[data-s3-poly-b]");
-        if (polyA) polyA.innerHTML = inline(M().polyTex2(A));
-        if (polyB) polyB.innerHTML = inline(M().polyTex2(B));
       };
       const reset = bindOrbit(canvases, camera, redraw, controller);
       addViewTools(pair, reset, true);

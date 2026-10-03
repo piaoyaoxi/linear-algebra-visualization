@@ -66,6 +66,7 @@ async function runChecks(page, name) {
   await page.screenshot({ path: `${shotDir}/${name}-s2-rotated.png`, fullPage: true });
 
   await openLesson(page, "quadratic-uniqueness");
+  await page.locator('#quadratic-uniqueness-interactive .ch3l-predict-options > button').first().click();
   await setRange(page, "[data-s3-h]", 1.5);
   const s3 = await dragCanvas(page, "[data-s3-b-canvas]", -85, -40);
   const s3Left = Number(await page.locator("[data-s3-a-canvas]").getAttribute("data-camera-yaw"));

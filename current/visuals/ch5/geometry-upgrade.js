@@ -88,12 +88,117 @@
     $$(root,'[data-s2-preset]').forEach(b=>b.addEventListener('click',()=>{state.p=b.dataset.s2Preset;state.step=0;$$(root,'[data-s2-preset]').forEach(x=>x.classList.toggle('is-active',x===b));paint();},{signal:ctl.signal}));$$(root,'[data-s2-nav]').forEach(b=>b.addEventListener('click',()=>{if(b.dataset.s2Nav==='next')state.step+=1;if(b.dataset.s2Nav==='prev')state.step-=1;if(b.dataset.s2Nav==='reset')state.step=0;paint();},{signal:ctl.signal}));window.addEventListener('resize',paint,{signal:ctl.signal,passive:true});paint();return()=>ctl.abort();
   }
 
+  /*
+   * §3 inertia lab. A is fixed; C = (1 h; 0 1), h in steps of 1/2, det C = 1.
+   * Entries are multiples of 1/4, shown as exact fractions (cells carry data-v for the surfaces).
+   * Each surface gets its up / down principal directions; a sign wheel under it colours
+   * every unit direction by the sign of q. Under an invertible C the arcs move, but the
+   * number of up and down directions does not change.
+   */
+  function fracStr(v, tex = false) {
+    if (Math.abs(v) < 1e-12) return "0";
+    const sign = v < 0 ? (tex ? "-" : "−") : "";
+    const x = Math.abs(v);
+    for (const d of [1, 2, 4, 8, 16]) {
+      const n = Math.round(x * d);
+      if (Math.abs(n / d - x) < 1e-9) {
+        if (d === 1) return `${sign}${n}`;
+        return tex ? `${sign}\\tfrac{${n}}{${d}}` : `${sign}${n}/${d}`;
+      }
+    }
+    return `${sign}${fmt(x, 3)}`;
+  }
+  const fracMatrix = (A) => `<div class="ch5-matrix" role="table" aria-label="矩阵">${A.map((row, i) => `<div class="ch5-matrix-row">${row.map((v, j) => `<span class="ch5-cell" data-i="${i}" data-j="${j}" data-v="${v}">${fracStr(v)}</span>`).join("")}</div>`).join("")}</div>`;
+  function polyFracTex(A) {
+    const terms = [[A[0][0], "x_1^2"], [2 * A[0][1], "x_1x_2"], [A[1][1], "x_2^2"]].filter(([c]) => Math.abs(c) > 1e-12);
+    if (!terms.length) return "0";
+    return terms.map(([c, m], i) => {
+      const mag = Math.abs(c);
+      const coef = Math.abs(mag - 1) < 1e-12 ? "" : fracStr(mag, true);
+      return `${c < 0 ? "-" : i ? "+" : ""}${coef}${m}`;
+    }).join("");
+  }
+
+  function signWheel(canvas, A, label) {
+    const { ctx, width, height } = M().setupCanvas(canvas); if (!ctx) return;
+    const p = M().getPalette();
+    const cx = width / 2, cy = height / 2 + 4, r = Math.min(width, height) * 0.32;
+    ctx.fillStyle = p.soft; ctx.fillRect(0, 0, width, height);
+    const N = 360;
+    for (let k = 0; k < N; k += 1) {
+      const t = (TAU * k) / N;
+      const v = M().qForm(A, [Math.cos(t), Math.sin(t)]);
+      ctx.strokeStyle = v > 1e-9 ? p.pos : v < -1e-9 ? p.neg : p.zero;
+      ctx.lineWidth = 9;
+      ctx.beginPath(); ctx.arc(cx, cy, r, -t, -t - TAU / N - 0.01, true); ctx.stroke();
+    }
+    // principal directions as diameters, labelled by sign
+    // q on a unit principal direction is its eigenvalue
+    eigen(A).vectors.forEach((vec) => {
+      const lam = M().qForm(A, vec);
+      const col = lam > 1e-9 ? p.pos : lam < -1e-9 ? p.neg : p.zero;
+      const a = { x: cx - vec[0] * r, y: cy + vec[1] * r }, b = { x: cx + vec[0] * r, y: cy - vec[1] * r };
+      ctx.save(); ctx.strokeStyle = col; ctx.lineWidth = 1.4; ctx.setLineDash(lam > 1e-9 || lam < -1e-9 ? [] : [3, 3]);
+      ctx.beginPath(); ctx.moveTo(a.x, a.y); ctx.lineTo(b.x, b.y); ctx.stroke(); ctx.restore();
+      ctx.fillStyle = col; ctx.font = "600 12px 'LA Serif Latin', 'LA Serif SC', 'Songti SC', serif"; ctx.textAlign = "center";
+      const tx = cx + vec[0] * (r + 18), ty = cy - vec[1] * (r + 18) + 4;
+      ctx.fillText(lam > 1e-9 ? "向上" : lam < -1e-9 ? "向下" : "平坦", tx, ty);
+    });
+    ctx.textAlign = "left";
+    ctx.fillStyle = p.muted; ctx.font = "12px 'LA Serif Latin', 'LA Serif SC', 'Songti SC', serif";
+    ctx.fillText(label, 10, 16);
+  }
+
   function mountS3(root){
-    root.innerHTML=`<h2>交互实验</h2><div class="qv-lab"><header class="qv-head"><h3>可逆变换可以扭曲曲面，却改不了向上、向下和平坦方向的数量</h3><p>拖动剪切参数 h。左右曲面的倾斜程度明显变化，但下方三个计数必须锁定。</p></header><div class="ch5-toolbar">${[["positive","两个正方向"],["indefinite","一正一负"],["rank1","一正一零"]].map(([k,l],i)=>`<button type="button" ${i===1?'class="is-active"':''} data-s3-preset="${k}">${l}</button>`).join('')}</div><label class="ch5-range"><span>剪切参数 h</span><input type="range" min="-1.5" max="1.5" step=".05" value="0" data-s3-h><output data-s3-h-value>0</output></label><div class="qv-same"><figure><canvas data-s3-a-canvas></canvas><figcaption>原曲面 A<div data-s3-a-counts></div></figcaption></figure><div class="qv-equals"><strong>CᵀAC</strong><span>可逆时只换坐标</span></div><figure><canvas data-s3-b-canvas></canvas><figcaption>变换后 B<div data-s3-b-counts></div></figcaption></figure></div><div class="qv-data"><div><span>C</span><div class="ch5-matrix-wrap" data-s3-c></div></div><div><span>A</span><div class="ch5-matrix-wrap" data-s3-a></div></div><div><span>B</span><div class="ch5-matrix-wrap" data-s3-b></div></div><div class="qv-values"><span>det C<strong data-s3-det></strong></span><span>A 的多项式<strong data-s3-poly-a></strong></span><span>B 的多项式<strong data-s3-poly-b></strong></span></div></div><div class="qv-actions"><button data-s3-singular>让替换奇异</button><button data-s3-reset>恢复可逆</button></div><div class="qv-result" data-s3-result><span class="ch5-status" data-s3-status></span><div><h4 data-s3-title></h4><p data-s3-copy></p></div></div></div>`;
-    const presets={positive:[[2,.35],[.35,1]],indefinite:[[1,.3],[.3,-1]],rank1:[[1,1],[1,1]]},state={p:'indefinite',h:0,singular:false},ctl=new AbortController();
+    root.innerHTML=`<h2>交互实验</h2><div class="qv-lab qv-s3"><header class="qv-head"><h3>可逆变换可以扭曲曲面，却改不了向上、向下和平坦方向的数量</h3><p>B=CᵀAC，C=${inline('\\begin{bmatrix}1&h\\\\0&1\\end{bmatrix}')}，det C=1。曲面上画出向上、向下的主方向；下方的符号轮把每个方向按 q 的正负着色。</p></header>
+      <div data-s3-gate></div>
+      <div class="ch5-toolbar">${[["positive","两个正方向"],["indefinite","一正一负"],["rank1","一正一零"]].map(([k,l],i)=>`<button type="button" ${i===1?'class="is-active"':''} data-s3-preset="${k}">${l}</button>`).join('')}</div>
+      <label class="ch5-range"><span>剪切参数 h</span><input type="range" min="-1.5" max="1.5" step=".5" value="0" data-s3-h><output data-s3-h-value>0</output></label>
+      <div class="qv-same"><figure><canvas data-s3-a-canvas></canvas><figcaption>原曲面 A<div data-s3-a-counts></div></figcaption></figure><div class="qv-equals"><strong>CᵀAC</strong><span>可逆时只换坐标</span></div><figure><canvas data-s3-b-canvas></canvas><figcaption>变换后 B<div data-s3-b-counts></div></figcaption></figure></div>
+      <div class="qv-s3-wheels"><figure><canvas data-s3-a-wheel aria-label="A 的符号轮"></canvas></figure><figure><canvas data-s3-b-wheel aria-label="B 的符号轮"></canvas></figure></div>
+      <div class="qv-data"><div><span>C</span><div class="ch5-matrix-wrap" data-s3-c></div></div><div><span>A</span><div class="ch5-matrix-wrap" data-s3-a></div></div><div><span>B</span><div class="ch5-matrix-wrap" data-s3-b></div></div><div class="qv-values"><span>det C<strong data-s3-det></strong></span><span>A 的多项式<strong data-s3-poly-a></strong></span><span>B 的多项式<strong data-s3-poly-b></strong></span></div></div>
+      <div class="qv-actions"><button data-s3-singular>让替换奇异</button><button data-s3-reset>恢复可逆</button></div>
+      <div class="qv-result" data-s3-result><span class="ch5-status" data-s3-status></span><div><h4 data-s3-title></h4><p data-s3-copy></p></div></div></div>`;
+    const presets={positive:[[2,.5],[.5,1]],indefinite:[[1,.5],[.5,-1]],rank1:[[1,1],[1,1]]},state={p:'indefinite',h:0,singular:false},ctl=new AbortController();
+    const gate=window.LAPredictGate?.mount($(root,'[data-s3-gate]'),{
+      root:$(root,'.qv-lab'),manual:true,key:'visuals/ch5/geometry-upgrade.js#s3',
+      question:`A 是一正一负的马鞍面。拖动 h（det C=1 始终可逆），B 的曲面能不能变成两个方向都向上的碗？`,
+      options:[
+        ['不能：始终恰好一个方向向上、一个方向向下',true,''],
+        ['能：h 足够大时',false,'h 越大曲面越斜，但符号轮上蓝色的“向下”弧一直在。'],
+        ['能：交叉项消失的那一刻',false,'交叉项消失时 B 是对角的，对角元仍是一正一负。'],
+        ['会变成一个向上、一个平坦',false,'平坦方向意味着某个非零方向上 q 恒为 0，可逆替换造不出这样的方向。'],
+      ],
+      right:`✓ 可逆的 C 把 A 的“向下”方向 v 换成 B 的方向 C⁻¹v：${inline('(C^{-1}v)^TB(C^{-1}v)=v^TAv<0')}。向下的方向只是换了位置，不会消失；向上的方向也一样。这就是惯性定理：p、q 由二次型本身决定。`,
+      onPick:()=>{if(state.p!=='indefinite')$(root,'[data-s3-preset="indefinite"]')?.click();},
+      onReveal:()=>paint(),
+    });
     function C(){return state.singular?[[1,1],[1,1]]:[[1,state.h],[0,1]];}
-    function paint(){const A=presets[state.p],c=C(),B=M().symmetrize(M().congruence(A,c)),det=M().det2(c),ok=Math.abs(det)>1e-8,ia=M().inertiaSymmetric(A),ib=M().inertiaSymmetric(B),same=ia.p===ib.p&&ia.q===ib.q&&ia.zero===ib.zero;$(root,'[data-s3-h]').value=state.h;$(root,'[data-s3-h]').disabled=state.singular;$(root,'[data-s3-h-value]').textContent=state.singular?'—':fmt(state.h,2);$(root,'[data-s3-a]').innerHTML=M().matrixHtml(A);$(root,'[data-s3-b]').innerHTML=M().matrixHtml(B);$(root,'[data-s3-c]').innerHTML=M().matrixHtml(c);$(root,'[data-s3-det]').textContent=fmt(det,4);$(root,'[data-s3-a-counts]').innerHTML=counts(ia);$(root,'[data-s3-b-counts]').innerHTML=counts(ib);$(root,'[data-s3-poly-a]').textContent=M().polyPlain2(A);$(root,'[data-s3-poly-b]').textContent=M().polyPlain2(B);surface($(root,'[data-s3-a-canvas]'),A,'A · 原曲面');surface($(root,'[data-s3-b-canvas]'),B,'B · 变换后');const s=$(root,'[data-s3-status]');s.className=`ch5-status ${ok&&same?'is-ok':'is-warn'}`;s.textContent=ok?(same?'惯性锁定':'数值异常'):'合同停止';$(root,'[data-s3-title]').textContent=ok?'形状被拉斜，符号骨架没有变':'一个方向被真正丢失';$(root,'[data-s3-copy]').textContent=ok?'det C≠0，正、负、零方向数量与 A 完全一致。':'det C=0，平面被压到一条线；此时替换不可逆，已经离开合同的前提。';}
-    $$(root,'[data-s3-preset]').forEach(b=>b.addEventListener('click',()=>{state.p=b.dataset.s3Preset;state.h=0;state.singular=false;$$(root,'[data-s3-preset]').forEach(x=>x.classList.toggle('is-active',x===b));paint();},{signal:ctl.signal}));$(root,'[data-s3-h]').addEventListener('input',e=>{state.h=Number(e.target.value);state.singular=false;paint();},{signal:ctl.signal});$(root,'[data-s3-singular]').addEventListener('click',()=>{state.singular=true;paint();},{signal:ctl.signal});$(root,'[data-s3-reset]').addEventListener('click',()=>{state.singular=false;state.h=0;paint();},{signal:ctl.signal});window.addEventListener('resize',paint,{signal:ctl.signal,passive:true});paint();return()=>ctl.abort();
+    function paint(){
+      const A=presets[state.p],c=C(),B=M().symmetrize(M().congruence(A,c)),det=M().det2(c),ok=Math.abs(det)>1e-8,ia=M().inertiaSymmetric(A),ib=M().inertiaSymmetric(B),same=ia.p===ib.p&&ia.q===ib.q&&ia.zero===ib.zero;
+      const open=!gate||gate.revealed;
+      $(root,'[data-s3-h]').value=state.h;$(root,'[data-s3-h]').disabled=state.singular;
+      $(root,'[data-s3-h-value]').textContent=state.singular?'—':fracStr(state.h);
+      $(root,'[data-s3-a]').innerHTML=fracMatrix(A);$(root,'[data-s3-b]').innerHTML=fracMatrix(B);$(root,'[data-s3-c]').innerHTML=fracMatrix(c);
+      $(root,'[data-s3-det]').textContent=fracStr(det);
+      $(root,'[data-s3-a-counts]').innerHTML=counts(ia);
+      // B's counts are the answer: they appear once the prediction is checked
+      $(root,'[data-s3-b-counts]').innerHTML=open?counts(ib):'<div class="qv-counts"><span>正<strong>?</strong></span><span>负<strong>?</strong></span><span>零<strong>?</strong></span></div>';
+      $(root,'[data-s3-poly-a]').innerHTML=inline(polyFracTex(A));$(root,'[data-s3-poly-b]').innerHTML=inline(polyFracTex(B));
+      surface($(root,'[data-s3-a-canvas]'),A,'A · 原曲面');surface($(root,'[data-s3-b-canvas]'),B,'B · 变换后');
+      signWheel($(root,'[data-s3-a-wheel]'),A,'A 的符号轮');signWheel($(root,'[data-s3-b-wheel]'),B,'B 的符号轮');
+      $(root,'[data-s3-singular]').disabled=!open;
+      const s=$(root,'[data-s3-status]');
+      if(!open){s.className='ch5-status';s.textContent='先预测';$(root,'[data-s3-title]').textContent='选好预测后拖动 h';$(root,'[data-s3-copy]').textContent='盯住右边的曲面和符号轮：蓝色弧是 q<0 的方向。';return;}
+      s.className=`ch5-status ${ok&&same?'is-ok':'is-warn'}`;s.textContent=ok?(same?'惯性锁定':'数值异常'):'合同停止';
+      $(root,'[data-s3-title]').textContent=ok?'形状被拉斜，符号骨架没有变':'一个方向被真正丢失';
+      $(root,'[data-s3-copy]').textContent=ok?'det C≠0，正、负、零方向数量与 A 完全一致。':'det C=0，平面被压到一条线；此时替换不可逆，已经离开合同的前提。';
+    }
+    $$(root,'[data-s3-preset]').forEach(b=>b.addEventListener('click',()=>{state.p=b.dataset.s3Preset;state.h=0;state.singular=false;$$(root,'[data-s3-preset]').forEach(x=>x.classList.toggle('is-active',x===b));paint();},{signal:ctl.signal}));
+    $(root,'[data-s3-h]').addEventListener('input',e=>{state.h=Number(e.target.value);state.singular=false;if(gate?.picked&&state.h!==0)gate.acted();paint();},{signal:ctl.signal});
+    $(root,'[data-s3-singular]').addEventListener('click',()=>{state.singular=true;paint();},{signal:ctl.signal});
+    $(root,'[data-s3-reset]').addEventListener('click',()=>{state.singular=false;state.h=0;paint();},{signal:ctl.signal});
+    window.addEventListener('resize',paint,{signal:ctl.signal,passive:true});paint();return()=>ctl.abort();
   }
 
   function mountS4(root){

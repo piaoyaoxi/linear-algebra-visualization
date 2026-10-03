@@ -550,7 +550,7 @@
   function bilinearLab(root) {
     const lab = K.labShell(root, {
       title: "固定一个变量，得到一个线性函数",
-      task: "f(x,y)=xᵀAy。固定朱色的 y，f(·,y) 就是 x 的线性函数，绿色直线是它的等值线。拖动 y 看这族直线怎样转动，拖动 x 读出 f(x,y)。",
+      task: "f(x,y)=xᵀAy。固定朱色的 y，f(·,y) 就是 x 的线性函数，绿色直线是它的等值线，紫色箭头 Ay 是它们的法向。拖动 y 看这族直线怎样转动，拖动 x 读出 f(x,y)。",
     });
     const state = { key: "ns", mode: "fixY", x: [1, 1], y: [1, 0] };
     const toolbar = el("div", "ch7l-toolbar");
@@ -583,7 +583,24 @@
       plane.setDraw((d) => {
         d.grid(undefined, { alpha: 0.35 });
         d.axes();
-        if (open && !K.isZeroVec(coef)) levelLines(d, coef.map(num), { label: "f", color: "subspace", zeroColor: "subspace", zeroLabel: "f=0" });
+        if (open && !K.isZeroVec(coef)) {
+          levelLines(d, coef.map(num), { label: "f", color: "subspace", zeroColor: "subspace", zeroLabel: "f=0" });
+          /*
+           * The coefficient vector Ay (or Aᵀx) is normal to the level lines: a
+           * right-angle mark where it leaves the line f=0. A long vector is
+           * drawn shortened, keeping its direction.
+           */
+          const c = coef.map(num);
+          const L = Math.hypot(c[0], c[1]);
+          const room = Math.min(d.halfW, d.halfH) * 0.92;
+          const k = L > room ? room / L : 1;
+          const tip = [c[0] * k, c[1] * k];
+          const n = [c[0] / L, c[1] / L];
+          const t = [-n[1], n[0]];
+          const m = 14 / d.scale;
+          d.polyline([[t[0] * m, t[1] * m], [t[0] * m + n[0] * m, t[1] * m + n[1] * m], [n[0] * m, n[1] * m]], "subspace", { width: 1.5 });
+          d.arrow([0, 0], tip, "image", { width: 2.8, dash: k < 1 ? [7, 4] : undefined, label: k < 1 ? `${fixY ? "Ay" : "Aᵀx"} 的方向` : fixY ? "Ay" : "Aᵀx" });
+        }
         d.arrow([0, 0], state.y, "v2", { width: fixY ? 3.4 : 2.4, label: "y" });
         d.arrow([0, 0], state.x, "v1", { width: fixY ? 2.4 : 3.4, label: "x" });
         if (open) pointLabel(d, fixY ? state.x : state.y, `f(x,y)=${minus(M().formatF(value))}`, "text", 16);
@@ -594,7 +611,7 @@
         <ul class="ch10l-readout"><li>${tex(`${coefTex}=${K.latexVec(coef)}`)}</li>`;
       html += K.isZeroVec(coef)
         ? `<li class="ch7l-bad">${tex(coefTex)} 是零向量：对一切 ${free}，f(x,y)=0。</li>`
-        : `<li>${tex(`f(x,y)=${formTex(coef, [`${free}_1`, `${free}_2`])}`)}</li>`;
+        : `<li>${tex(`f(x,y)=${formTex(coef, [`${free}_1`, `${free}_2`])}`)}</li><li class="ch7l-muted" data-bil-normal>紫色箭头 ${tex(coefTex)} 与每条等值线垂直；沿它的方向 f 增长最快。</li>`;
       html += `<li>${tex(`f(x,y)=x^TAy=${lf(value)}`)}</li></ul>`;
       readCard.innerHTML = open ? html : `<h4>固定 ${fixedName}，f 是 ${free} 的线性函数</h4><p class="ch7l-muted">先在上方作出预测，等值线和读数随后出现。</p>`;
       const detA = K.det(a);

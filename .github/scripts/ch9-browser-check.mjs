@@ -104,7 +104,10 @@ async function exerciseLabs(page) {
   await drag(page, "plane", [1, -1], [2, -0.5]);
   expect((await text(page, "[data-ip-status]")).includes("正交"), "§1: dragging v to (2,−1/2) should give orthogonality");
   await predict(page, 1);
-  expect(await resultShown(page), "§1: conclusion after prediction");
+  expect(!(await resultShown(page)), "§1: conclusion waits for an action after the prediction");
+  expect((await page.locator("[data-ch9-predict] .is-right, [data-ch9-predict] .is-wrong").count()) === 0, "§1: no verdict before an action");
+  await chip(page, "diag");
+  expect(await resultShown(page), "§1: conclusion after prediction and action");
   await chip(page, "bad");
   expect((await text(page, "[data-ip-status]")).includes("不正定"), "§1: indefinite G flagged");
 
@@ -113,7 +116,12 @@ async function exerciseLabs(page) {
   await page.locator("[data-gs-next]").click();
   expect(await page.locator("[data-gs-next]").isDisabled(), "§2: step 3 locked before prediction");
   await predict(page, 0);
+  expect(!(await resultShown(page)), "§2: conclusion waits for step 3");
+  await page.locator("[data-gs-prev]").click();
   await page.locator("[data-gs-next]").click();
+  expect(!(await resultShown(page)), "§2: stepping before step 3 does not grade");
+  await page.locator("[data-gs-next]").click();
+  expect(await resultShown(page), "§2: conclusion after step 3");
   expect((await text(page, "[data-gs-status]")).includes("垂直于整个平面"), "§2: β₃ orthogonal to plane");
   const before = await text(page, "[data-gs-beta3]");
   await drag(page, "scene", [0, 1, 1], [1.5, 1, 1]);
@@ -169,8 +177,10 @@ async function exerciseLabs(page) {
   expect(await page.locator("[data-sp-play]").isDisabled(), "§6: animation waits for the prediction");
   expect((await page.locator("[data-sp-status]").count()) === 0, "§6: eigen readout hidden before the prediction");
   await predict(page, 0);
-  expect(await resultShown(page), "§6: conclusion after prediction");
+  expect(!(await resultShown(page)), "§6: conclusion waits for an action after the prediction");
+  expect(!(await page.locator("[data-sp-play]").isDisabled()), "§6: animation opens after the prediction");
   await page.locator("[data-sp-s]").fill("3");
+  expect(await resultShown(page), "§6: conclusion after prediction and action");
   expect((await text(page, "[data-sp-steps] .is-active")).includes("③"), "§6: slider reaches step 3");
   await chip(page, "nonsym");
   expect((await text(page, "[data-sp-status]")).includes("不正交"), "§6: non-symmetric eigenvectors not orthogonal");

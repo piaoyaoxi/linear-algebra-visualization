@@ -34,8 +34,12 @@
     );
   }
 
-  /* The student commits to an answer first; the conclusion opens afterwards. */
-  function predictGate(host, spec, onAnswered) {
+  /*
+   * Predict -> act -> reveal. Picking an option only records the prediction;
+   * the verdict and onReveal wait until the lab reports a real action
+   * (gate.acted(): a drag, a slider, a preset or a button) after the pick.
+   */
+  function predictGate(host, spec, onReveal) {
     spec = { ...spec, options: window.LAStableShuffle ? window.LAStableShuffle(spec.options, spec.question) : spec.options };
     const box = el("div", "ch6l-predict");
     box.innerHTML = `<div class="ch6l-predict-q"><span>先预测</span><p>${spec.question}</p></div>
@@ -43,21 +47,51 @@
       <p class="ch6l-predict-feedback" hidden></p>`;
     host.append(box);
     const feedback = box.querySelector(".ch6l-predict-feedback");
-    let answered = false;
-    box.querySelectorAll("[data-i]").forEach((b) =>
+    const buttons = [...box.querySelectorAll("[data-i]")];
+    const state = { choice: null, acted: false, revealed: false };
+
+    function grade() {
+      const o = spec.options[state.choice];
+      buttons.forEach((x, i) => {
+        x.classList.remove("is-picked", "is-right", "is-wrong");
+        if (i === state.choice) x.classList.add(o.correct ? "is-right" : "is-wrong");
+      });
+      feedback.hidden = false;
+      feedback.innerHTML = o.correct ? `✓ ${spec.right}` : `再对照图形想一想：${o.why || "动手操作后看看发生了什么。"}`;
+    }
+
+    function reveal() {
+      if (state.revealed || state.choice == null || !state.acted) return;
+      state.revealed = true;
+      box.classList.add("is-done");
+      grade();
+      onReveal?.();
+    }
+
+    buttons.forEach((b, i) =>
       b.addEventListener("click", () => {
-        const o = spec.options[Number(b.dataset.i)];
-        box.querySelectorAll("[data-i]").forEach((x) => x.classList.remove("is-right", "is-wrong"));
-        b.classList.add(o.correct ? "is-right" : "is-wrong");
+        state.choice = i;
+        if (state.revealed) return grade();
+        buttons.forEach((x) => x.classList.toggle("is-picked", x === b));
         feedback.hidden = false;
-        feedback.innerHTML = o.correct ? `✓ ${spec.right}` : `再对照图形想一想：${o.why || "动手操作后看看发生了什么。"}`;
-        if (!answered) {
-          answered = true;
-          onAnswered?.();
-        }
+        feedback.textContent = spec.actHint || "已记下你的预测。现在动手操作一次，结论随后出现。";
       }),
     );
-    return box;
+
+    return {
+      element: box,
+      acted() {
+        if (state.choice == null) return;
+        state.acted = true;
+        reveal();
+      },
+      get predicted() {
+        return state.choice != null;
+      },
+      get revealed() {
+        return state.revealed;
+      },
+    };
   }
 
   function labShell(root, { title, task }) {

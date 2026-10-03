@@ -82,7 +82,8 @@
     };
     ["pointerup", "input", "change", "keyup"].forEach((type) => lab?.addEventListener(type, acted));
     lab?.addEventListener("click", (event) => {
-      if (event.target.closest("button")) acted(event);
+      const b = event.target.closest("button");
+      if (b && !b.disabled) acted(event);
     });
     return box;
   }
@@ -217,7 +218,16 @@
         return objs;
       });
       const changed = state.c !== 0 && state.target !== state.source ? [state.target] : [];
-      sysBox.innerHTML = `<h4>当前方程组</h4>${M().htmlEquations(rows, changed)}<p class="ch3l-muted">${describeSolution(rows)}</p>`;
+      // while c is sliding between nice values, the equations show the nearest twelfth
+      // instead of fractions like 437/1000; the planes still move smoothly
+      let shown = rows;
+      if (!Number.isInteger(state.c * 12) && state.target !== state.source) {
+        shown = state.rows.map((r) => r.slice());
+        shown[state.target] = M().rowAdd(shown, state.target, state.source, F(Math.round(state.c * 12) / 12))[state.target];
+      }
+      sysBox.innerHTML = `<h4>当前方程组${shown === rows ? "" : "（约）"}</h4>${M().htmlEquations(shown, changed)}<p class="ch3l-muted">${describeSolution(shown)}</p>`;
+      // “执行” only makes sense when it changes something
+      $("[data-apply]").disabled = state.c === 0 || state.target === state.source;
       $("[data-cv]").innerHTML = Number.isInteger(state.c * 12) ? tex(fmt(F(state.c))) : state.c.toFixed(2);
       $("[data-undo]").disabled = !state.history.length;
     }

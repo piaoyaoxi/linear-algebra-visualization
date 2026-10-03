@@ -93,7 +93,10 @@
   };
 
   /* n1 x1 + n2 x2 + n3 x3 without zero terms or unit coefficients. */
-  function planeLatex(n) {
+  function planeLatex(n0) {
+    // scale the normal so its first nonzero coefficient is ±1 (3/2 x₃=0 reads x₃=0)
+    const lead = n0.find((c) => !M().isZero(c));
+    const n = lead ? n0.map((c) => M().div(c, M().absF(lead))) : n0;
     const terms = [];
     n.forEach((c, i) => {
       if (M().isZero(c)) return;
@@ -469,7 +472,7 @@
           { text: "A²v", why: "(1,4,9)ᵀ 不在 (1,1,1)ᵀ、(1,2,3)ᵀ 张成的平面里。" },
           { text: "永远不会落回", why: "ℝ³ 里至多 3 个线性无关的向量。" },
         ],
-        conclusion: "v, Av, A²v 是 (1,1,1)ᵀ,(1,2,3)ᵀ,(1,4,9)ᵀ，线性无关，张满 ℝ³；A³v 必然落回，给出 m_v=(λ−1)(λ−2)(λ−3)=m_A。把 v 拖到 ε₁ 方向：第一步就停，m_v=λ−1，它整除 m_A。",
+        conclusion: "v, Av, A²v 是 (1,1,1)ᵀ,(1,2,3)ᵀ,(1,4,9)ᵀ，线性无关，张满 ℝ³；A³v 必然落回，给出 mᵥ=(λ−1)(λ−2)(λ−3)=m。把 v 拖到 ε₁ 方向：第一步就停，mᵥ=λ−1，它整除 m。",
       },
     },
     j21: {
@@ -484,7 +487,7 @@
           { text: "能，取 v=ε₃", why: "ε₃ 是特征向量，第一步就停。" },
           { text: "不能，因为 Av 总落回 L(v)", why: "v=ε₁ 时 Av=(2,1,0)ᵀ 与 v 不共线。" },
         ],
-        conclusion: "(A−2E)²=O，所以对每个 v 都有 A²v=4Av−4v：张成最多是平面。m_A=(λ−2)²，次数 2，低于特征多项式 (λ−2)³。",
+        conclusion: "(A−2E)²=O，所以对每个 v 都有 A²v=4Av−4v：张成最多是平面。m=(λ−2)²，次数 2，低于特征多项式 (λ−2)³。",
       },
     },
     j3: {
@@ -499,7 +502,7 @@
           { text: "2 次", why: "从 v=ε₁ 出发，看 A²v 是否落回。" },
           { text: "4 次", why: "最小多项式整除特征多项式。" },
         ],
-        conclusion: "v=ε₁ 时 v, Av, A²v 线性无关，所以没有 2 次多项式零化 A，m_A=(λ−2)³ 与特征多项式相同。v=ε₃ 是特征向量，一步就停：m_v=λ−2。",
+        conclusion: "v=ε₁ 时 v, Av, A²v 线性无关，所以没有 2 次多项式零化 A，m=(λ−2)³ 与特征多项式相同。v=ε₃ 是特征向量，一步就停：mᵥ=λ−2。",
       },
     },
   };
@@ -507,7 +510,7 @@
   function krylovLab(root) {
     const lab = K.labShell(root, {
       title: "v, Av, A²v, … 第几步落回",
-      task: "拖动 v 选一个起点，然后逐个加入 Av, A²v, …。张成从直线长成平面，再长满空间；新向量第一次落回已有张成时，得到 v 的最小多项式 m_v。",
+      task: "拖动 v 选一个起点，然后逐个加入 Av, A²v, …。张成从直线长成平面，再长满空间；新向量第一次落回已有张成时，得到 v 的最小多项式 mᵥ。",
     });
     const state = { key: "diag", v: [1, 1, 1], seq: null };
     const toolbar = el("div", "ch7l-toolbar");

@@ -422,14 +422,38 @@
       return { U, W, Bu, Bw, basis, sum };
     }
 
+    /*
+     * Basis of U∩W (α, green), extended inside U by β (blue) and inside W by
+     * γ (vermilion): α,β is a basis of U, α,γ of W, and α,β,γ of U+W, so the
+     * shared α is counted once.
+     */
+    function extendBasis(start, gens) {
+      const out = [];
+      gens.forEach((g) => {
+        const all = [...start, ...out, g];
+        if (M().rankOf(K().colsToRows(all)) === all.length) out.push(g);
+      });
+      return out;
+    }
+
     function redraw() {
       const { U, W, Bu, Bw, basis, sum } = compute();
       const inter = basis.length;
+      const alphas = basis.map(primitive);
+      const betas = extendBasis(alphas, Bu);
+      const gammas = extendBasis(alphas, Bw);
+      const name = (letter, i, n) => (n > 1 ? `${letter}${SUB[i]}` : letter);
       scene.setObjects(() => {
         const objs = [...K().spanObjects(Bu, "v1", { label: "U" }), ...K().spanObjects(Bw, "v2", { label: "W", alpha: 0.12 })];
         if (state.revealed && inter === 1) objs.push({ type: "line", dir: basis[0].map(num), color: "subspace", width: 4.2, label: "U∩W" });
-        U.forEach((v, i) => objs.push({ type: "arrow", to: v.map(num), color: "v1", width: 2.4, label: `u${SUB[i]}` }));
-        W.forEach((v, i) => objs.push({ type: "arrow", to: v.map(num), color: "v2", width: 2.4, label: `w${SUB[i]}` }));
+        const ghost = state.revealed;
+        U.forEach((v, i) => objs.push({ type: "arrow", to: v.map(num), color: "v1", width: 2.4, label: ghost ? undefined : `u${SUB[i]}`, ghost }));
+        W.forEach((v, i) => objs.push({ type: "arrow", to: v.map(num), color: "v2", width: 2.4, label: ghost ? undefined : `w${SUB[i]}`, ghost }));
+        if (state.revealed) {
+          alphas.forEach((v, i) => objs.push({ type: "arrow", to: v.map(num), color: "subspace", width: 3.4, label: name("α", i, alphas.length) }));
+          betas.forEach((v, i) => objs.push({ type: "arrow", to: v.map(num), color: "v1", width: 3.4, label: name("β", i, betas.length) }));
+          gammas.forEach((v, i) => objs.push({ type: "arrow", to: v.map(num), color: "v2", width: 3.4, label: name("γ", i, gammas.length) }));
+        }
         return objs;
       });
       scene.setHandles([
@@ -442,12 +466,27 @@
       if (state.revealed) {
         html += `<p>${tex(`\\dim(U\\cap W)=${inter}`)}${inter ? `，${inter === 1 ? tex(`U\\cap W=L(${vecTex(primitive(basis[0]))})`) : "U∩W 是整个平面"}` : "，只有零向量"}</p>`;
         html += `<p>${tex(`\\dim(U+W)=${sum}`)}，${tex("U+W")} 是${spaceName(sum)}</p>`;
-        html += `<p class="ch6l-ok">${tex(`${dU}+${dW}=${sum}+${inter}`)}</p>`;
+        // names carry the arrow colours: β → v1 (sentinel 0), γ → v2 (1), α → subspace (2)
+        const tn = (letter, list, j) => list.map((_, i) => `\\textcolor{${COL_SENTINEL[j]}}{\\${letter}${list.length > 1 ? `_${i + 1}` : ""}}`);
+        const A = tn("alpha", alphas, 2);
+        const B = tn("beta", betas, 0);
+        const G = tn("gamma", gammas, 1);
+        const basisOf = (names) => names.join(",");
+        html += colourColumnsHtml(
+          `<ul class="ch6l-bases">
+          <li>${tex("U")} 的基 ${tex(basisOf([...A, ...B]))}</li>
+          <li>${tex("W")} 的基 ${tex(basisOf([...A, ...G]))}</li>
+          <li>${tex("U+W")} 的基 ${tex(basisOf([...A, ...B, ...G]))}${A.length ? `，其中 ${tex(basisOf(A))} 只数一次` : ""}</li>
+        </ul>`,
+          COLORS,
+        );
+        html += `<p class="ch6l-ok">${tex(`\\dim(U+W)=${dU}+${dW}-${inter}=${sum}`)}</p>`;
       } else {
         html += `<p class="ch6l-muted">先作出预测，再看交与和的维数。</p>`;
       }
       info.innerHTML = html;
       info.dataset.ledger = [dU, dW, inter, sum].join(",");
+      info.dataset.bases = [alphas.length, betas.length, gammas.length].join(",");
       tools.querySelector("[data-look]").disabled = !state.revealed || inter !== 1;
     }
 

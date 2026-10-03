@@ -982,3 +982,16 @@ body .ch3l-dists > .ch3l-dist[data-plane="3"]::before {
 body .ch3l-dists > .ch3l-dist.is-on::before {
   display: none;
 }
+
+/* ch6 §6 the shared basis α of U∩W, extended by β inside U and γ inside W */
+body .ch6l-bases {
+  display: grid;
+  gap: 4px;
+  margin: 4px 0 8px;
+  padding: 0;
+  list-style: none;
+}
+
+body .ch6l-bases > li {
+  margin: 0;
+}

@@ -10,6 +10,24 @@
     let lastAction = "起点 3142 有三个逆序，因此是奇排列。";
     const pairOrder = M().allPositionPairs(4);
     const list = root.querySelector("[data-perm-list]");
+    // adjacent swaps counted from the last loaded or hand-made permutation
+    let startTau = 3;
+    let startText = "3142";
+    let adjSteps = 0;
+    let swappedRows = [];
+    const gate = window.LAPredictGate?.mount(root.querySelector("[data-perm-gate]"), {
+      root: root.querySelector(".ch2-lab"),
+      manual: true,
+      key: "visuals/ch2/section2-presentation.js#adjacent",
+      question: "从 3142 出发，每一步交换一对相邻的逆序数，直到变成 1234。一共要换几步？",
+      options: [
+        ["恰好 τ(3142) 步", true, ""],
+        ["4 步，与排列长度相同", false, "步数与长度无关：每一步 τ 恰好减 1，从 3 减到 0 用了 3 步。"],
+        ["不确定，取决于先换哪一对", false, "无论先换哪一对相邻逆序数，τ 都恰好减 1，所以总是 τ 步。"],
+        ["2τ 步", false, "一次相邻交换只改变这一对的先后，τ 减 1，不是减 1/2。"],
+      ],
+      right: "✓ 每一次相邻交换只改变一对数的先后，τ 恰好减 1，det P=sgn 翻一次号。从 τ=3 到 τ=0 正好 3 步，符号翻了 3 次：sgn(3142)=(−1)³=−1。",
+    });
 
     const tau = () => M().inversionPairs(permutation).length;
 
@@ -38,6 +56,27 @@
       drawWires();
     }
 
+    // permutation matrix: row i has its 1 in column σ(i); det P = sgn σ
+    function renderMatrix(sign) {
+      const box = root.querySelector("[data-perm-matrix]");
+      if (!box) return;
+      box.innerHTML = `<table class="ch2-perm-matrix" aria-label="置换矩阵">${permutation.map((value, row) => `<tr class="${swappedRows.includes(row) ? "is-swapped" : ""}">${[1, 2, 3, 4].map((col) => `<td class="${col === value ? "is-one" : ""}">${col === value ? 1 : 0}</td>`).join("")}</tr>`).join("")}</table>
+        <p class="ch2-perm-det">det P = ${swappedRows.length ? `<s>${sign > 0 ? "−1" : "+1"}</s> → ` : ""}<b class="${sign > 0 ? "is-plus" : "is-minus"}">${sign > 0 ? "+1" : "−1"}</b></p>`;
+      const done = permutation.every((value, index) => value === index + 1);
+      const counter = root.querySelector("[data-adj-count]");
+      counter.innerHTML = done && adjSteps > 0
+        ? `从 ${startText} 出发：相邻交换 <b>${adjSteps}</b> 次，τ(${startText}) = <b>${startTau}</b>`
+        : `从 ${startText} 出发：相邻交换 <b>${adjSteps}</b> 次`;
+      counter.classList.toggle("is-positive", done && adjSteps > 0);
+    }
+
+    function restart() {
+      startTau = tau();
+      startText = permutation.join("");
+      adjSteps = 0;
+      swappedRows = [];
+    }
+
     function describeParityChange(beforeTau, afterTau, action) {
       const delta = afterTau - beforeTau;
       const magnitude = Math.abs(delta);
@@ -60,6 +99,7 @@
         ? inversions.map(({ a, b }) => `<span>(${a},${b})</span>`).join("")
         : "<span>无逆序对</span>";
       drawWires();
+      renderMatrix(sign);
 
       let dragIndex = -1;
       list.querySelectorAll("[data-index]").forEach((button) => {
@@ -82,6 +122,8 @@
           [permutation[first], permutation[index]] = [permutation[index], permutation[first]];
           const afterTau = tau();
           describeParityChange(beforeTau, afterTau, `对换位置 ${first + 1} 与 ${index + 1}`);
+          restart();
+          swappedRows = [first, index];
           selected = -1;
           scannerIndex = 0;
           render({ pulse: true });
@@ -97,6 +139,7 @@
           const [moved] = next.splice(dragIndex, 1);
           next.splice(target, 0, moved);
           permutation = next;
+          restart();
           const afterTau = tau();
           lastAction = `把 ${moved} 从位置 ${dragIndex + 1} 移到位置 ${target + 1}，跨过 ${distance} 个相邻位置；这等价于 ${distance} 次相邻交换。τ：${beforeTau}→${afterTau}，符号${distance % 2 ? "翻转" : "保持"}。`;
           selected = -1;
@@ -118,6 +161,7 @@
           example: [3, 1, 4, 2],
         };
         permutation = presets[button.dataset.permPreset].slice();
+        restart();
         selected = -1;
         scannerIndex = 0;
         lastAction = `载入排列 ${permutation.join("")}：请先预测逆序数，再用扫描器核对。`;
@@ -137,9 +181,12 @@
           [permutation[index], permutation[index + 1]] = [permutation[index + 1], permutation[index]];
           const afterTau = tau();
           lastAction = `相邻交换位置 ${index + 1}、${index + 2}：τ 从 ${beforeTau} 降到 ${afterTau}，恰好减少 1，符号翻转。`;
+          adjSteps += 1;
+          swappedRows = [index, index + 1];
           selected = -1;
           scannerIndex = 0;
           render({ pulse: true });
+          if (afterTau === 0 && startText === "3142") gate?.acted();
           return;
         }
       }
@@ -182,12 +229,16 @@
         <h2>交互实验</h2>
         <div class="ch2-lab">
           <div class="ch2-lab-head"><h3>排列与逆序 · 逐对扫描</h3><p>点击两个数字完成一次对换，或拖动一个数字改变位置。扫描器逐对检查，连线图把逆序显示为交叉。</p></div>
-          <div class="ch2-task"><strong>观察任务</strong><span>从 3142 出发，每次做一个相邻交换，直到还原 1234；比较交换步数与初始逆序数。</span></div>
+          <div data-perm-gate></div>
           <div class="ch2-lab-grid ch2-permutation-layout">
             <div class="ch2-side ch2-permutation-scene">
               <div class="ch2-note">当前排列：<strong data-perm-text></strong></div>
               <div class="ch2-perm-row" data-perm-list></div>
-              <svg class="ch2-wires" data-wires viewBox="0 0 306 160" role="img" aria-label="排列连线图，交叉表示逆序"></svg>
+              <div class="ch2-wire-pair">
+                <svg class="ch2-wires" data-wires viewBox="0 0 306 160" role="img" aria-label="排列连线图，交叉表示逆序"></svg>
+                <figure class="ch2-perm-matrix-box" data-perm-matrix></figure>
+              </div>
+              <div class="ch2-note" data-adj-count aria-live="polite"></div>
             </div>
             <div class="ch2-side">
               <div class="ch2-meter">
@@ -200,7 +251,7 @@
               <div class="ch2-note"><strong data-scan-pair></strong><br /><span data-scan-result></span></div>
               <div class="ch2-toolbar">
                 <button type="button" data-scan-next>扫描下一对</button>
-                <button type="button" data-adj-step>相邻交换一步</button>
+                <button type="button" class="is-primary" data-adj-step>相邻交换一步</button>
               </div>
             </div>
           </div>

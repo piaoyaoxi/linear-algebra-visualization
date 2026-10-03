@@ -118,6 +118,11 @@ async function exerciseChapter(page) {
   if (!(await page.locator("[data-map-copy]").innerText()).includes("各填 3")) {
     throw new Error("§1 does not explain why the cross coefficient is halved");
   }
+  // predict → act → reveal: the two heights stay hidden until a prediction and a substitution
+  if ((await page.locator("[data-s1-left]").innerText()) !== "?") {
+    throw new Error("§1 heights are visible before the prediction");
+  }
+  await page.locator('#quadratic-matrix-interactive .ch3l-predict-options > button[data-ok="true"]').click();
   await page.locator('[data-s1-preset="shear"]').click();
   if (!(await page.locator("[data-s1-status]").innerText()).includes("合同成立")) {
     throw new Error("§1 invertible shear was not recognized as congruence");
@@ -137,6 +142,10 @@ async function exerciseChapter(page) {
 
   // §2: both the normal and pure-cross examples must end with a valid standard form.
   await openLesson(page, "quadratic-standard-form");
+  if (!(await page.locator('[data-s2-nav="next"]').isDisabled())) {
+    throw new Error("§2 stepping is open before the prediction");
+  }
+  await page.locator('#quadratic-standard-form-interactive .ch3l-predict-options > button[data-ok="true"]').click();
   for (let i = 0; i < 8; i += 1) await page.locator('[data-s2-nav="next"]').click();
   if (!(await page.locator("[data-s2-status]").innerText()).includes("标准形完成")) {
     throw new Error("§2 regular completion did not reach a verified standard form");

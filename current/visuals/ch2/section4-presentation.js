@@ -4,7 +4,8 @@
   function mountColumnOperations(root) {
     const controller = new AbortController();
     const { signal } = controller;
-    const initial = [[1.2, 0.35], [0.2, 1.1]];
+    // integer columns, so every determinant on the way is an exact integer
+    const initial = [[2, 1], [1, 2]];
     let matrix = M().cloneMat(initial);
     const baseDet = M().det2(initial);
     let factor = 1;
@@ -13,6 +14,20 @@
     const beforeCanvas = root.querySelector("[data-row-before]");
     const canvas = root.querySelector("[data-row-canvas]");
     let animating = false;
+    let guide = null;
+    const gate = window.LAPredictGate?.mount(root.querySelector("[data-op-gate]"), {
+      root: root.querySelector(".ch2-lab"),
+      manual: true,
+      key: "visuals/ch2/section4-presentation.js#add",
+      question: "两列 C₁、C₂ 围成平行四边形。做倍加 C₂ ← C₂ + C₁ 以后，它的有向面积 det 会怎样？",
+      options: [
+        ["不变", true, ""],
+        ["变大：多加了一列", false, "C₂ 的端点沿平行于 C₁ 的虚线滑动，底 C₁ 和高都没变。"],
+        ["变成原来的两倍", false, "倍加不是倍乘；面积仍是 3。"],
+        ["变号", false, "只有交换两列才变号；倍加不改变两列的先后次序。"],
+      ],
+      right: "✓ C₂ 的端点沿着与 C₁ 平行的直线滑动：底不变、高不变，所以 det 不变。交换乘 −1，倍乘 C₁×2 乘 2，倍加乘 1。",
+    });
 
     function matrixHtml(value) {
       return tex(`\\begin{bmatrix}${M().formatNum(value[0][0], 2)}&${M().formatNum(value[0][1], 2)}\\\\${M().formatNum(value[1][0], 2)}&${M().formatNum(value[1][1], 2)}\\end{bmatrix}`);
@@ -24,6 +39,7 @@
 
     function sync() {
       const det = M().det2(matrix);
+      gate?.relock();
       root.querySelector("[data-mat]").innerHTML = matrixHtml(matrix);
       root.querySelector("[data-cur-det]").textContent = M().formatNum(det, 3);
       root.querySelector("[data-factor]").textContent = M().formatNum(factor, 3);
@@ -32,27 +48,30 @@
       root.querySelector("[data-ledger]").innerHTML = ledger.length ? ledger.map((line) => `<li>${line}</li>`).join("") : "<li>起点：累计倍率 1</li>";
       root.querySelector("[data-op-undo]").disabled = history.length === 0 || animating;
       M().drawTransformScene(canvas, matrix, {
-        firstLabel: "第 1 列",
-        secondLabel: "第 2 列",
-        caption: `当前 det=${M().formatNum(det, 3)} · 图形展示列操作`,
+        firstLabel: "C₁",
+        secondLabel: "C₂",
+        ghost: initial,
+        guide,
+        caption: `当前 det=${M().formatNum(det, 3)} · 虚线是初始图形`,
       });
       M().drawTransformScene(beforeCanvas, initial, {
-        firstLabel: "初始 C₁",
-        secondLabel: "初始 C₂",
+        firstLabel: "C₁",
+        secondLabel: "C₂",
         caption: `固定参照 · det=${M().formatNum(baseDet, 3)}`,
       });
     }
 
-    async function apply(next, multiplier, line) {
+    async function apply(next, multiplier, line, track = null) {
       if (animating) return;
       snapshot();
       animating = true;
       factor *= multiplier;
       ledger.push(line);
+      guide = track;
       try {
         await M().animateMatrix(canvas, next, {
-          duration: 560,
-          drawOptions: { firstLabel: "第 1 列", secondLabel: "第 2 列", caption: line },
+          duration: track ? 900 : 560,
+          drawOptions: { firstLabel: "C₁", secondLabel: "C₂", caption: line, ghost: initial, guide: track },
           onUpdate(current) {
             root.querySelector("[data-cur-det]").textContent = M().formatNum(M().det2(current), 3);
             root.querySelector("[data-mat]").innerHTML = matrixHtml(current);
@@ -62,6 +81,7 @@
       } finally {
         animating = false;
         sync();
+        if (track) gate?.acted();
       }
     }
 
@@ -71,26 +91,30 @@
       "C₁ ↔ C₂　累计倍率 ×(−1)",
     ), { signal });
     root.querySelector("[data-op-scale]").addEventListener("click", () => apply(
-      [[matrix[0][0] * 1.5, matrix[0][1]], [matrix[1][0] * 1.5, matrix[1][1]]],
-      1.5,
-      "C₁ ← 1.5C₁　累计倍率 ×1.5",
+      [[matrix[0][0] * 2, matrix[0][1]], [matrix[1][0] * 2, matrix[1][1]]],
+      2,
+      "C₁ ← 2C₁　累计倍率 ×2",
     ), { signal });
+    // the tip of C₂ slides along the line through it parallel to C₁
     root.querySelector("[data-op-add]").addEventListener("click", () => apply(
       [[matrix[0][0], matrix[0][1] + matrix[0][0]], [matrix[1][0], matrix[1][1] + matrix[1][0]]],
       1,
-      "剪切：C₂ ← C₂+C₁　累计倍率 ×1",
+      "倍加：C₂ ← C₂+C₁　累计倍率 ×1",
+      { point: [matrix[0][1], matrix[1][1]], dir: [matrix[0][0], matrix[1][0]] },
     ), { signal });
     root.querySelector("[data-op-undo]").addEventListener("click", () => {
       if (animating || !history.length) return;
       const previous = history.pop();
       matrix = previous.matrix;
       factor = previous.factor;
+      guide = null;
       ledger.splice(0, ledger.length, ...previous.ledger);
       sync();
     }, { signal });
     root.querySelector("[data-op-reset]").addEventListener("click", () => {
       matrix = M().cloneMat(initial);
       factor = 1;
+      guide = null;
       ledger.length = 0;
       history.length = 0;
       sync();
@@ -138,8 +162,8 @@
       root.innerHTML = `
         <h2>交互实验</h2>
         <div class="ch2-lab">
-          <div class="ch2-lab-head"><h3>三种列操作 · 对比几何变化</h3><p>平行四边形由两列生成，所以画面直接操作列。右侧同步验证当前 det=初始 det×累计倍率。</p></div>
-          <div class="ch2-task"><strong>观察任务</strong><span>依次做交换、倍乘、倍加，再逐步撤销；每一步先预测 det。</span></div>
+          <div class="ch2-lab-head"><h3>三种列操作 · 对比几何变化</h3><p>平行四边形由两列生成，所以画面直接操作列。右图的虚线是初始图形；读数同步验证当前 det=初始 det×累计倍率。</p></div>
+          <div data-op-gate></div>
           <div class="ch2-operation-layout">
             <div class="ch2-compare-stage">
               <div><span>变换前 · 固定参照</span><div class="ch2-stage"><canvas data-row-before aria-label="列操作前的有向面积"></canvas></div></div>
@@ -157,9 +181,9 @@
               <div class="ch2-ledger"><strong>操作账本</strong><ol data-ledger></ol></div>
             </div>
             <div class="ch2-toolbar ch2-wide-controls">
+              <button type="button" class="is-primary" data-op-add>倍加 C₂ ← C₂+C₁</button>
               <button type="button" data-op-swap>交换 C₁、C₂</button>
-              <button type="button" data-op-scale>C₁ ×1.5</button>
-              <button type="button" data-op-add>C₂ ← C₂+C₁</button>
+              <button type="button" data-op-scale>C₁ ×2</button>
               <button type="button" data-op-undo>撤销</button>
               <button type="button" data-op-reset>重置</button>
             </div>

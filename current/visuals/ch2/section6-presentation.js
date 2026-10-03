@@ -7,6 +7,22 @@
     const matrix = [[1, 2, 0], [0, 3, 0], [4, 5, 6]];
     let active = { row: 1, col: 1 };
     let route = { type: "row", index: 1 };
+    const gate = window.LAPredictGate?.mount(root.querySelector("[data-cof-gate]"), {
+      root: root.querySelector(".ch2-lab"),
+      manual: true,
+      key: "visuals/ch2/section6-presentation.js#row2",
+      question: "第 2 行是 (0, 3, 0)。按第 2 行展开时，真正要算几个 2 阶余子式？",
+      options: [
+        ["1 个：只有 a₂₂ 不为 0", true, ""],
+        ["3 个：每个元素一个", false, "零元素那一项是 0×C=0，它的余子式不必算。"],
+        ["0 个：这一行有 0，det 就是 0", false, "一行里有 0 只消去对应的项；a₂₂C₂₂=3×6=18 仍要算。"],
+        ["2 个：两个 0 各算一个", false, "要算的是非零元素的余子式；两个 0 的项直接为 0。"],
+      ],
+      right: `✓ 两个零块直接为 0，只剩一块：${tex("\\det A=a_{22}C_{22}=3\\times6=18")}。展开时挑零最多的行或列。`,
+      onPick: () => render(),
+      onReveal: () => render(),
+    });
+    const open = () => !gate || gate.revealed;
 
     function cofactor(row, col) {
       const minor = M().minorMatrix(matrix, row, col);
@@ -61,20 +77,30 @@
         }
       }
       const container = root.querySelector("[data-route-list]");
-      container.innerHTML = routes.map((item) => `<button type="button" class="${route.type === item.type && route.index === item.index ? "is-active" : ""}" data-route-type="${item.type}" data-route-index="${item.index}">${item.type === "row" ? `第 ${item.index + 1} 行` : `第 ${item.index + 1} 列`} · ${item.cost} 个非零项</button>`).join("");
+      // before the prediction the routes are locked and their counts hidden
+      const locked = gate && !gate.picked;
+      container.innerHTML = routes.map((item) => `<button type="button" class="${open() && route.type === item.type && route.index === item.index ? "is-active" : ""}" data-route-type="${item.type}" data-route-index="${item.index}" ${locked ? 'disabled title="先在上方作出预测"' : ""}>${item.type === "row" ? `第 ${item.index + 1} 行` : `第 ${item.index + 1} 列`}${open() ? ` · ${item.cost} 个非零项` : ""}</button>`).join("");
       container.querySelectorAll("button").forEach((button) => {
         button.addEventListener("click", () => {
           route = { type: button.dataset.routeType, index: Number(button.dataset.routeIndex) };
+          gate?.acted();
           render();
         }, { signal });
       });
     }
 
-    function renderExpansionTerms(result) {
-      if (!result.items.length) return "<span>所有元素均为 0，因此展开和为 0。</span>";
-      return result.items
-        .map((item) => `<span>${aEntry(item.row + 1, item.col + 1)}${tex(`C_{${item.row + 1}${item.col + 1}}`)} = ${tex(M().formatNum(item.contribution, 3))}</span>`)
-        .join("<br />");
+    // one tile a_ij × C_ij per entry of the route; tiles of zero entries are greyed
+    function renderExpansionTiles(result) {
+      const tiles = result.allItems.map((item) => {
+        const zero = Math.abs(item.element) <= M().EPS;
+        const c = `C_{${item.row + 1}${item.col + 1}}`;
+        return `<figure class="ch2-cof-tile${zero ? " is-zero" : ""}">
+          <span>${aEntry(item.row + 1, item.col + 1)}${tex(`\\times`)}${tex(c)}</span>
+          <strong>${zero ? tex(`0\\times ${c}=0`) : tex(`${M().formatNum(item.element, 3)}\\times${item.value < 0 ? `(${M().formatNum(item.value, 3)})` : M().formatNum(item.value, 3)}=${M().formatNum(item.contribution, 3)}`)}</strong>
+          <small>${zero ? "不必算余子式" : `要算 ${tex(`M_{${item.row + 1}${item.col + 1}}`)}`}</small>
+        </figure>`;
+      });
+      return `${tiles.join('<b class="ch2-cof-op">+</b>')}<b class="ch2-cof-op">=</b><figure class="ch2-cof-tile is-sum"><span>det A</span><strong>${tex(M().formatNum(result.total, 3))}</strong></figure>`;
     }
 
     function render() {
@@ -97,10 +123,14 @@
       const result = expansion(route.type, route.index);
       const omitted = result.allItems.length - result.items.length;
       root.querySelector("[data-route-title]").textContent = route.type === "row" ? `沿第 ${route.index + 1} 行展开` : `沿第 ${route.index + 1} 列展开`;
-      root.querySelector("[data-expand]").innerHTML = renderExpansionTerms(result);
-      root.querySelector("[data-true]").textContent = M().formatNum(result.total, 3);
-      root.querySelector("[data-cost]").textContent = `${result.items.length} 个非零余子式`;
-      root.querySelector("[data-omitted]").textContent = omitted ? `已省略 ${omitted} 个零元素对应项。` : "本路线没有可省略的零项。";
+      const explorer = root.querySelector("[data-route-reading]");
+      explorer.hidden = !open();
+      root.querySelector("[data-route-wait]").hidden = open();
+      if (open()) {
+        root.querySelector("[data-expand]").innerHTML = renderExpansionTiles(result);
+        root.querySelector("[data-cost]").textContent = `${result.items.length} 个非零余子式`;
+        root.querySelector("[data-omitted]").textContent = omitted ? `${omitted} 个零元素的项直接为 0。` : "本路线没有零元素可省。";
+      }
       M().pulseClass(root.querySelector("[data-cij-card]"));
     }
 
@@ -150,7 +180,7 @@
         <h2>交互实验</h2>
         <div class="ch2-lab">
           <div class="ch2-lab-head"><h3>余子式 · 删去一行与一列</h3><p>点击元素后，横线与竖线划去对应行列；剩余元素保持相对位置组成余子矩阵。</p></div>
-          <div class="ch2-task"><strong>观察任务</strong><span>比较第 2 行与第 3 列的成本，再任选另一条路线核对相同结果。</span></div>
+          <div data-cof-gate></div>
           <div class="ch2-lab-grid ch2-cofactor-top">
             <div class="ch2-matrix-box ch2-cofactor-visual">
               <div class="ch2-cut-matrix" data-cut-matrix>
@@ -178,7 +208,8 @@
           </div>
           <div class="ch2-route-explorer">
             <div class="ch2-presets ch2-route-list" data-route-list></div>
-            <div class="ch2-note"><strong data-route-title></strong> · <span data-cost></span><br /><span data-expand></span><br />展开和 = <strong data-true></strong><br /><span data-omitted></span></div>
+            <div class="ch2-note" data-route-wait>选好预测后，点一条展开路线，看它的各项怎样相加。</div>
+            <div class="ch2-note" data-route-reading hidden><strong data-route-title></strong> · <span data-cost></span><div class="ch2-cof-tiles" data-expand></div><span data-omitted></span></div>
           </div>
         </div>`;
       return mountCofactor(root);

@@ -12,11 +12,25 @@
   // so students can verify arrow alignment by eye.
   const SAMPLE_VECTOR = [1, 1];
 
+  // two-step preset: shear S first, then rotation R, so A = RS
+  const SHEAR_S = [1, 1, 0, 1];
+  const ROTATE_R = [0, -1, 1, 0];
+  // x₁ ≠ x₂ on the line x + ker A for the rank-1 preset (ker A = span{(1, −1)})
+  const KERNEL_INPUTS = [[0, 2], [3, -1]];
+
   const PRESETS = [
+    {
+      key: "shearRotate",
+      label: "先剪切再旋转",
+      factors: [SHEAR_S, ROTATE_R],
+      factorNames: ["S", "R"],
+      matrix: [0, -1, 1, 1],
+      description: "先剪切 S，再旋转 90°（R）：A=RS。两步都可逆，A 也可逆。",
+    },
     {
       key: "shear",
       label: "剪切",
-      matrix: [1, 0.8, 0, 1],
+      matrix: [1, 0.5, 0, 1],
       description: "网格被剪斜，但两个基方向仍然独立，完整的二维信息被保留下来。",
     },
     {
@@ -28,7 +42,7 @@
     {
       key: "scale",
       label: "非零伸缩",
-      matrix: [1.5, 0, 0, 0.65],
+      matrix: [2, 0, 0, 0.5],
       description: "横向拉长、纵向压缩，但两个方向都没有消失，变换仍然可逆。",
     },
     {
@@ -106,7 +120,19 @@
     return from.map((value, index) => value + (to[index] - value) * amount);
   }
 
-  function effectiveMatrix(matrix, journey) {
+  // factors F₀, F₁, … applied in order on the way out; undone from the last one on the way back
+  function factorMatrix(factors, journey) {
+    const n = factors.length;
+    const steps = journey <= 1 ? factors : [...factors].reverse().map(inverse);
+    const local = (journey <= 1 ? journey : journey - 1) * n;
+    const k = Math.min(n - 1, Math.floor(local + 1e-9));
+    let matrix = journey <= 1 ? IDENTITY : factors.reduce((acc, f) => multiply(f, acc), IDENTITY);
+    for (let i = 0; i < k; i += 1) matrix = multiply(steps[i], matrix);
+    return multiply(interpolate(IDENTITY, steps[k], Math.min(1, local - k)), matrix);
+  }
+
+  function effectiveMatrix(matrix, journey, factors) {
+    if (factors) return factorMatrix(factors, journey);
     if (journey <= 1) return interpolate(IDENTITY, matrix, journey);
     const matrixInverse = inverse(matrix);
     if (!matrixInverse) return matrix;
@@ -125,8 +151,21 @@
     return Number.isInteger(rounded) ? String(rounded) : rounded.toFixed(2).replace(/0+$/, "").replace(/\.$/, "");
   }
 
+  // exact value as LaTeX: integers, or a fraction with a small denominator
+  function fracLatex(value) {
+    if (Math.abs(value) < 1e-9) return "0";
+    for (let d = 1; d <= 12; d += 1) {
+      const n = Math.round(value * d);
+      if (Math.abs(value * d - n) < 1e-9) {
+        if (d === 1) return String(n);
+        return `${n < 0 ? "-" : ""}\\tfrac{${Math.abs(n)}}{${d}}`;
+      }
+    }
+    return cleanNumber(value);
+  }
+
   function matrixLatex(matrix) {
-    return `\\begin{bmatrix}${cleanNumber(matrix[0])}&${cleanNumber(matrix[1])}\\\\${cleanNumber(matrix[2])}&${cleanNumber(matrix[3])}\\end{bmatrix}`;
+    return `\\begin{bmatrix}${fracLatex(matrix[0])}&${fracLatex(matrix[1])}\\\\${fracLatex(matrix[2])}&${fracLatex(matrix[3])}\\end{bmatrix}`;
   }
 
   function svgPoint(matrix, point, width = 420, height = 320, scale = 60) {
@@ -190,6 +229,8 @@
           </div>
         </header>
 
+        <div data-inverse-gate></div>
+
         <section class="inverse-preset-section" aria-label="选择线性变换">
           <div class="inverse-compact-heading">
             <strong>矩阵 A</strong>
@@ -218,6 +259,7 @@
                 <polygon class="inverse-reference-square" points="${polygonPoints(IDENTITY, SQUARE)}"></polygon>
                 <g data-inverse-grid></g>
                 <polygon class="inverse-current-square" data-inverse-square></polygon>
+                <g data-inverse-kernel></g>
                 <line class="inverse-basis is-x" data-inverse-basis-x />
                 <line class="inverse-basis is-y" data-inverse-basis-y />
                 <line class="inverse-sample-vector" data-inverse-vector />
@@ -280,7 +322,7 @@
 
               <p class="inverse-equation" data-inverse-equation>${inline("Ix=x")}</p>
               <div class="inverse-control-row">
-                <button class="button primary" type="button" data-inverse-next>应用 A</button>
+                <button class="button primary is-primary" type="button" data-inverse-next>应用 A</button>
                 <button class="button ghost" type="button" data-inverse-reset>回到起点</button>
               </div>
             </section>
@@ -347,20 +389,63 @@
       conclusionLabel: lab.querySelector("[data-inverse-conclusion-label]"),
       conclusionFormula: lab.querySelector("[data-inverse-conclusion-formula]"),
       stageControl: lab.querySelector("[data-inverse-stage-control]"),
+      kernel: lab.querySelector("[data-inverse-kernel]"),
       steps: [...lab.querySelectorAll("[data-inverse-step]")],
       jumpButtons: [...lab.querySelectorAll("[data-inverse-jump]")],
     };
 
     let presetKey = defaultPreset.key;
     let animationFrame = 0;
+    let pauseTimer = 0;
+
+    const gate = window.LAPredictGate?.mount(lab.querySelector("[data-inverse-gate]"), {
+      root: lab,
+      manual: true,
+      key: "visuals/ch4/section4-presentation.js#order",
+      question: "A 先剪切（S），再旋转 90°（R），即 A=RS。要把平面还原，应该先撤销哪一步？",
+      options: [
+        ["先撤销旋转（R⁻¹），再撤销剪切（S⁻¹）", true, ""],
+        ["先撤销剪切（S⁻¹），再撤销旋转（R⁻¹）", false, "旋转是最后做的，网格此时已经转过；必须先把它转回来，剪切才能被撤销。"],
+        ["顺序无所谓，结果一样", false, "R⁻¹S⁻¹ 与 S⁻¹R⁻¹ 是两个不同的矩阵，只有后者把网格送回原位。"],
+        ["A 由两步合成，没有逆矩阵", false, "剪切和旋转都可逆，合起来仍可逆，det A=1。"],
+      ],
+      right: `✓ 后做的先撤销：${inline("A^{-1}=(RS)^{-1}=S^{-1}R^{-1}")}，作用到 Ax 上时先遇到 ${inline("R^{-1}")}。`,
+      onPick: () => render(),
+    });
 
     function stopAnimation() {
       if (animationFrame) cancelAnimationFrame(animationFrame);
       animationFrame = 0;
+      if (pauseTimer) clearTimeout(pauseTimer);
+      pauseTimer = 0;
     }
 
-    function animateTo(target, duration = 900) {
+    // a two-step preset stops briefly after each factor, so each step can be seen
+    function animateJourney(target, duration) {
       stopAnimation();
+      const preset = PRESET_MAP[presetKey];
+      const start = Number(elements.progress.value);
+      const n = preset.factors?.length || 1;
+      const stops = [];
+      if (n > 1 && target > start) {
+        for (let k = 1; k < n * 2; k += 1) {
+          const v = k / n;
+          if (v > start + 0.02 && v < target - 0.02) stops.push(v);
+        }
+      }
+      stops.push(target);
+      const each = n > 1 ? Math.max(480, duration / stops.length + 160) : duration;
+      const run = (i) => animateTo(stops[i], each, () => {
+        if (i + 1 >= stops.length) return;
+        const reduced = window.matchMedia?.("(prefers-reduced-motion: reduce)").matches;
+        pauseTimer = setTimeout(() => { pauseTimer = 0; run(i + 1); }, reduced ? 0 : 420);
+      });
+      run(0);
+    }
+
+    function animateTo(target, duration = 900, done) {
+      if (animationFrame) cancelAnimationFrame(animationFrame);
+      animationFrame = 0;
       const startValue = Number(elements.progress.value);
       const reducedMotion = window.matchMedia?.("(prefers-reduced-motion: reduce)").matches;
       const actualDuration = reducedMotion ? 0 : duration;
@@ -376,7 +461,11 @@
         elements.progress.value = String(startValue + (target - startValue) * eased);
         render();
         if (amount < 1) animationFrame = requestAnimationFrame(tick);
-        else animationFrame = 0;
+        else {
+          animationFrame = 0;
+          render();
+          done?.();
+        }
       }
 
       animationFrame = requestAnimationFrame(tick);
@@ -445,7 +534,8 @@
       elements.progress.value = String(journey);
       elements.stageControl.style.setProperty("--journey-progress", `${(journey / 2) * 100}%`);
 
-      const currentMatrix = effectiveMatrix(preset.matrix, journey);
+      const currentMatrix = effectiveMatrix(preset.matrix, journey, preset.factors);
+      renderKernel(isSingular, currentMatrix, journey);
       const origin = svgPoint(currentMatrix, [0, 0]);
       const basisX = svgPoint(currentMatrix, [1, 0]);
       const basisY = svgPoint(currentMatrix, [0, 1]);
@@ -468,7 +558,7 @@
 
       elements.matrix.innerHTML = inline(matrixLatex(preset.matrix));
       elements.rank.innerHTML = inline(String(rank));
-      elements.determinant.innerHTML = inline(cleanNumber(det));
+      elements.determinant.innerHTML = inline(fracLatex(det));
       elements.dimension.innerHTML = isSingular ? inline("2\\to1") : inline("2\\to2");
       elements.explanation.textContent = preset.description;
 
@@ -495,7 +585,32 @@
         }
       });
 
-      if (atIdentity) {
+      const two = preset.factors ? preset.factorNames : null;
+      if (two && !atIdentity) {
+        const [S, R] = two;
+        const half = Math.abs(journey - 0.5) < 0.02 || Math.abs(journey - 1.5) < 0.02;
+        if (restored) {
+          elements.stageLabel.textContent = "逆变换完成";
+          elements.stageTitle.textContent = "网格回到原位";
+          elements.caption.textContent = `先用 ${R}⁻¹ 转回来，再用 ${S}⁻¹ 剪回去：后做的一步先撤销。`;
+          elements.composition.innerHTML = inline(`${S}^{-1}${R}^{-1}${R}${S}=I`);
+          elements.equation.innerHTML = inline(`(${R}${S})^{-1}=${S}^{-1}${R}^{-1}`);
+        } else if (journey > 1.02) {
+          const second = journey > 1.5 + 0.02;
+          elements.stageLabel.textContent = half ? `已撤销 ${R}` : second ? `正在撤销 ${S}` : `正在撤销 ${R}`;
+          elements.stageTitle.textContent = half ? "只剩剪切" : second ? `应用 ${S}⁻¹` : `应用 ${R}⁻¹`;
+          elements.caption.textContent = half || second ? `${R}⁻¹ 已把旋转转回，网格回到只剪切过的样子。` : `最后做的是旋转，先用 ${R}⁻¹ 把它转回来。`;
+          elements.composition.innerHTML = inline(half || second ? `${R}^{-1}${R}${S}=${S}` : `${R}^{-1}A`);
+          elements.equation.innerHTML = inline(half || second ? `${S}^{-1}(${S}x)\\longrightarrow x` : `${R}^{-1}(Ax)\\longrightarrow ${S}x`);
+        } else {
+          const second = journey > 0.5 + 0.02;
+          elements.stageLabel.textContent = atA ? "应用 A 完成" : half ? `已应用 ${S}` : second ? `正在应用 ${R}` : `正在应用 ${S}`;
+          elements.stageTitle.textContent = atA ? "先剪切，再旋转" : half || !second ? "第一步：剪切" : "第二步：旋转 90°";
+          elements.caption.textContent = atA ? `A=${R}${S}：剪切后的网格又转了 90°。` : half || !second ? "剪切把竖直方向推斜。" : "剪切后的整张网格再旋转 90°。";
+          elements.composition.innerHTML = inline(atA ? `A=${R}${S}` : half || !second ? S : `${R}${S}`);
+          elements.equation.innerHTML = inline(atA ? `x\\mapsto ${R}(${S}x)=Ax` : half || !second ? `x\\longrightarrow ${S}x` : `${S}x\\longrightarrow ${R}(${S}x)`);
+        }
+      } else if (atIdentity) {
         elements.stageLabel.textContent = "单位变换";
         elements.stageTitle.textContent = "平面保持原样";
         elements.caption.textContent = "起点：e₁、e₂ 的端点与单位正方形的两个相邻顶点完全重合。";
@@ -510,9 +625,9 @@
       } else if (isSingular && atA) {
         elements.stageLabel.textContent = "应用 A 完成";
         elements.stageTitle.textContent = "二维被压成一维";
-        elements.caption.textContent = "网格坍缩到一条线：rank(A)=1，二维信息已经丢失。";
+        elements.caption.textContent = "直线 x + ker A 上的点全部落到同一点：知道 Ax 也分不出原来是 x₁ 还是 x₂。";
         elements.composition.innerHTML = inline("A");
-        elements.equation.innerHTML = inline("x_1\\ne x_2\\;\\text{却可能有}\\;Ax_1=Ax_2");
+        elements.equation.innerHTML = inline("x_1\\ne x_2,\\ Ax_1=Ax_2");
       } else if (atA) {
         elements.stageLabel.textContent = "应用 A 完成";
         elements.stageTitle.textContent = "平面仍然是二维";
@@ -550,11 +665,49 @@
       }
       elements.next.dataset.inverseTarget = String(nextTarget);
       elements.next.textContent = nextLabel;
-      elements.next.disabled = nextDisabled;
+      elements.next.disabled = nextDisabled || Boolean(gate && !gate.picked);
+      if (gate && !gate.picked) elements.next.title = "先在上方作出预测";
+      else elements.next.removeAttribute("title");
       const showReset = !atIdentity && !restored;
       elements.reset.hidden = !showReset;
       elements.controlRow.classList.toggle("is-single", !showReset);
       elements.conclusion.classList.toggle("is-active", restored);
+      if (restored && preset.factors && !animationFrame && !pauseTimer) gate?.acted();
+    }
+
+    // rank-1 preset: the line x + ker A in the input plane (dashed), two inputs x₁ ≠ x₂ on it,
+    // and their images, which meet at one point when A has acted
+    function renderKernel(isSingular, currentMatrix, journey) {
+      if (!isSingular || journey < 0.02) {
+        elements.kernel.innerHTML = "";
+        return;
+      }
+      const ends = [[-1, 3], [4.5, -2.5]];
+      const [a1, a2] = ends.map((p) => svgPoint(IDENTITY, p));
+      const [b1, b2] = ends.map((p) => svgPoint(currentMatrix, p));
+      const parts = [
+        `<line class="inverse-kernel-line" x1="${a1[0]}" y1="${a1[1]}" x2="${a2[0]}" y2="${a2[1]}" />`,
+        `<line class="inverse-kernel-image" x1="${b1[0]}" y1="${b1[1]}" x2="${b2[0]}" y2="${b2[1]}" />`,
+      ];
+      const lineLabel = svgPoint(IDENTITY, [-0.5, 2.3]);
+      parts.push(`<text class="inverse-kernel-text" x="${lineLabel[0] + 8}" y="${lineLabel[1]}">x + ker A</text>`);
+      const met = journey > 0.98;
+      KERNEL_INPUTS.forEach((input, i) => {
+        const from = svgPoint(IDENTITY, input);
+        const to = svgPoint(currentMatrix, input);
+        parts.push(
+          `<line class="inverse-kernel-path" x1="${from[0]}" y1="${from[1]}" x2="${to[0]}" y2="${to[1]}" />`,
+          `<circle class="inverse-kernel-ghost" cx="${from[0]}" cy="${from[1]}" r="4.5" />`,
+          `<text class="inverse-kernel-label" x="${from[0] + (i === 0 ? -22 : 8)}" y="${from[1] + (i === 0 ? 5 : 16)}">x${i ? "₂" : "₁"}</text>`,
+          `<circle class="inverse-kernel-dot" cx="${to[0]}" cy="${to[1]}" r="4.5" />`,
+        );
+        if (!met) parts.push(`<text class="inverse-kernel-label" x="${to[0] + 8}" y="${to[1] + (i === 0 ? -6 : 16)}">Ax${i ? "₂" : "₁"}</text>`);
+      });
+      if (met) {
+        const p = svgPoint(currentMatrix, KERNEL_INPUTS[0]);
+        parts.push(`<text class="inverse-kernel-label is-met" x="${p[0] + 8}" y="${p[1] + 20}">Ax₁ = Ax₂</text>`);
+      }
+      elements.kernel.innerHTML = parts.join("");
     }
 
     lab.querySelectorAll("[data-inverse-preset]").forEach((button) => {
@@ -578,20 +731,20 @@
     elements.progress.addEventListener("change", () => {
       const maxJourney = matrixRank(PRESET_MAP[presetKey].matrix) < 2 ? 1 : 2;
       const target = Math.min(Math.round(Number(elements.progress.value)), maxJourney);
-      animateTo(target, 240);
+      animateJourney(target, 240);
     });
     elements.jumpButtons.forEach((button) => {
       button.addEventListener("click", () => {
         const target = Number(button.dataset.inverseJump);
         if (target > 1 && matrixRank(PRESET_MAP[presetKey].matrix) < 2) return;
-        animateTo(target, target === 2 ? 900 : 620);
+        animateJourney(target, target === 2 ? 900 : 620);
       });
     });
     elements.next.addEventListener("click", () => {
       const target = Number(elements.next.dataset.inverseTarget);
-      animateTo(target, target === 2 ? 900 : 620);
+      animateJourney(target, target === 2 ? 900 : 620);
     });
-    elements.reset.addEventListener("click", () => animateTo(0, 700));
+    elements.reset.addEventListener("click", () => animateJourney(0, 700));
 
     render();
   }

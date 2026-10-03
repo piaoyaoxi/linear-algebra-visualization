@@ -265,6 +265,25 @@
       ctx.restore();
     }
 
+    // guide: a dashed line through `point` along `dir` (e.g. the track of C₂'s tip in a shear)
+    if (options.guide) {
+      const { point, dir } = options.guide;
+      const len = Math.hypot(dir[0], dir[1]) || 1;
+      const reach = (width + height) / scale;
+      const from = map(point[0] - (dir[0] / len) * reach, point[1] - (dir[1] / len) * reach);
+      const to = map(point[0] + (dir[0] / len) * reach, point[1] + (dir[1] / len) * reach);
+      ctx.save();
+      ctx.strokeStyle = palette.v2;
+      ctx.globalAlpha = 0.6;
+      ctx.lineWidth = 1.2;
+      ctx.setLineDash([5, 5]);
+      ctx.beginPath();
+      ctx.moveTo(from.x, from.y);
+      ctx.lineTo(to.x, to.y);
+      ctx.stroke();
+      ctx.restore();
+    }
+
     const p0 = map(0, 0);
     const p1 = map(a, c);
     const p2 = map(a + b, c + d);

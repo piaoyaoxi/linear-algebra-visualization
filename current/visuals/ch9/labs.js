@@ -621,7 +621,42 @@
       `<p>保持内积 ⇔ 保持长度 ⇔ 把标准正交基变成标准正交基 ⇔ 矩阵满足 ${tex("Q^TQ=I")}。${tex("\\det Q=\\pm1")} 只是必要条件：${tex("\\operatorname{diag}(2,\\tfrac12)")} 保持面积，却把 ${tex("\\varepsilon_1")} 拉长一倍。${tex("\\det Q=1")} 的是旋转（第一类），${tex("\\det Q=-1")} 的是反射（第二类）。</p>`,
     );
     side.append(info, gateHost, result);
-    const state = { key: "rot", x: [1.5, 0.5], y: [0, 1] };
+    const state = { key: "rot", x: [1.5, 0.5], y: [0, 1], revealed: false };
+
+    /*
+     * Equal-length ticks and matching angle arcs: x and Qx carry one tick, y and
+     * Qy two, the image carrying them only when the length is kept exactly; the
+     * arc of ∠(Qx,Qy) is solid when it equals ∠(x,y) and dashed otherwise.
+     */
+    function marks(Q, ap) {
+      const x = toF(state.x);
+      const y = toF(state.y);
+      const Qx = M().matVec(Q, x);
+      const Qy = M().matVec(Q, y);
+      const [nx, ny, mx, my] = [dotF(x, x), dotF(y, y), dotF(Qx, Qx), dotF(Qy, Qy)];
+      const keepX = M().eq(nx, mx);
+      const keepY = M().eq(ny, my);
+      const objs = [];
+      if (!M().isZero(nx)) {
+        objs.push({ type: "ticks", a: [0, 0], b: state.x, n: 1, color: "v1", at: 0.55 });
+        if (keepX) objs.push({ type: "ticks", a: [0, 0], b: ap(state.x), n: 1, color: "image", at: 0.55 });
+      }
+      if (!M().isZero(ny)) {
+        objs.push({ type: "ticks", a: [0, 0], b: state.y, n: 2, color: "v2", at: 0.55 });
+        if (keepY) objs.push({ type: "ticks", a: [0, 0], b: ap(state.y), n: 2, color: "image", at: 0.55 });
+      }
+      let sameAngle = false;
+      const hasAngle = [nx, ny, mx, my].every((v) => !M().isZero(v));
+      if (hasAngle) {
+        const a = dotF(x, y);
+        const b = dotF(Qx, Qy);
+        // cos∠(x,y) = cos∠(Qx,Qy) exactly: same sign and a²·|Qx|²|Qy|² = b²·|x|²|y|²
+        sameAngle = Math.sign(a.n) === Math.sign(b.n) && M().eq(M().mul(M().mul(a, a), M().mul(mx, my)), M().mul(M().mul(b, b), M().mul(nx, ny)));
+        objs.push({ type: "arc", from: state.x, to: state.y, r: 22, color: "axis", width: 1.5 });
+        objs.push({ type: "arc", from: ap(state.x), to: ap(state.y), r: 34, color: "image", width: 1.8, dash: sameAngle ? undefined : [3, 4] });
+      }
+      return { objs, keepX, keepY, sameAngle, hasAngle };
+    }
 
     function redraw() {
       const Q = matF(ORTHO_PRESETS[state.key].Q);
@@ -646,10 +681,13 @@
           { type: "polygon", pts: FLAG.map(ap), color: "image", fillAlpha: 0.16, width: 1.6 },
         ];
         if (mirror) objs.push({ type: "line", dir: mirror, color: "subspace", dash: [7, 5], width: 1.6, label: "反射轴" });
+        const mk = state.revealed ? marks(Q, ap) : null;
+        if (mk) objs.push(...mk.objs.filter((o) => o.type === "arc"));
         objs.push({ type: "arrow", to: state.x, color: "v1", width: 1.8, alpha: 0.7, label: "x" });
         objs.push({ type: "arrow", to: state.y, color: "v2", width: 1.8, alpha: 0.7, label: "y" });
         objs.push({ type: "arrow", to: ap(state.x), color: "image", width: 3, label: "Qx" });
         objs.push({ type: "arrow", to: ap(state.y), color: "image", width: 3, label: "Qy" });
+        if (mk) objs.push(...mk.objs.filter((o) => o.type === "ticks"));
         return objs;
       });
       const x = toF(state.x);
@@ -669,7 +707,13 @@
         <p>${tex(`Q^TQ=${M().latexMatrix(QtQ)}`)}</p>
         <p>${tex(`|x|^2=${lf(dotF(x, x))}\\ ${cmp(dotF(x, x), dotF(Qx, Qx))}\\ |Qx|^2=${lf(dotF(Qx, Qx))}`)}</p>
         <p>${tex(`(x,y)=${lf(dotF(x, y))}\\ ${cmp(dotF(x, y), dotF(Qx, Qy))}\\ (Qx,Qy)=${lf(dotF(Qx, Qy))}`)}</p>
-        ${verdict}`;
+        ${verdict}${state.revealed ? marksNote(marks(Q, () => [0, 0])) : ""}`;
+    }
+
+    function marksNote(mk) {
+      const len = mk.keepX && mk.keepY ? "Qx、Qy 带着与 x、y 相同的刻痕：长度不变" : "像上缺了刻痕：有长度被改变";
+      const ang = !mk.hasAngle ? "零向量没有夹角" : mk.sameAngle ? "两段弧都是实线：夹角不变" : "紫色弧是虚线：夹角变了";
+      return `<p class="ch9l-muted" data-ortho-marks>${len}；${ang}。</p>`;
     }
 
     chips(toolbar, Object.entries(ORTHO_PRESETS).map(([k, p]) => [k, p.label]), (k) => {
@@ -690,10 +734,14 @@
           { text: "是：单位圆的像面积不变", why: "面积不变，形状却变了：长度和夹角都可能改变。" },
           { text: "要看 x 取在哪里", why: "正交变换要求对所有 x 保持长度；只要有一个 x 被拉长就不是。" },
         ],
-        right: `单位圆变成半轴为 2 和 ${tex("\\tfrac12")} 的椭圆；${tex("Q^TQ=\\operatorname{diag}(4,\\tfrac14)\\ne I")}。`,
+        right: `单位圆变成半轴为 2 和 ${tex("\\tfrac12")} 的椭圆；${tex("Q^TQ=\\operatorname{diag}(4,\\tfrac14)\\ne I")}。对默认的 x、y，像上没有刻痕，∠(Qx,Qy) 的弧是虚线。`,
+        defer: lab,
+        actHint: "已记下你的预测。选一个矩阵或拖动 x、y，结论随后出现。",
       },
       () => {
+        state.revealed = true;
         result.hidden = false;
+        redraw();
       },
     );
     redraw();

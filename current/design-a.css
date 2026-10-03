@@ -935,3 +935,10 @@ body .ch8l-trail-bar > b {
   font-weight: 650;
   text-align: center;
 }
+
+/* ---------- score-4 tweaks: chapters 9 and 10 ---------- */
+
+/* the canvas frame keeps its own height when the side column grows after the reveal */
+body .ch9l-body > .ch9l-stage {
+  align-content: start;
+}

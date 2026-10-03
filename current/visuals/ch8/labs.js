@@ -118,6 +118,10 @@
     },
   };
 
+  // A=J and A=2E: same determinant (λ−2)², compared on one picture
+  const PAIRED = ["jordan", "scalar"];
+  const PAIR_NAMES = { jordan: "A=J", scalar: "A=2E" };
+
   function scanLab(root) {
     const ui = skeleton(root, {
       title: "沿数轴扫描 λ",
@@ -171,17 +175,29 @@
         }
         d.polyline(pts, "v1", { width: 2.4 });
         d.text([X(HI) - 0.2, Math.min(d.halfH - 0.3, pts[pts.length - 1][1])], `|M(λ)|`, "v1", { align: "right", dy: -10, font: "700 13px 'LA Serif Latin', 'LA Serif SC', 'Songti SC', serif" });
-        /* rank track below the axis */
-        const TRACK = AXIS - 0.55;
-        d.text([X(LO), TRACK], `秩 ${n}`, "muted", { align: "left", dy: 16, font: "650 12px 'LA Serif Latin', 'LA Serif SC', 'Songti SC', serif" });
-        d.segment([X(LO), TRACK], [X(HI), TRACK], "v1", { width: 3, alpha: 0.55 });
-        roots.forEach((root) => {
-          const rr = M().rankOf(P.evalMatrix(Mx, root));
-          const rx = X(M().toNumber(root));
-          d.point([rx, TRACK], "v2", { r: 5 });
-          d.point([rx, AXIS], "v2", { r: 4 });
-          d.text([rx, TRACK], `秩 ${rr}`, "v2", { dy: 16, align: "center", font: "700 12px 'LA Serif Latin', 'LA Serif SC', 'Songti SC', serif" });
+        /*
+         * Rank track(s) below the axis. A=J and A=2E share the curve (λ−2)², so
+         * their two tracks are stacked under it: same zero, different rank drop.
+         */
+        // the second track keeps 24px for its labels above the canvas bottom
+        const gap = Math.max(26 / d.scale, Math.min(0.62, AXIS - 0.5 + d.halfH - 24 / d.scale));
+        const tracks = PAIRED.includes(state.key)
+          ? PAIRED.map((k, i) => ({ key: k, name: PAIR_NAMES[k], M: SCAN_PRESETS[k].M(), y: AXIS - 0.5 - gap * i }))
+          : [{ key: state.key, name: "", M: Mx, y: AXIS - 0.55 }];
+        roots.forEach((root) => d.point([X(M().toNumber(root)), AXIS], "v2", { r: 4 }));
+        tracks.forEach((t) => {
+          const now = t.key === state.key;
+          const font = (w) => `${w} 12px 'LA Serif Latin', 'LA Serif SC', 'Songti SC', serif`;
+          d.text([X(LO), t.y], `${t.name ? `${t.name} · ` : ""}秩 ${n}`, now ? "text" : "muted", { align: "left", dy: 16, font: font(now ? 700 : 600) });
+          d.segment([X(LO), t.y], [X(HI), t.y], "v1", { width: now ? 3 : 2, alpha: now ? 0.6 : 0.3, dash: now ? undefined : [5, 4] });
+          roots.forEach((root) => {
+            const rr = M().rankOf(P.evalMatrix(t.M, root));
+            const rx = X(M().toNumber(root));
+            d.point([rx, t.y], "v2", { r: now ? 5 : 4, alpha: now ? 1 : 0.6 });
+            d.text([rx, t.y], `秩 ${rr}`, "v2", { dy: 16, align: "center", font: font(now ? 700 : 600) });
+          });
         });
+        if (tracks.length > 1) d.segment([X(2), AXIS], [X(2), tracks[tracks.length - 1].y], "v2", { width: 1, dash: [2, 3], alpha: 0.6 });
         const xv = X(M().toNumber(x0));
         const yv = AXIS + yScale * M().toNumber(P.evalAt(det, x0));
         d.segment([xv, AXIS], [xv, yv], "drag", { width: 1.4, dash: [5, 4] });
@@ -199,6 +215,11 @@
       const drop = r < n;
       let html = `<h4>代入 λ₀=${minus(M().formatF(x0))}</h4><div>${texD(`M(${lf(x0)})=${numMatrix(val)}`)}</div>
         <p>秩 ${tex(`${r}`)}${drop ? `，<span class="ch7l-bad">比 ${n} 少 ${n - r}</span>` : "，满秩"}</p>`;
+      if (PAIRED.includes(state.key)) {
+        const other = PAIRED.find((k) => k !== state.key);
+        const ro = M().rankOf(P.evalMatrix(SCAN_PRESETS[other].M(), x0));
+        html += `<p class="ch7l-muted">对照 ${PAIR_NAMES[other]}：行列式同为 ${tex("(\\lambda-2)^2")}，这里秩 ${tex(`${ro}`)}。</p>`;
+      }
       if (state.key === "unimodular") html += `<p class="ch7l-muted">${tex("U(\\lambda)^{-1}=\\begin{pmatrix}1&-\\lambda\\\\0&1\\end{pmatrix}")} 也是 λ-矩阵。</p>`;
       if (state.key === "rotation") html += `<p class="ch7l-muted">实轴上没有降秩点；在复数 λ=±i 处秩降为 1。</p>`;
       readCard.innerHTML = html;
@@ -691,12 +712,30 @@
       ).join("");
       wallHead.textContent = `全部 ${list.length} 个 ${state.k} 阶子式（点一块，看它取的行与列）`;
       wall.style.setProperty("--cols", Math.min(list.length, N === 3 && state.k !== 3 ? 3 : list.length));
+      /*
+       * After a transformation, every nonzero tile is written as (its cofactor)·Dₖ
+       * with Dₖ highlighted: the values change, the common factor stays.
+       */
+      const Dk = open && state.ops.length ? P.determinantFactors(state.A)[state.k - 1] : null;
+      const showCommon = Dk && !P.isConstant(Dk);
+      const tileTex = (value) => {
+        if (!showCommon || P.isZero(value)) return tex(pfac(value));
+        const q = P.divmod(value, Dk).q;
+        const lead = P.lc(q);
+        const head = M().eq(lead, F(1)) ? "" : M().eq(lead, F(-1)) ? "-" : lf(lead);
+        const q1 = P.monic(q);
+        const qt = pfac(q1);
+        const rest = P.isConstant(q1) ? "" : /[+-]/.test(qt.slice(1)) && !qt.includes("(") ? `(${qt})` : qt;
+        return K.hlHtml(tex(`${head}${K.hlTex(pfac(Dk))}${rest ? `\\,${rest}` : ""}`), "subspace");
+      };
       wall.innerHTML = list
         .map(
           (x, idx) =>
-            `<button type="button" class="ch8l-minor${open && P.isZero(x.value) ? " is-zero" : ""}${idx === state.picked ? " is-picked" : ""}" data-minor="${idx}"><small>行 ${x.rows.map((r) => r + 1).join(",")}　列 ${x.cols.map((c) => c + 1).join(",")}</small><b>${open ? tex(pfac(x.value)) : "?"}</b></button>`,
+            `<button type="button" class="ch8l-minor${open && P.isZero(x.value) ? " is-zero" : ""}${idx === state.picked ? " is-picked" : ""}" data-minor="${idx}"><small>行 ${x.rows.map((r) => r + 1).join(",")}　列 ${x.cols.map((c) => c + 1).join(",")}</small><b>${open ? tileTex(x.value) : "?"}</b></button>`,
         )
         .join("");
+      wall.dataset.common = showCommon ? P.text(Dk) : "";
+      if (showCommon) wallHead.textContent = `全部 ${list.length} 个 ${state.k} 阶子式：变换后每个非零子式仍含公因式 D${"₁₂₃"[state.k - 1]}=${P.text(Dk)}（高亮）`;
       wall.querySelectorAll("[data-minor]").forEach((b) =>
         b.addEventListener("click", () => {
           state.picked = Number(b.dataset.minor);

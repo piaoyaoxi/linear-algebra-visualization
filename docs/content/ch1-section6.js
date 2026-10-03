@@ -38,7 +38,7 @@ defineChapter1Section("multiple-factors", {
     type: "slot",
     title: "两根合并与重数",
     description: "让两个单根合并，再比较不同重数的图像。",
-    task: "拖动 u、v 让两根靠近，再点“令 v=u，两根合并”，比较曲线和 gcd(f,f′)；然后切到“单根重数”，看 m=1,2,3,4 的图像。",
+    task: "先预测，再拖动 u、v 让两根靠近，或点“令 v=u，两根合并”。下方画的是同一横轴上的 f′，看它的零点和 f 的根什么时候重合；再切到“单根重数”比较 m=1,2,3,4。",
   },
   example: {
     title: "例题：求重根并用导数验证",

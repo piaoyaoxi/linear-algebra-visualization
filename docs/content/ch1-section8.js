@@ -38,7 +38,7 @@ defineChapter1Section("complex-real-factorization", {
     type: "slot",
     title: "共轭根",
     description: "在复平面上拖动根，观察二次因式的系数。",
-    task: "拖动 α，看 ᾱ 怎样关于实轴镜像跟随、二次因式的系数怎样变化；再切到“复系数：解锁”，单独移动 β，看系数何时出现虚部。",
+    task: "先预测，再拖动 β：紫色中点落到实轴上时根之和是实数，β 落到虚线圆上时根之积才可能是实数。最后切到“实系数：共轭锁”拖动 α。",
   },
   example: {
     title: "例题：由虚根写出实因式",

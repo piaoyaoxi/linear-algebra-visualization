@@ -95,6 +95,41 @@
     );
   }
 
+  /*
+   * Numbers on the integer level lines c·x = k, placed in a row across the
+   * lines (perpendicular to them) in the lower part of the canvas. `strong`
+   * holds the values to emphasise.
+   */
+  function numberLines(d, c, strong, color = "subspace") {
+    const len2 = c[0] * c[0] + c[1] * c[1];
+    if (len2 < 1e-9) return;
+    const len = Math.sqrt(len2);
+    let u = [-c[1] / len, c[0] / len];
+    if (u[1] < -1e-9 || (Math.abs(u[1]) < 1e-9 && u[0] < 0)) u = [-u[0], -u[1]];
+    const off = -d.halfH * 0.42;
+    const kMax = Math.ceil(Math.hypot(d.halfW, d.halfH) * len);
+    // keep at least 18px between numbers
+    const every = Math.max(1, Math.ceil((18 * len) / d.scale));
+    for (let k = -kMax; k <= kMax; k += 1) {
+      const isStrong = strong.has(k);
+      if (k % every && !isStrong) continue;
+      const q = [(k * c[0]) / len2 + u[0] * off, (k * c[1]) / len2 + u[1] * off];
+      if (Math.abs(q[0]) > d.halfW - 12 / d.scale || Math.abs(q[1]) > d.halfH - 10 / d.scale) continue;
+      d.text(q, minus(k), color, { align: "center", font: `${isStrong ? 750 : 550} ${isStrong ? 13 : 11}px 'LA Serif Latin', 'LA Serif SC', 'Songti SC', serif` });
+    }
+  }
+
+  /* Integer values k met by a path (exact f values at its vertices), leaving out the start value. */
+  function crossedValues(fs) {
+    if (fs.length < 2) return [];
+    const lo = Math.min(...fs.map(num));
+    const hi = Math.max(...fs.map(num));
+    const start = fs[0].d === 1 ? fs[0].n : null;
+    const out = [];
+    for (let k = Math.ceil(lo - 1e-9); k <= Math.floor(hi + 1e-9); k += 1) if (k !== start) out.push(k);
+    return out;
+  }
+
   const waitNote = (what) => `<p class="ch7l-muted">先在上方作出预测，${what}随后出现。</p>`;
 
   /* A reading next to a point, flipped to the left side near the right edge. */
@@ -158,9 +193,9 @@
   function functionalLab(root) {
     const lab = K.labShell(root, {
       title: "等值线读出 f(x)",
-      task: "每条绿色直线上 f 取同一个值，加粗的那条是 f=0，也就是 ker f。拖动金色的 x 读出 f(x)；用滑块改变 f(ε₁)、f(ε₂)，看整族直线怎样跟着变。",
+      task: "每条绿色直线上 f 取同一个值，直线上的数字就是这个值，加粗的那条是 f=0，也就是 ker f。拖动金色的 x 读出 f(x)，它走过的路径越过哪几条直线会被加亮；用滑块改变 f(ε₁)、f(ε₂)，看整族直线怎样跟着变。",
     });
-    const state = { key: "p31", a: [3, 1], x: [1, 0.5] };
+    const state = { key: "p31", a: [3, 1], x: [1, 0.5], path: [], dragging: false };
     const toolbar = el("div", "ch7l-toolbar");
     const gateHost = el("div");
     const body = el("div", "ch7l-body");
@@ -192,12 +227,35 @@
       const value = dot(a, x);
       const zeroFn = a.every(isZero);
       const open = Boolean(flow?.predicted);
+      const pathF = state.path.map((q) => dot(a, fv(q)));
+      const crossed = open && !zeroFn ? crossedValues(pathF) : [];
       plane.setDraw((d) => {
         d.grid(undefined, { alpha: 0.4 });
         d.axes();
         if (open && !zeroFn) {
-          levelLines(d, state.a, { label: "f", zeroColor: "subspace", zeroLabel: "f=0（ker f）" });
-          d.line(state.x, [-state.a[1], state.a[0]], "drag", { width: 1.6, dash: [6, 5], alpha: 0.75 });
+          const len2 = state.a[0] ** 2 + state.a[1] ** 2;
+          const dir = [-state.a[1], state.a[0]];
+          // lines the path of x crossed: the same green with a glow underneath
+          crossed.forEach((k) => d.line([(k * state.a[0]) / len2, (k * state.a[1]) / len2], dir, "subspace", { width: 7, alpha: 0.16 }));
+          levelLines(d, state.a, { zeroColor: "subspace", zeroLabel: "f=0（ker f）" });
+          numberLines(d, state.a, new Set(crossed));
+          d.line(state.x, dir, "drag", { width: 1.6, dash: [6, 5], alpha: 0.75 });
+          if (state.path.length > 1) {
+            d.polyline(state.path, "drag", { width: 2, dash: [2, 4], alpha: 0.8 });
+            // where the path first meets each crossed line
+            crossed.forEach((k) => {
+              for (let i = 1; i < state.path.length; i += 1) {
+                const f0 = num(pathF[i - 1]);
+                const f1 = num(pathF[i]);
+                if ((f0 - k) * (f1 - k) <= 0 && f0 !== f1) {
+                  const t = (k - f0) / (f1 - f0);
+                  const [p0, p1] = [state.path[i - 1], state.path[i]];
+                  d.point([p0[0] + (p1[0] - p0[0]) * t, p0[1] + (p1[1] - p0[1]) * t], "subspace", { r: 3.5 });
+                  break;
+                }
+              }
+            });
+          }
         }
         d.arrow([0, 0], [1, 0], "v1", { width: 2.4, label: "ε₁", ldy: 6 });
         d.arrow([0, 0], [0, 1], "v2", { width: 2.4, label: "ε₂", ldx: -8 });
@@ -219,6 +277,13 @@
         html += isZero(value)
           ? `<p class="ch7l-ok">x 落在 ker f 上。</p>`
           : `<p class="ch7l-muted">x 所在的等值线（金色虚线）与 ker f 平行。</p>`;
+        if (pathF.length > 1) {
+          const f0 = pathF[0];
+          const change = M().sub(value, f0);
+          html += `<p data-lf-path>${tex(`f:\\ ${lf(f0)}\\to ${lf(value)}`)}，读数改变 ${tex(lf(change))}。${
+            crossed.length ? `路径经过 ${crossed.length} 条整数等值线（${crossed.map(minus).join("、")}），已加亮。` : "路径没有越过整数等值线。"
+          }</p>`;
+        }
       }
       info.innerHTML = html;
     }
@@ -230,15 +295,26 @@
         limit: 3,
         get: () => state.x,
         set: (p) => {
+          // a new drag starts a new path of x
+          if (!state.dragging) {
+            state.dragging = true;
+            state.path = [state.x.slice()];
+          }
           state.x = p;
+          const last = state.path[state.path.length - 1];
+          if (last[0] !== p[0] || last[1] !== p[1]) state.path.push(p.slice());
           redraw();
         },
-        end: () => flow?.acted(),
+        end: () => {
+          state.dragging = false;
+          flow?.acted();
+        },
       },
     ]);
 
     sliders.forEach((s, i) =>
       s.addEventListener("input", () => {
+        state.path = [];
         state.a[i] = Number(s.value);
         syncSliders();
         redraw();
@@ -257,6 +333,7 @@
       (k) => {
         state.key = k;
         state.a = FUNCTIONAL_PRESETS[k].a.slice();
+        state.path = [];
         syncSliders();
         newFlow();
         redraw();

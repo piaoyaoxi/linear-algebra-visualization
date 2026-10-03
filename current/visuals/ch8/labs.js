@@ -305,11 +305,22 @@
       task: "每一步由你决定：点一个元素把它换到左上角，再用它做带余除法清掉同行同列。角上留下的余式次数会越来越低，直到它整除剩下的每个元素。",
     });
     const [stepCard, logCard] = ui.cards;
-    const state = { key: "diag", A: null, k: 0, log: [], history: [], changed: new Set() };
+    const state = { key: "diag", A: null, k: 0, log: [], history: [], changed: new Set(), trail: [] };
     let flow = null;
     ui.gateHost.addEventListener("click", () => redraw());
     const board = el("div", "ch8l-board");
-    ui.stage.append(board);
+    // the corner's degree after every move: a staircase that drops with each division
+    const trail = el("div", "ch8l-trail");
+    ui.stage.append(board, trail);
+
+    function noteCorner() {
+      const k = state.k;
+      if (k >= state.A.length) return;
+      const c = state.A[k][k];
+      const deg = P.isZero(c) ? null : P.deg(c);
+      const last = state.trail[state.trail.length - 1];
+      if (!last || last.k !== k || last.deg !== deg) state.trail.push({ k, deg });
+    }
 
     function reset() {
       state.A = SMITH_PRESETS[state.key].A();
@@ -317,13 +328,15 @@
       state.log = [];
       state.history = [];
       state.changed = new Set();
+      state.trail = [];
+      noteCorner();
     }
 
     const n = () => state.A.length;
     const cell = (i, j) => state.A[i][j];
 
     function snapshot() {
-      state.history.push({ A: state.A.map((r) => r.slice()), k: state.k, log: state.log.slice() });
+      state.history.push({ A: state.A.map((r) => r.slice()), k: state.k, log: state.log.slice(), trail: state.trail.slice() });
     }
 
     function swapRows(i, j) {
@@ -376,6 +389,7 @@
       fn();
       state.changed = new Set();
       state.A.forEach((row, i) => row.forEach((p, j) => P.latex(p) !== before[i][j] && state.changed.add(`${i},${j}`)));
+      noteCorner();
       redraw();
       if (analyse().phase === "done") flow.acted();
     }
@@ -424,7 +438,7 @@
     function undo() {
       const last = state.history.pop();
       if (!last) return;
-      Object.assign(state, { A: last.A, k: last.k, log: last.log, changed: new Set() });
+      Object.assign(state, { A: last.A, k: last.k, log: last.log, trail: last.trail, changed: new Set() });
       redraw();
     }
 
@@ -450,12 +464,25 @@
               if (state.changed.has(`${i},${j}`)) cls.push("is-changed");
               const clickable = open && !done && !P.isZero(p) && !(i === k && j === k);
               const degree = P.isZero(p) ? "" : P.deg(p) === 0 ? "常数" : `${P.deg(p)} 次`;
-              return `<button type="button" class="${cls.join(" ")}" data-cell="${i},${j}"${clickable ? "" : " disabled"}><b>${tex(ptex(p))}</b><small>${degree}</small></button>`;
+              // one pip per degree (a hollow pip for a nonzero constant), so degrees compare at a glance
+              const pips = P.isZero(p) ? "" : P.deg(p) === 0 ? `<i class="ch8l-pip is-zero-deg"></i>` : `<i class="ch8l-pip"></i>`.repeat(P.deg(p));
+              return `<button type="button" class="${cls.join(" ")}" data-cell="${i},${j}"${clickable ? "" : " disabled"}><b>${tex(ptex(p))}</b><i class="ch8l-pips" aria-hidden="true">${pips}</i><small>${degree}</small></button>`;
             })
             .join("")}`,
       );
       board.style.setProperty("--n", N);
       board.innerHTML = head + rows.join("");
+      const top = Math.max(1, ...state.trail.map((t) => t.deg ?? 0));
+      trail.innerHTML = `<p class="ch8l-trail-title">角元的次数（每组是一个角，每根柱是一次变换之后）</p><div class="ch8l-trail-bars">${state.trail
+        .map((t, i) => {
+          const last = i === state.trail.length - 1;
+          const stage = t.k < k || finished ? " is-done" : "";
+          const h = t.deg == null ? 0 : (t.deg + 1) / (top + 1);
+          const label = t.deg == null ? "0" : String(t.deg);
+          const newStage = i > 0 && state.trail[i - 1].k !== t.k ? " is-new-stage" : "";
+          return `<i class="ch8l-trail-bar${stage}${last ? " is-now" : ""}${newStage}" style="--h:${h.toFixed(3)}" title="第 ${t.k + 1} 阶角元：${t.deg == null ? "零" : `${t.deg} 次`}"><b>${t.deg == null ? "·" : label}</b></i>`;
+        })
+        .join("")}</div>`;
       board.querySelectorAll("[data-cell]").forEach((b) =>
         b.addEventListener("click", () => {
           const [i, j] = b.dataset.cell.split(",").map(Number);
@@ -1309,23 +1336,58 @@
     p3: { label: "λ³", a: [0, 0, 0] },
   };
 
+  /* Invariant factors 1, λ−1, (λ−1)(λ+2) and their companion blocks (assemble mode). */
+  const ASSEMBLE = {
+    factors: [
+      { name: "d₁=1", poly: [1], color: "axis" },
+      { name: "d₂=λ−1", poly: [-1, 1], color: "v1" },
+      { name: "d₃=(λ−1)(λ+2)", poly: [-2, 1, 1], color: "v2" },
+    ],
+  };
+
+  /* Companion matrix of a monic polynomial (coefficients low degree first): last column −a₀, …, −aₙ₋₁. */
+  function companionOf(coeffs) {
+    const n = coeffs.length - 1;
+    return Array.from({ length: n }, (_, i) =>
+      Array.from({ length: n }, (_, j) => (j === n - 1 ? -coeffs[i] : i === j + 1 ? 1 : 0)),
+    );
+  }
+
+  const COMPANION_PREDICT = {
+    question: `${tex("d(\\lambda)=\\lambda^3+a_2\\lambda^2+a_1\\lambda+a_0")}，C 是它的伴随矩阵。C 的最小多项式是什么？`,
+    options: [
+      { text: "就是 d(λ)", correct: true },
+      { text: "d(λ) 有重根时是它的真因式", why: "e₁, Ce₁, C²e₁ 线性无关，次数小于 3 的多项式 g 都使 g(C)e₁≠0。" },
+      { text: "总是 λ³", why: "C³=0 只在 a₀=a₁=a₂=0 时成立。" },
+      { text: "取决于 a₀, a₁, a₂ 的取值，没有统一答案", why: "对任何系数，C 的最小多项式都是 d(λ)。" },
+    ],
+    actHint: "已记下你的预测。让 C 一步步作用在 e₁ 上，或拖动滑块，结论随后出现。",
+    conclusion: "C 把 e₁ 依次送到 e₂、e₃，C³e₁=Ce₃=−a₀e₁−a₁e₂−a₂e₃，所以 d(C)e₁=0，进而 d(C)=0。e₁, Ce₁, C²e₁ 线性无关，次数更低的多项式消不掉 e₁，最小多项式就是 d(λ)，λE−C 的不变因子是 1, 1, d(λ)。即使 d(λ)=(λ−1)²(λ+1) 有重根也是如此。",
+  };
+
+  const ASSEMBLE_PREDICT = {
+    question: `三阶矩阵 A 的不变因子是 ${tex("1,\\ \\lambda-1,\\ (\\lambda-1)(\\lambda+2)")}。它的有理标准形由哪些伴随块组成？`,
+    options: [
+      { text: "C(λ−1) 和 C((λ−1)(λ+2))：一个 1 阶块、一个 2 阶块", correct: true },
+      { text: "C(1)、C(λ−1)、C((λ−1)(λ+2)) 三块", why: "d₁=1 是 0 次多项式，它的伴随块是 0 阶，不占位置。" },
+      { text: "一个 3 阶块 C((λ−1)²(λ+2))", why: "那是不变因子为 1, 1, (λ−1)²(λ+2) 的情形；这里 d₂=λ−1 不是 1。" },
+      { text: "三个 1 阶块 C(λ−1)、C(λ−1)、C(λ+2)", why: "diag(1,1,−2) 与 A 相似，但它是按初等因子排的若尔当形；有理标准形是每个非常数的不变因子一块。" },
+    ],
+    actHint: "已记下你的预测。按“放入下一块”逐个放入伴随块，结论随后出现。",
+    conclusion: "每个次数至少为 1 的不变因子 dₖ 给出一个伴随块 C(dₖ)，按整除顺序沿对角线排列：diag(C(λ−1), C(λ²+λ−2))。d₁=1 不占位置；块的阶数之和 1+2=3 等于各 dₖ 的次数之和，也等于 A 的阶数。",
+  };
+
   function companionLab(root) {
     const ui = skeleton(root, {
       title: "伴随矩阵：平移加反馈",
-      task: "d(λ)=λ³+a₂λ²+a₁λ+a₀ 的伴随矩阵 C 把 e₁ 送到 e₂，e₂ 送到 e₃，再把 e₃ 按系数 −a₀, −a₁, −a₂ 送回来。用滑块改变系数，看 C、它的最小多项式和不变因子。",
+      task: "d(λ)=λ³+a₂λ²+a₁λ+a₀ 的伴随矩阵 C 把 e₁ 送到 e₂，e₂ 送到 e₃，再把 e₃ 按系数 −a₀, −a₁, −a₂ 送回来。让 C 一步步作用在 e₁ 上，或用滑块改变系数；第二个模式把几个伴随块拼成有理标准形。",
+      toolbars: 2,
     });
     const [ctrlCard, readCard] = ui.cards;
-    const state = { a: COMPANION_PRESETS.p1.a.slice() };
+    const state = { mode: "companion", a: COMPANION_PRESETS.p1.a.slice(), k: 0, placed: 0, flash: 0 };
     let flow = null;
     ui.gateHost.addEventListener("click", () => redraw());
     const plane = K.plane2d(ui.stage, { extent: 3, hint: "", label: "伴随矩阵作用在 e₁, e₂, e₃ 上" });
-    ctrlCard.innerHTML = `<h4>d(λ) 的系数</h4>${["a₀", "a₁", "a₂"]
-      .map(
-        (name, i) =>
-          `<label class="ch8l-range"><span>${name}</span><input type="range" min="-3" max="3" step="1" value="${state.a[i]}" data-a="${i}" aria-label="${name}" /><b data-av="${i}">${minus(state.a[i])}</b></label>`,
-      )
-      .join("")}<p data-dpoly></p>`;
-    const sliders = [...ctrlCard.querySelectorAll("[data-a]")];
 
     const companion = () => [
       [0, 0, -state.a[0]],
@@ -1333,98 +1395,313 @@
       [0, 1, -state.a[2]],
     ];
     const dpoly = () => P.make([state.a[0], state.a[1], state.a[2], 1]);
+    const sliders = () => [...ctrlCard.querySelectorAll("[data-a]")];
 
-    function redraw() {
-      const open = Boolean(flow?.predicted);
-      sliders.forEach((s, i) => {
-        s.value = state.a[i];
-        ctrlCard.querySelector(`[data-av="${i}"]`).textContent = minus(state.a[i]);
-      });
-      ctrlCard.querySelector("[data-dpoly]").innerHTML = tex(`d(\\lambda)=${ptex(dpoly())}`);
-      plane.setDraw((d) => {
-        const ctx = d.ctx;
-        const [w, h] = size(d);
-        const narrow = w < 520;
-        const y = h * 0.42;
-        const xs = [w * 0.18, w * 0.5, w * 0.82];
-        const R = narrow ? 22 : 28;
-        const write = (x, yy, str, color, opts = {}) =>
-          d.text(at(d, x, yy), str, color, { font: `${opts.weight || 700} ${opts.size || 14}px 'LA Serif Latin', 'LA Serif SC', 'Songti SC', serif`, align: opts.align || "center" });
-        const arrowHead = (x, yy, ang, color) => {
-          ctx.beginPath();
-          ctx.moveTo(x, yy);
-          ctx.lineTo(x - Math.cos(ang - 0.42) * 11, yy - Math.sin(ang - 0.42) * 11);
-          ctx.lineTo(x - Math.cos(ang + 0.42) * 11, yy - Math.sin(ang + 0.42) * 11);
-          ctx.closePath();
-          ctx.fillStyle = color;
-          ctx.fill();
-        };
-        /* shift arrows e1 -> e2 -> e3 */
-        [0, 1].forEach((i) => {
-          ctx.save();
-          ctx.strokeStyle = d.color("text");
-          ctx.lineWidth = 2.4;
+    /* A short glow pulse on the object that just changed (steady afterwards). */
+    let flashAnim = 0;
+    function pulse() {
+      cancelAnimationFrame(flashAnim);
+      if (window.matchMedia?.("(prefers-reduced-motion: reduce)").matches) {
+        state.flash = 1;
+        plane.render();
+        return;
+      }
+      const t0 = performance.now();
+      const step = (now) => {
+        const t = Math.min(1, (now - t0) / 900);
+        state.flash = 1 + 1.4 * Math.sin(t * Math.PI);
+        plane.render();
+        if (t < 1) flashAnim = requestAnimationFrame(step);
+      };
+      flashAnim = requestAnimationFrame(step);
+    }
+
+    function buildControls() {
+      if (state.mode === "companion") {
+        ctrlCard.innerHTML = `<h4>d(λ) 的系数</h4>${["a₀", "a₁", "a₂"]
+          .map(
+            (name, i) =>
+              `<label class="ch8l-range"><span>${name}</span><input type="range" min="-3" max="3" step="1" value="${state.a[i]}" data-a="${i}" aria-label="${name}" /><b data-av="${i}">${minus(state.a[i])}</b></label>`,
+          )
+          .join("")}<p data-dpoly></p><div class="ch7l-actions"><button type="button" class="ch7l-btn is-primary" data-step>C 作用一次</button><button type="button" class="ch7l-btn" data-back>回到 e₁</button></div>`;
+        sliders().forEach((sl) =>
+          sl.addEventListener("input", () => {
+            state.a[Number(sl.dataset.a)] = Number(sl.value);
+            flow?.acted();
+            redraw();
+          }),
+        );
+        ctrlCard.querySelector("[data-step]").addEventListener("click", () => {
+          if (state.k >= 3) return;
+          state.k += 1;
+          pulse();
+          if (state.k === 3) flow?.acted();
+          redraw();
+        });
+        ctrlCard.querySelector("[data-back]").addEventListener("click", () => {
+          state.k = 0;
+          redraw();
+        });
+      } else {
+        ctrlCard.innerHTML = `<h4>不变因子</h4><p>${tex("1,\\ \\lambda-1,\\ (\\lambda-1)(\\lambda+2)")}</p><div class="ch7l-actions"><button type="button" class="ch7l-btn is-primary" data-place>放入下一块</button><button type="button" class="ch7l-btn" data-clear>清空</button></div>`;
+        ctrlCard.querySelector("[data-place]").addEventListener("click", () => {
+          if (state.placed >= 3) return;
+          state.placed += 1;
+          pulse();
+          if (state.placed === 3) flow?.acted();
+          redraw();
+        });
+        ctrlCard.querySelector("[data-clear]").addEventListener("click", () => {
+          state.placed = 0;
+          redraw();
+        });
+      }
+    }
+
+    function drawCompanion(d) {
+      const ctx = d.ctx;
+      const [w, h] = size(d);
+      const narrow = w < 520;
+      const y = h * 0.4;
+      const xs = [w * 0.18, w * 0.5, w * 0.82];
+      const R = narrow ? 22 : 28;
+      const k = state.k;
+      const glowA = (d.pal.dark ? 0.2 : 0.16) * state.flash;
+      const write = (x, yy, str, color, opts = {}) =>
+        d.text(at(d, x, yy), str, color, { font: `${opts.weight || 700} ${opts.size || 14}px 'LA Serif Latin', 'LA Serif SC', 'Songti SC', serif`, align: opts.align || "center" });
+      const arrowHead = (x, yy, ang, color) => {
+        ctx.beginPath();
+        ctx.moveTo(x, yy);
+        ctx.lineTo(x - Math.cos(ang - 0.42) * 11, yy - Math.sin(ang - 0.42) * 11);
+        ctx.lineTo(x - Math.cos(ang + 0.42) * 11, yy - Math.sin(ang + 0.42) * 11);
+        ctx.closePath();
+        ctx.fillStyle = color;
+        ctx.fill();
+      };
+      /* shift arrows e1 -> e2 -> e3; the one used by the current step glows */
+      [0, 1].forEach((i) => {
+        const current = k === i + 1;
+        ctx.save();
+        if (current) {
+          ctx.strokeStyle = d.alpha(d.color("drag"), glowA);
+          ctx.lineWidth = 10;
+          ctx.lineCap = "round";
           ctx.beginPath();
           ctx.moveTo(xs[i] + R + 4, y);
-          ctx.lineTo(xs[i + 1] - R - 10, y);
+          ctx.lineTo(xs[i + 1] - R - 6, y);
           ctx.stroke();
-          arrowHead(xs[i + 1] - R - 4, y, 0, d.color("text"));
-          ctx.restore();
-          write((xs[i] + xs[i + 1]) / 2, y - 14, "C", "text", { size: 13 });
-        });
-        /* feedback from e3 */
-        const coef = [-state.a[0], -state.a[1], -state.a[2]];
-        [0, 1].forEach((i) => {
-          const c = coef[i];
-          const color = c === 0 ? d.alpha(d.color("muted"), 0.35) : d.color("image");
-          const depth = (i === 0 ? 0.36 : 0.22) * h;
-          const x1 = xs[2] - R * 0.4;
-          const x2 = xs[i] + R * 0.4;
-          ctx.save();
-          ctx.strokeStyle = color;
-          ctx.lineWidth = c === 0 ? 1.4 : 1.6 + Math.abs(c) * 1.1;
-          if (c === 0) ctx.setLineDash([5, 5]);
+        }
+        const color = k > i ? d.color("drag") : d.color("text");
+        ctx.strokeStyle = color;
+        ctx.lineWidth = 2.4;
+        ctx.beginPath();
+        ctx.moveTo(xs[i] + R + 4, y);
+        ctx.lineTo(xs[i + 1] - R - 10, y);
+        ctx.stroke();
+        arrowHead(xs[i + 1] - R - 4, y, 0, color);
+        ctx.restore();
+        write((xs[i] + xs[i + 1]) / 2, y - 14, "C", "text", { size: 13 });
+      });
+      /* feedback from e3; it glows on the third step, when C³e₁ = Ce₃ comes back */
+      const coef = [-state.a[0], -state.a[1], -state.a[2]];
+      const back = k === 3;
+      [0, 1].forEach((i) => {
+        const c = coef[i];
+        const color = c === 0 ? d.alpha(d.color("muted"), 0.35) : d.color("image");
+        const depth = (i === 0 ? 0.34 : 0.21) * h;
+        const x1 = xs[2] - R * 0.4;
+        const x2 = xs[i] + R * 0.4;
+        ctx.save();
+        const path = () => {
           ctx.beginPath();
           ctx.moveTo(x1, y + R);
           ctx.bezierCurveTo(x1, y + depth, x2, y + depth, x2, y + R + 8);
+        };
+        if (back && c !== 0) {
+          path();
+          ctx.strokeStyle = d.alpha(d.color("image"), glowA);
+          ctx.lineWidth = 10 + Math.abs(c) * 1.1;
           ctx.stroke();
-          ctx.setLineDash([]);
-          arrowHead(x2, y + R + 2, -Math.PI / 2, color);
-          ctx.restore();
-          write((x1 + x2) / 2, y + depth * 0.78 + 14, minus(c), c === 0 ? "faint" : "image", { size: 13 });
-        });
-        {
-          const c = coef[2];
-          const color = c === 0 ? d.alpha(d.color("muted"), 0.35) : d.color("image");
-          ctx.save();
-          ctx.strokeStyle = color;
-          ctx.lineWidth = c === 0 ? 1.4 : 1.6 + Math.abs(c) * 1.1;
-          if (c === 0) ctx.setLineDash([5, 5]);
+        }
+        ctx.strokeStyle = color;
+        ctx.lineWidth = c === 0 ? 1.4 : 1.6 + Math.abs(c) * 1.1;
+        if (c === 0) ctx.setLineDash([5, 5]);
+        path();
+        ctx.stroke();
+        ctx.setLineDash([]);
+        arrowHead(x2, y + R + 2, -Math.PI / 2, color);
+        ctx.restore();
+        write((x1 + x2) / 2, y + depth * 0.78 + 14, minus(c), c === 0 ? "faint" : "image", { size: 13 });
+      });
+      {
+        const c = coef[2];
+        const color = c === 0 ? d.alpha(d.color("muted"), 0.35) : d.color("image");
+        ctx.save();
+        if (back && c !== 0) {
+          ctx.strokeStyle = d.alpha(d.color("image"), glowA);
+          ctx.lineWidth = 10;
           ctx.beginPath();
           ctx.arc(xs[2], y - R - 18, 18, Math.PI * 0.85, Math.PI * 2.15);
           ctx.stroke();
-          ctx.restore();
-          write(xs[2], y - R - 50, `${minus(c)}`, c === 0 ? "faint" : "image", { size: 13 });
         }
-        ["e₁", "e₂", "e₃"].forEach((name, i) => {
-          ctx.save();
+        ctx.strokeStyle = color;
+        ctx.lineWidth = c === 0 ? 1.4 : 1.6 + Math.abs(c) * 1.1;
+        if (c === 0) ctx.setLineDash([5, 5]);
+        ctx.beginPath();
+        ctx.arc(xs[2], y - R - 18, 18, Math.PI * 0.85, Math.PI * 2.15);
+        ctx.stroke();
+        ctx.restore();
+        write(xs[2], y - R - 50, `${minus(c)}`, c === 0 ? "faint" : "image", { size: 13 });
+      }
+      /* nodes; the vector reached so far (Cᵏe₁) is drawn in the drag colour with a glow */
+      const reachedName = ["e₁", "Ce₁", "C²e₁"];
+      ["e₁", "e₂", "e₃"].forEach((name, i) => {
+        const here = k < 3 && i === k;
+        const hit = back && coef[i] !== 0;
+        ctx.save();
+        if (here || hit) {
           ctx.beginPath();
-          ctx.arc(xs[i], y, R, 0, Math.PI * 2);
-          ctx.fillStyle = d.alpha(d.color("subspace"), 0.16);
-          ctx.fill();
-          ctx.lineWidth = 2;
-          ctx.strokeStyle = d.color("subspace");
+          ctx.arc(xs[i], y, R + 5, 0, Math.PI * 2);
+          ctx.strokeStyle = d.alpha(d.color(here ? "drag" : "image"), glowA);
+          ctx.lineWidth = 8;
           ctx.stroke();
-          ctx.restore();
-          write(xs[i], y, name, "text", { size: narrow ? 14 : 16 });
-        });
-        const combo = coef
-          .map((c, i) => ({ c, v: `e${"₁₂₃"[i]}` }))
-          .filter(({ c }) => c !== 0)
-          .map(({ c, v }, i) => `${c < 0 ? "−" : i ? "+" : ""}${Math.abs(c) === 1 ? "" : Math.abs(c)}${v}`)
-          .join("") || "0";
-        write(w / 2, h - 34, `Ce₁=e₂，Ce₂=e₃，Ce₃=${combo}`, "muted", { size: narrow ? 11.5 : 13, weight: 650 });
+        }
+        ctx.beginPath();
+        ctx.arc(xs[i], y, R, 0, Math.PI * 2);
+        ctx.fillStyle = d.alpha(d.color(here ? "drag" : "subspace"), 0.16);
+        ctx.fill();
+        ctx.lineWidth = 2;
+        ctx.strokeStyle = d.color(here ? "drag" : "subspace");
+        ctx.stroke();
+        ctx.restore();
+        write(xs[i], y, name, "text", { size: narrow ? 14 : 16 });
+        if (i <= Math.min(k, 2) && i > 0) write(xs[i], y - R - (i === 2 ? 72 : 30), `=${reachedName[i]}`, "drag", { size: narrow ? 11.5 : 13, weight: 650 });
       });
+      const combo = coef
+        .map((c, i) => ({ c, v: `e${"₁₂₃"[i]}` }))
+        .filter(({ c }) => c !== 0)
+        .map(({ c, v }, i) => `${c < 0 ? "−" : i ? "+" : ""}${Math.abs(c) === 1 ? "" : Math.abs(c)}${v}`)
+        .join("") || "0";
+      const captions = [
+        "从 e₁ 出发：按“C 作用一次”",
+        "Ce₁=e₂",
+        "C²e₁=Ce₂=e₃",
+        `C³e₁=Ce₃=−a₀e₁−a₁e₂−a₂e₃=${combo}`,
+      ];
+      write(w / 2, h - 38, captions[k], k === 3 ? "image" : "drag", { size: narrow ? 12 : 14, weight: 700 });
+      write(w / 2, h - 16, `Ce₁=e₂，Ce₂=e₃，Ce₃=${combo}`, "muted", { size: narrow ? 11 : 12.5, weight: 600 });
+    }
+
+    function drawAssemble(d) {
+      const ctx = d.ctx;
+      const [w, h] = size(d);
+      const narrow = w < 520;
+      const glowA = (d.pal.dark ? 0.2 : 0.16) * state.flash;
+      const n = state.placed;
+      const write = (x, yy, str, color, opts = {}) =>
+        d.text(at(d, x, yy), str, color, { font: `${opts.weight || 700} ${opts.size || 14}px 'LA Serif Latin', 'LA Serif SC', 'Songti SC', serif`, align: opts.align || "center" });
+      /* the three invariant factors */
+      const py = h * 0.12;
+      const px = [w * 0.17, w * 0.45, w * 0.78];
+      const pw = [narrow ? 62 : 80, narrow ? 84 : 104, narrow ? 120 : 150];
+      ASSEMBLE.factors.forEach((f, i) => {
+        const current = n === i + 1;
+        const used = n > i;
+        ctx.save();
+        roundRect(ctx, px[i] - pw[i] / 2, py - 16, pw[i], 32, 16);
+        if (current) {
+          ctx.strokeStyle = d.alpha(d.color(f.color), glowA);
+          ctx.lineWidth = 9;
+          ctx.stroke();
+        }
+        ctx.fillStyle = d.alpha(d.color(f.color), used ? 0.16 : 0.06);
+        ctx.fill();
+        ctx.strokeStyle = d.alpha(d.color(f.color), i === 0 && used ? 0.45 : 1);
+        ctx.lineWidth = 1.4;
+        if (i === 0 && used) ctx.setLineDash([5, 5]);
+        ctx.stroke();
+        ctx.restore();
+        write(px[i], py, f.name, f.color === "axis" ? "muted" : f.color, { size: narrow ? 12 : 14 });
+      });
+      /* the 3×3 matrix being assembled */
+      const cell = Math.min(w * 0.13, h * 0.13, 64);
+      const gx = w / 2 - 1.5 * cell;
+      const gy = h * 0.3;
+      ctx.save();
+      ctx.strokeStyle = d.color("text");
+      ctx.lineWidth = 1.6;
+      ctx.beginPath();
+      ctx.moveTo(gx - 6, gy);
+      ctx.lineTo(gx - 12, gy);
+      ctx.lineTo(gx - 12, gy + 3 * cell);
+      ctx.lineTo(gx - 6, gy + 3 * cell);
+      ctx.moveTo(gx + 3 * cell + 6, gy);
+      ctx.lineTo(gx + 3 * cell + 12, gy);
+      ctx.lineTo(gx + 3 * cell + 12, gy + 3 * cell);
+      ctx.lineTo(gx + 3 * cell + 6, gy + 3 * cell);
+      ctx.stroke();
+      ctx.restore();
+      const blocks = [];
+      if (n >= 2) blocks.push({ at: 0, M: companionOf(ASSEMBLE.factors[1].poly), color: "v1", step: 2 });
+      if (n >= 3) blocks.push({ at: 1, M: companionOf(ASSEMBLE.factors[2].poly), color: "v2", step: 3 });
+      const owner = (i, j) => blocks.find((b) => i >= b.at && j >= b.at && i < b.at + b.M.length && j < b.at + b.M.length);
+      for (let i = 0; i < 3; i += 1)
+        for (let j = 0; j < 3; j += 1) {
+          const b = owner(i, j);
+          const cx = gx + j * cell + cell / 2;
+          const cy = gy + i * cell + cell / 2;
+          if (b) write(cx, cy, minus(b.M[i - b.at][j - b.at]), b.color, { size: narrow ? 15 : 18 });
+          else if (n >= 3) write(cx, cy, "0", "faint", { size: narrow ? 14 : 16, weight: 600 });
+          else {
+            ctx.save();
+            ctx.setLineDash([2, 3]);
+            ctx.strokeStyle = d.alpha(d.color("axis"), 0.5);
+            ctx.strokeRect(gx + j * cell + 6, gy + i * cell + 6, cell - 12, cell - 12);
+            ctx.restore();
+          }
+        }
+      blocks.forEach((b) => {
+        const x0 = gx + b.at * cell;
+        const y0 = gy + b.at * cell;
+        const s = b.M.length * cell;
+        ctx.save();
+        if (b.step === n) {
+          ctx.strokeStyle = d.alpha(d.color(b.color), glowA);
+          ctx.lineWidth = 9;
+          ctx.strokeRect(x0 + 2, y0 + 2, s - 4, s - 4);
+        }
+        ctx.strokeStyle = d.color(b.color);
+        ctx.lineWidth = 1.6;
+        ctx.strokeRect(x0 + 2, y0 + 2, s - 4, s - 4);
+        ctx.restore();
+        /* dashed link from the factor to its block */
+        const f = b.step - 1;
+        ctx.save();
+        ctx.setLineDash([2, 3]);
+        ctx.strokeStyle = d.alpha(d.color(b.color), 0.7);
+        ctx.lineWidth = 1;
+        ctx.beginPath();
+        ctx.moveTo(px[f], py + 16);
+        ctx.lineTo(x0 + s / 2, y0);
+        ctx.stroke();
+        ctx.restore();
+      });
+      const captions = [
+        "每个不变因子给出一个伴随块，按“放入下一块”",
+        "d₁=1 是 0 次多项式：伴随块是 0 阶，不占位置",
+        "d₂=λ−1 → C(λ−1)=(1)，放在左上角",
+        "d₃=λ²+λ−2 → C(λ²+λ−2)，接着沿对角线放",
+      ];
+      write(w / 2, h - 30, captions[n], n ? (n === 1 ? "muted" : ASSEMBLE.factors[n - 1].color) : "muted", { size: narrow ? 12 : 14 });
+    }
+
+    function readCompanion(open) {
+      sliders().forEach((sl, i) => {
+        sl.value = state.a[i];
+        ctrlCard.querySelector(`[data-av="${i}"]`).textContent = minus(state.a[i]);
+      });
+      ctrlCard.querySelector("[data-dpoly]").innerHTML = tex(`d(\\lambda)=${ptex(dpoly())}`);
+      ctrlCard.querySelector("[data-step]").disabled = state.k >= 3;
       if (!open) {
         readCard.innerHTML = `<h4>伴随矩阵</h4>${waitNote("C、最小多项式与不变因子")}`;
         return;
@@ -1434,22 +1711,67 @@
       const mp = P.make(minimal.map((x) => x));
       const inv = P.invariantFactors(P.charMatrix(companion()));
       const shown = Boolean(flow?.revealed);
+      const powers = ["e_1", "Ce_1=e_2", "C^2e_1=e_3", `C^3e_1=${["e_1", "e_2", "e_3"].map((v, i) => ({ c: -state.a[i], v })).filter(({ c }) => c).map(({ c, v }, i) => `${c < 0 ? "-" : i ? "+" : ""}${Math.abs(c) === 1 ? "" : Math.abs(c)}${v}`).join("") || "0"}`];
       readCard.innerHTML = `<h4>伴随矩阵</h4><div>${texD(`C=${numMatrix(C)}`)}</div>
+        <p>${tex(powers.slice(0, state.k + 1).join(",\\ "))}</p>
         <ul class="ch8l-list"><li>${tex(`|\\lambda E-C|=${pfac(P.det(P.charMatrix(companion())))}`)}</li>
         ${shown ? `<li>最小多项式 ${tex(pfac(mp))}</li>
         <li>不变因子 ${tex(inv.map(pfac).join(",\\ "))}</li>` : ""}</ul>
-        ${shown ? `<p class="ch7l-muted">${P.eq(mp, dpoly()) ? "最小多项式就是 d(λ)。" : ""}e₁, Ce₁, C²e₁ 恰好是 e₁, e₂, e₃。</p>` : `<p class="ch7l-muted">拖动滑块或换一个 d(λ)，最小多项式与不变因子随后出现。</p>`}`;
+        ${shown ? `<p class="ch7l-muted">${P.eq(mp, dpoly()) ? "最小多项式就是 d(λ)。" : ""}e₁, Ce₁, C²e₁ 恰好是 e₁, e₂, e₃。</p>` : `<p class="ch7l-muted">让 C 作用到 C³e₁，或拖动滑块，最小多项式与不变因子随后出现。</p>`}`;
     }
 
-    sliders.forEach((s) =>
-      s.addEventListener("input", () => {
-        state.a[Number(s.dataset.a)] = Number(s.value);
-        flow?.acted();
-        redraw();
-      }),
-    );
+    function readAssemble(open) {
+      ctrlCard.querySelector("[data-place]").disabled = state.placed >= 3;
+      if (!open) {
+        readCard.innerHTML = `<h4>有理标准形</h4>${waitNote("伴随块")}`;
+        return;
+      }
+      const items = [];
+      if (state.placed >= 1) items.push(`<li>${tex("d_1=1")}：0 阶，跳过</li>`);
+      if (state.placed >= 2) items.push(`<li>${tex(`C(\\lambda-1)=${numMatrix(K.mat(companionOf(ASSEMBLE.factors[1].poly)))}`)}</li>`);
+      if (state.placed >= 3) items.push(`<li>${tex(`C(\\lambda^2+\\lambda-2)=${numMatrix(K.mat(companionOf(ASSEMBLE.factors[2].poly)))}`)}</li>`);
+      let html = `<h4>有理标准形</h4><ul class="ch8l-list">${items.join("") || `<li class="ch7l-muted">还没有放入伴随块。</li>`}</ul>`;
+      if (state.placed >= 3 && flow?.revealed) {
+        const Rm = [
+          [1, 0, 0],
+          [0, 0, 2],
+          [0, 1, -1],
+        ];
+        const inv = P.invariantFactors(P.charMatrix(Rm));
+        html += `<p>${tex("R=\\operatorname{diag}\\bigl(C(\\lambda-1),C(\\lambda^2+\\lambda-2)\\bigr)")}</p><div>${texD(`R=${numMatrix(K.mat(Rm))}`)}</div><p>验算：${tex("\\lambda E-R")} 的不变因子是 ${tex(inv.map(pfac).join(",\\ "))}。</p>`;
+      }
+      readCard.innerHTML = html;
+    }
+
+    function redraw() {
+      const open = Boolean(flow?.predicted);
+      ui.bars[1].style.display = state.mode === "companion" ? "" : "none";
+      plane.setDraw((d) => (state.mode === "companion" ? drawCompanion(d) : drawAssemble(d)));
+      if (state.mode === "companion") readCompanion(open);
+      else readAssemble(open);
+    }
+
+    function setMode(mode) {
+      state.mode = mode;
+      state.k = 0;
+      state.placed = 0;
+      state.flash = 0;
+      buildControls();
+      flow = gate(ui.gateHost, ui.result, mode === "companion" ? COMPANION_PREDICT : ASSEMBLE_PREDICT);
+      redraw();
+    }
+
     K.chips(
       ui.bars[0],
+      [
+        ["companion", "一个伴随矩阵"],
+        ["assemble", "拼出有理标准形"],
+      ],
+      setMode,
+      "companion",
+    );
+    K.chips(
+      ui.bars[1],
       Object.entries(COMPANION_PRESETS).map(([key, v]) => [key, `d(λ)=${v.label}`]),
       (key) => {
         state.a = COMPANION_PRESETS[key].a.slice();
@@ -1458,19 +1780,11 @@
       },
       "p1",
     );
-    flow = gate(ui.gateHost, ui.result, {
-      question: `${tex("d(\\lambda)=\\lambda^3+a_2\\lambda^2+a_1\\lambda+a_0")}，C 是它的伴随矩阵。C 的最小多项式是什么？`,
-      options: [
-        { text: "就是 d(λ)", correct: true },
-        { text: "d(λ) 有重根时是它的真因式", why: "e₁, Ce₁, C²e₁ 线性无关，次数小于 3 的多项式 g 都使 g(C)e₁≠0。" },
-        { text: "总是 λ³", why: "C³=0 只在 a₀=a₁=a₂=0 时成立。" },
-        { text: "取决于 a₀, a₁, a₂ 的取值，没有统一答案", why: "对任何系数，C 的最小多项式都是 d(λ)。" },
-      ],
-      actHint: "已记下你的预测。拖动滑块或换一个 d(λ)，结论随后出现。",
-      conclusion: "C 把 e₁ 依次送到 e₂、e₃，C³e₁=Ce₃=−a₀e₁−a₁e₂−a₂e₃，所以 d(C)e₁=0，进而 d(C)=0。e₁, Ce₁, C²e₁ 线性无关，次数更低的多项式消不掉 e₁，最小多项式就是 d(λ)，λE−C 的不变因子是 1, 1, d(λ)。即使 d(λ)=(λ−1)²(λ+1) 有重根也是如此。",
-    });
-    redraw();
-    return () => plane.destroy();
+    setMode("companion");
+    return () => {
+      cancelAnimationFrame(flashAnim);
+      plane.destroy();
+    };
   }
 
   /* ---------- figures (inline SVG, themed by the Chapter 7 figure classes) ---------- */

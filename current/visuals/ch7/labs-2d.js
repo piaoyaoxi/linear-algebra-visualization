@@ -72,9 +72,37 @@
       return { A, X, B };
     }
 
+    /* ηⱼ is an eigenvector exactly when ση_j ∥ ηⱼ, i.e. det(ηⱼ, Aηⱼ) = 0 (exact). */
+    function onFixedLine(A, j) {
+      const v = [F(state.eta[j][0]), F(state.eta[j][1])];
+      const w = K.matVec(A, v);
+      return M().isZero(M().sub(M().mul(v[0], w[1]), M().mul(v[1], w[0])));
+    }
+
     function drawEigen(d) {
       if (!flow?.revealed) return;
-      preset().eigen.forEach((v) => d.line([0, 0], v, "subspace", { width: 1.4, dash: [6, 5], alpha: 0.9 }));
+      const A = K.mat(preset().A);
+      const hit = [0, 1].filter((j) => onFixedLine(A, j)).map((j) => state.eta[j]);
+      preset().eigen.forEach((v) => {
+        const lit = hit.some((e) => Math.abs(e[0] * v[1] - e[1] * v[0]) < 1e-9);
+        if (lit) d.line([0, 0], v, "subspace", { width: 8, alpha: d.pal.dark ? 0.2 : 0.16 });
+        d.line([0, 0], v, "subspace", { width: lit ? 1.8 : 1.4, dash: [5, 5], alpha: 0.9 });
+      });
+    }
+
+    /* After the reveal, η is pulled onto a fixed line when dragged close to it. */
+    function magnet(p) {
+      const grid = p.map((x) => Math.round(x * 2) / 2);
+      if (!flow?.revealed) return grid;
+      let best = null;
+      preset().eigen.forEach((v) => {
+        const vv = v[0] * v[0] + v[1] * v[1];
+        const t = Math.round(((p[0] * v[0] + p[1] * v[1]) / vv) * 2) / 2;
+        const q = [t * v[0], t * v[1]];
+        const dist = Math.hypot(p[0] - q[0], p[1] - q[1]);
+        if (t !== 0 && dist < 0.32 && (!best || dist < best.dist)) best = { q, dist };
+      });
+      return best ? best.q : grid;
     }
 
     function redraw() {
@@ -106,34 +134,54 @@
             d.segment(corner, img, "image", { width: 1.2, dash: [3, 4], alpha: 0.7 });
           });
         }
+        if (flow?.revealed)
+          [0, 1].forEach((j) => {
+            if (onFixedLine(A, j)) d.segment([0, 0], state.eta[j], j ? "v2" : "v1", { width: 9, alpha: d.pal.dark ? 0.2 : 0.16 });
+          });
         d.arrow([0, 0], e1, "v1", { width: 2.8, label: "η₁" });
         d.arrow([0, 0], e2, "v2", { width: 2.8, label: "η₂" });
         d.arrow([0, 0], apply2(An, e1), "image", { width: 2.6, label: "ση₁" });
         d.arrow([0, 0], apply2(An, e2), "image", { width: 2.6, label: "ση₂", ldy: 4 });
       });
       const tr = M().add(A[0][0], A[1][1]);
+      // after the reveal, an off-diagonal 0 caused by ηⱼ lying on a fixed line is highlighted
+      const lit = flow?.revealed ? [0, 1].map((j) => onFixedLine(A, j)) : [false, false];
+      const bTex = B
+        ? `\\begin{bmatrix}${lf(B[0][0])}&${lit[1] ? K.hlTex(lf(B[0][1])) : lf(B[0][1])}\\\\${lit[0] ? K.hlTex(lf(B[1][0])) : lf(B[1][0])}&${lf(B[1][1])}\\end{bmatrix}`
+        : "";
+      const coord = (j) => {
+        const a = B[0][j];
+        const b = B[1][j];
+        const term = (c, name) => (M().isZero(c) ? "" : `${M().eq(c, F(1)) ? "" : M().eq(c, F(-1)) ? "-" : lf(c)}${name}`);
+        const parts = [term(a, "\\eta_1"), term(b, "\\eta_2")].filter(Boolean);
+        return `\\sigma\\eta_${j + 1}=${parts.join("+").replace(/\+-/g, "-") || "0"}`;
+      };
       let html = `<div class="ch7l-matrix-row">
         <div>${texD(`A=${K.latexMatrix(A)}`)}</div>
         <div>${texD(`X=(\\eta_1,\\eta_2)=${K.latexMatrix(X)}`)}</div>
-        <div>${B ? texD(`B=X^{-1}AX=${K.latexMatrix(B)}`) : texD("B=\\ ?")}</div></div>`;
+        <div>${B ? K.hlHtml(texD(`B=X^{-1}AX=${bTex}`)) : texD("B=\\ ?")}</div></div>`;
+      if (B) html += `<p>${tex(coord(0))}，${tex(coord(1))}</p>`;
       if (!B) {
         html += `<p class="ch7l-bad">η₁, η₂ 共线，不构成基，B 无从谈起。</p>`;
       } else {
         const trB = M().add(B[0][0], B[1][1]);
         html += `<p>${tex(`\\operatorname{tr}A=${lf(tr)}`)}，${tex(`\\operatorname{tr}B=${lf(trB)}`)}；${tex(`|A|=${lf(K.det(A))}`)}，${tex(`|B|=${lf(K.det(B))}`)}。</p>`;
-        html += K.isDiagonal(B)
+        const named = ["η₁", "η₂"].filter((_, j) => lit[j]);
+        html += flow?.revealed && K.isDiagonal(B)
           ? `<p class="ch7l-ok">B 是对角矩阵：每个 σηⱼ 都是 ηⱼ 的倍数。</p>`
-          : `<p class="ch7l-muted">B 的第 j 列 = σηⱼ 在 η₁, η₂ 下的坐标（右图虚线）。</p>`;
+          : flow?.revealed && named.length
+            ? `<p class="ch7l-muted">${named.join("、")} 在 σ 的不动直线上，B 中对应的非对角元为 0。</p>`
+            : `<p class="ch7l-muted">B 的第 j 列 = σηⱼ 在 η₁, η₂ 下的坐标（右图虚线）。</p>`;
       }
       strip.innerHTML = html;
     }
 
     const handle = (i, color) => ({
       color,
-      snap: 0.5,
       limit: 2.5,
       get: () => state.eta[i],
-      set: (p) => {
+      set: (raw) => {
+        const p = magnet(raw);
         if (Math.abs(p[0]) + Math.abs(p[1]) < 1e-9) return;
         state.eta[i] = p;
         redraw();
@@ -151,7 +199,7 @@
           { text: "只有 η 等于 ε 时", why: "η=ε 时 B=A，A 本身不一定是对角的。" },
           { text: "永远不会，换基不改变矩阵", why: "换基不改变 σ，矩阵却会变。" },
         ],
-        conclusion: `B 的第 j 列是 ${tex("\\sigma\\eta_j")} 在新基下的坐标。B 是对角矩阵，当且仅当 ${tex("\\sigma\\eta_j=\\lambda_j\\eta_j")}，即每个 ${tex("\\eta_j")} 都在 σ 保持的直线上（图中绿色虚线）。无论怎样换基，迹与行列式都不变，因为 B 与 A 相似。${preset().note}${state.key === "shear" ? "剪切只有一条这样的直线，B 最多化成三角形。" : ""}`,
+        conclusion: `B 的第 j 列是 ${tex("\\sigma\\eta_j")} 在新基下的坐标。B 是对角矩阵，当且仅当 ${tex("\\sigma\\eta_j=\\lambda_j\\eta_j")}，即每个 ${tex("\\eta_j")} 都在 σ 保持的直线上（图中绿色虚线，把 η 拖近它会吸附上去）。无论怎样换基，迹与行列式都不变，因为 B 与 A 相似。${preset().note}${state.key === "shear" ? "剪切只有一条这样的直线，B 最多化成三角形。" : ""}`,
         onReveal: redraw,
       });
     }

@@ -386,6 +386,20 @@
         if (rows && open) {
           const rn = rows.map((r) => r.map(num));
           const both = state.view === "both";
+          /*
+           * gᵢ vanishes on the other basis vector, so every level line of g₁ is
+           * parallel to η₂ (and g₂'s to η₁): the zero line through that vector
+           * glows, and a dashed copy of it lies along the line gᵢ=1 through ηᵢ's tip.
+           */
+          const parallel = (own, other, color, otherColor) => {
+            if (!both) {
+              d.line([0, 0], other, color, { width: 8, alpha: 0.16 });
+              d.segment([0, 0], other, otherColor, { width: 9, alpha: 0.18 });
+            }
+            d.arrow(own, [own[0] + other[0], own[1] + other[1]], otherColor, { width: 2, dash: [5, 4], alpha: 0.5 });
+          };
+          if (state.view !== "g2") parallel(e1, e2, "v1", "v2");
+          if (state.view !== "g1") parallel(e2, e1, "v2", "v1");
           if (state.view !== "g2") levelLines(d, rn[0], { label: "g₁", color: "v1", zeroColor: both ? null : "v1", zeroLabel: both ? null : "g₁=0", edge: both ? "right" : undefined });
           if (state.view !== "g1") levelLines(d, rn[1], { label: "g₂", color: "v2", zeroColor: both ? null : "v2", zeroLabel: both ? null : "g₂=0", edge: both ? "top" : undefined });
           const r = reads.map(num);
@@ -408,9 +422,15 @@
         matCard.innerHTML = `<h4>过渡矩阵</h4><div>${texD(`A=${K.latexMatrix(X)},\\quad |A|=0`)}</div>`;
         return;
       }
+      const parNote = {
+        g1: "g₁(η₂)=0：η₂ 躺在 g₁=0 上，g₁ 的每条等值线都与 η₂ 平行（虚线是平移到 η₁ 终点的 η₂）。",
+        g2: "g₂(η₁)=0：η₁ 躺在 g₂=0 上，g₂ 的每条等值线都与 η₁ 平行（虚线是平移到 η₂ 终点的 η₁）。",
+        both: "g₁ 的等值线平行于 η₂，g₂ 的等值线平行于 η₁，两族合成 η₁、η₂ 的斜网格。",
+      }[state.view];
       readCard.innerHTML = `<h4>读数</h4><ul class="ch10l-readout">
         <li>${tex(`g_1(x)=${lf(reads[0])},\\quad g_2(x)=${lf(reads[1])}`)}</li>
         <li>${tex(`x=${formTex(reads, ["\\eta_1", "\\eta_2"])}`)}</li></ul>
+        <p class="ch7l-muted" data-dual-par>${parNote}</p>
         <p class="ch7l-muted">x 所在格点的两个编号就是它在 η₁、η₂ 下的坐标。</p>`;
       const B = K.transpose(Xi);
       matCard.innerHTML = `<h4>对偶基的过渡矩阵</h4>

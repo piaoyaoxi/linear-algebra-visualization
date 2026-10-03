@@ -16,12 +16,47 @@
   const sub = (M, r0, r1, c0, c1) => M.slice(r0, r1).map((r) => r.slice(c0, c1));
   const texM = (M) => `\\begin{pmatrix}${M.map((r) => r.join("&")).join("\\\\")}\\end{pmatrix}`;
   const C = mul(A, B);
+  const SUB = ["₀", "₁", "₂"];
 
-  function gridHtml(M, rowCut, colCut, hiRows, hiCols, cls) {
-    return `<table class="blk-grid ${cls || ""}"><tbody>${M.map((r, i) => `<tr class="${i === rowCut - 1 ? "cut-below" : ""}">${r.map((v, j) => {
-      const hi = hiRows?.includes(i) && hiCols?.includes(j);
-      return `<td class="${j === colCut - 1 ? "cut-right" : ""}${hi ? " is-hi" : ""}">${v}</td>`;
-    }).join("")}</tr>`).join("")}</tbody></table>`;
+  // A cut at `cut` splits n rows (or columns) into two groups [start, end).
+  const groups = (cut, n) => [[0, cut], [cut, n]];
+
+  // The grid carries rulers: column-group widths on top, row-group heights on the
+  // left, so every block's size reads off its two rulers. opts.colTone / rowTone
+  // colour a whole ruler (is-ok / is-bad); opts.sel marks the chosen row/col group.
+  function gridHtml(M, rowCut, colCut, hiRows, hiCols, opts = {}) {
+    const rg = groups(rowCut, M.length);
+    const cg = groups(colCut, M[0].length);
+    const rule = (axis, [a, b], k) => {
+      const n = b - a;
+      const tone = axis === "col" ? opts.colTone : opts.rowTone;
+      const cls = ["blk-rule", `is-${axis}`, tone, opts.sel?.[axis] === k ? "is-sel" : ""].filter(Boolean).join(" ");
+      const span = axis === "col" ? `colspan="${n}"` : `rowspan="${n}"`;
+      return `<th ${span} class="${cls}" aria-label="${n} ${axis === "col" ? "列" : "行"}"><i>${n}</i></th>`;
+    };
+    const head = `<thead><tr><th class="blk-corner"></th>${cg.map((g, k) => rule("col", g, k)).join("")}</tr></thead>`;
+    const body = M.map((r, i) => {
+      const k = rg.findIndex(([a]) => a === i);
+      return `<tr class="${i === rowCut - 1 ? "cut-below" : ""}">${k >= 0 ? rule("row", rg[k], k) : ""}${r.map((v, j) => {
+        const hi = hiRows?.includes(i) && hiCols?.includes(j);
+        return `<td class="${j === colCut - 1 ? "cut-right" : ""}${hi ? " is-hi" : ""}">${v}</td>`;
+      }).join("")}</tr>`;
+    }).join("");
+    return `<table class="blk-grid ${opts.cls || ""}">${head}<tbody>${body}</tbody></table>`;
+  }
+
+  // C_ij = A_i1 B_1j + A_i2 B_2j written as sizes; the inner pair of each term is
+  // bracketed with = or ≠, and the result size appears only when both pairs agree.
+  function sizesHtml(i, j, rows, cols, p, q) {
+    const term = (k, ak, bk) => `<span class="blk-term ${ak === bk ? "is-ok" : "is-bad"}">`
+      + `<span class="blk-nm is-a">A${SUB[i]}${SUB[k]}</span><span class="blk-nm is-b">B${SUB[k]}${SUB[j]}</span>`
+      + `<span class="blk-d is-a">${rows}×</span><span class="blk-k is-a">${ak}</span><span class="blk-dot">·</span>`
+      + `<span class="blk-k is-b">${bk}</span><span class="blk-d is-b">×${cols}</span>`
+      + `<span class="blk-link">${ak === bk ? "=" : "≠"}</span></span>`;
+    const res = p === q
+      ? `<span class="blk-plus">=</span><span class="blk-res"><span class="blk-nm">C${SUB[i]}${SUB[j]}</span><span class="blk-d">${rows}×${cols}</span></span>`
+      : "";
+    return `<div class="blk-sizes">${term(1, p, q)}<span class="blk-plus">+</span>${term(2, 4 - p, 4 - q)}${res}</div>`;
   }
 
   const range = (a, b) => Array.from({ length: b - a }, (_, i) => a + i);
@@ -34,7 +69,7 @@
     let predicted = false;
     root.innerHTML = `<h2>交互实验</h2>
       <section class="ch3l-lab blk-lab">
-        <header class="ch3l-head"><h3>怎样切，块乘法才有定义</h3><p>A 是 3×4 矩阵，B 是 4×3 矩阵。拖动滑块决定切口，再点选输出块 ${tex("C_{ij}")}，用数字核对块乘法。</p></header>
+        <header class="ch3l-head"><h3>怎样切，块乘法才有定义</h3><p>A 是 3×4 矩阵，B 是 4×3 矩阵。拖动滑块决定切口，矩阵外侧的括号标出每块的行数和列数；再点选输出块 ${tex("C_{ij}")}，用数字核对块乘法。</p></header>
         <div data-gate></div>
         <div class="blk-cuts">
           <label class="ch3l-range blk-range"><span>A 行</span><input type="range" min="1" max="2" step="1" data-cut="aRow" /><b data-v="aRow"></b></label>
@@ -52,25 +87,34 @@
 
     function paint() {
       const ok = state.aCol === state.bRow;
+      // before a prediction nothing tells whether the cuts fit: rulers stay neutral,
+      // the size strip and the verdict wait, and every C_ij stays selectable
+      const open = predicted;
       const [i, j] = state.target.split("").map(Number);
       const rows = i === 1 ? range(0, state.aRow) : range(state.aRow, 3);
       const cols = j === 1 ? range(0, state.bCol) : range(state.bCol, 3);
-      stage.innerHTML = `<div class="blk-mat"><span>A</span>${gridHtml(A, state.aRow, state.aCol, ok ? rows : [], ok ? range(0, 4) : [])}</div>
+      const inner = open ? (ok ? "is-ok" : "is-bad") : "";
+      const p = state.aCol;
+      const q = state.bRow;
+      stage.innerHTML = `<div class="blk-mat"><span>A</span>${gridHtml(A, state.aRow, p, rows, range(0, 4), { colTone: inner, sel: { row: i - 1 } })}</div>
         <b class="blk-op">×</b>
-        <div class="blk-mat"><span>B</span>${gridHtml(B, state.bRow, state.bCol, ok ? range(0, 4) : [], ok ? cols : [])}</div>
+        <div class="blk-mat"><span>B</span>${gridHtml(B, q, state.bCol, range(0, 4), cols, { rowTone: inner, sel: { col: j - 1 } })}</div>
         <b class="blk-op">=</b>
-        <div class="blk-mat"><span>C=AB</span>${gridHtml(C, state.aRow, state.bCol, ok ? rows : [], ok ? cols : [], "is-result")}</div>`;
+        <div class="blk-mat"><span>C=AB</span>${gridHtml(C, state.aRow, state.bCol, rows, cols, { cls: "is-result", sel: { row: i - 1, col: j - 1 } })}</div>
+        ${open ? sizesHtml(i, j, rows.length, cols.length, p, q) : ""}`;
       root.querySelectorAll("[data-v]").forEach((n) => {
         const k = n.dataset.v;
         n.textContent = k.endsWith("Row") ? `${state[k]}+${(k === "aRow" ? 3 : 4) - state[k]}` : `${state[k]}+${(k === "aCol" ? 4 : 3) - state[k]}`;
       });
-      targets.innerHTML = ["11", "12", "21", "22"].map((t) => `<button type="button" class="ch3l-chip${t === state.target ? " is-active" : ""}" data-t="${t}" ${ok ? "" : "disabled"}>${tex(`C_{${t}}`)}</button>`).join("");
+      targets.innerHTML = ["11", "12", "21", "22"].map((t) => `<button type="button" class="ch3l-chip${t === state.target ? " is-active" : ""}" data-t="${t}">${tex(`C_{${t}}`)}</button>`).join("");
       targets.querySelectorAll("[data-t]").forEach((b) => b.addEventListener("click", () => { state.target = b.dataset.t; paint(); }));
 
-      const p = state.aCol;
-      const q = state.bRow;
+      if (!open) {
+        readout.innerHTML = `<p class="blk-wait">作出预测后，这里按块核对 ${tex(`C_{${i}${j}}`)}。</p>`;
+        return;
+      }
       if (!ok) {
-        readout.innerHTML = `<p class="ch3l-bad">块乘积没有定义</p><p>${tex(`A_{11}`)} 是 ${state.aRow}×${p} 矩阵，${tex(`B_{11}`)} 是 ${q}×${state.bCol} 矩阵。${tex(`A_{11}B_{11}`)} 要求 ${tex(`A_{11}`)} 的列数等于 ${tex(`B_{11}`)} 的行数，而 ${p}≠${q}。${predicted ? "把 A 的列切口和 B 的行切口对齐。" : ""}</p>`;
+        readout.innerHTML = `<p class="ch3l-bad">块乘积没有定义</p><p>${tex(`A_{${i}1}`)} 有 ${p} 列，${tex(`B_{1${j}}`)} 有 ${q} 行，${tex(`A_{${i}1}B_{1${j}}`)} 无法相乘。把 A 的列切口和 B 的行切口对齐。</p>`;
         return;
       }
       const r0 = i === 1 ? 0 : state.aRow;
@@ -86,7 +130,7 @@
       const same = JSON.stringify(block) === JSON.stringify(direct);
       readout.innerHTML = `<p>${tex(`C_{${i}${j}}=A_{${i}1}B_{1${j}}+A_{${i}2}B_{2${j}}`)}</p>
         <div class="blk-math">${texD(`${texM(Ai1)}${texM(B1j)}+${texM(Ai2)}${texM(B2j)}=${texM(block)}`)}</div>
-        <p>${same ? `<span class="ch3l-ok">与 AB 中对应的块完全相同</span>` : `<span class="ch3l-bad">与 AB 不符</span>`}。尺寸：${tex(`(${r1 - r0}\\times${p})(${p}\\times${c1 - c0})+(${r1 - r0}\\times${4 - p})(${4 - p}\\times${c1 - c0})`)}。</p>`;
+        <p>${same ? `<span class="ch3l-ok">与 AB 中对应的块完全相同</span>` : `<span class="ch3l-bad">与 AB 不符</span>`}。</p>`;
     }
 
     root.querySelectorAll("[data-cut]").forEach((input) => {

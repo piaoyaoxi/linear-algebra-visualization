@@ -130,7 +130,7 @@
     return out;
   }
 
-  const waitNote = (what) => `<p class="ch7l-muted">先在上方作出预测，${what}随后出现。</p>`;
+  const waitNote = (what) => `<p class="ch7l-muted">先在上方作出预测，再动手操作一次，${what}随后出现。</p>`;
 
   /* A reading next to a point, flipped to the left side near the right edge. */
   function pointLabel(d, p, text, color, dy) {
@@ -226,7 +226,8 @@
       const x = fv(state.x);
       const value = dot(a, x);
       const zeroFn = a.every(isZero);
-      const open = Boolean(flow?.predicted);
+      // answer lines and readouts wait until the student has predicted and acted
+      const open = Boolean(flow?.revealed);
       const pathF = state.path.map((q) => dot(a, fv(q)));
       const crossed = open && !zeroFn ? crossedValues(pathF) : [];
       plane.setDraw((d) => {
@@ -265,9 +266,10 @@
         if (open) pointLabel(d, state.x, `f(x)=${minus(M().formatF(value))}`, "drag", -14);
       });
       if (!open) {
-        info.innerHTML = `<h4>读数</h4><p class="ch7l-muted">先在上方作出预测，等值线和读数随后出现。</p>`;
+        info.innerHTML = `<h4>读数</h4><p class="ch7l-muted">先在上方作出预测，再动手操作一次，等值线和读数随后出现。</p>`;
         return;
       }
+      nowNote(a, zeroFn);
       const sum = `${paren(x[0])}\\cdot${paren(a[0])}+${paren(x[1])}\\cdot${paren(a[1])}`;
       let html = `<h4>读数</h4><div>${texD(`f(x)=x_1f(\\varepsilon_1)+x_2f(\\varepsilon_2)`)}${texD(`=${sum}=${lf(value)}`)}</div>`;
       if (zeroFn) {
@@ -287,6 +289,27 @@
       }
       info.innerHTML = html;
     }
+
+    /*
+     * The conclusion explains the preset that was predicted; once the sliders
+     * move f away from it, one more line describes the f now on screen.
+     */
+    function nowNote(a, zeroFn) {
+      result.querySelector("[data-lf-now]")?.remove();
+      const preset = FUNCTIONAL_PRESETS[state.key].a;
+      if (result.hidden || (state.a[0] === preset[0] && state.a[1] === preset[1])) return;
+      const [a1, a2] = state.a;
+      let text;
+      if (zeroFn) text = "现在 f(ε₁)=f(ε₂)=0：f 是零函数，整个平面都是 ker f。";
+      else {
+        const g = gcdInt(Math.abs(a1), Math.abs(a2)) || 1;
+        let d = [-a2 / g, a1 / g];
+        if (d[0] < 0 || (d[0] === 0 && d[1] < 0)) d = [-d[0], -d[1]];
+        text = `现在 f(ε₁)=${minus(a1)}、f(ε₂)=${minus(a2)}：${tex(`f(x)=${formTex(a, ["x_1", "x_2"])}`)}，ker f 是过原点、方向为 (${d.map(minus).join(",")}) 的直线，其余等值线都与它平行。`;
+      }
+      result.insertAdjacentHTML("beforeend", `<p data-lf-now>${text}</p>`);
+    }
+    const gcdInt = (p, q) => (q ? gcdInt(q, p % q) : p);
 
     plane.setHandles([
       {
@@ -324,7 +347,7 @@
 
     function newFlow() {
       const p = FUNCTIONAL_PRESETS[state.key].predict;
-      flow = K.predictFlow(gateHost, result, { ...p, actHint: "已记下你的预测。拖动 x 或移动滑块，结论随后出现。" });
+      flow = K.predictFlow(gateHost, result, { ...p, actHint: "已记下你的预测。拖动 x 或移动滑块，结论随后出现。", onReveal: () => redraw() });
     }
 
     K.chips(
@@ -379,7 +402,8 @@
       const x = fv(state.x);
       const [e1, e2] = state.eta;
       const reads = rows ? rows.map((r) => dot(r, x)) : null;
-      const open = Boolean(flow?.predicted);
+      // answer lines and readouts wait until the student has predicted and acted
+      const open = Boolean(flow?.revealed);
       plane.setDraw((d) => {
         d.grid(undefined, { alpha: 0.3 });
         d.axes();
@@ -488,6 +512,7 @@
         { text: "不变，g₁ 只由 η₁ 决定", why: "g₁ 还要满足 g₁(η₂)=0。" },
       ],
       actHint: "已记下你的预测。拖动 η₂，结论随后出现。",
+      onReveal: () => redraw(),
       conclusion: "g₁(η₂)=0，所以 g₁ 的零线就是 η₂ 所在的直线，g₁=1 的线经过 η₁ 的终点；同理 g₂ 的等值线都与 η₁ 平行。两族等值线织成 η₁、η₂ 的斜网格，x 所在格点的编号 (g₁(x), g₂(x)) 就是 x 在这组基下的坐标。",
     });
     redraw();
@@ -554,7 +579,10 @@
     });
     const state = { key: "ns", mode: "fixY", x: [1, 1], y: [1, 0] };
     const toolbar = el("div", "ch7l-toolbar");
+    // the two mode chips form one segmented control; the swap action sits beside it as a plain button
+    const modeRow = el("div", "ch10l-moderow");
     const modes = el("div", "ch7l-toolbar");
+    modeRow.append(modes);
     const gateHost = el("div");
     const body = el("div", "ch7l-body");
     const stage = el("div", "ch7l-stage");
@@ -564,7 +592,7 @@
     side.append(readCard, matCard);
     body.append(stage, side);
     const result = el("div", "ch7l-result");
-    lab.append(toolbar, modes, gateHost, body, result);
+    lab.append(toolbar, modeRow, gateHost, body, result);
     const plane = K.plane2d(stage, { extent: 3.2, hint: "拖动 x、y（每次四分之一格）", label: "双线性函数的等值线" });
     let flow = null;
     gateHost.addEventListener("click", () => redraw());
@@ -579,7 +607,8 @@
       const coef = fixY ? K.matVec(a, y) : K.matVec(K.transpose(a), x);
       const value = dot(x, K.matVec(a, y));
       const free = fixY ? "x" : "y";
-      const open = Boolean(flow?.predicted);
+      // answer lines and readouts wait until the student has predicted and acted
+      const open = Boolean(flow?.revealed);
       plane.setDraw((d) => {
         d.grid(undefined, { alpha: 0.35 });
         d.axes();
@@ -613,7 +642,7 @@
         ? `<li class="ch7l-bad">${tex(coefTex)} 是零向量：对一切 ${free}，f(x,y)=0。</li>`
         : `<li>${tex(`f(x,y)=${formTex(coef, [`${free}_1`, `${free}_2`])}`)}</li><li class="ch7l-muted" data-bil-normal>紫色箭头 ${tex(coefTex)} 与每条等值线垂直；沿它的方向 f 增长最快。</li>`;
       html += `<li>${tex(`f(x,y)=x^TAy=${lf(value)}`)}</li></ul>`;
-      readCard.innerHTML = open ? html : `<h4>固定 ${fixedName}，f 是 ${free} 的线性函数</h4><p class="ch7l-muted">先在上方作出预测，等值线和读数随后出现。</p>`;
+      readCard.innerHTML = open ? html : `<h4>固定 ${fixedName}，f 是 ${free} 的线性函数</h4><p class="ch7l-muted">先在上方作出预测，再动手操作一次，等值线和读数随后出现。</p>`;
       const detA = K.det(a);
       matCard.innerHTML = `<h4>度量矩阵</h4><div>${texD(`A=${K.latexMatrix(a)},\\quad |A|=${lf(detA)}`)}</div>
         <p><span class="ch10l-badge${isZero(detA) ? " is-off" : ""}">${isZero(detA) ? "退化" : "非退化"}</span> <span class="ch7l-muted">${K.eqMat(a, K.transpose(a)) ? "A=Aᵀ，f 对称" : "A≠Aᵀ，f(x,y) 与 f(y,x) 一般不同"}</span></p>`;
@@ -636,6 +665,7 @@
       flow = K.predictFlow(gateHost, result, {
         ...BILINEAR_PRESETS[state.key].predict,
         actHint: state.key === "sym" ? "已记下你的预测。点“交换 x、y”，结论随后出现。" : "已记下你的预测。拖动 y，结论随后出现。",
+        onReveal: () => redraw(),
       });
     }
 
@@ -645,10 +675,11 @@
       redraw();
     }
 
-    modes.innerHTML = `<button type="button" class="ch7l-chip is-active" data-key="fixY">固定 y，看 x</button><button type="button" class="ch7l-chip" data-key="fixX">固定 x，看 y</button><button type="button" class="ch7l-btn" data-swap>交换 x、y</button>`;
+    modes.innerHTML = `<button type="button" class="ch7l-chip is-active" data-key="fixY">固定 y，看 x</button><button type="button" class="ch7l-chip" data-key="fixX">固定 x，看 y</button>`;
+    modeRow.insertAdjacentHTML("beforeend", `<button type="button" class="ch7l-btn" data-swap>交换 x、y</button>`);
     const modeChips = [...modes.querySelectorAll(".ch7l-chip")];
     modeChips.forEach((b) => b.addEventListener("click", () => setMode(b.dataset.key)));
-    modes.querySelector("[data-swap]").addEventListener("click", () => {
+    modeRow.querySelector("[data-swap]").addEventListener("click", () => {
       [state.x, state.y] = [state.y, state.x];
       redraw();
       flow?.acted();
@@ -739,7 +770,8 @@
       const keeps = M().eq(detK, F(1));
       const kx = app(Kt, state.x);
       const ky = app(Kt, state.y);
-      const open = Boolean(flow?.predicted);
+      // answer lines and readouts wait until the student has predicted and acted
+      const open = Boolean(flow?.revealed);
       plane.setDraw((d) => {
         d.grid(undefined, { alpha: 0.35 });
         d.axes();
@@ -764,7 +796,7 @@
         <tr><td>ω</td><td>${open ? minus(M().formatF(w0)) : "?"}</td><td>${open ? minus(M().formatF(w1)) : "?"}</td></tr></tbody></table>
         ${isZero(w0) ? `<p class="ch7l-muted">x、y 共线，平行四边形压扁，ω(x,y)=0。</p>` : ""}`;
       if (!open) {
-        matCard.innerHTML = `<h4>变换矩阵</h4><div>${texD(`K=${K.latexMatrix(Kf)}`)}</div><p class="ch7l-muted">先在上方作出预测，ω 的读数随后出现。</p>`;
+        matCard.innerHTML = `<h4>变换矩阵</h4><div>${texD(`K=${K.latexMatrix(Kf)}`)}</div><p class="ch7l-muted">先在上方作出预测，再动手操作一次，ω 的读数随后出现。</p>`;
         return;
       }
       const base = shearOn()
@@ -854,6 +886,7 @@
         { text: "取决于 x、y", why: "ω(Kx,Ky)=|K|ω(x,y) 对一切 x、y 成立。" },
       ],
       actHint: "已记下你的预测。拖动 x、y 或换一个变换，结论随后出现。",
+      onReveal: () => redraw(),
       conclusion: "ω(Kx,Ky)=|K|·ω(x,y)。剪切、挤压与旋转的 |K|=1，有向面积不变，尽管长度与夹角都可能改变；横向拉伸 |K|=2，面积加倍；交换坐标 |K|=−1，有向面积变号。平面上保持 ω 的线性变换恰好是 |K|=1 的变换。",
     });
     redraw();

@@ -111,10 +111,11 @@
   }
 
   /*
-   * The student commits to an answer before the conclusion opens. With
-   * spec.defer = lab, picking only records the prediction (spec.onPick); the
-   * verdict and onAnswered wait for the first action in the lab (a drag, a
-   * slider, a preset or a button outside the gate).
+   * Predict -> act -> reveal. Picking an option only records the prediction
+   * (spec.onPick); the verdict and onAnswered wait for the first action in the
+   * lab after the pick: a drag on the picture, a slider, a preset or a button
+   * outside the gate. With spec.manual the lab decides itself and calls
+   * box.act() (§2 waits until the third step has run).
    */
   function predictGate(host, spec, onAnswered) {
     spec = { ...spec, options: window.LAStableShuffle ? window.LAStableShuffle(spec.options, spec.question) : spec.options };
@@ -137,14 +138,14 @@
       if (!answered) {
         answered = true;
         box.dataset.answered = "true";
-        if (spec.defer) box.classList.add("is-done");
+        box.classList.add("is-done");
         onAnswered?.();
       }
     }
 
     box.querySelectorAll("[data-i]").forEach((b) =>
       b.addEventListener("click", () => {
-        if (!spec.defer || answered) return verdict(b);
+        if (answered) return verdict(b);
         const first = !picked;
         picked = b;
         box.dataset.picked = "true";
@@ -155,13 +156,18 @@
       }),
     );
 
-    if (spec.defer) {
+    box.act = () => {
+      if (picked && !answered) verdict(picked);
+    };
+    const actRoot = spec.manual ? null : spec.defer || host.closest("[data-ch9-lab]");
+    if (actRoot) {
       const act = (e) => {
         if (!picked || answered || box.contains(e.target)) return;
         if (e.type === "click" && !e.target.closest("button")) return;
+        if (e.type === "pointerup" && !e.target.closest("canvas, svg")) return;
         verdict(picked);
       };
-      ["input", "change", "pointerup", "click"].forEach((t) => spec.defer.addEventListener(t, act));
+      ["input", "change", "pointerup", "click"].forEach((t) => actRoot.addEventListener(t, act));
     }
     return box;
   }
@@ -345,7 +351,7 @@
     const toolbar = el("div", "ch9l-toolbar");
     lab.append(toolbar);
     const { stage, side } = stageLayout(lab);
-    const scene = S().create(stage, { range: 2, label: "施密特正交化的三维图", yaw: -0.55, pitch: 0.38, hint: "拖动空白处旋转 · 拖动圆点改变 α₃" });
+    const scene = S().create(stage, { range: 2, label: "施密特正交化的三维图", yaw: -0.55, pitch: 0.38, hint: "拖动空白处旋转 · 拖动圆点改变 α₃", spreadLabels: true });
     lab.ch9Views = { scene };
     const stepCard = el("div", "ch9l-card");
     stepCard.innerHTML = `<div class="ch9l-steps" data-gs-steps></div>
@@ -382,7 +388,8 @@
       scene.setObjects(() => {
         const objs = [];
         const faded = step >= 4 ? 0.3 : step >= 1 ? 0.55 : 1;
-        if (step >= 3) objs.push({ type: "plane", n: V.cross(b1, b2), d: 0, color: "subspace", alpha: 0.13, label: "span{β₁,β₂}" });
+        // the plane's name sits on the side away from the vectors, so it stays clear of their labels
+        if (step >= 3) objs.push({ type: "plane", n: V.cross(b1, b2), d: 0, color: "subspace", alpha: 0.13, label: "span{β₁,β₂}", labelAt: V.mul(V.add(V.norm(b1), V.norm(b2)), -1.1) });
         state.a.forEach((v, i) => objs.push({ type: "arrow", to: v, color: colors[i], alpha: faded, width: 2.2, label: step >= 4 ? undefined : `α${"₁₂₃"[i]}` }));
         if (step >= 1 && step < 4) objs.push({ type: "arrow", to: b1, color: "v1", width: 3.2, label: "β₁" });
         if (step >= 2 && step < 4) {
@@ -392,7 +399,7 @@
           objs.push({ type: "arrow", to: b2, color: "v2", width: 3.2, label: "β₂" });
         }
         if (step >= 3 && step < 4) {
-          objs.push({ type: "arrow", to: p3, color: "image", width: 2, label: "投影" });
+          objs.push({ type: "arrow", to: p3, color: "image", width: 2, label: "投影", labelAt: V.mul(p3, 0.3) });
           objs.push({ type: "segment", a: state.a[2], b: p3, color: "axis", dash: [5, 4], width: 1.8 });
           objs.push({ type: "point", p: p3, color: "image", r: 4.5 });
           if (!dep) {
@@ -444,7 +451,8 @@
         lines.push(`<p>${tex(`|\\beta_1|^2=${n2[0]},\\ |\\beta_2|^2=${n2[1]},\\ |\\beta_3|^2=${n2[2]}`)}</p><p>${tex("\\eta_i=\\beta_i/|\\beta_i|")}：η₁、η₂、η₃ 是一组标准正交基，单位立方体随之摆正。</p>`);
       }
       info.innerHTML = lines.join("");
-      if (step >= 3 && state.predicted) result.hidden = false;
+      // the verdict waits until the third step has actually run
+      if (step >= 3 && state.predicted) gate?.act();
     }
 
     chips(toolbar, Object.entries(GS_PRESETS).map(([k, p]) => [k, p.label]), (k) => {
@@ -463,7 +471,8 @@
     });
     stepCard.querySelector("[data-gs-look]").addEventListener("click", () => scene.lookAlong(toN(compute().b1)));
     stepCard.querySelector("[data-gs-reset]").addEventListener("click", () => scene.resetView());
-    predictGate(
+    let gate = null;
+    gate = predictGate(
       gateHost,
       {
         question: `第三步要从 ${tex("\\alpha_3")} 中减去一个向量，使剩下的 ${tex("\\beta_3")} 与 ${tex("\\beta_1,\\beta_2")} 都正交。减去的是什么？`,
@@ -474,10 +483,15 @@
           { text: `${tex("\\alpha_3")} 在 ${tex("\\beta_1\\times\\beta_2")} 方向上的分量`, why: "那一部分恰好是要留下的 β₃。" },
         ],
         right: `投影 ${tex("=\\tfrac{(\\alpha_3,\\beta_1)}{(\\beta_1,\\beta_1)}\\beta_1+\\tfrac{(\\alpha_3,\\beta_2)}{(\\beta_2,\\beta_2)}\\beta_2")}。执行第三步，再点“沿平面看”。`,
+        manual: true,
+        actHint: "已记下你的预测。执行到第三步，结论随后出现。",
+        onPick: () => {
+          state.predicted = true;
+          redraw();
+        },
       },
       () => {
-        state.predicted = true;
-        redraw();
+        result.hidden = false;
       },
     );
     redraw();
@@ -806,7 +820,7 @@
     const toolbar = el("div", "ch9l-toolbar");
     lab.append(toolbar);
     const { stage, side } = stageLayout(lab);
-    const scene = S().create(stage, { range: 2.5, label: "子空间 W 与正交补", yaw: 0.8, pitch: 0.3, hint: "拖动空白处旋转 · 拖动圆点改变 w、α" });
+    const scene = S().create(stage, { range: 2.5, label: "子空间 W 与正交补", yaw: 0.8, pitch: 0.3, hint: "拖动空白处旋转 · 拖动圆点改变 w、α", spreadLabels: true });
     lab.ch9Views = { scene };
     const tools = el("div", "ch9l-actions");
     tools.innerHTML = `${btn("沿 W⊥ 看", "data-sub-look")}${btn("侧面看 W", "data-sub-side")}${btn("默认视角", "data-sub-reset")}`;
@@ -976,7 +990,7 @@
       `<p>实对称矩阵的特征向量可以取成两两正交的单位向量，排成正交矩阵 T，于是 ${tex("T^TAT=\\Lambda")}，即 ${tex("A=T\\Lambda T^T")}。单位圆的像是椭圆，主轴就是特征方向，半轴长是 ${tex("|\\lambda_i|")}；负特征值让那个方向反向。非对称的 ${tex("\\left[\\begin{smallmatrix}2&1\\\\0&1\\end{smallmatrix}\\right]")} 也有两个特征方向，但它们夹 45°，不能用正交矩阵对角化。</p>`,
     );
     side.append(ctrl, info, gateHost, result);
-    const state = { key: "pos", s: 0, revealed: false };
+    const state = { key: "pos", s: 0, picked: false, revealed: false };
     let anim = 0;
 
     const rot = (t) => [[Math.cos(t), -Math.sin(t)], [Math.sin(t), Math.cos(t)]];
@@ -1034,7 +1048,7 @@
       ctrl.querySelector("[data-sp-sv]").textContent = state.s <= 0 ? "起点" : state.s >= 3 ? "完成" : "①②③"[stepIdx];
       ctrl.querySelector("[data-sp-s]").value = String(state.s);
       // Playing the steps would draw the answer, so it waits for the prediction.
-      ctrl.querySelectorAll("input,button").forEach((x) => (x.disabled = !e.sym || !state.revealed));
+      ctrl.querySelectorAll("input,button").forEach((x) => (x.disabled = !e.sym || !state.picked));
 
       const lines = [`<h4>当前读数</h4>`, `<p>${tex(`A=${M().latexMatrix(e.A)}`)}${e.sym ? "，对称" : `，${tex("A^T\\ne A")}`}</p>`];
       if (!state.revealed) {
@@ -1104,6 +1118,11 @@
           { text: `沿 ${tex("(1,-1)")}，长 1`, why: "那是短轴：λ=1 的特征方向。" },
         ],
         right: `${tex("(1,1)")} 是属于 3 的特征向量，${tex("(-1,1)")} 是属于 1 的特征向量，两者正交。播放三步，紫色虚线是 A 直接作用的结果。`,
+        actHint: "已记下你的预测。播放三步或拖动进度条，结论随后出现。",
+        onPick: () => {
+          state.picked = true;
+          redraw();
+        },
       },
       () => {
         state.revealed = true;
@@ -1139,7 +1158,7 @@
     const controls = el("div", "ch9l-controls");
     controls.innerHTML = `<label class="ch9l-range"><span>${tex("C")}</span><input type="range" min="-4" max="4" step="0.5" value="0" data-ls-c /><b data-ls-cv>0</b></label>
       <label class="ch9l-range"><span>${tex("D")}</span><input type="range" min="-4" max="4" step="0.5" value="1" data-ls-d /><b data-ls-dv>1</b></label>
-      <div class="ch9l-actions">${btn("沿 e 的方向看", "data-ls-look")}${btn("沿平面看", "data-ls-side")}${btn("默认视角", "data-ls-reset")}</div>`;
+      <div class="ch9l-actions">${btn("看直角三角形", "data-ls-triview")}${btn("沿 e 的方向看", "data-ls-look")}${btn("沿平面看", "data-ls-side")}${btn("默认视角", "data-ls-reset")}</div>`;
     const status = el("div", "ch9l-status");
     status.dataset.ch9Readout = "ls";
     const gateHost = el("div");
@@ -1171,7 +1190,8 @@
       const n = [1, -2, 1];
       scene.setObjects(() => {
         const objs = [
-          { type: "plane", n, d: 0, color: "subspace", alpha: 0.12, label: "W=列空间" },
+          // the plane's name sits on the far side of the origin, away from b, p and Ax
+          { type: "plane", n, d: 0, color: "subspace", alpha: 0.12, label: "W=列空间", labelAt: [-1.6, -1.6, -1.6] },
           { type: "arrow", to: [1, 1, 1], color: "subspace", width: 1.8, alpha: 0.7, label: "a₁" },
           { type: "arrow", to: [0, 1, 2], color: "subspace", width: 1.8, alpha: 0.7, label: "a₂" },
           { type: "point", p: Ax, color: "image", r: 5, hollow: true, label: "Ax" },
@@ -1232,6 +1252,40 @@
         if (M().isZero(s.gap)) parts.push(`<p class="ch9l-ok">试的直线就是最佳直线。</p>`);
       } else parts.push(`<p class="ch9l-muted">调 C、D 让 ${tex("|b-Ax|^2")} 尽量小；作出预测并动手操作后，显示最佳直线与投影。</p>`);
       status.innerHTML = parts.join("");
+      controls.querySelector("[data-ls-triview]").disabled = !state.revealed;
+    }
+
+    /*
+     * Zoom the view to b, p, Ax and the origin: the smallest range (within
+     * limits) that keeps the four points inside the canvas.
+     */
+    function fitTriangle(animate = true) {
+      const s = solve();
+      const canvas = scene.element.querySelector("canvas");
+      const rect = canvas?.getBoundingClientRect();
+      if (!rect?.width) return;
+      const o = scene.project([0, 0, 0]);
+      let ratio = 0;
+      [state.b, toN(s.p), toN(s.Ax)].forEach((q) => {
+        const p = scene.project(q);
+        ratio = Math.max(ratio, Math.abs(p.x - o.x) / (rect.width / 2), Math.abs(p.y - o.y) / (rect.height / 2));
+      });
+      if (!ratio) return;
+      const target = Math.max(2, Math.min(3.5, (scene.range * ratio) / 0.9));
+      scene.setRange(target, animate);
+    }
+
+    function lookAtTriangle() {
+      const s = solve();
+      const V = V3();
+      const p = toN(s.p);
+      let n = V.cross(V.sub(state.b, p), V.sub(toN(s.Ax), p));
+      if (V.len(n) < 1e-9) n = [1, -2, 1];
+      const c = scene.camera;
+      const toViewer = [Math.cos(c.pitch) * Math.cos(c.yaw), Math.cos(c.pitch) * Math.sin(c.yaw), Math.sin(c.pitch)];
+      if (V.dot(n, toViewer) < 0) n = V.mul(n, -1);
+      scene.lookAlong(n, false);
+      fitTriangle();
     }
 
     const cIn = controls.querySelector("[data-ls-c]");
@@ -1240,7 +1294,13 @@
     dIn.addEventListener("input", () => ((state.D = Number(dIn.value)), redraw()));
     controls.querySelector("[data-ls-look]").addEventListener("click", () => scene.lookAlong([1, -2, 1]));
     controls.querySelector("[data-ls-side]").addEventListener("click", () => scene.lookAlong([1, 1, 1]));
-    controls.querySelector("[data-ls-reset]").addEventListener("click", () => scene.resetView());
+    controls.querySelector("[data-ls-reset]").addEventListener("click", () => {
+      scene.resetView(false);
+      scene.setRange(3.5);
+    });
+    controls.querySelector("[data-ls-triview]").addEventListener("click", lookAtTriangle);
+    cIn.addEventListener("change", () => state.revealed && fitTriangle());
+    dIn.addEventListener("change", () => state.revealed && fitTriangle());
     predictGate(
       gateHost,
       {
@@ -1259,6 +1319,7 @@
         state.revealed = true;
         result.hidden = false;
         redraw();
+        fitTriangle();
       },
     );
     redraw();

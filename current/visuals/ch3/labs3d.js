@@ -386,10 +386,24 @@
       const bb = b();
       const hit = Ax.every((v, i) => M().eq(v, bb[i]));
       const aug = A.map((r, i) => [...r, bb[i]]);
-      rowScene.setObjects(() => [
-        ...aug.map((r, i) => planeObj(r, PLANE_COLORS[i], { alpha: 0.12 })),
-        { type: "point", p: state.x, color: "drag", r: hit ? 7 : 5.5, label: "x" },
-      ]);
+      /*
+       * Perpendiculars from x to each plane: (Ax−b)ᵢ = 0 exactly when x lies on
+       * plane i; that plane then glows and its readout chip turns green.
+       */
+      const resid = Ax.map((v, i) => M().sub(v, bb[i]));
+      rowScene.setObjects(() => {
+        const objs = aug.map((r, i) => planeObj(r, PLANE_COLORS[i], { alpha: 0.12, glow: M().isZero(resid[i]) ? 1 : 0 }));
+        aug.forEach((r, i) => {
+          if (M().isZero(resid[i])) return;
+          const n = vecNum(r.slice(0, 3));
+          const t = num(resid[i]) / S().vec.dot(n, n);
+          const foot = S().vec.sub(state.x, S().vec.mul(n, t));
+          objs.push({ type: "segment", a: state.x, b: foot, color: PLANE_COLORS[i], width: 1.4, dash: [2, 3] });
+          objs.push({ type: "point", p: foot, color: PLANE_COLORS[i], r: 3.5 });
+        });
+        objs.push({ type: "point", p: state.x, color: "drag", r: hit ? 7 : 5.5, label: "x" });
+        return objs;
+      });
       colScene.setObjects(() => {
         const objs = [];
         let tail = [0, 0, 0];
@@ -405,9 +419,19 @@
         return objs;
       });
       controls.querySelectorAll("[data-xv]").forEach((n) => (n.textContent = String(state.x[Number(n.dataset.xv)])));
-      status.innerHTML = hit
-        ? `<span class="ch3l-ok">命中</span> ${tex(`x=(${state.x.join(",")})`)}：点 x 落在三个平面的公共点上，同时箭头链的终点就是 b。`
-        : `${tex(`Ax=(${Ax.map(fmt).join(",")})`)}，目标 ${tex(`b=(${bb.map(fmt).join(",")})`)}。`;
+      const NORM2 = aug.map((r) => r.slice(0, 3).reduce((s, a) => s + num(a) * num(a), 0));
+      const dists = resid
+        .map((r, i) => {
+          const on = M().isZero(r);
+          const d = on ? "0" : `${Math.abs(r.n)}/${r.d === 1 ? "" : r.d}\\sqrt{${NORM2[i]}}`;
+          return `<span class="ch3l-dist${on ? " is-on" : ""}" data-plane="${i + 1}">${on ? "✓ " : ""}到平面 ${i + 1}：${tex(d)}</span>`;
+        })
+        .join("");
+      status.innerHTML = `<div class="ch3l-dists">${dists}</div>${
+        hit
+          ? `<span class="ch3l-ok">命中</span> ${tex(`x=(${state.x.join(",")})`)}：点 x 落在三个平面的公共点上，同时箭头链的终点就是 b。`
+          : `${tex(`Ax=(${Ax.map(fmt).join(",")})`)}，目标 ${tex(`b=(${bb.map(fmt).join(",")})`)}。`
+      }`;
     }
 
     buttons(toolbar, Object.entries(targets).map(([k, v]) => [k, v.label]), (k) => {

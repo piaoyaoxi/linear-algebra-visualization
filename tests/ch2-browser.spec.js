@@ -117,6 +117,10 @@ test.describe("Chapter 2 desktop visual system", () => {
     await openLesson(page, "permutations");
     await expect(page.locator("[data-tau]")).toHaveText("3");
     await expect(page.locator("[data-wires] path")).toHaveCount(4);
+    await expect(page.locator("[data-perm-matrix] td.is-one")).toHaveCount(4);
+    // predict first: the step button stays locked until then
+    await expect(page.locator("[data-adj-step]")).toBeDisabled();
+    await page.locator("#permutations-interactive .ch3l-predict-options > button").first().click();
     await page.locator("[data-adj-step]").click();
     await expect(page.locator("[data-tau]")).toHaveText("2");
     await expect(page.locator("[data-action]")).toContainText("恰好减少 1");
@@ -128,8 +132,10 @@ test.describe("Chapter 2 desktop visual system", () => {
     await expect(page.locator("[data-perm-out]")).toHaveText("231");
     await expect(page.locator("[data-term-path] line")).toHaveCount(2);
     await expect(page.locator("[data-repeat-view]")).toBeVisible();
+    await page.locator("#n-order-determinant-interactive .ch3l-predict-options > button").first().click();
     await page.locator("[data-triangle-toggle]").click();
     await expect(page.locator("[data-zero-out]")).toContainText("贡献为 0");
+    await expect(page.locator("[data-six-terms] .is-zero-path")).toHaveCount(5);
     await expect(page.locator("[data-select-msg]")).toContainText("路径满足每行每列各一次");
   });
 
@@ -139,12 +145,16 @@ test.describe("Chapter 2 desktop visual system", () => {
     await expect(page.locator("[data-row-canvas]")).toBeVisible();
     await page.locator("[data-op-swap]").click();
     await expect(page.locator("[data-factor]")).toHaveText("-1");
+    await page.locator("#determinant-properties-interactive .ch3l-predict-options > button").first().click();
     await page.locator("[data-op-add]").click();
-    await expect(page.locator("[data-ledger]")).toContainText("剪切");
+    await expect(page.locator("[data-ledger]")).toContainText("倍加");
+    await expect(page.locator("[data-cur-det]")).toHaveText("-3");
   });
 
   test("§5 follows one two-step route to upper triangular form", async ({ page }) => {
     await openLesson(page, "determinant-computation");
+    await expect(page.locator("[data-cur]")).toHaveText("?");
+    await page.locator("#determinant-computation-interactive .ch3l-predict-options > button").first().click();
     await page.locator("[data-op-demo]").click();
     await expect(page.locator("[data-step-count]")).toHaveText("2");
     await expect(page.locator("[data-triangle-status]")).toContainText("已经是上三角");
@@ -158,6 +168,10 @@ test.describe("Chapter 2 desktop visual system", () => {
     await expect(page.locator("[data-cut-label]")).toContainText("删去第 1 行与第 3 列");
     await expect(page.locator("[data-minor-table] td")).toHaveCount(4);
     await expect(page.locator("[data-mij]")).toHaveText("-12");
+    // routes open after the prediction; row 2 leaves one non-zero tile
+    await page.locator("#cofactor-expansion-interactive .ch3l-predict-options > button").first().click();
+    await page.locator('[data-route-list] button[data-route-type="row"][data-route-index="1"]').click();
+    await expect(page.locator(".ch2-cof-tile.is-zero")).toHaveCount(2);
   });
 
   test("§7 distinguishes unique, sensitive and singular column-space states", async ({ page }) => {

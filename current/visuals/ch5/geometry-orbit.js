@@ -347,7 +347,7 @@
       wrapCanvas(right, `${inline("B=C^TAC")} · 新坐标`);
       const pair = $(root, ".qv-same");
       redraw = () => {
-        const A = [[2, 0.8], [0.8, 1.4]];
+        const A = [[2, 1], [1, 1]];
         const B = matrixFrom(root, "[data-s1-b]") || A;
         const x = vectorFromText($(root, "[data-s1-x]")?.textContent) || [1, 0];
         const active = $(root, "[data-s1-y].is-active")?.dataset.s1Y;

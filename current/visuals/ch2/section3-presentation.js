@@ -8,6 +8,37 @@
     let chosen = Array(n).fill(null);
     let triangular = false;
     let pathFrame = 0;
+    const gate = window.LAPredictGate?.mount(root.querySelector("[data-term-gate]"), {
+      root: root.querySelector(".ch2-lab"),
+      manual: true,
+      key: "visuals/ch2/section3-presentation.js#upper",
+      question: "把矩阵换成上三角（主对角线下方全是 0）。六条合法路径里，有几条的乘积可能不为 0？",
+      options: [
+        ["只有 1 条：主对角线", true, ""],
+        ["3 条：带正号的三条", false, "符号与是否为 0 无关；其余五条每条都至少经过一个对角线下方的 0。"],
+        ["6 条都可能", false, "除主对角线外，每条路径都要在某一行走到对角线左下方，那里是 0。"],
+        ["一条也没有", false, "主对角线不经过下方的 0，a₁₁a₂₂a₃₃ 一般不为 0。"],
+      ],
+      right: `✓ 五条路径都踩到对角线下方的 0，只剩主对角线：上三角行列式 ${tex("=a_{11}a_{22}a_{33}")}。`,
+      onReveal: () => paintTerms(),
+    });
+
+    // on an upper triangular matrix, the five paths that pick a zero are greyed out
+    function paintTerms() {
+      const open = triangular && (!gate || gate.revealed);
+      root.querySelectorAll("[data-six]").forEach((button) => {
+        const permutation = button.dataset.six.split("").map(Number);
+        const zero = permutation.some((col, row) => row > col - 1);
+        button.classList.toggle("is-zero-path", open && zero);
+        button.querySelector(".ch2-term-zero")?.remove();
+        if (open && zero) button.insertAdjacentHTML("beforeend", `<b class="ch2-term-zero">= 0</b>`);
+      });
+      const sum = root.querySelector("[data-six-sum]");
+      if (sum) {
+        sum.hidden = !open;
+        sum.innerHTML = open ? `五条路径为 0，${tex("\\det A=a_{11}a_{22}a_{33}")}` : "";
+      }
+    }
 
     const repeatMaps = {
       132: [0, 0, 1],
@@ -136,6 +167,8 @@
       event.currentTarget.classList.toggle("is-active", triangular);
       event.currentTarget.textContent = triangular ? "恢复一般矩阵" : "观察上三角矩阵";
       render();
+      if (triangular) gate?.acted();
+      paintTerms();
     }, { signal });
 
     const terms = root.querySelector("[data-six-terms]");
@@ -192,7 +225,7 @@
         <h2>交互实验</h2>
         <div class="ch2-lab">
           <div class="ch2-lab-head"><h3>Leibniz 取项 · 从矩阵到一项</h3><p>每行选择一个元素。已经使用的列会被锁定；完成后依次读出排列、符号与乘积项。</p></div>
-          <div class="ch2-task"><strong>观察任务</strong><span>构造排列 231，再切换上三角结构，解释同一合法路径为什么可能贡献 0。</span></div>
+          <div data-term-gate></div>
           <div class="ch2-term-workbench">
             <div class="ch2-term-scene" data-term-scene>
               <svg class="ch2-term-path" data-term-path aria-hidden="true"></svg>
@@ -217,10 +250,10 @@
               <div class="ch2-toolbar">
                 <button type="button" data-select-reset>清空</button>
                 <button type="button" data-select-231>播放排列 231</button>
-                <button type="button" data-triangle-toggle>观察上三角矩阵</button>
+                <button type="button" class="is-primary" data-triangle-toggle>观察上三角矩阵</button>
               </div>
             </div>
-            <div class="ch2-term-index"><strong>六条合法路径</strong><div data-six-terms></div></div>
+            <div class="ch2-term-index"><strong>六条合法路径</strong><div data-six-terms></div><p class="ch2-six-sum" data-six-sum hidden></p></div>
           </div>
         </div>`;
       return mountSelectionGrid(root);

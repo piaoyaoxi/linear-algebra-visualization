@@ -273,27 +273,89 @@
     arrow(ctx, origin, zAxis, palette.text);
     ctx.fillStyle = palette.muted;
     ctx.font = "600 12px 'LA Serif Latin', 'LA Serif SC', 'Songti SC', serif";
-    ctx.fillText("x₁", xAxis.x + 5, xAxis.y + 2);
-    ctx.fillText("x₂", yAxis.x - 18, yAxis.y + 2);
+    const [n1, n2] = options.axisLabels || ["x₁", "x₂"];
+    ctx.fillText(n1, xAxis.x + 5, xAxis.y + 2);
+    ctx.fillText(n2, yAxis.x - 18, yAxis.y + 2);
     ctx.fillText("q", zAxis.x + 6, zAxis.y + 2);
+
+    if (Number.isFinite(options.level) && options.point) {
+      // the level z = h: a horizontal patch around the stem top, a dashed horizontal line
+      // to the q axis and a tick there; both views share one frame, so the ticks match
+      const h = options.level;
+      const [px, py] = options.point;
+      const r = 0.6;
+      const corners = [[px - r, py - r], [px + r, py - r], [px + r, py + r], [px - r, py + r]].map(([x, y]) => frame.project(x, y, h));
+      const image = getComputedStyle(document.body).getPropertyValue("--cv-image").trim() || "#8c4f86";
+      const axisPoint = frame.project(0, 0, h);
+      const top = frame.project(px, py, h);
+      ctx.save();
+      ctx.beginPath();
+      corners.forEach((point, index) => index ? ctx.lineTo(point.x, point.y) : ctx.moveTo(point.x, point.y));
+      ctx.closePath();
+      ctx.fillStyle = image;
+      ctx.globalAlpha = 0.14;
+      ctx.fill();
+      ctx.globalAlpha = 0.55;
+      ctx.strokeStyle = image;
+      ctx.lineWidth = 1.2;
+      ctx.stroke();
+      ctx.globalAlpha = 0.85;
+      ctx.setLineDash([2, 3]);
+      ctx.beginPath();
+      ctx.moveTo(axisPoint.x, axisPoint.y);
+      ctx.lineTo(top.x, top.y);
+      ctx.stroke();
+      ctx.setLineDash([]);
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.moveTo(axisPoint.x - 6, axisPoint.y);
+      ctx.lineTo(axisPoint.x + 6, axisPoint.y);
+      ctx.stroke();
+      ctx.globalAlpha = 1;
+      ctx.fillStyle = image;
+      ctx.font = "600 13px 'LA Serif Latin', 'LA Serif SC', 'Songti SC', serif";
+      ctx.textAlign = "right";
+      ctx.fillText(M().formatNum(h, 4), axisPoint.x - 9, axisPoint.y + 4);
+      ctx.restore();
+    }
 
     if (options.point) {
       const floor = frame.project(options.point[0], options.point[1], 0);
       const value = M().qForm(A, options.point);
       const onSurface = frame.project(options.point[0], options.point[1], value);
+      const image = getComputedStyle(document.body).getPropertyValue("--cv-image").trim() || "#8c4f86";
       ctx.save();
-      ctx.strokeStyle = palette.coral;
-      ctx.lineWidth = 1.5;
-      ctx.setLineDash([5, 5]);
+      // vertical height stem from the base point up to the surface
+      ctx.strokeStyle = image;
+      ctx.lineWidth = 3.4;
+      ctx.lineCap = "round";
       ctx.beginPath();
       ctx.moveTo(floor.x, floor.y);
       ctx.lineTo(onSurface.x, onSurface.y);
       ctx.stroke();
-      ctx.setLineDash([]);
-      ctx.fillStyle = palette.coral;
+      ctx.fillStyle = image;
       ctx.beginPath();
       ctx.arc(onSurface.x, onSurface.y, 5.5, 0, TAU);
       ctx.fill();
+      ctx.globalAlpha = 0.8;
+      ctx.beginPath();
+      ctx.arc(floor.x, floor.y, 3.5, 0, TAU);
+      ctx.fill();
+      ctx.globalAlpha = 1;
+      ctx.font = "italic 600 14px 'LA Serif Latin', 'LA Serif SC', 'Songti SC', serif";
+      if (options.pointLabel) ctx.fillText(options.pointLabel, floor.x + 7, floor.y + 15);
+      if (options.stemLabel) {
+        const text = options.stemLabel;
+        const tw = ctx.measureText(text).width;
+        const lx = Math.max(8, Math.min(width - tw - 8, onSurface.x + 10));
+        const ly = Math.max(70, (floor.y + onSurface.y) / 2);
+        ctx.fillStyle = palette.soft;
+        ctx.globalAlpha = 0.85;
+        ctx.fillRect(lx - 4, ly - 14, tw + 8, 19);
+        ctx.globalAlpha = 1;
+        ctx.fillStyle = image;
+        ctx.fillText(text, lx, ly);
+      }
       ctx.restore();
     }
   }
@@ -349,14 +411,17 @@
       const left = $(root, "[data-s1-a-canvas]");
       const right = $(root, "[data-s1-b-canvas]");
       redraw = () => {
-        const A = [[2, 0.8], [0.8, 1.4]];
+        const A = [[2, 1], [1, 1]];
         const B = matrixFrom(root, "[data-s1-b]") || A;
         const x = vectorFromText($(root, "[data-s1-x]")?.textContent) || [1, 0];
         const active = $(root, "[data-s1-y].is-active")?.dataset.s1Y;
         const y = active === "e2" ? [0, 1] : active === "sum" ? [1, 1] : [1, 0];
         const half = Math.max(1.65, ...x.map((value) => Math.abs(value) * 1.12));
-        drawSurface(left, A, { point: x, half, frameMatrices: [A, B] });
-        drawSurface(right, B, { point: y, half, frameMatrices: [A, B] });
+        // after the prediction both views get the same level plane through the stem tops
+        const open = Boolean(root.querySelector(".qv-lab[data-s1-open]"));
+        const level = open ? M().qForm(A, x) : null;
+        drawSurface(left, A, { point: x, half, frameMatrices: [A, B], level, stemLabel: open ? `xᵀAx = ${M().formatNum(level, 4)}` : "xᵀAx", pointLabel: "x" });
+        drawSurface(right, B, { point: y, half, frameMatrices: [A, B], level, stemLabel: open ? `yᵀBy = ${M().formatNum(level, 4)}` : "yᵀBy", pointLabel: "y" });
       };
     }
 
@@ -364,7 +429,8 @@
       const canvas = $(root, "[data-s2-canvas]");
       redraw = () => {
         const D = matrixFrom(root, "[data-s2-d]");
-        if (D) drawSurface(canvas, D, { frameMatrices: [D] });
+        const y = root.querySelector(".qv-lab")?.dataset.s2Vars === "y";
+        if (D) drawSurface(canvas, D, { frameMatrices: [D], axisLabels: y ? ["y₁", "y₂"] : ["x₁", "x₂"] });
       };
     }
 

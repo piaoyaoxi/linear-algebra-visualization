@@ -712,12 +712,30 @@
       ).join("");
       wallHead.textContent = `全部 ${list.length} 个 ${state.k} 阶子式（点一块，看它取的行与列）`;
       wall.style.setProperty("--cols", Math.min(list.length, N === 3 && state.k !== 3 ? 3 : list.length));
+      /*
+       * After a transformation, every nonzero tile is written as (its cofactor)·Dₖ
+       * with Dₖ highlighted: the values change, the common factor stays.
+       */
+      const Dk = open && state.ops.length ? P.determinantFactors(state.A)[state.k - 1] : null;
+      const showCommon = Dk && !P.isConstant(Dk);
+      const tileTex = (value) => {
+        if (!showCommon || P.isZero(value)) return tex(pfac(value));
+        const q = P.divmod(value, Dk).q;
+        const lead = P.lc(q);
+        const head = M().eq(lead, F(1)) ? "" : M().eq(lead, F(-1)) ? "-" : lf(lead);
+        const q1 = P.monic(q);
+        const qt = pfac(q1);
+        const rest = P.isConstant(q1) ? "" : /[+-]/.test(qt.slice(1)) && !qt.includes("(") ? `(${qt})` : qt;
+        return K.hlHtml(tex(`${head}${K.hlTex(pfac(Dk))}${rest ? `\\,${rest}` : ""}`), "subspace");
+      };
       wall.innerHTML = list
         .map(
           (x, idx) =>
-            `<button type="button" class="ch8l-minor${open && P.isZero(x.value) ? " is-zero" : ""}${idx === state.picked ? " is-picked" : ""}" data-minor="${idx}"><small>行 ${x.rows.map((r) => r + 1).join(",")}　列 ${x.cols.map((c) => c + 1).join(",")}</small><b>${open ? tex(pfac(x.value)) : "?"}</b></button>`,
+            `<button type="button" class="ch8l-minor${open && P.isZero(x.value) ? " is-zero" : ""}${idx === state.picked ? " is-picked" : ""}" data-minor="${idx}"><small>行 ${x.rows.map((r) => r + 1).join(",")}　列 ${x.cols.map((c) => c + 1).join(",")}</small><b>${open ? tileTex(x.value) : "?"}</b></button>`,
         )
         .join("");
+      wall.dataset.common = showCommon ? P.text(Dk) : "";
+      if (showCommon) wallHead.textContent = `全部 ${list.length} 个 ${state.k} 阶子式：变换后每个非零子式仍含公因式 D${"₁₂₃"[state.k - 1]}=${P.text(Dk)}（高亮）`;
       wall.querySelectorAll("[data-minor]").forEach((b) =>
         b.addEventListener("click", () => {
           state.picked = Number(b.dataset.minor);

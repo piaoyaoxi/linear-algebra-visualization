@@ -75,6 +75,7 @@ async function runChecks(page, name) {
 
   await openLesson(page, "positive-definite");
   await checkFormulaRendering(page);
+  await page.locator('#positive-definite-interactive .ch3l-predict-options > button[data-ok="true"]').click();
   await setRange(page, "[data-s4-t]", 1);
   await dragCanvas(page, "[data-s4-surface]", 110, -70);
   if (!(await page.locator("[data-s4-status]").innerText()).includes("半正定")) {
@@ -82,9 +83,9 @@ async function runChecks(page, name) {
   }
   await page.screenshot({ path: `${shotDir}/${name}-s4-valley-rotated.png`, fullPage: true });
 
-  await setRange(page, "[data-s4-t]", 1.2);
+  await setRange(page, "[data-s4-t]", 1.25);
   if (!(await page.locator("[data-s4-status]").innerText()).includes("不定")) {
-    throw new Error("§4 t=1.2 did not become indefinite");
+    throw new Error("§4 t=5/4 did not become indefinite");
   }
   await page.screenshot({ path: `${shotDir}/${name}-s4-saddle-rotated.png`, fullPage: true });
 

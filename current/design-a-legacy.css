@@ -1439,6 +1439,18 @@ body.dark :is(main, #la) :is(.lesson-page-section, #lb) :is(.s2c-canvas-shell, .
   background: transparent;
 }
 
+/* §6: the grid fills its frame when the step list beside it is taller than the canvas */
+:is(main, #la) :is(.lesson-page-section, #lb) .el6-stage {
+  display: flex;
+  flex-direction: column;
+}
+
+:is(main, #la) :is(.lesson-page-section, #lb) .el6-canvas {
+  flex: 1 1 0;
+  height: auto;
+  min-height: clamp(300px, 40vw, 420px);
+}
+
 :is(main, #la) :is(.lesson-page-section, #lb) .inverse-plane-wrap {
   background: var(--cv-paper);
 }
@@ -2460,6 +2472,77 @@ body.dark :is(main, #la) :is(.lesson-page-section, #lb) .basis-label rect {
   }
 }
 
+/* §4: one surface (level curves on its floor) beside the direction wheel and the readouts */
+:is(main, #la) .qv-s4-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(250px, 290px);
+  gap: 22px;
+  align-items: start;
+}
+
+:is(main, #la) :is(.qv-s4-main, .qv-s4-side) {
+  display: grid;
+  gap: 14px;
+  min-width: 0;
+}
+
+:is(main, #la) .qv-s4-main > .qv-hero,
+:is(main, #la) .qv-s4-main > .qv-hero > canvas {
+  height: 500px;
+  min-height: 0;
+}
+
+:is(main, #la) .qv-s4-wheel {
+  margin: 0;
+}
+
+:is(main, #la) .qv-s4-wheel > canvas {
+  display: block;
+  width: 100%;
+  height: 230px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--cv-paper);
+}
+
+:is(main, #la) .qv-s4-wheel > figcaption {
+  margin-top: 6px;
+  color: var(--muted);
+  font-size: 13px;
+  line-height: 1.6;
+}
+
+:is(main, #la) .qv-s4-read {
+  display: grid;
+  gap: 10px;
+  padding: 12px;
+}
+
+:is(main, #la) .qv-s4-read > .ch5-matrix-wrap {
+  justify-self: start;
+}
+
+:is(main, #la) .qv-s4-read > .qv-values > .qv-s4-wide {
+  grid-column: 1 / -1;
+}
+
+@media (max-width: 900px) {
+  :is(main, #la) .qv-s4-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+@media (max-width: 680px) {
+  :is(main, #la) .qv-s4-main > .qv-hero,
+  :is(main, #la) .qv-s4-main > .qv-hero > canvas {
+    height: 380px;
+  }
+
+  :is(main, #la) .qv-s4-wheel > canvas {
+    height: 240px;
+  }
+}
+
 :is(main, #la) :is(.qv-orbit-title, .qv-orbit-hint) {
   border: 1px solid var(--line);
   border-radius: 6px;
@@ -2483,6 +2566,7 @@ body.dark :is(main, #la) :is(.lesson-page-section, #lb) .basis-label rect {
 :is(main, #la) :is(.qv-result, .qv-step, .qv-values),
 :is(main, #la) .qv-data > div,
 :is(main, #la) .qv-three > aside,
+:is(main, #la) .qv-s4-read,
 :is(main, #la) .qv-two > aside > div,
 :is(main, #la) .ch5s4-minor-chain > div {
   border: 1px solid var(--line);
@@ -2493,7 +2577,8 @@ body.dark :is(main, #la) :is(.lesson-page-section, #lb) .basis-label rect {
 
 :is(main, #la) .qv-data > .qv-values,
 :is(main, #la) .qv-two > aside > .qv-values,
-:is(main, #la) .qv-three > aside > .qv-values {
+:is(main, #la) .qv-three > aside > .qv-values,
+:is(main, #la) .qv-s4-read > .qv-values {
   border: 0;
   background: none;
   padding: 0;

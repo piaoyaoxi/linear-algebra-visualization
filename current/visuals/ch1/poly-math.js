@@ -71,6 +71,11 @@
     return a.d === 1 ? String(a.n) : `${a.n}/${a.d}`;
   }
 
+  // the same exact value for reading on the page: −3/2 with a true minus sign
+  function formatRText(a) {
+    return formatR(a).replace("-", "−");
+  }
+
   function formatRTex(a) {
     if (a.d === 1) return String(a.n);
     const sign = a.n < 0 ? "-" : "";
@@ -334,7 +339,7 @@
     const n = Math.max(P.length, length || 0);
     return `<div class="ch1-strip" role="list">${Array.from({ length: n }, (_, i) => {
       const value = P[i] || R(0);
-      return `<label class="ch1-strip-cell" role="listitem"><span class="ch1-strip-deg">${i === 0 ? "1" : i === 1 ? "x" : `x<sup>${i}</sup>`}</span>${editable ? `<input class="ch1-strip-input" type="text" inputmode="decimal" data-${key}="${i}" value="${formatR(value)}" aria-label="x 的 ${i} 次项系数">` : `<strong class="ch1-strip-val">${formatR(value)}</strong>`}</label>`;
+      return `<label class="ch1-strip-cell" role="listitem"><span class="ch1-strip-deg">${i === 0 ? "1" : i === 1 ? "x" : `x<sup>${i}</sup>`}</span>${editable ? `<input class="ch1-strip-input" type="text" inputmode="decimal" data-${key}="${i}" value="${formatR(value)}" aria-label="x 的 ${i} 次项系数">` : `<strong class="ch1-strip-val">${formatRText(value)}</strong>`}</label>`;
     }).join("")}</div>`;
   }
 
@@ -419,8 +424,9 @@
       ctx.textAlign = "center";
       ctx.lineWidth = 3;
       ctx.strokeStyle = palette.paper;
-      ctx.strokeText(String(x), p.x, p.y + 15);
-      ctx.fillText(String(x), p.x, p.y + 15);
+      const tick = String(x).replace("-", "−");
+      ctx.strokeText(tick, p.x, p.y + 15);
+      ctx.fillText(tick, p.x, p.y + 15);
     }
     ctx.restore();
   }
@@ -572,7 +578,7 @@
 
   window.Ch1Math = {
     gcdInt, lcmInt, R, parseR, rAdd, rSub, rMul, rDiv, rNeg, rAbs, rEq, rIsZero, rToNum,
-    formatR, formatRTex, poly, normalizePoly, zeroPoly, onePoly, isZeroPoly, deg, leading, polyEq,
+    formatR, formatRText, formatRTex, poly, normalizePoly, zeroPoly, onePoly, isZeroPoly, deg, leading, polyEq,
     polyAdd, polySub, polyScale, polyShift, polyMul, polyPow, polyDiv, polyMod, makeMonic, polyGcd,
     polyDerivative, evalPoly, evalPolyNum, divisionSteps, extendedEuclidSteps, hornerSteps,
     lagrangeInterpolation, contentAndPrimitive, integerDivisors, rationalRootCandidates,

@@ -14,6 +14,33 @@
   const fmt = (x) => M().latexF(x);
   const vecNum = (v) => v.map(num);
   const vecF = (v) => v.map(F);
+  /* Slider and preset values are halves or quarters: show them as exact fractions. */
+  const texNum = (x) => tex(fmt(F(x)));
+  /* A value in motion: two decimals at most, marked approximate, with a true minus sign. */
+  const approx = (x) => `≈${String(Math.round(x * 100) / 100).replace("-", "−")}`;
+
+  /* √N for a positive integer N as [k, m] with N = k²m and m squarefree. */
+  function sqrtSplit(N) {
+    let k = 1;
+    let m = N;
+    for (let p = 2; p * p <= m; p += 1) {
+      while (m % (p * p) === 0) {
+        m /= p * p;
+        k *= p;
+      }
+    }
+    return [k, m];
+  }
+
+  /* Exact LaTeX for |r| / √N (a point-to-plane distance), e.g. \frac{3}{2\sqrt{14}}. */
+  function distTex(r, N) {
+    if (M().isZero(r)) return "0";
+    const [k, m] = sqrtSplit(N);
+    const top = Math.abs(r.n);
+    const bottom = r.d * k;
+    if (m === 1) return fmt(F(top, bottom));
+    return `\\frac{${top}}{${bottom === 1 ? "" : bottom}\\sqrt{${m}}}`;
+  }
 
   /* ---------- shared UI pieces ---------- */
 
@@ -171,7 +198,7 @@
     body.append(stage, side);
 
     const scene = S().create(stage, { range: 3.2, label: "三个方程对应的三个平面", yaw: -0.8, pitch: 0.38 });
-    const state = { key: "unique", rows: null, target: 1, source: 0, c: 0, history: [] };
+    const state = { key: "unique", rows: null, target: 1, source: 0, c: 0, history: [], animating: false };
 
     const opBox = el("div", "ch3l-card");
     opBox.innerHTML = `<h4>倍加 ${tex("R_i\\leftarrow R_i+cR_j")}</h4>
@@ -222,18 +249,21 @@
       // while c is sliding between nice values, the equations show the nearest twelfth
       // instead of fractions like 437/1000; the planes still move smoothly
       let shown = rows;
-      if (!Number.isInteger(state.c * 12) && state.target !== state.source) {
+      if ((state.animating || !Number.isInteger(state.c * 12)) && state.target !== state.source) {
         shown = state.rows.map((r) => r.slice());
         shown[state.target] = M().rowAdd(shown, state.target, state.source, F(Math.round(state.c * 12) / 12))[state.target];
       }
       sysBox.innerHTML = `<h4>当前方程组${shown === rows ? "" : "（约）"}</h4>${M().htmlEquations(shown, changed)}<p class="ch3l-muted">${describeSolution(shown)}</p>`;
       // “执行” only makes sense when it changes something
-      $("[data-apply]").disabled = state.c === 0 || state.target === state.source;
-      $("[data-cv]").innerHTML = Number.isInteger(state.c * 12) ? tex(fmt(F(state.c))) : state.c.toFixed(2);
+      $("[data-apply]").disabled = state.animating || state.c === 0 || state.target === state.source;
+      // the slider moves in quarters, so c is exact at rest; mid-animation it is marked ≈
+      $("[data-cv]").innerHTML = !state.animating && Number.isInteger(state.c * 12) ? texNum(state.c) : approx(state.c);
       $("[data-undo]").disabled = !state.history.length;
     }
 
     function load(key) {
+      cancelAnimationFrame(anim);
+      state.animating = false;
       state.key = key;
       state.rows = ELIM_PRESETS[key].rows.map((r) => r.map(F));
       state.history = [];
@@ -255,6 +285,8 @@
       redraw();
     });
     $("[data-c]").addEventListener("input", (e) => {
+      cancelAnimationFrame(anim);
+      state.animating = false;
       state.c = Number(e.target.value);
       redraw();
     });
@@ -278,10 +310,14 @@
       const start = state.c;
       const t0 = performance.now();
       cancelAnimationFrame(anim);
+      state.animating = true;
       const step = (now) => {
         const t = Math.min(1, (now - t0) / 900);
         state.c = Math.round((start + (goal - start) * (1 - (1 - t) ** 3)) * 1000) / 1000;
-        if (t >= 1) state.c = goal; // goal is exactly num(f.c); F() recovers the fraction
+        if (t >= 1) {
+          state.c = goal; // goal is exactly num(f.c); F() recovers the fraction
+          state.animating = false;
+        }
         $("[data-c]").value = String(state.c);
         redraw();
         if (t < 1) anim = requestAnimationFrame(step);
@@ -418,18 +454,19 @@
         if (!hit) objs.push({ type: "segment", a: tail, b: vecNum(bb), color: "axis", dash: [4, 5] });
         return objs;
       });
-      controls.querySelectorAll("[data-xv]").forEach((n) => (n.textContent = String(state.x[Number(n.dataset.xv)])));
+      controls.querySelectorAll("[data-xv]").forEach((n) => (n.innerHTML = texNum(state.x[Number(n.dataset.xv)])));
+      // distance from x to plane i is |(Ax−b)ᵢ| / |nᵢ|, with |nᵢ|² an integer
       const NORM2 = aug.map((r) => r.slice(0, 3).reduce((s, a) => s + num(a) * num(a), 0));
       const dists = resid
         .map((r, i) => {
           const on = M().isZero(r);
-          const d = on ? "0" : `${Math.abs(r.n)}/${r.d === 1 ? "" : r.d}\\sqrt{${NORM2[i]}}`;
+          const d = distTex(r, NORM2[i]);
           return `<span class="ch3l-dist${on ? " is-on" : ""}" data-plane="${i + 1}">${on ? "✓ " : ""}到平面 ${i + 1}：${tex(d)}</span>`;
         })
         .join("");
       status.innerHTML = `<div class="ch3l-dists">${dists}</div>${
         hit
-          ? `<span class="ch3l-ok">命中</span> ${tex(`x=(${state.x.join(",")})`)}：点 x 落在三个平面的公共点上，同时箭头链的终点就是 b。`
+          ? `<span class="ch3l-ok">命中</span> ${tex(`x=(${x.map(fmt).join(",")})`)}：点 x 落在三个平面的公共点上，同时箭头链的终点就是 b。`
           : `${tex(`Ax=(${Ax.map(fmt).join(",")})`)}，目标 ${tex(`b=(${bb.map(fmt).join(",")})`)}。`
       }`;
     }
@@ -981,27 +1018,27 @@
       const Ax = M().matVec(A, x.map(F));
       info.innerHTML = `<h4>读数</h4>
         <p>${tex(`x_0=(${part.x.map(fmt).join(",")})`)}</p>
-        <p>基础解系 ${ns.map((v) => tex(`(${v.join(",")})`)).join("、")}</p>
+        <p>基础解系 ${M().nullspaceBasis(A).basis.map((v) => tex(`(${v.map(fmt).join(",")})`)).join("、")}</p>
         <p>${tex(`Ax=(${Ax.map(fmt).join(",")})=b`)}：在解集上移动，Ax 始终等于 b。</p>`;
     }
 
     function renderControls() {
       const P = presets[state.key];
-      const ranges = P.b.map((_, i) => `<label class="ch3l-range"><span>${tex(`b_${i + 1}`)}</span><input type="range" min="-3" max="5" step="0.5" value="${state.b[i]}" data-b="${i}" /><b data-bv="${i}">${state.b[i]}</b></label>`);
-      ranges.push(`<label class="ch3l-range"><span>${tex("t")}</span><input type="range" min="-1.5" max="1.5" step="0.25" value="${state.t}" data-p="t" /><b data-pv="t">${state.t}</b></label>`);
-      if (state.key === "plane") ranges.push(`<label class="ch3l-range"><span>${tex("s")}</span><input type="range" min="-1.5" max="1.5" step="0.25" value="${state.s}" data-p="s" /><b data-pv="s">${state.s}</b></label>`);
+      const ranges = P.b.map((_, i) => `<label class="ch3l-range"><span>${tex(`b_${i + 1}`)}</span><input type="range" min="-3" max="5" step="0.5" value="${state.b[i]}" data-b="${i}" /><b data-bv="${i}">${texNum(state.b[i])}</b></label>`);
+      ranges.push(`<label class="ch3l-range"><span>${tex("t")}</span><input type="range" min="-1.5" max="1.5" step="0.25" value="${state.t}" data-p="t" /><b data-pv="t">${texNum(state.t)}</b></label>`);
+      if (state.key === "plane") ranges.push(`<label class="ch3l-range"><span>${tex("s")}</span><input type="range" min="-1.5" max="1.5" step="0.25" value="${state.s}" data-p="s" /><b data-pv="s">${texNum(state.s)}</b></label>`);
       controls.innerHTML = `<h4>调节</h4>${ranges.join("")}`;
       controls.querySelectorAll("[data-b]").forEach((input) =>
         input.addEventListener("input", () => {
           state.b[Number(input.dataset.b)] = Number(input.value);
-          controls.querySelector(`[data-bv="${input.dataset.b}"]`).textContent = input.value;
+          controls.querySelector(`[data-bv="${input.dataset.b}"]`).innerHTML = texNum(Number(input.value));
           redraw();
         }),
       );
       controls.querySelectorAll("[data-p]").forEach((input) =>
         input.addEventListener("input", () => {
           state[input.dataset.p] = Number(input.value);
-          controls.querySelector(`[data-pv="${input.dataset.p}"]`).textContent = input.value;
+          controls.querySelector(`[data-pv="${input.dataset.p}"]`).innerHTML = texNum(Number(input.value));
           redraw();
         }),
       );

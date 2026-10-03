@@ -520,45 +520,54 @@
     const bounds = { xMin: -3, xMax: 3, yMin: -3, yMax: 3 };
     const canvas = root.querySelector("[data-complex-canvas]");
 
-    // positions sit on a 0.05 grid, so sums and products are exact with four decimals
-    function formatNumber(value) {
-      const rounded = Math.abs(value) < 1e-10 ? 0 : value;
-      return Number(rounded.toFixed(4)).toString().replace("-", "−");
-    }
+    /*
+     * Roots at rest sit on a quarter grid (drag, sliders and presets all snap to it),
+     * so every reading is an exact rational: α = 1 + 3/2 i, β = −1 + 3/4 i give
+     * α + β = 9/4 i and αβ = −17/8 − 3/4 i. While a preset or the conjugate lock
+     * animates, the readings already show the end values (state.tween holds them).
+     */
+    const GRID = 4;
+    const snap = (value) => Math.round(value * GRID) / GRID;
+    const toR = (value) => M().R(Math.round(value * GRID) + 0, GRID);
+    const exact = (z) => ({ re: toR(z.re), im: toR(z.im) });
+    const text = (r) => M().formatRText(r);
+    const rtex = (r) => M().formatRTex(r);
+    const shown = () => state.tween || state;
     let gate = null;
-    // a+bi without a zero part: 2i, 2.5, 1−1.5i
-    function shortComplex(z) {
-      if (Math.abs(z.im) < 1e-10) return formatNumber(z.re);
-      const im = formatNumber(Math.abs(z.im));
-      const imPart = `${im === "1" ? "" : im}i`;
-      if (Math.abs(z.re) < 1e-10) return `${z.im < 0 ? "−" : ""}${imPart}`;
-      return `${formatNumber(z.re)}${z.im < 0 ? "−" : "+"}${imPart}`;
+    // a+bi without a zero part, in TeX: 2i, \frac{3}{2}, 1-\frac{3}{2}i
+    function complexTex(z) {
+      if (M().rIsZero(z.im)) return rtex(z.re);
+      const absIm = M().rAbs(z.im);
+      const imPart = `${M().rEq(absIm, M().R(1)) ? "" : rtex(absIm)}i`;
+      const sign = z.im.n < 0 ? "-" : "+";
+      if (M().rIsZero(z.re)) return `${sign === "-" ? "-" : ""}${imPart}`;
+      return `${rtex(z.re)}${sign}${imPart}`;
     }
     const isConjugate = () => Math.abs(state.beta.re - state.alpha.re) < 1e-9 && Math.abs(state.beta.im + state.alpha.im) < 1e-9;
-
-    function formatComplex(z) {
-      const re = formatNumber(z.re);
-      const im = formatNumber(Math.abs(z.im));
-      return `${re}${z.im < 0 ? "−" : "+"}${im}i`;
-    }
 
     function exactConjugate() {
       return { re: state.alpha.re, im: -state.alpha.im };
     }
 
     function realQuadraticTex(sum, product) {
-      const linear = Math.abs(sum) < 1e-10 ? "" : sum > 0 ? `-${formatNumber(sum)}x` : `+${formatNumber(-sum)}x`;
-      const constant = product >= 0 ? `+${formatNumber(product)}` : `-${formatNumber(-product)}`;
+      const absSum = M().rAbs(sum);
+      const linear = M().rIsZero(sum) ? "" : `${sum.n > 0 ? "-" : "+"}${M().rEq(absSum, M().R(1)) ? "" : rtex(absSum)}x`;
+      const constant = M().rIsZero(product) ? "" : `${product.n < 0 ? "-" : "+"}${rtex(M().rAbs(product))}`;
       return `x^2${linear}${constant}`;
     }
 
+    // exact sum and product of the two roots that are being shown
     function coefficients() {
-      const b = state.beta;
+      const { alpha, beta } = shown();
+      const a = exact(alpha);
+      const b = exact(beta);
       return {
-        sum: { re: state.alpha.re + b.re, im: state.alpha.im + b.im },
+        alpha: a,
+        beta: b,
+        sum: { re: M().rAdd(a.re, b.re), im: M().rAdd(a.im, b.im) },
         product: {
-          re: state.alpha.re * b.re - state.alpha.im * b.im,
-          im: state.alpha.re * b.im + state.alpha.im * b.re,
+          re: M().rSub(M().rMul(a.re, b.re), M().rMul(a.im, b.im)),
+          im: M().rAdd(M().rMul(a.re, b.im), M().rMul(a.im, b.re)),
         },
       };
     }
@@ -734,11 +743,13 @@
       });
 
       if (state.mode === "R" && !state.locking && open) {
-        const a = state.alpha.re;
-        const modulusSquared = state.alpha.re ** 2 + state.alpha.im ** 2;
+        // exact end values, also while α is still sliding to a preset
+        const a = coefficients().alpha;
+        const twiceRe = M().rMul(M().R(2), a.re);
+        const modulusSquared = M().rAdd(M().rMul(a.re, a.re), M().rMul(a.im, a.im));
         /* compact pills in the lower-left corner, clear of the Im axis label and of α */
         const fontSize = width < 520 ? 11 : 12.5;
-        const texts = [`α+ᾱ = 2a = ${formatNumber(2 * a)}`, `αᾱ = |α|² = ${formatNumber(modulusSquared)}`];
+        const texts = [`α+ᾱ = 2a = ${text(twiceRe)}`, `αᾱ = |α|² = ${text(modulusSquared)}`];
         ctx.save();
         ctx.font = `650 ${fontSize}px 'LA Serif Latin', 'LA Serif SC', 'Songti SC', serif`;
         const boxWidth = Math.min(width - 32, Math.max(...texts.map((t) => ctx.measureText(t).width)) + 28);
@@ -749,40 +760,53 @@
       }
     }
 
+    // KaTeX only re-renders when the formula changes (a tween repaints every frame)
+    const rendered = new WeakMap();
+    const setTex = (node, source) => {
+      if (rendered.get(node) === source) return;
+      rendered.set(node, source);
+      node.innerHTML = tex(source);
+    };
+    const setText = (node, value) => {
+      rendered.delete(node);
+      node.textContent = value;
+    };
+
     function updateDom() {
       const c = coefficients();
-      root.querySelector("[data-alpha]").textContent = formatComplex(state.alpha);
-      root.querySelector("[data-beta]").textContent = formatComplex(state.beta);
-      root.querySelector("[data-sum]").textContent = shortComplex(c.sum);
-      root.querySelector("[data-product]").textContent = shortComplex(c.product);
-      const exactReal = Math.abs(c.sum.im) < 1e-9 && Math.abs(c.product.im) < 1e-9;
+      const view = shown();
+      setTex(root.querySelector("[data-alpha]"), complexTex(c.alpha));
+      setTex(root.querySelector("[data-beta]"), complexTex(c.beta));
+      setTex(root.querySelector("[data-sum]"), complexTex(c.sum));
+      setTex(root.querySelector("[data-product]"), complexTex(c.product));
+      const exactReal = M().rIsZero(c.sum.im) && M().rIsZero(c.product.im);
       const status = root.querySelector("[data-real-status]");
       const open = Boolean(!gate || gate.picked);
       status.hidden = !open;
       status.className = `ch1-status ${state.locking ? "is-warn" : exactReal ? "is-ok" : "is-bad"}`;
-      status.textContent = state.locking ? "β 正在移到 α 关于实轴的对称点" : exactReal ? "根之和与根之积都是实数" : `系数出现虚部：Im(α+β)=${formatNumber(c.sum.im)}，Im(αβ)=${formatNumber(c.product.im)}`;
-      root.querySelector("[data-factor]").innerHTML = exactReal
-        ? tex(realQuadraticTex(c.sum.re, c.product.re))
-        : tex(`x^2-(${shortComplex(c.sum)})x+(${shortComplex(c.product)})`);
+      status.textContent = state.locking ? "β 正在移到 α 关于实轴的对称点" : exactReal ? "根之和与根之积都是实数" : `系数出现虚部：Im(α+β)=${text(c.sum.im)}，Im(αβ)=${text(c.product.im)}`;
+      setTex(root.querySelector("[data-factor]"), exactReal
+        ? realQuadraticTex(c.sum.re, c.product.re)
+        : `x^2-\\left(${complexTex(c.sum)}\\right)x+\\left(${complexTex(c.product)}\\right)`);
       root.querySelector("[data-geometry-copy]").textContent = state.mode === "R"
         ? "中点 a 在实轴上，根之和 2a 是实数；ᾱ 在半径 |α| 的圆上，根之积 |α|² 是实数。"
         : "拖动 β，让根之和与根之积都变成实数。紫色点是中点 (α+β)/2，虚线圆的半径是 |α|。";
       if (!open) {
-        root.querySelector("[data-beta]").textContent = "预测后显示";
-        root.querySelector("[data-sum]").textContent = "—";
-        root.querySelector("[data-product]").textContent = "—";
-        root.querySelector("[data-factor]").textContent = "—";
+        setText(root.querySelector("[data-beta]"), "预测后显示");
+        setText(root.querySelector("[data-sum]"), "—");
+        setText(root.querySelector("[data-product]"), "—");
+        setText(root.querySelector("[data-factor]"), "—");
       }
-      if (gate?.picked && !state.locking && exactReal && Math.abs(state.alpha.im) > 1e-9) gate.acted();
+      if (gate?.picked && !state.tween && !state.locking && exactReal && Math.abs(state.alpha.im) > 1e-9) gate.acted();
       root.querySelector("[data-beta-controls]").hidden = state.mode === "R";
-      root.querySelector("[data-re]").value = state.alpha.re;
-      root.querySelector("[data-im]").value = state.alpha.im;
-      root.querySelector("[data-bre]").value = state.beta.re;
-      root.querySelector("[data-bim]").value = state.beta.im;
-      root.querySelector("[data-re-value]").textContent = formatNumber(state.alpha.re);
-      root.querySelector("[data-im-value]").textContent = formatNumber(state.alpha.im);
-      root.querySelector("[data-bre-value]").textContent = formatNumber(state.beta.re);
-      root.querySelector("[data-bim-value]").textContent = formatNumber(state.beta.im);
+      root.querySelector("[data-re]").value = view.alpha.re;
+      root.querySelector("[data-im]").value = view.alpha.im;
+      root.querySelector("[data-bre]").value = view.beta.re;
+      root.querySelector("[data-bim]").value = view.beta.im;
+      root.querySelector("[data-re-value]").textContent = text(c.alpha.re);
+      root.querySelector("[data-im-value]").textContent = text(c.alpha.im);
+      root.querySelector("[data-bre-value]").textContent = text(c.beta.re);
+      root.querySelector("[data-bim-value]").textContent = text(c.beta.im);
       root.querySelector("[data-canvas-hint]").textContent = !open
         ? "先在上方作出预测，再拖动 β"
         : state.mode === "R"
@@ -908,12 +932,12 @@
       root,
       manual: true,
       key: "visuals/ch1/motion-upgrade.js#conjugate",
-      question: `实系数二次多项式 ${tex("x^2+px+q")} 有一个根 ${tex("\\alpha=1+1.5i")}。另一个根 ${tex("\\beta")} 在哪里？`,
+      question: `实系数二次多项式 ${tex("x^2+px+q")} 有一个根 ${tex("\\alpha=1+\\tfrac32 i")}。另一个根 ${tex("\\beta")} 在哪里？`,
       options: [
-        [`${tex("\\bar\\alpha=1-1.5i")}：与 α 关于实轴对称`, true, ""],
-        [`${tex("-\\alpha=-1-1.5i")}：与 α 关于原点对称`, false, `这时 ${tex("\\alpha\\beta=-\\alpha^2=1.25-3i")}，常数项不是实数。`],
+        [`${tex("\\bar\\alpha=1-\\tfrac32 i")}：与 α 关于实轴对称`, true, ""],
+        [`${tex("-\\alpha=-1-\\tfrac32 i")}：与 α 关于原点对称`, false, `这时 ${tex("\\alpha\\beta=-\\alpha^2=\\tfrac54-3i")}，常数项不是实数。`],
         ["实轴上的某一点", false, `β 是实数时 ${tex("\\alpha+\\beta")} 的虚部仍是 1.5，一次项系数不是实数。`],
-        [`${tex("-\\bar\\alpha=-1+1.5i")}：与 α 关于虚轴对称`, false, `这时 ${tex("\\alpha+\\beta=3i")}，一次项系数不是实数。`],
+        [`${tex("-\\bar\\alpha=-1+\\tfrac32 i")}：与 α 关于虚轴对称`, false, `这时 ${tex("\\alpha+\\beta=3i")}，一次项系数不是实数。`],
       ],
       right: `✓ 根之和 ${tex("-p")} 是实数，中点 ${tex("\\tfrac{\\alpha+\\beta}{2}")} 就在实轴上；根之积 ${tex("q")} 是实数，β 又落在半径 ${tex("|\\alpha|")} 的圆上。两条同时成立，只有 ${tex("\\beta=\\bar\\alpha")}，此时 ${tex("q=\\alpha\\bar\\alpha=|\\alpha|^2")}。`,
       onPick: () => { lockables.forEach((node) => { node.disabled = false; }); updateDom(); },

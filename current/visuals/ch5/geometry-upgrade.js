@@ -61,16 +61,6 @@
     ctx.fillStyle=p.surface; ctx.globalAlpha=.9; ctx.fillRect(14,14,Math.min(290,width-28),34); ctx.globalAlpha=1; ctx.fillStyle=p.text; ctx.font="800 14px 'LA Serif Latin', 'LA Serif SC', 'Songti SC', serif"; ctx.fillText(title,26,36);
   }
 
-  function contour(canvas, A, caption) { M().drawContours(canvas, A, { caption, levels: [-2,-1,-.5,.5,1,2] }); }
-
-  function wheel(canvas, A) {
-    const { ctx, width, height } = M().setupCanvas(canvas); if (!ctx) return;
-    const p=M().getPalette(), cx=width/2, cy=height/2, r=Math.min(width,height)*.31, values=[];
-    ctx.fillStyle=p.soft; ctx.fillRect(0,0,width,height);
-    for(let i=0;i<240;i+=1){const th=TAU*i/240,q=M().qForm(A,[Math.cos(th),Math.sin(th)]);values.push(q);ctx.strokeStyle=q>1e-4?p.pos:q<-1e-4?p.neg:p.coral;ctx.lineWidth=7;ctx.beginPath();ctx.arc(cx,cy,r,th,th+TAU/240+.015);ctx.stroke();}
-    const min=Math.min(...values), max=Math.max(...values); ctx.fillStyle=p.text;ctx.font="800 22px 'LA Serif Latin', 'LA Serif SC', 'Songti SC', serif";ctx.textAlign="center";ctx.fillText(min>0?"全部 > 0":min===0?"接触 0":"出现 < 0",cx,cy-2);ctx.fillStyle=p.muted;ctx.font="12px 'LA Serif Latin', 'LA Serif SC', 'Songti SC', serif";ctx.fillText(`min ${fmt(min)} · max ${fmt(max)}`,cx,cy+22);ctx.textAlign="left";
-  }
-
   function counts(inn){return `<div class="qv-counts"><span>正<strong>${inn.p}</strong></span><span>负<strong>${inn.q}</strong></span><span>零<strong>${inn.zero}</strong></span></div>`;}
 
   function mountS1(root){
@@ -251,11 +241,131 @@
     window.addEventListener('resize',paint,{signal:ctl.signal,passive:true});paint();return()=>ctl.abort();
   }
 
+  /*
+   * §4 positive-definite boundary. A(t) = (1 t; t 1) with t = k/4, so every readout is an exact
+   * fraction and the type is decided on the integer k (|k| < 4, = 4, > 4). The level curves sit on
+   * the floor of the surface (geometry-orbit-fit.js); the direction wheel beside it colours every
+   * unit direction by the sign of q. Until a prediction is picked the floor curves, the wheel's
+   * colours and the sign readouts stay hidden; crossing |t| = 1 afterwards checks the prediction.
+   */
+  const S4_PRESETS = [[0, "圆碗"], [0.75, "狭长碗"], [1, "平底山谷"], [1.25, "马鞍"]];
+
+  // q(cos θ, sin θ) = 1 + t·sin 2θ. Directions run counter-clockwise from x₁, as on the floor.
+  function s4Wheel(canvas, k, open) {
+    const { ctx, width, height } = M().setupCanvas(canvas); if (!ctx) return;
+    const p = M().getPalette(), t = k / 4, font = "'LA Serif Latin', 'LA Serif SC', 'Songti SC', serif";
+    const textBand = 46, cx = width / 2, cy = (height - textBand) / 2 + 6;
+    const r = Math.max(30, Math.min(width * 0.3, (height - textBand) / 2 - 24));
+    const at = (u, s) => ({ x: cx + u[0] * s, y: cy - u[1] * s });
+    ctx.fillStyle = p.soft; ctx.fillRect(0, 0, width, height);
+    ctx.save(); ctx.strokeStyle = p.line; ctx.globalAlpha = 0.55; ctx.lineWidth = 1;
+    ctx.beginPath(); ctx.moveTo(cx - r - 16, cy); ctx.lineTo(cx + r + 16, cy); ctx.moveTo(cx, cy + r + 16); ctx.lineTo(cx, cy - r - 16); ctx.stroke();
+    ctx.restore();
+    ctx.fillStyle = p.muted; ctx.font = `italic 13px ${font}`;
+    ctx.fillText("x₁", cx + r + 19, cy + 4); ctx.fillText("x₂", cx + 6, cy - r - 9);
+    const N = 360;
+    for (let i = 0; i < N; i += 1) {
+      const a = (TAU * i) / N, b = (TAU * (i + 1)) / N, q = 1 + t * Math.sin(a + b);
+      ctx.strokeStyle = !open ? p.line : q > 0 ? p.pos : p.neg;
+      ctx.globalAlpha = open ? 1 : 0.32;
+      ctx.lineWidth = 9;
+      ctx.beginPath(); ctx.arc(cx, cy, r, -a, -b - 0.01, true); ctx.stroke();
+    }
+    ctx.globalAlpha = 1;
+    ctx.textAlign = "center";
+    if (!open) {
+      ctx.fillStyle = p.muted; ctx.font = `600 22px ${font}`; ctx.fillText("?", cx, cy + 8);
+      ctx.font = `13px ${font}`; ctx.fillText("先预测，再看每个方向的正负", cx, height - 18);
+      ctx.textAlign = "left";
+      return;
+    }
+    // q = 0 directions (1, m), 1 + 2tm + m² = 0: dashed, as on the floor
+    const ak = Math.abs(k), root2 = ak > 4 ? Math.sqrt(t * t - 1) : 0;
+    const zeros = ak < 4 ? [] : ak === 4 ? [-t] : [-t + root2, -t - root2];
+    zeros.forEach((m) => {
+      const n = Math.hypot(1, m), u = [1 / n, m / n], a = at(u, -r * 1.16), b = at(u, r * 1.16);
+      ctx.save(); ctx.strokeStyle = p.zero; ctx.lineWidth = 1.2; ctx.setLineDash([5, 5]);
+      ctx.beginPath(); ctx.moveTo(a.x, a.y); ctx.lineTo(b.x, b.y); ctx.stroke(); ctx.restore();
+    });
+    // the lowest direction, q = 1 − |t|: the same direction as the second principal curve on the surface
+    if (k !== 0) {
+      const low = k > 0 ? [-Math.SQRT1_2, Math.SQRT1_2] : [Math.SQRT1_2, Math.SQRT1_2];
+      const a = at(low, -r), b = at(low, r);
+      ctx.save(); ctx.strokeStyle = p.coral; ctx.fillStyle = p.coral; ctx.lineWidth = 1.4; ctx.globalAlpha = 0.85;
+      ctx.beginPath(); ctx.moveTo(a.x, a.y); ctx.lineTo(b.x, b.y); ctx.stroke();
+      ctx.globalAlpha = 1;
+      [a, b].forEach((pt) => { ctx.beginPath(); ctx.arc(pt.x, pt.y, 4.5, 0, TAU); ctx.fill(); });
+      ctx.restore();
+    }
+    const verdict = ak < 4 ? "全部 > 0" : ak === 4 ? "最小 = 0" : "出现 < 0";
+    ctx.fillStyle = p.text; ctx.font = `600 17px ${font}`; ctx.fillText(verdict, cx, height - 26);
+    ctx.fillStyle = p.muted; ctx.font = `13px ${font}`;
+    ctx.fillText(`最小 ${fracStr(1 - ak / 4)} · 最大 ${fracStr(1 + ak / 4)}`, cx, height - 8);
+    ctx.textAlign = "left";
+  }
+
   function mountS4(root){
-    root.innerHTML=`<h2>交互实验</h2><div class="qv-lab"><header class="qv-head"><h3>正定性就是曲面是否在每个方向都向上</h3><p>改变交叉项 t，让 ${inline('A(t)=\\begin{bmatrix}1&t\\\\t&1\\end{bmatrix}')} 连续跨过正定边界。</p></header><div class="ch5-toolbar">${[[0,'圆碗'],[.8,'狭长碗'],[1,'平底山谷'],[1.2,'马鞍']].map(([t,l],i)=>`<button type="button" ${i?'':'class="is-active"'} data-s4-preset="${t}">t=${t} · ${l}</button>`).join('')}</div><label class="ch5-range"><span>连续调节 t</span><input type="range" min="-1.5" max="1.5" step=".01" value="0" data-s4-t><output data-s4-t-value>0</output></label><div class="qv-hero"><canvas data-s4-surface></canvas><div><span class="ch5-status" data-s4-status></span><h4 data-s4-title></h4><p data-s4-scan-copy></p></div></div><div class="qv-three"><figure><canvas data-s4-scan></canvas><figcaption>单位圆全部方向</figcaption></figure><figure><canvas data-s4-contour></canvas><figcaption data-s4-contour-copy></figcaption></figure><aside><div class="ch5-matrix-wrap" data-s4-matrix></div><div class="qv-values"><span>λ₊=1+t<strong data-s4-lp></strong></span><span>λ₋=1−t<strong data-s4-lm></strong></span><span>Δ₁<strong data-s4-d1></strong></span><span>Δ₂=1−t²<strong data-s4-d2></strong></span><span>最小方向值<strong data-s4-min></strong></span><span>二次型<strong data-s4-poly></strong></span></div></aside></div><div class="qv-result" data-s4-result><span class="ch5-status" data-s4-status-copy></span><div><h4 data-s4-result-title></h4><p data-s4-copy></p></div></div></div>`;
-    const state={t:0},ctl=new AbortController();
-    function paint(){const A=[[1,state.t],[state.t,1]],cls=M().classify2(A),d2=1-state.t*state.t,min=1-Math.abs(state.t),inside=Math.abs(state.t)<1-1e-8,edge=Math.abs(Math.abs(state.t)-1)<=1e-8;$(root,'[data-s4-t]').value=state.t;$(root,'[data-s4-t-value]').textContent=fmt(state.t,2);$(root,'[data-s4-matrix]').innerHTML=M().matrixHtml(A);$(root,'[data-s4-poly]').textContent=M().polyPlain2(A);$(root,'[data-s4-lp]').textContent=fmt(1+state.t);$(root,'[data-s4-lm]').textContent=fmt(1-state.t);$(root,'[data-s4-d1]').textContent='1 > 0';$(root,'[data-s4-d2]').textContent=`${fmt(d2,4)} ${d2>1e-8?'> 0':Math.abs(d2)<=1e-8?'= 0':'< 0'}`;$(root,'[data-s4-min]').textContent=fmt(min,4);surface($(root,'[data-s4-surface]'),A,`q_t · ${cls.label}`);wheel($(root,'[data-s4-scan]'),A);contour($(root,'[data-s4-contour]'),A,'俯视：椭圆 → 平行线 → 双曲线');[$(root,'[data-s4-status]'),$(root,'[data-s4-status-copy]')].forEach(s=>{s.textContent=cls.label;s.className=`ch5-status ${inside?'is-ok':'is-warn'}`;});if(inside){$(root,'[data-s4-title]').textContent='每个方向都向上：碗面';$(root,'[data-s4-scan-copy]').textContent='方向轮全部在 0 上方，没有任何向下方向。';$(root,'[data-s4-contour-copy]').textContent='等高线是椭圆；越接近边界越狭长。';$(root,'[data-s4-result-title]').textContent='几何与 Sylvester 判据一致';$(root,'[data-s4-copy]').textContent='两个特征值都大于 0，同时 Δ₁>0、Δ₂>0，所以正定。';}else if(edge){$(root,'[data-s4-title]').textContent='一个方向变平：山谷';$(root,'[data-s4-scan-copy]').textContent='方向轮恰好接触 0，但没有进入 0 下方。';$(root,'[data-s4-contour-copy]').textContent='椭圆退化成平行线，沿零方向高度不变。';$(root,'[data-s4-result-title]').textContent='正定边界：秩降为 1';$(root,'[data-s4-copy]').textContent='最小特征值与 Δ₂ 同时等于 0，因此半正定。';}else{$(root,'[data-s4-title]').textContent='一个方向向下：马鞍';$(root,'[data-s4-scan-copy]').textContent='方向轮已经出现 0 下方的负方向；曲面同时向上和向下。';$(root,'[data-s4-contour-copy]').textContent='等高线变为双曲线，分界方向满足 q(x)=0。';$(root,'[data-s4-result-title]').textContent='正、负方向同时出现';$(root,'[data-s4-copy]').textContent='两个特征值一正一负，Δ₂<0，所以不定。';}}
-    $$(root,'[data-s4-preset]').forEach(b=>b.addEventListener('click',()=>{state.t=Number(b.dataset.s4Preset);$$(root,'[data-s4-preset]').forEach(x=>x.classList.toggle('is-active',x===b));paint();},{signal:ctl.signal}));$(root,'[data-s4-t]').addEventListener('input',e=>{state.t=Number(e.target.value);$$(root,'[data-s4-preset]').forEach(x=>x.classList.toggle('is-active',Number(x.dataset.s4Preset)===state.t));paint();},{signal:ctl.signal});window.addEventListener('resize',paint,{signal:ctl.signal,passive:true});paint();return()=>ctl.abort();
+    root.innerHTML=`<h2>交互实验</h2><div class="qv-lab qv-s4"><header class="qv-head"><h3>正定性就是曲面是否在每个方向都向上</h3><p>改变交叉项 t，让 ${inline('A(t)=\\begin{bmatrix}1&t\\\\t&1\\end{bmatrix}')} 连续变化。曲面底面上的曲线是等高线 q(x)=c：从正上方看，同一高度的点连成的线。</p></header>
+      <div data-s4-gate></div>
+      <div class="ch5-toolbar" role="group" aria-label="t 的预设">${S4_PRESETS.map(([t],i)=>`<button type="button" ${i?'':'class="is-active"'} data-s4-preset="${t}">t=${fracStr(t)}</button>`).join('')}</div>
+      <label class="ch5-range"><span>连续调节 t</span><input type="range" min="-1.5" max="1.5" step="0.25" value="0" data-s4-t><output data-s4-t-value>0</output></label>
+      <div class="qv-s4-grid">
+        <div class="qv-s4-main"><div class="qv-hero"><canvas data-s4-surface></canvas><div><span class="ch5-status" data-s4-status></span><div><h4 data-s4-title></h4><p data-s4-scan-copy></p></div></div></div></div>
+        <aside class="qv-s4-side">
+          <figure class="qv-s4-wheel"><canvas data-s4-scan aria-label="方向轮：单位圆上每个方向的 q 值"></canvas><figcaption>方向轮：单位圆上的每个方向按 q 的正负着色。圆点是 q 最小的方向，虚线是 q=0 的方向。</figcaption></figure>
+          <div class="qv-s4-read"><div class="ch5-matrix-wrap" data-s4-matrix></div><div class="qv-values">
+            <span class="qv-s4-wide">${inline('\\min_{\\lVert x\\rVert=1}q_t(x)=1-|t|')}<strong data-s4-min></strong></span>
+            <span>${inline('\\Delta_1')}<strong data-s4-d1></strong></span>
+            <span>${inline('\\Delta_2=1-t^2')}<strong data-s4-d2></strong></span>
+            <span>${inline('\\lambda_1=1+t')}<strong data-s4-lp></strong></span>
+            <span>${inline('\\lambda_2=1-t')}<strong data-s4-lm></strong></span>
+            <span class="qv-s4-wide">二次型<strong data-s4-poly></strong></span>
+          </div></div>
+        </aside>
+      </div></div>`;
+    const state={k:0},ctl=new AbortController(),lab=$(root,'.qv-lab');
+    const gate=window.LAPredictGate?.mount($(root,'[data-s4-gate]'),{
+      root:lab,manual:true,key:'visuals/ch5/geometry-upgrade.js#s4',
+      question:`${inline('A(t)')} 的对角元始终是 1。把交叉项 t 从 0 往右拖，曲面从什么时候开始出现向下的方向？`,
+      options:[
+        ['t 超过 1 以后',true,''],
+        ['t 一离开 0 就出现',false,'t=3/4 时方向轮仍然全在 0 上方，底面的等高线还是椭圆。'],
+        ['不会出现：对角元都是正的',false,'t=5/4 时沿 x=(1,−1) 方向 q=2−2t=−1/2，曲面在这个方向向下。'],
+        ['t 超过 1/2 以后：交叉项系数 2t 超过对角元 1',false,'t=3/4 时 2t=3/2 已经超过 1，方向轮仍然全在 0 上方。'],
+      ],
+      right:`✓ 沿 x=(1,−1) 方向 ${inline('q=2-2t')}：t=1 时等于 0，曲面沿这条直线贴住底面；t&gt;1 时变成负的，曲面向下。同时 ${inline('\\Delta_2=1-t^2')} 由正变 0 再变负，所以 A(t) 正定恰好是 −1&lt;t&lt;1。`,
+      onPick:()=>setK(0),
+    });
+    const nameOf=(k)=>(S4_PRESETS.find(([t])=>t*4===k)||[])[1];
+    function setK(k){state.k=M().clamp(k,-6,6);paint();}
+    function act(k){setK(k);if(gate?.picked&&Math.abs(state.k)>4)gate.acted();}
+    function paint(){
+      const k=state.k,ak=Math.abs(k),t=k/4,A=[[1,t],[t,1]],open=!gate||gate.picked;
+      const type=ak<4?'inside':ak===4?'edge':'outside';
+      lab.toggleAttribute('data-s4-open',open);
+      $(root,'[data-s4-t]').value=String(t);
+      $(root,'[data-s4-t-value]').textContent=fracStr(t);
+      // shape names would give the boundary away, so they join the presets after the prediction
+      $$(root,'[data-s4-preset]').forEach(b=>{const pk=Math.round(Number(b.dataset.s4Preset)*4);b.classList.toggle('is-active',pk===k);b.textContent=`t=${fracStr(pk/4)}${open?` · ${nameOf(pk)}`:''}`;});
+      $(root,'[data-s4-matrix]').innerHTML=fracMatrix(A);
+      $(root,'[data-s4-poly]').innerHTML=inline(polyFracTex(A));
+      $(root,'[data-s4-d1]').textContent='1 > 0';
+      $(root,'[data-s4-d2]').textContent=!open?'?':ak===4?'= 0':`${fracStr((16-k*k)/16)} ${ak<4?'> 0':'< 0'}`;
+      $(root,'[data-s4-lp]').textContent=open?fracStr(1+t):'?';
+      $(root,'[data-s4-lm]').textContent=open?fracStr(1-t):'?';
+      $(root,'[data-s4-min]').textContent=open?fracStr(1-ak/4):'?';
+      s4Wheel($(root,'[data-s4-scan]'),k,open);
+      const status=$(root,'[data-s4-status]'),title=$(root,'[data-s4-title]'),copy=$(root,'[data-s4-scan-copy]');
+      if(!open){status.className='ch5-status';status.textContent='先预测';title.textContent='先在上方选一个预测';copy.textContent='选好以后把 t 从 0 往右拖。曲面底面会画出等高线，方向轮会按 q 的正负着色。';return;}
+      status.className=`ch5-status ${type==='inside'?'is-ok':'is-warn'}`;
+      status.textContent=type==='inside'?'正定':type==='edge'?'半正定':'不定';
+      if(type==='inside'){title.textContent='每个方向都向上：碗面';copy.textContent=k===0?'底面的等高线是圆，方向轮全在 0 上方；Δ₁>0，Δ₂>0。':'底面的等高线是椭圆，t 离 0 越远越狭长；方向轮全在 0 上方，Δ₁>0，Δ₂>0。';}
+      else if(type==='edge'){title.textContent='一个方向变平：山谷';copy.textContent=`沿 ${k>0?'x₁=−x₂':'x₁=x₂'} 方向 q=0：曲面沿这条直线贴住底面，等高线变成平行直线，方向轮在这里碰到 0；Δ₂=0。`;}
+      else{title.textContent='一个方向向下：马鞍';copy.textContent='方向轮出现 0 下方的弧：曲面沿两条虚线穿过底面，等高线变成双曲线；Δ₂<0。';}
+    }
+    $$(root,'[data-s4-preset]').forEach(b=>b.addEventListener('click',()=>act(Math.round(Number(b.dataset.s4Preset)*4)),{signal:ctl.signal}));
+    $(root,'[data-s4-t]').addEventListener('input',e=>act(Math.round(Number(e.target.value)*4)),{signal:ctl.signal});
+    window.addEventListener('resize',paint,{signal:ctl.signal,passive:true});paint();return()=>ctl.abort();
   }
 
   const mounts={"quadratic-matrix":mountS1,"quadratic-standard-form":mountS2,"quadratic-uniqueness":mountS3,"positive-definite":mountS4};

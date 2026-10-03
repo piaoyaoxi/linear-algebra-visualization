@@ -34,6 +34,47 @@
   const vtex = (v) => `(${v.map(lf).join(",")})`;
   const det2 = (A) => M().sub(M().mul(A[0][0], A[1][1]), M().mul(A[0][1], A[1][0]));
   const isPosDef2 = (G) => G[0][0].n > 0 && det2(G).n > 0;
+  /* Slider values are halves: show them as exact fractions. */
+  const texNum = (x) => tex(lf(F(x)));
+
+  /* √N for a positive integer N as [k, m] with N = k²m and m squarefree. */
+  function sqrtSplit(N) {
+    let k = 1;
+    let m = N;
+    for (let p = 2; p * p <= m; p += 1) {
+      while (m % (p * p) === 0) {
+        m /= p * p;
+        k *= p;
+      }
+    }
+    return [k, m];
+  }
+
+  /*
+   * cos θ = (u,v) / √((u,u)(v,v)) as exact LaTeX (a fraction times one square
+   * root), plus the angle itself: exact for the angles whose cosine is 0, ±½,
+   * ±√2/2, ±√3/2 or ±1, otherwise rounded to a tenth of a degree and marked ≈.
+   */
+  function angleTex(uv, uu, vv) {
+    const P = M().mul(uu, vv); // (u,u)(v,v) = p/q, √(p/q) = √(pq)/q
+    const [k, m] = sqrtSplit(P.n * P.d);
+    const c = M().div(M().mul(uv, F(P.d)), F(k * m)); // cos θ = c·√m
+    let cos;
+    if (m === 1 || M().isZero(c)) cos = lf(c);
+    else {
+      const top = `${Math.abs(c.n) === 1 ? "" : Math.abs(c.n)}\\sqrt{${m}}`;
+      cos = `${c.n < 0 ? "-" : ""}${c.d === 1 ? top : `\\tfrac{${top}}{${c.d}}`}`;
+    }
+    const cos2 = M().div(M().mul(uv, uv), P);
+    const special = { "0/1": 90, "1/4": 60, "1/2": 45, "3/4": 30, "1/1": 0 }[`${cos2.n}/${cos2.d}`];
+    let angle;
+    if (special != null) angle = `\\theta=${uv.n < 0 ? 180 - special : special}^\\circ`;
+    else {
+      const deg = (Math.acos(Math.max(-1, Math.min(1, num(uv) / Math.sqrt(num(P))))) * 180) / Math.PI;
+      angle = `\\theta\\approx${deg.toFixed(1)}^\\circ`;
+    }
+    return { cos: `\\cos\\theta=${cos}`, angle };
+  }
 
   /* Latex for c₁·name₁ + c₂·name₂ + … (skips zero terms). */
   function combo(coeffs, names) {
@@ -244,8 +285,9 @@
       } else if (isZeroVec(u) || isZeroVec(v)) {
         status = `<p class="ch9l-muted">零向量与任何向量正交，但夹角没有定义。</p>`;
       } else {
-        const cos = num(uv) / Math.sqrt(num(uu) * num(vv));
-        status = `<p class="ch9l-muted">夹角 ${tex(`\\langle u,v\\rangle\\approx ${((Math.acos(Math.max(-1, Math.min(1, cos))) * 180) / Math.PI).toFixed(1)}^\\circ`)}</p>`;
+        // θ is read off a dragged picture: cos θ is exact, the angle exact only for the special values
+        const a = angleTex(uv, uu, vv);
+        status = `<p class="ch9l-muted" data-ip-angle>u 与 v 的夹角 θ：${tex(a.cos)}，${tex(a.angle)}</p>`;
       }
       info.innerHTML = `<h4>当前读数</h4>
         <p>${tex(`G=${M().latexMatrix(G)}`)}</p>
@@ -925,7 +967,7 @@
     lab.ch9Views = { plane };
     const ctrl = el("div", "ch9l-card");
     ctrl.innerHTML = `<div class="ch9l-steps" data-sp-steps></div>
-      <label class="ch9l-range"><span>进度</span><input type="range" min="0" max="3" step="0.01" value="0" data-sp-s /><b data-sp-sv>0</b></label>
+      <label class="ch9l-range"><span>进度</span><input type="range" min="0" max="3" step="0.01" value="0" data-sp-s /><b data-sp-sv>起点</b></label>
       <div class="ch9l-actions">${btn("播放", "data-sp-play", "is-primary")}${btn("回到起点", "data-sp-zero")}</div>`;
     const info = el("div", "ch9l-card");
     info.dataset.ch9Readout = "sp";
@@ -988,7 +1030,8 @@
       ctrl.querySelector("[data-sp-steps]").innerHTML = ["① Tᵀ：特征方向转到坐标轴", "② Λ：沿坐标轴伸缩", "③ T：转回原位"]
         .map((t, i) => `<span class="${!e.sym ? "" : i === stepIdx ? "is-active" : i < stepIdx ? "is-done" : ""}">${t}</span>`)
         .join("");
-      ctrl.querySelector("[data-sp-sv]").textContent = state.s.toFixed(2);
+      // the progress bar is a playback position: name the step it shows instead of a decimal
+      ctrl.querySelector("[data-sp-sv]").textContent = state.s <= 0 ? "起点" : state.s >= 3 ? "完成" : "①②③"[stepIdx];
       ctrl.querySelector("[data-sp-s]").value = String(state.s);
       // Playing the steps would draw the answer, so it waits for the prediction.
       ctrl.querySelectorAll("input,button").forEach((x) => (x.disabled = !e.sym || !state.revealed));
@@ -1176,8 +1219,8 @@
           redraw();
         },
       })));
-      controls.querySelector("[data-ls-cv]").textContent = String(state.C);
-      controls.querySelector("[data-ls-dv]").textContent = String(state.D);
+      controls.querySelector("[data-ls-cv]").innerHTML = texNum(state.C);
+      controls.querySelector("[data-ls-dv]").innerHTML = texNum(state.D);
       const parts = [
         `<p>${tex(`b=${vtex(s.b)}`)}，试的直线 ${tex(`x=(C,D)=${vtex(s.xc)}`)}：${tex(`|b-Ax|^2=${lf(s.sse)}`)}</p>`,
         `<p>${tex(`A^TA=${M().latexMatrix(s.AtA)},\\ A^Tb=${vtex(s.Atb)}`)}</p>`,

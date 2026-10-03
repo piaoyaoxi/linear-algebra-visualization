@@ -69,7 +69,12 @@
     return (key) => all.forEach((x) => x.classList.toggle("is-active", x.dataset.key === key));
   }
 
-  /* The student commits to an answer before the conclusion opens. */
+  /*
+   * The student commits to an answer before the conclusion opens. With
+   * spec.defer = lab, picking only records the prediction (spec.onPick); the
+   * verdict and onAnswered wait for the first action in the lab (a drag, a
+   * slider, a preset or a button outside the gate).
+   */
   function predictGate(host, spec, onAnswered) {
     spec = { ...spec, options: window.LAStableShuffle ? window.LAStableShuffle(spec.options, spec.question) : spec.options };
     const box = el("div", "ch9l-predict");
@@ -80,20 +85,43 @@
     host.append(box);
     const feedback = box.querySelector(".ch9l-predict-feedback");
     let answered = false;
+    let picked = null;
+
+    function verdict(b) {
+      const o = spec.options[Number(b.dataset.i)];
+      box.querySelectorAll("[data-i]").forEach((x) => x.classList.remove("is-right", "is-wrong", "is-picked"));
+      b.classList.add(o.correct ? "is-right" : "is-wrong");
+      feedback.hidden = false;
+      feedback.innerHTML = o.correct ? `✓ ${spec.right}` : `再对照图形想一想：${o.why || "动手操作后看看发生了什么。"}`;
+      if (!answered) {
+        answered = true;
+        box.dataset.answered = "true";
+        if (spec.defer) box.classList.add("is-done");
+        onAnswered?.();
+      }
+    }
+
     box.querySelectorAll("[data-i]").forEach((b) =>
       b.addEventListener("click", () => {
-        const o = spec.options[Number(b.dataset.i)];
-        box.querySelectorAll("[data-i]").forEach((x) => x.classList.remove("is-right", "is-wrong"));
-        b.classList.add(o.correct ? "is-right" : "is-wrong");
+        if (!spec.defer || answered) return verdict(b);
+        const first = !picked;
+        picked = b;
+        box.dataset.picked = "true";
+        box.querySelectorAll("[data-i]").forEach((x) => x.classList.toggle("is-picked", x === b));
         feedback.hidden = false;
-        feedback.innerHTML = o.correct ? `✓ ${spec.right}` : `再对照图形想一想：${o.why || "动手操作后看看发生了什么。"}`;
-        if (!answered) {
-          answered = true;
-          box.dataset.answered = "true";
-          onAnswered?.();
-        }
+        feedback.textContent = spec.actHint || "已记下你的预测。现在动手操作一次，结论随后出现。";
+        if (first) spec.onPick?.();
       }),
     );
+
+    if (spec.defer) {
+      const act = (e) => {
+        if (!picked || answered || box.contains(e.target)) return;
+        if (e.type === "click" && !e.target.closest("button")) return;
+        verdict(picked);
+      };
+      ["input", "change", "pointerup", "click"].forEach((t) => spec.defer.addEventListener(t, act));
+    }
     return box;
   }
 
@@ -448,16 +476,50 @@
     );
     lab.append(status, gateHost, result);
     const G = matF(ISO_G);
-    const state = { f: ISO_PRESETS.std.f.map((v) => v.slice()), alpha: [1, 1] };
+    const Gn = matN(G);
+    const state = { f: ISO_PRESETS.std.f.map((v) => v.slice()), alpha: [1, 1], revealed: false };
+
+    /*
+     * G-orthogonality drawn on the ellipse: t₁ is where the ray of f₁ meets the
+     * G-unit ellipse, and the tangent there has direction J·Gf₁. f₂ is
+     * G-orthogonal to f₁ exactly when it is parallel to that tangent; a dashed
+     * copy of f₂'s direction through t₁ shows how far off it is.
+     */
+    function tangentMark(f, b12) {
+      const [f1, f2] = state.f;
+      const q = Gn[0][0] * f1[0] * f1[0] + 2 * Gn[0][1] * f1[0] * f1[1] + Gn[1][1] * f1[1] * f1[1];
+      if (q < 1e-9 || Math.hypot(f2[0], f2[1]) < 1e-9) return [];
+      const t1 = [f1[0] / Math.sqrt(q), f1[1] / Math.sqrt(q)];
+      const Gf1 = [Gn[0][0] * f1[0] + Gn[0][1] * f1[1], Gn[1][0] * f1[0] + Gn[1][1] * f1[1]];
+      const tan = unit2([-Gf1[1], Gf1[0]]);
+      const d2 = unit2(f2);
+      const orth = M().isZero(b12);
+      const L = 1.05;
+      const objs = [];
+      if (orth) objs.push({ type: "segment", a: [t1[0] - tan[0] * L, t1[1] - tan[1] * L], b: [t1[0] + tan[0] * L, t1[1] + tan[1] * L], color: "subspace", width: 8, alpha: 0.18 });
+      objs.push({ type: "segment", a: [t1[0] - tan[0] * L, t1[1] - tan[1] * L], b: [t1[0] + tan[0] * L, t1[1] + tan[1] * L], color: "subspace", width: 2 });
+      objs.push({ type: "label", p: [t1[0] + tan[0] * L, t1[1] + tan[1] * L], text: "切线", color: "subspace", dx: 4, dy: -10, font: "600 12px 'LA Serif Latin', 'LA Serif SC', 'Songti SC', serif" });
+      // f₂ moved to the point of tangency (dashed copy)
+      const s = Math.min(1, 1.2 / Math.hypot(f2[0], f2[1]));
+      objs.push({ type: "arrow", from: t1, to: [t1[0] + f2[0] * s, t1[1] + f2[1] * s], color: "v2", width: 1.8, dash: [5, 4], alpha: 0.55 });
+      if (!orth) objs.push({ type: "segment", a: [t1[0] - d2[0] * 0.5, t1[1] - d2[1] * 0.5], b: t1, color: "v2", width: 1.6, dash: [5, 4], alpha: 0.55 });
+      objs.push({ type: "point", p: t1, color: "subspace", r: 4 });
+      return objs;
+    }
 
     function redraw() {
       const f = state.f.map(toF);
       const C = [[f[0][0], f[1][0]], [f[0][1], f[1][1]]];
       const det = det2(C);
       const alpha = toF(state.alpha);
+      const b12 = quadF(G, f[0], f[1]);
+      const onEllipse = f.map((v) => M().eq(quadF(G, v, v), F(1)));
       lp.setObjects(() => [
-        { type: "curve", pts: P().conic(matN(G)), closed: true, color: "subspace", width: 2.6, fill: true, fillAlpha: 0.07, label: "" },
+        { type: "curve", pts: P().conic(Gn), closed: true, color: "subspace", width: 2.6, fill: true, fillAlpha: 0.07, label: "" },
         { type: "polygon", pts: [[0, 0], state.f[0], [state.f[0][0] + state.f[1][0], state.f[0][1] + state.f[1][1]], state.f[1]], color: "axis", fillAlpha: 0.05, width: 1 },
+        ...(state.revealed && !M().isZero(det) ? tangentMark(f, b12) : []),
+        // a basis vector of G-length 1 ends on the ellipse: its tip glows
+        ...(state.revealed ? state.f.map((p, i) => (onEllipse[i] ? { type: "point", p, color: i ? "v2" : "v1", r: 14, alpha: 0.2 } : null)) : []),
         { type: "arrow", to: state.f[0], color: "v1", label: "f₁" },
         { type: "arrow", to: state.f[1], color: "v2", label: "f₂" },
         { type: "arrow", to: state.alpha, color: "drag", width: 2.2, label: "α" },
@@ -481,7 +543,12 @@
       ]);
       const aa = quadF(G, alpha, alpha);
       const xx = dotF(x, x);
-      status.innerHTML = `<p>${tex(`B=C^TGC=${M().latexMatrix(B)}`)}　${tex(`|\\alpha|^2=${lf(aa)}`)}，${tex(`|\\sigma\\alpha|^2=${lf(xx)}`)}</p>
+      const marks = state.revealed
+        ? `<p class="ch9l-muted" data-iso-tangent>${tex(`(f_1,f_2)=${lf(b12)}`)}：${
+            M().isZero(b12) ? "f₂ 平行于椭圆在 f₁ 方向上那一点的切线，f₁、f₂ 按 G 正交。" : "f₂（朱色虚线方向）偏离切线，f₁、f₂ 按 G 不正交。"
+          }${onEllipse.every(Boolean) ? "两个端点都在单位椭圆上，长度都是 1。" : ""}</p>`
+        : "";
+      status.innerHTML = `<p>${tex(`B=C^TGC=${M().latexMatrix(B)}`)}　${tex(`|\\alpha|^2=${lf(aa)}`)}，${tex(`|\\sigma\\alpha|^2=${lf(xx)}`)}</p>${marks}
         <p data-iso-status class="${iso ? "ch9l-ok" : "ch9l-muted"}">${
           iso
             ? "B = I：σ 把 V 的单位椭圆送成单位圆，保持全部内积，是欧氏空间的同构。"
@@ -508,10 +575,14 @@
           { text: "任意一组基都可以", why: "看右图：标准基的像是一个椭圆，长度被改变了。" },
           { text: `只有 ${tex("f_1=\\varepsilon_1,\\ f_2=\\varepsilon_2")}`, why: `${tex("(\\varepsilon_1,\\varepsilon_1)=2")}，标准基在 V 里不是单位向量。` },
         ],
-        right: `例如 ${tex("f_1=(\\tfrac35,\\tfrac15),\\ f_2=(-\\tfrac45,\\tfrac75)")}：${tex("B=I")}，右边的紫色曲线与虚线单位圆重合。`,
+        right: `例如 ${tex("f_1=(\\tfrac35,\\tfrac15),\\ f_2=(-\\tfrac45,\\tfrac75)")}：两个端点都在单位椭圆上，f₂ 平行于 f₁ 处的切线；${tex("B=I")}，右边的紫色曲线与虚线单位圆重合。`,
+        defer: lab,
+        actHint: "已记下你的预测。换一组基或拖动 f₁、f₂，结论随后出现。",
       },
       () => {
+        state.revealed = true;
         result.hidden = false;
+        redraw();
       },
     );
     redraw();

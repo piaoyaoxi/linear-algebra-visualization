@@ -77,7 +77,15 @@
       if (!value) {
         root.querySelectorAll("[data-op-add], [data-op-add2], [data-op-demo]").forEach((button) => button.removeAttribute("title"));
         syncLocks();
+        syncZeros();
       }
+    }
+
+    // an entry that is already 0 has nothing left to eliminate
+    function syncZeros() {
+      if (busy || !free()) return;
+      root.querySelector("[data-op-add]").disabled = Math.abs(matrix[1][0]) < M().EPS;
+      root.querySelector("[data-op-add2]").disabled = Math.abs(matrix[2][1]) < M().EPS;
     }
 
     // arrow from the pivot (row focus.col) to the entry being zeroed (row focus.row)
@@ -139,6 +147,7 @@
         ? "三角化完成：现在只需读取主对角线乘积，并按账本还原原值。"
         : focus.text;
       root.querySelector("[data-op-undo]").disabled = busy || history.length === 0;
+      syncZeros();
       drawPivotArrow(triangular);
     }
 
@@ -162,14 +171,14 @@
       },
       eliminateFirst: (allowBusy = false) => {
         const next = M().cloneMat(matrix);
-        if (Math.abs(next[0][0]) < M().EPS) return Promise.resolve();
+        if (Math.abs(next[0][0]) < M().EPS || Math.abs(next[1][0]) < M().EPS) return Promise.resolve();
         const coefficient = next[1][0] / next[0][0];
         next[1] = next[1].map((value, col) => value - coefficient * next[0][col]);
         return apply(next, 1, `${tex(`R_2\\leftarrow R_2-${frac(coefficient).tex}R_1`)}　×1`, { row: 2, col: 1, text: "第一个零已出现；接着利用新的第 2 行消去 a₃₂。" }, allowBusy);
       },
       eliminateSecond: (allowBusy = false) => {
         const next = M().cloneMat(matrix);
-        if (Math.abs(next[1][1]) < M().EPS) return Promise.resolve();
+        if (Math.abs(next[1][1]) < M().EPS || Math.abs(next[2][1]) < M().EPS) return Promise.resolve();
         const coefficient = next[2][1] / next[1][1];
         next[2] = next[2].map((value, col) => value - coefficient * next[1][col]);
         return apply(next, 1, `${tex(`R_3\\leftarrow R_3-${frac(coefficient).tex}R_2`)}　×1`, { row: 2, col: 1, text: "第二个零已出现，矩阵已经成为上三角。" }, allowBusy);

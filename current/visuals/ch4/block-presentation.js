@@ -58,33 +58,121 @@
     );
   }
 
-  const blockSteps = [
-    { label: "第 1 步 / 3：识别耦合位置", note: `考虑 ${inline("x=f")} 与 ${inline("Cx+y=g")}。第二个方程含有 x，因此左下块 C 正在把两个变量组耦合起来。`, leftTitle: "分块方程组", left: "\\begin{pmatrix}I&0\\\\C&I\\end{pmatrix}\\begin{pmatrix}x\\\\y\\end{pmatrix}=\\begin{pmatrix}f\\\\g\\end{pmatrix}", rightTitle: "要消去的块", right: "\\begin{pmatrix}I&0\\\\\\color{#d46b4f}{C}&I\\end{pmatrix}", caption: "目标是把左下块 C 变成 0，让第二块方程不再含有 x。" },
-    { label: "第 2 步 / 3：对分块单位矩阵做同一操作", note: `执行 ${inline("R_2\\leftarrow R_2-CR_1")}。对分块单位矩阵做这件事，得到块初等矩阵 E。`, leftTitle: "块初等矩阵 E", left: "E=\\begin{pmatrix}I&0\\\\-C&I\\end{pmatrix}", rightTitle: "同一条块行规则", right: "R_2\\leftarrow R_2-CR_1", caption: "这里的 C 是矩阵块；它的尺寸恰好让 CR₁ 能与 R₂ 相减。" },
-    { label: "第 3 步 / 3：左乘 E，消去耦合块", note: `左乘 E 后，左下块变为 ${inline("-CI+IC=0")}；右端第二块也同步变为 ${inline("g-Cf")}。`, leftTitle: "消元后的系统", left: "\\begin{pmatrix}I&0\\\\0&I\\end{pmatrix}\\begin{pmatrix}x\\\\y\\end{pmatrix}=\\begin{pmatrix}f\\\\g-Cf\\end{pmatrix}", rightTitle: "按块读出解", right: "x=f,\\quad y=g-Cf", caption: "块消元把耦合系统化成两个可直接读取的块方程；这就是分块初等变换的一个完整应用。" },
-  ];
+  /*
+   * §7 lab: the coupled system x = f, Cx + y = g with real 2×2 blocks.
+   * The student picks the block X and left-multiplies by E = (I 0; X I):
+   * the lower-left block becomes C + X and the right side g + Xf.
+   * Only X = −C clears the coupling; then y = g − Cf can be read off.
+   */
+  const C7 = [[2, 1], [1, 1]]; // det C = 1, C⁻¹ = (1 −1; −1 2)
+  const F7 = [1, -1];
+  const G7 = [3, 2];
+  const MULTIPLIERS = {
+    negC: { label: "-C", X: [[-2, -1], [-1, -1]] },
+    C: { label: "C", X: [[2, 1], [1, 1]] },
+    negCinv: { label: "-C^{-1}", X: [[-1, 1], [1, -2]] },
+    negI: { label: "-I", X: [[-1, 0], [0, -1]] },
+  };
+  const num = (v) => (v < 0 ? `−${-v}` : String(v));
+  const add2 = (P, Q) => P.map((r, i) => r.map((v, j) => v + Q[i][j]));
+  const apply2 = (P, v) => P.map((r) => r[0] * v[0] + r[1] * v[1]);
+  const texM2 = (P) => `\\begin{pmatrix}${P.map((r) => r.join("&")).join("\\\\")}\\end{pmatrix}`;
+  const texV2 = (v) => `\\begin{pmatrix}${v.join("\\\\")}\\end{pmatrix}`;
 
-  function blockStepView(index) {
-    const step = blockSteps[index];
-    return `<div class="block-stepper"><div class="block-progress">${step.label}</div><p class="block-caption">${step.note}</p><div class="block-system"><div class="block-system-card"><strong>${step.leftTitle}</strong>${display(step.left)}</div><div class="block-system-card"><strong>${step.rightTitle}</strong>${display(step.right)}</div></div><p class="block-caption">${step.caption}</p></div>`;
+  // augmented [M | b] as 4 rows × 5 columns, with a class per cell role
+  function augmented(lower, rhsLower) {
+    const top = [[1, 0, 0, 0, F7[0]], [0, 1, 0, 0, F7[1]]];
+    const bottom = [0, 1].map((i) => [lower[i][0], lower[i][1], i === 0 ? 1 : 0, i === 1 ? 1 : 0, rhsLower[i]]);
+    return top.concat(bottom);
+  }
+
+  function augGrid(M, roles, was) {
+    return `<table class="blk-grid bk7-grid"><tbody>${M.map((r, i) => `<tr class="${i === 1 ? "cut-below" : ""}">${r.map((v, j) => {
+      const role = roles(i, j);
+      const old = was?.[i]?.[j];
+      const changed = old !== undefined && old !== v;
+      const cls = [j === 1 ? "cut-right" : "", j === 3 ? "bk7-bar" : "", role, changed ? "is-new" : ""].filter(Boolean).join(" ");
+      return `<td class="${cls}">${changed ? `<s class="bk7-was">${num(old)}</s>` : ""}<b>${num(v)}</b></td>`;
+    }).join("")}</tr>`).join("")}</tbody></table>`;
+  }
+
+  function eGrid(X) {
+    const E = [[1, 0, 0, 0], [0, 1, 0, 0], [X ? X[0][0] : "?", X ? X[0][1] : "?", 1, 0], [X ? X[1][0] : "?", X ? X[1][1] : "?", 0, 1]];
+    return `<table class="blk-grid bk7-grid"><tbody>${E.map((r, i) => `<tr class="${i === 1 ? "cut-below" : ""}">${r.map((v, j) => `<td class="${[j === 1 ? "cut-right" : "", i > 1 && j < 2 ? "bk7-x" : ""].filter(Boolean).join(" ")}"><b>${typeof v === "number" ? num(v) : v}</b></td>`).join("")}</tr>`).join("")}</tbody></table>`;
   }
 
   function renderSection7Interactive(section) {
     if (!section) return;
-    let step = 0;
-    section.innerHTML = `<h2>块消元演示</h2><div class="block-lab"><div class="block-lab-head"><h3>把左下块消成 0</h3><p>按三步走完一个耦合系统：先看到 C 在哪里，再构造 E，最后看 E 怎样让系统按块可解。</p></div><div class="block-lab-panel" data-block-step-panel>${blockStepView(step)}</div><div class="block-step-controls"><button type="button" class="button" data-block-prev disabled>上一步</button><button type="button" class="button primary" data-block-next>下一步</button><button type="button" class="button" data-block-reset>重新开始</button></div></div>`;
-    const panel = section.querySelector("[data-block-step-panel]");
-    const previous = section.querySelector("[data-block-prev]");
-    const next = section.querySelector("[data-block-next]");
-    const reset = section.querySelector("[data-block-reset]");
-    const paint = () => {
-      if (panel) panel.innerHTML = blockStepView(step);
-      if (previous) previous.disabled = step === 0;
-      if (next) { next.disabled = step === blockSteps.length - 1; next.textContent = step === blockSteps.length - 1 ? "已完成" : "下一步"; }
+    const state = { pick: null, applied: null };
+    section.innerHTML = `<h2>交互实验</h2>
+      <section class="ch3l-lab bk7-lab">
+        <header class="ch3l-head"><h3>用一次块行变换消去 C</h3><p>方程组 ${inline("x=f")}，${inline("Cx+y=g")} 中 x、y 各有两个分量。选一个 2×2 块 X，把第一块行左乘 X 后加到第二块行，也就是左乘 ${inline("E=\\begin{pmatrix}I&0\\\\X&I\\end{pmatrix}")}。</p></header>
+        <div data-bk7-gate></div>
+        <div class="blk-stage bk7-stage" data-bk7-stage></div>
+        <div class="bk7-tools"><b class="bk7-tools-label">选 X</b><div class="ch3l-toolbar">${Object.entries(MULTIPLIERS).map(([k, m]) => `<button type="button" class="ch3l-chip" data-x="${k}">${inline(m.label)}</button>`).join("")}</div></div>
+        <div class="ch3l-actions bk7-actions"><button type="button" class="ch3l-btn is-primary" data-bk7-apply>左乘 E</button><button type="button" class="ch3l-btn" data-bk7-reset>重来</button></div>
+        <div class="ch3l-card bk7-readout" data-bk7-readout></div>
+      </section>`;
+    const stage = section.querySelector("[data-bk7-stage]");
+    const readout = section.querySelector("[data-bk7-readout]");
+    const lab = section.querySelector(".bk7-lab");
+    const startAug = augmented(C7, G7);
+    const roles = (lowerZero) => (i, j) => {
+      if (j === 4) return i < 2 ? "bk7-f" : lowerZero === undefined ? "bk7-g" : "bk7-res";
+      if (i > 1 && j < 2) return lowerZero ? "bk7-zero" : "bk7-c";
+      return "";
     };
-    previous?.addEventListener("click", () => { if (step > 0) { step -= 1; paint(); } });
-    next?.addEventListener("click", () => { if (step < blockSteps.length - 1) { step += 1; paint(); } });
-    reset?.addEventListener("click", () => { step = 0; paint(); });
+
+    function paint() {
+      const m = state.pick ? MULTIPLIERS[state.pick] : null;
+      section.querySelectorAll("[data-x]").forEach((b) => b.classList.toggle("is-active", b.dataset.x === state.pick));
+      const before = `<div class="blk-mat"><span>${inline("(M\\mid b)")}</span>${augGrid(startAug, roles(undefined))}</div>`;
+      if (!state.applied) {
+        stage.innerHTML = `<div class="blk-mat"><span>${inline(m ? `E,\\ X=${m.label}` : "E")}</span>${eGrid(m ? m.X : null)}</div><b class="blk-op">×</b>${before}`;
+        readout.innerHTML = `<div class="bk7-head"><b>左下块</b><strong>${inline("C")}</strong></div><p>第二个方程 ${inline("Cx+y=g")} 同时含有 x 和 y，两组未知量耦合在一起。选好 X 后按“左乘 E”。</p>`;
+        return;
+      }
+      const a = MULTIPLIERS[state.applied];
+      const lower = add2(C7, a.X);
+      const rhs = G7.map((v, i) => v + apply2(a.X, F7)[i]);
+      const zero = lower.every((r) => r.every((v) => v === 0));
+      const after = augmented(lower, rhs);
+      stage.innerHTML = `<div class="blk-mat"><span>${inline(`E,\\ X=${a.label}`)}</span>${eGrid(a.X)}</div><b class="blk-op">×</b>${before}<b class="blk-op">=</b><div class="blk-mat"><span>${inline("E(M\\mid b)")}</span>${augGrid(after, roles(zero), startAug)}</div>`;
+      readout.innerHTML = zero
+        ? `<div class="bk7-head"><b>左下块</b><strong class="ch3l-ok">${inline("C+X=0")}</strong></div><p>第二块方程不再含 x，两组未知量分开了：</p><div class="blk-math">${display(`x=f=${texV2(F7)},\\qquad y=g-Cf=${texV2(rhs)}`)}</div>`
+        : `<div class="bk7-head"><b>左下块</b><strong class="ch3l-bad">${inline(`C+X=${texM2(lower)}`)}</strong></div><p>左下块没有变成 0，第二块方程仍含 x：${inline(`${texM2(lower)}x+y=${texV2(rhs)}`)}。换一个 X 再试。</p>`;
+    }
+
+    const gate = window.LAPredictGate?.mount(section.querySelector("[data-bk7-gate]"), {
+      root: lab,
+      manual: true,
+      key: "visuals/ch4/block-presentation.js#s7",
+      question: `要让左下块 C 变成 0，第二块行应加上第一块行左乘哪个块 X？`,
+      options: [
+        [inline("X=-C"), true, ""],
+        [inline("X=C"), false, "左下块变成 C+C=2C，耦合反而加倍。"],
+        [inline("X=-C^{-1}"), false, `左下块变成 ${inline("C-C^{-1}")}，一般不为 0。`],
+        [inline("X=-I"), false, `左下块变成 ${inline("C-I")}，只有 C=I 时才为 0。`],
+      ],
+      right: `✓ 左下块变成 ${inline("C-C=0")}，右端变成 ${inline("g-Cf")}。普通消元里的倍数，在这里换成了矩阵块 ${inline("-C")}，乘在第一块行的左边。`,
+    });
+
+    section.querySelectorAll("[data-x]").forEach((b) => b.addEventListener("click", () => {
+      state.pick = b.dataset.x;
+      state.applied = null;
+      paint();
+    }));
+    section.querySelector("[data-bk7-apply]").addEventListener("click", () => {
+      if (!state.pick) return;
+      state.applied = state.pick;
+      paint();
+      gate?.acted();
+    });
+    section.querySelector("[data-bk7-reset]").addEventListener("click", () => {
+      state.applied = null;
+      paint();
+    });
+    paint();
   }
 
   defineChapter4Renderer("block-matrices", { formal: renderSection5Formal, interactive: renderSection5Interactive });

@@ -320,8 +320,8 @@
         </section>
 
         <div class="column-reading-note">
-          <strong>接下来：先看列</strong>
-          <p>在二维变换中，第一列记录 ${mathInline("Ae_1")}，第二列记录 ${mathInline("Ae_2")}。下面的实验让两个基本方向带动整张网格。</p>
+          <strong>先看列</strong>
+          <p>在二维变换中，第一列记录 ${mathInline("Ae_1")}，第二列记录 ${mathInline("Ae_2")}。改动一个元素，只有它所在那一列对应的箭头会移动。</p>
         </div>
       </div>
     `;
@@ -435,180 +435,177 @@
     render();
   }
 
-  function enhanceTransform(interactive) {
-    if (!interactive || interactive.dataset.sectionOneEnhanced === "true") return;
-    const panel = interactive.querySelector(".visual-panel");
-    const canvasWrap = interactive.querySelector(".canvas-wrap");
-    const controls = interactive.querySelector(".control-stack");
-    if (!panel || !canvasWrap || !controls) return;
+  /*
+   * §1 lab: one 2×2 table read three ways at once — a data table (店 × 水果),
+   * a system of equations (方程 × 未知量) and two directions (Ae₁, Ae₂).
+   * Selecting a_ij highlights the same entry in all three readings; changing it
+   * moves only the arrow of column j, along coordinate i.
+   */
+  const ROWS = ["甲店", "乙店"];
+  const COLS = ["苹果", "梨"];
+  const SUB = ["₁", "₂"];
 
-    const presets = [
-      ["identity", "单位矩阵", [1, 0, 0, 1]],
-      ["stretch", "拉伸", [1.7, 0, 0, 0.75]],
-      ["shear", "剪切", [1, 0.8, 0, 1]],
-      ["projection", "共线", [1, 1, 0, 0]],
-      ["zero", "零矩阵", [0, 0, 0, 0]],
-    ];
+  function renderThreeReadings(root) {
+    if (!root) return undefined;
+    const state = { A: [[2, 1], [1, 3]], sel: [1, 0], ghost: null };
+    root.innerHTML = `<h2>交互实验</h2>
+      <section class="ch3l-lab ml1-lab">
+        <header class="ch3l-head"><h3>同一张表，三种读法</h3><p>下面三处用的是同一个矩阵 A。点 A 中的一个元素，三处会同时标出它；选中后可以改它的值（0 到 4）。</p></header>
+        <div data-ml1-gate></div>
+        <div class="ml1-control">
+          <div class="ml1-matrix" role="group" aria-label="矩阵 A 的元素"><b class="ml1-name">A =</b><div class="ml1-cells" data-ml1-cells></div></div>
+          <div class="ml1-stepper"><b data-ml1-selname></b><button type="button" class="ch3l-btn" data-ml1-step="-1" aria-label="减 1">−1</button><button type="button" class="ch3l-btn is-primary" data-ml1-step="1" aria-label="加 1">+1</button></div>
+        </div>
+        <div class="ml1-views">
+          <figure class="ml1-view"><figcaption>数据表：行是店，列是水果（箱）</figcaption><div data-ml1-table></div></figure>
+          <figure class="ml1-view"><figcaption>方程组：行是方程，列是未知量</figcaption><div class="ml1-eqs" data-ml1-eqs></div></figure>
+          <figure class="ml1-view ml1-plane"><figcaption>平面：第 j 列是 Ae<sub>j</sub> 的坐标</figcaption><canvas aria-label="Ae₁ 与 Ae₂"></canvas></figure>
+        </div>
+        <div class="ch3l-card ml1-readout" data-ml1-readout></div>
+      </section>`;
+    const lab = root.querySelector(".ml1-lab");
+    const canvas = lab.querySelector("canvas");
+    const cells = lab.querySelector("[data-ml1-cells]");
+    const tableBox = lab.querySelector("[data-ml1-table]");
+    const eqs = lab.querySelector("[data-ml1-eqs]");
+    const readout = lab.querySelector("[data-ml1-readout]");
+    const selName = lab.querySelector("[data-ml1-selname]");
+    let revealed = false;
 
-    const toolbar = document.createElement("div");
-    toolbar.className = "transform-preset-bar";
-    toolbar.setAttribute("role", "group");
-    toolbar.setAttribute("aria-label", "矩阵预设");
-    toolbar.innerHTML = presets
-      .map(
-        ([id, label]) => `<button type="button" data-transform-preset="${id}" aria-pressed="${id === "identity"}">${label}</button>`,
-      )
-      .join("");
-    canvasWrap.before(toolbar);
+    const isSel = (i, j) => state.sel[0] === i && state.sel[1] === j;
+    const cls = (i, j) => `ml1-c${j + 1}${isSel(i, j) ? " is-sel" : ""}`;
 
-    const status = document.createElement("div");
-    status.className = "section-one-transform-status";
-    status.setAttribute("aria-live", "off");
-    status.setAttribute("aria-busy", "false");
-    controls.append(status);
+    function paintDom() {
+      const [si, sj] = state.sel;
+      const A = state.A;
+      cells.innerHTML = A.map((r, i) => r.map((v, j) => `<button type="button" class="${cls(i, j)}" data-ml1-cell="${i}${j}" aria-pressed="${isSel(i, j)}">${v}</button>`).join("")).join("");
+      selName.innerHTML = `a<sub>${si + 1}${sj + 1}</sub> = ${A[si][sj]}`;
+      tableBox.innerHTML = `<table class="ml1-table"><thead><tr><th></th>${COLS.map((c, j) => `<th class="ml1-c${j + 1}">${c}</th>`).join("")}</tr></thead><tbody>${A.map((r, i) => `<tr><th>${ROWS[i]}</th>${r.map((v, j) => `<td class="${cls(i, j)}">${v}</td>`).join("")}</tr>`).join("")}</tbody></table>`;
+      eqs.innerHTML = A.map((r, i) => `<p>${r.map((v, j) => `${j ? " + " : ""}<b class="${cls(i, j)}">${v}</b><i>x</i>${SUB[j]}`).join("")} = <i>b</i>${SUB[i]}</p>`).join("");
+      const v = A[si][sj];
+      readout.innerHTML = revealed
+        ? `<div class="ml1-head"><b>a<sub>${si + 1}${sj + 1}</sub> 的三种读法</b><strong>${v}</strong></div><ul class="ml1-list"><li>数据表：${ROWS[si]}卖出${COLS[sj]} ${v} 箱。</li><li>方程组：第 ${si + 1} 个方程中 <i>x</i>${SUB[sj]} 的系数。</li><li>平面：Ae${SUB[sj]} 的第 ${si + 1} 个坐标（${si === 0 ? "横" : "纵"}坐标）。</li></ul>`
+        : `<div class="ml1-head"><b>选中的元素</b><strong>a<sub>${si + 1}${sj + 1}</sub> = ${v}</strong></div><p>位于第 ${si + 1} 行、第 ${sj + 1} 列。下标先读行，再读列。</p>`;
+      lab.querySelector('[data-ml1-step="-1"]').disabled = !gate?.picked || v <= 0;
+      const plus = lab.querySelector('[data-ml1-step="1"]');
+      if (gate?.picked) plus.disabled = v >= 4;
+      cells.querySelectorAll("[data-ml1-cell]").forEach((b) => b.addEventListener("click", () => {
+        state.sel = [Number(b.dataset.ml1Cell[0]), Number(b.dataset.ml1Cell[1])];
+        state.ghost = null;
+        paint();
+      }));
+    }
 
-    const inputs = ["a", "b", "c", "d"].map((key) => interactive.querySelector(`#matrix-${key}`));
-    let statusSyncAt = 0;
-    let pendingStatusMatrix = null;
-    let statusSyncTimer = 0;
-
-    const shapeCopy = (a, b, c, d) => {
-      const det = a * d - b * c;
-      const allZero = [a, b, c, d].every((value) => Math.abs(value) < 1e-7);
-      if (allZero) {
-        return {
-          title: "一点",
-          description: "两列都是零向量：整个平面被收到原点。",
-        };
+    function draw() {
+      if (!canvas.isConnected) { ro?.disconnect(); mo?.disconnect(); return; }
+      const rect = canvas.getBoundingClientRect();
+      const dpr = Math.min(window.devicePixelRatio || 1, 2);
+      const w = Math.max(1, Math.round(rect.width));
+      const h = Math.max(1, Math.round(rect.height));
+      if (canvas.width !== w * dpr || canvas.height !== h * dpr) { canvas.width = w * dpr; canvas.height = h * dpr; }
+      const ctx = canvas.getContext("2d");
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      ctx.clearRect(0, 0, w, h);
+      const st = getComputedStyle(canvas);
+      const col = (n, fb) => st.getPropertyValue(n).trim() || fb;
+      const C = { v1: col("--cv-v1", "#2a64a8"), v2: col("--cv-v2", "#c4552f"), axis: col("--cv-axis", "#8a8d84"), grid: col("--cv-grid-major", "#e2ddd0"), paper: col("--cv-paper", "#fdfcf8") };
+      ctx.fillStyle = C.paper; ctx.fillRect(0, 0, w, h);
+      const lo = -1.1;
+      const hi = 4.6;
+      const s = Math.min(w, h) / (hi - lo);
+      const ox = (w - (hi - lo) * s) / 2;
+      const oy = (h - (hi - lo) * s) / 2;
+      const P = (x, y) => [ox + (x - lo) * s, h - oy - (y - lo) * s];
+      ctx.lineWidth = 1; ctx.strokeStyle = C.grid;
+      for (let k = 0; k <= 4; k += 1) {
+        ctx.beginPath(); ctx.moveTo(...P(k, lo)); ctx.lineTo(...P(k, hi)); ctx.stroke();
+        ctx.beginPath(); ctx.moveTo(...P(lo, k)); ctx.lineTo(...P(hi, k)); ctx.stroke();
       }
-      if (Math.abs(det) < 1e-7) {
-        return {
-          title: "一条直线",
-          description: "两列共线：整张网格塌缩到一条直线上。",
-        };
-      }
-      return {
-        title: "整个平面",
-        description: "两列不共线：变换后的网格仍能铺满平面。",
-      };
-    };
-
-    const updateStatus = (matrix, { final = true } = {}) => {
-      const source = matrix || {
-        a: Number(inputs[0]?.value || 0),
-        b: Number(inputs[1]?.value || 0),
-        c: Number(inputs[2]?.value || 0),
-        d: Number(inputs[3]?.value || 0),
-      };
-      const a = source.a;
-      const b = source.b;
-      const c = source.c;
-      const d = source.d;
-      const shape = shapeCopy(a, b, c, d);
-      // Plain text keeps mid-animation sync cheap and consistent with the canvas.
-      status.innerHTML = `
-        <div><span>第一列</span><strong>(${formatCompact(a)}, ${formatCompact(c)})ᵀ</strong></div>
-        <div><span>第二列</span><strong>(${formatCompact(b)}, ${formatCompact(d)})ᵀ</strong></div>
-        <div><span>输出形状</span><strong>${shape.title}</strong></div>
-        <p>${shape.description}</p>
-      `;
-      if (final) {
-        status.setAttribute("aria-busy", "false");
-        status.setAttribute("aria-live", "polite");
-        // Re-announce once at rest without spamming during the morph.
-        status.setAttribute("aria-live", "off");
-        requestAnimationFrame(() => status.setAttribute("aria-live", "polite"));
-      }
-    };
-
-    const scheduleStatus = (matrix, { final = false } = {}) => {
-      pendingStatusMatrix = matrix;
-      if (final) {
-        if (statusSyncTimer) {
-          clearTimeout(statusSyncTimer);
-          statusSyncTimer = 0;
+      ctx.strokeStyle = C.axis;
+      ctx.beginPath(); ctx.moveTo(...P(lo, 0)); ctx.lineTo(...P(hi, 0)); ctx.moveTo(...P(0, lo)); ctx.lineTo(...P(0, hi)); ctx.stroke();
+      ctx.fillStyle = C.axis; ctx.font = "12px 'LA Serif Latin', 'LA Serif SC', 'Songti SC', serif";
+      for (let k = 1; k <= 4; k += 1) { const [x, y] = P(k, 0); ctx.fillText(String(k), x - 3, y + 14); const [x2, y2] = P(0, k); ctx.fillText(String(k), x2 - 12, y2 + 4); }
+      const arrow = (x, y, color, label, opts = {}) => {
+        const [x0, y0] = P(0, 0);
+        const [x1, y1] = P(x, y);
+        if (x === 0 && y === 0) { ctx.fillStyle = color; ctx.beginPath(); ctx.arc(x0, y0, 4, 0, Math.PI * 2); ctx.fill(); return; }
+        const a = Math.atan2(y1 - y0, x1 - x0);
+        ctx.save();
+        if (opts.ghost) { ctx.globalAlpha = 0.35; ctx.setLineDash([5, 4]); }
+        if (opts.focus) {
+          ctx.strokeStyle = `color-mix(in srgb, ${color} 16%, transparent)`; ctx.lineWidth = 7; ctx.lineCap = "round";
+          ctx.beginPath(); ctx.moveTo(x0, y0); ctx.lineTo(x1, y1); ctx.stroke();
         }
-        updateStatus(matrix, { final: true });
-        statusSyncAt = performance.now();
-        return;
+        ctx.strokeStyle = color; ctx.fillStyle = color; ctx.lineWidth = w < 360 ? 3.6 : 2.4; ctx.lineCap = "butt";
+        ctx.beginPath(); ctx.moveTo(x0, y0); ctx.lineTo(x1 - Math.cos(a) * 9, y1 - Math.sin(a) * 9); ctx.stroke();
+        ctx.setLineDash([]);
+        ctx.beginPath(); ctx.moveTo(x1, y1); ctx.lineTo(x1 - Math.cos(a - 0.42) * 10, y1 - Math.sin(a - 0.42) * 10); ctx.lineTo(x1 - Math.cos(a + 0.42) * 10, y1 - Math.sin(a + 0.42) * 10); ctx.closePath(); ctx.fill();
+        if (label) { ctx.font = "italic 600 14px 'LA Serif Latin', 'LA Serif SC', 'Songti SC', serif"; ctx.fillText(label, x1 + 6, y1 - 6); }
+        ctx.restore();
+      };
+      const A = state.A;
+      if (state.ghost) arrow(state.ghost.x, state.ghost.y, state.ghost.j === 0 ? C.v1 : C.v2, "", { ghost: true });
+      const [si, sj] = state.sel;
+      const ex = A[0][sj];
+      const ey = A[1][sj];
+      const color = sj === 0 ? C.v1 : C.v2;
+      if (revealed) {
+        // coordinate i of Ae_j: the dashed drop line and the segment on axis i
+        ctx.save();
+        ctx.strokeStyle = C.axis; ctx.lineWidth = 1; ctx.setLineDash([2, 3]);
+        ctx.beginPath(); ctx.moveTo(...P(ex, ey)); ctx.lineTo(...(si === 0 ? P(ex, 0) : P(0, ey))); ctx.stroke();
+        ctx.setLineDash([]);
+        ctx.strokeStyle = `color-mix(in srgb, ${color} 28%, transparent)`; ctx.lineWidth = 7; ctx.lineCap = "round";
+        ctx.beginPath(); ctx.moveTo(...P(0, 0)); ctx.lineTo(...(si === 0 ? P(ex, 0) : P(0, ey))); ctx.stroke();
+        ctx.fillStyle = color; ctx.font = "italic 600 13px 'LA Serif Latin', 'LA Serif SC', 'Songti SC', serif";
+        // the label sits outside the first quadrant, away from the arrows
+        const lab2 = `a${SUB[si]}${SUB[sj]}`;
+        const tw = ctx.measureText(lab2).width;
+        const [lx, ly] = si === 0 ? P(ex / 2, 0) : P(0, ey / 2);
+        if (si === 0) ctx.fillText(lab2, lx - tw / 2, ly + 30); else ctx.fillText(lab2, lx - tw - 18, ly + 4);
+        ctx.restore();
       }
-      const now = performance.now();
-      const wait = Math.max(0, 100 - (now - statusSyncAt));
-      if (statusSyncTimer) return;
-      statusSyncTimer = window.setTimeout(() => {
-        statusSyncTimer = 0;
-        statusSyncAt = performance.now();
-        if (pendingStatusMatrix) updateStatus(pendingStatusMatrix, { final: false });
-      }, wait);
-    };
+      [0, 1].forEach((j) => arrow(A[0][j], A[1][j], j === 0 ? C.v1 : C.v2, `Ae${SUB[j]}`, { focus: revealed && j === sj }));
+    }
 
-    const markPreset = (id) => {
-      toolbar.querySelectorAll("button").forEach((button) => {
-        const active = Boolean(id) && button.dataset.transformPreset === id;
-        button.classList.toggle("is-active", active);
-        button.setAttribute("aria-pressed", String(active));
-      });
-    };
+    function paint() { paintDom(); draw(); gate?.relock(); if (gate?.picked) { const v = state.A[state.sel[0]][state.sel[1]]; lab.querySelector('[data-ml1-step="1"]').disabled = v >= 4; } }
 
-    const writeInputsFallback = (values) => {
-      inputs.forEach((input, index) => {
-        if (!input) return;
-        input.value = values[index];
-      });
-    };
+    lab.querySelectorAll("[data-ml1-step]").forEach((b) => b.addEventListener("click", () => {
+      if (!gate?.picked) return;
+      const [i, j] = state.sel;
+      const next = Math.max(0, Math.min(4, state.A[i][j] + Number(b.dataset.ml1Step)));
+      if (next === state.A[i][j]) return;
+      state.ghost = { j, x: state.A[0][j], y: state.A[1][j] };
+      state.A[i][j] = next;
+      if (i === 1 && j === 0) { revealed = true; gate.acted(); }
+      paint();
+    }));
 
-    const applyPreset = (values, id, { animate = true } = {}) => {
-      markPreset(id);
-      status.setAttribute("aria-busy", "true");
-      status.setAttribute("aria-live", "off");
-
-      if (animate && typeof window.animateTransformMatrix === "function") {
-        window
-          .animateTransformMatrix(values, {
-            onUpdate: (matrix, meta) => scheduleStatus(matrix, { final: Boolean(meta?.final) }),
-          })
-          .then((matrix) => scheduleStatus(matrix, { final: true }));
-        return;
-      }
-
-      if (typeof window.setTransformMatrix === "function") {
-        window.setTransformMatrix(values);
-      } else {
-        writeInputsFallback(values);
-        inputs[0]?.dispatchEvent(new Event("input", { bubbles: true }));
-      }
-      scheduleStatus(
-        { a: values[0], b: values[1], c: values[2], d: values[3] },
-        { final: true },
-      );
-    };
-
-    toolbar.addEventListener("click", (event) => {
-      const button = event.target.closest("[data-transform-preset]");
-      if (!button) return;
-      const preset = presets.find(([presetId]) => presetId === button.dataset.transformPreset);
-      if (preset) applyPreset(preset[2], preset[0], { animate: true });
+    const gate = window.LAPredictGate?.mount(lab.querySelector("[data-ml1-gate]"), {
+      root: lab,
+      manual: true,
+      key: "visuals/ch4/section1-presentation.js#three-readings",
+      question: "把 a<sub>21</sub> 从 1 改成 2。平面里哪个箭头会动，往哪个方向动？",
+      options: [
+        ["Ae₁ 向上移动一格", true, ""],
+        ["Ae₂ 向上移动一格", false, "a₂₁ 在第 1 列，第 1 列记录的是 Ae₁，Ae₂ 没有动。"],
+        ["Ae₁ 向右移动一格", false, "a₂₁ 在第 2 行，它是 Ae₁ 的第 2 个坐标，也就是纵坐标。"],
+        ["两个箭头都动", false, "一个元素只属于一列，只有这一列对应的箭头会动。"],
+      ],
+      right: "✓ a₂₁ 在第 1 列，所以属于 Ae₁；在第 2 行，所以是纵坐标。同一个位置 (i, j) 在数据表里是第 i 家店的第 j 种水果，在方程组里是第 i 个方程中 xⱼ 的系数。行和列的位置一旦定下，三种读法就同时定下。",
+      onPick: () => { state.sel = [1, 0]; state.ghost = null; paint(); },
     });
 
-    inputs.forEach((input) =>
-      input?.addEventListener("input", (event) => {
-        if (!event.isTrusted) return;
-        markPreset(null);
-        scheduleStatus(null, { final: true });
-      }),
-    );
-
-    applyPreset([1, 0, 0, 1], "identity", { animate: false });
-    interactive.dataset.sectionOneEnhanced = "true";
-  }
-
-  function formatCompact(value) {
-    const rounded = Math.round(value * 100) / 100;
-    return Number.isInteger(rounded) ? String(rounded) : String(rounded);
+    let ro = new ResizeObserver(() => draw());
+    ro.observe(canvas);
+    let mo = new MutationObserver(() => draw());
+    mo.observe(document.body, { attributes: true, attributeFilter: ["class"] });
+    paint();
+    return () => { ro.disconnect(); mo.disconnect(); };
   }
 
   window.defineChapter4Renderer?.("matrix-language", {
     formal: renderFormal,
-    interactive: enhanceTransform,
+    interactive: renderThreeReadings,
   });
 })();

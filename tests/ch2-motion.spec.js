@@ -54,6 +54,9 @@ test.describe("Chapter 2 normal-motion interactions", () => {
     const errors = browserErrors(page);
     await openLesson(page, "laplace-and-product");
     const replay = page.locator("[data-prod-replay]");
+    // the play button waits for a prediction
+    await expect(replay).toBeDisabled();
+    await page.locator('[data-prod-lab] .ch3l-predict-options > button').first().click();
     await expect(replay).toBeEnabled({ timeout: 5000 });
     await page.locator('[data-prod-preset="doubleMirror"]').click();
     await expect(replay).toBeDisabled();

@@ -47,13 +47,8 @@ defineChapter5Section("quadratic-uniqueness", {
   interactive: {
     type: "slot",
     title: "实验：惯性锁",
-    description: "固定一个对称矩阵 A，拖动可逆 C 观察 B=CᵀAC；系数与等高线可变，p、q 与零项数锁定。",
-    task: "比较可逆路径与 det C=0 断点；用预设看到碗面、山谷与马鞍对应的 (p,q)。",
-    prompts: [
-      "从正定矩阵出发，缩放 C 改变系数但仍 p=2。",
-      "切换到不定矩阵，观察 p=1、q=1。",
-      "把 det C 拉到 0，确认不再称为合同。",
-    ],
+    description: "固定对称矩阵 A，拖动剪切参数 h 观察 B=CᵀAC；曲面和符号轮上向上、向下的方向换了位置，数量不变。",
+    task: "先预测马鞍面能否被可逆替换变成碗，再拖动 h；最后让替换奇异，看定理前提何时失效。",
   },
   example: {
     title: "例题：从标准形读惯性",

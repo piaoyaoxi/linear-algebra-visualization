@@ -7,7 +7,7 @@
   const EPS = 1e-5;
 
   function matrixFrom(root, selector) {
-    const values = $$(root, `${selector} .ch5-cell`).map((cell) => Number(cell.textContent));
+    const values = $$(root, `${selector} .ch5-cell`).map((cell) => Number(cell.dataset.v ?? cell.textContent));
     if (values.length !== 4 || values.some((value) => !Number.isFinite(value))) return null;
     return [[values[0], values[1]], [values[2], values[3]]];
   }
@@ -243,7 +243,24 @@
         const y = direction[1] * t;
         points.push(frame.project(x, y, M().qForm(A, [x, y])));
       }
-      path(ctx, points, index ? palette.coral : palette.accentStrong, 3, 0.96);
+      if (!options.signedAxes) {
+        path(ctx, points, index ? palette.coral : palette.accentStrong, 3, 0.96);
+        return;
+      }
+      // §3: a principal direction is coloured and named by the sign of q along it
+      const lambda = M().qForm(A, direction);
+      const color = lambda > EPS ? palette.pos : lambda < -EPS ? palette.neg : palette.zero;
+      ctx.save();
+      if (Math.abs(lambda) <= EPS) ctx.setLineDash([6, 5]);
+      path(ctx, points, color, 3, 0.96);
+      ctx.restore();
+      const end = points[points.length - 1];
+      arrow(ctx, points[points.length - 4], end, color);
+      ctx.save();
+      ctx.fillStyle = color;
+      ctx.font = "600 13px 'LA Serif Latin', 'LA Serif SC', 'Songti SC', serif";
+      ctx.fillText(lambda > EPS ? "向上" : lambda < -EPS ? "向下" : "平坦", end.x + 6, end.y + (lambda < -EPS ? 14 : -6));
+      ctx.restore();
     });
 
     const origin = frame.project(0, 0, 0);
@@ -358,8 +375,8 @@
         const A = matrixFrom(root, "[data-s3-a]");
         const B = matrixFrom(root, "[data-s3-b]");
         if (!A || !B) return;
-        drawSurface(left, A, { frameMatrices: [A, B] });
-        drawSurface(right, B, { frameMatrices: [A, B] });
+        drawSurface(left, A, { frameMatrices: [A, B], signedAxes: true });
+        drawSurface(right, B, { frameMatrices: [A, B], signedAxes: true });
       };
     }
 

@@ -161,6 +161,10 @@
       [a, c], [b, d], [a + b, c + d],
       [-0.35, -0.35], [1.25, 1.25],
     ];
+    if (options.ghost) {
+      const [[ga, gb], [gc, gd]] = options.ghost;
+      points.push([ga, gc], [gb, gd], [ga + gb, gc + gd]);
+    }
     let minX = Infinity;
     let maxX = -Infinity;
     let minY = Infinity;
@@ -241,6 +245,26 @@
       ctx.restore();
     }
 
+    // ghost of the previous stage: same colours, dashed, 35% alpha
+    if (options.ghost) {
+      const [[ga, gb], [gc, gd]] = options.ghost;
+      const g0 = map(0, 0);
+      const g1 = map(ga, gc);
+      const g2 = map(ga + gb, gc + gd);
+      const g3 = map(gb, gd);
+      ctx.save();
+      ctx.globalAlpha = 0.35;
+      ctx.setLineDash([6, 5]);
+      ctx.strokeStyle = palette.image;
+      ctx.lineWidth = 1.4;
+      ctx.beginPath();
+      ctx.moveTo(g0.x, g0.y); ctx.lineTo(g1.x, g1.y); ctx.lineTo(g2.x, g2.y); ctx.lineTo(g3.x, g3.y); ctx.closePath();
+      ctx.stroke();
+      drawArrow(ctx, g0, g1, palette.v1, 2);
+      drawArrow(ctx, g0, g3, palette.v2, 2);
+      ctx.restore();
+    }
+
     const p0 = map(0, 0);
     const p1 = map(a, c);
     const p2 = map(a + b, c + d);
@@ -286,7 +310,7 @@
     const rect = canvas.getBoundingClientRect();
     const width = Math.max(1, rect.width || canvas.clientWidth || 520);
     const height = Math.max(1, rect.height || canvas.clientHeight || 320);
-    const both = [from, to];
+    const both = [from, to, ...(options.drawOptions?.ghost ? [options.drawOptions.ghost] : [])];
     const points = [[0, 0], [1, 0], [0, 1], [1, 1]];
     both.forEach((matrix) => {
       points.push(

@@ -461,6 +461,98 @@
   font-weight: 600;
 }
 
+/* §2 opener: the middle 0 keeps x² in place */
+:is(main, #la) .ch1-zero-module {
+  display: grid;
+  gap: 16px;
+}
+
+:is(main, #la) .ch1-zero-body {
+  display: grid;
+  grid-template-columns: minmax(0, 0.85fr) minmax(0, 1.15fr);
+  gap: 22px;
+  align-items: start;
+}
+
+:is(main, #la) .ch1-zero-strips {
+  display: grid;
+  gap: 14px;
+}
+
+:is(main, #la) .ch1-zero-strip {
+  display: grid;
+  gap: 6px;
+}
+
+:is(main, #la) .ch1-zero-strip[hidden],
+:is(main, #la) .ch1-zero-readout[hidden],
+:is(main, #la) .ch1-coeff-analysis[hidden] {
+  display: none;
+}
+
+:is(main, #la) .ch1-zero-strip > b {
+  color: var(--muted);
+  font-size: 13px;
+  font-weight: 600;
+}
+
+/* fixed columns, so the shorter strip lines up under 1, x, x² */
+:is(main, #la) .ch1-zero-strip .ch1-strip {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 64px));
+  gap: 8px;
+}
+
+:is(main, #la) .ch1-zero-strip .ch1-strip-cell {
+  display: grid;
+  justify-items: center;
+  gap: 4px;
+  min-width: 0;
+  padding: 8px 4px;
+}
+
+:is(main, #la) .ch1-zero-strip.is-f .ch1-strip-cell:nth-child(4) {
+  border-color: color-mix(in srgb, var(--cv-v1) 55%, var(--line));
+  background: color-mix(in srgb, var(--cv-v1) 10%, var(--surface-solid));
+  color: var(--cv-v1);
+}
+
+:is(main, #la) .ch1-zero-strip.is-f .ch1-strip-cell:nth-child(3) {
+  border-style: dashed;
+}
+
+:is(main, #la) .ch1-zero-strip.is-h .ch1-strip-cell:nth-child(3) {
+  border-color: color-mix(in srgb, var(--cv-v2) 55%, var(--line));
+  background: color-mix(in srgb, var(--cv-v2) 10%, var(--surface-solid));
+  color: var(--cv-v2);
+}
+
+:is(main, #la) .ch1-zero-actions > .ch3l-btn {
+  min-width: 160px;
+}
+
+:is(main, #la) .ch1-zero-readout {
+  margin: 0;
+  color: var(--text-2);
+  font-size: 15px;
+  line-height: 1.8;
+}
+
+:is(main, #la) .ch1-zero-stage canvas {
+  width: 100%;
+  height: 280px;
+}
+
+@media (max-width: 760px) {
+  :is(main, #la) .ch1-zero-body {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  :is(main, #la) .ch1-zero-stage canvas {
+    height: 240px;
+  }
+}
+
 /* ======================================================================
    2  Chapter 2 行列式
    ====================================================================== */
@@ -522,6 +614,130 @@
 
 :is(main, #la) :is(.ch2-presets button, .ch2-toolbar button, .ch2-pair):disabled {
   opacity: 0.4;
+}
+
+/* §8 product lab: the primary action leads the preset row */
+:is(main, #la) .ch2-presets > button.is-primary,
+:is(main, #la) .ch2-presets > button.is-primary:hover:not(:disabled) {
+  border-color: var(--accent);
+  background: var(--accent);
+  color: var(--on-accent);
+  font-weight: 600;
+}
+
+:is(main, #la) .ch2-tile-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px 16px;
+  min-height: 92px;
+  padding: 16px;
+  border-radius: 10px;
+  background: var(--surface-soft);
+}
+
+:is(main, #la) .ch2-tile-group {
+  display: grid;
+  justify-items: center;
+  gap: 8px;
+  margin: 0;
+}
+
+:is(main, #la) .ch2-tile-group > figcaption {
+  color: var(--muted);
+  font-size: 13px;
+  font-variant-numeric: tabular-nums;
+}
+
+:is(main, #la) .ch2-tiles {
+  display: grid;
+  grid-template-columns: repeat(var(--cols, 1), 22px);
+  gap: 3px;
+}
+
+:is(main, #la) .ch2-tiles > i {
+  width: 22px;
+  height: 22px;
+  border: 1px solid var(--cv-image);
+  border-radius: 3px;
+  background: color-mix(in srgb, var(--cv-image) 14%, transparent);
+}
+
+:is(main, #la) .ch2-tiles > i.is-unit {
+  border-color: var(--cv-axis);
+  background: color-mix(in srgb, var(--cv-axis) 12%, transparent);
+}
+
+/* a negative orientation keeps the area and is drawn dashed, as on the canvas */
+:is(main, #la) .ch2-tiles.is-flipped > i {
+  border-style: dashed;
+  background: color-mix(in srgb, var(--cv-image) 7%, transparent);
+}
+
+:is(main, #la) .ch2-tiles.is-zero {
+  display: grid;
+  place-items: center;
+  width: 46px;
+  height: 22px;
+  border: 1px dashed var(--cv-axis);
+  border-radius: 3px;
+}
+
+:is(main, #la) .ch2-tiles.is-zero > i {
+  color: var(--muted);
+  font-size: 13px;
+  font-style: normal;
+}
+
+:is(main, #la) .ch2-tile-op {
+  color: var(--accent-strong);
+  font-size: 15px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+
+/* §8 worked Laplace example (static) */
+:is(main, #la) .ch2-laplace-example-body {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: 20px;
+  align-items: center;
+  margin: 10px 0;
+}
+
+:is(main, #la) .ch2-laplace-terms {
+  width: 100%;
+  border-collapse: collapse;
+  font-variant-numeric: tabular-nums;
+}
+
+:is(main, #la) .ch2-laplace-terms :is(th, td) {
+  padding: 6px 8px;
+  border-bottom: 1px solid var(--line);
+  text-align: center;
+  font-size: 14px;
+}
+
+:is(main, #la) .ch2-laplace-terms th {
+  color: var(--muted);
+  font-size: 12.5px;
+  font-weight: 600;
+}
+
+:is(main, #la) .ch2-laplace-terms tfoot td {
+  border-bottom: 0;
+  color: var(--text-2);
+}
+
+@media (max-width: 720px) {
+  :is(main, #la) .ch2-laplace-example-body {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  :is(main, #la) .ch2-laplace-terms :is(th, td) {
+    padding: 6px 4px;
+    font-size: 13px;
+  }
 }
 
 :is(main, #la) .ch2-wide-controls {
@@ -1246,6 +1462,339 @@ body.dark :is(main, #la) :is(.lesson-page-section, #lb) .inverse-control-panel {
   box-shadow: none;
 }
 
+/* §7 lab: E (M | b) with real 2×2 blocks (ch3l shell) */
+:is(main, #la) :is(.lesson-page-section, #lb) .bk7-lab {
+  display: grid;
+  gap: 20px;
+}
+
+:is(main, #la) :is(.lesson-page-section, #lb) .bk7-stage {
+  gap: 12px 14px;
+}
+
+:is(main, #la) :is(.lesson-page-section, #lb) .bk7-grid td {
+  position: relative;
+  width: 40px;
+  height: 36px;
+  border-color: var(--line);
+  color: var(--text);
+}
+
+:is(main, #la) :is(.lesson-page-section, #lb) .bk7-grid tr.cut-below td {
+  border-bottom: 2px solid var(--line-strong);
+}
+
+:is(main, #la) :is(.lesson-page-section, #lb) .bk7-grid td.cut-right {
+  border-right: 2px solid var(--line-strong);
+}
+
+:is(main, #la) :is(.lesson-page-section, #lb) .bk7-grid td.bk7-bar {
+  border-right: 2px dashed var(--cv-axis);
+}
+
+:is(main, #la) :is(.lesson-page-section, #lb) .bk7-grid td > b {
+  font-weight: 600;
+}
+
+:is(main, #la) :is(.lesson-page-section, #lb) .bk7-grid td.bk7-c {
+  background: color-mix(in srgb, var(--cv-v2) 14%, var(--surface-solid));
+  color: var(--cv-v2);
+}
+
+:is(main, #la) :is(.lesson-page-section, #lb) .bk7-grid td.bk7-f {
+  background: color-mix(in srgb, var(--cv-v1) 12%, var(--surface-solid));
+  color: var(--cv-v1);
+}
+
+:is(main, #la) :is(.lesson-page-section, #lb) .bk7-grid td.bk7-x {
+  background: color-mix(in srgb, var(--cv-drag) 16%, var(--surface-solid));
+  color: var(--predict-text);
+}
+
+:is(main, #la) :is(.lesson-page-section, #lb) .bk7-grid td.bk7-res {
+  background: color-mix(in srgb, var(--cv-image) 12%, var(--surface-solid));
+  color: var(--cv-image);
+}
+
+:is(main, #la) :is(.lesson-page-section, #lb) .bk7-grid td.bk7-zero {
+  background: color-mix(in srgb, var(--cv-subspace) 12%, var(--surface-solid));
+  color: var(--cv-subspace);
+}
+
+/* the previous value stays as a faint ghost in the corner */
+:is(main, #la) :is(.lesson-page-section, #lb) .bk7-grid td > s.bk7-was {
+  position: absolute;
+  top: 1px;
+  right: 3px;
+  color: currentColor;
+  font-size: 12px;
+  line-height: 1;
+  opacity: 0.45;
+}
+
+:is(main, #la) :is(.lesson-page-section, #lb) .bk7-grid td.is-new > b {
+  animation: bk7-arrive 520ms ease-out both;
+}
+
+@keyframes bk7-arrive {
+  from { opacity: 0; transform: translateY(-4px); }
+  to { opacity: 1; transform: none; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :is(main, #la) :is(.lesson-page-section, #lb) .bk7-grid td.is-new > b {
+    animation: none;
+  }
+}
+
+:is(main, #la) :is(.lesson-page-section, #lb) .bk7-tools {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 12px;
+}
+
+:is(main, #la) :is(.lesson-page-section, #lb) .bk7-tools-label {
+  color: var(--muted);
+  font-size: 12.5px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+}
+
+:is(main, #la) :is(.lesson-page-section, #lb) .bk7-actions > .is-primary {
+  flex: 1 1 auto;
+}
+
+:is(main, #la) :is(.lesson-page-section, #lb) .bk7-readout {
+  display: grid;
+  gap: 8px;
+}
+
+:is(main, #la) :is(.lesson-page-section, #lb) .bk7-readout p {
+  margin: 0;
+  line-height: 1.8;
+}
+
+:is(main, #la) :is(.lesson-page-section, #lb) :is(.bk7-head, .ml1-head) {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid var(--line);
+}
+
+:is(main, #la) :is(.lesson-page-section, #lb) :is(.bk7-head, .ml1-head) > b {
+  color: var(--muted);
+  font-size: 12.5px;
+  letter-spacing: 0.08em;
+}
+
+/* §1 lab: one table, three readings (ch3l shell) */
+:is(main, #la) :is(.lesson-page-section, #lb) .ml1-lab {
+  display: grid;
+  gap: 20px;
+}
+
+:is(main, #la) :is(.lesson-page-section, #lb) .ml1-control {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px 20px;
+}
+
+:is(main, #la) :is(.lesson-page-section, #lb) .ml1-matrix {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+:is(main, #la) :is(.lesson-page-section, #lb) .ml1-name {
+  font-style: italic;
+  font-weight: 600;
+}
+
+:is(main, #la) :is(.lesson-page-section, #lb) .ml1-cells {
+  display: grid;
+  grid-template-columns: repeat(2, 46px);
+  gap: 6px;
+  padding: 4px 8px;
+  border-right: 1.5px solid var(--text-2);
+  border-left: 1.5px solid var(--text-2);
+  border-radius: 8px;
+}
+
+:is(main, #la) :is(.lesson-page-section, #lb) .ml1-cells > button {
+  height: 40px;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  background: var(--surface-solid);
+  font: inherit;
+  font-size: 17px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  cursor: pointer;
+}
+
+:is(main, #la) :is(.lesson-page-section, #lb) .ml1-stepper {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+:is(main, #la) :is(.lesson-page-section, #lb) .ml1-stepper > b {
+  min-width: 70px;
+  font-variant-numeric: tabular-nums;
+}
+
+:is(main, #la) :is(.lesson-page-section, #lb) .ml1-stepper > .ch3l-btn {
+  min-width: 56px;
+}
+
+/* column 1 = Ae₁ (blue), column 2 = Ae₂ (vermilion), in every reading */
+:is(main, #la) :is(.lesson-page-section, #lb) .ml1-lab .ml1-c1 {
+  color: var(--cv-v1);
+}
+
+:is(main, #la) :is(.lesson-page-section, #lb) .ml1-lab .ml1-c2 {
+  color: var(--cv-v2);
+}
+
+:is(main, #la) :is(.lesson-page-section, #lb) .ml1-lab .ml1-c1.is-sel {
+  background: color-mix(in srgb, var(--cv-v1) 16%, var(--surface-solid));
+  box-shadow: inset 0 0 0 1px var(--cv-v1);
+}
+
+:is(main, #la) :is(.lesson-page-section, #lb) .ml1-lab .ml1-c2.is-sel {
+  background: color-mix(in srgb, var(--cv-v2) 16%, var(--surface-solid));
+  box-shadow: inset 0 0 0 1px var(--cv-v2);
+}
+
+:is(main, #la) :is(.lesson-page-section, #lb) .ml1-views {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) minmax(0, 1.15fr);
+  gap: 16px;
+}
+
+:is(main, #la) :is(.lesson-page-section, #lb) .ml1-view {
+  display: grid;
+  align-content: start;
+  gap: 12px;
+  margin: 0;
+  padding: 14px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: var(--surface-solid);
+}
+
+:is(main, #la) :is(.lesson-page-section, #lb) .ml1-view > figcaption {
+  color: var(--muted);
+  font-size: 13px;
+  line-height: 1.6;
+}
+
+:is(main, #la) :is(.lesson-page-section, #lb) .ml1-plane canvas {
+  justify-self: center;
+  width: 100%;
+  max-width: 300px;
+  height: auto;
+  aspect-ratio: 1;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--cv-paper);
+}
+
+:is(main, #la) :is(.lesson-page-section, #lb) .ml1-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-variant-numeric: tabular-nums;
+}
+
+:is(main, #la) :is(.lesson-page-section, #lb) .ml1-table :is(th, td) {
+  padding: 8px 6px;
+  border-bottom: 1px solid var(--line);
+  text-align: center;
+}
+
+:is(main, #la) :is(.lesson-page-section, #lb) .ml1-table th {
+  color: var(--muted);
+  font-size: 13px;
+  font-weight: 600;
+}
+
+:is(main, #la) :is(.lesson-page-section, #lb) .ml1-table td {
+  border-radius: 6px;
+  font-size: 17px;
+  font-weight: 600;
+}
+
+:is(main, #la) :is(.lesson-page-section, #lb) .ml1-eqs {
+  display: grid;
+  gap: 8px;
+  padding-top: 6px;
+}
+
+:is(main, #la) :is(.lesson-page-section, #lb) .ml1-eqs > p {
+  margin: 0;
+  font-size: 18px;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+:is(main, #la) :is(.lesson-page-section, #lb) .ml1-eqs > p > b {
+  display: inline-block;
+  min-width: 24px;
+  padding: 0 4px;
+  border-radius: 6px;
+  text-align: center;
+}
+
+:is(main, #la) :is(.lesson-page-section, #lb) .ml1-readout {
+  display: grid;
+  gap: 8px;
+}
+
+:is(main, #la) :is(.lesson-page-section, #lb) .ml1-readout p,
+:is(main, #la) :is(.lesson-page-section, #lb) .ml1-list {
+  margin: 0;
+  line-height: 1.8;
+}
+
+:is(main, #la) :is(.lesson-page-section, #lb) .ml1-list {
+  padding-left: 20px;
+}
+
+@media (max-width: 900px) {
+  :is(main, #la) :is(.lesson-page-section, #lb) .ml1-views {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  }
+
+  :is(main, #la) :is(.lesson-page-section, #lb) .ml1-plane {
+    grid-column: 1 / -1;
+  }
+}
+
+@media (max-width: 560px) {
+  :is(main, #la) :is(.lesson-page-section, #lb) .ml1-views {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+@media (max-width: 720px) {
+  :is(main, #la) :is(.lesson-page-section, #lb) .bk7-grid td {
+    width: 30px;
+    height: 30px;
+    font-size: 13px;
+  }
+
+  :is(main, #la) :is(.lesson-page-section, #lb) .bk7-grid td > s.bk7-was {
+    font-size: 12px;
+    top: 0;
+    right: 1px;
+  }
+}
+
 /* formal blocks: quiet module numbers, paper cards, radii 10 */
 :is(main, #la) :is(.lesson-page-section, #lb) :is(.module-heading, .s2-module-heading, .s3-module-heading) > span:first-child,
 :is(main, #la) :is(.lesson-page-section, #lb) .definition-index {
@@ -1482,6 +2031,46 @@ body.dark :is(main, #la) :is(.lesson-page-section, #lb) .basis-label rect {
   background: none;
   color: var(--muted);
   font-size: 13px;
+}
+
+/* §3 sign wheels, one under each surface */
+:is(main, #la) .qv-s3-wheels {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 92px minmax(0, 1fr);
+  gap: 14px;
+}
+
+:is(main, #la) .qv-s3-wheels > figure {
+  margin: 0;
+}
+
+:is(main, #la) .qv-s3-wheels > figure:last-child {
+  grid-column: 3;
+}
+
+:is(main, #la) .qv-s3-wheels canvas {
+  display: block;
+  width: 100%;
+  height: 190px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--cv-paper);
+}
+
+@media (max-width: 1050px) {
+  :is(main, #la) .qv-s3-wheels {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  }
+
+  :is(main, #la) .qv-s3-wheels > figure:last-child {
+    grid-column: auto;
+  }
+}
+
+@media (max-width: 480px) {
+  :is(main, #la) .qv-s3-wheels canvas {
+    height: 160px;
+  }
 }
 
 :is(main, #la) :is(.qv-orbit-title, .qv-orbit-hint) {

@@ -41,15 +41,10 @@ defineChapter4Section("matrix-language", {
       "矩阵列向量的几何读取",
     ],
   },
-  visual: {
-    type: "transform",
-    title: "实验：先看两列，再看整个网格",
-    description: "调节矩阵的四个元素，先追踪 Ae₁、Ae₂，再观察两列怎样共同决定整张网格。",
-    prompts: [
-      "先选择“单位矩阵”，确认 e₁、e₂ 和网格都保持不变。",
-      "只改变一列，观察对应基向量和同方向网格线怎样同步移动。",
-      "选择“共线”与“零矩阵”，比较平面怎样依次缩成直线和一个点。",
-    ],
+  interactive: {
+    type: "slot",
+    title: "实验：同一张表，三种读法",
+    description: "同一个 2×2 矩阵同时读作数据表、方程组的系数和两个方向 Ae₁、Ae₂。",
   },
   example: {
     title: "例题：从矩阵的两列读出平面变化",

@@ -84,7 +84,10 @@
       root.querySelector("[data-k-coeff]").innerHTML = tex(M().formatRTex(coefficient));
       root.querySelector("[data-scale-box]").hidden = state.mode !== "scale";
       root.querySelector("[data-k-box]").hidden = state.mode !== "mul";
-      M().drawPolynomial(root.querySelector("canvas"), out, { bounds, caption: "结果多项式的图像" });
+      // the i+j=k contributions only describe a product; hide them for f±g and λf
+      const analysis = root.querySelector(".ch1-coeff-analysis");
+      if (analysis) analysis.hidden = state.mode !== "mul";
+      M().drawPolynomial(root.querySelector(".ch1-stage:not(.ch1-zero-stage) canvas"), out, { bounds, caption: "结果多项式的图像" });
     }
     root.addEventListener("change", (event) => {
       const target = event.target;
@@ -104,17 +107,109 @@
       root.querySelectorAll("[data-mode]").forEach((b) => b.classList.toggle("is-active", b.dataset.mode === state.mode));
       paint(true);
     }));
-    M().observeCanvas(root.querySelector(".ch1-stage"), () => paint(false));
+    M().observeCanvas(root.querySelector(".ch1-stage:not(.ch1-zero-stage)"), () => paint(false));
     paint(true);
+  }
+
+  /*
+   * §2 opening module: the section question “can the middle 0 be dropped?”.
+   * f = 3x³ − x + 2 ↔ (2, −1, 0, 3). Dropping the 0 gives (2, −1, 3) ↔ 3x² − x + 2:
+   * the 3 moves from the x³ slot to the x² slot, and the two curves differ
+   * (f − h = 3x²(x − 1), equal only at x = 0 and x = 1; f(2) = 24, h(2) = 12).
+   */
+  function mountZeroModule(root) {
+    const box = root.querySelector("[data-zero-module]");
+    if (!box) return;
+    const f = M().poly([2, -1, 0, 3]);
+    const h = M().poly([2, -1, 3]);
+    const bounds = { xMin: -1.6, xMax: 2.4, yMin: -4, yMax: 26 };
+    let dropped = false;
+    const stage = box.querySelector(".ch1-zero-stage");
+    const canvas = stage.querySelector("canvas");
+    const toggle = box.querySelector("[data-zero-toggle]");
+    const after = box.querySelector("[data-zero-after]");
+    const readout = box.querySelector("[data-zero-readout]");
+
+    function draw() {
+      const pal = M().getPalette ? M().getPalette() : null;
+      const st = getComputedStyle(canvas);
+      const v1 = st.getPropertyValue("--cv-v1").trim() || pal?.v1 || "#2a64a8";
+      const v2 = st.getPropertyValue("--cv-v2").trim() || pal?.v2 || "#c4552f";
+      const axis = st.getPropertyValue("--cv-axis").trim() || "#8a8d84";
+      const series = [{ p: f, color: v1, width: 2.4 }];
+      if (dropped) series.push({ p: h, color: v2, width: 2.4 });
+      const points = dropped ? [{ x: 2, y: 24, color: v1, r: 4.5 }, { x: 2, y: 12, color: v2, r: 4.5 }] : [];
+      const cam = M().drawPolynomial(canvas, f, { bounds, series, points, clipToBounds: true });
+      const ctx = canvas.getContext("2d");
+      ctx.save();
+      ctx.font = "italic 600 14px 'LA Serif Latin', 'LA Serif SC', 'Songti SC', serif";
+      const put = (text, x, y, color, dx = 8, dy = 0) => { const p = cam.toScreen(x, y); ctx.fillStyle = color; ctx.fillText(text, p.x + dx, p.y + dy); };
+      put("3x³ − x + 2", 1.62, 14.5, v1, -110, 0);
+      if (dropped) {
+        put("3x² − x + 2", -1.55, 15.5, v2, 0, 0);
+        const top = cam.toScreen(2, 24);
+        const bottom = cam.toScreen(2, 0);
+        ctx.strokeStyle = axis; ctx.lineWidth = 1; ctx.setLineDash([2, 3]);
+        ctx.beginPath(); ctx.moveTo(top.x, top.y); ctx.lineTo(bottom.x, bottom.y); ctx.stroke();
+        ctx.setLineDash([]);
+        ctx.font = "600 13px 'LA Serif Latin', 'LA Serif SC', 'Songti SC', serif";
+        put("24", 2, 24, v1, 9, 4);
+        put("12", 2, 12, v2, 9, 4);
+      }
+      ctx.restore();
+    }
+
+    function paint() {
+      after.hidden = !dropped;
+      toggle.textContent = dropped ? "恢复中间的 0" : "删去中间的 0";
+      readout.hidden = !dropped || !gate?.revealed;
+      draw();
+    }
+
+    const gate = window.LAPredictGate?.mount(box.querySelector("[data-zero-gate]"), {
+      root: box,
+      manual: true,
+      key: "visuals/ch1/section1-4-presentation.js#middle-zero",
+      question: `${tex("f(x)=3x^3-x+2")} 的系数序列是 ${tex("(2,-1,0,3)")}。删去中间的 0，写成 ${tex("(2,-1,3)")}，还是同一个多项式吗？`,
+      options: [
+        [`不是：3 挪到了 ${tex("x^2")} 的位置，变成 ${tex("3x^2-x+2")}`, true, ""],
+        ["是：系数为 0 的项本来就不存在", false, `0 本身不贡献，但它占着 ${tex("x^2")} 的位置；删掉后，后面的系数都往前挪一位。`],
+        ["是：只是写法更短", false, `${tex("(2,-1,3)")} 读作 ${tex("2-x+3x^2")}，在 x=2 处的值是 12，而 f(2)=24。`],
+        ["只有次数变了，图像不变", false, "两条曲线只在 x=0 和 x=1 处相交，其他地方都分开了。"],
+      ],
+      right: `✓ 系数序列的第 k 位就是 ${tex("x^k")} 的系数，位置本身就是次数。中间的 0 必须保留；两个多项式相等，指每个同次项的系数都相等。`,
+    });
+
+    toggle.addEventListener("click", () => {
+      dropped = !dropped;
+      if (dropped) gate?.acted();
+      paint();
+    });
+    M().observeCanvas(stage, draw);
+    paint();
   }
 
   function interactive2(el, section) {
     lab(el, "系数带工作台", section.interactive.description,
       `<button type="button" data-mode="mul" class="is-active">fg</button><button type="button" data-mode="add">f+g</button><button type="button" data-mode="sub">f−g</button><button type="button" data-mode="scale">λf</button><span class="ch1-control-separator"></span><button type="button" data-preset="default">默认</button><button type="button" data-preset="cancel">首项抵消</button><button type="button" data-preset="fraction">分数系数</button><button type="button" data-preset="zero">零多项式</button>`,
-      `<div class="ch1-two-col"><div class="ch1-panel"><div><h4>f 的系数带</h4><div data-f-strip></div><div class="ch1-inline-equation">${tex("f=")}<span data-f-tex></span> · deg f=<strong data-deg-f></strong></div></div><div><h4>g 的系数带</h4><div data-g-strip></div><div class="ch1-inline-equation">${tex("g=")}<span data-g-tex></span> · deg g=<strong data-deg-g></strong></div></div><div data-scale-box hidden><label class="ch1-field">λ（支持分数）<input type="text" value="2" data-scale></label></div><div data-k-box hidden><label class="ch1-slider-row"><span>结果次数 k</span><input type="range" min="0" max="8" value="3" data-k><output data-k-value>3</output></label></div></div><div class="ch1-stage"><canvas aria-label="结果多项式固定坐标图像"></canvas></div></div>
+      `<section class="ch1-learning-module ch1-zero-module" data-zero-module>
+         <div class="ch1-module-heading"><span>01</span><div><h4>中间的 0 能不能省掉</h4></div></div>
+         <div data-zero-gate></div>
+         <div class="ch1-zero-body">
+           <div class="ch1-zero-strips">
+             <div class="ch1-zero-strip is-f"><b>${tex("f")} 的系数</b>${M().coefficientStrip(M().poly([2, -1, 0, 3]))}</div>
+             <div class="ch1-zero-strip is-h" data-zero-after hidden><b>删去 0 后</b>${M().coefficientStrip(M().poly([2, -1, 3]))}</div>
+             <div class="ch1-zero-actions"><button type="button" class="ch3l-btn is-primary" data-zero-toggle>删去中间的 0</button></div>
+             <p class="ch1-zero-readout" data-zero-readout hidden>x=2 时，${tex("f(2)=24")}，而 ${tex("3\\cdot2^2-2+2=12")}。两者之差 ${tex("3x^2(x-1)")}，只在 x=0、x=1 处为 0。</p>
+           </div>
+           <div class="ch1-stage ch1-zero-stage"><canvas aria-label="3x³−x+2 与 3x²−x+2 的图像"></canvas></div>
+         </div>
+       </section>
+       <div class="ch1-two-col"><div class="ch1-panel"><div><h4>f 的系数带</h4><div data-f-strip></div><div class="ch1-inline-equation">${tex("f=")}<span data-f-tex></span> · deg f=<strong data-deg-f></strong></div></div><div><h4>g 的系数带</h4><div data-g-strip></div><div class="ch1-inline-equation">${tex("g=")}<span data-g-tex></span> · deg g=<strong data-deg-g></strong></div></div><div data-scale-box hidden><label class="ch1-field">λ（支持分数）<input type="text" value="2" data-scale></label></div><div data-k-box hidden><label class="ch1-slider-row"><span>结果次数 k</span><input type="range" min="0" max="8" value="3" data-k><output data-k-value>3</output></label></div></div><div class="ch1-stage"><canvas aria-label="结果多项式固定坐标图像"></canvas></div></div>
        <div class="ch1-result-band"><div><span>结果</span><strong data-out-tex></strong><small>次数：<span data-deg-out></span></small></div><div data-out-strip></div></div>
        <div class="ch1-two-col"><div><h4>指定次数贡献</h4><div class="ch1-table-wrap"><table class="ch1-table"><thead><tr><th>f 项</th><th>g 项</th><th>乘积</th></tr></thead><tbody data-contributions></tbody></table></div></div><div class="ch1-callout"><strong>${tex("[x^k](fg)")} 的当前值</strong><p>当 k=<span data-k-value></span> 时，系数为 <span data-k-coeff></span>。</p><p class="ch1-muted">输入允许整数、小数与分数，例如 −3/2；计算在有理数上精确完成。</p></div></div>`);
     mountCoefficients(el);
+    mountZeroModule(el);
   }
 
   // §3 — division stepper

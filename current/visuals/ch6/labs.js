@@ -58,8 +58,8 @@
       task: `${tex("P[x]_3")} 中取基 ${tex("1,x,x^2")}，每个多项式 ${tex("a_0+a_1x+a_2x^2")} 对应坐标 ${tex("(a_0,a_1,a_2)")}。左图是曲线，右图是坐标点；拖动右图的圆点，左边的曲线跟着变。`,
     });
     const PRESETS = {
-      lay: { label: "1+2x²，4+x+5x²，3+2x", polys: [[1, 0, 2], [4, 1, 5], [3, 2, 0]] },
-      basis: { label: "1+x，x+x²，1+x²", polys: [[1, 1, 0], [0, 1, 1], [1, 0, 1]] },
+      lay: { label: "1+2x²，4+x+5x²，3+2x", polys: [[1, 0, 2], [4, 1, 5], [3, 2, 0]], range: 5.5 },
+      basis: { label: "1+x，x+x²，1+x²", polys: [[1, 1, 0], [0, 1, 1], [1, 0, 1]], range: 3.5 },
     };
     const Q = [1, 2, 3];
     const state = { polys: PRESETS.lay.polys.map((p) => p.slice()), c: [F(0), F(0), F(0)], revealed: false };
@@ -109,14 +109,19 @@
         const vs = ps.map((p) => p.map(num));
         const objs = state.revealed ? [...K().spanObjects(ps, "subspace", { alpha: 0.1 })] : [];
         vs.forEach((v, i) => objs.push({ type: "arrow", to: v, color: COLORS_DRAG3[i], width: 2.2, label: `p${SUB[i]}` }));
+        /*
+         * Head-to-tail chain c₁p₁ → +c₂p₂ → +c₃p₃, each step in its vector's
+         * colour; a dotted gap remains until the chain ends exactly on q.
+         */
         let tail = [0, 0, 0];
         ps.forEach((p, i) => {
           if (M().isZero(state.c[i])) return;
           const head = S().vec.add(tail, p.map((x) => num(M().mul(x, state.c[i]))));
-          objs.push({ type: "arrow", from: tail, to: head, color: "image", width: 3 });
+          objs.push({ type: "arrow", from: tail, to: head, color: COLORS_DRAG3[i], width: 3.2, label: `c${SUB[i]}p${SUB[i]}`, labelAt: S().vec.add(tail, S().vec.mul(S().vec.sub(head, tail), S().vec.len(tail) < 1e-9 ? 0.78 : 0.42)) });
           tail = head;
         });
-        objs.push({ type: "point", p: Q, color: hit ? "image" : "axis", r: 6.5, hollow: !hit, label: "q" });
+        if (anyC && !hit) objs.push({ type: "segment", a: tail, b: Q, color: "axis", dash: [2, 3], width: 1.2 });
+        objs.push({ type: "point", p: Q, color: hit ? "image" : "axis", r: hit ? 7.5 : 6.5, hollow: !hit, label: "q" });
         return objs;
       });
       scene.setHandles(
@@ -147,6 +152,7 @@
       }
       html += `<p>${tex(`c_1p_1+c_2p_2+c_3p_3=${K().polyTex(cm)}`)}</p>`;
       html += hit ? `<p class="ch6l-ok">命中 q：坐标为 ${tex(vecTex(state.c))}</p>` : "";
+      if (hit && state.revealed && rank === 3) html += `<p class="ch6l-muted">三段折线恰好停在 q。换任何一个系数，终点都会离开 q：基下的坐标唯一。</p>`;
       info.innerHTML = html;
       info.dataset.rank = String(rank);
       info.dataset.hit = String(hit);
@@ -175,6 +181,7 @@
       state.c = [F(0), F(0), F(0)];
       controls.querySelectorAll("input[type=range]").forEach((input) => (input.value = "0"));
       scene.resetView(false);
+      scene.setRange(PRESETS[key].range, false);
       redraw();
     }
 

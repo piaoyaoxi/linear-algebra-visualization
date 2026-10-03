@@ -759,7 +759,7 @@
     const lab = labShell(root, {
       kind: "orthogonal-complement",
       title: "W 与它的正交补 W⊥",
-      task: "W 由 w₁（和 w₂）张成，三个圆点都能拖动（每次半格）。回答预测后，图中出现 W⊥，以及 α 沿 W 与 W⊥ 的分解。",
+      task: "W 由 w₁（和 w₂）张成，三个圆点都能拖动（每次半格）。作出预测并动手操作后，图中出现 W⊥，以及 α 沿 W 与 W⊥ 的分解。",
     });
     const toolbar = el("div", "ch9l-toolbar");
     lab.append(toolbar);
@@ -800,6 +800,25 @@
       return [0, 0, 1];
     }
 
+    /*
+     * α₂ ⊥ W at the foot α₁: a right-angle mark with each of two orthogonal
+     * directions of W (one when W is a line), and a small tile of W under it.
+     */
+    function footMark(c, a1, a2) {
+      const V = V3();
+      if (!c.r) return [];
+      const u = V.norm(V.len(a1) > 1e-9 ? a1 : toN(c.basis[0]));
+      const s = 0.36;
+      const objs = [...rightAngle3(a1, u, a2, s)];
+      if (c.r === 2) {
+        const v = V.norm(V.cross(normalOf(c), u));
+        objs.push(...rightAngle3(a1, v, a2, s));
+        const P = (x, y) => V.add(a1, V.add(V.mul(u, x), V.mul(v, y)));
+        objs.push({ type: "polygon", pts: [P(0, 0), P(s, 0), P(s, s), P(0, s)], color: "subspace", alpha: 0.45, strokeAlpha: 0.9 });
+      }
+      return objs.map((o) => (o.type === "segment" ? { ...o, width: 1.8 } : o));
+    }
+
     function redraw() {
       const V = V3();
       const c = compute();
@@ -821,10 +840,10 @@
         if (state.revealed) {
           if (V.len(a1) > 1e-9) objs.push({ type: "arrow", to: a1, color: "image", width: 3, label: "α₁" });
           if (V.len(a2) > 1e-9) {
-            objs.push({ type: "arrow", from: a1, to: state.alpha, color: "v2", width: 3, label: "α₂" });
+            objs.push({ type: "arrow", from: a1, to: state.alpha, color: "v2", width: 3, label: "α₂", labelAt: V.add(V.mul(V.add(a1, state.alpha), 0.5), V.mul(V.norm(a1.some((x) => Math.abs(x) > 1e-9) ? a1 : [1, 0, 0]), 0.3)) });
             objs.push({ type: "segment", a: [0, 0, 0], b: a2, color: "v2", dash: [4, 4], width: 1.4 });
             objs.push({ type: "segment", a: a2, b: state.alpha, color: "image", dash: [4, 4], width: 1.4 });
-            objs.push(...rightAngle3(a1, V.len(a1) > 1e-9 ? V.mul(a1, -1) : c.basis[0] ? toN(c.basis[0]) : [1, 0, 0], a2, 0.22));
+            objs.push(...footMark(c, a1, a2));
           }
         }
         return objs;
@@ -843,7 +862,7 @@
         if (checks.length) lines.push(`<p class="ch9l-ok">${checks.map((v, i) => tex(`(\\alpha_2,${vtex(c.basis[i])})=${v}`)).join("，")}：${tex("\\alpha_2\\in W^\\perp")}。</p>`);
         lines.push(`<p class="ch9l-muted">${tex(`\\dim W+\\dim W^\\perp=${c.r}+${c.perp.length}=${c.r + c.perp.length}`)}</p>`);
       } else {
-        lines.push(`<p class="ch9l-muted">回答预测后显示 W⊥ 和 α 的分解。</p>`);
+        lines.push(`<p class="ch9l-muted">作出预测并动手操作后，显示 W⊥ 和 α 的分解。</p>`);
       }
       info.innerHTML = lines.join("");
       tools.querySelector("[data-sub-look]").textContent = c.r === 1 ? "沿 W 看" : "沿 W⊥ 看";
@@ -870,7 +889,9 @@
           { text: `方向为 ${tex("(1,1,1)")} 的直线`, why: `${tex("(1,1,1)\\cdot(1,1,0)=2\\ne0")}。` },
           { text: "另一个平面", why: "W⊥ 的维数是 3−2=1。" },
         ],
-        right: `${tex("(1,-1,1)")} 与 ${tex("(1,1,0)")}、${tex("(0,1,1)")} 的内积都是 0。现在拖动 α，看它怎样拆成两部分。`,
+        right: `${tex("(1,-1,1)")} 与 ${tex("(1,1,0)")}、${tex("(0,1,1)")} 的内积都是 0。α 拆成 W 里的 α₁ 与 W⊥ 里的 α₂；在垂足 α₁ 处，α₂ 与 W 中两个互相垂直的方向都成直角。`,
+        defer: lab,
+        actHint: "已记下你的预测。拖动 α 或旋转画面，W⊥ 随后出现。",
       },
       () => {
         state.revealed = true;
@@ -1069,7 +1090,7 @@
     const right = el("div", "ch9l-view", `<div class="ch9l-view-title">数据点与直线 ${tex("y=C+Dt")}</div>`);
     pair.append(left, right);
     lab.append(pair);
-    const scene = S().create(left, { range: 3.5, label: "b 在列空间上的投影", yaw: 0.3, pitch: 0.35, axisNames: ["b₁", "b₂", "b₃"], hint: "拖动 b 或旋转" });
+    const scene = S().create(left, { range: 3.5, label: "b 在列空间上的投影", yaw: 0.3, pitch: 0.35, axisNames: ["b₁", "b₂", "b₃"], hint: "拖动 b 或旋转", spreadLabels: true });
     const fit = P().create(right, { bounds: { x: [-0.5, 2.6], y: [-3.8, 3.8] }, equal: false, label: "数据点与拟合直线", hint: "上下拖动数据点", axisNames: ["t", "y"], ticks: 1, grid: true });
     lab.ch9Views = { scene, fit };
     const controls = el("div", "ch9l-controls");
@@ -1111,14 +1132,23 @@
           { type: "arrow", to: [1, 1, 1], color: "subspace", width: 1.8, alpha: 0.7, label: "a₁" },
           { type: "arrow", to: [0, 1, 2], color: "subspace", width: 1.8, alpha: 0.7, label: "a₂" },
           { type: "point", p: Ax, color: "image", r: 5, hollow: true, label: "Ax" },
-          { type: "segment", a: state.b, b: Ax, color: "axis", dash: [4, 5], width: 1.4 },
+          state.revealed ? null : { type: "segment", a: state.b, b: Ax, color: "axis", dash: [4, 5], width: 1.4 },
           { type: "arrow", to: state.b, color: "drag", width: 3, label: "b" },
         ];
         if (state.revealed) {
           objs.push({ type: "arrow", to: p, color: "image", width: 3, label: "p" });
-          if (V().len(V().sub(state.b, p)) > 1e-9) {
-            objs.push({ type: "arrow", from: p, to: state.b, color: "v2", width: 3, label: "e" });
-            objs.push(...rightAngle3(p, V().len(p) > 1e-9 ? V().mul(p, -1) : [1, 1, 1], V().sub(state.b, p), 0.3));
+          const eLen = V().len(V().sub(state.b, p));
+          const gLen = V().len(V().sub(Ax, p));
+          // the right triangle b–p–Ax: legs e (⊥ W) and p−Ax (in W), hypotenuse b−Ax
+          if (eLen > 1e-9 && gLen > 1e-9) {
+            objs.push({ type: "polygon", pts: [state.b, p, Ax], color: "image", alpha: 0.1, strokeAlpha: 0 });
+            objs.push({ type: "segment", a: p, b: Ax, color: "image", width: 2.2 });
+            objs.push({ type: "segment", a: state.b, b: Ax, color: "axis", width: 1.6 });
+            objs.push(...rightAngle3(p, V().sub(state.b, p), V().sub(Ax, p), 0.32).map((o) => ({ ...o, width: 1.8 })));
+          }
+          if (eLen > 1e-9) {
+            objs.push({ type: "arrow", from: p, to: state.b, color: "v2", width: 3, label: "e", labelAt: V().mul(V().add(p, state.b), 0.5) });
+            if (gLen <= 1e-9) objs.push(...rightAngle3(p, V().len(p) > 1e-9 ? V().mul(p, -1) : [1, 1, 1], V().sub(state.b, p), 0.3));
           }
         }
         return objs;
@@ -1127,7 +1157,8 @@
       const xh = toN(s.xh);
       fit.setObjects(() => {
         const objs = [{ type: "line", p: [0, state.C], dir: [1, state.D], color: "image", dash: [6, 5], width: 1.8, label: "试的直线" }];
-        [0, 1, 2].forEach((t) => objs.push({ type: "segment", a: [t, state.b[t]], b: [t, Ax[t]], color: "axis", width: 1.4, dash: [3, 3] }));
+        // residuals of the trial line: faint, in the colour of that line
+        [0, 1, 2].forEach((t) => objs.push({ type: "segment", a: [t - 0.04, state.b[t]], b: [t - 0.04, Ax[t]], color: "image", width: 2, dash: [3, 3], alpha: 0.45 }));
         if (state.revealed) {
           objs.push({ type: "line", p: [0, xh[0]], dir: [1, xh[1]], color: "image", width: 2.6, label: "最佳直线" });
           [0, 1, 2].forEach((t) => objs.push({ type: "segment", a: [t + 0.04, state.b[t]], b: [t + 0.04, p[t]], color: "v2", width: 2.6 }));
@@ -1153,9 +1184,10 @@
       ];
       if (state.revealed) {
         parts.push(`<p data-ls-best>${tex(`\\hat x=${vtex(s.xh)},\\ p=A\\hat x=${vtex(s.p)},\\ e=${vtex(s.e)}`)}</p>`);
-        parts.push(`<p class="ch9l-ok">${tex(`(e,a_1)=${lf(dotF(s.e, A.map((r) => r[0])))},\\ (e,a_2)=${lf(dotF(s.e, A.map((r) => r[1])))}`)}；${tex(`|b-Ax|^2=${lf(s.sse)}=|e|^2+|p-Ax|^2=${lf(s.best)}+${lf(s.gap)}`)}</p>`);
+        parts.push(`<p class="ch9l-ok">${tex(`(e,a_1)=${lf(dotF(s.e, A.map((r) => r[0])))},\\ (e,a_2)=${lf(dotF(s.e, A.map((r) => r[1])))}`)}：e 垂直于 W。</p>`);
+        parts.push(`<p data-ls-tri>${M().isZero(s.gap) || M().isZero(s.best) ? "" : "直角三角形 b–p–Ax（直角在 p）："}${tex(`|b-Ax|^2=${lf(s.sse)}=|e|^2+|p-Ax|^2=${lf(s.best)}+${lf(s.gap)}`)}</p>`);
         if (M().isZero(s.gap)) parts.push(`<p class="ch9l-ok">试的直线就是最佳直线。</p>`);
-      } else parts.push(`<p class="ch9l-muted">调 C、D 让 ${tex("|b-Ax|^2")} 尽量小；回答预测后显示最佳直线与投影。</p>`);
+      } else parts.push(`<p class="ch9l-muted">调 C、D 让 ${tex("|b-Ax|^2")} 尽量小；作出预测并动手操作后，显示最佳直线与投影。</p>`);
       status.innerHTML = parts.join("");
     }
 
@@ -1176,7 +1208,9 @@
           { text: "e 与 b 正交", why: "与 e 正交的是 p=Ax̂，b 本身不一定。" },
           { text: "e 的三个分量相等", why: "那样 e 平行于 (1,1,1)，在平面 W 里，不会垂直于 W。" },
         ],
-        right: `这里 ${tex("\\hat x=(2,0)")}，最佳直线是 ${tex("y=2")}，${tex("e=(1,-2,1)")}，正好沿 W 的法向。点“沿 e 的方向看”，b 与 p 重合。`,
+        right: `这里 ${tex("\\hat x=(2,0)")}，最佳直线是 ${tex("y=2")}，${tex("e=(1,-2,1)")}，正好沿 W 的法向。b、p、Ax 围成直角三角形，直角在 p：${tex("|b-Ax|^2=|e|^2+|p-Ax|^2")}，所以 Ax 取 p 时最小。`,
+        defer: lab,
+        actHint: "已记下你的预测。调 C、D 或拖动 b，结论随后出现。",
       },
       () => {
         state.revealed = true;

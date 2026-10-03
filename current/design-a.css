@@ -995,3 +995,74 @@ body .ch6l-bases {
 body .ch6l-bases > li {
   margin: 0;
 }
+
+/* ch7 §4 angle strip under the plane: ψ(θ) from the line of v to Av; zeros are eigen-lines */
+body .ch7l-anglestrip {
+  margin: 10px 0 0;
+  padding: 6px 8px 4px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--cv-paper);
+}
+
+body .ch7l-anglestrip > svg {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+body .ch7l-anglestrip > figcaption {
+  margin-top: 2px;
+  color: var(--muted);
+  font-size: 13px;
+  line-height: 1.6;
+}
+
+body .ch7l-anglestrip .ch7s-grid {
+  stroke: var(--cv-grid-major);
+  stroke-width: 1;
+}
+
+body .ch7l-anglestrip .ch7s-zero {
+  stroke: var(--cv-axis);
+  stroke-width: 1;
+}
+
+body .ch7l-anglestrip .ch7s-tick {
+  fill: var(--faint);
+  font-family: var(--font-serif);
+  font-size: 11px;
+  font-variant-numeric: tabular-nums;
+}
+
+body .ch7l-anglestrip .ch7s-trace {
+  fill: none;
+  stroke: var(--cv-image);
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+body .ch7l-anglestrip .ch7s-now {
+  fill: var(--cv-drag);
+  stroke: var(--cv-paper);
+  stroke-width: 1.5;
+}
+
+body .ch7l-anglestrip .ch7s-eigen {
+  stroke: var(--cv-subspace);
+  stroke-width: 1.2;
+  stroke-dasharray: 5 5;
+}
+
+body .ch7l-anglestrip .ch7s-eigen-dot {
+  fill: var(--cv-subspace);
+}
+
+body .ch7l-anglestrip .ch7s-eigen-label {
+  fill: var(--cv-subspace);
+  font-family: var(--font-serif);
+  font-size: 12px;
+  font-style: italic;
+  font-weight: 600;
+}

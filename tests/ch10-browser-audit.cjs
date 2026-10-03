@@ -119,6 +119,9 @@ async function operateLab(page, route, label) {
   assert(await lab.locator(".ch7l-result").isHidden(), `${label}: conclusion opened without a prediction`);
   await lab.locator(".ch7l-predict-options [data-i]").first().click();
   assert(await lab.locator(".ch7l-predict-feedback").isVisible(), `${label}: prediction feedback missing`);
+  // picking alone opens nothing: answer lines and readouts wait for an action
+  assert(await lab.locator(".ch7l-result").isHidden(), `${label}: conclusion opened on the prediction click`);
+  assert((await lab.locator(".ch7l-side").innerText()).includes("再动手操作一次"), `${label}: readout shown before acting`);
   const before = await lab.locator(".ch7l-side").innerText();
   await act();
   assert((await lab.locator(".ch7l-side").innerText()) !== before || route.act.chip != null, `${label}: control did not change the readout`);

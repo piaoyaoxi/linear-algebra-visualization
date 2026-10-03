@@ -115,16 +115,45 @@
       render();
     }
 
-    function text(str, x, y, color, font, align = "left") {
+    /*
+     * Where a label lands: kept inside the canvas and, when `avoid` is given,
+     * moved off the boxes of labels already drawn (axis names included).
+     */
+    function place(str, x, y, font, align, avoid) {
       ctx.save();
-      ctx.font = font || "650 13px 'LA Serif Latin', 'LA Serif SC', 'Songti SC', serif";
+      ctx.font = font;
+      const width = ctx.measureText(str).width;
+      ctx.restore();
+      const leftOf = (cx) => (align === "center" ? cx - width / 2 : align === "right" || align === "end" ? cx - width : cx);
+      const fit = (cx, cy) => {
+        const left = leftOf(cx);
+        return [cx + Math.max(4 - left, 0) - Math.max(left + width - (size.w - 4), 0), Math.min(Math.max(cy, 9), size.h - 9)];
+      };
+      let [px, py] = fit(x, y);
+      if (avoid) {
+        const gap = 4;
+        const hits = (cx, cy) => avoid.some((r) => leftOf(cx) < r.x + r.w + gap && leftOf(cx) + width + gap > r.x && Math.abs(cy - r.y) < 15);
+        const tries = [[0, 0], [0, -16], [0, 16], [-width - 8, 0], [0, -32], [0, 32], [-width - 8, -16], [-width - 8, 16]];
+        for (const [ox, oy] of tries) {
+          const [cx, cy] = fit(x + ox, y + oy);
+          if (!hits(cx, cy)) {
+            [px, py] = [cx, cy];
+            break;
+          }
+        }
+        avoid.push({ x: leftOf(px), y: py, w: width });
+      }
+      return [px, py];
+    }
+
+    function text(str, x, y, color, font, align = "left", avoid) {
+      font = font || "650 13px 'LA Serif Latin', 'LA Serif SC', 'Songti SC', serif";
+      // Keep labels inside the canvas on narrow screens.
+      [x, y] = place(str, x, y, font, align, avoid);
+      ctx.save();
+      ctx.font = font;
       ctx.textAlign = align;
       ctx.textBaseline = "middle";
-      // Keep labels inside the canvas on narrow screens.
-      const width = ctx.measureText(str).width;
-      const left = align === "center" ? x - width / 2 : align === "right" || align === "end" ? x - width : x;
-      x += Math.max(4 - left, 0) - Math.max(left + width - (size.w - 4), 0);
-      y = Math.min(Math.max(y, 9), size.h - 9);
       ctx.lineWidth = 4;
       ctx.strokeStyle = palette(host).dark ? "rgba(14,18,27,.85)" : "rgba(255,255,255,.92)";
       ctx.strokeText(str, x, y);
@@ -196,8 +225,9 @@
       ctx.stroke();
       ctx.restore();
       const names = options.axisNames || ["x₁", "x₂"];
-      text(names[0], size.w - 10, o.y - 12, pal.muted, "600 12px 'LA Serif Latin', 'LA Serif SC', 'Songti SC', serif", "right");
-      text(names[1], o.x + 8, 12, pal.muted, "600 12px 'LA Serif Latin', 'LA Serif SC', 'Songti SC', serif");
+      const placed = [];
+      text(names[0], size.w - 10, o.y - 12, pal.muted, "600 12px 'LA Serif Latin', 'LA Serif SC', 'Songti SC', serif", "right", placed);
+      text(names[1], o.x + 8, 12, pal.muted, "600 12px 'LA Serif Latin', 'LA Serif SC', 'Songti SC', serif", "left", placed);
       if (options.ticks) {
         const step = options.ticks;
         for (let x = Math.ceil(f.view.x[0] / step) * step; x <= f.view.x[1]; x += step) {
@@ -402,7 +432,7 @@
 
       labels.forEach((lab) => {
         const q = lab.q || f.toScreen(lab.p);
-        text(lab.text, q.x + (lab.dx ?? (lab.q ? 0 : 6)), q.y + (lab.dy ?? (lab.q ? 0 : -8)), lab.color, lab.font, lab.align);
+        text(lab.text, q.x + (lab.dx ?? (lab.q ? 0 : 6)), q.y + (lab.dy ?? (lab.q ? 0 : -8)), lab.color, lab.font, lab.align, placed);
       });
     }
 

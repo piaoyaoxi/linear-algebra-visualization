@@ -62,9 +62,21 @@ async function open(page, id, dark) {
   await assertLayout(page, id);
 }
 
-const predict = async (page, label) => {
+/*
+ * Predict -> act -> reveal: picking only records the prediction; the verdict
+ * and the conclusion appear after the first action on the lab.
+ */
+const predict = async (page, label, act) => {
   await page.locator(".ch6l-predict-options button", { hasText: label }).first().click();
+  const feedback = await page.locator(".ch6l-predict-feedback").first().innerText();
+  if (/✓|再对照/.test(feedback) || (await page.locator(".ch6l-result").first().isVisible())) throw new Error(`prediction "${label}" graded before any action`);
+  if (!act) return;
+  await act();
   await page.locator(".ch6l-result").first().waitFor({ state: "visible" });
+};
+const resultHas = async (page, re, label) => {
+  const text = await page.locator(".ch6l-result").first().innerText();
+  if (!re.test(text)) throw new Error(`${label}: conclusion does not match ${re}`);
 };
 const attr = (page, name) => page.locator(`.ch6l-lab [data-${name}]`).first().getAttribute(`data-${name}`);
 const expectAttr = async (page, name, value, label) => {
@@ -76,24 +88,25 @@ async function exercise(page) {
   /* §3: the preset is dependent; after predicting, the exact rank verdict appears. */
   await open(page, "basis-coordinates");
   if (await page.locator(".ch6l-result").isVisible()) throw new Error("§3 conclusion visible before prediction");
-  await predict(page, "共面");
+  await predict(page, "共面", () => page.locator("[data-look]").click());
   await expectAttr(page, "rank", "2", "§3 Lay preset");
+  await resultHas(page, /线性相关，不是基/, "§3 Lay preset");
   await page.locator(".ch6l-toolbar button", { hasText: "1+x" }).click();
   await expectAttr(page, "rank", "3", "§3 basis preset");
+  await resultHas(page, /是一组基/, "§3 basis preset");
   await page.locator("[data-solve]").click();
   await expectAttr(page, "hit", "true", "§3 solve q");
 
   /* §4: drag a to 1; A_a·Y must reproduce the fixed X exactly. */
   await open(page, "change-of-basis");
-  await predict(page, "(0,2,1)");
-  await page.locator("[data-a]").fill("1");
+  await predict(page, "(0,2,1)", () => page.locator("[data-a]").fill("1"));
   await expectAttr(page, "check", "true", "§4 X=AY at a=1");
   await page.locator("[data-a]").fill("-1.5");
   await expectAttr(page, "check", "true", "§4 X=AY at a=-3/2");
 
   /* §6: two planes always share a line; a line lying in the plane drops the sum. */
   await open(page, "intersection-sum");
-  await predict(page, "不可以");
+  await predict(page, "不可以", () => page.locator(".ch6l-toolbar button", { hasText: "两个平面" }).click());
   await expectAttr(page, "ledger", "2,2,1,3", "§6 two planes");
   await page.locator(".ch6l-toolbar button", { hasText: "两平面重合" }).click();
   await expectAttr(page, "ledger", "2,2,2,2", "§6 equal planes");
@@ -104,15 +117,21 @@ async function exercise(page) {
 
   /* §7: oblique split, then flatten u into the plane; second mode is not direct. */
   await open(page, "direct-sum");
-  await predict(page, "越来越长");
+  await predict(page, "越来越长", () => page.locator("[data-low]").click());
   await expectAttr(page, "state", "direct", "§7 line ⊕ plane");
+  await resultHas(page, /U\oplus W|⊕/, "§7 line ⊕ plane");
   await page.locator("[data-flat]").click();
   await expectAttr(page, "state", "inside", "§7 line inside plane");
+  await resultHas(page, /不再是直和/, "§7 line inside plane");
+  await page.locator("[data-vflat]").click();
+  await resultHas(page, /无穷多种/, "§7 u and v inside the plane");
   await page.locator(".ch6l-toolbar button", { hasText: "三条直线" }).click();
   await predict(page, "不是，零向量");
   await expectAttr(page, "state", "not-direct", "§7 three coplanar lines");
   await page.locator("[data-lift]").click();
+  await page.locator(".ch6l-result").first().waitFor({ state: "visible" });
   await expectAttr(page, "state", "direct", "§7 lifted third line");
+  await resultHas(page, /直和成立/, "§7 lifted third line");
 
   /* §8: coefficient and value maps close the parallelogram; squaring breaks it. */
   await open(page, "isomorphism");

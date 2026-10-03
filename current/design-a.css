@@ -1073,3 +1073,15 @@ body .ch7l-anglestrip .ch7s-eigen-label {
 body .ch9l-body > .ch9l-stage {
   align-content: start;
 }
+
+/* ch10 §3: the mode chips stay one segmented control; the swap action is a plain button beside it */
+body .ch10l-moderow {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+}
+
+body .ch10l-moderow > .ch7l-toolbar {
+  margin: 0;
+}

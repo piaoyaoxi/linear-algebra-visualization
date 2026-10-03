@@ -87,8 +87,22 @@
     grid.append(controls, info);
     lab.append(grid);
     const gateHost = el("div");
-    const result = K().resultBox(`<p>坐标把 ${tex("P[x]_3")} 一对一地搬到 ${tex("P^3")}，并且保持加法和数乘。于是 ${tex("p_1,p_2,p_3")} 线性相关，当且仅当三个坐标点与原点共面。预设的三条曲线两两不成比例，坐标点却在同一平面上：${tex("3+2x=2(4+x+5x^2)-5(1+2x^2)")}。换成一组基后，每个 ${tex("q")} 恰有一组坐标。</p>`);
+    const result = K().resultBox("");
     lab.append(gateHost, result);
+    let gate = null;
+    const acted = () => gate?.acted();
+
+    /* The conclusion explains the polynomials now on screen. */
+    function conclusion(ps, det) {
+      const lead = `坐标把 ${tex("P[x]_3")} 一对一地搬到 ${tex("P^3")}，并且保持加法和数乘。于是 ${tex("p_1,p_2,p_3")} 线性相关，当且仅当三个坐标点与原点共面。`;
+      const cert = M().relationCertificate(ps);
+      if (cert.dependent) {
+        const pairwise = [[0, 1], [0, 2], [1, 2]].every(([i, j]) => M().rankOf(K().colsToRows([ps[i], ps[j]])) === 2);
+        return `<p>${lead}现在 ${tex(M().latexRelation(cert.coeffs, ["p_1", "p_2", "p_3"]))}：三个坐标点与原点共面，${tex("p_1,p_2,p_3")} 线性相关，不是基。${pairwise ? "三条曲线两两不成比例，三个一起仍然相关。" : ""}</p>`;
+      }
+      const part = M().particularSolution([0, 1, 2].map((k) => [ps[0][k], ps[1][k], ps[2][k], fv(Q)[k]]));
+      return `<p>${lead}现在坐标矩阵的行列式为 ${tex(fmt(det))}，不为 0：三个坐标点不与原点共面，${tex("p_1,p_2,p_3")} 是一组基。于是每个 ${tex("q")} 恰有一组坐标，${tex("q=1+2x+3x^2")} 的坐标是 ${tex(vecTex(part.x))}，三段折线只有这一种走法停在 q。</p>`;
+    }
 
     controls.innerHTML = `<h4>组合 ${tex("c_1p_1+c_2p_2+c_3p_3")}，目标 ${tex("q=1+2x+3x^2")}</h4>
       ${[0, 1, 2].map((i) => rangeInput(tex(`c_${i + 1}`), `c${i}`, -3, 3, 0.5, 0)).join("")}
@@ -145,6 +159,7 @@
           set: (p) => {
             state.polys[i] = p;
             redraw();
+            acted();
           },
         })),
       );
@@ -167,6 +182,7 @@
       html += hit ? `<p class="ch6l-ok">命中 q：坐标为 ${tex(vecTex(state.c))}</p>` : "";
       if (hit && state.revealed && rank === 3) html += `<p class="ch6l-muted">三段折线恰好停在 q。换任何一个系数，终点都会离开 q：基下的坐标唯一。</p>`;
       info.innerHTML = html;
+      if (state.revealed) result.innerHTML = `<strong>结论</strong>${conclusion(ps, det)}`;
       info.dataset.rank = String(rank);
       info.dataset.hit = String(hit);
       controls.querySelectorAll("[data-c0-v],[data-c1-v],[data-c2-v]").forEach((b, i) => (b.innerHTML = tex(fmt(state.c[i]))));
@@ -196,6 +212,7 @@
       scene.resetView(false);
       scene.setRange(PRESETS[key].range, false);
       redraw();
+      acted();
     }
 
     K().chips(toolbar, Object.entries(PRESETS).map(([k, v]) => [k, v.label]), load, "lay");
@@ -203,17 +220,22 @@
       input.addEventListener("input", () => {
         state.c[i] = F(Number(input.value));
         redraw();
+        acted();
       }),
     );
-    controls.querySelector("[data-solve]").addEventListener("click", solve);
+    controls.querySelector("[data-solve]").addEventListener("click", () => {
+      acted();
+      solve();
+    });
     controls.querySelector("[data-reset]").addEventListener("click", () => scene.resetView());
     controls.querySelector("[data-look]").addEventListener("click", () => {
       const ps = polysF();
       const nonzero = ps.find((p) => p.some((x) => !M().isZero(x)));
       if (nonzero) scene.lookAlong(nonzero.map(num));
+      acted();
     });
 
-    K().predictGate(
+    gate = K().predictGate(
       gateHost,
       {
         question: `${tex("p_1=1+2x^2,\\ p_2=4+x+5x^2,\\ p_3=3+2x")} 是 ${tex("P[x]_3")} 的一组基吗？`,
@@ -327,15 +349,18 @@
       out.innerHTML = tex(fmt(a));
     }
 
+    let gate = null;
     K().chips(toolbar, Object.entries(PRESETS).map(([k, v]) => [k, v.label]), (k) => {
       state.key = k;
       redraw();
+      gate?.acted();
     }, "sq1");
     controls.querySelector("[data-a]").addEventListener("input", (e) => {
       state.a = F(Number(e.target.value));
       redraw();
+      gate?.acted();
     });
-    K().predictGate(
+    gate = K().predictGate(
       gateHost,
       {
         question: `取 ${tex("p=x^2-1")}，${tex("a=1")}。${tex("p")} 在新基 ${tex("1,\\,x-1,\\,(x-1)^2")} 下的坐标 ${tex("Y")} 是什么？`,
@@ -457,8 +482,8 @@
         return objs;
       });
       scene.setHandles([
-        ...state.u.map((_, i) => ({ color: "drag", snap: 0.5, get: () => state.u[i], set: (p) => ((state.u[i] = p), redraw()) })),
-        ...state.w.map((_, i) => ({ color: "drag", snap: 0.5, get: () => state.w[i], set: (p) => ((state.w[i] = p), redraw()) })),
+        ...state.u.map((_, i) => ({ color: "drag", snap: 0.5, get: () => state.u[i], set: (p) => ((state.u[i] = p), redraw(), gate?.acted()) })),
+        ...state.w.map((_, i) => ({ color: "drag", snap: 0.5, get: () => state.w[i], set: (p) => ((state.w[i] = p), redraw(), gate?.acted()) })),
       ]);
       const dU = Bu.length;
       const dW = Bw.length;
@@ -490,6 +515,7 @@
       tools.querySelector("[data-look]").disabled = !state.revealed || inter !== 1;
     }
 
+    let gate = null;
     function load(key) {
       scene.setHandles([]);
       state.key = key;
@@ -499,13 +525,16 @@
       redraw();
     }
 
-    K().chips(toolbar, Object.entries(PRESETS).map(([k, v]) => [k, v.label]), load, "planes");
+    K().chips(toolbar, Object.entries(PRESETS).map(([k, v]) => [k, v.label]), (key) => {
+      load(key);
+      gate?.acted();
+    }, "planes");
     tools.querySelector("[data-look]").addEventListener("click", () => {
       const { basis } = compute();
       if (basis.length === 1) scene.lookAlong(basis[0].map(num));
     });
     tools.querySelector("[data-reset]").addEventListener("click", () => scene.resetView());
-    K().predictGate(
+    gate = K().predictGate(
       gateHost,
       {
         question: `${tex("\\mathbb R^3")} 中两个不同的过原点平面，交可以只有零向量吗？`,
@@ -544,7 +573,12 @@
           ],
           right: "u′=t·u，其中 t=v₃/u₃。u₃→0 时 t 无限增大；u₃=0 时 U⊂W，U+W=W，直和不再成立。",
         },
-        result: `<p>${tex("U\\cap W=\\{0\\}")} 且 ${tex("\\dim U+\\dim W=3")}，所以 ${tex("\\mathbb R^3=U\\oplus W")}，每个 ${tex("v")} 恰有一种分解。分解沿着 ${tex("U")} 的方向，画出的平行四边形一般不是矩形。直线越贴近平面，分量越长；直线落进平面后，平面外的 ${tex("v")} 无法分解，平面内的 ${tex("v")} 有无穷多种分解。</p>`,
+        result: (kind) =>
+          ({
+            direct: `<p>${tex("U\\cap W=\\{0\\}")} 且 ${tex("\\dim U+\\dim W=3")}，所以 ${tex("\\mathbb R^3=U\\oplus W")}，每个 ${tex("v")} 恰有一种分解 ${tex("v=u'+w'")}。分解沿着 ${tex("U")} 的方向，画出的平行四边形一般不是矩形。直线越贴近平面，${tex("u'=tu")} 中的 ${tex("t=v_3/u_3")} 越大，两个分量越长。</p>`,
+            outside: `<p>现在 ${tex("u")} 落进了 ${tex("W")}：${tex("U\\subset W")}，${tex("U\\cap W=U")}，${tex("U+W=W")} 只是平面，不再是直和。${tex("v")} 在平面外，没有任何分解；把 ${tex("v")} 也放进平面，分解就有无穷多种。</p>`,
+            inside: `<p>现在 ${tex("u")} 和 ${tex("v")} 都在 ${tex("W")} 里：${tex("U\\subset W")}，${tex("U\\cap W=U\\ne\\{0\\}")}，${tex("U+W=W")} 不是直和。图中两个不同的平行四边形给出同一个 ${tex("v")}：沿 ${tex("U")} 走多少都可以，分解有无穷多种。</p>`,
+          })[kind],
       },
       three: {
         label: "同一平面内三条直线",
@@ -558,7 +592,12 @@
           ],
           right: "k₁w₁+k₂w₂+k₃w₃=0 有非零解，三段箭头首尾相接回到原点。维数 1+1+1=3，和空间却只是 2 维的平面。",
         },
-        result: `<p>多个子空间的和是直和，当且仅当每个 ${tex("W_i")} 与其余子空间之和只交于零，也等价于 ${tex("\\dim(W_1+W_2+W_3)=\\dim W_1+\\dim W_2+\\dim W_3")}。这里 ${tex("W_3\\subset W_1+W_2")}，条件失败。把 ${tex("w_3")} 拖出水平面，三个维数之和等于 3，直和成立，${tex("\\mathbb R^3=W_1\\oplus W_2\\oplus W_3")}。</p>`,
+        result: (kind) =>
+          `<p>多个子空间的和是直和，当且仅当每个 ${tex("W_i")} 与其余子空间之和只交于零，也等价于 ${tex("\\dim(W_1+W_2+W_3)=\\dim W_1+\\dim W_2+\\dim W_3")}。${
+            kind === "direct"
+              ? `现在 ${tex("w_3")} 离开了水平面，${tex("\\dim(W_1+W_2+W_3)=3=1+1+1")}，直和成立，${tex("\\mathbb R^3=W_1\\oplus W_2\\oplus W_3")}。`
+              : `现在 ${tex("W_3\\subset W_1+W_2")}，和空间只有 2 维，条件失败：零向量有非零的分解。把 ${tex("w_3")} 拖出水平面，三个维数之和等于 3，直和成立。`
+          }</p>`,
       },
     };
     const lab = K().labShell(root, { title: "分解什么时候唯一", task: MODES.split.task });
@@ -624,8 +663,8 @@
         return objs;
       });
       scene.setHandles([
-        { color: "drag", snap: 0.5, get: () => state.u, set: (p) => ((state.u = nonzero(p, state.u)), redraw()) },
-        { color: "drag", snap: 0.5, get: () => state.v, set: (p) => ((state.v = p), redraw()) },
+        { color: "drag", snap: 0.5, get: () => state.u, set: (p) => ((state.u = nonzero(p, state.u)), redraw(), acted()) },
+        { color: "drag", snap: 0.5, get: () => state.v, set: (p) => ((state.v = p), redraw(), acted()) },
       ]);
       const inter = ok ? 0 : 1;
       const sum = ok ? 3 : 2;
@@ -645,6 +684,7 @@
       }
       info.innerHTML = html;
       info.dataset.state = ok ? "direct" : "inside";
+      setResult(ok ? "direct" : M().isZero(v[2]) ? "inside" : "outside");
     }
 
     function drawThree() {
@@ -670,7 +710,7 @@
         }
         return objs;
       });
-      scene.setHandles([{ color: "drag", snap: 0.5, get: () => state.w3, set: (p) => ((state.w3 = nonzero(p, state.w3)), redraw()) }]);
+      scene.setHandles([{ color: "drag", snap: 0.5, get: () => state.w3, set: (p) => ((state.w3 = nonzero(p, state.w3)), redraw(), acted()) }]);
       const pairsText = pairOk.every(Boolean) ? "两两交为 {0}" : "有两条直线重合";
       let html = `<h4>读数</h4><p>${pairsText}</p>`;
       if (state.revealed) {
@@ -683,6 +723,14 @@
       }
       info.innerHTML = html;
       info.dataset.state = rank === 3 ? "direct" : "not-direct";
+      setResult(rank === 3 ? "direct" : "not-direct");
+    }
+
+    let gate = null;
+    const acted = () => gate?.acted();
+    function setResult(kind) {
+      result.innerHTML = `<strong>结论</strong>${MODES[state.mode].result(kind)}`;
+      result.dataset.kind = kind;
     }
 
     function redraw() {
@@ -699,20 +747,24 @@
       tools.querySelector("[data-low]")?.addEventListener("click", () => {
         state.u = [state.u[0], state.u[1], 0.5];
         redraw();
+        acted();
       });
       tools.querySelector("[data-flat]")?.addEventListener("click", () => {
         state.u = [state.u[0], state.u[1], 0];
         redraw();
+        acted();
       });
       tools.querySelector("[data-vflat]")?.addEventListener("click", () => {
         state.v = [state.v[0], state.v[1], 0];
         redraw();
+        acted();
         // look nearly straight down so both parallelograms in W are open
         scene.lookAlong([0.2, -0.3, 1]);
       });
       tools.querySelector("[data-lift]")?.addEventListener("click", () => {
         state.w3 = [state.w3[0], state.w3[1], 1.5];
         redraw();
+        acted();
       });
       tools.querySelector("[data-top]")?.addEventListener("click", () => scene.lookAlong([0, 0, 1]));
     }
@@ -724,10 +776,9 @@
       state.v = [-1, 2, 2];
       state.w3 = [1, 1, 0];
       lab.querySelector(".ch6l-head p").innerHTML = MODES[mode].task;
-      result.innerHTML = `<strong>结论</strong>${MODES[mode].result}`;
       result.hidden = true;
       gateHost.innerHTML = "";
-      K().predictGate(gateHost, MODES[mode].predict, () => {
+      gate = K().predictGate(gateHost, MODES[mode].predict, () => {
         state.revealed = true;
         result.hidden = false;
         redraw();
@@ -838,6 +889,7 @@
               set: (pt) => {
                 state[key] = preimage(fv(pt));
                 redraw();
+                gate?.acted();
               },
             })),
       );
@@ -847,11 +899,13 @@
       }${closes ? "" : `<br>从 ${tex(`${name}(p+q)`)} 到第四个顶点的线段：${tex(`${name}(p)+${name}(q)-${name}(p+q)=${vecTex(corner.map((x, i) => M().sub(x, is[i])))}`)}`}`;
     }
 
+    let gate = null;
     K().chips(toolbar, Object.entries(MODES).map(([k, v]) => [k, v.label]), (k) => {
       state.mode = k;
       redraw();
+      gate?.acted();
     }, "coef");
-    K().predictGate(
+    gate = K().predictGate(
       gateHost,
       {
         question: `${tex("\\tau(p)=(p(0),p(1),p(2))")} 是 ${tex("P[x]_3")} 到 ${tex("\\mathbb R^3")} 的同构吗？`,

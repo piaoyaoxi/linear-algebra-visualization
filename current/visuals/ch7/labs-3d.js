@@ -457,7 +457,7 @@
       let html = `<h4>${state.kind === "line" ? "候选直线" : "候选平面"}</h4>`;
       if (state.kind === "line") {
         html += `<p>${tex(`W=L(${K.latexRow(r.u)}^{T})`)}，${tex(`Au=${K.latexRow(r.Au)}^{T}`)}</p>`;
-        html += r.inv ? `<p class="ch7l-ok">AW=W：u 是特征向量</p>` : `<p class="ch7l-muted">AW 与 W 夹角 ${angleBetween(numVec(r.u), numVec(r.Au)).toFixed(1)}°</p>`;
+        html += r.inv ? `<p class="ch7l-ok">AW=W：u 是特征向量</p>` : `<p class="ch7l-muted">AW 与 W 夹角 ≈${angleBetween(numVec(r.u), numVec(r.Au)).toFixed(1)}°</p>`;
       } else {
         html += `<p>${tex(`W:\\ ${planeLatex(r.n)}=0`)}</p>`;
         if (r.inv) {
@@ -465,7 +465,7 @@
           html += r.hasEig ? `<p class="ch7l-muted">W 中含有特征向量（x₃ 轴方向）。</p>` : `<p class="ch7l-muted">W 中没有实特征向量：每条直线都被转走，平面整体不动。</p>`;
         } else {
           const imgs = r.images.map(numVec);
-          html += `<p class="ch7l-muted">AW 与 W 的夹角 ${angleBetween(numVec(r.n), V().cross(imgs[0], imgs[1])).toFixed(1)}°</p>`;
+          html += `<p class="ch7l-muted">AW 与 W 的夹角 ≈${angleBetween(numVec(r.n), V().cross(imgs[0], imgs[1])).toFixed(1)}°</p>`;
         }
       }
       info.innerHTML = html;

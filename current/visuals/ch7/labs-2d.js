@@ -17,6 +17,16 @@
     return Object.is(r, -0) || Math.abs(r) < 10 ** -(d + 1) ? "0" : String(r);
   };
   const vecText = (v, d = 2) => `(${v.map((x) => fmt(x, d)).join(", ")})`;
+  /*
+   * An exact fraction while it stays readable (denominator at most 999), otherwise
+   * ≈ with three digits: powers like (4/5)⁴ = 256/625 are exact, (4/5)¹⁰ is not shown so.
+   */
+  const nice = (x) => {
+    const f = M().fromNumber(x, 999);
+    if (Math.abs(f.n / f.d - x) < 1e-9 && Math.abs(f.n) < 1e5) return tex(lf(f));
+    return `≈${fmt(x, 3)}`;
+  };
+  const vecNice = (v) => `(${v.map(nice).join(", ")})`;
   const matNum = (A) => A.map((r) => r.map(num));
   const apply2 = (A, v) => [A[0][0] * v[0] + A[0][1] * v[1], A[1][0] * v[0] + A[1][1] * v[1]];
 
@@ -490,7 +500,7 @@
         const avLen = Math.hypot(Av[0], Av[1]);
         const ang = avLen < 1e-9 ? 0 : (Math.acos(Math.max(-1, Math.min(1, (v[0] * Av[0] + v[1] * Av[1]) / (r * avLen)))) * 180) / Math.PI;
         const line = Math.min(ang, 180 - ang);
-        info.innerHTML = `<h4>v 与 Av</h4><p>Av 偏离 v 所在直线 ${fmt(line, 1)}°</p><p class="ch7l-muted">偏离为 0 时，Av=λv。</p>`;
+        info.innerHTML = `<h4>v 与 Av</h4><p>Av 偏离 v 所在直线 ${fmt(line, 1) === "0" ? "0" : `≈${fmt(line, 1)}`}°</p><p class="ch7l-muted">偏离为 0 时，Av=λv。</p>`;
       }
     }
 
@@ -820,7 +830,7 @@
         pts.forEach((p, i) => d.point(p, i ? "image" : "drag", { r: i === pts.length - 1 ? 5.5 : 3, alpha: i === pts.length - 1 ? 1 : 0.7 }));
         d.text(xk, state.k ? `x${toSub(state.k)}` : "x₀", state.k ? "image" : "drag", { dx: 10, dy: 12 });
       });
-      let html = `<h4>k = ${state.k}</h4><p>${tex(`x_{${state.k}}=`)} ${vecText(xk, 3)}</p>`;
+      let html = `<h4>k = ${state.k}</h4><p>${tex(`x_{${state.k}}=`)} ${vecNice(xk)}</p>`;
       if (c) {
         const co = (x) => { const t = lf(x); return t === "1" ? "" : t === "-1" ? "-" : t; };
         html += `<p>${tex(`x_0=${co(c[0])}\\eta_1${c[1].n < 0 ? "" : "+"}${co(c[1])}\\eta_2`)}</p>`;
@@ -839,8 +849,8 @@
           ${rows.map((k) => {
             const a = comp(0, k), b = comp(1, k);
             const st = comp(strong, k), wk = comp(weak, k);
-            const ratio = Math.abs(st) < 1e-12 ? "—" : fmt(wk / st, 3);
-            return `<tr${k === state.k ? ' class="is-now"' : ""}><td>${k}</td><td>${fmt(a, 3)}</td><td>${fmt(b, 3)}</td><td>${ratio}</td></tr>`;
+            const ratio = Math.abs(st) < 1e-12 ? "—" : nice(wk / st);
+            return `<tr${k === state.k ? ' class="is-now"' : ""}><td>${k}</td><td>${nice(a)}</td><td>${nice(b)}</td><td>${ratio}</td></tr>`;
           }).join("")}
           </tbody></table>`;
         const onLine = c.findIndex((x) => M().isZero(x));

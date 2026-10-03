@@ -713,6 +713,11 @@
       return (Math.acos(Math.max(-1, Math.min(1, c))) * 180) / Math.PI;
     };
     const fmt = (v) => (Math.round(v * 100) / 100).toString();
+    // exact when the value is a simple fraction (a length like 3/2, an angle like 90°), otherwise ≈
+    const shown = (v) => {
+      const f = M().fromNumber(v, 64);
+      return Math.abs(f.n / f.d - v) < 1e-9 ? minus(M().formatF(f)) : `≈${Math.round(v * 10) / 10}`;
+    };
 
     const shearOn = () => state.key === "shear";
     const shearK = () => [[1, fq(state.s)], [0, 1]].map((r) => r.map((v) => (typeof v === "number" ? F(v) : v)));
@@ -754,8 +759,8 @@
       const Kyn = Ky.map(num);
       readCard.innerHTML = `<h4>比较</h4>
         <table class="ch7l-table"><thead><tr><th></th><th>x, y</th><th>Kx, Ky</th></tr></thead><tbody>
-        <tr><td>长度</td><td>${fmt(len(state.x))}, ${fmt(len(state.y))}</td><td>${fmt(len(Kxn))}, ${fmt(len(Kyn))}</td></tr>
-        <tr><td>夹角</td><td>${fmt(angle(state.x, state.y))}°</td><td>${fmt(angle(Kxn, Kyn))}°</td></tr>
+        <tr><td>长度</td><td>${shown(len(state.x))}, ${shown(len(state.y))}</td><td>${shown(len(Kxn))}, ${shown(len(Kyn))}</td></tr>
+        <tr><td>夹角</td><td>${shown(angle(state.x, state.y))}°</td><td>${shown(angle(Kxn, Kyn))}°</td></tr>
         <tr><td>ω</td><td>${open ? minus(M().formatF(w0)) : "?"}</td><td>${open ? minus(M().formatF(w1)) : "?"}</td></tr></tbody></table>
         ${isZero(w0) ? `<p class="ch7l-muted">x、y 共线，平行四边形压扁，ω(x,y)=0。</p>` : ""}`;
       if (!open) {

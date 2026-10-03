@@ -312,24 +312,12 @@ _dev/research/3b1b_eola_chapter10.py
 - 第八章已按同一标准重做并合并（#77）：删除 `ch8-entry.js` 的全局路由覆盖，改走标准 `renderLessonPage`（`content/ch8-section*.js` + registry/assemble），实验复用 `Ch7Kit`（`visuals/ch8/labs.js`），λ 的多项式用精确有理系数（`visuals/ch8/poly.js`，`Ch8Poly`）。§4 无交互，只有定理块小图。记号：单位矩阵 E，行列式因子 Dₖ(λ)，不变因子 dₖ(λ)，初等变换 [i,j]、[i(c)]、[i+j(φ)]（列用花括号），若尔当块下三角，伴随矩阵最后一列为 −a₀,…,−aₙ₋₁。导学页“从第一节开始”现在指向第一章 §1（原先被 ch8-entry 改成第四章 §1）。
 - 第十章已按同一标准重做并合并（#76）：改走标准 `renderLessonPage`，复用第七章实验外壳 `Ch7Kit`（`visuals/ch10/labs.js`），不再注册结构化渲染器；对偶基记作 g₁,…,gₙ，过渡公式 (g)=(f)(Aᵀ)⁻¹，双线性函数换基 B=CᵀAC。
 - 旧方案的草稿 PR #33、#34、#44–#52 已按用户决定关闭（分支保留）。
-## 交接：第四批小改（2026-10-03）
+## 第四批小改（2026-10-04 完成）
 
-分支 `ui/score4` = 两条 WIP 分支 `ui/score4-a`（第三、六、七、八章）与 `ui/score4-b`（第九、十、二、四、五章）合并而成，已通过全站检查。`docs/lab-improvement-plan.md` 第四批里标“✓（待 PR）”的 20 条已做完，还剩：
+`docs/lab-improvement-plan.md` 第一至四批和五个共性问题都已完成。其中一部分由另一个账号在云端接力完成（推不上 GitHub 时用 git bundle + diff 交回，本地合并、截图审查后提交）。接力经验：交接内容写进 TODO.md；给对方 GitHub 协作者权限，让它直接推分支、开 PR；它没有浏览器，截图审查由主账号做。
 
-1. 第八章 §5：ℝ→ℂ 时演示 λ²+1 分裂成 (λ−i)、(λ+i) 两个块（`visuals/ch8/labs.js`）。
-2. 第二章 §7：“接近奇异”时放大细长的平行四边形 D。
-3. 第四章 §5：在块上标维数（如 1×2 · 2×1）。
-4. 第四章 §6：“拼出 A”时保留每一步的中间像作为虚影。
-5. 第五章 §4：等高线并入曲面底面，保留方向轮。
-6. 第三章 §7、第七章 §9 两条补充（见计划文档末尾）。
-7. 收尾：把“✓（待 PR）”改成“✓（#PR 号）”；跑各章检查；开一个 PR 到 `main`，正文用中文，写清每个实验改了什么，**不要合并**（由主账号截图审查后合并）。
-
-做法要点：
-- 结论必须在学生“先预测、再动手”之后才出现；预测前隐藏会泄底的读数（见上文“预测门不能被画面泄底”）。旧实验（第二、四、五章）用 `visuals/shared/predict-gate.js`；ch7 外壳用 `predictFlow`；第三章用 `labs3d.js` 里的 `predictGate`。
-- 画布颜色按角色（`current/tokens.css`，palette 键 v1 v2 drag image subspace axis grid gridMajor）：v1 蓝＝第一向量，v2 朱＝第二向量，drag 金＝可拖动，image 紫＝结果/面积，subspace 绿＝平面/张成/核/等值线；虚影＝同色虚线约 35%；高亮用光晕，不引入新颜色。
-- 精确值用分数，数学用 python3 + sympy 核对。纯文字下标用 Unicode。CSS：第三、六至十章写在 `current/design-a.css`，第一、二、四、五章写在 `current/design-a-legacy.css`（带 `:is(main, #la)` 前缀），不要写后代 `span` 选择器。
-- 改了哪个文件，就只改 `learn.html` 里那个文件的 `?v=`。
-- 检查：`python3 -m http.server` 起 `current/` 后跑 `SITE_BASE=http://127.0.0.1:端口/learn.html node .github/scripts/site-audit.mjs`；各章检查脚本在 `.github/scripts/` 与 `tests/`（第二章的 Playwright 测试要多线程服务器）；字体覆盖 `python3 .github/scripts/check-font-coverage.py`。本地没有浏览器时，以 PR 上的 CI（全站审计、各章浏览器检查）为准，并在 PR 里注明没有本地截图。
+- 小数：显示给学生的读数在分母不超过 999 时写成分数，否则写“≈”加小数；第一章 §8 的根、第三章滑块、第五章 §4 的 t 都按 1/4 或 1/2 吸附。可以用逐节扫描页面文字的方式复查（找 `\d\.\d`）。
+- 3D 场景（`visuals/shared/scene3d.js`）的 `spreadLabels` 现在把拖动圆点也当作障碍，标签之间至少留 6px。
 
 ## 下一步
 

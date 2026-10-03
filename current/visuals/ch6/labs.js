@@ -50,6 +50,19 @@
 
   const fv = (v) => v.map(F);
 
+  /*
+   * A matrix whose j-th column carries the colour role of the j-th vector.
+   * KaTeX (trust off) only accepts literal colours, so the columns are marked
+   * with sentinel colours and swapped for theme variables after rendering.
+   */
+  const COL_SENTINEL = ["#0a0c01", "#0a0c02", "#0a0c03"];
+  function colourColumnsTex(rows) {
+    return `\\begin{pmatrix}${rows.map((r) => r.map((x, j) => `\\textcolor{${COL_SENTINEL[j]}}{${fmt(x)}}`).join("&")).join("\\\\")}\\end{pmatrix}`;
+  }
+  function colourColumnsHtml(html, roles) {
+    return roles.reduce((out, role, j) => out.split(`color:${COL_SENTINEL[j]}`).join(`color:var(--cv-${role})`), String(html));
+  }
+
   /* ================= §3 维数·基与坐标 ================= */
 
   function coordinatesLab(root) {
@@ -305,7 +318,7 @@
       });
 
       const check = M().matVec(A, Y).every((x, i) => M().eq(x, X[i]));
-      info.innerHTML = `<div>${texD(`A_a=${K().matTex(A)}`)}</div>
+      info.innerHTML = `<div>${colourColumnsHtml(texD(`A_a=${colourColumnsTex(A)}`), COLORS)}</div>
         <div>${texD(`X=${K().colTex(X)}`)}</div>
         <div>${state.revealed ? texD(`Y=${K().colTex(Y)}`) : texD("Y=\\;?")}</div>
         <p>${state.revealed ? `${tex(`A_aY=${vecTex(M().matVec(A, Y))}^T`)} ${check ? `<span class="ch6l-ok">= X</span>` : ""}` : `先预测 ${tex("a=1")} 时的 ${tex("Y")}，再揭示新坐标。`}</p>`;

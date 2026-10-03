@@ -184,6 +184,8 @@ async function exerciseChapter(page) {
   // §4: formulas must remain inline, then the family must pass PD -> PSD -> indefinite.
   await openLesson(page, "positive-definite");
   await assertSignCheckLayout(page);
+  // the type is shown once a prediction is picked; t moves in quarters
+  await page.locator('#positive-definite-interactive .ch3l-predict-options > button[data-ok="true"]').click();
   await setRange(page, "[data-s4-t]", 0);
   if (!(await page.locator("[data-s4-status]").innerText()).includes("正定")) {
     throw new Error("§4 A(0) should be positive definite");
@@ -195,14 +197,14 @@ async function exerciseChapter(page) {
   if (!(await page.locator("[data-s4-d2]").innerText()).includes("= 0")) {
     throw new Error("§4 determinant did not hit zero at the boundary");
   }
-  await setRange(page, "[data-s4-t]", 1.2);
+  await setRange(page, "[data-s4-t]", 1.25);
   if (!(await page.locator("[data-s4-status]").innerText()).includes("不定")) {
-    throw new Error("§4 A(1.2) should be indefinite");
+    throw new Error("§4 A(5/4) should be indefinite");
   }
   if (!(await page.locator("[data-s4-scan-copy]").innerText()).includes("0 下方")) {
     throw new Error("§4 direction scan explanation does not identify the negative region");
   }
-  for (const selector of ["[data-s4-contour]", "[data-s4-scan]"]) {
+  for (const selector of ["[data-s4-surface]", "[data-s4-scan]"]) {
     const box = await page.locator(selector).boundingBox();
     if (!box || box.width < 100 || box.height < 100) throw new Error(`§4 visualization ${selector} is not usable`);
   }

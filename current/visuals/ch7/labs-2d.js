@@ -17,6 +17,16 @@
     return Object.is(r, -0) || Math.abs(r) < 10 ** -(d + 1) ? "0" : String(r);
   };
   const vecText = (v, d = 2) => `(${v.map((x) => fmt(x, d)).join(", ")})`;
+  /*
+   * An exact fraction while it stays readable (denominator at most 999), otherwise
+   * ≈ with three digits: powers like (4/5)⁴ = 256/625 are exact, (4/5)¹⁰ is not shown so.
+   */
+  const nice = (x) => {
+    const f = M().fromNumber(x, 999);
+    if (Math.abs(f.n / f.d - x) < 1e-9 && Math.abs(f.n) < 1e5) return tex(lf(f));
+    return `≈${fmt(x, 3)}`;
+  };
+  const vecNice = (v) => `(${v.map(nice).join(", ")})`;
   const matNum = (A) => A.map((r) => r.map(num));
   const apply2 = (A, v) => [A[0][0] * v[0] + A[0][1] * v[1], A[1][0] * v[0] + A[1][1] * v[1]];
 
@@ -344,13 +354,83 @@
     host.append(toolbar, body);
     const plane = K.plane2d(stage, { extent: 3, hint: "拖动 v 的端点，或用下方滑杆", label: "方向 v 与它的像 Av" });
     const control = el("div", "ch7l-card");
-    control.innerHTML = `<label class="ch7l-range"><span>${tex("\\theta")}</span><input type="range" min="0" max="359" step="1" value="${state.theta}" data-theta aria-label="方向角" /><b data-theta-v>${state.theta}°</b></label>`;
+    control.innerHTML = `<div class="ch7l-actions"><button type="button" class="ch7l-btn is-primary" data-sweep>从 0° 转到 180°</button></div><label class="ch7l-range"><span>${tex("\\theta")}</span><input type="range" min="0" max="359" step="1" value="${state.theta}" data-theta aria-label="方向角" /><b data-theta-v>${state.theta}°</b></label>`;
     const info = el("div", "ch7l-card");
     const gateHost = el("div");
     const result = el("div", "ch7l-result");
     side.append(gateHost, control, info, result);
     let flow = null;
     const preset = () => SWEEP_PRESETS[state.key];
+
+    /*
+     * Angle strip: the signed angle ψ(θ) from the line of v to Av, folded into
+     * (−90°, 90°]. The trace records the directions the student has swept
+     * (only after predicting); ψ = 0 marks an eigen-line, shown after reveal.
+     */
+    const strip = el("figure", "ch7l-anglestrip");
+    stage.append(strip);
+    const visited = new Map();
+    let lastSwept = null;
+    let sweepRaf = 0;
+    // the strip is drawn at its on-screen width so tick labels keep their size on phones
+    let SW = 520;
+    const SH = 112;
+    const pad = { l: 40, r: 12, t: 12, b: 22 };
+    const sx = (t) => pad.l + (t / 180) * (SW - pad.l - pad.r);
+    const sy = (p) => pad.t + ((90 - p) / 180) * (SH - pad.t - pad.b);
+
+    function psiAt(A, deg) {
+      const t = (deg * Math.PI) / 180;
+      const v = [Math.cos(t), Math.sin(t)];
+      const Av = apply2(A, v);
+      if (Math.hypot(Av[0], Av[1]) < 1e-12) return null;
+      let p = (Math.atan2(v[0] * Av[1] - v[1] * Av[0], v[0] * Av[0] + v[1] * Av[1]) * 180) / Math.PI;
+      if (p > 90) p -= 180;
+      if (p <= -90) p += 180;
+      return p;
+    }
+
+    function drawStrip(A) {
+      const P = preset();
+      SW = Math.max(280, Math.min(640, (strip.clientWidth || 536) - 16));
+      const parts = [];
+      [-90, 0, 90].forEach((p) => {
+        parts.push(`<line x1="${pad.l}" y1="${sy(p)}" x2="${SW - pad.r}" y2="${sy(p)}" class="${p === 0 ? "ch7s-zero" : "ch7s-grid"}"/>`);
+        parts.push(`<text x="${pad.l - 6}" y="${sy(p) + 4}" class="ch7s-tick" text-anchor="end">${p === -90 ? "−90°" : `${p}°`}</text>`);
+      });
+      [0, 45, 90, 135, 180].forEach((t) => {
+        parts.push(`<line x1="${sx(t)}" y1="${pad.t}" x2="${sx(t)}" y2="${SH - pad.b}" class="ch7s-grid"/>`);
+        parts.push(`<text x="${sx(t)}" y="${SH - 6}" class="ch7s-tick" text-anchor="middle">${t}°</text>`);
+      });
+      if (flow?.revealed) {
+        P.eigen.forEach((e) => {
+          (e.angle === 0 ? [0, 180] : [e.angle]).forEach((t) => {
+            parts.push(`<line x1="${sx(t)}" y1="${pad.t}" x2="${sx(t)}" y2="${SH - pad.b}" class="ch7s-eigen"/>`);
+            parts.push(`<circle cx="${sx(t)}" cy="${sy(0)}" r="4" class="ch7s-eigen-dot"/>`);
+            parts.push(`<text x="${sx(t) + (t === 180 ? -5 : 5)}" y="${pad.t + 10}" class="ch7s-eigen-label" text-anchor="${t === 180 ? "end" : "start"}">λ=${String(e.lambda.n).replace("-", "−")}${e.lambda.d === 1 ? "" : `/${e.lambda.d}`}</text>`);
+          });
+        });
+      }
+      // trace of swept directions, broken at gaps and at the ±90° fold
+      const degs = [...visited.keys()].sort((a, b) => a - b);
+      let d = "";
+      let prev = null;
+      degs.forEach((t) => {
+        const p = visited.get(t);
+        if (p == null) {
+          prev = null;
+          return;
+        }
+        const jump = !prev || t - prev.t > 1 || Math.abs(p - prev.p) > 90;
+        d += `${jump ? "M" : "L"}${sx(t).toFixed(1)} ${sy(p).toFixed(1)}`;
+        prev = { t, p };
+      });
+      if (d) parts.push(`<path d="${d}" class="ch7s-trace"/>`);
+      const now = state.theta % 180;
+      const pNow = psiAt(A, now);
+      if (pNow != null) parts.push(`<circle cx="${sx(now)}" cy="${sy(pNow)}" r="4.5" class="ch7s-now"/>`);
+      strip.innerHTML = `<svg viewBox="0 0 ${SW} ${SH}" role="img" aria-label="v 与 Av 的有向夹角随 θ 的变化">${parts.join("")}</svg><figcaption>v 到 Av 的有向夹角（θ 从 0° 到 180°）${flow?.predicted ? "" : " · 作出预测后记录轨迹"}</figcaption>`;
+    }
 
     function hit() {
       return preset().eigen.find((e) => e.angle === state.theta % 180) || null;
@@ -372,6 +452,20 @@
       const v = [r * Math.cos(th), r * Math.sin(th)];
       const Av = apply2(A, v);
       const h = hit();
+      if (flow?.predicted) {
+        const now = state.theta % 180;
+        const last = lastSwept;
+        // fill the degrees passed over since the last frame (shortest way round mod 180)
+        let delta = last == null ? 0 : ((now - last + 270) % 180) - 90;
+        if (Math.abs(delta) > 45) delta = 0;
+        for (let k = 0; k <= Math.abs(delta); k += 1) {
+          const t = (((now - Math.sign(delta) * k) % 180) + 180) % 180;
+          visited.set(t, psiAt(A, t));
+        }
+        if (now === 0) visited.set(180, psiAt(A, 180));
+        lastSwept = now;
+      }
+      drawStrip(A);
       plane.setDraw((d) => {
         d.grid(undefined, { alpha: 0.55 });
         d.axes();
@@ -406,7 +500,7 @@
         const avLen = Math.hypot(Av[0], Av[1]);
         const ang = avLen < 1e-9 ? 0 : (Math.acos(Math.max(-1, Math.min(1, (v[0] * Av[0] + v[1] * Av[1]) / (r * avLen)))) * 180) / Math.PI;
         const line = Math.min(ang, 180 - ang);
-        info.innerHTML = `<h4>v 与 Av</h4><p>Av 偏离 v 所在直线 ${fmt(line, 1)}°</p><p class="ch7l-muted">偏离为 0 时，Av=λv。</p>`;
+        info.innerHTML = `<h4>v 与 Av</h4><p>Av 偏离 v 所在直线 ${fmt(line, 1) === "0" ? "0" : `≈${fmt(line, 1)}`}°</p><p class="ch7l-muted">偏离为 0 时，Av=λv。</p>`;
       }
     }
 
@@ -439,16 +533,50 @@
       redraw();
     });
     control.querySelector("[data-theta]").addEventListener("change", () => flow?.acted());
+    control.querySelector("[data-sweep]").addEventListener("click", () => {
+      cancelAnimationFrame(sweepRaf);
+      const reduce = window.matchMedia?.("(prefers-reduced-motion: reduce)").matches;
+      state.theta = 0;
+      lastSwept = null;
+      if (reduce) {
+        for (let t = 0; t <= 180; t += 1) {
+          state.theta = t;
+          redraw();
+        }
+        flow?.acted();
+        return;
+      }
+      const start = performance.now();
+      const step = (now) => {
+        const t = Math.min(180, Math.round(((now - start) / 2400) * 180));
+        state.theta = t;
+        redraw();
+        if (t < 180) sweepRaf = requestAnimationFrame(step);
+        else flow?.acted();
+      };
+      sweepRaf = requestAnimationFrame(step);
+    });
 
     function load(key) {
+      cancelAnimationFrame(sweepRaf);
       state.key = key;
       state.theta = 20;
-      flow = K.predictFlow(gateHost, result, { ...preset().predict, onReveal: redraw });
+      visited.clear();
+      lastSwept = null;
+      flow = K.predictFlow(gateHost, result, {
+        ...preset().predict,
+        onReveal: redraw,
+      });
+      // picking a prediction starts the trace at the current direction
+      flow.element.querySelectorAll("[data-i]").forEach((b) => b.addEventListener("click", redraw));
       redraw();
     }
     K.chips(toolbar, Object.entries(SWEEP_PRESETS).map(([k, v]) => [k, v.label]), load, state.key);
     load("sym");
-    return () => plane.destroy();
+    return () => {
+      cancelAnimationFrame(sweepRaf);
+      plane.destroy();
+    };
   }
 
   function spaceMode(host, lab) {
@@ -702,7 +830,7 @@
         pts.forEach((p, i) => d.point(p, i ? "image" : "drag", { r: i === pts.length - 1 ? 5.5 : 3, alpha: i === pts.length - 1 ? 1 : 0.7 }));
         d.text(xk, state.k ? `x${toSub(state.k)}` : "x₀", state.k ? "image" : "drag", { dx: 10, dy: 12 });
       });
-      let html = `<h4>k = ${state.k}</h4><p>${tex(`x_{${state.k}}=`)} ${vecText(xk, 3)}</p>`;
+      let html = `<h4>k = ${state.k}</h4><p>${tex(`x_{${state.k}}=`)} ${vecNice(xk)}</p>`;
       if (c) {
         const co = (x) => { const t = lf(x); return t === "1" ? "" : t === "-1" ? "-" : t; };
         html += `<p>${tex(`x_0=${co(c[0])}\\eta_1${c[1].n < 0 ? "" : "+"}${co(c[1])}\\eta_2`)}</p>`;
@@ -721,8 +849,8 @@
           ${rows.map((k) => {
             const a = comp(0, k), b = comp(1, k);
             const st = comp(strong, k), wk = comp(weak, k);
-            const ratio = Math.abs(st) < 1e-12 ? "—" : fmt(wk / st, 3);
-            return `<tr${k === state.k ? ' class="is-now"' : ""}><td>${k}</td><td>${fmt(a, 3)}</td><td>${fmt(b, 3)}</td><td>${ratio}</td></tr>`;
+            const ratio = Math.abs(st) < 1e-12 ? "—" : nice(wk / st);
+            return `<tr${k === state.k ? ' class="is-now"' : ""}><td>${k}</td><td>${nice(a)}</td><td>${nice(b)}</td><td>${ratio}</td></tr>`;
           }).join("")}
           </tbody></table>`;
         const onLine = c.findIndex((x) => M().isZero(x));

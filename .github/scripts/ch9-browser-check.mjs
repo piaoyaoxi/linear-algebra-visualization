@@ -3,7 +3,8 @@ import path from "node:path";
 import { chromium } from "playwright";
 
 // Browser gate for Chapter 9: every lab must render, accept a prediction,
-// respond to clicks and drags, and keep its conclusion hidden until answered.
+// respond to clicks and drags, and keep its conclusion hidden until answered
+// (§3, §5, §6, §7: until the student has predicted and then acted once).
 const base = process.env.CH9_BASE || "http://127.0.0.1:4173/learn.html";
 const shots = "/tmp/ch9-browser-screenshots";
 fs.mkdirSync(shots, { recursive: true });
@@ -128,7 +129,13 @@ async function exerciseLabs(page) {
   await drag(page, "lp", [-0.8, 1.4], [-1, 2]);
   expect((await text(page, "[data-iso-status]")).includes("B ≠ I"), "§3: dragging f₂ breaks the isometry");
   await predict(page, 0);
-  expect(await resultShown(page), "§3: conclusion after prediction");
+  expect(!(await resultShown(page)), "§3: conclusion waits for an action after the prediction");
+  expect((await page.locator("[data-iso-tangent]").count()) === 0, "§3: tangent mark hidden before acting");
+  await chip(page, "other");
+  expect(await resultShown(page), "§3: conclusion after prediction and action");
+  expect((await text(page, "[data-iso-tangent]")).includes("平行于椭圆"), "§3: f₂ parallel to the tangent at f₁");
+  await chip(page, "dotperp");
+  expect((await text(page, "[data-iso-tangent]")).includes("偏离切线"), "§3: (1,1),(1,−1) is not G-orthogonal");
 
   await openLesson(page, sections[3]);
   expect((await text(page, "[data-ortho-status]")).includes("第一类"), "§4: rotation is first kind");
@@ -139,11 +146,18 @@ async function exerciseLabs(page) {
   await drag(page, "plane", [1.5, 0.5], [1, 0]);
   expect((await text(page, "[data-ch9-readout=ortho]")).includes("≠"), "§4: squeeze changes a length");
   await predict(page, 0);
-  expect(await resultShown(page), "§4: conclusion after prediction");
+  expect(!(await resultShown(page)), "§4: conclusion waits for an action after the prediction");
+  await chip(page, "squeeze");
+  expect(await resultShown(page), "§4: conclusion after prediction and action");
+  expect((await text(page, "[data-ortho-marks]")).includes("有长度被改变"), "§4: squeeze drops the length ticks");
+  await chip(page, "rot");
+  expect((await text(page, "[data-ortho-marks]")).includes("长度不变"), "§4: rotation keeps the length ticks");
 
   await openLesson(page, sections[4]);
   expect((await page.locator("[data-sub-perp]").count()) === 0, "§5: W⊥ hidden before prediction");
   await predict(page, 0);
+  expect((await page.locator("[data-sub-perp]").count()) === 0, "§5: W⊥ waits for an action after the prediction");
+  await page.locator("[data-sub-reset]").click();
   expect((await page.locator("[data-sub-perp]").count()) === 1, "§5: W⊥ revealed");
   const sub = await text(page, "[data-ch9-readout=sub]");
   await drag(page, "scene", [0.5, -1.5, 2], [1, 1, 1]);
@@ -165,7 +179,11 @@ async function exerciseLabs(page) {
   await openLesson(page, sections[6]);
   expect((await page.locator("[data-ls-best]").count()) === 0, "§7: best line hidden before prediction");
   await predict(page, 0);
+  expect((await page.locator("[data-ls-best]").count()) === 0, "§7: best line waits for an action after the prediction");
+  await page.locator("[data-ls-c]").fill("1");
   expect((await page.locator("[data-ls-best]").count()) === 1, "§7: best line revealed");
+  expect((await text(page, "[data-ls-tri]")).includes("直角三角形"), "§7: right triangle b–p–Ax");
+  expect((await text(page, "[data-ls-tri]")).replace(/\s/g, "").includes("=8=") && (await text(page, "[data-ls-tri]")).replace(/\s/g, "").includes("6+2"), "§7: 8 = 6 + 2 for C = D = 1");
   await page.locator("[data-ls-c]").fill("2");
   await page.locator("[data-ls-d]").fill("0");
   expect((await text(page, "[data-ch9-readout=ls]")).includes("就是最佳直线"), "§7: C=2, D=0 is optimal");

@@ -121,13 +121,17 @@
     lab.append(toolbar, body);
     const gateHost = el("div");
     const tools = el("div", "ch7l-actions");
-    tools.innerHTML = `<button type="button" class="ch7l-btn" data-look-ker>沿核看</button><button type="button" class="ch7l-btn" data-reset>回到默认视角</button>`;
+    tools.innerHTML = `<button type="button" class="ch7l-btn is-primary" data-slide>让 x′ 走遍 x+σ⁻¹(0)</button><button type="button" class="ch7l-btn" data-look-ker>沿核看</button><button type="button" class="ch7l-btn" data-reset>回到默认视角</button>`;
     const info = el("div", "ch7l-card");
     const result = el("div", "ch7l-result");
     side.append(gateHost, tools, info, result);
     let scene = null;
     let flow = null;
     const state = { key: "oblique", x: [1.5, -0.5, 2], w: [0, 0, 0] };
+    // positions x′ has visited on the slice x+σ⁻¹(0): every one maps to the same σx
+    const trail = new Map();
+    let slideTimer = 0;
+    const remember = () => trail.set(state.w.join(","), state.w.slice());
 
     const mode = () => KERNEL_MODES[state.key];
     const A = () => K.mat(mode().A);
@@ -166,6 +170,11 @@
           const n = V().cross(numVec(ker[0]), numVec(ker[1]));
           objs.push({ type: "plane", n, d: V().dot(n, state.x), color: "subspace", alpha: 0.06, dash: [6, 5], strokeAlpha: 0.5 });
         }
+        trail.forEach((w) => {
+          const p = state.x.map((v, i) => v + w[i]);
+          objs.push({ type: "segment", a: p, b: sxN, color: "drag", dash: [2, 3], width: 1.1, alpha: 0.5 });
+          objs.push({ type: "point", p, color: "drag", r: 2.8 });
+        });
         objs.push({ type: "segment", a: state.x, b: sxN, color: "axis", dash: [4, 4], width: 1.3 });
         objs.push({ type: "segment", a: xPrime(), b: sxN, color: "axis", dash: [4, 4], width: 1.3 });
         // x and x′ are both gold drag handles: name them on the picture.
@@ -189,7 +198,7 @@
         ? `<p class="ch7l-ok">${tex(D ? "Dg=Df" : "\\sigma x'=\\sigma x")}：${tex(D ? "g-f" : "x'-x")} 在核里。</p>`
         : `<p class="ch7l-bad">${tex(D ? "Dg\\ne Df" : "\\sigma x'\\ne\\sigma x")}</p>`;
       if (flow?.revealed) {
-        html += `<p>${tex(`\\dim ${s}^{-1}(0)=${ker.length}`)}（${dimName(ker.length)}），${tex(`\\dim ${s}V=${im.length}`)}（${dimName(im.length)}），${tex(`\\dim(${s}V\\cap ${s}^{-1}(0))=${cap}`)}</p>`;
+        html += `<p>${tex(`\\dim ${s}^{-1}(0)=${ker.length}`)}（${dimName(ker.length)}），${tex(`\\dim ${s} V=${im.length}`)}（${dimName(im.length)}），${tex(`\\dim(${s} V\\cap ${s}^{-1}(0))=${cap}`)}</p>`;
       }
       info.innerHTML = html;
     }
@@ -205,6 +214,7 @@
           const q = p.slice();
           if (state.key === "deriv") q[2] = Math.max(-1.5, Math.min(1.5, q[2]));
           state.x = q;
+          trail.clear();
           redraw();
         },
         end: () => flow?.acted(),
@@ -222,6 +232,7 @@
             // kernel plane x₃ = 0 in this lab
             state.w = [snapHalf(d[0]), snapHalf(d[1]), 0];
           }
+          remember();
           redraw();
         },
         end: () => flow?.acted(),
@@ -234,18 +245,72 @@
       scene.setHandles([xHandle, xpHandle]);
     }
 
+    /* Exact stops for x′ on the slice that stay inside the view cube. */
+    function slideStops() {
+      const { ker } = structure();
+      const kerN = ker.map(numVec);
+      const inside = (w) => state.x.every((v, i) => Math.abs(v + w[i]) <= 2.8);
+      const stops = [];
+      if (kerN.length === 1) {
+        for (let t = -6; t <= 6; t += 0.5) {
+          const w = kerN[0].map((c) => c * t);
+          if (inside(w)) stops.push(w);
+        }
+      } else {
+        // a zigzag over the kernel plane x₃ = 0
+        for (let b = -2; b <= 2; b += 1) {
+          const row = [];
+          for (let a = -2; a <= 2; a += 1) if (inside([a, b, 0])) row.push([a, b, 0]);
+          stops.push(...(b % 2 ? row.reverse() : row));
+        }
+      }
+      return stops;
+    }
+
+    function slide() {
+      clearInterval(slideTimer);
+      const stops = slideStops();
+      const reduce = window.matchMedia?.("(prefers-reduced-motion: reduce)").matches;
+      const visit = (w) => {
+        state.w = w.map((c) => c + 0);
+        remember();
+      };
+      if (reduce) {
+        stops.forEach(visit);
+        redraw();
+        flow?.acted();
+        return;
+      }
+      let i = 0;
+      slideTimer = setInterval(() => {
+        visit(stops[i]);
+        redraw();
+        i += 1;
+        if (i >= stops.length) {
+          clearInterval(slideTimer);
+          flow?.acted();
+        }
+      }, 140);
+    }
+
     function load(key) {
+      clearInterval(slideTimer);
+      trail.clear();
       state.key = key;
+      tools.querySelector("[data-slide]").textContent = key === "deriv" ? "让 x′ 走遍 x+D⁻¹(0)" : "让 x′ 走遍 x+σ⁻¹(0)";
       state.x = mode().x.slice();
       const { ker } = structure();
       state.w = ker.length === 1 ? numVec(ker[0]).map((c) => (key === "deriv" ? -c : -0.5 * c)) : [-1, 1, 0];
       scene?.destroy();
+      // the old scene's caption (added by lab-layout.js) goes with it
+      stage.querySelectorAll(".la-figcaption").forEach((n) => n.remove());
       scene = S().create(stage, { range: 3, label: "核、值域与一个点的像", hint: "拖动空白处旋转 · 拖动金色圆点 x 或 x′", yaw: -0.9, pitch: 0.35, axisNames: mode().axes });
       handles();
       flow = K.predictFlow(gateHost, result, { ...mode().predict, onReveal: redraw });
       redraw();
     }
 
+    tools.querySelector("[data-slide]").addEventListener("click", slide);
     tools.querySelector("[data-look-ker]").addEventListener("click", () => {
       const { ker } = structure();
       if (ker.length === 1) scene.lookAlong(numVec(ker[0]));
@@ -254,7 +319,10 @@
     tools.querySelector("[data-reset]").addEventListener("click", () => scene.resetView());
     K.chips(toolbar, Object.entries(KERNEL_MODES).map(([k, v]) => [k, v.label]), load, state.key);
     load("oblique");
-    return () => scene?.destroy();
+    return () => {
+      clearInterval(slideTimer);
+      scene?.destroy();
+    };
   }
 
   /* ================= §7 不变子空间 ================= */
@@ -365,16 +433,18 @@
           const Au = numVec(r.Au);
           // Highlight when invariant: the same colour with a glow underneath.
           if (r.inv) objs.push({ type: "line", dir: u, color: W, width: 7, alpha: 0.16 });
-          objs.push({ type: "line", dir: u, color: W, width: 2.6, label: "W" });
-          if (!r.inv) objs.push({ type: "line", dir: Au, color: "image", width: 1.8, dash: [6, 5], label: "AW" });
+          objs.push({ type: "line", dir: u, color: W, width: 2.6, label: r.inv ? "AW=W" : "W" });
+          // AW stays on the picture as a ghost, also when it lands on W
+          objs.push({ type: "line", dir: Au, color: "image", width: 1.8, ghost: true, alpha: 0.6, label: r.inv ? undefined : "AW" });
           objs.push({ type: "arrow", to: u, color: "drag", label: "u" });
           objs.push({ type: "arrow", to: scaled(Au, Math.min(2.4, V().len(Au))), color: "image", width: 2.4, label: "Au" });
         } else {
           const n = numVec(r.n);
-          objs.push({ type: "plane", n, d: 0, color: W, alpha: r.inv ? 0.26 : 0.14, width: r.inv ? 2.2 : 1.3, label: "W" });
+          objs.push({ type: "plane", n, d: 0, color: W, alpha: r.inv ? 0.26 : 0.14, width: r.inv ? 2.2 : 1.3, label: r.inv ? "AW=W" : "W" });
           const imgs = r.images.map(numVec);
           const nImg = V().cross(imgs[0], imgs[1]);
-          if (!r.inv && V().len(nImg) > 1e-9) objs.push({ type: "plane", n: nImg, d: 0, color: "image", alpha: 0.08, dash: [6, 5], strokeAlpha: 0.6, label: "AW" });
+          // AW stays on the picture as a ghost, also when it lands on W
+          if (V().len(nImg) > 1e-9) objs.push({ type: "plane", n: nImg, d: 0, color: "image", ghost: true, alpha: r.inv ? 0.03 : 0.06, strokeAlpha: 0.6, width: 1.4, label: r.inv ? undefined : "AW" });
           r.basis.map(numVec).forEach((w, i) => {
             objs.push({ type: "arrow", to: scaled(w, 1.4), color: W, width: 2.2, label: `w${"₁₂"[i]}` });
             objs.push({ type: "arrow", to: scaled(imgs[i], 1.4 * (V().len(imgs[i]) / V().len(w))), color: "image", width: 2.2, label: `Aw${"₁₂"[i]}` });
@@ -387,7 +457,7 @@
       let html = `<h4>${state.kind === "line" ? "候选直线" : "候选平面"}</h4>`;
       if (state.kind === "line") {
         html += `<p>${tex(`W=L(${K.latexRow(r.u)}^{T})`)}，${tex(`Au=${K.latexRow(r.Au)}^{T}`)}</p>`;
-        html += r.inv ? `<p class="ch7l-ok">AW=W：u 是特征向量</p>` : `<p class="ch7l-muted">AW 与 W 夹角 ${angleBetween(numVec(r.u), numVec(r.Au)).toFixed(1)}°</p>`;
+        html += r.inv ? `<p class="ch7l-ok">AW=W：u 是特征向量</p>` : `<p class="ch7l-muted">AW 与 W 夹角 ≈${angleBetween(numVec(r.u), numVec(r.Au)).toFixed(1)}°</p>`;
       } else {
         html += `<p>${tex(`W:\\ ${planeLatex(r.n)}=0`)}</p>`;
         if (r.inv) {
@@ -395,7 +465,7 @@
           html += r.hasEig ? `<p class="ch7l-muted">W 中含有特征向量（x₃ 轴方向）。</p>` : `<p class="ch7l-muted">W 中没有实特征向量：每条直线都被转走，平面整体不动。</p>`;
         } else {
           const imgs = r.images.map(numVec);
-          html += `<p class="ch7l-muted">AW 与 W 的夹角 ${angleBetween(numVec(r.n), V().cross(imgs[0], imgs[1])).toFixed(1)}°</p>`;
+          html += `<p class="ch7l-muted">AW 与 W 的夹角 ≈${angleBetween(numVec(r.n), V().cross(imgs[0], imgs[1])).toFixed(1)}°</p>`;
         }
       }
       info.innerHTML = html;

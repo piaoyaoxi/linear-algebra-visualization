@@ -26,7 +26,7 @@ test.describe("Chapter 2 normal-motion interactions", () => {
     await expect(page.locator("[data-status]")).toContainText("维度塌缩", { timeout: 3000 });
     await page.locator('[data-preset="negative2"]').click();
     await expect(page.locator("[data-status]")).toContainText("方向翻转", { timeout: 3000 });
-    await expect(page.locator("[data-det]")).toHaveText("-2", { timeout: 3000 });
+    await expect(page.locator("[data-det]")).toHaveText("−2", { timeout: 3000 });
     expect(errors).toEqual([]);
   });
 
@@ -44,7 +44,7 @@ test.describe("Chapter 2 normal-motion interactions", () => {
     const errors = browserErrors(page);
     await openLesson(page, "cramer-rule");
     await page.locator("[data-cramer-near]").click();
-    await expect(page.locator("[data-d]")).toHaveText("-0.02", { timeout: 4000 });
+    await expect(page.locator("[data-d]")).toHaveText("1/10", { timeout: 4000 });
     await expect(page.locator("[data-sol]")).toContainText("接近共线", { timeout: 4000 });
     await expect(page.locator("[data-slide-proof]")).toContainText("沿 a₂ 方向滑到 x₁a₁", { timeout: 4000 });
     expect(errors).toEqual([]);

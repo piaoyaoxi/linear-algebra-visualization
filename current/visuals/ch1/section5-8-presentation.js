@@ -15,14 +15,16 @@
    *   and at a root of f only when u = v (then gcd(f, f′) = x − u).
    * Multiplicity mode: f = (x−a)^m (x+1), f′ = (x−a)^{m−1}[(m+1)x + m − a];
    *   a = −1 gives f = (x+1)^{m+1}, f′ = (m+1)(x+1)^m.
-   * Every value shown is exact (slider steps are decimals, read as rationals).
+   * Every value shown is exact: the u, v sliders move in quarters and are read as
+   * rationals, so the start u = −3/4, v = 3/4 gives f = x² − 9/16 and f′(u) = u − v = −3/2.
    */
   function mountMultiplicity(root) {
-    const state = { mode: "merge", a: 1, m: 2, u: "-0.7", v: "0.7" };
+    const state = { mode: "merge", a: 1, m: 2, u: "-0.75", v: "0.75" };
     const fBounds = { xMin: -3, xMax: 3, yMin: -4, yMax: 6 };
     const dBounds = { xMin: -3, xMax: 3, yMin: -6, yMax: 6 };
     const R = (s) => M().parseR(s);
-    const dec = (r) => String(Number(M().rToNum(r).toFixed(4))).replace("-", "−");
+    const frac = (r) => M().formatRText(r);
+    const int = (n) => String(n).replace("-", "−");
     const merged = () => state.mode === "merge" && M().rEq(R(state.u), R(state.v));
     const currentPoly = () => state.mode === "multiplicity"
       ? M().polyMul(M().polyPow(M().poly([-state.a, 1]), state.m), M().poly([1, 1]))
@@ -136,26 +138,26 @@
       const gcdCell = root.querySelector("[data-gcd]");
       gcdCell.innerHTML = open ? tex(M().formatPolyTex(gcd)) : `<small class="ch1-muted">预测后显示</small>`;
       gcdCell.closest("div").classList.toggle("is-shared", open && !coprime);
-      root.querySelector("[data-focus-label]").textContent = state.mode === "multiplicity" ? `x=${dec(focus)}` : `x=u=${dec(focus)}`;
-      root.querySelector("[data-derivatives]").innerHTML = derivatives.map((row) => `<tr><td>${row.order === 0 ? "f" : row.order === 1 ? "f′" : `f<sup>(${row.order})</sup>`}</td><td>${M().formatR(row.value).replace("-", "−")}</td><td><b class="ch1-status ${M().rIsZero(row.value) ? "is-warn" : "is-ok"}">${M().rIsZero(row.value) ? "0" : "非零"}</b></td></tr>`).join("");
+      root.querySelector("[data-focus-label]").textContent = state.mode === "multiplicity" ? `x=${frac(focus)}` : `x=u=${frac(focus)}`;
+      root.querySelector("[data-derivatives]").innerHTML = derivatives.map((row) => `<tr><td>${row.order === 0 ? "f" : row.order === 1 ? "f′" : `f<sup>(${row.order})</sup>`}</td><td>${frac(row.value)}</td><td><b class="ch1-status ${M().rIsZero(row.value) ? "is-warn" : "is-ok"}">${M().rIsZero(row.value) ? "0" : "非零"}</b></td></tr>`).join("");
       const status = root.querySelector("[data-status]");
       if (state.mode === "multiplicity") {
         const m = effectiveM();
-        const a = state.a === -1 ? "−1" : state.a;
+        const a = int(state.a);
         status.textContent = m >= 2
           ? `${a} 是 ${m} 重根${state.a === -1 ? "（与 x+1 合并）" : ""}，也是 f′ 的 ${m - 1} 重根`
           : `${a} 是单根，f′(${a})≠0`;
       } else {
         status.textContent = merged()
-          ? `u=v：二重根，f 与 f′ 在 x=${dec(R(state.u))} 同为 0`
-          : `u≠v：两个单根（相距 ${dec(M().rAbs(M().rSub(R(state.u), R(state.v))))}），f′ 的零点 ${dec(dRoots()[0])} 在两根之间`;
+          ? `u=v：二重根，f 与 f′ 在 x=${frac(R(state.u))} 同为 0`
+          : `u≠v：两个单根（相距 ${frac(M().rAbs(M().rSub(R(state.u), R(state.v))))}），f′ 的零点 ${frac(dRoots()[0])} 在两根之间`;
       }
       root.querySelector("[data-m-controls]").hidden = state.mode !== "multiplicity";
       root.querySelector("[data-merge-controls]").hidden = state.mode !== "merge";
       status.className = `ch1-status ${coprime ? "is-ok" : "is-warn"}`;
       draw(p, dp);
-      root.querySelector("[data-a-value]").textContent = String(state.a).replace("-", "−"); root.querySelector("[data-m-value]").textContent = state.m;
-      root.querySelector("[data-u-value]").textContent = dec(R(state.u)); root.querySelector("[data-v-value]").textContent = dec(R(state.v));
+      root.querySelector("[data-a-value]").textContent = int(state.a); root.querySelector("[data-m-value]").textContent = state.m;
+      root.querySelector("[data-u-value]").textContent = frac(R(state.u)); root.querySelector("[data-v-value]").textContent = frac(R(state.v));
       if (gate?.picked && !coprime) gate.acted();
     }
     const locked = [...root.querySelectorAll("[data-u], [data-v], [data-a], [data-m], [data-preset-m], [data-mode]")];
@@ -189,7 +191,7 @@
   function interactive6(el, section) {
     lab(el, "两根合并时的 f′", section.interactive.description,
       `<button type="button" data-mode="merge" class="is-active">两根合并</button><button type="button" data-mode="multiplicity">单根重数</button><span class="ch1-control-separator"></span><button type="button" data-preset-m="1">m=1</button><button type="button" data-preset-m="2">m=2</button><button type="button" data-preset-m="3">m=3</button><button type="button" data-preset-m="4">m=4</button>`,
-      `<div class="ch1-two-col"><div class="ch1-merge-stages"><div class="ch1-stage"><canvas data-graph aria-label="y = f(x) 的图像"></canvas></div><div class="ch1-stage is-short"><canvas data-deriv-graph aria-label="同一横轴上 y = f′(x) 的图像"></canvas></div><p class="ch1-merge-legend"><b class="is-f">● f 的根</b><b class="is-d">● f′ 的零点</b><b class="is-glow">◎ 公共零点</b></p></div><div class="ch1-panel"><div data-merge-controls><label class="ch1-slider-row"><span>根 u</span><input data-u type="range" min="-2" max="2" step="0.05" value="-0.7"><output data-u-value></output></label><label class="ch1-slider-row"><span>根 v</span><input data-v type="range" min="-2" max="2" step="0.05" value="0.7"><output data-v-value></output></label><button type="button" class="ch3l-btn is-primary ch1-merge-exact" data-merge-exact>令 v=u，两根合并</button></div><div data-m-controls hidden><label class="ch1-slider-row"><span>根 a</span><input data-a type="range" min="-2" max="2" step="1" value="1"><output data-a-value></output></label><label class="ch1-slider-row"><span>重数 m</span><input data-m type="range" min="1" max="4" step="1" value="2"><output data-m-value></output></label></div><div class="ch1-result-band"><div><span>当前结论</span><strong data-status class="ch1-status"></strong></div></div><div class="ch1-equation-grid"><div><span>f</span><strong data-poly></strong></div><div><span>f′</span><strong data-derivative></strong></div><div class="ch1-gcd-cell"><span>gcd(f,f′)</span><strong data-gcd></strong></div></div><h4>在 <b data-focus-label></b> 处各阶导数的值</h4><div class="ch1-table-wrap"><table class="ch1-table"><thead><tr><th>导数</th><th>值</th><th>状态</th></tr></thead><tbody data-derivatives></tbody></table></div></div></div>`);
+      `<div class="ch1-two-col"><div class="ch1-merge-stages"><div class="ch1-stage"><canvas data-graph aria-label="y = f(x) 的图像"></canvas></div><div class="ch1-stage is-short"><canvas data-deriv-graph aria-label="同一横轴上 y = f′(x) 的图像"></canvas></div><p class="ch1-merge-legend"><b class="is-f">● f 的根</b><b class="is-d">● f′ 的零点</b><b class="is-glow">◎ 公共零点</b></p></div><div class="ch1-panel"><div data-merge-controls><label class="ch1-slider-row"><span>根 u</span><input data-u type="range" min="-2" max="2" step="0.25" value="-0.75"><output data-u-value></output></label><label class="ch1-slider-row"><span>根 v</span><input data-v type="range" min="-2" max="2" step="0.25" value="0.75"><output data-v-value></output></label><button type="button" class="ch3l-btn is-primary ch1-merge-exact" data-merge-exact>令 v=u，两根合并</button></div><div data-m-controls hidden><label class="ch1-slider-row"><span>根 a</span><input data-a type="range" min="-2" max="2" step="1" value="1"><output data-a-value></output></label><label class="ch1-slider-row"><span>重数 m</span><input data-m type="range" min="1" max="4" step="1" value="2"><output data-m-value></output></label></div><div class="ch1-result-band"><div><span>当前结论</span><strong data-status class="ch1-status"></strong></div></div><div class="ch1-equation-grid"><div><span>f</span><strong data-poly></strong></div><div><span>f′</span><strong data-derivative></strong></div><div class="ch1-gcd-cell"><span>gcd(f,f′)</span><strong data-gcd></strong></div></div><h4>在 <b data-focus-label></b> 处各阶导数的值</h4><div class="ch1-table-wrap"><table class="ch1-table"><thead><tr><th>导数</th><th>值</th><th>状态</th></tr></thead><tbody data-derivatives></tbody></table></div></div></div>`);
     const gateBox = document.createElement("div");
     gateBox.dataset.mergeGate = "";
     el.querySelector(".ch1-controls")?.before(gateBox);
@@ -204,12 +206,16 @@
       const h = M().hornerSteps(state.p, M().parseR(state.a));
       root.querySelector("[data-eval-panel]").hidden = false; root.querySelector("[data-root-panel]").hidden = true; root.querySelector("[data-interp-panel]").hidden = true;
       root.querySelector("[data-eval-poly]").innerHTML = tex(M().formatPolyTex(state.p));
-      root.querySelector("[data-a-value]").textContent = state.a;
+      // a can be negative: −2 with a true minus, (−2) after a product dot, x+2 as the factor
+      const a = String(state.a).replace("-", "−");
+      const times = state.a < 0 ? `(${a})` : a;
+      const factor = state.a === 0 ? "x" : state.a < 0 ? `x+${-state.a}` : `x−${state.a}`;
+      root.querySelector("[data-a-value]").textContent = a;
       root.querySelector("[data-fa]").innerHTML = tex(M().formatRTex(h.value));
       const signed = (t) => (t.startsWith("-") ? `−${tex(t.slice(1))}` : `+${tex(t)}`);
-      root.querySelector("[data-horner]").innerHTML = h.steps.map((s, i) => `<div class="${i === h.steps.length - 1 ? "is-current" : ""}"><span>${i + 1}</span><p>(${tex(M().formatRTex(s.before))})·${state.a}${signed(M().formatRTex(s.coefficient))}=${tex(M().formatRTex(s.after))}</p></div>`).join("");
+      root.querySelector("[data-horner]").innerHTML = h.steps.map((s, i) => `<div class="${i === h.steps.length - 1 ? "is-current" : ""}"><span>${i + 1}</span><p>(${tex(M().formatRTex(s.before))})·${times}${signed(M().formatRTex(s.coefficient))}=${tex(M().formatRTex(s.after))}</p></div>`).join("");
       const isRoot = M().rIsZero(h.value);
-      const st = root.querySelector("[data-factor]"); st.className = `ch1-status ${isRoot ? "is-ok" : "is-warn"}`; st.textContent = isRoot ? `f(${state.a})=0，x−${state.a} 是因式` : `余式 f(${state.a})≠0`;
+      const st = root.querySelector("[data-factor]"); st.className = `ch1-status ${isRoot ? "is-ok" : "is-warn"}`; st.textContent = isRoot ? `f(${a})=0，${factor} 是因式` : `余式 f(${a})≠0`;
       M().drawPolynomial(root.querySelector("[data-canvas]"), state.p, { bounds, points: [{ x: state.a, y: M().rToNum(h.value) }], caption: "评价点 (a,f(a))" });
     }
     // (x − r) as TeX, with an optional power

@@ -225,7 +225,8 @@ async function operate(page, section, viewport, theme) {
     ensure(await page.locator("#complex-real-factorization-interactive .ch1-live-conclusion").isVisible(), "§8: conclusion missing after acting");
     await clickIf(page, '[data-mode="R"]'); await page.waitForTimeout(700);
     if (detail) await dragConjugate(page); await clickIf(page, '[data-mode="C"]');
-    if (await page.locator("[data-re]").count()) await page.locator("[data-re]").fill("1.5");
+    // the roots move in quarters: Re(α) = 2 differs from wherever the drag left α
+    if (await page.locator("[data-re]").count()) await page.locator("[data-re]").fill("2");
     ensure(/虚部/.test((await page.locator("[data-real-status]").textContent()) || ""), "§8: unlocked coefficient explanation missing");
   } else if (section === "multivariate-polynomials") {
     await checkMultivariateLayout(page, viewport);

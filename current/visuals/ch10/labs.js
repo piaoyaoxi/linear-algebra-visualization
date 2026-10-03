@@ -95,6 +95,41 @@
     );
   }
 
+  /*
+   * Numbers on the integer level lines c·x = k, placed in a row across the
+   * lines (perpendicular to them) in the lower part of the canvas. `strong`
+   * holds the values to emphasise.
+   */
+  function numberLines(d, c, strong, color = "subspace") {
+    const len2 = c[0] * c[0] + c[1] * c[1];
+    if (len2 < 1e-9) return;
+    const len = Math.sqrt(len2);
+    let u = [-c[1] / len, c[0] / len];
+    if (u[1] < -1e-9 || (Math.abs(u[1]) < 1e-9 && u[0] < 0)) u = [-u[0], -u[1]];
+    const off = -d.halfH * 0.42;
+    const kMax = Math.ceil(Math.hypot(d.halfW, d.halfH) * len);
+    // keep at least 18px between numbers
+    const every = Math.max(1, Math.ceil((18 * len) / d.scale));
+    for (let k = -kMax; k <= kMax; k += 1) {
+      const isStrong = strong.has(k);
+      if (k % every && !isStrong) continue;
+      const q = [(k * c[0]) / len2 + u[0] * off, (k * c[1]) / len2 + u[1] * off];
+      if (Math.abs(q[0]) > d.halfW - 12 / d.scale || Math.abs(q[1]) > d.halfH - 10 / d.scale) continue;
+      d.text(q, minus(k), color, { align: "center", font: `${isStrong ? 750 : 550} ${isStrong ? 13 : 11}px 'LA Serif Latin', 'LA Serif SC', 'Songti SC', serif` });
+    }
+  }
+
+  /* Integer values k met by a path (exact f values at its vertices), leaving out the start value. */
+  function crossedValues(fs) {
+    if (fs.length < 2) return [];
+    const lo = Math.min(...fs.map(num));
+    const hi = Math.max(...fs.map(num));
+    const start = fs[0].d === 1 ? fs[0].n : null;
+    const out = [];
+    for (let k = Math.ceil(lo - 1e-9); k <= Math.floor(hi + 1e-9); k += 1) if (k !== start) out.push(k);
+    return out;
+  }
+
   const waitNote = (what) => `<p class="ch7l-muted">先在上方作出预测，${what}随后出现。</p>`;
 
   /* A reading next to a point, flipped to the left side near the right edge. */
@@ -158,9 +193,9 @@
   function functionalLab(root) {
     const lab = K.labShell(root, {
       title: "等值线读出 f(x)",
-      task: "每条绿色直线上 f 取同一个值，加粗的那条是 f=0，也就是 ker f。拖动金色的 x 读出 f(x)；用滑块改变 f(ε₁)、f(ε₂)，看整族直线怎样跟着变。",
+      task: "每条绿色直线上 f 取同一个值，直线上的数字就是这个值，加粗的那条是 f=0，也就是 ker f。拖动金色的 x 读出 f(x)，它走过的路径越过哪几条直线会被加亮；用滑块改变 f(ε₁)、f(ε₂)，看整族直线怎样跟着变。",
     });
-    const state = { key: "p31", a: [3, 1], x: [1, 0.5] };
+    const state = { key: "p31", a: [3, 1], x: [1, 0.5], path: [], dragging: false };
     const toolbar = el("div", "ch7l-toolbar");
     const gateHost = el("div");
     const body = el("div", "ch7l-body");
@@ -192,12 +227,35 @@
       const value = dot(a, x);
       const zeroFn = a.every(isZero);
       const open = Boolean(flow?.predicted);
+      const pathF = state.path.map((q) => dot(a, fv(q)));
+      const crossed = open && !zeroFn ? crossedValues(pathF) : [];
       plane.setDraw((d) => {
         d.grid(undefined, { alpha: 0.4 });
         d.axes();
         if (open && !zeroFn) {
-          levelLines(d, state.a, { label: "f", zeroColor: "subspace", zeroLabel: "f=0（ker f）" });
-          d.line(state.x, [-state.a[1], state.a[0]], "drag", { width: 1.6, dash: [6, 5], alpha: 0.75 });
+          const len2 = state.a[0] ** 2 + state.a[1] ** 2;
+          const dir = [-state.a[1], state.a[0]];
+          // lines the path of x crossed: the same green with a glow underneath
+          crossed.forEach((k) => d.line([(k * state.a[0]) / len2, (k * state.a[1]) / len2], dir, "subspace", { width: 7, alpha: 0.16 }));
+          levelLines(d, state.a, { zeroColor: "subspace", zeroLabel: "f=0（ker f）" });
+          numberLines(d, state.a, new Set(crossed));
+          d.line(state.x, dir, "drag", { width: 1.6, dash: [6, 5], alpha: 0.75 });
+          if (state.path.length > 1) {
+            d.polyline(state.path, "drag", { width: 2, dash: [2, 4], alpha: 0.8 });
+            // where the path first meets each crossed line
+            crossed.forEach((k) => {
+              for (let i = 1; i < state.path.length; i += 1) {
+                const f0 = num(pathF[i - 1]);
+                const f1 = num(pathF[i]);
+                if ((f0 - k) * (f1 - k) <= 0 && f0 !== f1) {
+                  const t = (k - f0) / (f1 - f0);
+                  const [p0, p1] = [state.path[i - 1], state.path[i]];
+                  d.point([p0[0] + (p1[0] - p0[0]) * t, p0[1] + (p1[1] - p0[1]) * t], "subspace", { r: 3.5 });
+                  break;
+                }
+              }
+            });
+          }
         }
         d.arrow([0, 0], [1, 0], "v1", { width: 2.4, label: "ε₁", ldy: 6 });
         d.arrow([0, 0], [0, 1], "v2", { width: 2.4, label: "ε₂", ldx: -8 });
@@ -219,6 +277,13 @@
         html += isZero(value)
           ? `<p class="ch7l-ok">x 落在 ker f 上。</p>`
           : `<p class="ch7l-muted">x 所在的等值线（金色虚线）与 ker f 平行。</p>`;
+        if (pathF.length > 1) {
+          const f0 = pathF[0];
+          const change = M().sub(value, f0);
+          html += `<p data-lf-path>${tex(`f:\\ ${lf(f0)}\\to ${lf(value)}`)}，读数改变 ${tex(lf(change))}。${
+            crossed.length ? `路径经过 ${crossed.length} 条整数等值线（${crossed.map(minus).join("、")}），已加亮。` : "路径没有越过整数等值线。"
+          }</p>`;
+        }
       }
       info.innerHTML = html;
     }
@@ -230,15 +295,26 @@
         limit: 3,
         get: () => state.x,
         set: (p) => {
+          // a new drag starts a new path of x
+          if (!state.dragging) {
+            state.dragging = true;
+            state.path = [state.x.slice()];
+          }
           state.x = p;
+          const last = state.path[state.path.length - 1];
+          if (last[0] !== p[0] || last[1] !== p[1]) state.path.push(p.slice());
           redraw();
         },
-        end: () => flow?.acted(),
+        end: () => {
+          state.dragging = false;
+          flow?.acted();
+        },
       },
     ]);
 
     sliders.forEach((s, i) =>
       s.addEventListener("input", () => {
+        state.path = [];
         state.a[i] = Number(s.value);
         syncSliders();
         redraw();
@@ -257,6 +333,7 @@
       (k) => {
         state.key = k;
         state.a = FUNCTIONAL_PRESETS[k].a.slice();
+        state.path = [];
         syncSliders();
         newFlow();
         redraw();
@@ -309,6 +386,20 @@
         if (rows && open) {
           const rn = rows.map((r) => r.map(num));
           const both = state.view === "both";
+          /*
+           * gᵢ vanishes on the other basis vector, so every level line of g₁ is
+           * parallel to η₂ (and g₂'s to η₁): the zero line through that vector
+           * glows, and a dashed copy of it lies along the line gᵢ=1 through ηᵢ's tip.
+           */
+          const parallel = (own, other, color, otherColor) => {
+            if (!both) {
+              d.line([0, 0], other, color, { width: 8, alpha: 0.16 });
+              d.segment([0, 0], other, otherColor, { width: 9, alpha: 0.18 });
+            }
+            d.arrow(own, [own[0] + other[0], own[1] + other[1]], otherColor, { width: 2, dash: [5, 4], alpha: 0.5 });
+          };
+          if (state.view !== "g2") parallel(e1, e2, "v1", "v2");
+          if (state.view !== "g1") parallel(e2, e1, "v2", "v1");
           if (state.view !== "g2") levelLines(d, rn[0], { label: "g₁", color: "v1", zeroColor: both ? null : "v1", zeroLabel: both ? null : "g₁=0", edge: both ? "right" : undefined });
           if (state.view !== "g1") levelLines(d, rn[1], { label: "g₂", color: "v2", zeroColor: both ? null : "v2", zeroLabel: both ? null : "g₂=0", edge: both ? "top" : undefined });
           const r = reads.map(num);
@@ -331,9 +422,15 @@
         matCard.innerHTML = `<h4>过渡矩阵</h4><div>${texD(`A=${K.latexMatrix(X)},\\quad |A|=0`)}</div>`;
         return;
       }
+      const parNote = {
+        g1: "g₁(η₂)=0：η₂ 躺在 g₁=0 上，g₁ 的每条等值线都与 η₂ 平行（虚线是平移到 η₁ 终点的 η₂）。",
+        g2: "g₂(η₁)=0：η₁ 躺在 g₂=0 上，g₂ 的每条等值线都与 η₁ 平行（虚线是平移到 η₂ 终点的 η₁）。",
+        both: "g₁ 的等值线平行于 η₂，g₂ 的等值线平行于 η₁，两族合成 η₁、η₂ 的斜网格。",
+      }[state.view];
       readCard.innerHTML = `<h4>读数</h4><ul class="ch10l-readout">
         <li>${tex(`g_1(x)=${lf(reads[0])},\\quad g_2(x)=${lf(reads[1])}`)}</li>
         <li>${tex(`x=${formTex(reads, ["\\eta_1", "\\eta_2"])}`)}</li></ul>
+        <p class="ch7l-muted" data-dual-par>${parNote}</p>
         <p class="ch7l-muted">x 所在格点的两个编号就是它在 η₁、η₂ 下的坐标。</p>`;
       const B = K.transpose(Xi);
       matCard.innerHTML = `<h4>对偶基的过渡矩阵</h4>
@@ -453,7 +550,7 @@
   function bilinearLab(root) {
     const lab = K.labShell(root, {
       title: "固定一个变量，得到一个线性函数",
-      task: "f(x,y)=xᵀAy。固定朱色的 y，f(·,y) 就是 x 的线性函数，绿色直线是它的等值线。拖动 y 看这族直线怎样转动，拖动 x 读出 f(x,y)。",
+      task: "f(x,y)=xᵀAy。固定朱色的 y，f(·,y) 就是 x 的线性函数，绿色直线是它的等值线，紫色箭头 Ay 是它们的法向。拖动 y 看这族直线怎样转动，拖动 x 读出 f(x,y)。",
     });
     const state = { key: "ns", mode: "fixY", x: [1, 1], y: [1, 0] };
     const toolbar = el("div", "ch7l-toolbar");
@@ -486,7 +583,24 @@
       plane.setDraw((d) => {
         d.grid(undefined, { alpha: 0.35 });
         d.axes();
-        if (open && !K.isZeroVec(coef)) levelLines(d, coef.map(num), { label: "f", color: "subspace", zeroColor: "subspace", zeroLabel: "f=0" });
+        if (open && !K.isZeroVec(coef)) {
+          levelLines(d, coef.map(num), { label: "f", color: "subspace", zeroColor: "subspace", zeroLabel: "f=0" });
+          /*
+           * The coefficient vector Ay (or Aᵀx) is normal to the level lines: a
+           * right-angle mark where it leaves the line f=0. A long vector is
+           * drawn shortened, keeping its direction.
+           */
+          const c = coef.map(num);
+          const L = Math.hypot(c[0], c[1]);
+          const room = Math.min(d.halfW, d.halfH) * 0.92;
+          const k = L > room ? room / L : 1;
+          const tip = [c[0] * k, c[1] * k];
+          const n = [c[0] / L, c[1] / L];
+          const t = [-n[1], n[0]];
+          const m = 14 / d.scale;
+          d.polyline([[t[0] * m, t[1] * m], [t[0] * m + n[0] * m, t[1] * m + n[1] * m], [n[0] * m, n[1] * m]], "subspace", { width: 1.5 });
+          d.arrow([0, 0], tip, "image", { width: 2.8, dash: k < 1 ? [7, 4] : undefined, label: k < 1 ? `${fixY ? "Ay" : "Aᵀx"} 的方向` : fixY ? "Ay" : "Aᵀx" });
+        }
         d.arrow([0, 0], state.y, "v2", { width: fixY ? 3.4 : 2.4, label: "y" });
         d.arrow([0, 0], state.x, "v1", { width: fixY ? 2.4 : 3.4, label: "x" });
         if (open) pointLabel(d, fixY ? state.x : state.y, `f(x,y)=${minus(M().formatF(value))}`, "text", 16);
@@ -497,7 +611,7 @@
         <ul class="ch10l-readout"><li>${tex(`${coefTex}=${K.latexVec(coef)}`)}</li>`;
       html += K.isZeroVec(coef)
         ? `<li class="ch7l-bad">${tex(coefTex)} 是零向量：对一切 ${free}，f(x,y)=0。</li>`
-        : `<li>${tex(`f(x,y)=${formTex(coef, [`${free}_1`, `${free}_2`])}`)}</li>`;
+        : `<li>${tex(`f(x,y)=${formTex(coef, [`${free}_1`, `${free}_2`])}`)}</li><li class="ch7l-muted" data-bil-normal>紫色箭头 ${tex(coefTex)} 与每条等值线垂直；沿它的方向 f 增长最快。</li>`;
       html += `<li>${tex(`f(x,y)=x^TAy=${lf(value)}`)}</li></ul>`;
       readCard.innerHTML = open ? html : `<h4>固定 ${fixedName}，f 是 ${free} 的线性函数</h4><p class="ch7l-muted">先在上方作出预测，等值线和读数随后出现。</p>`;
       const detA = K.det(a);
@@ -571,9 +685,9 @@
   function symplecticLab(root) {
     const lab = K.labShell(root, {
       title: "保持有向面积的变换",
-      task: "ω(x,y)=x₁y₂−x₂y₁ 是 x、y 张成的平行四边形的有向面积。选一个线性变换 K，比较虚线框（x、y）与实色框（Kx、Ky）：长度、夹角、ω 各变了没有。",
+      task: "ω(x,y)=x₁y₂−x₂y₁ 是 x、y 张成的平行四边形的有向面积。选一个线性变换 K，比较虚线框（x、y）与实色框（Kx、Ky）：长度、夹角、ω 各变了没有。剪切时可以拖动滑块 s，让上边沿水平线滑动。",
     });
-    const state = { key: "shear", x: [1.5, 0.25], y: [0.5, 1.25], t: 1 };
+    const state = { key: "shear", x: [1.5, 0], y: [0.5, 1.25], t: 1, s: 1 };
     const toolbar = el("div", "ch7l-toolbar");
     const gateHost = el("div");
     const body = el("div", "ch7l-body");
@@ -581,7 +695,9 @@
     const side = el("aside", "ch7l-side");
     const readCard = el("div", "ch7l-card");
     const matCard = el("div", "ch7l-card");
-    side.append(readCard, matCard);
+    const shearCard = el("div", "ch7l-card");
+    shearCard.innerHTML = `<label class="ch10l-range"><span>剪切量 s</span><input type="range" min="-2" max="2" step="0.25" value="1" data-shear aria-label="剪切量 s" /><b data-shear-v>1</b></label>`;
+    side.append(shearCard, readCard, matCard);
     body.append(stage, side);
     const result = el("div", "ch7l-result");
     lab.append(toolbar, gateHost, body, result);
@@ -597,9 +713,18 @@
       return (Math.acos(Math.max(-1, Math.min(1, c))) * 180) / Math.PI;
     };
     const fmt = (v) => (Math.round(v * 100) / 100).toString();
+    // exact when the value is a simple fraction (a length like 3/2, an angle like 90°), otherwise ≈
+    const shown = (v) => {
+      const f = M().fromNumber(v, 64);
+      return Math.abs(f.n / f.d - v) < 1e-9 ? minus(M().formatF(f)) : `≈${Math.round(v * 10) / 10}`;
+    };
+
+    const shearOn = () => state.key === "shear";
+    const shearK = () => [[1, fq(state.s)], [0, 1]].map((r) => r.map((v) => (typeof v === "number" ? F(v) : v)));
 
     function redraw() {
-      const Kf = K.mat(SYMPLECTIC_MAPS[state.key].K);
+      shearCard.hidden = !shearOn();
+      const Kf = shearOn() ? shearK() : K.mat(SYMPLECTIC_MAPS[state.key].K);
       const Kn = Kf.map((r) => r.map(num));
       const t = state.t;
       const Kt = Kn.map((r, i) => r.map((v, j) => (1 - t) * (i === j ? 1 : 0) + t * v));
@@ -619,11 +744,13 @@
         d.grid(undefined, { alpha: 0.35 });
         d.axes();
         const sum = (u, v) => [u[0] + v[0], u[1] + v[1]];
-        d.polyline([[0, 0], state.x, sum(state.x, state.y), state.y], "axis", { close: true, dash: [5, 5], width: 1.4 });
+        // the parallelogram of x, y: the ghost of the image (same colour, dashed, light fill)
+        d.polygon([[0, 0], state.x, sum(state.x, state.y), state.y], "image", { dash: [5, 5], width: 1.4, alpha: 0.6, fillAlpha: 0.07 });
+        if (open && shearOn()) shearGuides(d, kx, ky);
         // Kx, Ky and their parallelogram are images; whether ω is kept shows in the readout, not in a hue.
         const tone = "image";
         d.polygon([[0, 0], kx, sum(kx, ky), ky], tone, { width: 1.8, fillAlpha: 0.16 });
-        d.arrow([0, 0], kx, tone, { width: 2.6, label: "Kx" });
+        d.arrow([0, 0], kx, tone, { width: 2.6, label: "Kx", ldy: 14 });
         d.arrow([0, 0], ky, tone, { width: 2.6, label: "Ky" });
         d.arrow([0, 0], state.x, "v1", { width: 1.8, alpha: 0.75, label: "x" });
         d.arrow([0, 0], state.y, "v2", { width: 1.8, alpha: 0.75, label: "y" });
@@ -632,17 +759,40 @@
       const Kyn = Ky.map(num);
       readCard.innerHTML = `<h4>比较</h4>
         <table class="ch7l-table"><thead><tr><th></th><th>x, y</th><th>Kx, Ky</th></tr></thead><tbody>
-        <tr><td>长度</td><td>${fmt(len(state.x))}, ${fmt(len(state.y))}</td><td>${fmt(len(Kxn))}, ${fmt(len(Kyn))}</td></tr>
-        <tr><td>夹角</td><td>${fmt(angle(state.x, state.y))}°</td><td>${fmt(angle(Kxn, Kyn))}°</td></tr>
+        <tr><td>长度</td><td>${shown(len(state.x))}, ${shown(len(state.y))}</td><td>${shown(len(Kxn))}, ${shown(len(Kyn))}</td></tr>
+        <tr><td>夹角</td><td>${shown(angle(state.x, state.y))}°</td><td>${shown(angle(Kxn, Kyn))}°</td></tr>
         <tr><td>ω</td><td>${open ? minus(M().formatF(w0)) : "?"}</td><td>${open ? minus(M().formatF(w1)) : "?"}</td></tr></tbody></table>
         ${isZero(w0) ? `<p class="ch7l-muted">x、y 共线，平行四边形压扁，ω(x,y)=0。</p>` : ""}`;
       if (!open) {
         matCard.innerHTML = `<h4>变换矩阵</h4><div>${texD(`K=${K.latexMatrix(Kf)}`)}</div><p class="ch7l-muted">先在上方作出预测，ω 的读数随后出现。</p>`;
         return;
       }
+      const base = shearOn()
+        ? state.x[1] === 0 && state.y[1] !== 0
+          ? `<p class="ch7l-muted" data-sym-base>底边 x 不动，上边沿水平虚线滑动，高 h 不变：同底同高，面积相等。</p>`
+          : `<p class="ch7l-muted" data-sym-base>每个点沿水平虚线滑动。把 x 拖回 x₁ 轴，可以看到同底同高。</p>`
+        : "";
       matCard.innerHTML = `<h4>变换矩阵</h4><div>${texD(`K=${K.latexMatrix(Kf)},\\quad |K|=${lf(detK)}`)}</div>
         <div>${texD(`\\omega(Kx,Ky)=|K|\\,\\omega(x,y)`)}</div>
-        <p><span class="ch10l-badge${keeps ? "" : " is-off"}">${keeps ? "K 保持 ω" : "K 不保持 ω"}</span></p>`;
+        <p><span class="ch10l-badge${keeps ? "" : " is-off"}">${keeps ? "K 保持 ω" : "K 不保持 ω"}</span></p>${base}`;
+    }
+
+    /*
+     * A shear moves every point along its horizontal line. With x on the x₁ axis
+     * the base Ox stays put and the top edge slides along the line x₂ = y₂: same
+     * base, same height, same area.
+     */
+    function shearGuides(d, kx, ky) {
+      const [x, y] = [state.x, state.y];
+      const tops = [y, [x[0] + y[0], x[1] + y[1]]];
+      tops.forEach((q) => d.line([0, q[1]], [1, 0], "axis", { width: 1, dash: [2, 3] }));
+      if (x[1] !== 0) d.line([0, x[1]], [1, 0], "axis", { width: 1, dash: [2, 3] });
+      if (x[1] === 0 && y[1] !== 0) {
+        d.segment([0, 0], x, "v1", { width: 8, alpha: 0.18 });
+        [y, ky].forEach((q, i) => d.segment([q[0], 0], q, "axis", { width: 1.3, dash: [4, 3] }));
+        const h = M().formatF(fq(y[1])).replace("-", "−");
+        d.text([ky[0], ky[1] / 2], `h=${h}`, "axis", { dx: 8, align: "left", font: "600 12px 'LA Serif Latin', 'LA Serif SC', 'Songti SC', serif" });
+      }
     }
 
     function animate() {
@@ -674,6 +824,16 @@
       end: () => flow?.acted(),
     });
     plane.setHandles([handle("x", "drag"), handle("y", "drag")]);
+
+    const shearIn = shearCard.querySelector("[data-shear]");
+    shearIn.addEventListener("input", () => {
+      cancelAnimationFrame(raf);
+      state.s = Number(shearIn.value);
+      state.t = 1;
+      shearCard.querySelector("[data-shear-v]").textContent = M().formatF(fq(state.s)).replace("-", "−");
+      redraw();
+      flow?.acted();
+    });
 
     K.chips(
       toolbar,

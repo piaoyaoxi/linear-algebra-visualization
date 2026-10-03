@@ -165,6 +165,64 @@
     ctx.restore();
   }
 
+  /*
+   * §4: the level curves q = c drawn on the floor z = 0 under the surface (what a view from straight
+   * above shows), clipped to the floor square, q > 0 in the surface's positive colour and q < 0 in its
+   * negative colour; the q = 0 lines are dashed. They are drawn before the translucent surface, so the
+   * surface passes over them and meets the floor exactly on the dashed lines.
+   */
+  function drawFloorLevels(ctx, frame, A, palette, floor) {
+    const half = frame.half;
+    const reach = half * Math.SQRT2 * 1.1;
+    const corners = [[-half, -half], [half, -half], [half, half], [-half, half]].map(([x, y]) => frame.project(x, y, 0));
+    ctx.save();
+    ctx.beginPath();
+    corners.forEach((point, index) => index ? ctx.lineTo(point.x, point.y) : ctx.moveTo(point.x, point.y));
+    ctx.closePath();
+    ctx.fillStyle = palette.line;
+    ctx.globalAlpha = 0.07;
+    ctx.fill();
+    ctx.strokeStyle = palette.line;
+    ctx.globalAlpha = 0.45;
+    ctx.lineWidth = 1;
+    ctx.stroke();
+    ctx.clip();
+    const N = 720;
+    (floor.levels || []).forEach((level) => {
+      ctx.strokeStyle = level > 0 ? palette.pos : palette.neg;
+      ctx.globalAlpha = 0.9;
+      ctx.lineWidth = 1.2;
+      ctx.beginPath();
+      let down = false;
+      for (let i = 0; i <= N; i += 1) {
+        const angle = (TAU * i) / N;
+        const ux = Math.cos(angle);
+        const uy = Math.sin(angle);
+        const q = M().qForm(A, [ux, uy]);
+        if (q * level <= 0) { down = false; continue; }
+        const r = Math.sqrt(level / q);
+        if (r > reach) { down = false; continue; }
+        const point = frame.project(r * ux, r * uy, 0);
+        if (down) ctx.lineTo(point.x, point.y);
+        else { ctx.moveTo(point.x, point.y); down = true; }
+      }
+      ctx.stroke();
+    });
+    ctx.strokeStyle = palette.zero;
+    ctx.globalAlpha = 0.9;
+    ctx.lineWidth = 1.2;
+    ctx.setLineDash([5, 5]);
+    (floor.zeroDirections || []).forEach(([dx, dy]) => {
+      const a = frame.project(-dx * reach, -dy * reach, 0);
+      const b = frame.project(dx * reach, dy * reach, 0);
+      ctx.beginPath();
+      ctx.moveTo(a.x, a.y);
+      ctx.lineTo(b.x, b.y);
+      ctx.stroke();
+    });
+    ctx.restore();
+  }
+
   function drawSurface(canvas, A, options = {}) {
     const { ctx, width, height } = M().setupCanvas(canvas);
     if (!ctx) return;
@@ -191,6 +249,8 @@
       path(ctx, row, palette.line, 1, 0.2);
       path(ctx, column, palette.line, 1, 0.2);
     }
+
+    if (options.floor) drawFloorLevels(ctx, frame, A, palette, options.floor);
 
     const resolution = width < 560 ? 24 : 32;
     const quads = [];
@@ -360,48 +420,6 @@
     }
   }
 
-  function drawDirectionWheel(canvas, A) {
-    const { ctx, width, height } = M().setupCanvas(canvas);
-    if (!ctx) return;
-    const palette = M().getPalette();
-    const cx = width / 2;
-    const cy = height / 2;
-    const radius = Math.min(width, height) * 0.31;
-    const values = [];
-    ctx.fillStyle = palette.soft;
-    ctx.fillRect(0, 0, width, height);
-    for (let index = 0; index < 240; index += 1) {
-      const angle = (TAU * index) / 240;
-      const value = M().qForm(A, [Math.cos(angle), Math.sin(angle)]);
-      values.push(value);
-      ctx.strokeStyle = value > EPS ? palette.pos : value < -EPS ? palette.neg : palette.coral;
-      ctx.lineWidth = 7;
-      ctx.beginPath();
-      ctx.arc(cx, cy, radius, angle, angle + TAU / 240 + 0.015);
-      ctx.stroke();
-    }
-    const minimum = Math.min(...values);
-    const maximum = Math.max(...values);
-    const state = minimum > EPS ? "全部 > 0" : minimum < -EPS ? "出现 < 0" : "接触 0";
-    ctx.fillStyle = palette.text;
-    ctx.font = "800 22px 'LA Serif Latin', 'LA Serif SC', 'Songti SC', serif";
-    ctx.textAlign = "center";
-    ctx.fillText(state, cx, cy - 2);
-    ctx.fillStyle = palette.muted;
-    ctx.font = "12px 'LA Serif Latin', 'LA Serif SC', 'Songti SC', serif";
-    ctx.fillText(`min ${M().formatNum(minimum, 3)} · max ${M().formatNum(maximum, 3)}`, cx, cy + 22);
-    ctx.textAlign = "left";
-  }
-
-  function ensureSection4Compatibility(root) {
-    if ($(root, "[data-s4-region]")) return;
-    const compatibility = document.createElement("div");
-    compatibility.hidden = true;
-    compatibility.setAttribute("data-s4-region", "");
-    compatibility.innerHTML = '<b data-s4-marker></b>';
-    root.append(compatibility);
-  }
-
   function enhance(section, root) {
     if (!root) return undefined;
     const controller = new AbortController();
@@ -447,14 +465,23 @@
     }
 
     if (section.id === "positive-definite") {
-      ensureSection4Compatibility(root);
       const surface = $(root, "[data-s4-surface]");
-      const wheel = $(root, "[data-s4-scan]");
       redraw = () => {
         const t = Number($(root, "[data-s4-t]")?.value || 0);
         const A = [[1, t], [t, 1]];
-        drawSurface(surface, A, { frameMatrices: [A], padding: { top: 58, bottom: 42 } });
-        drawDirectionWheel(wheel, A);
+        // the level curves would give the type away, so the floor stays bare until a prediction
+        const open = Boolean(root.querySelector(".qv-lab[data-s4-open]"));
+        surface.dataset.floor = open ? "on" : "off";
+        // q = 0 directions (1, m) with 1 + 2tm + m² = 0; t = k/4, so |k| decides exactly
+        const k = Math.abs(Math.round(t * 4));
+        const root2 = k > 4 ? Math.sqrt(t * t - 1) : 0;
+        const zeroDirections = (k < 4 ? [] : k === 4 ? [-t] : [-t + root2, -t - root2])
+          .map((m) => [1 / Math.hypot(1, m), m / Math.hypot(1, m)]);
+        drawSurface(surface, A, {
+          frameMatrices: [A],
+          padding: { top: 58, bottom: 42 },
+          floor: open ? { levels: [-2, -1, -0.5, 0.5, 1, 2], zeroDirections } : null,
+        });
       };
     }
 

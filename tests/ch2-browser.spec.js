@@ -104,7 +104,13 @@ test.describe("Chapter 2 desktop visual system", () => {
 
   test("§1 synchronizes geometry, sign and collapse", async ({ page }) => {
     await openLesson(page, "determinant-intro");
+    await expect(page.locator("[data-det]")).toHaveText("7/8");
+    // predict, then act: the verdict waits for the first action
+    const gate = page.locator("#determinant-intro-interactive .ch3l-predict");
+    await gate.locator(".ch3l-predict-options > button", { hasText: /^负$/ }).click();
+    await expect(gate.locator(".ch3l-predict-feedback")).toContainText("已记下");
     await page.locator('[data-preset="shear"]').click();
+    await expect(gate.locator(".ch3l-predict-feedback")).toContainText("顺时针为负");
     await expect(page.locator("[data-det]")).toHaveText("1");
     await page.locator('[data-preset="collinear"]').click();
     await expect(page.locator("[data-status]")).toContainText("维度塌缩");
@@ -178,6 +184,15 @@ test.describe("Chapter 2 desktop visual system", () => {
     await openLesson(page, "cramer-rule");
     await page.locator("[data-cramer-near]").click();
     await expect(page.locator("[data-sol]")).toContainText("接近共线");
+    // predict, then act: x stays hidden until a prediction, the verdict waits for b₂ − 1/10
+    await expect(page.locator("[data-sol]")).toContainText("x₁=?");
+    await expect(page.locator("[data-cramer-nudge]")).toBeDisabled();
+    const gate = page.locator("#cramer-rule-interactive .ch3l-predict");
+    await gate.locator(".ch3l-predict-options > button", { hasText: "仍是唯一解，但变化很大" }).click();
+    await expect(page.locator("[data-sol]")).toContainText("x₁=1，x₂=2");
+    await page.locator("[data-cramer-nudge]").click();
+    await expect(gate.locator(".ch3l-predict-feedback")).toContainText("越敏感");
+    await expect(page.locator("[data-sol]")).toContainText("x₁=3，x₂=1");
     await page.locator("[data-cramer-sing]").click();
     await expect(page.locator("[data-d]")).toHaveText("0");
     await expect(page.locator("[data-sol]")).toContainText("无穷多解");

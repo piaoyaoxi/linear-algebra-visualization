@@ -332,6 +332,53 @@
           ctx.lineTo(at.x + u.x + v.x, at.y + u.y + v.y);
           ctx.lineTo(at.x + v.x, at.y + v.y);
           ctx.stroke();
+        } else if (obj.type === "arc") {
+          // Angle mark at `at` from direction `from` to direction `to` (the smaller turn);
+          // `count` concentric arcs, radius in px.
+          const at = f.toScreen(obj.at || [0, 0]);
+          const ang = (d) => {
+            const q = f.toScreen([(obj.at?.[0] || 0) + d[0], (obj.at?.[1] || 0) + d[1]]);
+            return Math.atan2(q.y - at.y, q.x - at.x);
+          };
+          const a0 = ang(obj.from);
+          let da = ang(obj.to) - a0;
+          while (da > Math.PI) da -= 2 * Math.PI;
+          while (da < -Math.PI) da += 2 * Math.PI;
+          ctx.strokeStyle = color;
+          ctx.lineWidth = obj.width || 1.5;
+          for (let i = 0; i < (obj.count || 1); i += 1) {
+            ctx.beginPath();
+            ctx.arc(at.x, at.y, (obj.r || 22) + i * 4, a0, a0 + da, da < 0);
+            ctx.stroke();
+          }
+          if (obj.label) {
+            const mid = a0 + da / 2;
+            const rr = (obj.r || 22) + (obj.count || 1) * 4 + 9;
+            labels.push({ q: { x: at.x + Math.cos(mid) * rr, y: at.y + Math.sin(mid) * rr }, text: obj.label, color, align: "center", font: "600 12px 'LA Serif Latin', 'LA Serif SC', 'Songti SC', serif" });
+          }
+        } else if (obj.type === "ticks") {
+          // `n` equal-length marks across the middle of segment a–b.
+          const a = f.toScreen(obj.a);
+          const b = f.toScreen(obj.b);
+          const len = Math.hypot(b.x - a.x, b.y - a.y);
+          if (len > 1) {
+            const ux = (b.x - a.x) / len;
+            const uy = (b.y - a.y) / len;
+            const at = obj.at ?? 0.5;
+            const m = { x: a.x + (b.x - a.x) * at, y: a.y + (b.y - a.y) * at };
+            const n = obj.n || 1;
+            ctx.strokeStyle = color;
+            ctx.lineWidth = obj.width || 1.8;
+            ctx.setLineDash([]);
+            for (let i = 0; i < n; i += 1) {
+              const s = (i - (n - 1) / 2) * 4.5;
+              const c = { x: m.x + ux * s, y: m.y + uy * s };
+              ctx.beginPath();
+              ctx.moveTo(c.x - uy * 6, c.y + ux * 6);
+              ctx.lineTo(c.x + uy * 6, c.y - ux * 6);
+              ctx.stroke();
+            }
+          }
         } else if (obj.type === "label") {
           labels.push({ p: obj.p, text: obj.text, color, font: obj.font, align: obj.align, dx: obj.dx, dy: obj.dy });
         }

@@ -1011,6 +1011,15 @@ body.dark :is(main, #la) .ch2-meter-card {
   background: var(--surface-soft);
 }
 
+/* §7 the action (b₂ − 1/10) heads the readout column, full width */
+:is(main, #la) .ch2-cramer-act {
+  margin: 0;
+}
+
+:is(main, #la) .ch2-cramer-act > button {
+  flex: 1 1 auto;
+}
+
 /* permutation tiles */
 :is(main, #la) .ch2-perm-item {
   border: 1px solid var(--line-strong);
@@ -1430,6 +1439,18 @@ body.dark :is(main, #la) :is(.lesson-page-section, #lb) :is(.s2c-canvas-shell, .
   background: transparent;
 }
 
+/* §6: the grid fills its frame when the step list beside it is taller than the canvas */
+:is(main, #la) :is(.lesson-page-section, #lb) .el6-stage {
+  display: flex;
+  flex-direction: column;
+}
+
+:is(main, #la) :is(.lesson-page-section, #lb) .el6-canvas {
+  flex: 1 1 0;
+  height: auto;
+  min-height: clamp(300px, 40vw, 420px);
+}
+
 :is(main, #la) :is(.lesson-page-section, #lb) .inverse-plane-wrap {
   background: var(--cv-paper);
 }
@@ -1614,6 +1635,212 @@ body.dark :is(main, #la) :is(.lesson-page-section, #lb) .inverse-control-panel {
   border: 0;
   border-radius: 10px;
   background: var(--surface-soft);
+}
+
+:is(main, #la) :is(.lesson-page-section, #lb) .blk-readout > .blk-wait {
+  color: var(--muted);
+}
+
+/* §5 block sizes: a ruler bracket over every column group and beside every row
+   group; after the prediction the inner pair (A's columns, B's rows) turns
+   ok/bad, and the strip spells C_ij as sizes with the inner pair bracketed */
+:is(main, #la) :is(.lesson-page-section, #lb) .blk-grid th {
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--muted);
+  font-size: 12.5px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  line-height: 1;
+}
+
+:is(main, #la) :is(.lesson-page-section, #lb) .blk-grid th.blk-rule {
+  position: relative;
+}
+
+:is(main, #la) :is(.lesson-page-section, #lb) .blk-grid th.blk-rule.is-col {
+  height: 24px;
+  vertical-align: top;
+  text-align: center;
+}
+
+:is(main, #la) :is(.lesson-page-section, #lb) .blk-grid th.blk-rule.is-row {
+  padding-right: 10px;
+  text-align: right;
+  vertical-align: middle;
+}
+
+/* centre the matrix name over the cells, past the row ruler */
+:is(main, #la) :is(.lesson-page-section, #lb) .blk-lab .blk-mat > span {
+  padding-left: 24px;
+}
+
+:is(main, #la) :is(.lesson-page-section, #lb) .blk-grid th.blk-rule::after {
+  content: "";
+  position: absolute;
+  border: 1px solid var(--cv-axis);
+}
+
+:is(main, #la) :is(.lesson-page-section, #lb) .blk-grid th.blk-rule.is-col::after {
+  right: 4px;
+  bottom: 3px;
+  left: 4px;
+  height: 5px;
+  border-bottom: 0;
+}
+
+:is(main, #la) :is(.lesson-page-section, #lb) .blk-grid th.blk-rule.is-row::after {
+  top: 4px;
+  right: 3px;
+  bottom: 4px;
+  width: 5px;
+  border-right: 0;
+}
+
+:is(main, #la) :is(.lesson-page-section, #lb) .blk-grid th.blk-rule > i {
+  display: inline-block;
+  min-width: 13px;
+  padding: 1px 2px;
+  border-radius: 4px;
+  font-style: normal;
+  text-align: center;
+}
+
+:is(main, #la) :is(.lesson-page-section, #lb) .blk-grid th.blk-rule.is-sel {
+  color: var(--text);
+}
+
+:is(main, #la) :is(.lesson-page-section, #lb) .blk-grid th.blk-rule:is(.is-ok, .is-bad) {
+  font-weight: 700;
+}
+
+:is(main, #la) :is(.lesson-page-section, #lb) .blk-grid th.blk-rule.is-ok {
+  color: var(--ok-text);
+}
+
+:is(main, #la) :is(.lesson-page-section, #lb) .blk-grid th.blk-rule.is-bad {
+  color: var(--bad-text);
+}
+
+:is(main, #la) :is(.lesson-page-section, #lb) .blk-grid th.blk-rule:is(.is-ok, .is-bad)::after {
+  border-color: currentColor;
+  border-width: 1.5px;
+}
+
+:is(main, #la) :is(.lesson-page-section, #lb) .blk-grid th.blk-rule.is-ok > i {
+  background: var(--ok-bg);
+}
+
+:is(main, #la) :is(.lesson-page-section, #lb) .blk-grid th.blk-rule.is-bad > i {
+  background: var(--bad-bg);
+}
+
+:is(main, #la) :is(.lesson-page-section, #lb) .blk-sizes {
+  display: flex;
+  flex: 0 0 100%;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  justify-content: center;
+  gap: 4px 10px;
+  padding-top: 14px;
+  border-top: 1px solid var(--line);
+  font-variant-numeric: tabular-nums;
+}
+
+:is(main, #la) :is(.lesson-page-section, #lb) .blk-term {
+  display: inline-grid;
+  grid-template-areas:
+    "na na . nb nb"
+    "ao ak dot bk bo"
+    ". ln ln ln .";
+  justify-items: center;
+}
+
+:is(main, #la) :is(.lesson-page-section, #lb) :is(.blk-term, .blk-res) > .blk-nm {
+  color: var(--muted);
+  font-size: 12.5px;
+  font-style: italic;
+  line-height: 18px;
+}
+
+:is(main, #la) :is(.lesson-page-section, #lb) .blk-term > .blk-nm.is-a { grid-area: na; }
+:is(main, #la) :is(.lesson-page-section, #lb) .blk-term > .blk-nm.is-b { grid-area: nb; }
+:is(main, #la) :is(.lesson-page-section, #lb) .blk-term > .blk-d.is-a { grid-area: ao; justify-self: end; }
+:is(main, #la) :is(.lesson-page-section, #lb) .blk-term > .blk-k.is-a { grid-area: ak; }
+:is(main, #la) :is(.lesson-page-section, #lb) .blk-term > .blk-dot { grid-area: dot; padding: 0 4px; color: var(--muted); }
+:is(main, #la) :is(.lesson-page-section, #lb) .blk-term > .blk-k.is-b { grid-area: bk; }
+:is(main, #la) :is(.lesson-page-section, #lb) .blk-term > .blk-d.is-b { grid-area: bo; justify-self: start; }
+
+:is(main, #la) :is(.lesson-page-section, #lb) :is(.blk-term, .blk-res) > :is(.blk-d, .blk-k, .blk-dot),
+:is(main, #la) :is(.lesson-page-section, #lb) .blk-sizes > .blk-plus {
+  font-size: 15px;
+  line-height: 22px;
+}
+
+:is(main, #la) :is(.lesson-page-section, #lb) .blk-term > .blk-k {
+  min-width: 12px;
+  font-weight: 700;
+  text-align: center;
+}
+
+:is(main, #la) :is(.lesson-page-section, #lb) .blk-term > .blk-link {
+  display: grid;
+  grid-area: ln;
+  justify-self: stretch;
+  justify-items: center;
+  font-size: 14px;
+  font-weight: 700;
+  line-height: 16px;
+}
+
+:is(main, #la) :is(.lesson-page-section, #lb) .blk-term > .blk-link::before {
+  content: "";
+  justify-self: stretch;
+  height: 5px;
+  margin: 0 2px;
+  border: 1.5px solid currentColor;
+  border-top: 0;
+}
+
+:is(main, #la) :is(.lesson-page-section, #lb) .blk-term.is-ok > :is(.blk-k, .blk-link) {
+  color: var(--ok-text);
+}
+
+:is(main, #la) :is(.lesson-page-section, #lb) .blk-term.is-bad > :is(.blk-k, .blk-link) {
+  color: var(--bad-text);
+}
+
+:is(main, #la) :is(.lesson-page-section, #lb) .blk-sizes > .blk-plus {
+  margin-top: 18px;
+  color: var(--accent-strong);
+}
+
+:is(main, #la) :is(.lesson-page-section, #lb) .blk-res {
+  display: grid;
+  justify-items: center;
+}
+
+:is(main, #la) :is(.lesson-page-section, #lb) .blk-res > :is(.blk-nm, .blk-d) {
+  color: var(--cv-image);
+}
+
+:is(main, #la) :is(.lesson-page-section, #lb) .blk-res > .blk-d {
+  font-weight: 700;
+}
+
+@media (max-width: 760px) {
+  :is(main, #la) :is(.lesson-page-section, #lb) .blk-grid th.blk-rule.is-row {
+    padding-right: 9px;
+  }
+
+  :is(main, #la) :is(.lesson-page-section, #lb) .blk-grid th.blk-rule.is-col {
+    height: 22px;
+  }
+
+  :is(main, #la) :is(.lesson-page-section, #lb) .blk-lab .blk-mat > span {
+    padding-left: 22px;
+  }
 }
 
 /* §7 block elimination */
@@ -2245,6 +2472,77 @@ body.dark :is(main, #la) :is(.lesson-page-section, #lb) .basis-label rect {
   }
 }
 
+/* §4: one surface (level curves on its floor) beside the direction wheel and the readouts */
+:is(main, #la) .qv-s4-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(250px, 290px);
+  gap: 22px;
+  align-items: start;
+}
+
+:is(main, #la) :is(.qv-s4-main, .qv-s4-side) {
+  display: grid;
+  gap: 14px;
+  min-width: 0;
+}
+
+:is(main, #la) .qv-s4-main > .qv-hero,
+:is(main, #la) .qv-s4-main > .qv-hero > canvas {
+  height: 500px;
+  min-height: 0;
+}
+
+:is(main, #la) .qv-s4-wheel {
+  margin: 0;
+}
+
+:is(main, #la) .qv-s4-wheel > canvas {
+  display: block;
+  width: 100%;
+  height: 230px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--cv-paper);
+}
+
+:is(main, #la) .qv-s4-wheel > figcaption {
+  margin-top: 6px;
+  color: var(--muted);
+  font-size: 13px;
+  line-height: 1.6;
+}
+
+:is(main, #la) .qv-s4-read {
+  display: grid;
+  gap: 10px;
+  padding: 12px;
+}
+
+:is(main, #la) .qv-s4-read > .ch5-matrix-wrap {
+  justify-self: start;
+}
+
+:is(main, #la) .qv-s4-read > .qv-values > .qv-s4-wide {
+  grid-column: 1 / -1;
+}
+
+@media (max-width: 900px) {
+  :is(main, #la) .qv-s4-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+@media (max-width: 680px) {
+  :is(main, #la) .qv-s4-main > .qv-hero,
+  :is(main, #la) .qv-s4-main > .qv-hero > canvas {
+    height: 380px;
+  }
+
+  :is(main, #la) .qv-s4-wheel > canvas {
+    height: 240px;
+  }
+}
+
 :is(main, #la) :is(.qv-orbit-title, .qv-orbit-hint) {
   border: 1px solid var(--line);
   border-radius: 6px;
@@ -2268,6 +2566,7 @@ body.dark :is(main, #la) :is(.lesson-page-section, #lb) .basis-label rect {
 :is(main, #la) :is(.qv-result, .qv-step, .qv-values),
 :is(main, #la) .qv-data > div,
 :is(main, #la) .qv-three > aside,
+:is(main, #la) .qv-s4-read,
 :is(main, #la) .qv-two > aside > div,
 :is(main, #la) .ch5s4-minor-chain > div {
   border: 1px solid var(--line);
@@ -2278,7 +2577,8 @@ body.dark :is(main, #la) :is(.lesson-page-section, #lb) .basis-label rect {
 
 :is(main, #la) .qv-data > .qv-values,
 :is(main, #la) .qv-two > aside > .qv-values,
-:is(main, #la) .qv-three > aside > .qv-values {
+:is(main, #la) .qv-three > aside > .qv-values,
+:is(main, #la) .qv-s4-read > .qv-values {
   border: 0;
   background: none;
   padding: 0;

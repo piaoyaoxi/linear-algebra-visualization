@@ -57,6 +57,20 @@
     return Number.isInteger(rounded) ? String(rounded) : String(rounded);
   }
 
+  /* exact text of a rational number with a small denominator: "7/8", "−2" */
+  function formatFrac(value) {
+    const number = Number(value);
+    if (!Number.isFinite(number)) return "—";
+    if (Math.abs(number) < 1e-9) return "0";
+    const sign = number < 0 ? "−" : "";
+    const x = Math.abs(number);
+    for (let d = 1; d <= 64; d += 1) {
+      const n = Math.round(x * d);
+      if (Math.abs(n / d - x) < 1e-9) return d === 1 ? `${sign}${n}` : `${sign}${n}/${d}`;
+    }
+    return formatNum(number, 3).replace("-", "−");
+  }
+
   function getPalette() {
     const style = getComputedStyle(document.body);
     return {
@@ -304,6 +318,49 @@
     ctx.stroke();
     ctx.restore();
 
+    /*
+     * orientation: the smaller turn from column 1 to column 2, with an arrowhead.
+     * It runs counterclockwise exactly when det > 0 and flips when det < 0.
+     */
+    if (options.orientation && !nearZero) {
+      const t1 = Math.atan2(c, a);
+      let turn = Math.atan2(d, b) - t1;
+      while (turn > Math.PI) turn -= 2 * Math.PI;
+      while (turn <= -Math.PI) turn += 2 * Math.PI;
+      const shortest = Math.min(Math.hypot(a, c), Math.hypot(b, d)) * scale;
+      const r = clamp(shortest * 0.42, 18, 46);
+      const end = t1 + turn;
+      ctx.save();
+      ctx.strokeStyle = palette.image;
+      ctx.fillStyle = palette.image;
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      // canvas y points down: math angle t is screen angle −t
+      ctx.arc(p0.x, p0.y, r, -t1, -end, turn > 0);
+      ctx.stroke();
+      const tip = { x: p0.x + r * Math.cos(-end), y: p0.y + r * Math.sin(-end) };
+      // tangent in the direction of travel
+      const dir = turn > 0 ? -end - Math.PI / 2 : -end + Math.PI / 2;
+      ctx.beginPath();
+      ctx.moveTo(tip.x + 8 * Math.cos(dir), tip.y + 8 * Math.sin(dir));
+      ctx.lineTo(tip.x + 8 * Math.cos(dir + 2.6), tip.y + 8 * Math.sin(dir + 2.6));
+      ctx.lineTo(tip.x + 8 * Math.cos(dir - 2.6), tip.y + 8 * Math.sin(dir - 2.6));
+      ctx.closePath();
+      ctx.fill();
+      const mid = -(t1 + turn / 2);
+      ctx.font = "650 12px 'LA Serif Latin', 'LA Serif SC', 'Songti SC', serif";
+      ctx.textAlign = Math.cos(mid) < -0.3 ? "right" : Math.cos(mid) > 0.3 ? "left" : "center";
+      ctx.textBaseline = "middle";
+      const label = det > 0 ? "逆时针 · det>0" : "顺时针 · det<0";
+      const lx = clamp(p0.x + (r + 14) * Math.cos(mid), 8, width - 8);
+      const ly = clamp(p0.y + (r + 14) * Math.sin(mid), 10, height - 10);
+      ctx.lineWidth = 4;
+      ctx.strokeStyle = palette.paper;
+      ctx.strokeText(label, lx, ly);
+      ctx.fillText(label, lx, ly);
+      ctx.restore();
+    }
+
     drawArrow(ctx, p0, p1, palette.v1, 3);
     drawArrow(ctx, p0, p3, palette.v2, 3);
 
@@ -441,6 +498,7 @@
     determinant,
     mul2,
     formatNum,
+    formatFrac,
     getPalette,
     cancelAnim,
     animateTo,

@@ -5,11 +5,28 @@
     const controller = new AbortController();
     const { signal } = controller;
     const canvas = root.querySelector("[data-ch2-canvas]");
-    const state = { matrix: [[1, 0.65], [0.15, 1]], view: null, dragging: -1, animating: false };
+    // quarter steps keep every entry and det exact (det = 7/8 at the start)
+    const state = { matrix: [[1, 0.5], [0.25, 1]], view: null, dragging: -1, animating: false };
+    const snap = (x) => Math.round(x * 4) / 4;
+    const lab = root.querySelector(".ch2-lab");
+    const gate = window.LAPredictGate?.mount(root.querySelector("[data-orient-gate]"), {
+      root: lab,
+      key: "visuals/ch2/section1-presentation.js#orient",
+      question: "从第 1 列转到第 2 列（取较小的那个角）。如果这一转是顺时针的，det 的符号是什么？",
+      options: [
+        ["负", true, ""],
+        ["正", false, "逆时针才给正号。把第 2 列拖到第 1 列的另一侧，看紫色的转向弧。"],
+        ["det=0", false, "det=0 时两列共线，没有转角。"],
+        ["要看平行四边形面积多大", false, "面积给出 |det|，符号只由转向决定。"],
+      ],
+      right: "✓ 逆时针为正，顺时针为负，|det| 是面积。两列共线时转角消失，det=0；拖着第 2 列穿过第 1 列所在的直线，转向弧随之翻转。",
+      onPick: () => draw(state.matrix),
+    });
+    const open = () => !gate || gate.picked;
     const presets = {
       identity: [[1, 0], [0, 1]],
       scale2: [[2, 0], [0, 1]],
-      shear: [[1, 1.15], [0, 1]],
+      shear: [[1, 1], [0, 1]],
       mirror: [[-1, 0], [0, 1]],
       collinear: [[1, 2], [0.5, 1]],
       negative2: [[-2, 0], [0, 1]],
@@ -28,7 +45,7 @@
         const input = root.querySelector(`[data-key="${key}"]`);
         const label = root.querySelector(`[data-val="${key}"]`);
         if (input) input.value = String(value);
-        if (label) label.textContent = M().formatNum(value, 2);
+        if (label) label.textContent = M().formatFrac(value);
       });
     }
 
@@ -36,15 +53,16 @@
       const det = M().det2(matrix);
       const status = M().detStatus(det);
       const detElement = root.querySelector("[data-det]");
-      detElement.textContent = M().formatNum(det, 3);
+      detElement.textContent = M().formatFrac(det);
       detElement.className = status.cls;
-      root.querySelector("[data-abs]").textContent = M().formatNum(Math.abs(det), 3);
+      root.querySelector("[data-abs]").textContent = M().formatFrac(Math.abs(det));
       const statusElement = root.querySelector("[data-status]");
       statusElement.textContent = status.label;
       statusElement.className = `ch2-status ${status.cls}`;
-      root.querySelector("[data-formula]").textContent = `${M().formatNum(matrix[0][0])}·${M().formatNum(matrix[1][1])} − ${M().formatNum(matrix[0][1])}·${M().formatNum(matrix[1][0])}`;
+      const f = (x) => (x < 0 ? `(${M().formatFrac(x)})` : M().formatFrac(x));
+      root.querySelector("[data-formula]").textContent = `${f(matrix[0][0])}·${f(matrix[1][1])} − ${f(matrix[0][1])}·${f(matrix[1][0])}`;
       const hint = root.querySelector("[data-zero-hint]");
-      hint.hidden = Math.abs(det) >= 0.08;
+      hint.hidden = Math.abs(det) > 0.25;
       if (!hint.hidden) hint.textContent = Math.abs(det) < M().EPS ? "两列已经共线：二维面积完全消失。" : "接近零：继续拖动会穿过维度塌缩边界。";
       M().pulseClass(root.querySelector("[data-det-card]"));
     }
@@ -53,7 +71,8 @@
       state.view = M().drawTransformScene(canvas, matrix, {
         firstLabel: "第 1 列",
         secondLabel: "第 2 列",
-        caption: `det = ${M().formatNum(M().det2(matrix), 3)} · 可拖动两个箭头端点`,
+        caption: `det = ${M().formatFrac(M().det2(matrix))} · 可拖动两个箭头端点`,
+        orientation: open(),
       });
       writeControls(matrix);
       syncReadout(matrix);
@@ -65,7 +84,7 @@
       try {
         await M().animateMatrix(canvas, target, {
           duration: 650,
-          drawOptions: { firstLabel: "第 1 列", secondLabel: "第 2 列" },
+          drawOptions: { firstLabel: "第 1 列", secondLabel: "第 2 列", orientation: open() },
           onUpdate(current) {
             state.matrix = M().cloneMat(current);
             writeControls(current);
@@ -109,8 +128,8 @@
     canvas.addEventListener("pointermove", (event) => {
       if (state.dragging < 0 || !state.view) return;
       const rect = canvas.getBoundingClientRect();
-      const x = M().clamp((event.clientX - rect.left - state.view.origin.x) / state.view.scale, -2.5, 2.5);
-      const y = M().clamp(-(event.clientY - rect.top - state.view.origin.y) / state.view.scale, -2.5, 2.5);
+      const x = snap(M().clamp((event.clientX - rect.left - state.view.origin.x) / state.view.scale, -2.5, 2.5));
+      const y = snap(M().clamp(-(event.clientY - rect.top - state.view.origin.y) / state.view.scale, -2.5, 2.5));
       if (state.dragging === 0) {
         state.matrix[0][0] = x;
         state.matrix[1][0] = y;
@@ -165,8 +184,8 @@
       root.innerHTML = `
         <h2>交互实验</h2>
         <div class="ch2-lab">
-          <div class="ch2-lab-head"><h3>有向面积 · 拖动两列</h3><p>拖动两根列向量的端点，也可以使用滑杆与预设。图形、ad−bc、|det| 与状态同步更新。</p></div>
-          <div class="ch2-task"><strong>观察任务</strong><span>构造明显剪切但 det=1 的图形，再让两列共线并继续拖到 det<0。</span></div>
+          <div class="ch2-lab-head"><h3>有向面积 · 拖动两列</h3><p>拖动两根列向量的端点（每次四分之一格），也可以使用滑杆与预设。图形、ad−bc、|det| 与状态同步更新；作出预测后，紫色弧标出从第 1 列到第 2 列的转向。</p></div>
+          <div data-orient-gate></div>
           <div class="ch2-lab-grid ch2-area-layout">
             <div class="ch2-stage"><canvas data-ch2-canvas aria-label="可拖动两列向量的有向面积画布"></canvas></div>
             <div class="ch2-side">
@@ -178,7 +197,7 @@
               <div class="ch2-note">计算：<strong data-formula></strong></div>
               <div class="ch2-note is-zero" data-zero-hint hidden></div>
               <div class="ch2-sliders">
-                ${["a", "b", "c", "d"].map((key) => `<label><span>${key}</span><input data-key="${key}" type="range" min="-2.5" max="2.5" step="0.05" aria-label="矩阵元素 ${key}" /><span data-val="${key}">0</span></label>`).join("")}
+                ${["a", "b", "c", "d"].map((key) => `<label><span>${key}</span><input data-key="${key}" type="range" min="-2.5" max="2.5" step="0.25" aria-label="矩阵元素 ${key}" /><span data-val="${key}">0</span></label>`).join("")}
               </div>
             </div>
           </div>

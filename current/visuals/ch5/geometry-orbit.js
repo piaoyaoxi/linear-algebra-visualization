@@ -6,6 +6,8 @@
   const $$ = (root, selector) => [...root.querySelectorAll(selector)];
   const TAU = Math.PI * 2;
   const HOME = Object.freeze({ yaw: -0.72, pitch: 0.46 });
+  // §4 looks across the direction x₁ = −x₂ (where q = 1 − |t| is lowest), so its flattening shows
+  const HOME_S4 = Object.freeze({ yaw: 0.3, pitch: 0.56 });
 
   const matrixFrom = (root, selector) => {
     const cells = $$(root, `${selector} .ch5-cell`).map((cell) => Number(cell.dataset.v ?? cell.textContent));
@@ -273,11 +275,11 @@
     reference.before(tools);
   }
 
-  function bindOrbit(canvases, camera, redraw, controller) {
+  function bindOrbit(canvases, camera, redraw, controller, home = HOME) {
     const drag = { active: false, id: null, x: 0, y: 0, yaw: 0, pitch: 0 };
     const reset = () => {
-      camera.yaw = HOME.yaw;
-      camera.pitch = HOME.pitch;
+      camera.yaw = home.yaw;
+      camera.pitch = home.pitch;
       redraw();
     };
     canvases.forEach((canvas) => {
@@ -335,7 +337,7 @@
 
   function enhanceSection(section, root) {
     const controller = new AbortController();
-    const camera = { ...HOME };
+    const camera = { ...(section.id === "positive-definite" ? HOME_S4 : HOME) };
     let redraw = () => {};
     let canvases = [];
 
@@ -416,7 +418,7 @@
       }
       const title = document.createElement("div");
       title.className = "qv-orbit-title";
-      title.innerHTML = `${inline("q_t")} · <span data-orbit-class>正定</span>`;
+      title.innerHTML = `${inline("q_t(x)")}<span data-orbit-class></span>`;
       const hint = document.createElement("div");
       hint.className = "qv-orbit-hint";
       hint.textContent = "拖动旋转 · 双击复位";
@@ -425,20 +427,14 @@
         const value = Number($(root, "[data-s4-t]")?.value || 0);
         const A = [[1, value], [value, 1]];
         drawSurface(canvas, A, camera, { frameMatrices: [A], padding: { top: 58, bottom: 42 } });
-        const cls = M().classify2(A).label;
+        // t = k/4: the type is read off |k| exactly, and joins the title once a prediction is picked
+        const k = Math.abs(Math.round(value * 4));
+        const open = Boolean(root.querySelector(".qv-lab[data-s4-open]"));
         const clsNode = $(root, "[data-orbit-class]");
-        if (clsNode) clsNode.textContent = cls;
-        const poly = $(root, "[data-s4-poly]");
-        if (poly) poly.innerHTML = inline(M().polyTex2(A));
+        if (clsNode) clsNode.textContent = open ? ` · ${k < 4 ? "正定" : k === 4 ? "半正定" : "不定"}` : "";
       };
-      const reset = bindOrbit(canvases, camera, redraw, controller);
+      const reset = bindOrbit(canvases, camera, redraw, controller, HOME_S4);
       addViewTools(hero, reset, false);
-      const labels = $$(root, ".qv-three .qv-values > span");
-      replaceLabel(labels[0], "\\lambda_1=1+t");
-      replaceLabel(labels[1], "\\lambda_2=1-t");
-      replaceLabel(labels[2], "\\Delta_1");
-      replaceLabel(labels[3], "\\Delta_2=1-t^2");
-      replaceLabel(labels[4], "\\min_{\\lVert x\\rVert=1}q_t(x)=1-|t|");
     }
 
     if (!canvases.length) return undefined;

@@ -758,7 +758,7 @@
     const toolbar = el("div", "ch6l-toolbar");
     lab.append(toolbar);
     const { plotBox, right } = pairViews(lab, `${tex("P[x]_3")} 中的三条曲线`, `像所在的 ${tex("\\mathbb R^3")}`);
-    const scene = S().create(right, { range: 2.5, label: "像与平行四边形", hint: "拖动圆点改变多项式 · 拖动空白处旋转", yaw: 0.4, pitch: 0.35 });
+    const scene = S().create(right, { range: 1.7, label: "像与平行四边形", hint: "拖动圆点改变多项式 · 拖动空白处旋转", yaw: 2.7, pitch: 0.65, spreadLabels: true });
     const info = el("div", "ch6l-status");
     const gateHost = el("div");
     const result = K().resultBox(`<p>${tex("\\tau")} 保持加法和数乘：${tex("(p+q)(k)=p(k)+q(k)")}。它是单射，因为次数小于 3 的多项式若有 0、1、2 三个根，只能是零多项式；两边维数都是 3，所以 ${tex("\\tau")} 也是满射，是同构。拖动 ${tex("\\tau(p)")} 时，左图的曲线始终穿过三个指定高度的点，这就是插值。同构不唯一：${tex("\\sigma")} 与 ${tex("\\tau")} 是两个不同的同构。第三种对应把平方作用在系数上，${tex("p+q")} 的像离开第四个顶点，它不保持加法。</p>`);
@@ -821,7 +821,11 @@
           { type: "arrow", to: Q, color: "v2", width: 2.8, label: `${name}(q)` },
           { type: "arrow", to: Sn, color: "image", width: 3.2, label: `${name}(p+q)` },
         ];
-        if (!closes) objs.push({ type: "point", p: C, color: "axis", r: 5.5, hollow: true, label: "第四个顶点" });
+        if (!closes) {
+          // the gap that additivity would close, in the second-vector / error colour
+          objs.push({ type: "segment", a: Sn, b: C, color: "v2", width: 3 });
+          objs.push({ type: "point", p: C, color: "axis", r: 5.5, hollow: true, label: "第四个顶点" });
+        }
         return objs;
       });
       scene.setHandles(
@@ -840,7 +844,7 @@
       info.dataset.closes = String(closes);
       info.innerHTML = `${tex(`${name}(p)=${vecTex(ip)},\\ ${name}(q)=${vecTex(iq)}`)}<br>${tex(`${name}(p+q)=${vecTex(is)}`)}，${tex(`${name}(p)+${name}(q)=${vecTex(corner)}`)}：${
         closes ? `<span class="ch6l-ok">两者相等，平行四边形闭合</span>` : `<span class="ch6l-bad">两者不等，加法没有被保持</span>`
-      }`;
+      }${closes ? "" : `<br>从 ${tex(`${name}(p+q)`)} 到第四个顶点的线段：${tex(`${name}(p)+${name}(q)-${name}(p+q)=${vecTex(corner.map((x, i) => M().sub(x, is[i])))}`)}`}`;
     }
 
     K().chips(toolbar, Object.entries(MODES).map(([k, v]) => [k, v.label]), (k) => {

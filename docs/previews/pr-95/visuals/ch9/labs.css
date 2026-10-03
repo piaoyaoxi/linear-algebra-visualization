@@ -1,0 +1,511 @@
+/* Chapter 9 labs (labs.js) and the 2D plane scene (plane2d.js). */
+.ch9p {
+  position: relative;
+  min-width: 0;
+  overflow: hidden;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background:
+    radial-gradient(circle at 50% 42%, var(--canvas-paper-glow, rgba(7, 139, 126, 0.05)), transparent 62%),
+    linear-gradient(180deg, var(--canvas-paper-top, #fbfcfb), var(--canvas-paper-bottom, #f3f6f4));
+}
+
+body.dark .ch9p {
+  background: linear-gradient(180deg, rgba(205, 215, 240, 0.05), rgba(205, 215, 240, 0.02));
+}
+
+.ch9p-canvas {
+  display: block;
+  width: 100%;
+  height: clamp(300px, 40vw, 430px);
+  touch-action: none;
+  outline: none;
+}
+
+.ch9p-canvas:focus-visible {
+  box-shadow: inset 0 0 0 3px color-mix(in srgb, var(--accent) 40%, transparent);
+}
+
+.ch9p.is-dragging .ch9p-canvas {
+  cursor: grabbing !important;
+}
+
+.ch9p-hint {
+  position: absolute;
+  left: 12px;
+  bottom: 9px;
+  color: var(--faint);
+  font-size: 11.5px;
+  pointer-events: none;
+}
+
+.ch9l-lab {
+  display: grid;
+  gap: 16px;
+  min-width: 0;
+  padding: 22px;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  background: var(--surface-solid);
+}
+
+.ch9l-head h3 {
+  margin: 0 0 6px;
+  font-size: 20px;
+}
+
+.ch9l-head p {
+  margin: 0;
+  max-width: 72ch;
+  color: var(--muted);
+  line-height: 1.75;
+}
+
+.ch9l-toolbar,
+.ch9l-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+}
+
+.ch9l-chip,
+.ch9l-btn {
+  padding: 7px 13px;
+  border: 1px solid var(--line-strong);
+  border-radius: 999px;
+  background: var(--surface-solid);
+  color: var(--text);
+  font: inherit;
+  font-size: 13.5px;
+  font-weight: 650;
+  line-height: 1.4;
+  cursor: pointer;
+}
+
+.ch9l-chip.is-active,
+.ch9l-chip:hover,
+.ch9l-btn:hover:not(:disabled) {
+  border-color: var(--accent);
+  background: var(--accent-soft);
+  color: var(--accent-strong);
+}
+
+.ch9l-btn.is-primary {
+  border-color: var(--accent);
+  background: var(--accent);
+  color: #fff;
+}
+
+body.dark .ch9l-btn.is-primary {
+  color: #0e121b;
+}
+
+.ch9l-btn:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.ch9l-body {
+  display: grid;
+  grid-template-columns: minmax(0, 1.45fr) minmax(260px, 1fr);
+  gap: 16px;
+  align-items: start;
+}
+
+.ch9l-stage,
+.ch9l-side {
+  display: grid;
+  gap: 12px;
+  min-width: 0;
+}
+
+.ch9l-pair {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.ch9l-view {
+  display: grid;
+  gap: 6px;
+  min-width: 0;
+}
+
+.ch9l-view-title {
+  color: var(--muted);
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.ch9l-pair .ch9p-canvas,
+.ch9l-pair .la3d-canvas {
+  height: clamp(270px, 32vw, 350px);
+}
+
+.ch9l-card {
+  display: grid;
+  gap: 8px;
+  min-width: 0;
+  padding: 14px 16px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: var(--surface-soft);
+}
+
+.ch9l-card h4 {
+  margin: 0;
+  font-size: 14px;
+}
+
+.ch9l-card p,
+.ch9l-status p {
+  margin: 0;
+  line-height: 1.75;
+  overflow-wrap: anywhere;
+}
+
+.ch9l-card .katex-display,
+.ch9l-card .tex-inline,
+.ch9l-status .tex-inline {
+  max-width: 100%;
+}
+
+.ch9l-card p,
+.ch9l-status p {
+  overflow-x: auto;
+  overflow-y: hidden;
+}
+
+.ch9l-steps {
+  display: grid;
+  gap: 4px;
+  font-size: 13.5px;
+}
+
+.ch9l-steps span {
+  padding: 3px 9px;
+  border-radius: 8px;
+  color: var(--faint);
+}
+
+.ch9l-steps span.is-done {
+  color: var(--muted);
+}
+
+.ch9l-steps span.is-active {
+  background: var(--accent-soft);
+  color: var(--accent-strong);
+  font-weight: 700;
+}
+
+.ch9l-note {
+  margin: 0;
+  color: var(--gold);
+  font-size: 13px;
+  font-weight: 650;
+}
+
+.ch9l-range {
+  display: grid;
+  grid-template-columns: 40px minmax(0, 1fr) 44px;
+  gap: 10px;
+  align-items: center;
+}
+
+.ch9l-range span {
+  color: var(--muted);
+  font-size: 13px;
+  font-weight: 650;
+}
+
+.ch9l-range input {
+  width: 100%;
+  accent-color: var(--accent);
+}
+
+.ch9l-range b {
+  color: var(--accent-strong);
+  font-variant-numeric: tabular-nums;
+  text-align: right;
+}
+
+.ch9l-controls {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr)) auto;
+  gap: 12px 20px;
+  align-items: center;
+}
+
+.ch9l-status {
+  display: grid;
+  gap: 6px;
+  min-width: 0;
+  padding: 12px 16px;
+  border-radius: 12px;
+  background: var(--surface-soft);
+}
+
+.ch9l-muted {
+  color: var(--muted);
+}
+
+.ch9l-ok,
+.ch9l-bad {
+  font-weight: 650;
+}
+
+.ch9l-ok {
+  color: var(--accent-strong);
+}
+
+.ch9l-bad {
+  color: var(--coral);
+}
+
+/* Prediction gate */
+.ch9l-predict {
+  display: grid;
+  gap: 10px;
+  min-width: 0;
+  padding: 14px 16px;
+  border: 1px solid color-mix(in srgb, var(--gold) 45%, var(--line));
+  border-radius: 12px;
+  background: color-mix(in srgb, var(--gold) 7%, var(--surface-solid));
+}
+
+.ch9l-predict-q {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: 10px;
+  align-items: start;
+}
+
+.ch9l-predict-q > span {
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: var(--gold);
+  color: #fff;
+  font-size: 12px;
+  font-weight: 750;
+  white-space: nowrap;
+}
+
+body.dark .ch9l-predict-q > span {
+  color: #0e121b;
+}
+
+.ch9l-predict-q p {
+  margin: 0;
+  line-height: 1.7;
+}
+
+.ch9l-predict-options {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.ch9l-predict-options button {
+  max-width: 100%;
+  padding: 7px 12px;
+  border: 1px solid var(--line-strong);
+  border-radius: 10px;
+  background: var(--surface-solid);
+  color: var(--text);
+  font: inherit;
+  font-size: 13.5px;
+  line-height: 1.5;
+  text-align: left;
+  cursor: pointer;
+}
+
+.ch9l-predict-options button.is-right {
+  border-color: var(--accent);
+  background: var(--accent-soft);
+  color: var(--accent-strong);
+}
+
+.ch9l-predict-options button.is-wrong {
+  border-color: var(--coral);
+  color: var(--coral);
+}
+
+.ch9l-predict-feedback {
+  margin: 0;
+  color: var(--muted);
+  line-height: 1.7;
+}
+
+.ch9l-result {
+  min-width: 0;
+  padding: 14px 16px;
+  border-left: 4px solid var(--accent);
+  border-radius: 0 12px 12px 0;
+  background: var(--accent-soft);
+}
+
+.ch9l-result p {
+  margin: 6px 0 0;
+  line-height: 1.75;
+}
+
+/* Formal blocks */
+.ch9l-formal {
+  display: grid;
+  gap: 12px;
+  min-width: 0;
+}
+
+.ch9l-formal > * {
+  min-width: 0;
+}
+
+.ch9l-theorem {
+  padding: 16px 18px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: var(--surface-solid);
+}
+
+.ch9l-theorem h3 {
+  margin: 0 0 8px;
+  font-size: 16px;
+}
+
+.ch9l-theorem p {
+  margin: 0;
+  color: var(--muted);
+  line-height: 1.8;
+}
+
+.ch9l-theorem-math {
+  margin: 6px 0 10px;
+  overflow-x: auto;
+  overflow-y: hidden;
+}
+
+.ch9l-pitfalls {
+  padding: 14px 18px;
+  border: 1px solid color-mix(in srgb, var(--coral) 30%, var(--line));
+  border-radius: 12px;
+  background: color-mix(in srgb, var(--coral) 5%, var(--surface-solid));
+}
+
+.ch9l-pitfalls h3 {
+  margin: 0 0 6px;
+  font-size: 15px;
+}
+
+.ch9l-pitfalls ul {
+  margin: 0;
+  padding-left: 20px;
+  line-height: 1.8;
+}
+
+.ch9l-figure {
+  display: grid;
+  grid-template-columns: minmax(0, 320px) minmax(0, 1fr);
+  gap: 18px;
+  align-items: center;
+  margin: 0;
+  padding: 16px 18px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: var(--surface-solid);
+}
+
+.ch9l-figure svg {
+  width: 100%;
+  height: auto;
+}
+
+.ch9l-figure figcaption {
+  color: var(--muted);
+  line-height: 1.8;
+}
+
+.ch9l-figure .ax {
+  stroke: var(--line-strong);
+  stroke-width: 1.3;
+}
+
+.ch9l-figure .ring {
+  fill: none;
+  stroke: var(--faint);
+  stroke-dasharray: 5 5;
+}
+
+.ch9l-figure .z {
+  stroke: var(--accent);
+  stroke-width: 3;
+}
+
+.ch9l-figure .zp {
+  fill: var(--accent);
+}
+
+.ch9l-figure .zb {
+  stroke: var(--coral);
+  stroke-width: 3;
+}
+
+.ch9l-figure .zbp {
+  fill: var(--coral);
+}
+
+.ch9l-figure .dash {
+  stroke: var(--muted);
+  stroke-dasharray: 4 4;
+}
+
+.ch9l-figure text {
+  font: 600 12.5px var(--font-serif);
+}
+
+.ch9l-figure .t {
+  fill: var(--muted);
+}
+
+.ch9l-figure .tz {
+  fill: var(--accent-strong);
+}
+
+.ch9l-figure .tzb {
+  fill: var(--coral);
+}
+
+/* Keep the picture in view while the side column (readings, prediction) scrolls. */
+@media (min-width: 1101px) {
+  .ch9l-body > .ch9l-stage {
+    position: sticky;
+    top: 84px;
+  }
+}
+
+@media (max-width: 1100px) {
+  .ch9l-body {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 900px) {
+  .ch9l-pair,
+  .ch9l-figure {
+    grid-template-columns: 1fr;
+  }
+
+  .ch9l-controls {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 640px) {
+  .ch9l-lab {
+    padding: 14px;
+  }
+
+  .ch9p-canvas {
+    height: 300px;
+  }
+}

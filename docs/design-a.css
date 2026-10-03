@@ -935,3 +935,141 @@ body .ch8l-trail-bar > b {
   font-weight: 650;
   text-align: center;
 }
+
+/* ch3 §2 row picture: distance from x to each plane; a plane x lies on turns green */
+body .ch3l-dists {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 8px;
+  margin-bottom: 6px;
+}
+
+body .ch3l-dists > .ch3l-dist {
+  padding: 2px 10px;
+  border: 1px solid var(--line-strong);
+  border-radius: 999px;
+  color: var(--muted);
+  font-size: 13.5px;
+  font-variant-numeric: tabular-nums;
+}
+
+body .ch3l-dists > .ch3l-dist.is-on {
+  border-color: var(--ok-line);
+  background: var(--ok-bg);
+  color: var(--ok-text);
+  font-weight: 600;
+}
+
+body .ch3l-dists > .ch3l-dist::before {
+  content: "";
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  margin-right: 6px;
+  border-radius: 50%;
+  background: var(--cv-v1);
+  vertical-align: 1px;
+}
+
+body .ch3l-dists > .ch3l-dist[data-plane="2"]::before {
+  background: var(--cv-v2);
+}
+
+body .ch3l-dists > .ch3l-dist[data-plane="3"]::before {
+  background: var(--cv-subspace);
+}
+
+body .ch3l-dists > .ch3l-dist.is-on::before {
+  display: none;
+}
+
+/* ch6 §6 the shared basis α of U∩W, extended by β inside U and γ inside W */
+body .ch6l-bases {
+  display: grid;
+  gap: 4px;
+  margin: 4px 0 8px;
+  padding: 0;
+  list-style: none;
+}
+
+body .ch6l-bases > li {
+  margin: 0;
+}
+
+/* ch7 §4 angle strip under the plane: ψ(θ) from the line of v to Av; zeros are eigen-lines */
+body .ch7l-anglestrip {
+  margin: 10px 0 0;
+  padding: 6px 8px 4px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--cv-paper);
+}
+
+body .ch7l-anglestrip > svg {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+body .ch7l-anglestrip > figcaption {
+  margin-top: 2px;
+  color: var(--muted);
+  font-size: 13px;
+  line-height: 1.6;
+}
+
+body .ch7l-anglestrip .ch7s-grid {
+  stroke: var(--cv-grid-major);
+  stroke-width: 1;
+}
+
+body .ch7l-anglestrip .ch7s-zero {
+  stroke: var(--cv-axis);
+  stroke-width: 1;
+}
+
+body .ch7l-anglestrip .ch7s-tick {
+  fill: var(--faint);
+  font-family: var(--font-serif);
+  font-size: 11px;
+  font-variant-numeric: tabular-nums;
+}
+
+body .ch7l-anglestrip .ch7s-trace {
+  fill: none;
+  stroke: var(--cv-image);
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+body .ch7l-anglestrip .ch7s-now {
+  fill: var(--cv-drag);
+  stroke: var(--cv-paper);
+  stroke-width: 1.5;
+}
+
+body .ch7l-anglestrip .ch7s-eigen {
+  stroke: var(--cv-subspace);
+  stroke-width: 1.2;
+  stroke-dasharray: 5 5;
+}
+
+body .ch7l-anglestrip .ch7s-eigen-dot {
+  fill: var(--cv-subspace);
+}
+
+body .ch7l-anglestrip .ch7s-eigen-label {
+  fill: var(--cv-subspace);
+  font-family: var(--font-serif);
+  font-size: 12px;
+  font-style: italic;
+  font-weight: 600;
+}
+
+/* ---------- score-4 tweaks: chapters 9 and 10 ---------- */
+
+/* the canvas frame keeps its own height when the side column grows after the reveal */
+body .ch9l-body > .ch9l-stage {
+  align-content: start;
+}

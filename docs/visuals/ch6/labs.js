@@ -50,6 +50,19 @@
 
   const fv = (v) => v.map(F);
 
+  /*
+   * A matrix whose j-th column carries the colour role of the j-th vector.
+   * KaTeX (trust off) only accepts literal colours, so the columns are marked
+   * with sentinel colours and swapped for theme variables after rendering.
+   */
+  const COL_SENTINEL = ["#0a0c01", "#0a0c02", "#0a0c03"];
+  function colourColumnsTex(rows) {
+    return `\\begin{pmatrix}${rows.map((r) => r.map((x, j) => `\\textcolor{${COL_SENTINEL[j]}}{${fmt(x)}}`).join("&")).join("\\\\")}\\end{pmatrix}`;
+  }
+  function colourColumnsHtml(html, roles) {
+    return roles.reduce((out, role, j) => out.split(`color:${COL_SENTINEL[j]}`).join(`color:var(--cv-${role})`), String(html));
+  }
+
   /* ================= §3 维数·基与坐标 ================= */
 
   function coordinatesLab(root) {
@@ -58,8 +71,8 @@
       task: `${tex("P[x]_3")} 中取基 ${tex("1,x,x^2")}，每个多项式 ${tex("a_0+a_1x+a_2x^2")} 对应坐标 ${tex("(a_0,a_1,a_2)")}。左图是曲线，右图是坐标点；拖动右图的圆点，左边的曲线跟着变。`,
     });
     const PRESETS = {
-      lay: { label: "1+2x²，4+x+5x²，3+2x", polys: [[1, 0, 2], [4, 1, 5], [3, 2, 0]] },
-      basis: { label: "1+x，x+x²，1+x²", polys: [[1, 1, 0], [0, 1, 1], [1, 0, 1]] },
+      lay: { label: "1+2x²，4+x+5x²，3+2x", polys: [[1, 0, 2], [4, 1, 5], [3, 2, 0]], range: 5.5 },
+      basis: { label: "1+x，x+x²，1+x²", polys: [[1, 1, 0], [0, 1, 1], [1, 0, 1]], range: 3.5 },
     };
     const Q = [1, 2, 3];
     const state = { polys: PRESETS.lay.polys.map((p) => p.slice()), c: [F(0), F(0), F(0)], revealed: false };
@@ -109,14 +122,19 @@
         const vs = ps.map((p) => p.map(num));
         const objs = state.revealed ? [...K().spanObjects(ps, "subspace", { alpha: 0.1 })] : [];
         vs.forEach((v, i) => objs.push({ type: "arrow", to: v, color: COLORS_DRAG3[i], width: 2.2, label: `p${SUB[i]}` }));
+        /*
+         * Head-to-tail chain c₁p₁ → +c₂p₂ → +c₃p₃, each step in its vector's
+         * colour; a dotted gap remains until the chain ends exactly on q.
+         */
         let tail = [0, 0, 0];
         ps.forEach((p, i) => {
           if (M().isZero(state.c[i])) return;
           const head = S().vec.add(tail, p.map((x) => num(M().mul(x, state.c[i]))));
-          objs.push({ type: "arrow", from: tail, to: head, color: "image", width: 3 });
+          objs.push({ type: "arrow", from: tail, to: head, color: COLORS_DRAG3[i], width: 3.2, label: `c${SUB[i]}p${SUB[i]}`, labelAt: S().vec.add(tail, S().vec.mul(S().vec.sub(head, tail), S().vec.len(tail) < 1e-9 ? 0.78 : 0.42)) });
           tail = head;
         });
-        objs.push({ type: "point", p: Q, color: hit ? "image" : "axis", r: 6.5, hollow: !hit, label: "q" });
+        if (anyC && !hit) objs.push({ type: "segment", a: tail, b: Q, color: "axis", dash: [2, 3], width: 1.2 });
+        objs.push({ type: "point", p: Q, color: hit ? "image" : "axis", r: hit ? 7.5 : 6.5, hollow: !hit, label: "q" });
         return objs;
       });
       scene.setHandles(
@@ -147,6 +165,7 @@
       }
       html += `<p>${tex(`c_1p_1+c_2p_2+c_3p_3=${K().polyTex(cm)}`)}</p>`;
       html += hit ? `<p class="ch6l-ok">命中 q：坐标为 ${tex(vecTex(state.c))}</p>` : "";
+      if (hit && state.revealed && rank === 3) html += `<p class="ch6l-muted">三段折线恰好停在 q。换任何一个系数，终点都会离开 q：基下的坐标唯一。</p>`;
       info.innerHTML = html;
       info.dataset.rank = String(rank);
       info.dataset.hit = String(hit);
@@ -175,6 +194,7 @@
       state.c = [F(0), F(0), F(0)];
       controls.querySelectorAll("input[type=range]").forEach((input) => (input.value = "0"));
       scene.resetView(false);
+      scene.setRange(PRESETS[key].range, false);
       redraw();
     }
 
@@ -298,7 +318,7 @@
       });
 
       const check = M().matVec(A, Y).every((x, i) => M().eq(x, X[i]));
-      info.innerHTML = `<div>${texD(`A_a=${K().matTex(A)}`)}</div>
+      info.innerHTML = `<div>${colourColumnsHtml(texD(`A_a=${colourColumnsTex(A)}`), COLORS)}</div>
         <div>${texD(`X=${K().colTex(X)}`)}</div>
         <div>${state.revealed ? texD(`Y=${K().colTex(Y)}`) : texD("Y=\\;?")}</div>
         <p>${state.revealed ? `${tex(`A_aY=${vecTex(M().matVec(A, Y))}^T`)} ${check ? `<span class="ch6l-ok">= X</span>` : ""}` : `先预测 ${tex("a=1")} 时的 ${tex("Y")}，再揭示新坐标。`}</p>`;
@@ -402,14 +422,38 @@
       return { U, W, Bu, Bw, basis, sum };
     }
 
+    /*
+     * Basis of U∩W (α, green), extended inside U by β (blue) and inside W by
+     * γ (vermilion): α,β is a basis of U, α,γ of W, and α,β,γ of U+W, so the
+     * shared α is counted once.
+     */
+    function extendBasis(start, gens) {
+      const out = [];
+      gens.forEach((g) => {
+        const all = [...start, ...out, g];
+        if (M().rankOf(K().colsToRows(all)) === all.length) out.push(g);
+      });
+      return out;
+    }
+
     function redraw() {
       const { U, W, Bu, Bw, basis, sum } = compute();
       const inter = basis.length;
+      const alphas = basis.map(primitive);
+      const betas = extendBasis(alphas, Bu);
+      const gammas = extendBasis(alphas, Bw);
+      const name = (letter, i, n) => (n > 1 ? `${letter}${SUB[i]}` : letter);
       scene.setObjects(() => {
         const objs = [...K().spanObjects(Bu, "v1", { label: "U" }), ...K().spanObjects(Bw, "v2", { label: "W", alpha: 0.12 })];
         if (state.revealed && inter === 1) objs.push({ type: "line", dir: basis[0].map(num), color: "subspace", width: 4.2, label: "U∩W" });
-        U.forEach((v, i) => objs.push({ type: "arrow", to: v.map(num), color: "v1", width: 2.4, label: `u${SUB[i]}` }));
-        W.forEach((v, i) => objs.push({ type: "arrow", to: v.map(num), color: "v2", width: 2.4, label: `w${SUB[i]}` }));
+        const ghost = state.revealed;
+        U.forEach((v, i) => objs.push({ type: "arrow", to: v.map(num), color: "v1", width: 2.4, label: ghost ? undefined : `u${SUB[i]}`, ghost }));
+        W.forEach((v, i) => objs.push({ type: "arrow", to: v.map(num), color: "v2", width: 2.4, label: ghost ? undefined : `w${SUB[i]}`, ghost }));
+        if (state.revealed) {
+          alphas.forEach((v, i) => objs.push({ type: "arrow", to: v.map(num), color: "subspace", width: 3.4, label: name("α", i, alphas.length) }));
+          betas.forEach((v, i) => objs.push({ type: "arrow", to: v.map(num), color: "v1", width: 3.4, label: name("β", i, betas.length) }));
+          gammas.forEach((v, i) => objs.push({ type: "arrow", to: v.map(num), color: "v2", width: 3.4, label: name("γ", i, gammas.length) }));
+        }
         return objs;
       });
       scene.setHandles([
@@ -422,12 +466,27 @@
       if (state.revealed) {
         html += `<p>${tex(`\\dim(U\\cap W)=${inter}`)}${inter ? `，${inter === 1 ? tex(`U\\cap W=L(${vecTex(primitive(basis[0]))})`) : "U∩W 是整个平面"}` : "，只有零向量"}</p>`;
         html += `<p>${tex(`\\dim(U+W)=${sum}`)}，${tex("U+W")} 是${spaceName(sum)}</p>`;
-        html += `<p class="ch6l-ok">${tex(`${dU}+${dW}=${sum}+${inter}`)}</p>`;
+        // names carry the arrow colours: β → v1 (sentinel 0), γ → v2 (1), α → subspace (2)
+        const tn = (letter, list, j) => list.map((_, i) => `\\textcolor{${COL_SENTINEL[j]}}{\\${letter}${list.length > 1 ? `_${i + 1}` : ""}}`);
+        const A = tn("alpha", alphas, 2);
+        const B = tn("beta", betas, 0);
+        const G = tn("gamma", gammas, 1);
+        const basisOf = (names) => names.join(",");
+        html += colourColumnsHtml(
+          `<ul class="ch6l-bases">
+          <li>${tex("U")} 的基 ${tex(basisOf([...A, ...B]))}</li>
+          <li>${tex("W")} 的基 ${tex(basisOf([...A, ...G]))}</li>
+          <li>${tex("U+W")} 的基 ${tex(basisOf([...A, ...B, ...G]))}${A.length ? `，其中 ${tex(basisOf(A))} 只数一次` : ""}</li>
+        </ul>`,
+          COLORS,
+        );
+        html += `<p class="ch6l-ok">${tex(`\\dim(U+W)=${dU}+${dW}-${inter}=${sum}`)}</p>`;
       } else {
         html += `<p class="ch6l-muted">先作出预测，再看交与和的维数。</p>`;
       }
       info.innerHTML = html;
       info.dataset.ledger = [dU, dW, inter, sum].join(",");
+      info.dataset.bases = [alphas.length, betas.length, gammas.length].join(",");
       tools.querySelector("[data-look]").disabled = !state.revealed || inter !== 1;
     }
 
@@ -527,6 +586,13 @@
       const t = ok ? M().div(v[2], uz) : null;
       const uc = ok ? u.map((x) => M().mul(x, t)) : null;
       const wc = ok ? v.map((x, k) => M().sub(x, uc[k])) : null;
+      const splits = ok
+        ? []
+        : [1, -1].map((s) => {
+            const ucS = u.map((x) => M().mul(x, F(s)));
+            return { t: s, uc: ucS, wc: v.map((x, k) => M().sub(x, ucS[k])) };
+          });
+      tools.querySelector("[data-vflat]")?.toggleAttribute("hidden", ok || M().isZero(v[2]));
       scene.setObjects(() => {
         const objs = [
           { type: "plane", n: [0, 0, 1], d: 0, color: "v2", alpha: 0.12, label: "W" },
@@ -541,6 +607,18 @@
           objs.push({ type: "segment", a: wcn, b: state.v, color: "axis", dash: [5, 4], width: 1.4 });
           objs.push({ type: "arrow", to: ucn, color: "v1", width: 3.4, label: "u′" });
           objs.push({ type: "arrow", to: wcn, color: "v2", width: 3.4, label: "w′" });
+        } else if (state.revealed && M().isZero(v[2])) {
+          // U ⊂ W and v ∈ W: two different parallelograms give the same v.
+          splits.forEach(({ uc: ucF, wc: wcF }, k) => {
+            const ucn = ucF.map(num);
+            const wcn = wcF.map(num);
+            const ghost = k === 1;
+            objs.push({ type: "polygon", pts: [[0, 0, 0], ucn, state.v, wcn], color: "drag", alpha: ghost ? 0.04 : 0.08, strokeAlpha: 0 });
+            objs.push({ type: "segment", a: ucn, b: state.v, color: "axis", dash: [5, 4], width: 1.2 });
+            objs.push({ type: "segment", a: wcn, b: state.v, color: "axis", dash: [5, 4], width: 1.2 });
+            objs.push({ type: "arrow", to: ucn, color: "v1", width: 3, ghost, label: ghost ? "u″" : "u′" });
+            objs.push({ type: "arrow", to: wcn, color: "v2", width: 3, ghost, label: ghost ? "w″" : "w′" });
+          });
         }
         objs.push({ type: "arrow", to: state.v, color: "drag", width: 3.4, label: "v" });
         return objs;
@@ -558,6 +636,7 @@
           html += `<p>${tex(`u'=${fmt(t)}\\,u=${vecTex(uc)}`)}</p><p>${tex(`w'=v-u'=${vecTex(wc)}`)}</p><p class="ch6l-ok">${tex("\\mathbb R^3=U\\oplus W")}，分解唯一</p>`;
         } else if (M().isZero(v[2])) {
           html += `<p class="ch6l-bad">${tex("U\\subset W")}：v 在 W 内，分解有无穷多种</p>`;
+          html += splits.map(({ uc: a, wc: b }, k) => `<p>${tex(`v=${vecTex(a)}+${vecTex(b)}`)}${k ? "（虚线）" : ""}</p>`).join("");
         } else {
           html += `<p class="ch6l-bad">${tex("U\\subset W")}：v 不在 ${tex("U+W=W")} 中，无法分解</p>`;
         }
@@ -614,7 +693,7 @@
     function setTools() {
       tools.innerHTML =
         state.mode === "split"
-          ? `<button type="button" class="ch6l-btn" data-low>把 u 压低</button><button type="button" class="ch6l-btn" data-flat>让 u 落进平面</button><button type="button" class="ch6l-btn" data-reset>回到默认视角</button>`
+          ? `<button type="button" class="ch6l-btn" data-low>把 u 压低</button><button type="button" class="ch6l-btn" data-flat>让 u 落进平面</button><button type="button" class="ch6l-btn" data-vflat hidden>让 v 也落进平面</button><button type="button" class="ch6l-btn" data-reset>回到默认视角</button>`
           : `<button type="button" class="ch6l-btn" data-lift>把 w₃ 抬出平面</button><button type="button" class="ch6l-btn" data-top>从上方看</button><button type="button" class="ch6l-btn" data-reset>回到默认视角</button>`;
       tools.querySelector("[data-reset]").addEventListener("click", () => scene.resetView());
       tools.querySelector("[data-low]")?.addEventListener("click", () => {
@@ -624,6 +703,12 @@
       tools.querySelector("[data-flat]")?.addEventListener("click", () => {
         state.u = [state.u[0], state.u[1], 0];
         redraw();
+      });
+      tools.querySelector("[data-vflat]")?.addEventListener("click", () => {
+        state.v = [state.v[0], state.v[1], 0];
+        redraw();
+        // look nearly straight down so both parallelograms in W are open
+        scene.lookAlong([0.2, -0.3, 1]);
       });
       tools.querySelector("[data-lift]")?.addEventListener("click", () => {
         state.w3 = [state.w3[0], state.w3[1], 1.5];
@@ -673,7 +758,7 @@
     const toolbar = el("div", "ch6l-toolbar");
     lab.append(toolbar);
     const { plotBox, right } = pairViews(lab, `${tex("P[x]_3")} 中的三条曲线`, `像所在的 ${tex("\\mathbb R^3")}`);
-    const scene = S().create(right, { range: 2.5, label: "像与平行四边形", hint: "拖动圆点改变多项式 · 拖动空白处旋转", yaw: 0.4, pitch: 0.35 });
+    const scene = S().create(right, { range: 1.7, label: "像与平行四边形", hint: "拖动圆点改变多项式 · 拖动空白处旋转", yaw: 2.7, pitch: 0.65, spreadLabels: true });
     const info = el("div", "ch6l-status");
     const gateHost = el("div");
     const result = K().resultBox(`<p>${tex("\\tau")} 保持加法和数乘：${tex("(p+q)(k)=p(k)+q(k)")}。它是单射，因为次数小于 3 的多项式若有 0、1、2 三个根，只能是零多项式；两边维数都是 3，所以 ${tex("\\tau")} 也是满射，是同构。拖动 ${tex("\\tau(p)")} 时，左图的曲线始终穿过三个指定高度的点，这就是插值。同构不唯一：${tex("\\sigma")} 与 ${tex("\\tau")} 是两个不同的同构。第三种对应把平方作用在系数上，${tex("p+q")} 的像离开第四个顶点，它不保持加法。</p>`);
@@ -736,7 +821,11 @@
           { type: "arrow", to: Q, color: "v2", width: 2.8, label: `${name}(q)` },
           { type: "arrow", to: Sn, color: "image", width: 3.2, label: `${name}(p+q)` },
         ];
-        if (!closes) objs.push({ type: "point", p: C, color: "axis", r: 5.5, hollow: true, label: "第四个顶点" });
+        if (!closes) {
+          // the gap that additivity would close, in the second-vector / error colour
+          objs.push({ type: "segment", a: Sn, b: C, color: "v2", width: 3 });
+          objs.push({ type: "point", p: C, color: "axis", r: 5.5, hollow: true, label: "第四个顶点" });
+        }
         return objs;
       });
       scene.setHandles(
@@ -755,7 +844,7 @@
       info.dataset.closes = String(closes);
       info.innerHTML = `${tex(`${name}(p)=${vecTex(ip)},\\ ${name}(q)=${vecTex(iq)}`)}<br>${tex(`${name}(p+q)=${vecTex(is)}`)}，${tex(`${name}(p)+${name}(q)=${vecTex(corner)}`)}：${
         closes ? `<span class="ch6l-ok">两者相等，平行四边形闭合</span>` : `<span class="ch6l-bad">两者不等，加法没有被保持</span>`
-      }`;
+      }${closes ? "" : `<br>从 ${tex(`${name}(p+q)`)} 到第四个顶点的线段：${tex(`${name}(p)+${name}(q)-${name}(p+q)=${vecTex(corner.map((x, i) => M().sub(x, is[i])))}`)}`}`;
     }
 
     K().chips(toolbar, Object.entries(MODES).map(([k, v]) => [k, v.label]), (k) => {

@@ -26,7 +26,7 @@ test.describe("Chapter 2 normal-motion interactions", () => {
     await expect(page.locator("[data-status]")).toContainText("维度塌缩", { timeout: 3000 });
     await page.locator('[data-preset="negative2"]').click();
     await expect(page.locator("[data-status]")).toContainText("方向翻转", { timeout: 3000 });
-    await expect(page.locator("[data-det]")).toHaveText("-2", { timeout: 3000 });
+    await expect(page.locator("[data-det]")).toHaveText("−2", { timeout: 3000 });
     expect(errors).toEqual([]);
   });
 

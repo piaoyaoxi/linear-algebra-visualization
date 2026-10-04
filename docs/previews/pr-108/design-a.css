@@ -1,0 +1,1203 @@
+/*
+ * Design direction A “松烟” (docs/design-spec.md). Loaded last on the learning
+ * page so it overrides the older theme in one place: tokens first, then the
+ * page surface, the glass chrome and the shared lesson components.
+ */
+
+/* ---------- 1 Interface tokens ---------- */
+
+:root {
+  --bg: #f5f2ea;
+  --bg-grid: transparent;
+  --surface: #fbf9f4;
+  --surface-solid: #fbf9f4;
+  --surface-sidebar: #faf8f2;
+  --surface-soft: #f0ede3;
+  --text: #1d211e;
+  --text-2: #4a4f49;
+  --muted: #5d625c;
+  --faint: #8f938b;
+  --line: #e1dccf;
+  --line-strong: #d6d1c3;
+  --accent: #2c5e4a;
+  --accent-strong: #1f4a39;
+  --accent-soft: #e7ece3;
+  --on-accent: #f7f5ee;
+  --predict-text: #8a630c;
+  --predict-bg: #f8f2e2;
+  --predict-line: #e8dcb8;
+  --ok-text: #2c7a55;
+  --ok-bg: #eef3ec;
+  --ok-line: #b9d2bf;
+  --bad-text: #a3402a;
+  --bad-bg: #f6ebe4;
+  --bad-line: #e3c2b4;
+  /* hue names used by older canvases now point at the colour roles */
+  --blue: var(--cv-v1);
+  --coral: var(--cv-v2);
+  --gold: var(--cv-drag);
+  --violet: var(--cv-image);
+  --shadow: none;
+  --shadow-soft: none;
+  --canvas-paper-top: var(--cv-paper);
+  --canvas-paper-bottom: var(--cv-paper);
+  --canvas-paper-glow: transparent;
+  --glass-fill: rgba(250, 247, 240, 0.72);
+  --glass-edge: rgba(60, 52, 30, 0.12);
+  --glass-shadow: 0 4px 14px rgba(50, 42, 20, 0.06);
+  --glass-panel-fill: rgba(250, 247, 240, 0.8);
+  --glass-scrim: rgba(40, 36, 24, 0.16);
+}
+
+body.dark {
+  --bg: #131614;
+  --surface: #1a1d1a;
+  --surface-solid: #1a1d1a;
+  --surface-sidebar: #171a17;
+  --surface-soft: #1e221e;
+  --text: #e7e5dd;
+  --text-2: #c4c3ba;
+  --muted: #a6a89f;
+  --faint: #7d8178;
+  --line: #2a2e2a;
+  --line-strong: #3a3f3a;
+  --accent: #93c2a6;
+  --accent-strong: #b9d9c4;
+  --accent-soft: #1f2a23;
+  --on-accent: #10140f;
+  --predict-text: #dcb661;
+  --predict-bg: #1f1d16;
+  --predict-line: rgba(220, 182, 97, 0.3);
+  --ok-text: #9fd0b3;
+  --ok-bg: #18241d;
+  --ok-line: rgba(159, 208, 179, 0.35);
+  --bad-text: #f0a98e;
+  --bad-bg: #241a16;
+  --bad-line: #3d2a22;
+  --blue: var(--cv-v1);
+  --coral: var(--cv-v2);
+  --gold: var(--cv-drag);
+  --violet: var(--cv-image);
+  --shadow: none;
+  --shadow-soft: none;
+  --canvas-paper-top: var(--cv-paper);
+  --canvas-paper-bottom: var(--cv-paper);
+  --canvas-paper-glow: transparent;
+  --glass-fill: rgba(30, 34, 31, 0.62);
+  --glass-edge: rgba(255, 255, 255, 0.09);
+  --glass-shadow: 0 4px 14px rgba(0, 0, 0, 0.3);
+  --glass-panel-fill: rgba(30, 34, 31, 0.7);
+  --glass-scrim: rgba(0, 0, 0, 0.35);
+}
+
+/* ---------- 2 Page surface: plain paper, no grid or glow ---------- */
+
+body,
+body.dark {
+  background-color: var(--bg);
+  background-image: none;
+}
+
+body::before,
+body.dark::before {
+  background: none;
+}
+
+/* ---------- 3 Glass: only the three top controls, the search panel, the phone sidebar ---------- */
+
+body .icon-button,
+body.dark .icon-button,
+body .topbar-search,
+body.dark .topbar-search {
+  border: 1px solid var(--glass-edge);
+  background: var(--glass-fill);
+  box-shadow: var(--glass-shadow);
+  -webkit-backdrop-filter: blur(14px) saturate(120%);
+  backdrop-filter: blur(14px) saturate(120%);
+}
+
+.lg-refract body .icon-button[data-lg-filter],
+.lg-refract body .topbar-search[data-lg-filter] {
+  backdrop-filter: blur(14px) saturate(120%);
+}
+
+body .icon-button:hover,
+body.dark .icon-button:hover,
+body .topbar-search:hover,
+body.dark .topbar-search:hover {
+  border-color: var(--line-strong);
+  background: var(--glass-panel-fill);
+  box-shadow: var(--glass-shadow);
+}
+
+/* no specular rims or sheen: a quiet frosted surface */
+body .icon-button::before,
+body .topbar-search::before,
+body .topbar-search::after,
+body .sidebar::before,
+body .toc-rail-label::before,
+body .search-results-panel::before {
+  content: none;
+}
+
+body .search-results-panel,
+body.dark .search-results-panel {
+  border: 1px solid var(--glass-edge);
+  background: var(--glass-panel-fill);
+  box-shadow: var(--glass-shadow);
+  -webkit-backdrop-filter: blur(18px) saturate(120%);
+  backdrop-filter: blur(18px) saturate(120%);
+}
+
+/* desktop sidebar is paper */
+body .sidebar,
+body.dark .sidebar {
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  background: var(--surface-sidebar);
+  box-shadow: none;
+  -webkit-backdrop-filter: none;
+  backdrop-filter: none;
+}
+
+@media (max-width: 1080px) {
+  body .sidebar,
+  body.dark .sidebar {
+    background: var(--glass-panel-fill);
+    box-shadow: var(--glass-shadow);
+    -webkit-backdrop-filter: blur(18px) saturate(120%);
+    backdrop-filter: blur(18px) saturate(120%);
+  }
+}
+
+/* ---------- 4 Lesson page rhythm ---------- */
+
+body main {
+  counter-reset: la-section;
+}
+
+/* section opener: a lit paper card (soft light top-right, warm bottom-left, top rim, low shadow) */
+body .lesson-cover,
+body.dark .lesson-cover {
+  position: relative;
+  overflow: hidden;
+  padding: 40px 44px 36px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  -webkit-backdrop-filter: none;
+  backdrop-filter: none;
+}
+
+body .lesson-cover {
+  background:
+    radial-gradient(120% 140% at 92% -10%, color-mix(in srgb, var(--accent) 10%, transparent), transparent 46%),
+    radial-gradient(80% 120% at 0% 110%, color-mix(in srgb, var(--cv-drag) 6%, transparent), transparent 50%),
+    linear-gradient(180deg, var(--surface-solid), color-mix(in srgb, var(--surface-solid) 82%, var(--surface-soft)));
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.75),
+    0 1px 2px rgba(50, 42, 20, 0.04),
+    0 18px 40px -18px rgba(50, 42, 20, 0.16);
+}
+
+body.dark .lesson-cover {
+  background:
+    radial-gradient(120% 140% at 92% -10%, color-mix(in srgb, var(--accent) 12%, transparent), transparent 46%),
+    radial-gradient(80% 120% at 0% 110%, color-mix(in srgb, var(--cv-drag) 5%, transparent), transparent 50%),
+    linear-gradient(180deg, color-mix(in srgb, var(--surface-solid), white 3%), var(--surface-solid));
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.06),
+    0 18px 40px -18px rgba(0, 0, 0, 0.5);
+}
+
+body .lesson-cover::before {
+  content: none;
+}
+
+/* a short pine-green mark on the top edge */
+body .lesson-cover::after {
+  position: absolute;
+  top: 0;
+  left: 44px;
+  width: 56px;
+  height: 2px;
+  content: "";
+  background: var(--accent);
+}
+
+/* the card already separates the opener; the first section needs no top rule */
+body .lesson-cover + .lesson-page-section {
+  border-top: 0;
+  padding-top: 24px;
+}
+
+@media (max-width: 720px) {
+  body .lesson-cover,
+  body.dark .lesson-cover {
+    padding: 28px 20px 24px;
+  }
+
+  body .lesson-cover::after {
+    left: 20px;
+  }
+}
+
+body .lesson-cover h1 {
+  font-size: 46px;
+  font-weight: 700;
+  line-height: 1.15;
+  letter-spacing: 0.04em;
+}
+
+body .lesson-cover p {
+  color: var(--text-2);
+}
+
+body .lesson-page-section {
+  counter-increment: la-section;
+  border-top: 1px solid var(--line);
+  padding-top: 56px;
+}
+
+body .lesson-page-section > h2 {
+  display: flex;
+  align-items: baseline;
+  gap: 0;
+  margin-bottom: 28px;
+  font-size: 28px;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+}
+
+body .lesson-page-section > h2::before {
+  flex: 0 0 62px;
+  content: counter(la-section, decimal-leading-zero);
+  color: var(--faint);
+  font-size: 13px;
+  font-weight: 400;
+  letter-spacing: 0;
+}
+
+/* prose sits on the heading's text column; labs and cards use the full width */
+body .lesson-page-section > p,
+body .lesson-page-section > ul,
+body .lesson-page-section > .lead {
+  padding-left: 62px;
+}
+
+body .lesson-page-section > .lead {
+  color: var(--accent);
+  font-size: 18px;
+  line-height: 1.7;
+}
+
+body .lesson-page-section > p:not(.lead) {
+  color: var(--text);
+  font-size: 16.5px;
+  line-height: 1.95;
+}
+
+@media (max-width: 720px) {
+  body .lesson-cover h1 {
+    font-size: 34px;
+  }
+
+  body .lesson-page-section > h2 {
+    font-size: 23px;
+  }
+
+  body .lesson-page-section > h2::before {
+    flex-basis: 36px;
+  }
+
+  body .lesson-page-section > p,
+  body .lesson-page-section > ul,
+  body .lesson-page-section > .lead {
+    padding-left: 0;
+  }
+
+  body .lesson-page-section > p:not(.lead) {
+    font-size: 15.5px;
+  }
+}
+
+/* ---------- 5 Lab shell (ch3l / ch6l / ch7l / ch9l share one look) ---------- */
+
+body :is(.ch3l-lab, .ch6l-lab, .ch7l-lab, .ch9l-lab) {
+  gap: 20px;
+  padding: 28px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: var(--surface-solid);
+  box-shadow: none;
+}
+
+body :is(.ch3l-head, .ch3-lab-head, .ch6l-head, .ch7l-head, .ch9l-head) > h3 {
+  font-size: 21px;
+  font-weight: 600;
+}
+
+body :is(.ch3l-head, .ch6l-head, .ch7l-head, .ch9l-head) > p {
+  color: var(--text-2);
+  font-size: 15.5px;
+  line-height: 1.8;
+}
+
+/* toolbars read as one segmented control */
+body :is(.ch3l-toolbar, .ch6l-toolbar, .ch7l-toolbar, .ch9l-toolbar) {
+  width: fit-content;
+  max-width: 100%;
+  padding: 3px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: var(--surface-soft);
+  gap: 2px;
+}
+
+body :is(.ch3l-chip, .ch6l-chip, .ch7l-chip, .ch9l-chip) {
+  border: 1px solid transparent;
+  border-radius: 999px;
+  background: transparent;
+  color: var(--muted);
+  font-size: 14px;
+}
+
+body :is(.ch3l-chip, .ch6l-chip, .ch7l-chip, .ch9l-chip):hover {
+  color: var(--text);
+}
+
+body :is(.ch3l-chip, .ch6l-chip, .ch7l-chip, .ch9l-chip).is-active {
+  border-color: var(--line);
+  background: var(--surface-solid);
+  color: var(--accent-strong);
+}
+
+body :is(.ch3l-btn, .ch6l-btn, .ch7l-btn, .ch9l-btn) {
+  border: 1px solid var(--line-strong);
+  border-radius: 8px;
+  background: var(--surface-solid);
+  color: var(--text);
+  box-shadow: none;
+}
+
+body :is(.ch3l-btn, .ch6l-btn, .ch7l-btn, .ch9l-btn):hover {
+  border-color: var(--accent);
+}
+
+body :is(.ch3l-btn, .ch6l-btn, .ch7l-btn, .ch9l-btn):active {
+  transform: translateY(1px);
+  background: var(--accent-soft);
+}
+
+body :is(.ch3l-btn, .ch6l-btn, .ch7l-btn, .ch9l-btn).is-primary {
+  border-color: var(--accent);
+  background: var(--accent);
+  color: var(--on-accent);
+}
+
+body :is(.ch3l-btn, .ch6l-btn, .ch7l-btn, .ch9l-btn).is-primary:hover,
+body :is(.ch3l-btn, .ch6l-btn, .ch7l-btn, .ch9l-btn).is-primary:active {
+  border-color: var(--accent-strong);
+  background: var(--accent-strong);
+  color: var(--on-accent);
+}
+
+body :is(.ch3l-btn, .ch6l-btn, .ch7l-btn, .ch9l-btn):disabled {
+  opacity: 0.4;
+}
+
+/* the prediction box */
+body :is(.ch3l-predict, .ch6l-predict, .ch7l-predict, .ch9l-predict) {
+  border: 1px solid var(--predict-line);
+  border-radius: 10px;
+  background: var(--predict-bg);
+}
+
+body :is(.ch3l-predict-q, .ch6l-predict-q, .ch7l-predict-q, .ch9l-predict-q) > span,
+body.dark :is(.ch3l-predict-q, .ch6l-predict-q, .ch7l-predict-q, .ch9l-predict-q) > span {
+  background: none;
+  color: var(--predict-text);
+  padding: 0;
+}
+
+body :is(.ch3l-predict-q, .ch6l-predict-q, .ch7l-predict-q, .ch9l-predict-q) > span::before {
+  content: "● ";
+}
+
+body :is(.ch3l-predict-options, .ch6l-predict-options, .ch7l-predict-options, .ch9l-predict-options) > button {
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--surface-solid);
+  color: var(--text);
+}
+
+body :is(.ch3l-predict-options, .ch6l-predict-options, .ch7l-predict-options, .ch9l-predict-options) > button.is-picked {
+  border-color: var(--cv-drag);
+  box-shadow: inset 0 0 0 1px var(--cv-drag);
+}
+
+body :is(.ch3l-predict-options, .ch6l-predict-options, .ch7l-predict-options, .ch9l-predict-options) > button.is-right {
+  border-color: var(--ok-line);
+  background: var(--ok-bg);
+  color: var(--ok-text);
+}
+
+body :is(.ch3l-predict-options, .ch6l-predict-options, .ch7l-predict-options, .ch9l-predict-options) > button.is-wrong {
+  border-color: var(--bad-line);
+  background: var(--bad-bg);
+  color: var(--bad-text);
+}
+
+body :is(.ch3l-predict-feedback, .ch6l-predict-feedback, .ch7l-predict-feedback, .ch9l-predict-feedback) {
+  color: var(--predict-text);
+}
+
+/* readout cards, canvas frames, conclusions */
+body :is(.ch3l-card, .ch6l-card, .ch7l-card, .ch9l-card) {
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: var(--surface-solid);
+  box-shadow: none;
+}
+
+/* the canvas frame lives on the plane / scene wrapper, not on the stage */
+body :is(.ch3l-stage, .ch6l-stage, .ch7l-stage, .ch9l-stage) {
+  border: 0;
+  background: none;
+  box-shadow: none;
+}
+
+body :is(.ch7p, .ch9p, .la3d),
+body.dark :is(.ch7p, .ch9p, .la3d) {
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--cv-paper);
+}
+
+body :is(.ch3l-result, .ch6l-result, .ch7l-result, .ch9l-result) {
+  border: 1px solid var(--ok-line);
+  border-radius: 10px;
+  background: var(--ok-bg);
+}
+
+body :is(.ch3l-ok, .ch6l-ok, .ch7l-ok, .ch9l-ok) {
+  color: var(--ok-text);
+}
+
+body :is(.ch3l-bad, .ch6l-bad, .ch7l-bad, .ch9l-bad) {
+  color: var(--bad-text);
+}
+
+@media (max-width: 720px) {
+  body :is(.ch3l-lab, .ch6l-lab, .ch7l-lab, .ch9l-lab) {
+    padding: 16px;
+  }
+}
+
+/* ---------- 6 Theorems, pitfalls ---------- */
+
+body :is(.ch3l-theorem, .ch6l-theorem, .ch7l-theorem, .ch9l-theorem) {
+  padding: 22px 0 22px 62px;
+  border: 0;
+  border-top: 1px solid var(--line);
+  border-radius: 0;
+  background: none;
+  box-shadow: none;
+}
+
+body :is(.ch3l-theorem, .ch6l-theorem, .ch7l-theorem, .ch9l-theorem) > h3 {
+  font-size: 17px;
+  font-weight: 600;
+}
+
+body :is(.ch3l-theorem, .ch6l-theorem, .ch7l-theorem, .ch9l-theorem) > p {
+  color: var(--text-2);
+  font-size: 15.5px;
+  line-height: 1.85;
+}
+
+body :is(.ch3l-theorem-math, .ch6l-theorem-math, .ch7l-theorem-math, .ch9l-theorem-math) {
+  border: 0;
+  border-radius: 6px;
+  background: var(--surface-soft);
+}
+
+body :is(.ch3l-pitfalls, .ch6l-pitfalls, .ch7l-pitfalls, .ch9l-pitfalls) {
+  border: 1px solid var(--bad-line);
+  border-radius: 10px;
+  background: var(--bad-bg);
+  box-shadow: none;
+}
+
+body :is(.ch3l-pitfalls, .ch6l-pitfalls, .ch7l-pitfalls, .ch9l-pitfalls) > h3 {
+  color: var(--bad-text);
+  font-size: 12.5px;
+  letter-spacing: 0.08em;
+}
+
+@media (max-width: 720px) {
+  body :is(.ch3l-theorem, .ch6l-theorem, .ch7l-theorem, .ch9l-theorem) {
+    padding-left: 0;
+  }
+}
+
+/* ---------- 7 Example, self-test, summary ---------- */
+
+body .example-challenge {
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: var(--surface-solid);
+  box-shadow: none;
+}
+
+body .example-choice {
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--surface-solid);
+  box-shadow: none;
+}
+
+body .example-choice:has(input:checked) {
+  border-color: var(--accent);
+  background: var(--accent-soft);
+}
+
+body .self-test-list {
+  gap: 0;
+  border-top: 1px solid var(--line);
+}
+
+body .self-test-item {
+  border: 0;
+  border-bottom: 1px solid var(--line);
+  border-radius: 0;
+  background: none;
+  box-shadow: none;
+}
+
+/* ---------- 8 Formulas: ink, no chips ---------- */
+
+body .tex,
+body.dark .tex {
+  color: var(--text);
+}
+
+body .tex-inline,
+body.dark .tex-inline {
+  margin: 0 1px;
+  padding: 0 1px;
+  border-color: transparent;
+  background: none;
+  color: var(--text);
+}
+
+body .tex .katex {
+  font-size: 1.02em;
+}
+
+/* ---------- 9 Fixes from the first pass ---------- */
+
+body .lesson-cover p {
+  font-weight: 400;
+  font-size: 17px;
+  line-height: 1.8;
+}
+
+body .lesson-page-section {
+  padding-top: 40px;
+}
+
+body .lesson-page-section > h2 {
+  margin-top: 0;
+  margin-bottom: 24px;
+}
+
+/* ---------- 10 Lab layout (spec §6, with visuals/shared/lab-layout.js) ---------- */
+
+/* title and the segmented control share the first row */
+body :is(.ch3l-lab, .ch6l-lab, .ch7l-lab, .ch9l-lab).la-laid-out {
+  grid-template-columns: minmax(0, 1fr) auto;
+  column-gap: 22px;
+}
+
+body :is(.ch3l-lab, .ch6l-lab, .ch7l-lab, .ch9l-lab).la-laid-out > * {
+  grid-column: 1 / -1;
+  min-width: 0;
+}
+
+body :is(.ch3l-lab, .ch6l-lab, .ch7l-lab, .ch9l-lab).la-laid-out > :is(.ch3l-head, .ch6l-head, .ch7l-head, .ch9l-head) {
+  grid-column: 1;
+}
+
+body :is(.ch3l-lab, .ch6l-lab, .ch7l-lab, .ch9l-lab).la-laid-out > :is(.ch3l-head, .ch6l-head, .ch7l-head, .ch9l-head) + :is(.ch3l-toolbar, .ch6l-toolbar, .ch7l-toolbar, .ch9l-toolbar) {
+  grid-column: 2;
+  align-self: end;
+  justify-self: end;
+}
+
+/* canvas column sets the height; the side column stretches to it */
+body :is(.ch3l-body, .ch6l-body, .ch7l-body, .ch9l-body) {
+  align-items: stretch;
+  column-gap: 22px;
+}
+
+body :is(.ch3l-side, .ch6l-side, .ch7l-side, .ch9l-side) {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+body :is(.ch3l-side, .ch6l-side, .ch7l-side, .ch9l-side) > .la-fill {
+  flex: 1 1 auto;
+  align-content: start;
+}
+
+body :is(.ch7p-hint, .ch9p-hint, .la3d-hint)[hidden] {
+  display: none;
+}
+
+body .la-figcaption {
+  margin: 8px 0 0;
+  color: var(--muted);
+  font-size: 13px;
+  line-height: 1.6;
+}
+
+body .la-figcaption > b {
+  margin-right: 10px;
+  color: var(--text);
+  font-weight: 600;
+}
+
+@media (max-width: 900px) {
+  body :is(.ch3l-lab, .ch6l-lab, .ch7l-lab, .ch9l-lab).la-laid-out > :is(.ch3l-head, .ch6l-head, .ch7l-head, .ch9l-head) + :is(.ch3l-toolbar, .ch6l-toolbar, .ch7l-toolbar, .ch9l-toolbar) {
+    grid-column: 1 / -1;
+    justify-self: start;
+  }
+}
+
+@media (max-width: 720px) {
+  /* on phones the presets wrap, so they become separate small chips instead of one segmented bar */
+  body :is(.ch3l-toolbar, .ch6l-toolbar, .ch7l-toolbar, .ch9l-toolbar) {
+    gap: 6px;
+    padding: 0;
+    border: 0;
+    border-radius: 0;
+    background: none;
+  }
+
+  body :is(.ch3l-chip, .ch6l-chip, .ch7l-chip, .ch9l-chip) {
+    border-color: var(--line);
+    background: var(--surface-solid);
+  }
+
+  body :is(.ch3l-chip, .ch6l-chip, .ch7l-chip, .ch9l-chip).is-active {
+    border-color: var(--accent);
+    background: var(--accent-soft);
+  }
+}
+
+/* ---------- 11 Component states (spec 组件状态) ---------- */
+
+/* example choices: right / wrong use the ok / bad tokens, never colour alone */
+body .example-choice.is-correct.is-correct,
+body .example-challenge[data-state="correct"] .example-choice.is-correct:hover {
+  border-color: var(--ok-line);
+  background: var(--ok-bg);
+  box-shadow: inset 0 0 0 1px var(--ok-line);
+}
+
+body .example-choice.is-wrong.is-wrong,
+body .example-challenge[data-state="wrong"] .example-choice.is-wrong:hover {
+  border-color: var(--bad-line);
+  background: var(--bad-bg);
+  box-shadow: inset 0 0 0 1px var(--bad-line);
+}
+
+body .example-choice.is-correct .example-choice-result {
+  color: var(--ok-text);
+}
+
+body .example-choice.is-wrong .example-choice-result {
+  color: var(--bad-text);
+}
+
+body .example-explanation {
+  border-color: var(--line);
+  background: var(--surface-soft);
+}
+
+/* self-test: hairline list; the opened answer hangs on a pine-green rule */
+body .self-test-item > summary {
+  padding-block: 16px;
+}
+
+body .self-test-item[open] > summary {
+  color: var(--text);
+}
+
+body .self-test-item .disclose-panel-inner > * {
+  border-left: 2px solid var(--accent);
+  padding-left: 14px;
+}
+
+body .self-test-item[open] {
+  padding-bottom: 14px;
+}
+
+/* “停一下”: lighter than a lab card, a short pine-green bar on the left */
+body :is(.ch3l-ponder, .lx-ponder) {
+  position: relative;
+  padding: 14px 18px 14px 20px;
+  border: 0;
+  border-radius: 8px;
+  background: var(--surface-soft);
+}
+
+body :is(.ch3l-ponder, .lx-ponder)::before {
+  position: absolute;
+  top: 14px;
+  left: 0;
+  width: 2px;
+  height: 22px;
+  content: "";
+  background: var(--accent);
+}
+
+body :is(.ch3l-ponder, .lx-ponder) > summary > span:first-child,
+body :is(.ch3l-ponder, .lx-ponder)[open] > summary > span:first-child {
+  padding: 0;
+  border-radius: 0;
+  background: none;
+  color: var(--accent);
+  font-size: 12.5px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+}
+
+body :is(.ch3l-ponder, .lx-ponder):not([open]) > summary::after {
+  margin-left: auto;
+  flex: none;
+  content: "想好了，看答案 ↓";
+  color: var(--accent);
+  font-size: 13px;
+}
+
+body :is(.ch3l-ponder, .lx-ponder)[open] > p {
+  margin-top: 10px;
+  padding-top: 10px;
+  border-top: 1px solid var(--line);
+  color: var(--text-2);
+}
+
+/* sidebar: the current section is the only filled item; its chapter only colours the number */
+body .nav-section.is-active,
+body.dark .nav-section.is-active {
+  background: var(--accent-soft);
+  color: var(--accent-strong);
+  font-weight: 600;
+}
+
+body .nav-section:hover:not(.is-active),
+body.dark .nav-section:hover:not(.is-active) {
+  background: color-mix(in srgb, var(--surface-soft) 70%, transparent);
+}
+
+/* only the “停一下” label is a label; inline formulas in the question stay in the text */
+body .ch3l-ponder > summary > span:not(:first-child),
+body .ch3l-ponder[open] > summary > span:not(:first-child) {
+  flex: initial;
+  padding: 0;
+  border-radius: 0;
+  background: none;
+  color: inherit;
+  font-size: inherit;
+  font-weight: inherit;
+}
+
+body :is(.ch3l-ponder, .lx-ponder) > summary {
+  flex-wrap: wrap;
+  row-gap: 4px;
+}
+
+body :is(.ch3l-ponder, .lx-ponder) > p {
+  margin-left: 0;
+}
+
+body .example-choice.is-wrong > .example-choice-marker {
+  border-color: var(--bad-text);
+  background: var(--bad-text);
+  color: var(--bad-bg);
+}
+
+body .example-choice.is-correct > .example-choice-marker {
+  border-color: var(--ok-text);
+  background: var(--ok-text);
+  color: var(--ok-bg);
+}
+
+/* ch7 §5 iteration table: the current step is the highlighted row */
+body .ch7l-iter tr.is-now > td {
+  background: var(--accent-soft);
+  font-weight: 600;
+}
+
+body .ch7l-iter > :is(thead, tbody) > tr > :is(th, td):not(:first-child) {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+/* ch7 §7 legend under the readout */
+body .ch7l-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 14px;
+  margin-top: 10px;
+  padding-top: 8px;
+  border-top: 1px solid var(--line);
+  color: var(--muted);
+  font-size: 13px;
+}
+
+body .ch7l-legend > span {
+  display: inline-flex;
+  gap: 6px;
+  align-items: center;
+}
+
+body .ch7l-legend > span > i {
+  flex: none;
+  width: 18px;
+  height: 10px;
+  border-radius: 2px;
+}
+
+body .ch7l-legend > span > i.is-w {
+  border: 1.2px solid var(--cv-subspace);
+  background: color-mix(in srgb, var(--cv-subspace) 14%, transparent);
+}
+
+body .ch7l-legend > span > i.is-aw {
+  border: 1.2px dashed color-mix(in srgb, var(--cv-image) 60%, transparent);
+  background: color-mix(in srgb, var(--cv-image) 6%, transparent);
+}
+
+body .ch7l-legend > span > i.is-same {
+  border: 2px solid var(--cv-subspace);
+  background: color-mix(in srgb, var(--cv-subspace) 26%, transparent);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--cv-subspace) 16%, transparent);
+}
+
+/* ch7 §5: Aᵏ through the eigenbasis, beside the table */
+body .ch7l-power {
+  margin: 4px 0 8px;
+  overflow-x: auto;
+  overflow-y: hidden;
+  font-size: 14px;
+}
+
+/* lab-layout.js: when the title would be squeezed, the presets get their own row */
+body :is(.ch3l-lab, .ch6l-lab, .ch7l-lab, .ch9l-lab).la-laid-out.la-stack > :is(.ch3l-head, .ch6l-head, .ch7l-head, .ch9l-head) {
+  grid-column: 1 / -1;
+}
+
+body :is(.ch3l-lab, .ch6l-lab, .ch7l-lab, .ch9l-lab).la-laid-out.la-stack > :is(.ch3l-head, .ch6l-head, .ch7l-head, .ch9l-head) + :is(.ch3l-toolbar, .ch6l-toolbar, .ch7l-toolbar, .ch9l-toolbar) {
+  grid-column: 1 / -1;
+  justify-self: start;
+}
+
+/* ch8 §2 standard-form workbench: degree pips on each tile and the corner-degree staircase */
+body .ch8l-tile > .ch8l-pips {
+  display: flex;
+  gap: 3px;
+  min-height: 7px;
+}
+
+body .ch8l-pips > .ch8l-pip {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--cv-axis);
+}
+
+body .ch8l-pips > .ch8l-pip.is-zero-deg {
+  box-sizing: border-box;
+  border: 1.5px solid var(--cv-axis);
+  background: transparent;
+}
+
+body .ch8l-tile.is-corner > .ch8l-pips > .ch8l-pip:not(.is-zero-deg) {
+  background: var(--accent);
+}
+
+body .ch8l-tile.is-corner > .ch8l-pips > .ch8l-pip.is-zero-deg {
+  border-color: var(--accent);
+}
+
+body .ch8l-trail {
+  margin-top: 12px;
+}
+
+body .ch8l-trail > .ch8l-trail-title {
+  margin: 0 0 6px;
+  color: var(--muted);
+  font-size: 13px;
+}
+
+/* ch8 §2 staircase: the corner's degree after every step */
+body .ch8l-trail > .ch8l-stair-wrap {
+  overflow-x: auto;
+  overflow-y: hidden;
+}
+
+body .ch8l-stair {
+  display: block;
+  font-family: var(--font-serif);
+  font-variant-numeric: tabular-nums;
+}
+
+body .ch8l-stair > .ch8l-stair-grid {
+  stroke: var(--cv-grid-major);
+  stroke-width: 1;
+}
+
+body .ch8l-stair > .ch8l-stair-axis {
+  stroke: var(--cv-axis);
+  stroke-width: 1;
+}
+
+body .ch8l-stair > .ch8l-stair-tick,
+body .ch8l-stair > .ch8l-stair-step {
+  fill: var(--muted);
+  font-size: 13px;
+}
+
+body .ch8l-stair > .ch8l-stair-stage {
+  fill: var(--text-2);
+  font-size: 14px;
+  font-weight: 600;
+}
+
+body .ch8l-stair > .ch8l-stair-val {
+  fill: var(--text-2);
+  font-size: 14px;
+  font-weight: 650;
+}
+
+body .ch8l-stair > .ch8l-stair-bar {
+  fill: color-mix(in srgb, var(--accent) 50%, transparent);
+}
+
+body .ch8l-stair > .ch8l-stair-bar.is-done {
+  fill: color-mix(in srgb, var(--cv-axis) 40%, transparent);
+}
+
+body .ch8l-stair > .ch8l-stair-bar.is-now {
+  fill: var(--accent);
+  stroke: color-mix(in srgb, var(--accent) 22%, transparent);
+  stroke-width: 6px;
+  paint-order: stroke;
+}
+
+body .ch8l-stair > .ch8l-stair-zero {
+  stroke: var(--cv-axis);
+  stroke-width: 3;
+}
+
+body .ch8l-stair > .ch8l-stair-rest {
+  stroke: var(--cv-v2);
+  stroke-width: 2;
+  stroke-dasharray: 6 4;
+}
+
+body .ch8l-stair > .ch8l-stair-rest-label {
+  fill: var(--cv-v2);
+  font-size: 13.5px;
+  font-weight: 650;
+}
+
+/* ch3 §2 row picture: distance from x to each plane; a plane x lies on turns green */
+body .ch3l-dists {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 8px;
+  margin-bottom: 6px;
+}
+
+body .ch3l-dists > .ch3l-dist {
+  padding: 2px 10px;
+  border: 1px solid var(--line-strong);
+  border-radius: 999px;
+  color: var(--muted);
+  font-size: 13.5px;
+  font-variant-numeric: tabular-nums;
+}
+
+body .ch3l-dists > .ch3l-dist.is-on {
+  border-color: var(--ok-line);
+  background: var(--ok-bg);
+  color: var(--ok-text);
+  font-weight: 600;
+}
+
+body .ch3l-dists > .ch3l-dist::before {
+  content: "";
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  margin-right: 6px;
+  border-radius: 50%;
+  background: var(--cv-v1);
+  vertical-align: 1px;
+}
+
+body .ch3l-dists > .ch3l-dist[data-plane="2"]::before {
+  background: var(--cv-v2);
+}
+
+body .ch3l-dists > .ch3l-dist[data-plane="3"]::before {
+  background: var(--cv-subspace);
+}
+
+body .ch3l-dists > .ch3l-dist.is-on::before {
+  display: none;
+}
+
+/* ch6 §6 the shared basis α of U∩W, extended by β inside U and γ inside W */
+body .ch6l-bases {
+  display: grid;
+  gap: 4px;
+  margin: 4px 0 8px;
+  padding: 0;
+  list-style: none;
+}
+
+body .ch6l-bases > li {
+  margin: 0;
+}
+
+/* ch7 §4 angle strip under the plane: ψ(θ) from the line of v to Av; zeros are eigen-lines */
+body .ch7l-anglestrip {
+  margin: 10px 0 0;
+  padding: 6px 8px 4px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--cv-paper);
+}
+
+body .ch7l-anglestrip > svg {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+body .ch7l-anglestrip > figcaption {
+  margin-top: 2px;
+  color: var(--muted);
+  font-size: 13px;
+  line-height: 1.6;
+}
+
+body .ch7l-anglestrip .ch7s-grid {
+  stroke: var(--cv-grid-major);
+  stroke-width: 1;
+}
+
+body .ch7l-anglestrip .ch7s-zero {
+  stroke: var(--cv-axis);
+  stroke-width: 1;
+}
+
+body .ch7l-anglestrip .ch7s-tick {
+  fill: var(--faint);
+  font-family: var(--font-serif);
+  font-size: 11px;
+  font-variant-numeric: tabular-nums;
+}
+
+body .ch7l-anglestrip .ch7s-trace {
+  fill: none;
+  stroke: var(--cv-image);
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+body .ch7l-anglestrip .ch7s-now {
+  fill: var(--cv-drag);
+  stroke: var(--cv-paper);
+  stroke-width: 1.5;
+}
+
+body .ch7l-anglestrip .ch7s-eigen {
+  stroke: var(--cv-subspace);
+  stroke-width: 1.2;
+  stroke-dasharray: 5 5;
+}
+
+body .ch7l-anglestrip .ch7s-eigen-dot {
+  fill: var(--cv-subspace);
+}
+
+body .ch7l-anglestrip .ch7s-eigen-label {
+  fill: var(--cv-subspace);
+  font-family: var(--font-serif);
+  font-size: 12px;
+  font-style: italic;
+  font-weight: 600;
+}
+
+/* ---------- score-4 tweaks: chapters 9 and 10 ---------- */
+
+/* the canvas frame keeps its own height when the side column grows after the reveal */
+body .ch9l-body > .ch9l-stage {
+  align-content: start;
+}
+
+/* ch10 §3: the mode chips stay one segmented control; the swap action is a plain button beside it */
+body .ch10l-moderow {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+}
+
+body .ch10l-moderow > .ch7l-toolbar {
+  margin: 0;
+}
+
+/* ---------- round 3: a formula keeps the punctuation that follows it ---------- */
+
+/* a closing mark such as 。or ， never starts a line after a formula */
+body .la-keep {
+  white-space: nowrap;
+}
+
+/* ch8 §3: the minors before the first transformation, one unbroken formula per item */
+body .ch8l-compare-cell > .ch8l-minor-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 2px 14px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  color: var(--text-2);
+  font-size: 13.5px;
+}
+
+body .ch8l-minor-list > li {
+  max-width: 100%;
+  overflow-x: auto;
+  overflow-y: hidden;
+  white-space: nowrap;
+}
+
+body .ch8l-minor-list > li > .tex-inline {
+  white-space: nowrap;
+}
+
+/* ch10 §2: each transition matrix is named by the two bases it connects */
+body .ch10l-arrow {
+  margin: 8px 0 0;
+  color: var(--muted);
+  font-size: 14px;
+}

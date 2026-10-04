@@ -552,9 +552,13 @@
       setArrow(elements.basisY, elements.basisYHead, origin, basisY, 15, 4.2);
       setArrow(elements.vector, elements.vectorHead, origin, vectorTip, 14, 3.8);
       setDot(elements.originDot, origin);
-      setLabel(elements.basisXLabel, basisX, stage === 1 ? "Ae₁" : "e₁");
-      setLabel(elements.basisYLabel, basisY, stage === 1 ? "Ae₂" : "e₂");
-      setVectorLabel(elements.vectorLabel, vectorTip, stage === 1 ? "Ax" : stage === 2 ? "A⁻¹Ax = x" : "x");
+      // two-factor presets: name the vectors by the nearest settled product (I, S, A=RS, S, I)
+      const factorNames = preset.factors ? preset.factorNames : null;
+      const settled = factorNames ? Math.round(journey * 2) : -1;
+      const prefix = factorNames ? ["", factorNames[0], "A", factorNames[0], ""][settled] : stage === 1 ? "A" : "";
+      setLabel(elements.basisXLabel, basisX, `${prefix}e₁`);
+      setLabel(elements.basisYLabel, basisY, `${prefix}e₂`);
+      setVectorLabel(elements.vectorLabel, vectorTip, stage === 2 ? "A⁻¹Ax = x" : `${prefix}x`);
 
       elements.matrix.innerHTML = inline(matrixLatex(preset.matrix));
       elements.rank.innerHTML = inline(String(rank));

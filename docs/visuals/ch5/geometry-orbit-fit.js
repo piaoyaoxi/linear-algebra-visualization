@@ -339,12 +339,12 @@
     ctx.fillText("q", zAxis.x + 6, zAxis.y + 2);
 
     if (Number.isFinite(options.level) && options.point) {
-      // the level z = h: a horizontal patch around the stem top, a dashed horizontal line
-      // to the q axis and a tick there; both views share one frame, so the ticks match
+      // the level z = h: one translucent horizontal plane over the whole square, the level curve
+      // q = h where it cuts the surface, a dashed line to the q axis and a tick there; both views
+      // share one frame, so the planes are the same height
       const h = options.level;
       const [px, py] = options.point;
-      const r = 0.6;
-      const corners = [[px - r, py - r], [px + r, py - r], [px + r, py + r], [px - r, py + r]].map(([x, y]) => frame.project(x, y, h));
+      const corners = [[-half, -half], [half, -half], [half, half], [-half, half]].map(([x, y]) => frame.project(x, y, h));
       const image = getComputedStyle(document.body).getPropertyValue("--cv-image").trim() || "#8c4f86";
       const axisPoint = frame.project(0, 0, h);
       const top = frame.project(px, py, h);
@@ -353,12 +353,31 @@
       corners.forEach((point, index) => index ? ctx.lineTo(point.x, point.y) : ctx.moveTo(point.x, point.y));
       ctx.closePath();
       ctx.fillStyle = image;
-      ctx.globalAlpha = 0.14;
+      ctx.globalAlpha = 0.1;
       ctx.fill();
       ctx.globalAlpha = 0.55;
       ctx.strokeStyle = image;
       ctx.lineWidth = 1.2;
       ctx.stroke();
+      // level curve: r·u with q(u)·r² = h, kept inside the square
+      ctx.globalAlpha = 0.95;
+      ctx.lineWidth = 2.2;
+      ctx.beginPath();
+      let down = false;
+      for (let i = 0; i <= 720; i += 1) {
+        const angle = (TAU * i) / 720;
+        const u = [Math.cos(angle), Math.sin(angle)];
+        const q = M().qForm(A, u);
+        const r = q * h > 0 ? Math.sqrt(h / q) : Infinity;
+        const x = r * u[0];
+        const y = r * u[1];
+        if (!Number.isFinite(r) || Math.abs(x) > half || Math.abs(y) > half) { down = false; continue; }
+        const point = frame.project(x, y, h);
+        if (down) ctx.lineTo(point.x, point.y);
+        else { ctx.moveTo(point.x, point.y); down = true; }
+      }
+      ctx.stroke();
+      ctx.lineWidth = 1.2;
       ctx.globalAlpha = 0.85;
       ctx.setLineDash([2, 3]);
       ctx.beginPath();
@@ -394,6 +413,14 @@
       ctx.lineTo(onSurface.x, onSurface.y);
       ctx.stroke();
       ctx.fillStyle = image;
+      // the tip sits on the level plane: glow it
+      if (Number.isFinite(options.level) && Math.abs(value - options.level) < 1e-6) {
+        ctx.globalAlpha = 0.2;
+        ctx.beginPath();
+        ctx.arc(onSurface.x, onSurface.y, 12, 0, TAU);
+        ctx.fill();
+        ctx.globalAlpha = 1;
+      }
       ctx.beginPath();
       ctx.arc(onSurface.x, onSurface.y, 5.5, 0, TAU);
       ctx.fill();

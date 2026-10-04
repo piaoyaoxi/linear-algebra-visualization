@@ -441,6 +441,9 @@
       ctx.save();
       ctx.strokeStyle = series.color || palette.text;
       ctx.lineWidth = series.width || 2.2;
+      // ghost series: same colour, dashed and faint
+      if (series.dash) ctx.setLineDash(series.dash);
+      if (series.alpha != null) ctx.globalAlpha = series.alpha;
       ctx.beginPath();
       let penDown = false;
       const samples = options.samples || Math.max(280, Math.round(width));

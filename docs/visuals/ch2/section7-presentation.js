@@ -411,9 +411,17 @@
           ctx.moveTo(map(old.b).x, map(old.b).y);
           ctx.lineTo(map(old.land).x, map(old.land).y);
           ctx.stroke();
+          // the old solution: x₁a₁ on the a₁ line and the slid parallelogram, both faint
+          const oldArea = [[0, 0], old.land, add(old.land, old.a2), old.a2].map(map);
+          ctx.beginPath();
+          oldArea.forEach((point, index) => (index ? ctx.lineTo(point.x, point.y) : ctx.moveTo(point.x, point.y)));
+          ctx.closePath();
+          ctx.lineWidth = 1;
+          ctx.stroke();
           dot(ctx, map(old.land), palette.image, palette, 3);
         }
         ctx.restore();
+        if (old.land) label(ctx, "改动前", map(old.land).x + 8, map(old.land).y + 14, palette, "left");
       }
 
       const target = map(g.b);
@@ -515,7 +523,7 @@
         const x1 = ratio(ex.D1, ex.D).text;
         const x2 = ratio(ex.D2, ex.D).text;
         const old = ghost ? exact(ghost) : null;
-        const before = old && old.D !== 0 ? `（改动 b 前：x₁=${ratio(old.D1, old.D).text}，x₂=${ratio(old.D2, old.D).text}）` : "";
+        const before = old && old.D !== 0 ? `（改动前：x₁=${ratio(old.D1, old.D).text}，x₂=${ratio(old.D2, old.D).text}）` : "";
         if (ex.near) {
           // the size of the jump answers the prediction: x stays hidden until a prediction is picked
           solution.innerHTML = !picked()
@@ -619,9 +627,9 @@
       const isB = input.dataset.k === "b1" || input.dataset.k === "b2";
       input.addEventListener("input", () => {
         if (animating) return;
-        if (!isB) ghost = null;
-        else if (!dragging) ghost = { ...state };
-        dragging = isB;
+        // the state before this drag stays as a ghost, also when a₁ or a₂ is moved
+        if (!dragging) ghost = { ...state };
+        dragging = true;
         state[input.dataset.k] = tenths(input.value) / 10;
         shown = { ...state };
         render();

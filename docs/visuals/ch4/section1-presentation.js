@@ -447,13 +447,14 @@
 
   function renderThreeReadings(root) {
     if (!root) return undefined;
-    const state = { A: [[2, 1], [1, 3]], sel: [1, 0], ghost: null };
+    // col: a whole column picked from a column title (null while a single entry is picked)
+    const state = { A: [[2, 1], [1, 3]], sel: [1, 0], ghost: null, col: null };
     root.innerHTML = `<h2>交互实验</h2>
       <section class="ch3l-lab ml1-lab">
-        <header class="ch3l-head"><h3>同一张表，三种读法</h3><p>下面三处用的是同一个矩阵 A。点 A 中的一个元素，三处会同时标出它；选中后可以改它的值（0 到 4）。</p></header>
+        <header class="ch3l-head"><h3>同一张表，三种读法</h3><p>下面三处用的是同一个矩阵 A。点 A 中的一个元素，三处会同时标出它；选中后可以改它的值（0 到 4）。点列标题，三处同时标出这一整列。</p></header>
         <div data-ml1-gate></div>
         <div class="ml1-control">
-          <div class="ml1-matrix" role="group" aria-label="矩阵 A 的元素"><b class="ml1-name">A =</b><div class="ml1-cells" data-ml1-cells></div></div>
+          <div class="ml1-matrix" role="group" aria-label="矩阵 A 的元素"><b class="ml1-name">A =</b><div class="ml1-colwrap"><div class="ml1-colheads" data-ml1-colheads></div><div class="ml1-cells" data-ml1-cells></div></div></div>
           <div class="ml1-stepper"><b data-ml1-selname></b><button type="button" class="ch3l-btn" data-ml1-step="-1" aria-label="减 1">−1</button><button type="button" class="ch3l-btn is-primary" data-ml1-step="1" aria-label="加 1">+1</button></div>
         </div>
         <div class="ml1-views">
@@ -473,17 +474,22 @@
     let revealed = false;
 
     const isSel = (i, j) => state.sel[0] === i && state.sel[1] === j;
-    const cls = (i, j) => `ml1-c${j + 1}${isSel(i, j) ? " is-sel" : ""}`;
+    const cls = (i, j) => `ml1-c${j + 1}${state.col === null && isSel(i, j) ? " is-sel" : ""}${state.col === j ? " is-col" : ""}`;
+    const colHead = (j, text) => `<button type="button" class="ml1-colhead ml1-c${j + 1}${state.col === j ? " is-col" : ""}" data-ml1-col="${j}" aria-pressed="${state.col === j}">${text}</button>`;
 
     function paintDom() {
       const [si, sj] = state.sel;
       const A = state.A;
       cells.innerHTML = A.map((r, i) => r.map((v, j) => `<button type="button" class="${cls(i, j)}" data-ml1-cell="${i}${j}" aria-pressed="${isSel(i, j)}">${v}</button>`).join("")).join("");
       selName.innerHTML = `a<sub>${si + 1}${sj + 1}</sub> = ${A[si][sj]}`;
-      tableBox.innerHTML = `<table class="ml1-table"><thead><tr><th></th>${COLS.map((c, j) => `<th class="ml1-c${j + 1}">${c}</th>`).join("")}</tr></thead><tbody>${A.map((r, i) => `<tr><th>${ROWS[i]}</th>${r.map((v, j) => `<td class="${cls(i, j)}">${v}</td>`).join("")}</tr>`).join("")}</tbody></table>`;
+      lab.querySelector("[data-ml1-colheads]").innerHTML = [0, 1].map((j) => colHead(j, `第 ${j + 1} 列`)).join("");
+      tableBox.innerHTML = `<table class="ml1-table"><thead><tr><th></th>${COLS.map((c, j) => `<th>${colHead(j, c)}</th>`).join("")}</tr></thead><tbody>${A.map((r, i) => `<tr><th>${ROWS[i]}</th>${r.map((v, j) => `<td class="${cls(i, j)}">${v}</td>`).join("")}</tr>`).join("")}</tbody></table>`;
       eqs.innerHTML = A.map((r, i) => `<p>${r.map((v, j) => `${j ? " + " : ""}<b class="${cls(i, j)}">${v}</b><i>x</i>${SUB[j]}`).join("")} = <i>b</i>${SUB[i]}</p>`).join("");
       const v = A[si][sj];
-      readout.innerHTML = revealed
+      const cj = state.col;
+      readout.innerHTML = cj !== null
+        ? `<div class="ml1-head"><b>第 ${cj + 1} 列的三种读法</b><strong>Ae${SUB[cj]} = (${A[0][cj]}, ${A[1][cj]})</strong></div><ul class="ml1-list"><li>数据表：两家店卖出的${COLS[cj]}，${A[0][cj]} 箱与 ${A[1][cj]} 箱。</li><li>方程组：两个方程中 <i>x</i>${SUB[cj]} 的系数。</li><li>平面：箭头 Ae${SUB[cj]} 的横、纵坐标。</li></ul>`
+        : revealed
         ? `<div class="ml1-head"><b>a<sub>${si + 1}${sj + 1}</sub> 的三种读法</b><strong>${v}</strong></div><ul class="ml1-list"><li>数据表：${ROWS[si]}卖出${COLS[sj]} ${v} 箱。</li><li>方程组：第 ${si + 1} 个方程中 <i>x</i>${SUB[sj]} 的系数。</li><li>平面：Ae${SUB[sj]} 的第 ${si + 1} 个坐标（${si === 0 ? "横" : "纵"}坐标）。</li></ul>`
         : `<div class="ml1-head"><b>选中的元素</b><strong>a<sub>${si + 1}${sj + 1}</sub> = ${v}</strong></div><p>位于第 ${si + 1} 行、第 ${sj + 1} 列。下标先读行，再读列。</p>`;
       lab.querySelector('[data-ml1-step="-1"]').disabled = !gate?.picked || v <= 0;
@@ -491,6 +497,13 @@
       if (gate?.picked) plus.disabled = v >= 4;
       cells.querySelectorAll("[data-ml1-cell]").forEach((b) => b.addEventListener("click", () => {
         state.sel = [Number(b.dataset.ml1Cell[0]), Number(b.dataset.ml1Cell[1])];
+        state.ghost = null;
+        state.col = null;
+        paint();
+      }));
+      lab.querySelectorAll("[data-ml1-col]").forEach((b) => b.addEventListener("click", () => {
+        const j = Number(b.dataset.ml1Col);
+        state.col = state.col === j ? null : j;
         state.ghost = null;
         paint();
       }));
@@ -533,8 +546,10 @@
         ctx.save();
         if (opts.ghost) { ctx.globalAlpha = 0.35; ctx.setLineDash([5, 4]); }
         if (opts.focus) {
-          ctx.strokeStyle = `color-mix(in srgb, ${color} 16%, transparent)`; ctx.lineWidth = 7; ctx.lineCap = "round";
+          // glow: the same colour, faint and wide (canvas strokeStyle does not take color-mix)
+          ctx.strokeStyle = color; ctx.globalAlpha = 0.18; ctx.lineWidth = 9; ctx.lineCap = "round";
           ctx.beginPath(); ctx.moveTo(x0, y0); ctx.lineTo(x1, y1); ctx.stroke();
+          ctx.globalAlpha = opts.ghost ? 0.35 : 1;
         }
         ctx.strokeStyle = color; ctx.fillStyle = color; ctx.lineWidth = w < 360 ? 3.6 : 2.4; ctx.lineCap = "butt";
         ctx.beginPath(); ctx.moveTo(x0, y0); ctx.lineTo(x1 - Math.cos(a) * 9, y1 - Math.sin(a) * 9); ctx.stroke();
@@ -549,14 +564,15 @@
       const ex = A[0][sj];
       const ey = A[1][sj];
       const color = sj === 0 ? C.v1 : C.v2;
-      if (revealed) {
+      if (revealed && state.col === null) {
         // coordinate i of Ae_j: the dashed drop line and the segment on axis i
         ctx.save();
         ctx.strokeStyle = C.axis; ctx.lineWidth = 1; ctx.setLineDash([2, 3]);
         ctx.beginPath(); ctx.moveTo(...P(ex, ey)); ctx.lineTo(...(si === 0 ? P(ex, 0) : P(0, ey))); ctx.stroke();
         ctx.setLineDash([]);
-        ctx.strokeStyle = `color-mix(in srgb, ${color} 28%, transparent)`; ctx.lineWidth = 7; ctx.lineCap = "round";
+        ctx.strokeStyle = color; ctx.globalAlpha = 0.28; ctx.lineWidth = 7; ctx.lineCap = "round";
         ctx.beginPath(); ctx.moveTo(...P(0, 0)); ctx.lineTo(...(si === 0 ? P(ex, 0) : P(0, ey))); ctx.stroke();
+        ctx.globalAlpha = 1;
         ctx.fillStyle = color; ctx.font = "italic 600 13px 'LA Serif Latin', 'LA Serif SC', 'Songti SC', serif";
         // the label sits outside the first quadrant, away from the arrows
         const lab2 = `a${SUB[si]}${SUB[sj]}`;
@@ -565,7 +581,7 @@
         if (si === 0) ctx.fillText(lab2, lx - tw / 2, ly + 30); else ctx.fillText(lab2, lx - tw - 18, ly + 4);
         ctx.restore();
       }
-      [0, 1].forEach((j) => arrow(A[0][j], A[1][j], j === 0 ? C.v1 : C.v2, `Ae${SUB[j]}`, { focus: revealed && j === sj }));
+      [0, 1].forEach((j) => arrow(A[0][j], A[1][j], j === 0 ? C.v1 : C.v2, state.col === j ? `Ae${SUB[j]} = (${A[0][j]}, ${A[1][j]})` : `Ae${SUB[j]}`, { focus: state.col === null ? revealed && j === sj : j === state.col }));
     }
 
     function paint() { paintDom(); draw(); gate?.relock(); if (gate?.picked) { const v = state.A[state.sel[0]][state.sel[1]]; lab.querySelector('[data-ml1-step="1"]').disabled = v >= 4; } }
@@ -573,6 +589,7 @@
     lab.querySelectorAll("[data-ml1-step]").forEach((b) => b.addEventListener("click", () => {
       if (!gate?.picked) return;
       const [i, j] = state.sel;
+      state.col = null;
       const next = Math.max(0, Math.min(4, state.A[i][j] + Number(b.dataset.ml1Step)));
       if (next === state.A[i][j]) return;
       state.ghost = { j, x: state.A[0][j], y: state.A[1][j] };

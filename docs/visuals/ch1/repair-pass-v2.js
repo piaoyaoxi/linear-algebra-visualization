@@ -95,23 +95,35 @@
     let gate = null;
 
     // f, then one bar per remainder reached; the dashed level is deg g, where the division stops
-    function stairs(index) {
-      const bars = [{ label: "f", deg: M().deg(state.example.f), role: "f" }];
+    function stairs(index, example = state.example, steps = state.steps) {
+      const bars = [{ label: "f", deg: M().deg(example.f), role: "f" }];
       let k = 0;
-      state.steps.forEach((entry, stepIndex) => {
+      steps.forEach((entry, stepIndex) => {
         if (entry.kind !== "eliminate" || stepIndex > index) return;
         k += 1;
         bars.push({ label: `r${window.Ch1Stairs.sub(k)}`, deg: M().isZeroPoly(entry.r) ? null : M().deg(entry.r), role: "r" });
       });
-      const done = state.steps[index]?.kind === "done";
+      const done = steps[index]?.kind === "done";
       const last = bars.at(-1);
-      const degG = M().deg(state.example.g);
+      const degG = M().deg(example.g);
       return window.Ch1Stairs.degreeStairs(bars, {
-        maxDeg: M().deg(state.example.f),
+        maxDeg: M().deg(example.f),
         line: { deg: degG, label: `deg g = ${degG}` },
         highlight: done ? bars.length - 1 : -1,
         highlightLabel: done ? (last.deg == null ? "r = 0，停止" : `${last.deg} < ${degG}，停止`) : "",
       });
+    }
+    /*
+     * Once a division is finished, the opposite case is drawn beside it: a run that stops at the
+     * zero polynomial (g | f) next to one that stops at a remainder of degree < deg g.
+     */
+    function stairsPair(index, divides) {
+      const mine = stairs(index);
+      const other = divides ? presets.default : presets.divides;
+      const otherSteps = M().divisionSteps(other.f, other.g);
+      const caption = (d, name) => `<figcaption><b>${d ? "整除" : "不整除"}</b> ${svgEscape(name)}</figcaption>`;
+      const otherDivides = M().isZeroPoly(otherSteps.at(-1).r);
+      return `<div class="ch1-stairs-pair"><figure>${caption(divides, state.example.name)}${mine}</figure><figure class="is-compare">${caption(otherDivides, other.name)}${stairs(otherSteps.length - 1, other, otherSteps)}</figure></div>`;
     }
     const eliminations = () => state.steps
       .map((step, index) => ({ step, index }))
@@ -186,7 +198,7 @@
         root.querySelector("[data-focus]").textContent = divides ? "余式归零，除法结束。" : "余式次数已经低于除式次数，除法结束。";
         root.querySelector("[data-note]").textContent = divides ? "因此 f(x)=q(x)g(x)。" : `最终 deg r=${M().deg(step.r)}<deg g=${M().deg(state.example.g)}。`;
       }
-      root.querySelector("[data-stairs]").innerHTML = stairs(index);
+      root.querySelector("[data-stairs]").innerHTML = done ? stairsPair(index, divides) : stairs(index);
       root.querySelector("[data-stairs-note]").textContent = done
         ? (divides ? "余式降成 0 多项式，g 整除 f。" : `余式次数降到 ${M().deg(step.r)}，低于 deg g = ${M().deg(state.example.g)}，不能再用 g 的首项去除了。`)
         : "每一步消去当前最高次项，余式次数严格下降。";

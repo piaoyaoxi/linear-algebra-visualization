@@ -103,8 +103,49 @@
       return `${tiles.join('<b class="ch2-cof-op">+</b>')}<b class="ch2-cof-op">=</b><figure class="ch2-cof-tile is-sum"><span>det A</span><strong>${tex(M().formatNum(result.total, 3))}</strong></figure>`;
     }
 
+    /*
+     * The six terms of the 3-order determinant, sgn(p)·a₁ₚ₁a₂ₚ₂a₃ₚ₃ in lexicographic order. The two
+     * terms that contain the selected a_ij share that factor; what is left is (−1)^{i+j}M_ij = C_ij.
+     */
+    const PERMS = [[0, 1, 2], [0, 2, 1], [1, 0, 2], [1, 2, 0], [2, 0, 1], [2, 1, 0]];
+    const permSign = (p) => {
+      let inv = 0;
+      for (let i = 0; i < 3; i += 1) for (let j = i + 1; j < 3; j += 1) if (p[i] > p[j]) inv += 1;
+      return inv % 2 ? -1 : 1;
+    };
+    const sub = (r, c) => `a_{${r + 1}${c + 1}}`;
+    function renderLeibniz() {
+      const { row: i, col: j } = active;
+      const terms = PERMS.map((p) => ({
+        p,
+        sign: permSign(p),
+        hit: p[i] === j,
+        value: permSign(p) * p.reduce((acc, c, r) => acc * matrix[r][c], 1),
+      }));
+      const tiles = terms.map((t, k) => `<figure class="ch2-leib-term${t.hit ? " is-hit" : ""}">
+          <span>${tex(`${t.sign > 0 ? (k ? "+" : "") : "-"}${t.p.map((c, r) => sub(r, c)).join("")}`)}</span>
+          <small>${tex(M().formatNum(t.value, 3))}</small>
+        </figure>`).join("");
+      // the two hits with a_ij taken out
+      const hits = terms.filter((t) => t.hit);
+      const rest = (t) => t.p.map((c, r) => (r === i ? "" : sub(r, c))).join("");
+      const inner = hits.map((t, k) => `${t.sign > 0 ? (k ? "+" : "") : "-"}${rest(t)}`).join("");
+      const rows = [0, 1, 2].filter((r) => r !== i);
+      const cols = [0, 1, 2].filter((c) => c !== j);
+      const minor = `${sub(rows[0], cols[0])}${sub(rows[1], cols[1])}-${sub(rows[0], cols[1])}${sub(rows[1], cols[0])}`;
+      const ij = `${i + 1}${j + 1}`;
+      const selected = cofactor(i, j);
+      const sum = hits.reduce((acc, t) => acc + t.value, 0);
+      root.querySelector("[data-leibniz]").innerHTML = `
+        <p class="ch2-leib-title">${tex("\\det A")} 的 6 项中，含 ${tex(sub(i, j))} 的恰好 2 项</p>
+        <div class="ch2-leib-terms">${tiles}</div>
+        <p class="ch2-leib-factor">${tex(`${sub(i, j)}\\bigl(${inner}\\bigr)=(-1)^{${i + 1}+${j + 1}}\\,${sub(i, j)}\\bigl(${minor}\\bigr)=${sub(i, j)}\\,C_{${ij}}`)}</p>
+        <p class="ch2-leib-value">括号里正是 ${tex(`M_{${ij}}`)} 的两项，符号为 ${tex(`(-1)^{${i + 1}+${j + 1}}=${selected.sign > 0 ? "+1" : "-1"}`)}；这两项之和为 ${tex(`${M().formatNum(matrix[i][j], 3)}\\times${selected.value < 0 ? `(${M().formatNum(selected.value, 3)})` : M().formatNum(selected.value, 3)}=${M().formatNum(sum, 3)}`)}。</p>`;
+    }
+
     function render() {
       renderMatrix();
+      renderLeibniz();
       renderRoutes();
       const selected = cofactor(active.row, active.col);
       root.querySelector("[data-pos]").innerHTML = aEntry(active.row + 1, active.col + 1);
@@ -206,6 +247,7 @@
               <div class="ch2-note">先在左侧任选元素，读取“余子矩阵 → 余子式 → 代数余子式”的对应关系。</div>
             </div>
           </div>
+          <div class="ch2-leibniz" data-leibniz aria-live="polite"></div>
           <div class="ch2-route-explorer">
             <div class="ch2-presets ch2-route-list" data-route-list></div>
             <div class="ch2-note" data-route-wait>选好预测后，点一条展开路线，看它的各项怎样相加。</div>

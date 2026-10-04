@@ -111,6 +111,7 @@
         <div class="blk-stage bk7-stage" data-bk7-stage></div>
         <div class="bk7-tools"><b class="bk7-tools-label">选 X</b><div class="ch3l-toolbar">${Object.entries(MULTIPLIERS).map(([k, m]) => `<button type="button" class="ch3l-chip" data-x="${k}">${inline(m.label)}</button>`).join("")}</div></div>
         <div class="ch3l-actions bk7-actions"><button type="button" class="ch3l-btn is-primary" data-bk7-apply>左乘 E</button><button type="button" class="ch3l-btn" data-bk7-reset>重来</button></div>
+        <figure class="bk7-couple" data-bk7-couple aria-label="x 对 y 的耦合"></figure>
         <div class="ch3l-card bk7-readout" data-bk7-readout></div>
       </section>`;
     const stage = section.querySelector("[data-bk7-stage]");
@@ -123,6 +124,31 @@
       return "";
     };
 
+    /*
+     * Coupling diagram: x → y through the lower-left block. The arrow's weight follows
+     * ‖C+X‖ / ‖C‖ (Frobenius); it fades out at C+X=0 and turns red and thicker when the
+     * coupling grows (X = C gives 2C).
+     */
+    const couple = section.querySelector("[data-bk7-couple]");
+    const norm = (P) => Math.hypot(...P.flat());
+    function paintCouple(lower, label) {
+      const k = norm(lower) / norm(C7);
+      const zero = k === 0;
+      const grow = k > 1 + 1e-9;
+      const width = zero ? 1.2 : 1.6 + 2.4 * Math.min(k, 2);
+      const tone = zero ? "is-zero" : grow ? "is-grow" : "";
+      const head = zero ? "" : `<path class="bk7-link-head ${tone}" d="M246 44 l-${8 + width} -${4 + width / 2} v${8 + width} z"></path>`;
+      couple.innerHTML = `<svg viewBox="0 0 320 96" role="img" aria-label="${zero ? "x 不再影响 y" : "x 通过左下块影响 y"}">
+        <circle class="bk7-node is-x" cx="46" cy="44" r="20"></circle><text class="bk7-node-name" x="46" y="49" text-anchor="middle">x</text>
+        <circle class="bk7-node is-y" cx="274" cy="44" r="20"></circle><text class="bk7-node-name" x="274" y="49" text-anchor="middle">y</text>
+        <text class="bk7-node-note" x="46" y="86" text-anchor="middle">x = f</text>
+        <text class="bk7-node-note" x="274" y="86" text-anchor="middle">${zero ? "y = g − Cf" : "y 还含 x"}</text>
+        <line class="bk7-link ${tone}" x1="72" y1="44" x2="${zero ? 246 : 238}" y2="44" style="stroke-width:${width};opacity:${zero ? 0.3 : Math.min(1, 0.35 + 0.65 * k)}" ${zero ? 'stroke-dasharray="4 4"' : ""}></line>
+        ${head}
+        <text class="bk7-link-label ${tone}" x="160" y="30" text-anchor="middle">${label}</text>
+      </svg>`;
+    }
+
     function paint() {
       const m = state.pick ? MULTIPLIERS[state.pick] : null;
       section.querySelectorAll("[data-x]").forEach((b) => b.classList.toggle("is-active", b.dataset.x === state.pick));
@@ -130,6 +156,7 @@
       if (!state.applied) {
         stage.innerHTML = `<div class="blk-mat"><span>${inline(m ? `E,\\ X=${m.label}` : "E")}</span>${eGrid(m ? m.X : null)}</div><b class="blk-op">×</b>${before}`;
         readout.innerHTML = `<div class="bk7-head"><b>左下块</b><strong>${inline("C")}</strong></div><p>第二个方程 ${inline("Cx+y=g")} 同时含有 x 和 y，两组未知量耦合在一起。选好 X 后按“左乘 E”。</p>`;
+        paintCouple(C7, "C");
         return;
       }
       const a = MULTIPLIERS[state.applied];
@@ -137,6 +164,7 @@
       const rhs = G7.map((v, i) => v + apply2(a.X, F7)[i]);
       const zero = lower.every((r) => r.every((v) => v === 0));
       const after = augmented(lower, rhs);
+      paintCouple(lower, zero ? "C+X = 0" : state.applied === "C" ? "C+X = 2C" : "C+X ≠ 0");
       stage.innerHTML = `<div class="blk-mat"><span>${inline(`E,\\ X=${a.label}`)}</span>${eGrid(a.X)}</div><b class="blk-op">×</b>${before}<b class="blk-op">=</b><div class="blk-mat"><span>${inline("E(M\\mid b)")}</span>${augGrid(after, roles(zero), startAug)}</div>`;
       readout.innerHTML = zero
         ? `<div class="bk7-head"><b>左下块</b><strong class="ch3l-ok">${inline("C+X=0")}</strong></div><p>第二块方程不再含 x，两组未知量分开了：</p><div class="blk-math">${display(`x=f=${texV2(F7)},\\qquad y=g-Cf=${texV2(rhs)}`)}</div>`

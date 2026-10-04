@@ -218,7 +218,7 @@ async function operate(page, section, viewport, theme) {
     if (detail) await page.locator("#polynomial-functions-interactive .ch1-lab").screenshot({ path: path.join(outputDir, `${viewport.name}-${theme}-horner.png`) });
     await clickIf(page, '[data-mode="roots"]'); await clickIf(page, '[data-mode="interp"]');
   } else if (section === "complex-real-factorization") {
-    ensure((await page.locator("[data-beta]").textContent())?.includes("预测后"), "§8: second root shown before predicting");
+    ensure((await page.locator("[data-beta]").textContent())?.includes("猜过之后"), "§8: second root shown before predicting");
     ensure(await page.locator("#complex-real-factorization-interactive .ch1-live-conclusion").isHidden(), "§8: conclusion shown before predicting");
     await page.locator('[data-conj-gate] [data-ok="true"]').click();
     ensure(!(await page.locator("#complex-real-factorization-interactive .ch3l-predict.is-done").count()), "§8: revealed before acting");

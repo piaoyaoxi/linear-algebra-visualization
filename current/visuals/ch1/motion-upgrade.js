@@ -866,7 +866,7 @@
       const geometryNode = root.querySelector("[data-geometry-copy]");
       if (geometryNode.dataset.copy !== geometryCopy) { geometryNode.dataset.copy = geometryCopy; geometryNode.innerHTML = geometryCopy; }
       if (!open) {
-        setText(root.querySelector("[data-beta]"), "预测后显示");
+        setText(root.querySelector("[data-beta]"), "猜过之后显示");
         setText(root.querySelector("[data-sum]"), "—");
         setText(root.querySelector("[data-product]"), "—");
         setText(root.querySelector("[data-factor]"), "—");
@@ -882,7 +882,7 @@
       root.querySelector("[data-bre-value]").textContent = text(c.beta.re);
       root.querySelector("[data-bim-value]").textContent = text(c.beta.im);
       root.querySelector("[data-canvas-hint]").textContent = !open
-        ? "先在上方作出预测，再拖动 β"
+        ? "先在上方猜一猜，再拖动 β"
         : state.mode === "R"
           ? "拖动 α：共轭根关于实轴镜像跟随，两条线始终交在共轭根处"
           : "拖动离指针最近的根，看它何时落到两条线上";

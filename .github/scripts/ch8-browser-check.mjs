@@ -170,10 +170,10 @@ async function check(viewport, dark) {
     assert.ok(stageBox && stageBox.width >= 200 && stageBox.height >= minH, `${label}: stage ${JSON.stringify(stageBox)}`);
 
     assert.ok(await lab.locator(".ch7l-result").isHidden(), `${label}: conclusion visible before predicting`);
-    assert.ok((await lab.locator(".ch7l-side").innerText()).includes("先在上方作出预测"), `${label}: readout visible before predicting`);
+    assert.ok((await lab.locator(".ch7l-side").innerText()).includes("先在上方猜一猜"), `${label}: readout visible before predicting`);
     await lab.locator(".ch7l-predict-options [data-i]").first().click();
     assert.ok(await lab.locator(".ch7l-predict-feedback").isVisible(), `${label}: prediction feedback`);
-    assert.ok(!(await lab.locator(".ch7l-side").innerText()).includes("先在上方作出预测"), `${label}: readout still hidden after predicting`);
+    assert.ok(!(await lab.locator(".ch7l-side").innerText()).includes("先在上方猜一猜"), `${label}: readout still hidden after predicting`);
     assert.ok(await lab.locator(".ch7l-result").isHidden(), `${label}: conclusion opened before acting`);
     const before = await lab.locator(".ch7l-side").innerText();
     await route.act(page, lab);

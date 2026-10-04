@@ -137,7 +137,7 @@
     return out;
   }
 
-  const waitNote = (what) => `<p class="ch7l-muted">先在上方作出预测，再动手操作一次，${what}随后出现。</p>`;
+  const waitNote = (what) => `<p class="ch7l-muted">先在上方猜一猜，再动手操作一次，${what}随后出现。</p>`;
 
   /* A reading next to a point, flipped to the left side near the right edge. */
   function pointLabel(d, p, text, color, dy) {
@@ -273,7 +273,7 @@
         if (open) pointLabel(d, state.x, `f(x)=${minus(M().formatF(value))}`, "drag", -14);
       });
       if (!open) {
-        info.innerHTML = `<h4>读数</h4><p class="ch7l-muted">先在上方作出预测，再动手操作一次，等值线和读数随后出现。</p>`;
+        info.innerHTML = `<h4>读数</h4><p class="ch7l-muted">先在上方猜一猜，再动手操作一次，等值线和读数随后出现。</p>`;
         return;
       }
       nowNote(a, zeroFn);
@@ -354,7 +354,7 @@
 
     function newFlow() {
       const p = FUNCTIONAL_PRESETS[state.key].predict;
-      flow = K.predictFlow(gateHost, result, { ...p, actHint: "已记下你的预测。拖动 x 或移动滑块，结论随后出现。", onReveal: () => redraw() });
+      flow = K.predictFlow(gateHost, result, { ...p, actHint: "记下了你的猜测。拖动 x 或移动滑块，结论随后出现。", onReveal: () => redraw() });
     }
 
     K.chips(
@@ -522,7 +522,7 @@
         { text: "始终与 η₁ 垂直", why: "只有 η₂ 恰好与 η₁ 垂直时才如此。" },
         { text: "不变，g₁ 只由 η₁ 决定", why: "g₁ 还要满足 g₁(η₂)=0。" },
       ],
-      actHint: "已记下你的预测。拖动 η₂，结论随后出现。",
+      actHint: "记下了你的猜测。拖动 η₂，结论随后出现。",
       onReveal: () => redraw(),
       conclusion: "g₁(η₂)=0，所以 g₁ 的零线就是 η₂ 所在的直线，g₁=1 的线经过 η₁ 的终点；同理 g₂ 的等值线都与 η₁ 平行。两族等值线织成 η₁、η₂ 的斜网格，x 所在格点的编号 (g₁(x), g₂(x)) 就是 x 在这组基下的坐标。",
     });
@@ -653,7 +653,7 @@
         ? `<li class="ch7l-bad">${tex(coefTex)} 是零向量：对一切 ${free}，f(x,y)=0。</li>`
         : `<li>${tex(`f(x,y)=${formTex(coef, [`${free}_1`, `${free}_2`])}`)}</li><li class="ch7l-muted" data-bil-normal>紫色箭头 ${tex(coefTex)} 与每条等值线垂直；沿它的方向 f 增长最快。</li>`;
       html += `<li>${tex(`f(x,y)=x^TAy=${lf(value)}`)}</li></ul>`;
-      readCard.innerHTML = open ? html : `<h4>固定 ${fixedName}，f 是 ${free} 的线性函数</h4><p class="ch7l-muted">先在上方作出预测，再动手操作一次，等值线和读数随后出现。</p>`;
+      readCard.innerHTML = open ? html : `<h4>固定 ${fixedName}，f 是 ${free} 的线性函数</h4><p class="ch7l-muted">先在上方猜一猜，再动手操作一次，等值线和读数随后出现。</p>`;
       const detA = K.det(a);
       matCard.innerHTML = `<h4>度量矩阵</h4><div>${texD(`A=${K.latexMatrix(a)},\\quad |A|=${lf(detA)}`)}</div>
         <p><span class="ch10l-badge${isZero(detA) ? " is-off" : ""}">${isZero(detA) ? "退化" : "非退化"}</span> <span class="ch7l-muted">${K.eqMat(a, K.transpose(a)) ? "A=Aᵀ，f 对称" : "A≠Aᵀ，f(x,y) 与 f(y,x) 一般不同"}</span></p>`;
@@ -676,9 +676,9 @@
       flow = K.predictFlow(gateHost, result, {
         ...BILINEAR_PRESETS[state.key].predict,
         actHint: {
-          sym: "已记下你的预测。点“交换 x、y”，结论随后出现。",
-          ns: "已记下你的预测。拖动 x 或 y，结论随后出现；点“y=ε₁”让 y 回到 ε₁。",
-        }[state.key] || "已记下你的预测。拖动 y，结论随后出现。",
+          sym: "记下了你的猜测。点“交换 x、y”，结论随后出现。",
+          ns: "记下了你的猜测。拖动 x 或 y，结论随后出现；点“y=ε₁”让 y 回到 ε₁。",
+        }[state.key] || "记下了你的猜测。拖动 y，结论随后出现。",
         onReveal: () => redraw(),
       });
     }
@@ -819,7 +819,7 @@
         <tr><td>ω</td><td>${open ? minus(M().formatF(w0)) : "?"}</td><td>${open ? minus(M().formatF(w1)) : "?"}</td></tr></tbody></table>
         ${isZero(w0) ? `<p class="ch7l-muted">x、y 共线，平行四边形压扁，ω(x,y)=0。</p>` : ""}`;
       if (!open) {
-        matCard.innerHTML = `<h4>变换矩阵</h4><div>${texD(`K=${K.latexMatrix(Kf)}`)}</div><p class="ch7l-muted">先在上方作出预测，再动手操作一次，ω 的读数随后出现。</p>`;
+        matCard.innerHTML = `<h4>变换矩阵</h4><div>${texD(`K=${K.latexMatrix(Kf)}`)}</div><p class="ch7l-muted">先在上方猜一猜，再动手操作一次，ω 的读数随后出现。</p>`;
         return;
       }
       const base = shearOn()
@@ -916,7 +916,7 @@
         { text: "变号", why: "变号需要 |K|<0，剪切的 |K|=1。" },
         { text: "取决于 x、y", why: "ω(Kx,Ky)=|K|ω(x,y) 对一切 x、y 成立。" },
       ],
-      actHint: "已记下你的预测。拖动 x、y 或换一个变换，结论随后出现。",
+      actHint: "记下了你的猜测。拖动 x、y 或换一个变换，结论随后出现。",
       onReveal: () => redraw(),
       conclusion: "ω(Kx,Ky)=|K|·ω(x,y)。剪切、挤压与旋转的 |K|=1，有向面积不变，尽管长度与夹角都可能改变；横向拉伸 |K|=2，面积加倍；交换坐标 |K|=−1，有向面积变号。平面上保持 ω 的线性变换恰好是 |K|=1 的变换。",
     });

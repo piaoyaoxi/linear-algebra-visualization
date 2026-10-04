@@ -156,7 +156,7 @@
       root.querySelector("[data-poly]").innerHTML = tex(M().formatPolyTex(p));
       root.querySelector("[data-derivative]").innerHTML = tex(M().formatPolyTex(dp));
       const gcdCell = root.querySelector("[data-gcd]");
-      gcdCell.innerHTML = open ? tex(M().formatPolyTex(gcd)) : `<small class="ch1-muted">预测后显示</small>`;
+      gcdCell.innerHTML = open ? tex(M().formatPolyTex(gcd)) : `<small class="ch1-muted">猜过之后显示</small>`;
       gcdCell.closest("div").classList.toggle("is-shared", open && !coprime);
       root.querySelector("[data-focus-label]").textContent = state.mode === "multiplicity" ? `x=${frac(focus)}` : `x=u=${frac(focus)}`;
       root.querySelector("[data-derivatives]").innerHTML = derivatives.map((row) => `<tr><td>${row.order === 0 ? "f" : row.order === 1 ? "f′" : `f<sup>(${row.order})</sup>`}</td><td>${frac(row.value)}</td><td><b class="ch1-status ${M().rIsZero(row.value) ? "is-warn" : "is-ok"}">${M().rIsZero(row.value) ? "0" : "非零"}</b></td></tr>`).join("");

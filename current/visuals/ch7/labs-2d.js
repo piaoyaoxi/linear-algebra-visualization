@@ -446,7 +446,7 @@
       const now = state.theta % 180;
       const pNow = psiAt(A, now);
       if (pNow != null) parts.push(`<circle cx="${sx(now)}" cy="${sy(pNow)}" r="4.5" class="ch7s-now"/>`);
-      strip.innerHTML = `<svg viewBox="0 0 ${SW} ${SH}" role="img" aria-label="v 与 Av 的有向夹角随 θ 的变化">${parts.join("")}</svg><figcaption>v 到 Av 的有向夹角（θ 从 0° 到 180°）${flow?.predicted ? "" : " · 作出预测后记录轨迹"}</figcaption>`;
+      strip.innerHTML = `<svg viewBox="0 0 ${SW} ${SH}" role="img" aria-label="v 与 Av 的有向夹角随 θ 的变化">${parts.join("")}</svg><figcaption>v 到 Av 的有向夹角（θ 从 0° 到 180°）${flow?.predicted ? "" : " · 猜过之后记录轨迹"}</figcaption>`;
     }
 
     function hit() {
@@ -939,7 +939,7 @@
       state.x0 = preset().x0.slice();
       state.k = 0;
       plane.setExtent(preset().extent);
-      flow = K.predictFlow(gateHost, result, { ...preset().predict, actHint: "已记下你的预测。按“作用一次 A”至少三次，结论随后出现。" });
+      flow = K.predictFlow(gateHost, result, { ...preset().predict, actHint: "记下了你的猜测。按“作用一次 A”至少三次，结论随后出现。" });
       redraw();
     }
     K.chips(toolbar, Object.entries(ITER_PRESETS).map(([k, v]) => [k, v.label]), load, state.key);

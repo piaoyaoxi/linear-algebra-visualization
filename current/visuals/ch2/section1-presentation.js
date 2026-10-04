@@ -197,7 +197,7 @@
       root.innerHTML = `
         <h2>交互实验</h2>
         <div class="ch2-lab">
-          <div class="ch2-lab-head"><h3>有向面积 · 拖动两列</h3><p>拖动两根列向量的端点（每次四分之一格），也可以使用滑杆与预设。图形、ad−bc、|det| 与状态同步更新；预测并动手后，紫色弧标出从第 1 列到第 2 列的转向。</p></div>
+          <div class="ch2-lab-head"><h3>有向面积 · 拖动两列</h3><p>拖动两根列向量的端点（每次四分之一格），也可以使用滑杆与预设。图形、ad−bc、|det| 与状态同步更新；猜过并动手后，紫色弧标出从第 1 列到第 2 列的转向。</p></div>
           <div data-orient-gate></div>
           <div class="ch2-lab-grid ch2-area-layout">
             <div class="ch2-stage"><canvas data-ch2-canvas aria-label="可拖动两列向量的有向面积画布"></canvas></div>

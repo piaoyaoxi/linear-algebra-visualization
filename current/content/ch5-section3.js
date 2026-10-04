@@ -48,7 +48,7 @@ defineChapter5Section("quadratic-uniqueness", {
     type: "slot",
     title: "实验：惯性锁",
     description: "固定对称矩阵 A，拖动剪切参数 h 观察 B=CᵀAC；曲面和符号轮上向上、向下的方向换了位置，数量不变。",
-    task: "先预测马鞍面能否被可逆替换变成碗，再拖动 h；最后让替换奇异，看定理前提何时失效。",
+    task: "先猜一猜马鞍面能否被可逆替换变成碗，再拖动 h；最后让替换奇异，看定理前提何时失效。",
   },
   example: {
     title: "例题：从标准形读惯性",

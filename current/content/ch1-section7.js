@@ -38,7 +38,7 @@ defineChapter1Section("polynomial-functions", {
     type: "slot",
     title: "代入、根数与插值",
     description: "Horner 计算、根数上界与 Lagrange 插值。",
-    task: "先预测，再把不同根的个数 m 拖到超过次数 n，看曲线还能不能穿过所有根。“评价 / Horner”里移动 a 看 f(a) 何时为 0；“Lagrange 插值”里修改三个节点。",
+    task: "先猜一猜，再把不同根的个数 m 拖到超过次数 n，看曲线还能不能穿过所有根。“评价 / Horner”里移动 a 看 f(a) 何时为 0；“Lagrange 插值”里修改三个节点。",
   },
   example: {
     title: "例题：三点确定一个二次多项式",

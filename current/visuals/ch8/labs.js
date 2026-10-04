@@ -55,7 +55,7 @@
   const ptex = (p) => P.latex(p);
   const numMatrix = (A) => `\\begin{pmatrix}${A.map((row) => row.map(lf).join("&")).join("\\\\")}\\end{pmatrix}`;
   const pfac = (p) => P.factorLatex(p);
-  const waitNote = (what) => `<p class="ch7l-muted">先在上方作出预测，${what}随后出现。</p>`;
+  const waitNote = (what) => `<p class="ch7l-muted">先在上方猜一猜，${what}随后出现。</p>`;
 
   /* ================= §1 λ-矩阵 ================= */
 
@@ -166,7 +166,7 @@
         }
         d.text([X(HI) + 0.3, AXIS], "λ₀", "muted", { dy: -12, align: "right", font: "650 13px 'LA Serif Latin', 'LA Serif SC', 'Songti SC', serif" });
         if (!open) {
-          d.text([0, 0.6], "先在上方作出预测", "faint", { align: "center", font: "650 14px 'LA Serif Latin', 'LA Serif SC', 'Songti SC', serif" });
+          d.text([0, 0.6], "先在上方猜一猜", "faint", { align: "center", font: "650 14px 'LA Serif Latin', 'LA Serif SC', 'Songti SC', serif" });
           return;
         }
         const pts = [];
@@ -264,7 +264,7 @@
       state.x = 0.5;
       state.lo = 0.5;
       state.hi = 0.5;
-      const hint = data().roots.length ? "已记下你的预测。拖动 λ₀ 一直扫到行列式的零点，看秩条在那里怎样变化，结论随后出现。" : "已记下你的预测。拖动 λ₀ 扫过数轴，结论随后出现。";
+      const hint = data().roots.length ? "记下了你的猜测。拖动 λ₀ 一直扫到行列式的零点，看秩条在那里怎样变化，结论随后出现。" : "记下了你的猜测。拖动 λ₀ 扫过数轴，结论随后出现。";
       flow = gate(ui.gateHost, ui.result, { ...SCAN_PRESETS[state.key].predict, actHint: hint });
     }
 
@@ -641,7 +641,7 @@
     }
 
     function newFlow() {
-      flow = gate(ui.gateHost, ui.result, { ...SMITH_PRESETS[state.key].predict, actHint: "已记下你的预测。动手把矩阵化成标准形，结论随后出现。" });
+      flow = gate(ui.gateHost, ui.result, { ...SMITH_PRESETS[state.key].predict, actHint: "记下了你的猜测。动手把矩阵化成标准形，结论随后出现。" });
     }
 
     K.chips(
@@ -874,7 +874,7 @@
     }
 
     function newFlow() {
-      flow = gate(ui.gateHost, ui.result, { ...MINOR_PRESETS[state.key].predict, actHint: "已记下你的预测。做一次初等变换，或换一个阶数看看，结论随后出现。", onReveal: () => redraw() });
+      flow = gate(ui.gateHost, ui.result, { ...MINOR_PRESETS[state.key].predict, actHint: "记下了你的猜测。做一次初等变换，或换一个阶数看看，结论随后出现。", onReveal: () => redraw() });
     }
 
     function orderChips() {
@@ -1458,7 +1458,7 @@
       anim = { from: new Map(), t: 1, raf: 0 };
       split = { s: 0, target: 0, raf: 0, timer: 0, note: null };
       viewChips();
-      flow = gate(ui.gateHost, ui.result, { ...DIVISOR_PRESETS[key].predict, actHint: "已记下你的预测。切换排法或数域，结论随后出现。", onReveal: () => redraw() });
+      flow = gate(ui.gateHost, ui.result, { ...DIVISOR_PRESETS[key].predict, actHint: "记下了你的猜测。切换排法或数域，结论随后出现。", onReveal: () => redraw() });
       redraw();
     }
 
@@ -1485,7 +1485,7 @@
       label: "A₁",
       A: [[3, -1, 1, -2], [1, 2, 0, -1], [0, 1, 1, 1], [0, 0, 0, 2]],
       predict: {
-        question: `${tex("|\\lambda E-A_1|=(\\lambda-2)^4")}，${tex("N=A_1-2E")} 的秩是 2。A₁ 的若尔当形中有几个若尔当块？`,
+        question: `${tex("|\\lambda E-A_1|=(\\lambda-2)^4")}，${tex("N=A_1-2E")} 的秩是 2，所以 N 的核是 4−2=2 维。每个若尔当块恰好给这个核贡献一个方向。A₁ 的若尔当形中有几个若尔当块？`,
         options: [
           { text: "2 个", correct: true },
           { text: "1 个", why: "块数等于 dim ker N=4−rank N=2。" },
@@ -1499,7 +1499,7 @@
       label: "A₂",
       A: [[4, -3, 4, -6], [2, 0, 2, -4], [2, -3, 6, -6], [1, -2, 3, -2]],
       predict: {
-        question: `${tex("|\\lambda E-A_2|=(\\lambda-2)^4")}，${tex("N=A_2-2E")} 的秩是 2，且 ${tex("N^2=0")}。若尔当块的阶数是多少？`,
+        question: `${tex("|\\lambda E-A_2|=(\\lambda-2)^4")}，${tex("N=A_2-2E")} 的秩是 2，且 ${tex("N^2=0")}：任何向量被 N 作用两次就变成 0。若尔当块的阶数是多少？`,
         options: [
           { text: "2, 2", correct: true },
           { text: "3, 1", why: "有 3 阶块时 N²≠0：链 ε₁→ε₂→ε₃ 上 N²ε₁=ε₃。" },
@@ -1586,7 +1586,7 @@
           ctx.stroke();
           ctx.restore();
           write(20, yTop + 14, "ker N", "faint", { size: 12, weight: 700 });
-          write(towerW / 2 + 6, yTop - 28, "先在上方作出预测，再一层层往上搭", "faint", { align: "center", size: 13 });
+          write(towerW / 2 + 6, yTop - 28, "先在上方猜一猜，再一层层往上搭", "faint", { align: "center", size: 13 });
           return;
         }
         const dx = Math.min(86, (towerW - 70) / Math.max(chains.length, 2));
@@ -1729,12 +1729,12 @@
       (key) => {
         state.key = key;
         state.k = 0;
-        flow = gate(ui.gateHost, ui.result, { ...TOWER_PRESETS[key].predict, actHint: "已记下你的预测。逐层往上数一数，结论随后出现。" });
+        flow = gate(ui.gateHost, ui.result, { ...TOWER_PRESETS[key].predict, actHint: "记下了你的猜测。逐层往上数一数，结论随后出现。" });
         redraw();
       },
       state.key,
     );
-    flow = gate(ui.gateHost, ui.result, { ...TOWER_PRESETS[state.key].predict, actHint: "已记下你的预测。逐层往上数一数，结论随后出现。" });
+    flow = gate(ui.gateHost, ui.result, { ...TOWER_PRESETS[state.key].predict, actHint: "记下了你的猜测。逐层往上数一数，结论随后出现。" });
     redraw();
     return () => plane.destroy();
   }
@@ -1765,14 +1765,14 @@
   }
 
   const COMPANION_PREDICT = {
-    question: `${tex("d(\\lambda)=\\lambda^3+a_2\\lambda^2+a_1\\lambda+a_0")}，C 是它的伴随矩阵。C 的最小多项式是什么？`,
+    question: `${tex("d(\\lambda)=\\lambda^3+a_2\\lambda^2+a_1\\lambda+a_0")}，C 是它的伴随矩阵：C 把 ${tex("e_1")} 送到 ${tex("e_2")}，${tex("e_2")} 送到 ${tex("e_3")}，${tex("e_3")} 送到 ${tex("-a_0e_1-a_1e_2-a_2e_3")}。C 的最小多项式是什么？`,
     options: [
       { text: "就是 d(λ)", correct: true },
       { text: "d(λ) 有重根时是它的真因式", why: "e₁, Ce₁, C²e₁ 线性无关，次数小于 3 的多项式 g 都使 g(C)e₁≠0。" },
       { text: "总是 λ³", why: "C³=0 只在 a₀=a₁=a₂=0 时成立。" },
       { text: "取决于 a₀, a₁, a₂ 的取值，没有统一答案", why: "对任何系数，C 的最小多项式都是 d(λ)。" },
     ],
-    actHint: "已记下你的预测。让 C 一步步作用在 e₁ 上，或拖动滑块，结论随后出现。",
+    actHint: "记下了你的猜测。让 C 一步步作用在 e₁ 上，或拖动滑块，结论随后出现。",
     conclusion: "C 把 e₁ 依次送到 e₂、e₃，C³e₁=Ce₃=−a₀e₁−a₁e₂−a₂e₃，所以 d(C)e₁=0，进而 d(C)=0。e₁, Ce₁, C²e₁ 线性无关，次数更低的多项式消不掉 e₁，最小多项式就是 d(λ)，λE−C 的不变因子是 1, 1, d(λ)。即使 d(λ)=(λ−1)²(λ+1) 有重根也是如此。",
   };
 
@@ -1784,7 +1784,7 @@
       { text: "一个 3 阶块 C((λ−1)²(λ+2))", why: "那是不变因子为 1, 1, (λ−1)²(λ+2) 的情形；这里 d₂=λ−1 不是 1。" },
       { text: "三个 1 阶块 C(λ−1)、C(λ−1)、C(λ+2)", why: "diag(1,1,−2) 与 A 相似，但它是按初等因子排的若尔当形；有理标准形是每个非常数的不变因子一块。" },
     ],
-    actHint: "已记下你的预测。按“放入下一块”逐个放入伴随块，结论随后出现。",
+    actHint: "记下了你的猜测。按“放入下一块”逐个放入伴随块，结论随后出现。",
     conclusion: "每个次数至少为 1 的不变因子 dₖ 给出一个伴随块 C(dₖ)，按整除顺序沿对角线排列：diag(C(λ−1), C(λ²+λ−2))。d₁=1 不占位置；块的阶数之和 1+2=3 等于各 dₖ 的次数之和，也等于 A 的阶数。",
   };
 

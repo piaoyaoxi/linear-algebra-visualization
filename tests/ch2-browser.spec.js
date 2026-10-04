@@ -132,12 +132,12 @@ test.describe("Chapter 2 desktop visual system", () => {
     await expect(page.locator("[data-action]")).toContainText("恰好减少 1");
   });
 
-  test("§3 builds permutation 231 with one optional repeated view", async ({ page }) => {
+  test("§3 builds permutation 231 with its path inside the matrix", async ({ page }) => {
     await openLesson(page, "n-order-determinant");
     await page.locator("[data-select-231]").click();
     await expect(page.locator("[data-perm-out]")).toHaveText("231");
     await expect(page.locator("[data-term-path] line")).toHaveCount(2);
-    await expect(page.locator("[data-repeat-view]")).toBeVisible();
+    await expect(page.locator("[data-repeat-view]")).toHaveCount(0);
     await page.locator("#n-order-determinant-interactive .ch3l-predict-options > button").first().click();
     await page.locator("[data-triangle-toggle]").click();
     await expect(page.locator("[data-zero-out]")).toContainText("贡献为 0");

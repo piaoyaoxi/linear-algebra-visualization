@@ -30,13 +30,13 @@ test.describe("Chapter 2 normal-motion interactions", () => {
     expect(errors).toEqual([]);
   });
 
-  test("§3 draws a repeated-view path after the three row choices", async ({ page }) => {
+  test("§3 draws the path inside the matrix after the three row choices", async ({ page }) => {
     const errors = browserErrors(page);
     await openLesson(page, "n-order-determinant");
     await page.locator("[data-select-231]").click();
     await expect(page.locator("[data-perm-out]")).toHaveText("231", { timeout: 3000 });
     await expect(page.locator("[data-term-path] line")).toHaveCount(2);
-    await expect(page.locator("[data-repeat-view]")).toBeVisible();
+    await expect(page.locator("[data-repeat-view]")).toHaveCount(0);
     expect(errors).toEqual([]);
   });
 

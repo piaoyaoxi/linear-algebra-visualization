@@ -470,13 +470,29 @@
       });
     }
 
-    function stepMarkup(step) {
+    // p written as (d)·(p/d) with the common factor d marked; d divides every A, B, r of the run
+    function factored(p, d) {
+      if (M().isZeroPoly(p)) return tex("0");
+      const mark = `<b class="ch1-common-factor">${tex(`(${M().formatPolyTex(d)})`)}</b>`;
+      const q = M().polyDiv(p, d).q;
+      if (M().deg(q) === 0) {
+        const c = M().formatRTex(q[0]);
+        return `${c === "1" ? "" : tex(c === "-1" ? "-" : c)}${mark}`;
+      }
+      return `${mark}${tex(`(${M().formatPolyTex(q)})`)}`;
+    }
+
+    function stepMarkup(step, common) {
       if (step.kind === "divide") {
         const equation = `${M().formatPolyTex(step.a)}=(${M().formatPolyTex(step.q)})(${M().formatPolyTex(step.b)})+(${M().formatPolyTex(step.remainder)})`;
-        return `<div class="ch1-euclid-step-copy"><p>${tex(equation)}</p><small>取余后，用 B 和 r 进入下一轮。</small></div>`;
+        const note = common
+          ? `<small class="ch1-euclid-common">A=${factored(step.a, common)}，B=${factored(step.b, common)}，r=${factored(step.remainder, common)}</small>`
+          : "<small>取余后，用 B 和 r 进入下一轮。</small>";
+        return `<div class="ch1-euclid-step-copy"><p>${tex(equation)}</p>${note}</div>`;
       }
       if (step.kind === "done") {
-        return `<div class="ch1-euclid-step-copy"><p>首一化后得到 ${tex(M().formatPolyTex(step.d || step.a))}</p><small>最后一个非零余式给出最大公因式。</small></div>`;
+        const d = M().formatPolyTex(step.d || step.a);
+        return `<div class="ch1-euclid-step-copy"><p>首一化后得到 ${common ? `<b class="ch1-common-factor">${tex(d)}</b>` : tex(d)}</p><small>${common ? "每一行的 A、B、r 都含这个因式，取余时它一直保留。" : "最后一个非零余式给出最大公因式。"}</small></div>`;
       }
       return `<div class="ch1-euclid-step-copy"><p>${esc(step.note)}</p><small>从 A=f、B=g 开始。</small></div>`;
     }
@@ -505,7 +521,9 @@
       const status = root.querySelector("[data-coprime]");
       status.className = `ch1-status ${done ? (coprime ? "is-ok" : "is-warn") : "is-warn"}`;
       status.textContent = done ? (coprime ? "互素" : "有非常数公共因式") : "取余进行中";
-      root.querySelector("[data-ledger]").innerHTML = steps.filter((_, stepIndex) => stepIndex <= index).map((entry, stepIndex) => `<div class="${stepIndex === index ? "is-current" : ""}"><span>${stepIndex + 1}</span>${stepMarkup(entry)}</div>`).join("");
+      // once the run ends, a non-constant gcd is marked inside every ledger row
+      const common = done && !coprime ? (final.d || final.a) : null;
+      root.querySelector("[data-ledger]").innerHTML = steps.filter((_, stepIndex) => stepIndex <= index).map((entry, stepIndex) => `<div class="${stepIndex === index ? "is-current" : ""}"><span>${stepIndex + 1}</span>${stepMarkup(entry, common)}</div>`).join("");
       root.querySelector("[data-stairs]").innerHTML = stairs(done);
       root.querySelector("[data-stairs-note]").textContent = done
         ? `次数 ${M().deg(current.f)} → ${M().deg(current.g)} → ${steps.filter((e) => e.kind === "divide").map((e) => (M().isZeroPoly(e.remainder) ? "0 多项式" : M().deg(e.remainder))).join(" → ")}，降到 0 多项式就停；它前面那一个就是公因式。`

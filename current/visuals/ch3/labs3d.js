@@ -269,9 +269,10 @@
           const moving = i === state.target && state.c !== 0 && state.target !== state.source;
           objs.push(planeObj(r, PLANE_COLORS[i], { label: `平面 ${i + 1}`, alpha: moving ? 0.22 : 0.12, width: moving ? 2.2 : 1.2 }));
         });
-        if (state.target !== state.source) {
+        // the hinge names the answer to the prediction, so it appears with the verdict
+        if (state.target !== state.source && !resultBox.hidden) {
           const hinge = planeLine(state.rows[state.target], state.rows[state.source]);
-          if (hinge) objs.push({ type: "line", ...hinge, color: "axis", width: 2, dash: [7, 5], label: "铰链" });
+          if (hinge) objs.push({ type: "line", ...hinge, color: "axis", width: 2.8, dash: [8, 5], label: "铰链" });
         }
         objs.push(...solutionObjects(rows));
         return objs;
@@ -399,6 +400,7 @@
       },
       () => {
         resultBox.hidden = false;
+        redraw();
       },
     );
     resultBox.innerHTML = `<strong>结论</strong><p>倍加得到的新方程是旧方程的组合，逆操作是 ${tex("R_i\\leftarrow R_i-cR_j")}。两个方向都不丢解、不添解，所以解集不变。消去 ${tex("x_k")} 就是把新平面转到与 ${tex("x_k")} 轴平行，此时沿 ${tex("x_k")} 轴看，这个平面只剩一条线。</p>`;

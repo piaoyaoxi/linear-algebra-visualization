@@ -1201,3 +1201,22 @@ body .ch10l-arrow {
   color: var(--muted);
   font-size: 14px;
 }
+
+/* ch3 §7: the stage name takes its own row so “构造 Sylvester”“回代验解” stay on one line */
+body .ch3-meter.is-3:has(> [data-stage-card]) {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+body .ch3-meter.is-3 > [data-stage-card] {
+  grid-column: 1 / -1;
+  border-right: 0;
+  border-bottom: 1px solid var(--line);
+}
+
+body .ch3-meter.is-3:has(> [data-stage-card]) > .ch3-meter-card:not([data-stage-card]) {
+  border-bottom: 0;
+}
+
+body .ch3-meter.is-3 > [data-stage-card] > span {
+  white-space: nowrap;
+}

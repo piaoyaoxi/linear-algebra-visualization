@@ -20,9 +20,10 @@
         ["要看平行四边形面积多大", false, "面积给出 |det|，符号只由转向决定。"],
       ],
       right: "✓ 逆时针为正，顺时针为负，|det| 是面积。两列共线时转角消失，det=0；拖着第 2 列穿过第 1 列所在的直线，转向弧随之翻转。",
-      onPick: () => draw(state.matrix),
+      onReveal: () => { if (!state.animating) draw(state.matrix); },
     });
-    const open = () => !gate || gate.picked;
+    // the turning arc names the sign rule, so it waits for a prediction and a first move
+    const open = () => !gate || gate.revealed;
     const presets = {
       identity: [[1, 0], [0, 1]],
       scale2: [[2, 0], [0, 1]],
@@ -196,7 +197,7 @@
       root.innerHTML = `
         <h2>交互实验</h2>
         <div class="ch2-lab">
-          <div class="ch2-lab-head"><h3>有向面积 · 拖动两列</h3><p>拖动两根列向量的端点（每次四分之一格），也可以使用滑杆与预设。图形、ad−bc、|det| 与状态同步更新；作出预测后，紫色弧标出从第 1 列到第 2 列的转向。</p></div>
+          <div class="ch2-lab-head"><h3>有向面积 · 拖动两列</h3><p>拖动两根列向量的端点（每次四分之一格），也可以使用滑杆与预设。图形、ad−bc、|det| 与状态同步更新；预测并动手后，紫色弧标出从第 1 列到第 2 列的转向。</p></div>
           <div data-orient-gate></div>
           <div class="ch2-lab-grid ch2-area-layout">
             <div class="ch2-stage"><canvas data-ch2-canvas aria-label="可拖动两列向量的有向面积画布"></canvas></div>

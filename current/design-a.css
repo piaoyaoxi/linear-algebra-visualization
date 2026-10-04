@@ -967,19 +967,19 @@ body .ch8l-stair > .ch8l-stair-axis {
 
 body .ch8l-stair > .ch8l-stair-tick,
 body .ch8l-stair > .ch8l-stair-step {
-  fill: var(--faint);
-  font-size: 12px;
+  fill: var(--muted);
+  font-size: 13px;
 }
 
 body .ch8l-stair > .ch8l-stair-stage {
-  fill: var(--muted);
-  font-size: 12.5px;
+  fill: var(--text-2);
+  font-size: 14px;
   font-weight: 600;
 }
 
 body .ch8l-stair > .ch8l-stair-val {
-  fill: var(--muted);
-  font-size: 12px;
+  fill: var(--text-2);
+  font-size: 14px;
   font-weight: 650;
 }
 
@@ -1005,13 +1005,13 @@ body .ch8l-stair > .ch8l-stair-zero {
 
 body .ch8l-stair > .ch8l-stair-rest {
   stroke: var(--cv-v2);
-  stroke-width: 1.4;
-  stroke-dasharray: 5 4;
+  stroke-width: 2;
+  stroke-dasharray: 6 4;
 }
 
 body .ch8l-stair > .ch8l-stair-rest-label {
   fill: var(--cv-v2);
-  font-size: 12px;
+  font-size: 13.5px;
   font-weight: 650;
 }
 
@@ -1163,4 +1163,41 @@ body .ch10l-moderow {
 
 body .ch10l-moderow > .ch7l-toolbar {
   margin: 0;
+}
+
+/* ---------- round 3: a formula keeps the punctuation that follows it ---------- */
+
+/* a closing mark such as 。or ， never starts a line after a formula */
+body .la-keep {
+  white-space: nowrap;
+}
+
+/* ch8 §3: the minors before the first transformation, one unbroken formula per item */
+body .ch8l-compare-cell > .ch8l-minor-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 2px 14px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  color: var(--text-2);
+  font-size: 13.5px;
+}
+
+body .ch8l-minor-list > li {
+  max-width: 100%;
+  overflow-x: auto;
+  overflow-y: hidden;
+  white-space: nowrap;
+}
+
+body .ch8l-minor-list > li > .tex-inline {
+  white-space: nowrap;
+}
+
+/* ch10 §2: each transition matrix is named by the two bases it connects */
+body .ch10l-arrow {
+  margin: 8px 0 0;
+  color: var(--muted);
+  font-size: 14px;
 }

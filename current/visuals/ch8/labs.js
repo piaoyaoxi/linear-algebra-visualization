@@ -215,7 +215,9 @@
         d.segment([xv, AXIS], [xv, yv], "drag", { width: 1.4, dash: [5, 4] });
         d.point([xv, yv], "drag", { r: 4.5 });
         const right = xv > d.halfW * 0.3;
-        d.text([xv, yv], `|M(λ₀)|=${minus(M().formatF(P.evalAt(det, x0)))}`, "drag", { dx: right ? -12 : 12, dy: -12, align: right ? "right" : "left" });
+        // near the axis the value point sits on the handle: lift the label clear of the ring
+        const near = Math.abs(yv - AXIS) * d.scale < 30;
+        d.text([xv, yv], `|M(λ₀)|=${minus(M().formatF(P.evalAt(det, x0)))}`, "drag", { dx: (right ? -1 : 1) * (near ? 18 : 12), dy: near ? -28 : -12, align: right ? "right" : "left" });
       });
       matCard.innerHTML = `<h4>λ-矩阵</h4><div>${texD(`M(\\lambda)=${P.latexMatrix(Mx)}`)}</div>${
         open ? `<p>${tex(`|M(\\lambda)|=${pfac(det)}`)}</p>` : ""
@@ -503,12 +505,13 @@
     function staircase(finished) {
       const t = state.trail;
       const top = Math.max(2, ...t.map((x) => Math.max(x.deg ?? 0, x.rest ?? 0)));
-      const bw = 22;
-      const gap = 6;
-      const stageGap = 18;
-      const left = 34;
-      const unit = Math.min(30, 96 / top);
-      const base = 22 + top * unit + 4;
+      // sized to be read at a glance: wide bars, tall degree units
+      const bw = 34;
+      const gap = 10;
+      const stageGap = 26;
+      const left = 40;
+      const unit = Math.min(42, 150 / top);
+      const base = 30 + top * unit + 4;
       const xs = [];
       let x = left + 6;
       t.forEach((b, i) => {
@@ -516,21 +519,21 @@
         xs.push(x);
         x += bw + gap;
       });
-      const width = Math.max(300, x + 120);
-      const height = base + 40;
+      const width = Math.max(320, x + 150);
+      const height = base + 44;
       const y = (deg) => base - deg * unit;
       let svg = "";
       for (let dg = 0; dg <= top; dg += 1) {
         svg += `<line class="ch8l-stair-grid" x1="${left}" x2="${x}" y1="${y(dg)}" y2="${y(dg)}"/><text class="ch8l-stair-tick" x="${left - 6}" y="${y(dg) + 4}" text-anchor="end">${dg}</text>`;
       }
-      svg += `<text class="ch8l-stair-tick" x="${left - 6}" y="12" text-anchor="end">次数</text>`;
+      svg += `<text class="ch8l-stair-tick" x="${left - 6}" y="14" text-anchor="end">次数</text>`;
       const stages = [...new Set(t.map((b) => b.k))];
       stages.forEach((k) => {
         const idx = t.map((b, i) => (b.k === k ? i : -1)).filter((i) => i >= 0);
         const x0 = xs[idx[0]];
         const x1 = xs[idx[idx.length - 1]] + bw;
         const done = k < state.k || finished;
-        svg += `<text class="ch8l-stair-stage" x="${(x0 + x1) / 2}" y="${base + 30}" text-anchor="middle">第 ${k + 1} 个角</text>`;
+        svg += `<text class="ch8l-stair-stage" x="${(x0 + x1) / 2}" y="${base + 36}" text-anchor="middle">第 ${k + 1} 个角</text>`;
         if (!done) {
           const rest = t[idx[idx.length - 1]].rest;
           if (rest != null) {
@@ -546,8 +549,8 @@
         svg += b.deg == null
           ? `<line class="ch8l-stair-zero" x1="${xs[i]}" x2="${xs[i] + bw}" y1="${base}" y2="${base}"/>`
           : `<rect class="${cls}" x="${xs[i]}" y="${base - h}" width="${bw}" height="${h}" rx="3"/>`;
-        svg += `<text class="ch8l-stair-val" x="${xs[i] + bw / 2}" y="${base - h - 5}" text-anchor="middle">${b.deg == null ? "0 多项式" : b.deg}</text>`;
-        svg += `<text class="ch8l-stair-step" x="${xs[i] + bw / 2}" y="${base + 14}" text-anchor="middle">${i}</text>`;
+        svg += `<text class="ch8l-stair-val" x="${xs[i] + bw / 2}" y="${base - h - 6}" text-anchor="middle">${b.deg == null ? "0 多项式" : b.deg}</text>`;
+        svg += `<text class="ch8l-stair-step" x="${xs[i] + bw / 2}" y="${base + 16}" text-anchor="middle">${i}</text>`;
       });
       svg += `<line class="ch8l-stair-axis" x1="${left}" x2="${x}" y1="${base}" y2="${base}"/>`;
       return `<p class="ch8l-trail-title">角元的次数：每根柱是一步之后的角元（横轴是步数）</p><div class="ch8l-stair-wrap"><svg class="ch8l-stair" width="${width}" height="${height}" viewBox="0 0 ${width} ${height}" role="img" aria-label="每一步之后角元的次数">${svg}</svg></div>`;
@@ -838,7 +841,7 @@
         const Dk1 = P.determinantFactors(state.A)[state.k - 1] || P.make([0]);
         const same = P.eq(Dk0, Dk1);
         const dk = (x) => K.hlHtml(tex(K.hlTex(`D_${state.k}=${pfac(x)}`)), "subspace");
-        compare.innerHTML = `<div class="ch8l-compare-cell"><small>变换前</small><b>${dk(Dk0)}</b><p>${state.k} 阶子式 ${tex(before.map((x) => pfac(x.value)).join(",\\ "))}</p></div>
+        compare.innerHTML = `<div class="ch8l-compare-cell"><small>变换前</small><b>${dk(Dk0)}</b><p>${state.k} 阶子式</p><ul class="ch8l-minor-list">${before.map((x) => `<li>${tex(pfac(x.value))}</li>`).join("")}</ul></div>
           <div class="ch8l-compare-cell"><small>做了 ${state.ops.length} 次变换后</small><b>${dk(Dk1)}</b><p>${list.length} 个 ${state.k} 阶子式中 ${changed} 个变了${same ? `，D${sub} 没有变` : ""}</p></div>`;
       }
       if (!open) {
@@ -1052,6 +1055,7 @@
     const label = (b) => (b.e > 1 ? `(${PRIMES[b.p].text})${SUPS[b.e]}` : PRIMES[b.p].text);
     const btex = (b) => (b.e > 1 ? `(${PRIMES[b.p].tex})^{${b.e}}` : PRIMES[b.p].tex);
 
+    const ROW_GAP = 18;
     function layout(d, field = state.field) {
       const [w, h] = size(d);
       const { rows } = DIVISOR_PRESETS[state.key];
@@ -1066,13 +1070,14 @@
         ...rows.map((row, r) => room / Math.max(units(blocks("R").filter((b) => b.r === r)), 3)),
         ...["R", "C"].flatMap((f) => edLines(blocks(f)).map((g) => (room - 10 * (g.length - 1)) / Math.max(units(g), 3))),
       );
-      const bh = Math.min(62, (h - 120) / Math.max(shown, 3));
+      // taller blocks and wider row gaps, so the blocks fill the canvas
+      const bh = Math.min(84, (h - 130) / Math.max(shown, 3));
       const pos = new Map();
       if (state.view === "inv") {
-        const top = h / 2 - (shown * (bh + 14)) / 2 + 20;
+        const top = h / 2 - (shown * (bh + ROW_GAP)) / 2 + 20;
         rows.forEach((row, r) => {
           let x = left;
-          const y = top + (r - firstRow) * (bh + 14);
+          const y = top + (r - firstRow) * (bh + ROW_GAP);
           Object.entries(row).forEach(([p, e]) => {
             const parts = field === "C" && PRIMES[p].split ? PRIMES[p].split : [p];
             parts.forEach((s) => {
@@ -1085,12 +1090,12 @@
         return { pos, top, firstRow, left, bh };
       }
       const lines = edLines(blocks(field));
-      const top = h / 2 - (lines.length * (bh + 14)) / 2 + 20;
+      const top = h / 2 - (lines.length * (bh + ROW_GAP)) / 2 + 20;
       lines.forEach((g, li) => {
         let x = left;
         g.forEach((b) => {
           const bw = PRIMES[b.p].deg * b.e * unit;
-          pos.set(b.id, { x, y: top + li * (bh + 14), w: bw - 6, h: bh });
+          pos.set(b.id, { x, y: top + li * (bh + ROW_GAP), w: bw - 6, h: bh });
           x += bw + 10;
         });
       });
@@ -1175,7 +1180,7 @@
         d.text(at(d, x, y), str, color, { font: font(opts.size || 13, opts.weight), align: opts.align || "left" });
         ctx.restore();
       };
-      const blockSize = w < 520 ? 12.5 : 14;
+      const blockSize = w < 520 ? 13.5 : 16;
       const glowAlpha = d.pal.dark ? 0.2 : 0.16;
       const Lr = layout(d, "R");
       const Lc = layout(d, "C");
@@ -1228,7 +1233,7 @@
       if (state.view === "inv") {
         preset.rows.forEach((row, r) => {
           if (r < Lr.firstRow) return;
-          write(Lr.left - 14, Lr.top + (r - Lr.firstRow) * (Lr.bh + 14) + Lr.bh / 2, `d${"₁₂₃₄₅"[r]}`, "muted", { align: "right", size: 14, weight: 700 });
+          write(Lr.left - 14, Lr.top + (r - Lr.firstRow) * (Lr.bh + ROW_GAP) + Lr.bh / 2, `d${"₁₂₃₄₅"[r]}`, "muted", { align: "right", size: 14, weight: 700 });
         });
         if (Lr.firstRow > 0) write(Lr.left, Lr.top - 24, `d₁${Lr.firstRow > 1 ? `=${Lr.firstRow > 2 ? "…=" : ""}d${"₁₂₃₄₅"[Lr.firstRow - 1]}` : ""}=1`, "faint", { size: 12.5 });
       } else {

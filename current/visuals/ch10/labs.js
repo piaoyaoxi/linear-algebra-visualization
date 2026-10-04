@@ -35,6 +35,9 @@
     return out.join("") || "0";
   }
 
+  /* fractions inside a matrix at full size, with room between the rows */
+  const roomy = (t) => (t.includes("\\frac") ? t.replace(/\\frac/g, "\\dfrac").replace(/\\\\(?!\[)/g, "\\\\[4pt]") : t);
+
   const paren = (x) => (x.n < 0 ? `(${lf(x)})` : lf(x));
 
   /* ---------- drawing helpers ---------- */
@@ -108,14 +111,18 @@
     if (u[1] < -1e-9 || (Math.abs(u[1]) < 1e-9 && u[0] < 0)) u = [-u[0], -u[1]];
     const off = -d.halfH * 0.42;
     const kMax = Math.ceil(Math.hypot(d.halfW, d.halfH) * len);
-    // keep at least 18px between numbers
-    const every = Math.max(1, Math.ceil((18 * len) / d.scale));
+    // keep at least 28px between numbers; a plain number gives way to a nearby emphasised one
+    const every = Math.max(1, Math.ceil((28 * len) / d.scale));
+    // crossed values keep the same spacing; the first and last crossed value always show
+    const ends = strong.size ? [Math.min(...strong), Math.max(...strong)] : [];
+    const nearEnd = (k) => ends.some((t) => t !== k && Math.abs(t - k) < every);
     for (let k = -kMax; k <= kMax; k += 1) {
       const isStrong = strong.has(k);
-      if (k % every && !isStrong) continue;
+      const isEnd = ends.includes(k);
+      if (!isEnd && (k % every || nearEnd(k))) continue;
       const q = [(k * c[0]) / len2 + u[0] * off, (k * c[1]) / len2 + u[1] * off];
       if (Math.abs(q[0]) > d.halfW - 12 / d.scale || Math.abs(q[1]) > d.halfH - 10 / d.scale) continue;
-      d.text(q, minus(k), color, { align: "center", font: `${isStrong ? 750 : 550} ${isStrong ? 13 : 11}px 'LA Serif Latin', 'LA Serif SC', 'Songti SC', serif` });
+      d.text(q, minus(k), color, { align: "center", font: `${isStrong ? 750 : 600} ${isStrong ? 13.5 : 12}px 'LA Serif Latin', 'LA Serif SC', 'Songti SC', serif` });
     }
   }
 
@@ -387,7 +394,7 @@
     body.append(stage, side);
     const result = el("div", "ch7l-result");
     lab.append(toolbar, gateHost, body, result);
-    const plane = K.plane2d(stage, { extent: 3.2, hint: "拖动 η₁、η₂（每次半格）与 x", label: "对偶基的等值线" });
+    const plane = K.plane2d(stage, { extent: 3.2, hint: "拖动 η₁、η₂（每次半格）与 x", label: "对偶基的等值线", spreadLabels: true });
     let flow = null;
     gateHost.addEventListener("click", () => redraw());
 
@@ -434,16 +441,17 @@
         d.arrow([0, 0], e1, "v1", { width: 3, label: "η₁" });
         d.arrow([0, 0], e2, "v2", { width: 3, label: "η₂" });
         d.point(state.x, "drag", { r: 4 });
+        d.text(state.x, "x", "drag", { dx: -14, dy: 12, align: "right", font: "700 14px 'LA Serif Latin', 'LA Serif SC', 'Songti SC', serif" });
         if (reads && open) pointLabel(d, state.x, `(${minus(M().formatF(reads[0]))}, ${minus(M().formatF(reads[1]))})`, "drag", -14);
       });
       if (rows && !open) {
         readCard.innerHTML = `<h4>读数</h4>${waitNote("等值线和读数")}`;
-        matCard.innerHTML = `<h4>对偶基的过渡矩阵</h4><div>${texD(`A=${K.latexMatrix(X)}`)}</div>`;
+        matCard.innerHTML = `<h4>过渡矩阵</h4><p class="ch10l-arrow">ε → η：${tex("(\\eta_1,\\eta_2)=(\\varepsilon_1,\\varepsilon_2)A")}</p><div>${texD(`A=${roomy(K.latexMatrix(X))}`)}</div>`;
         return;
       }
       if (!rows) {
         readCard.innerHTML = `<h4>读数</h4><p class="ch7l-bad">η₁、η₂ 共线，不构成基，没有对偶基。</p>`;
-        matCard.innerHTML = `<h4>过渡矩阵</h4><div>${texD(`A=${K.latexMatrix(X)},\\quad |A|=0`)}</div>`;
+        matCard.innerHTML = `<h4>过渡矩阵</h4><div>${texD(`A=${roomy(K.latexMatrix(X))},\\quad |A|=0`)}</div>`;
         return;
       }
       const parNote = {
@@ -457,8 +465,11 @@
         <p class="ch7l-muted" data-dual-par>${parNote}</p>
         <p class="ch7l-muted">x 所在格点的两个编号就是它在 η₁、η₂ 下的坐标。</p>`;
       const B = K.transpose(Xi);
-      matCard.innerHTML = `<h4>对偶基的过渡矩阵</h4>
-        <div>${texD(`A=${K.latexMatrix(X)},\\quad (A^T)^{-1}=${K.latexMatrix(B)}`)}</div>
+      matCard.innerHTML = `<h4>两个过渡矩阵</h4>
+        <p class="ch10l-arrow">ε → η：${tex("(\\eta_1,\\eta_2)=(\\varepsilon_1,\\varepsilon_2)A")}</p>
+        <div>${texD(`A=${roomy(K.latexMatrix(X))}`)}</div>
+        <p class="ch10l-arrow">f → g：${tex("(g_1,g_2)=(f_1,f_2)(A^T)^{-1}")}</p>
+        <div>${texD(`(A^T)^{-1}=${roomy(K.latexMatrix(B))}`)}</div>
         <ul class="ch10l-readout"><li>${tex(`g_1=${formTex(rows[0], ["f_1", "f_2"])}`)}</li><li>${tex(`g_2=${formTex(rows[1], ["f_1", "f_2"])}`)}</li></ul>`;
     }
 
@@ -593,7 +604,7 @@
     body.append(stage, side);
     const result = el("div", "ch7l-result");
     lab.append(toolbar, modeRow, gateHost, body, result);
-    const plane = K.plane2d(stage, { extent: 3.2, hint: "拖动 x、y（每次四分之一格）", label: "双线性函数的等值线" });
+    const plane = K.plane2d(stage, { extent: 3.2, hint: "拖动 x、y（每次四分之一格）", label: "双线性函数的等值线", spreadLabels: true });
     let flow = null;
     gateHost.addEventListener("click", () => redraw());
 
@@ -664,7 +675,10 @@
     function newFlow() {
       flow = K.predictFlow(gateHost, result, {
         ...BILINEAR_PRESETS[state.key].predict,
-        actHint: state.key === "sym" ? "已记下你的预测。点“交换 x、y”，结论随后出现。" : "已记下你的预测。拖动 y，结论随后出现。",
+        actHint: {
+          sym: "已记下你的预测。点“交换 x、y”，结论随后出现。",
+          ns: "已记下你的预测。拖动 x 或 y，结论随后出现；点“y=ε₁”让 y 回到 ε₁。",
+        }[state.key] || "已记下你的预测。拖动 y，结论随后出现。",
         onReveal: () => redraw(),
       });
     }
@@ -676,11 +690,17 @@
     }
 
     modes.innerHTML = `<button type="button" class="ch7l-chip is-active" data-key="fixY">固定 y，看 x</button><button type="button" class="ch7l-chip" data-key="fixX">固定 x，看 y</button>`;
-    modeRow.insertAdjacentHTML("beforeend", `<button type="button" class="ch7l-btn" data-swap>交换 x、y</button>`);
+    modeRow.insertAdjacentHTML("beforeend", `<button type="button" class="ch7l-btn" data-swap>交换 x、y</button><button type="button" class="ch7l-btn" data-yeps>y=ε₁</button>`);
     const modeChips = [...modes.querySelectorAll(".ch7l-chip")];
     modeChips.forEach((b) => b.addEventListener("click", () => setMode(b.dataset.key)));
     modeRow.querySelector("[data-swap]").addEventListener("click", () => {
       [state.x, state.y] = [state.y, state.x];
+      redraw();
+      flow?.acted();
+    });
+    // the prediction asks about y=ε₁: one click brings y back there after a drag
+    modeRow.querySelector("[data-yeps]").addEventListener("click", () => {
+      state.y = [1, 0];
       redraw();
       flow?.acted();
     });
@@ -728,11 +748,14 @@
     const matCard = el("div", "ch7l-card");
     const shearCard = el("div", "ch7l-card");
     shearCard.innerHTML = `<label class="ch10l-range"><span>剪切量 s</span><input type="range" min="-2" max="2" step="0.25" value="1" data-shear aria-label="剪切量 s" /><b data-shear-v>1</b></label>`;
-    side.append(shearCard, readCard, matCard);
+    // swapping x and y reverses the orientation of the parallelogram: ω(y,x)=−ω(x,y)
+    const swapRow = el("div", "ch7l-actions");
+    swapRow.innerHTML = `<button type="button" class="ch7l-btn" data-swapxy>交换 x、y</button>`;
+    side.append(swapRow, shearCard, readCard, matCard);
     body.append(stage, side);
     const result = el("div", "ch7l-result");
     lab.append(toolbar, gateHost, body, result);
-    const plane = K.plane2d(stage, { extent: 3.6, hint: "拖动 x、y（每次四分之一格）", label: "有向面积与线性变换" });
+    const plane = K.plane2d(stage, { extent: 3.6, hint: "拖动 x、y（每次四分之一格）", label: "有向面积与线性变换", spreadLabels: true });
     let flow = null;
     gateHost.addEventListener("click", () => redraw());
     let raf = 0;
@@ -806,7 +829,9 @@
         : "";
       matCard.innerHTML = `<h4>变换矩阵</h4><div>${texD(`K=${K.latexMatrix(Kf)},\\quad |K|=${lf(detK)}`)}</div>
         <div>${texD(`\\omega(Kx,Ky)=|K|\\,\\omega(x,y)`)}</div>
-        <p><span class="ch10l-badge${keeps ? "" : " is-off"}">${keeps ? "K 保持 ω" : "K 不保持 ω"}</span></p>${base}`;
+        <p><span class="ch10l-badge${keeps ? "" : " is-off"}">${keeps ? "K 保持 ω" : "K 不保持 ω"}</span></p>${base}
+        <p data-sym-swap>${tex(`\\omega(y,x)=${lf(M().neg(w0))}=-\\omega(x,y)`)}</p>
+        <p class="ch7l-muted">交换 x、y，平行四边形的定向反过来，ω 变号；所以 ${tex("\\omega(x,x)=0")}。</p>`;
     }
 
     /*
@@ -856,6 +881,12 @@
       end: () => flow?.acted(),
     });
     plane.setHandles([handle("x", "drag"), handle("y", "drag")]);
+
+    swapRow.querySelector("[data-swapxy]").addEventListener("click", () => {
+      [state.x, state.y] = [state.y, state.x];
+      redraw();
+      flow?.acted();
+    });
 
     const shearIn = shearCard.querySelector("[data-shear]");
     shearIn.addEventListener("input", () => {

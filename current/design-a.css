@@ -1349,3 +1349,77 @@ body .la-option-why > .la-option-hint {
   color: var(--muted);
   font-size: 13px;
 }
+
+/* ---------- iOS: the page runs under the status bar, with a progressive blur instead of a hard edge ---------- */
+
+/* viewport-fit=cover: everything fixed at the top moves down by the status bar's height */
+:root {
+  --safe-top: env(safe-area-inset-top, 0px);
+}
+
+body .topbar {
+  margin-top: var(--safe-top);
+}
+
+body .app-layout,
+body.sidebar-collapsed .app-layout {
+  margin-top: var(--safe-top);
+}
+
+@media (max-width: 1080px) {
+  body .sidebar {
+    margin-top: var(--safe-top);
+    max-height: calc(100vh - var(--topbar-height) - 22px - var(--safe-top));
+  }
+}
+
+/*
+ * The scroll edge behind the floating controls: two layers, the upper one blurred more
+ * and tinted with the page colour (it sits under the status bar text), both fading out
+ * downwards, so content dissolves into the top instead of meeting a line.
+ */
+body .topbar::before,
+body .topbar::after {
+  content: "";
+  position: fixed;
+  top: 0;
+  right: 0;
+  left: 0;
+  z-index: -1;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 240ms ease;
+}
+
+body .topbar::before {
+  height: calc(var(--safe-top) + var(--topbar-height) * 0.6 + 14px);
+  background: linear-gradient(180deg, color-mix(in srgb, var(--bg) 86%, transparent) 0%, color-mix(in srgb, var(--bg) 46%, transparent) 70%, transparent 100%);
+  -webkit-backdrop-filter: blur(12px);
+  backdrop-filter: blur(12px);
+  -webkit-mask-image: linear-gradient(180deg, #000 0%, #000 55%, transparent 100%);
+  mask-image: linear-gradient(180deg, #000 0%, #000 55%, transparent 100%);
+}
+
+body .topbar::after {
+  height: calc(var(--safe-top) + var(--topbar-height) + 36px);
+  background: linear-gradient(180deg, color-mix(in srgb, var(--bg) 30%, transparent) 0%, transparent 100%);
+  -webkit-backdrop-filter: blur(4px);
+  backdrop-filter: blur(4px);
+  -webkit-mask-image: linear-gradient(180deg, #000 0%, #000 35%, transparent 100%);
+  mask-image: linear-gradient(180deg, #000 0%, #000 35%, transparent 100%);
+}
+
+body.lg-scrolled .topbar::before,
+body.lg-scrolled .topbar::after {
+  opacity: 1;
+}
+
+/* under a status bar (iPhone) the edge is always there: the status bar text needs it */
+@supports (padding-top: env(safe-area-inset-top)) {
+  @media (max-width: 1080px) {
+    body .topbar::before,
+    body .topbar::after {
+      opacity: 1;
+    }
+  }
+}

@@ -28,6 +28,8 @@
   };
   const vecNice = (v) => `(${v.map(nice).join(", ")})`;
   const matNum = (A) => A.map((r) => r.map(num));
+  /* Matrices with fractions: full-size \dfrac and a little more row space, so rows do not touch. */
+  const roomy = (t) => (t.includes("\\frac") ? t.replace(/\\frac/g, "\\dfrac").replace(/\\\\(?!\[)/g, "\\\\[10pt]") : t);
   const apply2 = (A, v) => [A[0][0] * v[0] + A[0][1] * v[1], A[1][0] * v[0] + A[1][1] * v[1]];
 
   /* ================= §3 线性变换的矩阵 ================= */
@@ -167,9 +169,9 @@
         return `\\sigma\\eta_${j + 1}=${parts.join("+").replace(/\+-/g, "-") || "0"}`;
       };
       let html = `<div class="ch7l-matrix-row">
-        <div>${texD(`A=${K.latexMatrix(A)}`)}</div>
-        <div>${texD(`X=(\\eta_1,\\eta_2)=${K.latexMatrix(X)}`)}</div>
-        <div>${B ? K.hlHtml(texD(`B=X^{-1}AX=${bTex}`)) : texD("B=\\ ?")}</div></div>`;
+        <div>${texD(`A=${roomy(K.latexMatrix(A))}`)}</div>
+        <div>${texD(`X=(\\eta_1,\\eta_2)=${roomy(K.latexMatrix(X))}`)}</div>
+        <div>${B ? K.hlHtml(texD(`B=X^{-1}AX=${roomy(bTex)}`)) : texD("B=\\ ?")}</div></div>`;
       if (B) html += `<p>${tex(coord(0))}，${tex(coord(1))}</p>`;
       if (!B) {
         html += `<p class="ch7l-bad">η₁, η₂ 共线，不构成基，B 无从谈起。</p>`;
@@ -834,6 +836,13 @@
       if (c) {
         const co = (x) => { const t = lf(x); return t === "1" ? "" : t === "-1" ? "-" : t; };
         html += `<p>${tex(`x_0=${co(c[0])}\\eta_1${c[1].n < 0 ? "" : "+"}${co(c[1])}\\eta_2`)}</p>`;
+        // the k-th power through the eigenbasis: only the diagonal factor depends on k
+        const X = [[F(P.vecs[0][0]), F(P.vecs[1][0])], [F(P.vecs[0][1]), F(P.vecs[1][1])]];
+        const pow = (l) => {
+          const t = lf(F(l));
+          return /frac|-/.test(t) ? `\\left(${t}\\right)^{${state.k}}` : `${t}^{${state.k}}`;
+        };
+        html += `<div class="ch7l-power">${texD(`A^{${state.k}}=X\\begin{pmatrix}${pow(P.lambdas[0])}&0\\\\[4pt]0&${pow(P.lambdas[1])}\\end{pmatrix}X^{-1}`)}${texD(`X=(\\eta_1,\\eta_2)=${roomy(K.latexMatrix(X))},\\ X^{-1}=${roomy(K.latexMatrix(K.inv(X)))}`)}</div>`;
         // last five steps: each component is multiplied by its own λ; the ratio column
         // (weaker over stronger component) shows which one dies out
         const strong = Math.abs(lam[1]) >= Math.abs(lam[0]) ? 1 : 0;
@@ -865,11 +874,12 @@
       return String(n).split("").map((ch) => "₀₁₂₃₄₅₆₇₈₉"[Number(ch)]).join("");
     }
 
+    // the conclusion waits for a few steps: one step barely shows which component wins
     function step() {
       if (state.k >= 40) return;
       state.k += 1;
       redraw();
-      flow?.acted();
+      if (state.k >= 3) flow?.acted();
     }
 
     plane.setHandles([
@@ -913,7 +923,7 @@
       state.x0 = preset().x0.slice();
       state.k = 0;
       plane.setExtent(preset().extent);
-      flow = K.predictFlow(gateHost, result, preset().predict);
+      flow = K.predictFlow(gateHost, result, { ...preset().predict, actHint: "已记下你的预测。按“作用一次 A”至少三次，结论随后出现。" });
       redraw();
     }
     K.chips(toolbar, Object.entries(ITER_PRESETS).map(([k, v]) => [k, v.label]), load, state.key);

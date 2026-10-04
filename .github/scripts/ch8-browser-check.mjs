@@ -18,14 +18,22 @@ const routes = [
     id: "lambda-matrix",
     canvas: true,
     async act(page, lab) {
-      // Drag λ₀ from 1/2 to 2 (world x = λ − 2, axis at world y = −1.5, extent 3.1).
+      // Drag λ₀ from 1/2 to 3/2, then on to 2 (world x = λ − 2, axis at world y = −1.5, extent 3.1).
+      // The rank strips cover only the swept part, so the conclusion waits until λ₀ reaches 2.
       await lab.locator(".ch7p-canvas").scrollIntoViewIfNeeded();
       const box = await lab.locator(".ch7p-canvas").boundingBox();
       const s = Math.min(box.width, box.height) / 6.2;
       const P = (x, y) => [box.x + box.width / 2 + x * s, box.y + box.height / 2 - y * s];
       const [x1, y1] = P(-1.5, -1.5);
+      const [xm] = P(-0.5, -1.5);
       const [x2] = P(0, -1.5);
       await page.mouse.move(x1, y1);
+      await page.mouse.down();
+      await page.mouse.move(xm, y1, { steps: 8 });
+      await page.mouse.up();
+      await page.waitForTimeout(150);
+      assert.ok(await lab.locator(".ch7l-result").isHidden(), "lambda-matrix: conclusion opened before λ₀ reached the zero of |M(λ)|");
+      await page.mouse.move(xm, y1);
       await page.mouse.down();
       await page.mouse.move(x2, y1, { steps: 8 });
       await page.mouse.up();
@@ -57,6 +65,8 @@ const routes = [
     },
     async verify(lab) {
       assert.ok((await lab.locator(".ch7l-side").innerText()).includes("整除链"), "smith-form: divisibility chain missing");
+      // one staircase bar per step (a zero corner is drawn as a flat line)
+      assert.ok((await lab.locator(".ch8l-stair .ch8l-stair-bar, .ch8l-stair .ch8l-stair-zero").count()) >= 3, "smith-form: corner-degree staircase missing");
     },
   },
   {
@@ -65,6 +75,8 @@ const routes = [
       const before = await lab.locator(".ch7l-side .ch8l-list").first().innerText();
       await lab.locator("[data-op]").click();
       assert.equal(await lab.locator(".ch7l-side .ch8l-list").first().innerText(), before, "invariant-factors: D_k changed under an elementary operation");
+      // D_k before and after the transformation, side by side
+      assert.equal(await lab.locator(".ch8l-compare-cell").count(), 2, "invariant-factors: before/after comparison missing");
     },
   },
   {
@@ -72,6 +84,8 @@ const routes = [
     canvas: true,
     preset: 1,
     async act(page, lab) {
+      // the elementary divisors (the answer) stay closed until the student acts
+      assert.ok(!(await lab.locator(".ch7l-side").innerText()).includes("共 3 个"), "elementary-divisors: divisors shown before acting");
       await lab.locator(".ch7l-toolbar .ch7l-chip", { hasText: "复数域" }).click();
       assert.ok((await lab.locator(".ch7l-side").innerText()).includes("共 5 个"), "elementary-divisors: complex count");
     },
@@ -80,8 +94,9 @@ const routes = [
   {
     id: "jordan-derivation",
     canvas: true,
-    // the conclusion opens only once the tower reaches the top layer
+    // the tower starts at layer 0 (no ν₁ yet); the conclusion opens only at the top layer
     async act(page, lab) {
+      assert.ok(!(await lab.locator(".ch7l-side").innerText()).includes("νⱼ"), "jordan-derivation: kernel dimensions shown before climbing");
       for (let i = 0; i < 6; i += 1) {
         const up = lab.locator("[data-up]");
         if (!(await up.count()) || !(await up.isEnabled())) break;

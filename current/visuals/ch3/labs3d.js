@@ -197,7 +197,7 @@
     const side = el("aside", "ch3l-side");
     body.append(stage, side);
 
-    const scene = S().create(stage, { range: 3.2, label: "三个方程对应的三个平面", yaw: -0.8, pitch: 0.38 });
+    const scene = S().create(stage, { range: 3.2, label: "三个方程对应的三个平面", yaw: -0.8, pitch: 0.38, spreadLabels: true, labelSafe: true });
     const state = { key: "unique", rows: null, target: 1, source: 0, c: 0, history: [], animating: false };
 
     const opBox = el("div", "ch3l-card");
@@ -400,7 +400,7 @@
     right.innerHTML = `<div class="ch3l-view-title">列图景 · 输出空间 ${tex("\\mathbb R^3")}</div>`;
     pair.append(left, right);
     lab.append(pair);
-    const rowScene = S().create(left, { range: 3, label: "三个平面与点 x", hint: "拖动旋转" });
+    const rowScene = S().create(left, { range: 3, label: "三个平面与点 x", hint: "拖动旋转", spreadLabels: true, labelSafe: true });
     const colScene = S().create(right, { range: 7, label: "列向量的组合与目标 b", hint: "拖动旋转", axisNames: ["b₁", "b₂", "b₃"] });
 
     const controls = el("div", "ch3l-controls");
@@ -434,8 +434,9 @@
           const n = vecNum(r.slice(0, 3));
           const t = num(resid[i]) / S().vec.dot(n, n);
           const foot = S().vec.sub(state.x, S().vec.mul(n, t));
-          objs.push({ type: "segment", a: state.x, b: foot, color: PLANE_COLORS[i], width: 1.4, dash: [2, 3] });
-          objs.push({ type: "point", p: foot, color: PLANE_COLORS[i], r: 3.5 });
+          // drop lines thick enough to read against the planes
+          objs.push({ type: "segment", a: state.x, b: foot, color: PLANE_COLORS[i], width: 2.6, dash: [5, 4] });
+          objs.push({ type: "point", p: foot, color: PLANE_COLORS[i], r: 4.5 });
         });
         objs.push({ type: "point", p: state.x, color: "drag", r: hit ? 7 : 5.5, label: "x" });
         return objs;
@@ -514,7 +515,7 @@
     const side = el("aside", "ch3l-side");
     body.append(stage, side);
     lab.append(body);
-    const scene = S().create(stage, { range: 2.5, label: "三个向量与它们张成的空间", yaw: 0.4, pitch: 0.35 });
+    const scene = S().create(stage, { range: 2.5, label: "三个向量与它们张成的空间", yaw: 0.4, pitch: 0.35, spreadLabels: true, labelSafe: true });
     const info = el("div", "ch3l-card");
     const tools = el("div", "ch3l-actions");
     tools.innerHTML = `<button type="button" class="ch3l-btn" data-snap>把 v₃ 放进平面</button><button type="button" class="ch3l-btn" data-look>沿平面看</button><button type="button" class="ch3l-btn" data-reset>回到默认视角</button>`;
@@ -587,6 +588,8 @@
       state.v[2] = [x, y, -(c[0] * x + c[1] * y) / c[2]];
       state.showDrop = true;
       redraw();
+      // turn straight to the edge-on view: the plane becomes a line and v₃ lies on it
+      scene.lookAlong(state.v[0]);
     });
     tools.querySelector("[data-look]").addEventListener("click", () => scene.lookAlong(state.v[0]));
     tools.querySelector("[data-reset]").addEventListener("click", () => scene.resetView());
@@ -683,10 +686,10 @@
     });
   }
 
-  /* Zoom so the longest vector fills the view without leaving it. */
-  function fitRange(vectors) {
+  /* Zoom so the longest vector fills the view without leaving it (a larger k zooms in further). */
+  function fitRange(vectors, k = 1.3, min = 1.6) {
     const longest = Math.max(...vectors.map((v) => S().vec.len(vecNum(v))), 1);
-    return Math.max(1.6, Math.min(5, longest / 1.3));
+    return Math.max(min, Math.min(5, longest / k));
   }
 
   function rankLab(root) {
@@ -728,7 +731,8 @@
         const tip = S().vec.add(p, q);
         const [ci, cj] = rel.terms.map(({ i }) => PLANE_COLORS[i]);
         objs.push(
-          { type: "polygon", pts: [[0, 0, 0], p, tip, q], color: "axis", alpha: 0.06, strokeAlpha: 0 },
+          // filled: c₁ and c₂ span it, and its far corner lands on the dependent column
+          { type: "polygon", pts: [[0, 0, 0], p, tip, q], color: "image", alpha: 0.16, strokeAlpha: 0 },
           { type: "segment", a: p, b: tip, color: cj, width: 1.2, dash: [2, 3] },
           { type: "segment", a: q, b: tip, color: ci, width: 1.2, dash: [2, 3] },
         );
@@ -755,7 +759,8 @@
         ...labelledArrows(cols, "c", PLANE_COLORS),
       ]);
       rowScene.setRange(fitRange(rows));
-      colScene.setRange(fitRange(cols));
+      // the column space is zoomed in further: its vectors are short next to the rows
+      colScene.setRange(fitRange(cols, 2, 1.4));
       const list = ops();
       const next = list[state.step];
       const label = next === "swap12" ? "R_2\\leftrightarrow R_3" : next ? `R_${next[0] + 1}\\leftarrow R_${next[0] + 1}${num(F(next[2])) < 0 ? "-" : "+"}${Math.abs(next[2]) === 1 ? "" : Math.abs(next[2])}R_${next[1] + 1}` : "";
@@ -810,10 +815,12 @@
       title: "把 b 拖离列空间，三个平面失去公共线",
       task: "A 的第三列等于前两列之和，列空间是平面 b₃=b₁+b₂。拖动 b：它在平面上时方程组有解，一离开就无解。虚线竖段是偏离量 b₃−b₁−b₂。右图同步显示三个方程对应的平面。",
     });
-    const A = [[1, 1, 2], [1, 2, 3], [2, 3, 5]].map((r) => r.map(F));
+    // rows (1,0,1), (0,1,1), (1,1,2): the end-on triangle has sides √6/3, √6/3, √2 (no sliver)
+    const A = [[1, 0, 1], [0, 1, 1], [1, 1, 2]].map((r) => r.map(F));
     // every pair of the three planes meets along this direction (n₁×n₂ = (−1,−1,1))
     const LINE_DIR = [-1, -1, 1];
     const state = { b: [1, 2, 3], picked: false, revealed: false, endOn: false };
+    let endOnCorners = [];
     const pair = el("div", "ch3l-pair");
     const left = el("div", "ch3l-view");
     const right = el("div", "ch3l-view");
@@ -821,8 +828,8 @@
     right.innerHTML = `<div class="ch3l-view-title">三个方程的平面（输入空间）</div>`;
     pair.append(left, right);
     lab.append(pair);
-    const colScene = S().create(left, { range: 5, label: "列空间平面与可拖动的 b", hint: "拖动 b 或旋转", yaw: 0.4, pitch: 0.35, axisNames: ["b₁", "b₂", "b₃"], spreadLabels: true });
-    const rowScene = S().create(right, { range: 3.5, label: "三个平面", hint: "拖动旋转", yaw: 0.35, pitch: 0.3 });
+    const colScene = S().create(left, { range: 5, label: "列空间平面与可拖动的 b", hint: "拖动 b 或旋转", yaw: 0.4, pitch: 0.35, axisNames: ["b₁", "b₂", "b₃"], spreadLabels: true, labelSafe: true });
+    const rowScene = S().create(right, { range: 3.5, label: "三个平面", hint: "拖动旋转", yaw: 0.35, pitch: 0.3, clampLabels: true });
     rowScene.on("camera", () => {
       // any orbit away from the end-on view gives the button back its first meaning
       const d = S().vec.norm(LINE_DIR);
@@ -886,10 +893,13 @@
             objs.push({ type: "polygon", pts: corners, color: "axis", alpha: 0.2, strokeAlpha: 0.5 });
             corners.forEach((p) => objs.push({ type: "point", p, color: "axis", r: 3.5 }));
           }
+          endOnCorners = corners;
         }
         return objs;
       });
-      rowScene.setRange(state.endOn && !onPlane && state.revealed ? 1.8 : 3.5);
+      // end-on and off the plane: centre and magnify the view on the triangle
+      if (state.endOn && !onPlane && state.revealed && endOnCorners.length === 3) rowScene.fitView(endOnCorners, { pad: 1.9 });
+      else rowScene.resetFit();
       const picture = !state.revealed
         ? ""
         : onPlane
@@ -975,7 +985,8 @@
       },
     };
     const lab = labShell(root, { title: "解集是零空间平移过去的样子", task: presets.line.task });
-    const state = { key: "line", b: [3, 4], t: 0, s: 0 };
+    // ghostB: b before the last change, so the old solution set stays on the picture
+    const state = { key: "line", b: [3, 4], t: 0, s: 0, ghostB: null, lastInput: 0 };
     const toolbar = el("div", "ch3l-toolbar");
     lab.append(toolbar);
     const body = el("div", "ch3l-body");
@@ -983,7 +994,7 @@
     const side = el("aside", "ch3l-side");
     body.append(stage, side);
     lab.append(body);
-    const scene = S().create(stage, { range: 3.6, label: "解集与零空间", yaw: -0.7, pitch: 0.4 });
+    const scene = S().create(stage, { range: 3.6, label: "解集与零空间", yaw: -0.7, pitch: 0.4, spreadLabels: true, labelSafe: true });
     const controls = el("div", "ch3l-card");
     const info = el("div", "ch3l-card");
     const gateHost = el("div");
@@ -1004,6 +1015,17 @@
         const objs = [];
         aug.forEach((r, i) => objs.push(planeObj(r, ns.length === 2 ? "drag" : PLANE_COLORS[i], { alpha: ns.length === 2 ? 0.2 : 0.1, label: ns.length === 2 ? "解集" : undefined })));
         hom.forEach((r, i) => objs.push(planeObj(r, ns.length === 2 ? "subspace" : PLANE_COLORS[i], { alpha: 0.03, dash: [5, 5], strokeAlpha: 0.45, label: ns.length === 2 ? "零空间" : undefined })));
+        // the solution set before the last change of b: same colour, dashed and faint
+        const gb = state.ghostB && state.ghostB.some((v, i) => v !== state.b[i]) ? state.ghostB : null;
+        const gp = gb ? M().particularSolution(A.map((r, i) => [...r, F(gb[i])])) : null;
+        if (gp?.ok) {
+          const g = vecNum(gp.x);
+          if (ns.length === 1) objs.push({ type: "line", p: g, dir: ns[0], color: "drag", width: 3, ghost: true, alpha: 0.5, label: "原来的解集" });
+          if (ns.length === 2) {
+            const n = S().vec.cross(ns[0], ns[1]);
+            objs.push({ type: "plane", n, d: S().vec.dot(n, g), color: "drag", ghost: true, alpha: 0.05, label: "原来的解集" });
+          }
+        }
         if (ns.length === 1) {
           objs.push({ type: "line", dir: ns[0], color: "subspace", width: 2, dash: [7, 5], label: "零空间" });
           objs.push({ type: "line", p: xp, dir: ns[0], color: "drag", width: 3.4, label: "解集" });
@@ -1028,13 +1050,18 @@
       ranges.push(`<label class="ch3l-range"><span>${tex("t")}</span><input type="range" min="-1.5" max="1.5" step="0.25" value="${state.t}" data-p="t" /><b data-pv="t">${texNum(state.t)}</b></label>`);
       if (state.key === "plane") ranges.push(`<label class="ch3l-range"><span>${tex("s")}</span><input type="range" min="-1.5" max="1.5" step="0.25" value="${state.s}" data-p="s" /><b data-pv="s">${texNum(state.s)}</b></label>`);
       controls.innerHTML = `<h4>调节</h4>${ranges.join("")}`;
-      controls.querySelectorAll("[data-b]").forEach((input) =>
+      controls.querySelectorAll("[data-b]").forEach((input) => {
+        // a new burst of changes (a drag, or key presses close together) keeps the
+        // solution set it started from as the ghost
         input.addEventListener("input", () => {
+          const now = performance.now();
+          if (now - state.lastInput > 900) state.ghostB = state.b.slice();
+          state.lastInput = now;
           state.b[Number(input.dataset.b)] = Number(input.value);
           controls.querySelector(`[data-bv="${input.dataset.b}"]`).innerHTML = texNum(Number(input.value));
           redraw();
-        }),
-      );
+        });
+      });
       controls.querySelectorAll("[data-p]").forEach((input) =>
         input.addEventListener("input", () => {
           state[input.dataset.p] = Number(input.value);
@@ -1049,6 +1076,8 @@
       state.b = presets[key].b.slice();
       state.t = 0;
       state.s = 0;
+      state.ghostB = null;
+      state.lastInput = 0;
       lab.querySelector(".ch3l-head p").textContent = presets[key].task;
       gateHost.innerHTML = "";
       predictGate(gateHost, presets[key].predict);

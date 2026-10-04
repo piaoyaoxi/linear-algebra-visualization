@@ -218,7 +218,7 @@
       if (!open && !b.disabled) {
         b.disabled = true;
         b.dataset.laGated = "1";
-        b.title = "先在上方作出预测";
+        b.title = "先在上方猜一猜";
       } else if (open && b.dataset.laGated) {
         b.disabled = false;
         delete b.dataset.laGated;

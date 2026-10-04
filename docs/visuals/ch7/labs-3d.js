@@ -564,7 +564,7 @@
       // look at L(v, Av) (normal (−1,0,1)) from slightly off its normal
       camera: { yaw: 2.75, pitch: 0.62 },
       predict: {
-        question: "A=J(2,2)⊕J(2,1)，特征多项式是 (λ−2)³。A 的最小多项式是什么？",
+        question: "这个 A 的特征多项式是 (λ−2)³。从 v 出发依次作用 A：v、Av、A²v 在哪一步落回前面向量张成的空间，那一步的关系式就给出最小多项式。A 的最小多项式是什么？",
         options: [
           { text: "(λ−2)²", correct: true },
           { text: "λ−2", why: "A≠2E：从 v=(1,0,1)ᵀ 出发，Av 与 v 不共线。" },

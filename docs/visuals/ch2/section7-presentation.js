@@ -559,7 +559,7 @@
         root.querySelector(`[data-v="${key}"]`).textContent = ratio(t[key], 10).text;
       });
       nudge.disabled = !picked() || animating || t.b2 - 1 < -60;
-      if (!picked()) nudge.title = "先在上方作出预测";
+      if (!picked()) nudge.title = "先在上方猜一猜";
       else nudge.removeAttribute("title");
       drawScene();
       M().pulseClass(root.querySelector("[data-d-card]"));
@@ -686,7 +686,7 @@
       root.innerHTML = `
         <h2>交互实验</h2>
         <div class="ch2-lab">
-          <div class="ch2-lab-head"><h3>Cramer 法则 · 列空间与面积比</h3><p>系数列、b、D、D₁、D₂ 与坐标重构同步变化。作出预测后，两列接近平行时，角上的放大框把细长的 D 放平、加厚；D=0 时改用列空间判断相容性。</p></div>
+          <div class="ch2-lab-head"><h3>Cramer 法则 · 列空间与面积比</h3><p>系数列、b、D、D₁、D₂ 与坐标重构同步变化。猜过之后，两列接近平行时，角上的放大框把细长的 D 放平、加厚；D=0 时改用列空间判断相容性。</p></div>
           <div data-cramer-gate></div>
           <div class="ch2-cramer-layout">
             <div class="ch2-cramer-main">

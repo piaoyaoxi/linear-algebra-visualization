@@ -671,7 +671,7 @@
       elements.next.dataset.inverseTarget = String(nextTarget);
       elements.next.textContent = nextLabel;
       elements.next.disabled = nextDisabled || Boolean(gate && !gate.picked);
-      if (gate && !gate.picked) elements.next.title = "先在上方作出预测";
+      if (gate && !gate.picked) elements.next.title = "先在上方猜一猜";
       else elements.next.removeAttribute("title");
       const showReset = !atIdentity && !restored;
       elements.reset.hidden = !showReset;

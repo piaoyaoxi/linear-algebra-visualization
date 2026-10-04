@@ -51,7 +51,7 @@
           return;
         }
         button.disabled = true;
-        button.title = "先在上方作出预测";
+        button.title = "先在上方猜一猜";
       });
     }
 

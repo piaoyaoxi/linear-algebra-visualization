@@ -26,7 +26,7 @@
   function mount(container, opts) {
     const root = opts.root || container;
     const options = shuffle(opts.options, opts.key || opts.question);
-    container.innerHTML = `<div class="ch3l-predict"><div class="ch3l-predict-q"><span>先预测</span><p>${opts.question}</p></div>
+    container.innerHTML = `<div class="ch3l-predict"><div class="ch3l-predict-q"><span>先猜一猜</span><p>${opts.question}</p></div>
       <div class="ch3l-predict-options">${options.map(([t, ok, why], i) => `<button type="button" data-i="${i}" data-ok="${ok}" data-why="${esc(why || "")}">${t}</button>`).join("")}</div><p class="ch3l-predict-feedback" hidden></p></div>`;
     const box = container.querySelector(".ch3l-predict");
     const fb = box.querySelector(".ch3l-predict-feedback");
@@ -36,7 +36,7 @@
     const primaries = () => [...root.querySelectorAll("button.is-primary")].filter((b) => !box.contains(b));
     const lockPrimaries = () => {
       primaries().forEach((b) => {
-        if (!api.picked && !b.disabled) { b.disabled = true; b.dataset.laGated = "1"; b.title = "先在上方作出预测"; }
+        if (!api.picked && !b.disabled) { b.disabled = true; b.dataset.laGated = "1"; b.title = "先在上方猜一猜"; }
         else if (api.picked && b.dataset.laGated) { b.disabled = false; delete b.dataset.laGated; b.removeAttribute("title"); }
       });
     };
@@ -49,7 +49,7 @@
       box.querySelectorAll("[data-i]").forEach((x) => x.classList.remove("is-picked"));
       picked.classList.add(api.ok ? "is-right" : "is-wrong");
       box.classList.add("is-done");
-      fb.innerHTML = api.ok ? opts.right : `和图中看到的不一致：${picked.dataset.why}`;
+      fb.innerHTML = api.ok ? opts.right : `再看看图：${picked.dataset.why}`;
       opts.onReveal?.(api.ok);
     };
     api.acted = () => api.reveal();
@@ -60,7 +60,7 @@
       api.picked = true;
       box.querySelectorAll("[data-i]").forEach((x) => x.classList.toggle("is-picked", x === b));
       fb.hidden = false;
-      fb.textContent = "已记下你的预测。现在动手操作一次，结论随后出现。";
+      fb.textContent = "记下了你的猜测。现在动手操作一次，结论随后出现。";
       lockPrimaries();
       opts.onPick?.();
     }));

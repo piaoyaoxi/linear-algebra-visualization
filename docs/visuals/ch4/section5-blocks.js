@@ -125,7 +125,7 @@
       targets.querySelectorAll("[data-t]").forEach((b) => b.addEventListener("click", () => { state.target = b.dataset.t; paint(); }));
 
       if (!open) {
-        readout.innerHTML = `<p class="blk-wait">作出预测后，这里按块核对 ${tex(`C_{${i}${j}}`)}。</p>`;
+        readout.innerHTML = `<p class="blk-wait">猜过之后，这里按块核对 ${tex(`C_{${i}${j}}`)}。</p>`;
         return;
       }
       if (!ok) {
@@ -157,7 +157,7 @@
     });
 
     const gate = root.querySelector("[data-gate]");
-    gate.innerHTML = `<div class="ch3l-predict"><div class="ch3l-predict-q"><span>先预测</span><p>把 A 的列切成 2+2。B 的行要怎样切，${tex("AB")} 才能按块相乘？B 的列切口有没有限制？</p></div>
+    gate.innerHTML = `<div class="ch3l-predict"><div class="ch3l-predict-q"><span>先猜一猜</span><p>把 A 的列切成 2+2。B 的行要怎样切，${tex("AB")} 才能按块相乘？B 的列切口有没有限制？</p></div>
       <div class="ch3l-predict-options">${(window.LAStableShuffle || ((a) => a))([
         ["B 的行切成 2+2；B 的列可以任意切", true, ""],
         ["B 的行切成 2+2，B 的列也必须切成 2+2", false, "B 的列切口决定 C 的列怎样分块，与能否相乘无关。"],
@@ -177,7 +177,7 @@
       gate.querySelector(".ch3l-predict").classList.add("is-done");
       revealedText = okk
         ? "✓ 块乘法只要求 A 的列分法与 B 的行分法一致。A 的行切口和 B 的列切口可以自由选择，它们只决定结果 C 怎样分块。"
-        : `和图中看到的不一致：${picked.dataset.why}`;
+        : `再看看图：${picked.dataset.why}`;
       syncFeedback();
     };
     gate.querySelectorAll("[data-i]").forEach((b) => b.addEventListener("click", () => {
@@ -187,7 +187,7 @@
       paint();
       gate.querySelectorAll("[data-i]").forEach((x) => x.classList.toggle("is-picked", x === b));
       fb.hidden = false;
-      fb.textContent = "已记下你的预测。现在动手操作一次，结论随后出现。";
+      fb.textContent = "记下了你的猜测。现在动手操作一次，结论随后出现。";
     }));
     const acted = (e) => { if (!gate.contains(e.target)) reveal(); };
     ["input", "change", "pointerup"].forEach((t) => root.addEventListener(t, acted));

@@ -181,7 +181,7 @@
         restart();
         selected = -1;
         scannerIndex = 0;
-        lastAction = `载入排列 ${permutation.join("")}：请先预测逆序数，再用扫描器核对。`;
+        lastAction = `载入排列 ${permutation.join("")}：请先猜一猜逆序数，再用扫描器核对。`;
         render({ pulse: true });
       }, { signal });
     });

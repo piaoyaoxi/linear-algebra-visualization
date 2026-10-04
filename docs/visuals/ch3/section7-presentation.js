@@ -353,7 +353,7 @@
       if (state.step === 5 && state.key === "crossing") gate?.acted();
       else if (state.step === 5 && gate?.picked && !gate.revealed) {
         const note = root.querySelector("[data-resultant-gate] .ch3l-predict-feedback");
-        if (note) note.textContent = "这道预测问的是“圆与割线”：切回它，走完五步，结论随后出现。";
+        if (note) note.textContent = "这道题问的是“圆与割线”：切回它，走完五步，结论随后出现。";
       }
     }
 

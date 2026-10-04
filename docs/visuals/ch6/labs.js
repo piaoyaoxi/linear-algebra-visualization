@@ -177,7 +177,7 @@
           ? `<p class="ch6l-bad">线性相关：${tex(M().latexRelation(cert.coeffs, ["p_1", "p_2", "p_3"]))}，不是基</p>`
           : `<p class="ch6l-ok">线性无关，是 ${tex("P[x]_3")} 的一组基</p>`;
       } else {
-        html += `<p class="ch6l-muted">先在下方作出预测，再看秩的判定。</p>`;
+        html += `<p class="ch6l-muted">先在下方猜一猜，再看秩的判定。</p>`;
       }
       html += `<p>${tex(`c_1p_1+c_2p_2+c_3p_3=${K().polyTex(cm)}`)}</p>`;
       html += hit ? `<p class="ch6l-ok">命中 q：坐标为 ${tex(vecTex(state.c))}</p>` : "";
@@ -345,7 +345,7 @@
       info.innerHTML = `<div>${colourColumnsHtml(texD(`A_a=${colourColumnsTex(A)}`), COLORS)}</div>
         <div>${texD(`X=${K().colTex(X)}`)}</div>
         <div>${state.revealed ? texD(`Y=${K().colTex(Y)}`) : texD("Y=\\;?")}</div>
-        <p>${state.revealed ? `${tex(`A_aY=${vecTex(M().matVec(A, Y))}^T`)} ${check ? `<span class="ch6l-ok">= X</span>` : ""}` : `先预测 ${tex("a=1")} 时的 ${tex("Y")}，再揭示新坐标。`}</p>`;
+        <p>${state.revealed ? `${tex(`A_aY=${vecTex(M().matVec(A, Y))}^T`)} ${check ? `<span class="ch6l-ok">= X</span>` : ""}` : `先猜一猜 ${tex("a=1")} 时的 ${tex("Y")}，再揭示新坐标。`}</p>`;
       info.dataset.check = String(check);
       const out = controls.querySelector("[data-a-v]");
       out.innerHTML = tex(fmt(a));
@@ -365,7 +365,7 @@
     gate = K().predictGate(
       gateHost,
       {
-        question: `取 ${tex("p=x^2-1")}，${tex("a=1")}。${tex("p")} 在新基 ${tex("1,\\,x-1,\\,(x-1)^2")} 下的坐标 ${tex("Y")} 是什么？`,
+        question: `取 ${tex("p=x^2-1")}，${tex("a=1")}。${tex("p")} 在新基 ${tex("1,\\,x-1,\\,(x-1)^2")} 下的坐标 ${tex("Y")} 是什么？（提示：把 ${tex("x")} 写成 ${tex("(x-1)+1")}。）`,
         options: [
           { text: tex("(-1,0,1)^T"), why: "这是旧坐标 X，只有 a=0 时两者相同。" },
           { text: tex("(1,-2,1)^T"), why: "这是 (x−1)² 在旧基下的坐标，也就是 A₁ 的第三列。" },
@@ -514,7 +514,7 @@
         );
         html += `<p class="ch6l-ok">${tex(`\\dim(U+W)=${dU}+${dW}-${inter}=${sum}`)}</p>`;
       } else {
-        html += `<p class="ch6l-muted">先作出预测，再看交与和的维数。</p>`;
+        html += `<p class="ch6l-muted">先猜一猜，再看交与和的维数。</p>`;
       }
       info.innerHTML = html;
       info.dataset.ledger = [dU, dW, inter, sum].join(",");
@@ -687,7 +687,7 @@
           html += `<p class="ch6l-bad">${tex("U\\subset W")}：v 不在 ${tex("U+W=W")} 中，无法分解</p>`;
         }
       } else {
-        html += `<p class="ch6l-muted">先作出预测，再看分量的数值。</p>`;
+        html += `<p class="ch6l-muted">先猜一猜，再看分量的数值。</p>`;
       }
       info.innerHTML = html;
       info.dataset.state = ok ? "direct" : "inside";
@@ -726,7 +726,7 @@
           ? `<p class="ch6l-ok">直和：${tex("\\mathbb R^3=W_1\\oplus W_2\\oplus W_3")}</p>`
           : `<p class="ch6l-bad">不是直和：${tex(M().latexRelation(cert.coeffs, ["w_1", "w_2", "w_3"]))}</p>`;
       } else {
-        html += `<p class="ch6l-muted">先作出预测，再看维数。</p>`;
+        html += `<p class="ch6l-muted">先猜一猜，再看维数。</p>`;
       }
       info.innerHTML = html;
       info.dataset.state = rank === 3 ? "direct" : "not-direct";

@@ -621,7 +621,7 @@
       await animateCanvasTo(resultCanvas, product, { drawOptions: { firstLabel: "ABe₁", secondLabel: "ABe₂", ghost: BOTTLENECK_B, ghostLabels: ["Be₁", "Be₂"], ghostName: "B 的像" } });
     };
     lab.querySelectorAll("[data-s3-bottleneck]").forEach((button) => {
-      if (!gate?.picked) { button.disabled = true; button.title = "先在上方作出预测"; }
+      if (!gate?.picked) { button.disabled = true; button.title = "先在上方猜一猜"; }
       button.addEventListener("click", () => select(button.dataset.s3Bottleneck));
     });
   }

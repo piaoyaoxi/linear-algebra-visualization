@@ -519,6 +519,9 @@ body :is(.ch3l-theorem-math, .ch6l-theorem-math, .ch7l-theorem-math, .ch9l-theor
   border: 0;
   border-radius: 6px;
   background: var(--surface-soft);
+  /* wide systems scroll inside the box instead of touching its edge */
+  padding-inline: 14px;
+  overflow-x: auto;
 }
 
 body :is(.ch3l-pitfalls, .ch6l-pitfalls, .ch7l-pitfalls, .ch9l-pitfalls) {
@@ -724,6 +727,22 @@ body .example-choice.is-wrong .example-choice-result {
 body .example-explanation {
   border-color: var(--line);
   background: var(--surface-soft);
+  /* the inner panel needs its own room; text never touches its edge */
+  margin-top: 4px;
+  padding: 18px 22px 20px;
+  border-top: 0;
+  border-radius: 8px;
+}
+
+/* phones: one card is enough — the answer sits under a divider, without a second box */
+@media (max-width: 720px) {
+  body .example-explanation {
+    margin-top: 0;
+    padding: 16px 0 0;
+    border-top: 1px solid var(--line);
+    border-radius: 0;
+    background: none;
+  }
 }
 
 /* self-test: hairline list; the opened answer hangs on a pine-green rule */
@@ -1172,6 +1191,14 @@ body .la-keep {
   white-space: nowrap;
 }
 
+/* the glued mark sits inside the formula's box: give it the text font and size back */
+body .la-punct {
+  font-family: var(--font-serif);
+  font-size: calc(1em / 1.06);
+  font-style: normal;
+  font-weight: inherit;
+}
+
 /* ch8 §3: the minors before the first transformation, one unbroken formula per item */
 body .ch8l-compare-cell > .ch8l-minor-list {
   display: flex;
@@ -1233,4 +1260,38 @@ body.dark {
 canvas,
 body.dark canvas {
   background: var(--canvas-wash);
+}
+
+/* lab-layout.js: a conclusion moved under both columns (the side column ran far below the canvas) */
+:is(.ch3l-lab, .ch6l-lab, .ch7l-lab, .ch9l-lab) > .la-result-wide {
+  margin-top: 18px;
+}
+
+/* lab-layout.js: the canvas frame grows to the side column's bottom; the canvas stays centred */
+.la-frame-fill {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+/* lab-layout.js: an inline formula wider than its paragraph sits on its own scrolling line */
+body .tex-inline.la-wide {
+  display: block;
+  max-width: 100%;
+  margin: 4px 0;
+  overflow-x: auto;
+  overflow-y: hidden;
+  padding-bottom: 2px;
+}
+
+/* the answer list may not grow wider than its card (a wide formula used to stretch the grid) */
+body .example-explanation > *,
+body .example-explanation li {
+  min-width: 0;
+  max-width: 100%;
+}
+
+/* a list item that opens with a formula: the number stays on the formula's first line */
+body li > .tex-inline:first-child {
+  vertical-align: top;
 }

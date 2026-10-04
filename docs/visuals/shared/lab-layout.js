@@ -60,6 +60,25 @@
     });
   }
 
+  /*
+   * A closing mark (，。；：、）) right after an inline formula is glued to it, so a
+   * line never starts with punctuation when the formula ends a line.
+   */
+  const CLOSERS = "，。；：、）！？";
+  function gluePunctuation(lab) {
+    lab.querySelectorAll(".tex-inline").forEach((formula) => {
+      const next = formula.nextSibling;
+      if (!next || next.nodeType !== Node.TEXT_NODE || !CLOSERS.includes(next.textContent.charAt(0))) return;
+      if (formula.parentElement?.classList.contains("la-keep")) return;
+      const keep = document.createElement("span");
+      keep.className = "la-keep";
+      formula.before(keep);
+      keep.append(formula, document.createTextNode(next.textContent.charAt(0)));
+      next.textContent = next.textContent.slice(1);
+      if (!next.textContent) next.remove();
+    });
+  }
+
   function normalize() {
     const labs = document.querySelectorAll(LAB);
     if (!labs.length) return;
@@ -70,6 +89,7 @@
       const row = canvasRow(lab);
       placePrediction(lab, row);
       captions(lab, prefix, counter);
+      gluePunctuation(lab);
       // The last readout card stretches to the canvas bottom only when little space
       // is left over; a short readout keeps its natural height (no empty box).
       lab.querySelectorAll(SIDE).forEach((side) => {

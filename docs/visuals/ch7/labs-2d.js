@@ -70,9 +70,19 @@
     const strip = el("div", "ch7l-strip");
     const result = el("div", "ch7l-result");
     lab.append(toolbar, gateHost, pair, strip, result);
-    const L = K.plane2d(left, { extent: 3.2, hint: "", label: "标准网格中的 σ" });
-    const R = K.plane2d(right, { extent: 3.2, hint: "拖动 η₁、η₂（每次半格）", label: "新基网格中的 σ" });
+    const L = K.plane2d(left, { extent: 3.2, hint: "", label: "标准网格中的 σ", spreadLabels: true });
+    const R = K.plane2d(right, { extent: 3.2, hint: "拖动 η₁、η₂（每次半格）", label: "新基网格中的 σ", spreadLabels: true });
     let flow = null;
+
+    /* Both views share one scale, wide enough for every image arrow; refit when a drag ends. */
+    function fitExtent() {
+      const An = matNum(K.mat(preset().A));
+      const pts = [...state.eta, ...state.eta.map((e) => apply2(An, e)), [An[0][0], An[1][0]], [An[0][1], An[1][1]]];
+      const need = Math.max(...pts.flat().map(Math.abs));
+      const ext = Math.min(6, Math.max(3.2, need * 1.12 + 0.3));
+      L.setExtent(ext);
+      R.setExtent(ext);
+    }
 
     const preset = () => BASIS_PRESETS[state.key];
 
@@ -177,7 +187,7 @@
         html += `<p class="ch7l-bad">η₁, η₂ 共线，不构成基，B 无从谈起。</p>`;
       } else {
         const trB = M().add(B[0][0], B[1][1]);
-        html += `<p>${tex(`\\operatorname{tr}A=${lf(tr)}`)}，${tex(`\\operatorname{tr}B=${lf(trB)}`)}；${tex(`|A|=${lf(K.det(A))}`)}，${tex(`|B|=${lf(K.det(B))}`)}。</p>`;
+        html += `<p>${tex(`\\operatorname{tr}A=${lf(tr)}`)}，${tex(`\\operatorname{tr}B=${lf(trB)}`)}；${tex(`|A|=${lf(K.det(A))}`)}，<span class="la-keep">${tex(`|B|=${lf(K.det(B))}`)}。</span></p>`;
         const named = ["η₁", "η₂"].filter((_, j) => lit[j]);
         html += flow?.revealed && K.isDiagonal(B)
           ? `<p class="ch7l-ok">B 是对角矩阵：每个 σηⱼ 都是 ηⱼ 的倍数。</p>`
@@ -198,7 +208,10 @@
         state.eta[i] = p;
         redraw();
       },
-      end: () => flow?.acted(),
+      end: () => {
+        fitExtent();
+        flow?.acted();
+      },
     });
     R.setHandles([handle(0, "drag"), handle(1, "drag")]);
 
@@ -220,9 +233,11 @@
       state.key = k;
       newFlow();
       redraw();
+      fitExtent();
     }, state.key);
     newFlow();
     redraw();
+    fitExtent();
     return () => {
       L.destroy();
       R.destroy();

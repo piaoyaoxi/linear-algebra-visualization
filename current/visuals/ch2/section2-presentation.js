@@ -13,6 +13,7 @@
     // adjacent swaps counted from the last loaded or hand-made permutation
     let startTau = 3;
     let startText = "3142";
+    let startPerm = [3, 1, 4, 2];
     let adjSteps = 0;
     let swappedRows = [];
     const gate = window.LAPredictGate?.mount(root.querySelector("[data-perm-gate]"), {
@@ -35,7 +36,11 @@
       const svg = root.querySelector("[data-wires]");
       const xs = [42, 116, 190, 264];
       const pair = pairOrder[scannerIndex % pairOrder.length];
+      // the wiring the count started from stays as a dashed ghost
+      const moved = startPerm.some((value, index) => value !== permutation[index]);
+      const ghost = moved ? startPerm.map((value, index) => `<path class="is-ghost" d="M ${xs[index]} 28 C ${xs[index]} 70, ${xs[value - 1]} 82, ${xs[value - 1]} 132" />`).join("") : "";
       svg.innerHTML = `
+        ${ghost}
         ${xs.map((x, index) => `<text x="${x}" y="18" text-anchor="middle">${index + 1}</text>`).join("")}
         ${xs.map((x, index) => `<text x="${x}" y="146" text-anchor="middle">${index + 1}</text>`).join("")}
         ${permutation.map((value, index) => `<path class="${index === pair.i || index === pair.j ? "is-focus" : ""}" d="M ${xs[index]} 28 C ${xs[index]} 70, ${xs[value - 1]} 82, ${xs[value - 1]} 132" data-wire-index="${index}" />`).join("")}
@@ -68,11 +73,23 @@
         ? `从 ${startText} 出发：相邻交换 <b>${adjSteps}</b> 次，τ(${startText}) = <b>${startTau}</b>`
         : `从 ${startText} 出发：相邻交换 <b>${adjSteps}</b> 次`;
       counter.classList.toggle("is-positive", done && adjSteps > 0);
+      // τ strip: one cell per adjacent swap made so far, det P = (−1)^τ under each
+      const strip = root.querySelector("[data-tau-strip]");
+      if (strip) {
+        const cells = [];
+        for (let k = 0; k <= adjSteps; k += 1) {
+          const t = startTau - k;
+          const plus = t % 2 === 0;
+          cells.push(`<span class="ch2-tau-cell${k === adjSteps ? " is-current" : ""}"><b>τ=${t}</b><small class="${plus ? "is-plus" : "is-minus"}">det P=${plus ? "+1" : "−1"}</small></span>`);
+        }
+        strip.innerHTML = cells.join('<i aria-hidden="true">→</i>');
+      }
     }
 
     function restart() {
       startTau = tau();
       startText = permutation.join("");
+      startPerm = permutation.slice();
       adjSteps = 0;
       swappedRows = [];
     }
@@ -239,6 +256,7 @@
                 <figure class="ch2-perm-matrix-box" data-perm-matrix></figure>
               </div>
               <div class="ch2-note" data-adj-count aria-live="polite"></div>
+              <div class="ch2-tau-strip" data-tau-strip aria-label="每次相邻交换后的逆序数与 det P"></div>
             </div>
             <div class="ch2-side">
               <div class="ch2-meter">

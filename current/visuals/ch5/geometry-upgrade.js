@@ -84,7 +84,7 @@
   }
 
   function mountS2(root){
-    root.innerHTML=`<h2>交互实验</h2><div class="qv-lab"><header class="qv-head"><h3>配方：换一组变量，让交叉项消失</h3><p>每前进一步，公式、替换矩阵 C 和曲面同步更新。曲面始终画在当前变量的坐标里；右上角的小图是从正上方看到的等高线。</p></header><div data-s2-gate></div><div class="ch5-toolbar">${[["regular","含交叉项"],["cross","只有交叉项"],["rank1","退化为一个平方"],["indef","一正一负"]].map(([k,l],i)=>`<button type="button" ${i?'':'class="is-active"'} data-s2-preset="${k}">${l}</button>`).join('')}</div><div class="qv-stepbar"><span data-s2-step-count></span><button data-s2-nav="prev">上一步</button><button class="is-primary" data-s2-nav="next">下一步</button><button data-s2-nav="reset">重置</button></div><div class="qv-progress" data-s2-progress></div><div class="qv-two"><section><div class="qv-step"><span data-s2-kicker></span><h4 data-s2-title></h4><div data-s2-poly></div><p data-s2-note></p></div><div class="qv-s2-stage"><canvas class="qv-main-canvas" data-s2-canvas></canvas><figure class="qv-s2-inset"><canvas data-s2-top aria-label="俯视等高线"></canvas><figcaption data-s2-top-caption>俯视 · 等高线</figcaption></figure></div><p data-s2-look></p></section><aside><div><h4>当前替换 C</h4><div class="ch5-matrix-wrap" data-s2-c></div><p data-s2-substitution></p></div><div><h4>当前矩阵</h4><div class="ch5-matrix-wrap" data-s2-d></div></div><div class="qv-values"><span>det C<strong data-s2-det></strong></span><span>交叉项系数<strong data-s2-cross></strong></span><span>原秩<strong data-s2-rank-a></strong></span><span>当前秩<strong data-s2-rank-d></strong></span></div><div class="qv-result" data-s2-result><span class="ch5-status" data-s2-status></span><div><h4 data-s2-result-title></h4><p data-s2-result-copy></p></div></div></aside></div></div>`;
+    root.innerHTML=`<h2>交互实验</h2><div class="qv-lab"><header class="qv-head"><h3>配方：换一组变量，让交叉项消失</h3><p>每前进一步，公式、替换矩阵 C 和曲面同步更新。曲面始终画在当前变量的坐标里；左下角的小图是从正上方看到的等高线。</p></header><div data-s2-gate></div><div class="ch5-toolbar">${[["regular","含交叉项"],["cross","只有交叉项"],["rank1","退化为一个平方"],["indef","一正一负"]].map(([k,l],i)=>`<button type="button" ${i?'':'class="is-active"'} data-s2-preset="${k}">${l}</button>`).join('')}</div><div class="qv-stepbar"><span data-s2-step-count></span><button data-s2-nav="prev">上一步</button><button class="is-primary" data-s2-nav="next">下一步</button><button data-s2-nav="reset">重置</button></div><div class="qv-progress" data-s2-progress></div><div class="qv-two"><section><div class="qv-step"><span data-s2-kicker></span><h4 data-s2-title></h4><div data-s2-poly></div><p data-s2-note></p></div><div class="qv-s2-stage"><canvas class="qv-main-canvas" data-s2-canvas></canvas><figure class="qv-s2-inset"><canvas data-s2-top aria-label="俯视等高线"></canvas><figcaption data-s2-top-caption>俯视 · 等高线</figcaption></figure></div><p data-s2-look></p></section><aside><div><h4>当前替换 C</h4><div class="ch5-matrix-wrap" data-s2-c></div><p data-s2-substitution></p></div><div><h4>当前矩阵</h4><div class="ch5-matrix-wrap" data-s2-d></div></div><div class="qv-values"><span>det C<strong data-s2-det></strong></span><span>交叉项系数<strong data-s2-cross></strong></span><span>原秩<strong data-s2-rank-a></strong></span><span>当前秩<strong data-s2-rank-d></strong></span></div><div class="qv-result" data-s2-result><span class="ch5-status" data-s2-status></span><div><h4 data-s2-result-title></h4><p data-s2-result-copy></p></div></div></aside></div></div>`;
     const presets={regular:M().mat2FromAbc(1,2,6),cross:M().mat2FromAbc(0,1,0),rank1:M().mat2FromAbc(1,1,1),indef:M().mat2FromAbc(1,1,-2)},state={p:'regular',step:0,t:1},ctl=new AbortController();
     const lab=$(root,'.qv-lab');
     let raf=0;
@@ -162,14 +162,16 @@
   function signWheel(canvas, A, label) {
     const { ctx, width, height } = M().setupCanvas(canvas); if (!ctx) return;
     const p = M().getPalette();
-    const cx = width / 2, cy = height / 2 + 4, r = Math.min(width, height) * 0.32;
+    // small = the inset on a surface's corner (phones): no title, tighter ring
+    const small = width < 130;
+    const cx = width / 2, cy = height / 2 + (small ? 0 : 4), r = Math.min(width, height) * (small ? 0.3 : 0.32);
     ctx.fillStyle = p.soft; ctx.fillRect(0, 0, width, height);
     const N = 360;
     for (let k = 0; k < N; k += 1) {
       const t = (TAU * k) / N;
       const v = M().qForm(A, [Math.cos(t), Math.sin(t)]);
       ctx.strokeStyle = v > 1e-9 ? p.pos : v < -1e-9 ? p.neg : p.zero;
-      ctx.lineWidth = 9;
+      ctx.lineWidth = small ? 6 : 9;
       ctx.beginPath(); ctx.arc(cx, cy, r, -t, -t - TAU / N - 0.01, true); ctx.stroke();
     }
     // principal directions as diameters, labelled by sign
@@ -180,13 +182,14 @@
       const a = { x: cx - vec[0] * r, y: cy + vec[1] * r }, b = { x: cx + vec[0] * r, y: cy - vec[1] * r };
       ctx.save(); ctx.strokeStyle = col; ctx.lineWidth = 1.4; ctx.setLineDash(lam > 1e-9 || lam < -1e-9 ? [] : [3, 3]);
       ctx.beginPath(); ctx.moveTo(a.x, a.y); ctx.lineTo(b.x, b.y); ctx.stroke(); ctx.restore();
-      ctx.fillStyle = col; ctx.font = "600 12px 'LA Serif Latin', 'LA Serif SC', 'Songti SC', serif"; ctx.textAlign = "center";
-      const tx = cx + vec[0] * (r + 18), ty = cy - vec[1] * (r + 18) + 4;
+      ctx.fillStyle = col; ctx.font = `600 ${small ? 11 : 12}px 'LA Serif Latin', 'LA Serif SC', 'Songti SC', serif`; ctx.textAlign = "center";
+      const out = small ? 14 : 18;
+      const tx = Math.max(14, Math.min(width - 14, cx + vec[0] * (r + out))), ty = Math.max(10, Math.min(height - 4, cy - vec[1] * (r + out) + 4));
       ctx.fillText(lam > 1e-9 ? "向上" : lam < -1e-9 ? "向下" : "平坦", tx, ty);
     });
     ctx.textAlign = "left";
     ctx.fillStyle = p.muted; ctx.font = "12px 'LA Serif Latin', 'LA Serif SC', 'Songti SC', serif";
-    ctx.fillText(label, 10, 16);
+    if (!small) ctx.fillText(label, 10, 16);
   }
 
   function mountS3(root){
@@ -238,7 +241,13 @@
     $(root,'[data-s3-h]').addEventListener('input',e=>{state.h=Number(e.target.value);state.singular=false;if(gate?.picked&&state.h!==0)gate.acted();paint();},{signal:ctl.signal});
     $(root,'[data-s3-singular]').addEventListener('click',()=>{state.singular=true;paint();},{signal:ctl.signal});
     $(root,'[data-s3-reset]').addEventListener('click',()=>{state.singular=false;state.h=0;paint();},{signal:ctl.signal});
-    window.addEventListener('resize',paint,{signal:ctl.signal,passive:true});paint();return()=>ctl.abort();
+    // phones: each sign wheel becomes a small inset on the corner of its own surface
+    const wheelHome=$(root,'.qv-s3-wheels'),wheelFigs=[$(root,'[data-s3-a-wheel]').closest('figure'),$(root,'[data-s3-b-wheel]').closest('figure')];
+    const surfaceFigs=[$(root,'[data-s3-a-canvas]').closest('figure'),$(root,'[data-s3-b-canvas]').closest('figure')];
+    const phone=window.matchMedia('(max-width: 720px)');
+    const placeWheels=()=>{wheelFigs.forEach((f,i)=>{const host=phone.matches?surfaceFigs[i]:wheelHome;if(f.parentElement!==host)host.append(f);f.classList.toggle('qv-s3-inset',phone.matches);});wheelHome.hidden=phone.matches;paint();};
+    phone.addEventListener('change',placeWheels,{signal:ctl.signal});
+    window.addEventListener('resize',paint,{signal:ctl.signal,passive:true});placeWheels();return()=>ctl.abort();
   }
 
   /*
@@ -314,11 +323,11 @@
         <aside class="qv-s4-side">
           <figure class="qv-s4-wheel"><canvas data-s4-scan aria-label="方向轮：单位圆上每个方向的 q 值"></canvas><figcaption>方向轮：单位圆上的每个方向按 q 的正负着色。圆点是 q 最小的方向，虚线是 q=0 的方向。</figcaption></figure>
           <div class="qv-s4-read"><div class="ch5-matrix-wrap" data-s4-matrix></div><div class="qv-values">
-            <span class="qv-s4-wide">${inline('\\min_{\\lVert x\\rVert=1}q_t(x)=1-|t|')}<strong data-s4-min></strong></span>
+            <span class="qv-s4-wide"><b class="qv-s4-label" data-s4-label="min"></b><strong data-s4-min></strong></span>
             <span>${inline('\\Delta_1')}<strong data-s4-d1></strong></span>
-            <span>${inline('\\Delta_2=1-t^2')}<strong data-s4-d2></strong></span>
-            <span>${inline('\\lambda_1=1+t')}<strong data-s4-lp></strong></span>
-            <span>${inline('\\lambda_2=1-t')}<strong data-s4-lm></strong></span>
+            <span><b class="qv-s4-label" data-s4-label="d2"></b><strong data-s4-d2></strong></span>
+            <span><b class="qv-s4-label" data-s4-label="lp"></b><strong data-s4-lp></strong></span>
+            <span><b class="qv-s4-label" data-s4-label="lm"></b><strong data-s4-lm></strong></span>
             <span class="qv-s4-wide">二次型<strong data-s4-poly></strong></span>
           </div></div>
         </aside>
@@ -335,7 +344,16 @@
       ],
       right:`✓ 沿 x=(1,−1) 方向 ${inline('q=2-2t')}：t=1 时等于 0，曲面沿这条直线贴住底面；t&gt;1 时变成负的，曲面向下。同时 ${inline('\\Delta_2=1-t^2')} 由正变 0 再变负，所以 A(t) 正定恰好是 −1&lt;t&lt;1。`,
       onPick:()=>setK(0),
+      onReveal:()=>paint(),
     });
+    // the formulas in t would give the boundary t = ±1 away, so they appear with the verdict
+    const S4_LABELS={
+      min:['\\min_{\\lVert x\\rVert=1}q_t(x)','\\min_{\\lVert x\\rVert=1}q_t(x)=1-|t|'],
+      d2:['\\Delta_2','\\Delta_2=1-t^2'],
+      lp:['\\lambda_1','\\lambda_1=1+t'],
+      lm:['\\lambda_2','\\lambda_2=1-t'],
+    };
+    let labelsShown=null;
     const nameOf=(k)=>(S4_PRESETS.find(([t])=>t*4===k)||[])[1];
     function setK(k){state.k=M().clamp(k,-6,6);paint();}
     function act(k){setK(k);if(gate?.picked&&Math.abs(state.k)>4)gate.acted();}
@@ -347,6 +365,8 @@
       $(root,'[data-s4-t-value]').textContent=fracStr(t);
       // shape names would give the boundary away, so they join the presets after the prediction
       $$(root,'[data-s4-preset]').forEach(b=>{const pk=Math.round(Number(b.dataset.s4Preset)*4);b.classList.toggle('is-active',pk===k);b.textContent=`t=${fracStr(pk/4)}${open?` · ${nameOf(pk)}`:''}`;});
+      const full=Boolean(!gate||gate.revealed);
+      if(labelsShown!==full){labelsShown=full;$$(root,'[data-s4-label]').forEach(b=>{b.innerHTML=inline(S4_LABELS[b.dataset.s4Label][full?1:0]);});}
       $(root,'[data-s4-matrix]').innerHTML=fracMatrix(A);
       $(root,'[data-s4-poly]').innerHTML=inline(polyFracTex(A));
       $(root,'[data-s4-d1]').textContent='1 > 0';

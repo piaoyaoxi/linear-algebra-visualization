@@ -67,13 +67,15 @@
           active: term.i === state.selected.i && term.j === state.selected.j,
         }));
       lattice = M().drawLattice(canvas, terms, { maxI: 4, maxJ: 4 });
+      drawLexOrder(terms);
       const selected = termAt(state.selected.i, state.selected.j);
       const readout = root.querySelector("[data-lattice-readout]");
       if (selected) {
+        const rank = lexOrder().indexOf(selected) + 1;
         readout.innerHTML = `
           <span>当前格点 (${selected.i}, ${selected.j})</span>
           <strong>${tex(selected.math)}</strong>
-          <p>x 的指数是 ${selected.i}，y 的指数是 ${selected.j}，所以总次数是 ${selected.i + selected.j}。</p>`;
+          <p>x 的指数是 ${selected.i}，y 的指数是 ${selected.j}，所以总次数是 ${selected.i + selected.j}。按字典序排第 ${rank}${rank === 1 ? "，是首项" : ""}。</p>`;
       } else {
         readout.innerHTML = `
           <span>当前格点 (${state.selected.i}, ${state.selected.j})</span>
@@ -82,6 +84,43 @@
       }
       root.querySelector("[data-degree-summary]").textContent =
         "当前多项式的总次数、x 次数和 y 次数都等于 3；数值相同只是巧合，定义并不相同。";
+    }
+
+    // lexicographic order (x before y): compare the x exponent, then the y exponent
+    const lexOrder = () => baseTerms.slice().sort((p, q) => q.i - p.i || q.j - p.j);
+
+    // number every visible term by its place in the lexicographic order; the first one is the leading term
+    function drawLexOrder(terms) {
+      const ctx = canvas.getContext("2d");
+      const pal = M().getPalette();
+      const order = lexOrder();
+      ctx.save();
+      ctx.textAlign = "center";
+      ctx.textBaseline = "middle";
+      terms.forEach((term) => {
+        const k = order.findIndex((t) => t.i === term.i && t.j === term.j) + 1;
+        const x = lattice.pad + term.i * lattice.sx - 14;
+        const y = lattice.height - lattice.pad - term.j * lattice.sy + 14;
+        ctx.beginPath();
+        ctx.fillStyle = pal.paper;
+        ctx.strokeStyle = k === 1 ? pal.accent : pal.axis;
+        ctx.lineWidth = k === 1 ? 1.6 : 1;
+        ctx.arc(x, y, 8, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.stroke();
+        ctx.fillStyle = k === 1 ? pal.accent : pal.muted;
+        ctx.font = "600 11px 'LA Serif Latin', 'LA Serif SC', 'Songti SC', serif";
+        ctx.fillText(String(k), x, y + 0.5);
+        if (k === 1) {
+          ctx.textAlign = "left";
+          ctx.font = "600 12px 'LA Serif Latin', 'LA Serif SC', 'Songti SC', serif";
+          ctx.lineWidth = 4; ctx.strokeStyle = pal.paper;
+          ctx.strokeText("首项", x + 22, y + 2);
+          ctx.fillText("首项", x + 22, y + 2);
+          ctx.textAlign = "center";
+        }
+      });
+      ctx.restore();
     }
 
     function arrow(ctx, from, to, color, { width = 2.4, dashed = false, alpha = 1 } = {}) {

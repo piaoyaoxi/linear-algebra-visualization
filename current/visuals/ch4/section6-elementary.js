@@ -141,15 +141,20 @@
     // unit square image
     square(M);
     // the image of the unit square is a result; a reversed orientation is dashed
-    ctx.fillStyle = `color-mix(in srgb, ${image} ${det(M) < 0 ? 7 : 12}%, transparent)`;
+    // canvas colours take no color-mix(): tints are the same colour at a low alpha
+    ctx.save();
+    ctx.globalAlpha = det(M) < 0 ? 0.07 : 0.12;
+    ctx.fillStyle = image;
     ctx.fill();
     if (ghosts.length) {
       // the current image is the focus: a wide halo of the same colour underneath
-      ctx.strokeStyle = `color-mix(in srgb, ${image} 16%, transparent)`;
+      ctx.globalAlpha = 0.16;
+      ctx.strokeStyle = image;
       ctx.lineWidth = 7;
       ctx.lineJoin = "round";
       ctx.stroke();
     }
+    ctx.restore();
     ctx.strokeStyle = image;
     ctx.lineWidth = 1.6;
     if (det(M) < 0) ctx.setLineDash([6, 4]);
@@ -202,7 +207,8 @@
       ctx.fillText(text, tx, place[1]);
       ctx.restore();
     };
-    ghosts.forEach((g) => name(g.M, g.text, g.spot, { size: 12.5, alpha: 0.7 }));
+    // the ghosts' names stay readable: nearly the size of the current one
+    ghosts.forEach((g) => name(g.M, g.text, g.spot, { size: 13.5, alpha: 0.85 }));
     if (opts.tag) name(M, opts.tag.text, opts.tag.spot, { size: 14, alpha: 1 });
   }
 

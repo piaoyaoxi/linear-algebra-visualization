@@ -205,6 +205,32 @@
         // the line B crushed the plane onto
         const k = 40 / Math.hypot(col[0], col[1]);
         drawLine(ctx, { x: origin.x - col[0] * k * scale, y: origin.y + col[1] * k * scale }, { x: origin.x + col[0] * k * scale, y: origin.y - col[1] * k * scale }, palette.image, 1.6, 0.35);
+        if (options.ghostName) {
+          // name the dashed line near where it leaves the canvas, on the upper-right side
+          const len = Math.hypot(col[0], col[1]);
+          const u = [col[0] / len, col[1] / len];
+          const dir = u[1] < 0 || (u[1] === 0 && u[0] < 0) ? -1 : 1;
+          const w = width;
+          const h = height;
+          let t = Math.max(w, h) / scale;
+          let at = null;
+          for (; t > 0.2; t *= 0.92) {
+            const q = { x: origin.x + dir * u[0] * t * scale, y: origin.y - dir * u[1] * t * scale };
+            if (q.x > 18 && q.x < w - 70 && q.y > 26 && q.y < h - 18) { at = q; break; }
+          }
+          if (at) {
+            ctx.save();
+            ctx.globalAlpha = 0.9;
+            ctx.setLineDash([]);
+            ctx.font = "600 13px 'LA Serif Latin', 'LA Serif SC', 'Songti SC', serif";
+            ctx.lineWidth = 4;
+            ctx.strokeStyle = palette.paper;
+            ctx.fillStyle = palette.image;
+            ctx.strokeText(options.ghostName, at.x + 8, at.y - 6);
+            ctx.fillText(options.ghostName, at.x + 8, at.y - 6);
+            ctx.restore();
+          }
+        }
       }
       drawArrow(ctx, origin, gp(1, 0), palette.v1, options.ghostLabels?.[0] ?? "", 2.2);
       drawArrow(ctx, origin, gp(0, 1), palette.v2, options.ghostLabels?.[1] ?? "", 2.2);
@@ -575,9 +601,9 @@
       lab.querySelector("[data-s3-bottleneck-title]").textContent = preset.title;
       lab.querySelector("[data-s3-bottleneck-copy]").textContent = preset.copy;
       // start each choice from B's output, so the move from the dashed line is visible
-      drawTransformScene(resultCanvas, BOTTLENECK_B, { firstLabel: "", secondLabel: "", ghost: BOTTLENECK_B });
+      drawTransformScene(resultCanvas, BOTTLENECK_B, { firstLabel: "", secondLabel: "", ghost: BOTTLENECK_B, ghostName: "B 的像" });
       gate?.acted();
-      await animateCanvasTo(resultCanvas, product, { drawOptions: { firstLabel: "ABe₁", secondLabel: "ABe₂", ghost: BOTTLENECK_B, ghostLabels: ["Be₁", "Be₂"] } });
+      await animateCanvasTo(resultCanvas, product, { drawOptions: { firstLabel: "ABe₁", secondLabel: "ABe₂", ghost: BOTTLENECK_B, ghostLabels: ["Be₁", "Be₂"], ghostName: "B 的像" } });
     };
     lab.querySelectorAll("[data-s3-bottleneck]").forEach((button) => {
       if (!gate?.picked) { button.disabled = true; button.title = "先在上方作出预测"; }

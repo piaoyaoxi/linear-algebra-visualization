@@ -46,15 +46,10 @@ defineChapter4Section("matrix-operations", {
   },
   visual: {
     type: "multiply",
-    title: "同一个乘积，四个入口",
-    description: "同一组矩阵贯穿复合、看列、行乘列与顺序比较。",
-    task: `依次切换四个视角，确认 ${texInline("ABx=A(Bx)")}、乘积的列解释、${texInline("c_{ij}")} 的行乘列计算，以及 ${texInline("AB\\ne BA")} 的过程差异。`,
-    prompts: [
-      "在“复合”中沿箭头从 x 读到 Bx，再读到 A(Bx)。",
-      "在“看列”中比较 B 的两列经过 A 后，怎样成为 AB 的两列。",
-      "在“行乘列”中点击结果矩阵的任意位置，观察一行与一列的配对。",
-      "在“交换顺序”中比较先剪切后拉伸与先拉伸后剪切。",
-    ],
+    title: "同一个乘积，两个视角",
+    description: "同一组矩阵贯穿复合与顺序比较。",
+    task: `播放 B → A，再与“直接看 AB”对照终点，确认 ${texInline("ABx=A(Bx)")}；在“交换顺序”中比较 ${texInline("AB")} 与 ${texInline("BA")}。`,
+    prompts: [],
   },
   example: {
     title: "例题：为什么 AB 和 BA 通常不同",

@@ -535,7 +535,7 @@
       <div class="s2c-lab" data-s2c-lab>
         <header class="s2c-header">
           <div>
-            <span class="s2c-kicker">同一组对象贯穿四个视角</span>
+            <span class="s2c-kicker">同一组对象，两个视角</span>
             <h3>矩阵乘法：在连续画面里完成</h3>
             <p>所有画面都使用同一个 ${texInline(`A=${matrixTex(MODEL.A)}`)}、${texInline(`B=${matrixTex(MODEL.B)}`)} 和输入 ${texInline(`x=${vectorTex(MODEL.x)}`)}。</p>
           </div>
@@ -545,10 +545,8 @@
           </div>
         </header>
 
-        <div class="s2c-tabs" role="tablist" aria-label="矩阵乘法的四种观察方式">
+        <div class="s2c-tabs" role="tablist" aria-label="矩阵乘法的两种观察方式">
           <button type="button" class="is-active" role="tab" aria-selected="true" data-s2c-tab="compose">连续复合</button>
-          <button type="button" role="tab" aria-selected="false" data-s2c-tab="columns">看列</button>
-          <button type="button" role="tab" aria-selected="false" data-s2c-tab="formula">行乘列</button>
           <button type="button" role="tab" aria-selected="false" data-s2c-tab="order">交换顺序</button>
         </div>
 
@@ -578,46 +576,6 @@
             </div>
           </section>
 
-          <section class="s2c-panel" data-s2c-panel="columns" role="tabpanel" hidden>
-            <div class="s2c-stage-copy">
-              <span class="s2c-stage-kicker">列视角</span>
-              <h4>B 的每一列，都继续接受 A 的作用</h4>
-              <p>
-                两根向量从 <span class="s2c-math-plain">b₁</span>、<span class="s2c-math-plain">b₂</span>
-                连续移到 <span class="s2c-math-plain">Ab₁</span>、<span class="s2c-math-plain">Ab₂</span>；
-                其间平行四边形跟着变形。
-              </p>
-            </div>
-            <div class="s2c-columns-layout">
-              <div class="s2c-canvas-shell">
-                <canvas class="s2c-column-canvas" data-s2c-column-canvas width="720" height="360" aria-label="乘积矩阵的列动画"></canvas>
-              </div>
-              <aside class="s2c-column-readout" data-s2c-column-readout></aside>
-            </div>
-            <div class="s2c-controls">
-              <button type="button" class="is-primary" data-s2c-column-play>让 A 作用于两列</button>
-              <button type="button" data-s2c-column-reset>回到 B 的两列</button>
-            </div>
-            <div class="s2c-conclusion"><strong>${texInline("(AB)_{:j}=Ab_j")}</strong><p>乘积的第 j 列，就是 A 作用在 B 的第 j 列之后得到的向量。</p></div>
-          </section>
-
-          <section class="s2c-panel" data-s2c-panel="formula" role="tabpanel" hidden>
-            <div class="s2c-stage-copy">
-              <span class="s2c-stage-kicker">坐标视角</span>
-              <h4>一个结果元素怎样由一行和一列汇合</h4>
-              <p>点击结果矩阵中的位置，配对项会依次亮起，再汇入求和。</p>
-            </div>
-            <div class="s2c-formula-stage" data-s2c-formula-stage>
-              <div class="s2c-matrix-block"><span>A</span>${matrixCellGrid(MODEL.A, "A")}</div>
-              <b>×</b>
-              <div class="s2c-matrix-block"><span>B</span>${matrixCellGrid(MODEL.B, "B")}</div>
-              <b>=</b>
-              <div class="s2c-matrix-block"><span>C=AB</span>${matrixCellGrid(MODEL.AB, "C", true)}</div>
-            </div>
-            <div class="s2c-dot-work" data-s2c-dot-work aria-live="polite"></div>
-            <div class="s2c-conclusion"><strong>${texInline("c_{ij}=\\sum_k a_{ik}b_{kj}")}</strong><p>中间下标 k 依次走过所有配对位置，所以这些乘积要相加。</p></div>
-          </section>
-
           <section class="s2c-panel" data-s2c-panel="order" role="tabpanel" hidden>
             <div class="s2c-stage-copy">
               <span class="s2c-stage-kicker">顺序比较</span>
@@ -641,15 +599,6 @@
           </section>
         </div>
 
-        <div class="script-panel s2-task-panel s2c-task-panel">
-          <h3>操作任务</h3>
-          <ol>
-            <li>在「连续复合」中播放 B → A，再与「直接看 AB」对照终点。</li>
-            <li>在「看列」中确认两列怎样变成 AB 的两列。</li>
-            <li>在「行乘列」中点击四个结果位置，核对每一个配对求和。</li>
-            <li>在「交换顺序」中比较 AB 与 BA 的中间状态与最终矩阵。</li>
-          </ol>
-        </div>
       </div>
     `;
 
@@ -755,7 +704,8 @@
     // stage = label stage, done = index of the last keyframe reached
     const stageDrawOptions = (stage, done = stage) => {
       const trail = [{ at: MODEL.x, label: "x", offset: [-16, -8] }];
-      if (done >= 1) trail.push({ at: Bx, label: "Bx", offset: [-26, -8] });
+      // Bx = (2, 1) is also the tip of ABe₂: its name sits above the point, the arrow's to the right
+      if (done >= 1) trail.push({ at: Bx, label: "Bx", offset: [-18, -20] });
       if (done >= 2) trail.push({ at: ABx, label: "" });
       return {
         vector: true,
@@ -815,6 +765,7 @@
   function bindColumns(root, signal) {
     const canvas = root.querySelector("[data-s2c-column-canvas]");
     const readout = root.querySelector("[data-s2c-column-readout]");
+    if (!canvas || !readout) return;
     canvas.dataset.progress = "0";
     drawColumnScene(canvas, 0);
     updateColumnReadout(readout, 0);
@@ -829,6 +780,7 @@
   function bindFormula(root, signal) {
     const stage = root.querySelector("[data-s2c-formula-stage]");
     const work = root.querySelector("[data-s2c-dot-work]");
+    if (!stage || !work) return;
     const aCells = [...stage.querySelectorAll('[data-s2c-matrix="A"] span')];
     const bCells = [...stage.querySelectorAll('[data-s2c-matrix="B"] span')];
     const resultCells = [...stage.querySelectorAll("[data-s2c-result]")];

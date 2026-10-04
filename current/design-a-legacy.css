@@ -2969,3 +2969,390 @@ body.dark :is(main, #la) :is(.lesson-page-section, #lb) .basis-label rect {
   font-size: 18px;
   font-weight: 600;
 }
+
+/* ch5 §4: value labels, the formulas in t appear with the verdict */
+:is(main, #la) .qv-values > span > .qv-s4-label {
+  justify-self: start;
+  max-width: 100%;
+  font-weight: inherit;
+}
+
+/* ch2 §1: det and |det| stay on one line */
+:is(main, #la) .ch2-meter-card > :is([data-det], [data-abs]) {
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+}
+
+/* ch2 §6: the six Leibniz terms, the two containing a_ij lit */
+:is(main, #la) .ch2-leibniz {
+  display: grid;
+  gap: 10px;
+  margin: 16px 0;
+  padding: 14px 16px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: var(--surface-soft);
+}
+
+:is(main, #la) .ch2-leibniz > p {
+  margin: 0;
+  color: var(--text-2);
+  font-size: 15px;
+  line-height: 1.7;
+}
+
+:is(main, #la) .ch2-leibniz > .ch2-leib-title {
+  color: var(--text);
+  font-weight: 600;
+}
+
+:is(main, #la) .ch2-leib-terms {
+  display: grid;
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+  gap: 6px;
+}
+
+:is(main, #la) .ch2-leib-term {
+  display: grid;
+  justify-items: center;
+  gap: 2px;
+  min-width: 0;
+  margin: 0;
+  padding: 8px 4px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--surface-solid);
+  opacity: 0.6;
+}
+
+:is(main, #la) .ch2-leib-term > small {
+  color: var(--muted);
+  font-size: 12px;
+}
+
+:is(main, #la) .ch2-leib-term.is-hit {
+  border-color: color-mix(in srgb, var(--cv-image) 55%, var(--line));
+  background: color-mix(in srgb, var(--cv-image) 9%, var(--surface-solid));
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--cv-image) 16%, transparent);
+  opacity: 1;
+}
+
+:is(main, #la) .ch2-leibniz > .ch2-leib-factor {
+  overflow-x: auto;
+  color: var(--text);
+}
+
+@media (max-width: 720px) {
+  :is(main, #la) .ch2-leib-terms {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+/* ch2 §3: the zero below the diagonal that the current path picks, circled */
+:is(main, #la) .ch2-term-matrix td.is-zero-hit > :is(button, span) {
+  border-radius: 999px;
+  box-shadow: 0 0 0 2px var(--bad-text, #a3402a), 0 0 0 7px color-mix(in srgb, var(--bad-text, #a3402a) 16%, transparent);
+  color: var(--bad-text, #a3402a);
+}
+
+/* ch2 §2: the starting wiring as a ghost, and the τ strip */
+:is(main, #la) .ch2-wires path.is-ghost {
+  stroke: var(--cv-axis);
+  stroke-dasharray: 5 4;
+  opacity: 0.35;
+}
+
+:is(main, #la) .ch2-tau-strip {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+  margin-top: 8px;
+}
+
+:is(main, #la) .ch2-tau-strip > i {
+  color: var(--faint);
+  font-style: normal;
+}
+
+:is(main, #la) .ch2-tau-cell {
+  display: grid;
+  justify-items: center;
+  gap: 2px;
+  padding: 6px 10px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--surface-solid);
+  font-variant-numeric: tabular-nums;
+}
+
+:is(main, #la) .ch2-tau-cell > b {
+  font-size: 14px;
+}
+
+:is(main, #la) .ch2-tau-cell > small {
+  font-size: 12.5px;
+  font-weight: 600;
+}
+
+:is(main, #la) .ch2-tau-cell > .is-plus {
+  color: var(--ok-text);
+}
+
+:is(main, #la) .ch2-tau-cell > .is-minus {
+  color: var(--bad-text);
+}
+
+:is(main, #la) .ch2-tau-cell.is-current {
+  border-color: color-mix(in srgb, var(--cv-image) 55%, var(--line));
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--cv-image) 16%, transparent);
+}
+
+/* ch1 §3/§4: the zero polynomial as an empty slot below the axis; the gcd on the last nonzero bar */
+:is(main, #la) .ch1-stairs-svg :is(.ch1-stairs-zero-label, .ch1-stairs-top) {
+  fill: var(--cv-image);
+  font-size: 12px;
+  font-weight: 600;
+}
+
+:is(main, #la) .ch1-stairs-svg .ch1-stairs-top {
+  font-size: 13px;
+  font-style: italic;
+}
+
+/* ch4 §7: the x → y coupling through the lower-left block */
+:is(main, #la) :is(.lesson-page-section, #lb) .bk7-couple {
+  margin: 0;
+  padding: 8px 12px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: var(--cv-paper);
+}
+
+:is(main, #la) :is(.lesson-page-section, #lb) .bk7-couple > svg {
+  display: block;
+  width: 100%;
+  max-width: 420px;
+  height: auto;
+  margin: 0 auto;
+}
+
+:is(main, #la) :is(.lesson-page-section, #lb) .bk7-couple .bk7-node {
+  fill: var(--surface-solid);
+  stroke-width: 1.6;
+}
+
+:is(main, #la) :is(.lesson-page-section, #lb) .bk7-couple .bk7-node.is-x { stroke: var(--cv-v1); }
+:is(main, #la) :is(.lesson-page-section, #lb) .bk7-couple .bk7-node.is-y { stroke: var(--cv-image); }
+
+:is(main, #la) :is(.lesson-page-section, #lb) .bk7-couple .bk7-node-name {
+  fill: var(--text);
+  font: italic 600 16px var(--font-serif, serif);
+}
+
+:is(main, #la) :is(.lesson-page-section, #lb) .bk7-couple .bk7-node-note {
+  fill: var(--muted);
+  font: 12.5px var(--font-serif, serif);
+}
+
+:is(main, #la) :is(.lesson-page-section, #lb) .bk7-couple .bk7-link {
+  stroke: var(--cv-v2);
+  transition: stroke-width 420ms ease, opacity 420ms ease;
+}
+
+:is(main, #la) :is(.lesson-page-section, #lb) .bk7-couple .bk7-link-head { fill: var(--cv-v2); }
+:is(main, #la) :is(.lesson-page-section, #lb) .bk7-couple .bk7-link.is-grow { stroke: var(--bad-text); }
+:is(main, #la) :is(.lesson-page-section, #lb) .bk7-couple .bk7-link-head.is-grow { fill: var(--bad-text); }
+:is(main, #la) :is(.lesson-page-section, #lb) .bk7-couple .bk7-link.is-zero { stroke: var(--cv-axis); }
+
+:is(main, #la) :is(.lesson-page-section, #lb) .bk7-couple .bk7-link-label {
+  fill: var(--cv-v2);
+  font: italic 600 14px var(--font-serif, serif);
+}
+
+:is(main, #la) :is(.lesson-page-section, #lb) .bk7-couple .bk7-link-label.is-grow { fill: var(--bad-text); }
+:is(main, #la) :is(.lesson-page-section, #lb) .bk7-couple .bk7-link-label.is-zero { fill: var(--cv-subspace); }
+
+@media (prefers-reduced-motion: reduce) {
+  :is(main, #la) :is(.lesson-page-section, #lb) .bk7-couple .bk7-link { transition: none; }
+}
+
+/* ch1 §2: the operations workbench folded under the opening question */
+:is(main, #la) .ch1-more-ops {
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: var(--surface-solid);
+}
+
+:is(main, #la) .ch1-more-ops > summary {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 4px 14px;
+  padding: 14px 18px;
+  cursor: pointer;
+  list-style: none;
+}
+
+:is(main, #la) .ch1-more-ops > summary::-webkit-details-marker {
+  display: none;
+}
+
+:is(main, #la) .ch1-more-ops > summary::after {
+  content: "展开";
+  margin-left: auto;
+  color: var(--accent-strong);
+  font-size: 14px;
+  font-weight: 600;
+}
+
+:is(main, #la) .ch1-more-ops[open] > summary::after {
+  content: "收起";
+}
+
+:is(main, #la) .ch1-more-ops > summary > span {
+  color: var(--text);
+  font-size: 17px;
+  font-weight: 600;
+}
+
+:is(main, #la) .ch1-more-ops > summary > small {
+  color: var(--muted);
+  font-size: 14px;
+}
+
+:is(main, #la) .ch1-more-ops > .ch1-coeff-workflow {
+  padding: 0 18px 18px;
+}
+
+@media (max-width: 720px) {
+  :is(main, #la) .ch1-more-ops > summary,
+  :is(main, #la) .ch1-more-ops > .ch1-coeff-workflow {
+    padding-inline: 12px;
+  }
+}
+
+/* ch1 §3: the finished staircase beside the opposite case (divides / does not divide) */
+:is(main, #la) .ch1-stairs-pair {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+
+:is(main, #la) .ch1-stairs-pair > figure {
+  display: grid;
+  gap: 4px;
+  min-width: 0;
+  margin: 0;
+  padding: 8px 6px 4px;
+  border-radius: 8px;
+  background: var(--cv-paper);
+}
+
+:is(main, #la) .ch1-stairs-pair > figure.is-compare {
+  border: 1px dashed var(--line-strong);
+}
+
+:is(main, #la) .ch1-stairs-pair > figure > figcaption {
+  padding-left: 6px;
+  color: var(--muted);
+  font-size: 13px;
+}
+
+:is(main, #la) .ch1-stairs-pair > figure > figcaption > b {
+  color: var(--text);
+  font-weight: 600;
+}
+
+@media (max-width: 560px) {
+  :is(main, #la) .ch1-stairs-pair {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* ch2 §8: the signed area written on each block of tiles */
+:is(main, #la) .ch2-tile-group > .ch2-tile-val {
+  padding: 1px 8px;
+  border: 1px solid color-mix(in srgb, var(--cv-image) 35%, var(--line));
+  border-radius: 6px;
+  background: var(--surface-solid);
+  color: var(--cv-image);
+  font-size: 13px;
+  font-weight: 600;
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+}
+
+/* ch4 §1: column titles pick a whole column; its cells glow in all three readings */
+:is(main, #la) :is(.lesson-page-section, #lb) .ml1-colwrap {
+  display: grid;
+  gap: 4px;
+}
+
+:is(main, #la) :is(.lesson-page-section, #lb) .ml1-colheads {
+  display: grid;
+  grid-template-columns: repeat(2, 46px);
+  gap: 6px;
+  padding: 0 9.5px;
+}
+
+:is(main, #la) :is(.lesson-page-section, #lb) .ml1-colhead {
+  min-height: 26px;
+  padding: 2px 4px;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  background: var(--surface-solid);
+  font: inherit;
+  font-size: 12.5px;
+  font-weight: 600;
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+:is(main, #la) :is(.lesson-page-section, #lb) .ml1-table th > .ml1-colhead {
+  font-size: 13px;
+}
+
+:is(main, #la) :is(.lesson-page-section, #lb) .ml1-lab .ml1-c1.is-col {
+  background: color-mix(in srgb, var(--cv-v1) 16%, var(--surface-solid));
+  box-shadow: inset 0 0 0 1px var(--cv-v1), 0 0 0 3px color-mix(in srgb, var(--cv-v1) 16%, transparent);
+}
+
+:is(main, #la) :is(.lesson-page-section, #lb) .ml1-lab .ml1-c2.is-col {
+  background: color-mix(in srgb, var(--cv-v2) 16%, var(--surface-solid));
+  box-shadow: inset 0 0 0 1px var(--cv-v2), 0 0 0 3px color-mix(in srgb, var(--cv-v2) 16%, transparent);
+}
+
+/* ch4 §5: when the cuts do not match, C greys out */
+:is(main, #la) :is(.lesson-page-section, #lb) .blk-mat.is-void > .blk-grid {
+  opacity: 0.4;
+  filter: grayscale(1);
+  transition: opacity 240ms ease;
+}
+
+:is(main, #la) :is(.lesson-page-section, #lb) .blk-mat.is-void > span {
+  color: var(--bad-text);
+}
+
+/* ch5 §3 on phones: the sign wheel sits on the upper-right corner of its surface */
+:is(main, #la) .qv-same > figure:has(> .qv-s3-inset) {
+  position: relative;
+}
+
+:is(main, #la) .qv-same > figure > figure.qv-s3-inset {
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  z-index: 2;
+  width: 96px;
+  margin: 0;
+}
+
+:is(main, #la) .qv-same > figure > figure.qv-s3-inset canvas {
+  display: block;
+  width: 96px;
+  height: 88px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--cv-paper);
+}

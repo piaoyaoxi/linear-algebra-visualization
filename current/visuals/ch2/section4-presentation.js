@@ -52,11 +52,13 @@
         secondLabel: "C₂",
         ghost: initial,
         guide,
+        orientation: true,
         caption: `当前 det=${M().formatNum(det, 3)} · 虚线是初始图形`,
       });
       M().drawTransformScene(beforeCanvas, initial, {
         firstLabel: "C₁",
         secondLabel: "C₂",
+        orientation: true,
         caption: `固定参照 · det=${M().formatNum(baseDet, 3)}`,
       });
     }
@@ -71,10 +73,11 @@
       try {
         await M().animateMatrix(canvas, next, {
           duration: track ? 900 : 560,
-          drawOptions: { firstLabel: "C₁", secondLabel: "C₂", caption: line, ghost: initial, guide: track },
-          onUpdate(current) {
-            root.querySelector("[data-cur-det]").textContent = M().formatNum(M().det2(current), 3);
-            root.querySelector("[data-mat]").innerHTML = matrixHtml(current);
+          // the orientation arc turns over during a swap; the readouts show where the move lands
+          drawOptions: { firstLabel: "C₁", secondLabel: "C₂", caption: line, ghost: initial, guide: track, orientation: true },
+          onUpdate() {
+            root.querySelector("[data-cur-det]").textContent = M().formatNum(M().det2(next), 3);
+            root.querySelector("[data-mat]").innerHTML = matrixHtml(next);
           },
         });
         matrix = M().cloneMat(next);

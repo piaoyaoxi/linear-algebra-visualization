@@ -300,7 +300,19 @@
       tools.querySelector("[data-slide]").textContent = key === "deriv" ? "让 x′ 走遍 x+D⁻¹(0)" : "让 x′ 走遍 x+σ⁻¹(0)";
       state.x = mode().x.slice();
       const { ker } = structure();
-      state.w = ker.length === 1 ? numVec(ker[0]).map((c) => (key === "deriv" ? -c : -0.5 * c)) : [-1, 1, 0];
+      // x′ starts well away from x and from σx (so handles and labels do not overlap), on the half grid
+      const sx = numVec(K.matVec(A(), K.vec(state.x)));
+      const start = () => {
+        const k = numVec(ker[0]);
+        for (const t of [-2, 2, -1.5, 1.5, -3, 3, -1, 1]) {
+          const w = k.map((c) => c * t);
+          const far = Math.hypot(...state.x.map((v, i) => v + w[i] - sx[i])) >= 1;
+          const ok = far && w.every((c, i) => Number.isInteger(c * 2) && Math.abs(state.x[i] + c) <= 2.5) && Math.hypot(...w) >= 1.2;
+          if (ok) return w;
+        }
+        return k.map((c) => -c);
+      };
+      state.w = ker.length === 1 ? start() : [-1.5, 1.5, 0];
       scene?.destroy();
       // the old scene's caption (added by lab-layout.js) goes with it
       stage.querySelectorAll(".la-figcaption").forEach((n) => n.remove());
@@ -468,6 +480,8 @@
           html += `<p class="ch7l-muted">AW 与 W 的夹角 ≈${angleBetween(numVec(r.n), V().cross(imgs[0], imgs[1])).toFixed(1)}°</p>`;
         }
       }
+      // legend at the bottom of the readout: what the colours and the deeper W mean
+      html += `<div class="ch7l-legend"><span><i class="is-w"></i>W：候选${state.kind === "line" ? "直线" : "平面"}</span><span><i class="is-aw"></i>AW：W 的像（虚线）</span><span><i class="is-same"></i>AW=W 时两者重合，W 加深</span></div>`;
       info.innerHTML = html;
       if (flow?.revealed) {
         const A = K.mat(preset().A);
@@ -601,7 +615,7 @@
     const side = el("aside", "ch7l-side");
     body.append(stage, side);
     lab.append(toolbar, body);
-    const scene = S().create(stage, { range: 2.4, label: "Krylov 序列与它的张成", hint: "拖动空白处旋转 · 拖动圆点改变 v（箭头只画方向）", yaw: -0.85, pitch: 0.4, spreadLabels: true });
+    const scene = S().create(stage, { range: 2, label: "Krylov 序列与它的张成", hint: "拖动空白处旋转 · 拖动圆点改变 v（箭头只画方向）", yaw: -0.85, pitch: 0.4, spreadLabels: true, labelSafe: true });
     const gateHost = el("div");
     const tools = el("div", "ch7l-actions");
     tools.innerHTML = `<button type="button" class="ch7l-btn is-primary" data-next>加入下一个</button><button type="button" class="ch7l-btn" data-restart>只留 v</button><button type="button" class="ch7l-btn" data-e1>v=ε₁</button><button type="button" class="ch7l-btn" data-e3>v=ε₃</button>`;

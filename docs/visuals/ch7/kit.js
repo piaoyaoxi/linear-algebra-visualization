@@ -269,6 +269,8 @@
         : `<span class="ch7l-bad">和图中看到的不一致。</span>${o.why ? ` ${o.why}` : ""}`;
       resultBox.innerHTML = `<strong>结论</strong><p>${verdict}</p><p>${spec.conclusion}</p>`;
       resultBox.hidden = false;
+      // the “act now” hint has done its job: the box now shows the verdict instead
+      feedback.innerHTML = o.correct ? `<span class="ch7l-ok">✓ 预测正确，结论见下方。</span>` : `<span class="ch7l-bad">× 和图中看到的不一致，结论见下方。</span>`;
       box.classList.add("is-done");
       spec.onReveal?.();
     }

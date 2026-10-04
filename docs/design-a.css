@@ -331,7 +331,7 @@ body :is(.ch3l-lab, .ch6l-lab, .ch7l-lab, .ch9l-lab) {
   box-shadow: none;
 }
 
-body :is(.ch3l-head, .ch6l-head, .ch7l-head, .ch9l-head) > h3 {
+body :is(.ch3l-head, .ch3-lab-head, .ch6l-head, .ch7l-head, .ch9l-head) > h3 {
   font-size: 21px;
   font-weight: 600;
 }
@@ -846,6 +846,55 @@ body .ch7l-iter > :is(thead, tbody) > tr > :is(th, td):not(:first-child) {
   font-variant-numeric: tabular-nums;
 }
 
+/* ch7 §7 legend under the readout */
+body .ch7l-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 14px;
+  margin-top: 10px;
+  padding-top: 8px;
+  border-top: 1px solid var(--line);
+  color: var(--muted);
+  font-size: 13px;
+}
+
+body .ch7l-legend > span {
+  display: inline-flex;
+  gap: 6px;
+  align-items: center;
+}
+
+body .ch7l-legend > span > i {
+  flex: none;
+  width: 18px;
+  height: 10px;
+  border-radius: 2px;
+}
+
+body .ch7l-legend > span > i.is-w {
+  border: 1.2px solid var(--cv-subspace);
+  background: color-mix(in srgb, var(--cv-subspace) 14%, transparent);
+}
+
+body .ch7l-legend > span > i.is-aw {
+  border: 1.2px dashed color-mix(in srgb, var(--cv-image) 60%, transparent);
+  background: color-mix(in srgb, var(--cv-image) 6%, transparent);
+}
+
+body .ch7l-legend > span > i.is-same {
+  border: 2px solid var(--cv-subspace);
+  background: color-mix(in srgb, var(--cv-subspace) 26%, transparent);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--cv-subspace) 16%, transparent);
+}
+
+/* ch7 §5: Aᵏ through the eigenbasis, beside the table */
+body .ch7l-power {
+  margin: 4px 0 8px;
+  overflow-x: auto;
+  overflow-y: hidden;
+  font-size: 14px;
+}
+
 /* lab-layout.js: when the title would be squeezed, the presets get their own row */
 body :is(.ch3l-lab, .ch6l-lab, .ch7l-lab, .ch9l-lab).la-laid-out.la-stack > :is(.ch3l-head, .ch6l-head, .ch7l-head, .ch9l-head) {
   grid-column: 1 / -1;
@@ -894,46 +943,76 @@ body .ch8l-trail > .ch8l-trail-title {
   font-size: 13px;
 }
 
-body .ch8l-trail > .ch8l-trail-bars {
-  display: flex;
-  align-items: flex-end;
-  gap: 6px;
-  height: 76px;
+/* ch8 §2 staircase: the corner's degree after every step */
+body .ch8l-trail > .ch8l-stair-wrap {
   overflow-x: auto;
   overflow-y: hidden;
 }
 
-body .ch8l-trail-bars > .ch8l-trail-bar {
-  position: relative;
-  flex: 0 0 18px;
-  height: calc(10px + 44px * var(--h, 0));
-  border-radius: 4px 4px 0 0;
-  background: color-mix(in srgb, var(--accent) 55%, transparent);
-  font-style: normal;
+body .ch8l-stair {
+  display: block;
+  font-family: var(--font-serif);
+  font-variant-numeric: tabular-nums;
 }
 
-body .ch8l-trail-bars > .ch8l-trail-bar.is-done {
-  background: color-mix(in srgb, var(--cv-axis) 40%, transparent);
+body .ch8l-stair > .ch8l-stair-grid {
+  stroke: var(--cv-grid-major);
+  stroke-width: 1;
 }
 
-body .ch8l-trail-bars > .ch8l-trail-bar.is-now {
-  background: var(--accent);
-  box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 18%, transparent);
+body .ch8l-stair > .ch8l-stair-axis {
+  stroke: var(--cv-axis);
+  stroke-width: 1;
 }
 
-body .ch8l-trail-bars > .ch8l-trail-bar.is-new-stage {
-  margin-left: 10px;
+body .ch8l-stair > .ch8l-stair-tick,
+body .ch8l-stair > .ch8l-stair-step {
+  fill: var(--faint);
+  font-size: 12px;
 }
 
-body .ch8l-trail-bar > b {
-  position: absolute;
-  top: -16px;
-  left: 0;
-  right: 0;
-  color: var(--muted);
-  font-size: 11px;
+body .ch8l-stair > .ch8l-stair-stage {
+  fill: var(--muted);
+  font-size: 12.5px;
+  font-weight: 600;
+}
+
+body .ch8l-stair > .ch8l-stair-val {
+  fill: var(--muted);
+  font-size: 12px;
   font-weight: 650;
-  text-align: center;
+}
+
+body .ch8l-stair > .ch8l-stair-bar {
+  fill: color-mix(in srgb, var(--accent) 50%, transparent);
+}
+
+body .ch8l-stair > .ch8l-stair-bar.is-done {
+  fill: color-mix(in srgb, var(--cv-axis) 40%, transparent);
+}
+
+body .ch8l-stair > .ch8l-stair-bar.is-now {
+  fill: var(--accent);
+  stroke: color-mix(in srgb, var(--accent) 22%, transparent);
+  stroke-width: 6px;
+  paint-order: stroke;
+}
+
+body .ch8l-stair > .ch8l-stair-zero {
+  stroke: var(--cv-axis);
+  stroke-width: 3;
+}
+
+body .ch8l-stair > .ch8l-stair-rest {
+  stroke: var(--cv-v2);
+  stroke-width: 1.4;
+  stroke-dasharray: 5 4;
+}
+
+body .ch8l-stair > .ch8l-stair-rest-label {
+  fill: var(--cv-v2);
+  font-size: 12px;
+  font-weight: 650;
 }
 
 /* ch3 §2 row picture: distance from x to each plane; a plane x lies on turns green */

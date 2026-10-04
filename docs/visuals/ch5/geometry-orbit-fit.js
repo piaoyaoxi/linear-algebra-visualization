@@ -404,10 +404,18 @@
       const onSurface = frame.project(options.point[0], options.point[1], value);
       const image = getComputedStyle(document.body).getPropertyValue("--cv-image").trim() || "#8c4f86";
       ctx.save();
-      // vertical height stem from the base point up to the surface
-      ctx.strokeStyle = image;
-      ctx.lineWidth = 3.4;
+      // vertical height stem from the base point up to the surface, on a paper halo so it reads over the mesh
       ctx.lineCap = "round";
+      ctx.strokeStyle = palette.soft;
+      ctx.globalAlpha = 0.85;
+      ctx.lineWidth = 9;
+      ctx.beginPath();
+      ctx.moveTo(floor.x, floor.y);
+      ctx.lineTo(onSurface.x, onSurface.y);
+      ctx.stroke();
+      ctx.globalAlpha = 1;
+      ctx.strokeStyle = image;
+      ctx.lineWidth = 5;
       ctx.beginPath();
       ctx.moveTo(floor.x, floor.y);
       ctx.lineTo(onSurface.x, onSurface.y);

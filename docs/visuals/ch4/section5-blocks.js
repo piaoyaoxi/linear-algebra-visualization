@@ -85,7 +85,22 @@
     const readout = root.querySelector("[data-readout]");
     const targets = root.querySelector("[data-targets]");
 
+    // after the reveal, the verdict is followed by a line that reads the current cuts
+    let revealedText = "";
+    const split = (k, n) => `${state[k]}+${n - state[k]}`;
+    function nowLine() {
+      const ok = state.aCol === state.bRow;
+      return ok
+        ? `现在：A 的列 ${split("aCol", 4)} 与 B 的行 ${split("bRow", 4)} 一致，块乘积有定义；A 的行 ${split("aRow", 3)}、B 的列 ${split("bCol", 3)} 把 C 分成 ${split("aRow", 3)} 行、${split("bCol", 3)} 列。`
+        : `现在：A 的列 ${split("aCol", 4)} 与 B 的行 ${split("bRow", 4)} 不一致，块乘积无定义。`;
+    }
+    function syncFeedback() {
+      if (!revealedText) return;
+      fb.innerHTML = `${revealedText}<br><span class="blk-now">${nowLine()}</span>`;
+    }
+
     function paint() {
+      syncFeedback();
       const ok = state.aCol === state.bRow;
       // before a prediction nothing tells whether the cuts fit: rulers stay neutral,
       // the size strip and the verdict wait, and every C_ij stays selectable
@@ -160,9 +175,10 @@
       gate.querySelectorAll("[data-i]").forEach((x) => x.classList.remove("is-picked"));
       picked.classList.add(okk ? "is-right" : "is-wrong");
       gate.querySelector(".ch3l-predict").classList.add("is-done");
-      fb.innerHTML = okk
+      revealedText = okk
         ? "✓ 块乘法只要求 A 的列分法与 B 的行分法一致。A 的行切口和 B 的列切口可以自由选择，它们只决定结果 C 怎样分块。"
         : `和图中看到的不一致：${picked.dataset.why}`;
+      syncFeedback();
     };
     gate.querySelectorAll("[data-i]").forEach((b) => b.addEventListener("click", () => {
       if (revealed) return;

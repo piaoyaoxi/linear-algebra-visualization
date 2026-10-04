@@ -535,7 +535,6 @@
       <div class="s2c-lab" data-s2c-lab>
         <header class="s2c-header">
           <div>
-            <span class="s2c-kicker">同一组对象，两个视角</span>
             <h3>矩阵乘法：在连续画面里完成</h3>
             <p>所有画面都使用同一个 ${texInline(`A=${matrixTex(MODEL.A)}`)}、${texInline(`B=${matrixTex(MODEL.B)}`)} 和输入 ${texInline(`x=${vectorTex(MODEL.x)}`)}。</p>
           </div>
@@ -553,9 +552,7 @@
         <div class="s2c-panels">
           <section class="s2c-panel is-active" data-s2c-panel="compose" role="tabpanel">
             <div class="s2c-stage-copy">
-              <span class="s2c-stage-kicker">核心画面</span>
-              <h4>同一张网格，先经过 B，再经过 A</h4>
-              <p>紫色向量是输入 <span class="s2c-math-plain">x</span> 在当前变换下的像；虚线留下它经过的位置。</p>
+              <p>同一张网格先经过 B，再经过 A。紫色向量是输入 <span class="s2c-math-plain">x</span> 在当前变换下的像；虚线留下它经过的位置。</p>
             </div>
             <div data-s2c-compose-gate></div>
             <div class="s2c-canvas-shell">
@@ -578,9 +575,7 @@
 
           <section class="s2c-panel" data-s2c-panel="order" role="tabpanel" hidden>
             <div class="s2c-stage-copy">
-              <span class="s2c-stage-kicker">顺序比较</span>
-              <h4>从同一个单位方格出发，左右同时播放</h4>
-              <p>左边先剪切后拉伸，右边先拉伸后剪切；中间状态不同，最终结果也不同。</p>
+              <p>从同一个单位方格出发，左右同时播放：左边先剪切后拉伸，右边先拉伸后剪切；中间状态不同，最终结果也不同。</p>
             </div>
             <div class="s2c-order-grid">
               <article>

@@ -314,6 +314,15 @@
         ctx.arc(s.x, s.y, 5.5, 0, Math.PI * 2);
         ctx.fill();
         ctx.strokeStyle = pal.paper; ctx.lineWidth = 1.5; ctx.stroke();
+        // a root the degree-n attempt could not reach is named, on the side away from its miss
+        if (missed) {
+          const value = M().rToNum(info.missed[i - info.n]?.value ?? M().R(0));
+          ctx.save(); ctx.fillStyle = pal.v2; ctx.font = "600 13px 'LA Serif Latin', 'LA Serif SC', 'Songti SC', serif";
+          const unit = cam.toScreen(1, 0).x - cam.toScreen(0, 0).x;
+          const stagger = unit < 70 && (i - info.n) % 2 === 1 ? 17 : 0;
+          ctx.fillText(`第 ${i + 1} 个根`, s.x, value >= 0 ? s.y + 34 + stagger : s.y - 14 - stagger);
+          ctx.restore();
+        }
         // the tick numbers already name the roots; only a multiple root gets a label
         if (info.possible && i === 0 && info.n > info.m) {
           ctx.fillStyle = pal.text;

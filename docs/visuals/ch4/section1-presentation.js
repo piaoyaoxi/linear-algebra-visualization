@@ -504,7 +504,6 @@
       lab.querySelectorAll("[data-ml1-col]").forEach((b) => b.addEventListener("click", () => {
         const j = Number(b.dataset.ml1Col);
         state.col = state.col === j ? null : j;
-        state.ghost = null;
         paint();
       }));
     }
@@ -555,11 +554,16 @@
         ctx.beginPath(); ctx.moveTo(x0, y0); ctx.lineTo(x1 - Math.cos(a) * 9, y1 - Math.sin(a) * 9); ctx.stroke();
         ctx.setLineDash([]);
         ctx.beginPath(); ctx.moveTo(x1, y1); ctx.lineTo(x1 - Math.cos(a - 0.42) * 10, y1 - Math.sin(a - 0.42) * 10); ctx.lineTo(x1 - Math.cos(a + 0.42) * 10, y1 - Math.sin(a + 0.42) * 10); ctx.closePath(); ctx.fill();
-        if (label) { ctx.font = "italic 600 14px 'LA Serif Latin', 'LA Serif SC', 'Songti SC', serif"; ctx.fillText(label, x1 + 6, y1 - 6); }
+        if (label && opts.ghost) {
+          // the ghost is named below its tip, away from the current arrow's label
+          ctx.globalAlpha = 0.7; ctx.font = "italic 600 13px 'LA Serif Latin', 'LA Serif SC', 'Songti SC', serif"; ctx.fillText(label, x1 + 6, y1 + 16);
+        } else if (label) { ctx.font = "italic 600 14px 'LA Serif Latin', 'LA Serif SC', 'Songti SC', serif"; ctx.fillText(label, x1 + 6, y1 - 6); }
         ctx.restore();
       };
       const A = state.A;
-      if (state.ghost) arrow(state.ghost.x, state.ghost.y, state.ghost.j === 0 ? C.v1 : C.v2, "", { ghost: true });
+      // the arrow before the last edit, unless the edit left it where it was
+      const g = state.ghost;
+      if (g && (g.x !== state.A[0][g.j] || g.y !== state.A[1][g.j])) arrow(g.x, g.y, g.j === 0 ? C.v1 : C.v2, `改前 Ae${SUB[g.j]}`, { ghost: true });
       const [si, sj] = state.sel;
       const ex = A[0][sj];
       const ey = A[1][sj];

@@ -164,7 +164,7 @@
         || rows.join("").includes("/");
       return `<svg data-division-svg data-animation-progress="0" viewBox="0 0 ${width} ${height}" role="img" aria-label="标准多项式长除法"${fractional ? ' class="has-fractions"' : ""}>
         <text class="ch1-ld-label" x="174" y="57" text-anchor="end">商</text>
-        ${termRow(quotient, maxDegree, 59, { x0, columnWidth, newDegree: newQuotientDegree })}
+        ${state.steps[index]?.kind === "start" ? "" : termRow(quotient, maxDegree, 59, { x0, columnWidth, newDegree: newQuotientDegree })}
         <path class="ch1-ld-bracket" d="M188 91 H${width - 34} M188 91 V154"></path>
         <text class="ch1-ld-label is-role" x="174" y="113" text-anchor="end">除式</text>
         <text class="ch1-ld-label is-role" x="${x0 - 10}" y="113">被除式</text>

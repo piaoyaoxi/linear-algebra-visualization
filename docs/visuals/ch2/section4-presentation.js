@@ -52,6 +52,7 @@
         secondLabel: "C₂",
         ghost: initial,
         guide,
+        guideLabel: guide ? "∥ C₁" : "",
         orientation: true,
         caption: `当前 det=${M().formatNum(det, 3)} · 虚线是初始图形`,
       });
@@ -69,12 +70,13 @@
       animating = true;
       factor *= multiplier;
       ledger.push(line);
-      guide = track;
+      // C₁ ← 2C₁ keeps C₂ and the direction of C₁, so the slide line of an earlier shear stays valid
+      guide = track || (multiplier === 2 ? guide : null);
       try {
         await M().animateMatrix(canvas, next, {
           duration: track ? 900 : 560,
           // the orientation arc turns over during a swap; the readouts show where the move lands
-          drawOptions: { firstLabel: "C₁", secondLabel: "C₂", caption: line, ghost: initial, guide: track, orientation: true },
+          drawOptions: { firstLabel: "C₁", secondLabel: "C₂", caption: line, ghost: initial, guide, guideLabel: guide ? "∥ C₁" : "", orientation: true },
           onUpdate() {
             root.querySelector("[data-cur-det]").textContent = M().formatNum(M().det2(next), 3);
             root.querySelector("[data-mat]").innerHTML = matrixHtml(next);

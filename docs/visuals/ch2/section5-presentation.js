@@ -44,7 +44,7 @@
     });
     const free = () => !gate || gate.picked;
     function syncLocks() {
-      ["[data-op-add]", "[data-op-add2]", "[data-op-demo]"].forEach((selector) => {
+      ["[data-op-next]", "[data-op-demo]"].forEach((selector) => {
         const button = root.querySelector(selector);
         if (free()) {
           if (button.title) { button.disabled = busy; button.removeAttribute("title"); }
@@ -75,17 +75,24 @@
       });
       root.querySelector("[data-op-undo]").disabled = value || history.length === 0;
       if (!value) {
-        root.querySelectorAll("[data-op-add], [data-op-add2], [data-op-demo]").forEach((button) => button.removeAttribute("title"));
+        root.querySelectorAll("[data-op-next], [data-op-demo]").forEach((button) => button.removeAttribute("title"));
         syncLocks();
         syncZeros();
       }
     }
 
-    // an entry that is already 0 has nothing left to eliminate
+    // the stepper names the entry it zeroes next; once upper triangular there is nothing left
+    function nextTarget() {
+      if (Math.abs(matrix[1][0]) > M().EPS) return "first";
+      if (Math.abs(matrix[2][1]) > M().EPS) return "second";
+      return null;
+    }
     function syncZeros() {
+      const next = root.querySelector("[data-op-next]");
+      const target = nextTarget();
+      next.textContent = target === "first" ? "下一步：消去 a₂₁" : target === "second" ? "下一步：消去 a₃₂" : "已是上三角";
       if (busy || !free()) return;
-      root.querySelector("[data-op-add]").disabled = Math.abs(matrix[1][0]) < M().EPS;
-      root.querySelector("[data-op-add2]").disabled = Math.abs(matrix[2][1]) < M().EPS;
+      next.disabled = !target;
     }
 
     // arrow from the pivot (row focus.col) to the entry being zeroed (row focus.row)
@@ -126,7 +133,7 @@
           rowIndex === focus.col && colIndex === focus.col ? "is-pivot" : "",
           rowIndex > colIndex && Math.abs(value) < M().EPS ? "is-zero-entry" : "",
         ].filter(Boolean).join(" ");
-        return `<td class="${classes}">${tex(frac(value).tex)}</td>`;
+        return `<td class="${classes}">${tex(frac(value).tex.replace("\\tfrac", "\\dfrac"))}</td>`;
       }).join("")}</tr>`).join("");
       if (pulse && !M().reducedMotion()) setTimeout(() => table.querySelectorAll("td").forEach((cell) => cell.classList.remove("is-updated")), 420);
       const current = M().determinant(matrix);
@@ -187,8 +194,11 @@
 
     root.querySelector("[data-op-swap]").addEventListener("click", () => operations.swap(), { signal });
     root.querySelector("[data-op-scale]").addEventListener("click", () => operations.scale(), { signal });
-    root.querySelector("[data-op-add]").addEventListener("click", () => operations.eliminateFirst(), { signal });
-    root.querySelector("[data-op-add2]").addEventListener("click", () => operations.eliminateSecond(), { signal });
+    root.querySelector("[data-op-next]").addEventListener("click", () => {
+      const target = nextTarget();
+      if (target === "first") operations.eliminateFirst();
+      else if (target === "second") operations.eliminateSecond();
+    }, { signal });
     root.querySelector("[data-op-undo]").addEventListener("click", () => {
       if (busy || !history.length) return;
       const previous = history.pop();
@@ -258,20 +268,21 @@
       root.innerHTML = `
         <h2>交互实验</h2>
         <div class="ch2-lab">
-          <div class="ch2-lab-head"><h3>造零路线 · 两步到上三角</h3><p>矩阵、当前 det、累计倍率和操作历史同步。形成上三角后，直接读取对角线乘积。</p></div>
+          <div class="ch2-lab-head"><h3>造零路线 · 两步到上三角</h3><p>按“下一步”逐个消去主对角线下方的元：箭头从主元指向要消去的元，旁边写着所乘的倍数。形成上三角后，读对角线乘积。</p></div>
           <div data-elim-gate></div>
           <div class="ch2-lab-grid ch2-elimination-layout">
             <div class="ch2-matrix-box">
               <div class="ch2-pivot-wrap"><table class="ch2-matrix-table is-static" data-mat-table aria-label="三阶计算策略矩阵"></table><svg class="ch2-pivot-arrow" data-pivot-arrow aria-hidden="true"></svg></div>
               <div class="ch2-operation-line"><span>当前目标</span><strong data-current-operation></strong></div>
               <div class="ch2-toolbar">
-                <button type="button" class="is-primary" data-op-add>消去 R₂ 第一项</button>
-                <button type="button" data-op-add2>消去 R₃ 第二项</button>
+                <button type="button" class="is-primary" data-op-next>下一步：消去 a₂₁</button>
+                <button type="button" data-op-undo>上一步</button>
+                <button type="button" data-op-demo>自动播放</button>
+                <button type="button" data-op-reset>重置</button>
+              </div>
+              <div class="ch2-toolbar ch2-elim-compare"><span>对照：别的行变换怎样改 det</span>
                 <button type="button" data-op-swap>交换 R₁、R₂</button>
                 <button type="button" data-op-scale>R₂ ×2</button>
-                <button type="button" data-op-undo>撤销</button>
-                <button type="button" data-op-demo>播放三角化</button>
-                <button type="button" data-op-reset>重置</button>
               </div>
             </div>
             <div class="ch2-side">

@@ -92,7 +92,8 @@
       const old = was?.[i]?.[j];
       const changed = old !== undefined && old !== v;
       const cls = [j === 1 ? "cut-right" : "", j === 3 ? "bk7-bar" : "", role, changed ? "is-new" : ""].filter(Boolean).join(" ");
-      return `<td class="${cls}">${changed ? `<s class="bk7-was">${num(old)}</s>` : ""}<b>${num(v)}</b></td>`;
+      // the old value stays readable in (M | b) right beside; a changed cell is only tinted
+      return `<td class="${cls}"><b>${num(v)}</b></td>`;
     }).join("")}</tr>`).join("")}</tbody></table>`;
   }
 

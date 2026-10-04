@@ -53,6 +53,17 @@ async function check(viewport, dark) {
         await option.click();
         assert.ok(await lab.locator(".ch7l-predict-feedback").first().isVisible(), `${route}: prediction feedback`);
       }
+      if (route === "diagonal-matrices") {
+        // one or two steps barely show which component wins: the conclusion waits for k = 3
+        const stepBtn = lab.locator("[data-step]");
+        for (let k = 1; k <= 3; k += 1) {
+          await stepBtn.click();
+          await page.waitForTimeout(80);
+          const open = await lab.locator(".ch7l-result").isVisible();
+          assert.equal(open, k >= 3, `${route}: conclusion ${open ? "open" : "closed"} after ${k} step(s)`);
+        }
+        assert.ok((await lab.locator(".ch7l-power").innerText()).includes("X"), `${route}: Aᵏ = X·diag·X⁻¹ missing`);
+      }
       const chips = lab.locator(".ch7l-chip");
       if ((await chips.count()) > 1) {
         const before = await lab.innerText();

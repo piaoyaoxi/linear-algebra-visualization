@@ -42,7 +42,7 @@ defineChapter3Section("solvability", {
   },
   example: {
     title: "例题：先判断，再求解",
-    question: `${texInline(String.raw`A=\begin{bmatrix}1&1&2\\1&2&3\\2&3&5\end{bmatrix}`)}。分别取 ${texInline("b=(1,2,3)^T")} 与 ${texInline("b'=(1,2,4)^T")}，判断 ${texInline("Ax=b")} 是否有解。`,
+    question: `${texInline(String.raw`A=\begin{bmatrix}1&0&1\\0&1&1\\1&1&2\end{bmatrix}`)}。分别取 ${texInline("b=(1,2,3)^T")} 与 ${texInline("b'=(1,2,4)^T")}，判断 ${texInline("Ax=b")} 是否有解。`,
     choices: [
       { correct: true, text: "b 有解，并且有无穷多解；b′ 无解，此时 rank[A|b′]=3>rank A=2。" },
       { text: "两者都有唯一解，因为 A 是方阵。" },
@@ -51,7 +51,7 @@ defineChapter3Section("solvability", {
     ],
     steps: [
       "A 的第三行等于前两行之和，rank A=2。有解必须满足 b₃=b₁+b₂。",
-      `b=(1,2,3)：3=1+2，有解。消元得 ${texInline("x=(0,1,0)+t(-1,-1,1)")}，三个平面交于一条直线。`,
+      `b=(1,2,3)：3=1+2，有解。消元得 ${texInline("x=(1,2,0)+t(-1,-1,1)")}，三个平面交于一条直线。`,
       `b′=(1,2,4)：化简后最后一行是 ${texInline(String.raw`[0\ 0\ 0\mid 1]`)}，rank[A|b′]=3，无解。`,
       "几何上，b′ 离开了列空间平面；三个平面两两相交，三条交线互相平行，形成三棱柱。",
     ],

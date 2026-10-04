@@ -19,7 +19,13 @@
  *   glow: true | k  highlight: a wide underlay in the same colour (k scales its strength)
  * Optional scene options:
  *   spreadLabels    nudge overlapping labels apart in screen space
+ *   labelSafe       (with spreadLabels) treat each drag handle as a centred 26px obstacle,
+ *                   try a few more positions, and keep every label fully inside the canvas
+ *   clampLabels     keep every label fully inside the canvas (also without spreadLabels)
  *   scene.setRange(L, animate) zooms the viewing cube.
+ *   scene.fitRange(points, { pad, min, max, animate }) zooms to the given points.
+ *   scene.fitView(points, { pad, animate }) centres and magnifies the view on the given
+ *   points (planes stay clipped to the same cube); scene.resetFit() undoes it.
  */
 (() => {
   const V = {
@@ -168,6 +174,9 @@
     const defaults = { yaw: options.yaw ?? -0.95, pitch: options.pitch ?? 0.42 };
     const camera = { yaw: defaults.yaw, pitch: defaults.pitch };
     let objectsFn = () => [];
+    // view centre and magnification (opt-in through fitView; the defaults change nothing)
+    let center = [0, 0, 0];
+    let zoom = 1;
     let handles = [];
     let animation = 0;
     let destroyed = false;
@@ -204,14 +213,15 @@
     }
 
     function scale() {
-      return Math.min(size.w, size.h) / (2 * L * 1.72);
+      return (Math.min(size.w, size.h) / (2 * L * 1.72)) * zoom;
     }
 
     function project(p, b = basis()) {
       const s = scale();
+      const q = V.sub(p, center);
       return {
-        x: size.w / 2 + V.dot(p, b.right) * s,
-        y: size.h / 2 - V.dot(p, b.up) * s,
+        x: size.w / 2 + V.dot(q, b.right) * s,
+        y: size.h / 2 - V.dot(q, b.up) * s,
         z: V.dot(p, b.d),
       };
     }
@@ -424,7 +434,8 @@
         handles.forEach((h) => {
           if (h.hidden?.()) return;
           const q = project(h.get(), b);
-          placed.push({ x: q.x - 11, y: q.y + 5, w: 22 });
+          if (options.labelSafe) placed.push({ x: q.x - 13, y: q.y, w: 26 });
+          else placed.push({ x: q.x - 11, y: q.y + 5, w: 22 });
         });
       }
       // arrow shafts in screen space, so spread labels also keep off other arrows
@@ -451,7 +462,10 @@
           const gap = 6;
           const hits = (cx, cy) => placed.some((r) => cx < r.x + r.w + gap && cx + w + gap > r.x && Math.abs(cy - r.y) < h) || nearShaft(cx, cy);
           const tries = [[0, 0], [0, -h], [0, h], [w * 0.6, 0], [-w * 0.6, 0], [w + gap, 0], [w + gap, h], [0, -2 * h], [0, 2 * h], [w * 0.6, -h], [-w * 0.6, h]];
-          const ok = tries.find(([ox, oy]) => !hits(x + ox, y + oy));
+          if (options.labelSafe) tries.push([-w - gap, 0], [-w - gap, -h], [w + gap, -h], [-w - gap, h], [0, -3 * h], [0, 3 * h]);
+          // with labelSafe, a candidate must also fit inside the canvas
+          const inside = (cx, cy) => !options.labelSafe || (cx >= 4 && cx + w <= size.w - 4 && cy >= 10 && cy <= size.h - 10);
+          const ok = tries.find(([ox, oy]) => inside(x + ox, y + oy) && !hits(x + ox, y + oy));
           if (ok) {
             x += ok[0];
             y += ok[1];
@@ -459,6 +473,13 @@
           x = Math.max(4, Math.min(size.w - w, x));
           y = Math.max(10, Math.min(size.h - 10, y));
           placed.push({ x, y, w });
+        } else if (options.clampLabels) {
+          ctx.save();
+          ctx.font = lab.font || "600 13px 'LA Serif Latin', 'LA Serif SC', 'Songti SC', serif";
+          const w = ctx.measureText(lab.text).width + 4;
+          ctx.restore();
+          x = Math.max(4, Math.min(size.w - w, x));
+          y = Math.max(10, Math.min(size.h - 10, y));
         }
         drawText(lab.text, x, y, lab.color, lab.font);
       });
@@ -482,6 +503,55 @@
         if (t < 1) zoomAnim = requestAnimationFrame(step);
       };
       zoomAnim = requestAnimationFrame(step);
+    }
+
+    /*
+     * Zoom so the given points (and the origin) fill the view: the cube half-width
+     * becomes pad × the largest coordinate, kept within [min, max].
+     */
+    function fitRange(points, opts = {}) {
+      const big = Math.max(0, ...points.flat().map((x) => Math.abs(x)));
+      const target = Math.max(opts.min ?? 1, Math.min(opts.max ?? (options.range || 4), big * (opts.pad ?? 1.25)));
+      setRange(target, opts.animate ?? true);
+    }
+
+    let fitAnim = 0;
+    function animateView(toCenter, toZoom, animate) {
+      cancelAnimationFrame(fitAnim);
+      const from = { c: center.slice(), z: zoom };
+      const same = V.len(V.sub(toCenter, center)) < 1e-6 && Math.abs(toZoom - zoom) < 1e-6;
+      if (same) return;
+      if (!animate || reduceMotion()) {
+        center = toCenter;
+        zoom = toZoom;
+        render();
+        return;
+      }
+      const start = performance.now();
+      const step = (now) => {
+        const t = Math.min(1, (now - start) / 420);
+        const e = 1 - (1 - t) ** 3;
+        center = V.add(from.c, V.mul(V.sub(toCenter, from.c), e));
+        zoom = from.z + (toZoom - from.z) * e;
+        render();
+        if (t < 1) fitAnim = requestAnimationFrame(step);
+      };
+      fitAnim = requestAnimationFrame(step);
+    }
+
+    /* Centre the view on the points and magnify until they fill about 1/pad of the canvas. */
+    function fitView(points, opts = {}) {
+      if (!points.length || !size.w) return;
+      const b = basis();
+      const c = V.mul(points.reduce((acc, p) => V.add(acc, p), [0, 0, 0]), 1 / points.length);
+      const extent = Math.max(1e-6, ...points.map((p) => Math.max(Math.abs(V.dot(V.sub(p, c), b.right)), Math.abs(V.dot(V.sub(p, c), b.up)))));
+      const base = Math.min(size.w, size.h) / (2 * L * 1.72);
+      const target = Math.max(1, Math.min(opts.max ?? 4, Math.min(size.w, size.h) / (2 * (opts.pad ?? 1.6)) / (extent * base)));
+      animateView(c, target, opts.animate ?? true);
+    }
+
+    function resetFit(animate = true) {
+      animateView([0, 0, 0], 1, animate);
     }
 
     /* ---------- camera ---------- */
@@ -560,7 +630,7 @@
       const s = scale();
       const sx = (pt.x - size.w / 2) / s;
       const sy = -(pt.y - size.h / 2) / s;
-      const origin = V.add(V.mul(b.right, sx), V.mul(b.up, sy));
+      const origin = V.add(center, V.add(V.mul(b.right, sx), V.mul(b.up, sy)));
       const denom = V.dot(n, b.d);
       if (Math.abs(denom) < 1e-4) return null; // plane is edge-on
       const t = (d - V.dot(n, origin)) / denom;
@@ -673,6 +743,9 @@
         return L;
       },
       setRange,
+      fitRange,
+      fitView,
+      resetFit,
       render,
       resize,
       project: (p) => project(p),
@@ -694,6 +767,7 @@
         destroyed = true;
         cancelAnimationFrame(animation);
         cancelAnimationFrame(zoomAnim);
+        cancelAnimationFrame(fitAnim);
         ro.disconnect();
         themeObserver.disconnect();
         wrap.remove();

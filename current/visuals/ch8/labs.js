@@ -128,7 +128,8 @@
       task: "把 λ 换成一个数 λ₀，λ-矩阵就变成数字矩阵。拖动数轴上的 λ₀，看行列式曲线与秩怎样随 λ₀ 变化；切换上方的矩阵比较。",
     });
     const [matCard, readCard] = ui.cards;
-    const state = { key: "jordan", x: 0.5 };
+    // swept: the λ₀ interval already visited; rank strips are drawn only there
+    const state = { key: "jordan", x: 0.5, lo: 0.5, hi: 0.5 };
     let flow = null;
     ui.gateHost.addEventListener("click", () => redraw());
     const LO = -1;
@@ -185,19 +186,30 @@
           ? PAIRED.map((k, i) => ({ key: k, name: PAIR_NAMES[k], M: SCAN_PRESETS[k].M(), y: AXIS - 0.5 - gap * i }))
           : [{ key: state.key, name: "", M: Mx, y: AXIS - 0.55 }];
         roots.forEach((root) => d.point([X(M().toNumber(root)), AXIS], "v2", { r: 4 }));
+        const swept = (x) => x >= state.lo - 1e-9 && x <= state.hi + 1e-9;
+        const seen = roots.filter((root) => swept(M().toNumber(root)));
         tracks.forEach((t) => {
           const now = t.key === state.key;
           const font = (w) => `${w} 12px 'LA Serif Latin', 'LA Serif SC', 'Songti SC', serif`;
-          d.text([X(LO), t.y], `${t.name ? `${t.name} · ` : ""}秩 ${n}`, now ? "text" : "muted", { align: "left", dy: 16, font: font(now ? 700 : 600) });
-          d.segment([X(LO), t.y], [X(HI), t.y], "v1", { width: now ? 3 : 2, alpha: now ? 0.6 : 0.3, dash: now ? undefined : [5, 4] });
-          roots.forEach((root) => {
+          // the part not yet swept stays an empty, faint guide
+          d.segment([X(LO), t.y], [X(HI), t.y], "axis", { width: 1, alpha: 0.35, dash: [2, 4] });
+          d.segment([X(state.lo), t.y], [X(state.hi), t.y], "v1", { width: now ? 3 : 2, alpha: now ? 0.6 : 0.3, dash: now ? undefined : [5, 4] });
+          const style = { align: "left", dy: 16, font: font(now ? 700 : 600) };
+          const ink = now ? "text" : "muted";
+          // name at the left end; the full rank at the left end of the swept part
+          if ((state.lo - LO) * d.scale < 64) d.text([X(LO), t.y], `${t.name ? `${t.name} · ` : ""}秩 ${n}`, ink, style);
+          else {
+            if (t.name) d.text([X(LO), t.y], t.name, ink, style);
+            d.text([X(state.lo), t.y], `秩 ${n}`, ink, style);
+          }
+          seen.forEach((root) => {
             const rr = M().rankOf(P.evalMatrix(t.M, root));
             const rx = X(M().toNumber(root));
             d.point([rx, t.y], "v2", { r: now ? 5 : 4, alpha: now ? 1 : 0.6 });
             d.text([rx, t.y], `秩 ${rr}`, "v2", { dy: 16, align: "center", font: font(now ? 700 : 600) });
           });
         });
-        if (tracks.length > 1) d.segment([X(2), AXIS], [X(2), tracks[tracks.length - 1].y], "v2", { width: 1, dash: [2, 3], alpha: 0.6 });
+        if (tracks.length > 1 && seen.length) d.segment([X(2), AXIS], [X(2), tracks[tracks.length - 1].y], "v2", { width: 1, dash: [2, 3], alpha: 0.6 });
         const xv = X(M().toNumber(x0));
         const yv = AXIS + yScale * M().toNumber(P.evalAt(det, x0));
         d.segment([xv, AXIS], [xv, yv], "drag", { width: 1.4, dash: [5, 4] });
@@ -234,14 +246,24 @@
         get: () => [state.x - MID, AXIS],
         set: (p) => {
           state.x = Math.max(LO, Math.min(HI, p[0] + MID));
+          const q = Math.round(state.x * 4) / 4;
+          state.lo = Math.min(state.lo, q);
+          state.hi = Math.max(state.hi, q);
           redraw();
         },
-        end: () => flow?.acted(),
+        // the conclusion waits until λ₀ has passed every point where the rank drops
+        end: () => {
+          if (data().roots.every((r) => M().toNumber(r) >= state.lo - 1e-9 && M().toNumber(r) <= state.hi + 1e-9)) flow?.acted();
+        },
       },
     ]);
 
     function newFlow() {
-      flow = gate(ui.gateHost, ui.result, { ...SCAN_PRESETS[state.key].predict, actHint: "已记下你的预测。拖动 λ₀ 扫过数轴，结论随后出现。" });
+      state.x = 0.5;
+      state.lo = 0.5;
+      state.hi = 0.5;
+      const hint = data().roots.length ? "已记下你的预测。拖动 λ₀ 一直扫到行列式的零点，看秩条在那里怎样变化，结论随后出现。" : "已记下你的预测。拖动 λ₀ 扫过数轴，结论随后出现。";
+      flow = gate(ui.gateHost, ui.result, { ...SCAN_PRESETS[state.key].predict, actHint: hint });
     }
 
     K.chips(
@@ -334,13 +356,23 @@
     const trail = el("div", "ch8l-trail");
     ui.stage.append(board, trail);
 
+    /* Lowest degree among the other nonzero entries of the active block (null when they are all 0). */
+    function restDegree(k) {
+      let best = null;
+      for (let i = k; i < state.A.length; i += 1)
+        for (let j = k; j < state.A.length; j += 1) {
+          const p = state.A[i][j];
+          if ((i !== k || j !== k) && !P.isZero(p)) best = best == null ? P.deg(p) : Math.min(best, P.deg(p));
+        }
+      return best;
+    }
+
+    /* One bar per step: the corner's degree after it, and the lowest degree of the other entries. */
     function noteCorner() {
-      const k = state.k;
-      if (k >= state.A.length) return;
+      const k = Math.min(state.k, state.A.length - 1);
       const c = state.A[k][k];
       const deg = P.isZero(c) ? null : P.deg(c);
-      const last = state.trail[state.trail.length - 1];
-      if (!last || last.k !== k || last.deg !== deg) state.trail.push({ k, deg });
+      state.trail.push({ k, deg, rest: restDegree(k) });
     }
 
     function reset() {
@@ -463,6 +495,64 @@
       redraw();
     }
 
+    /*
+     * The corner's degree as a staircase: one bar per step, grouped by corner, with
+     * a dashed line at the lowest degree among the other entries of the current block.
+     * The corner is done once it is not above that line and divides everything.
+     */
+    function staircase(finished) {
+      const t = state.trail;
+      const top = Math.max(2, ...t.map((x) => Math.max(x.deg ?? 0, x.rest ?? 0)));
+      const bw = 22;
+      const gap = 6;
+      const stageGap = 18;
+      const left = 34;
+      const unit = Math.min(30, 96 / top);
+      const base = 22 + top * unit + 4;
+      const xs = [];
+      let x = left + 6;
+      t.forEach((b, i) => {
+        if (i && t[i - 1].k !== b.k) x += stageGap;
+        xs.push(x);
+        x += bw + gap;
+      });
+      const width = Math.max(300, x + 120);
+      const height = base + 40;
+      const y = (deg) => base - deg * unit;
+      let svg = "";
+      for (let dg = 0; dg <= top; dg += 1) {
+        svg += `<line class="ch8l-stair-grid" x1="${left}" x2="${x}" y1="${y(dg)}" y2="${y(dg)}"/><text class="ch8l-stair-tick" x="${left - 6}" y="${y(dg) + 4}" text-anchor="end">${dg}</text>`;
+      }
+      svg += `<text class="ch8l-stair-tick" x="${left - 6}" y="12" text-anchor="end">次数</text>`;
+      const stages = [...new Set(t.map((b) => b.k))];
+      stages.forEach((k) => {
+        const idx = t.map((b, i) => (b.k === k ? i : -1)).filter((i) => i >= 0);
+        const x0 = xs[idx[0]];
+        const x1 = xs[idx[idx.length - 1]] + bw;
+        const done = k < state.k || finished;
+        svg += `<text class="ch8l-stair-stage" x="${(x0 + x1) / 2}" y="${base + 30}" text-anchor="middle">第 ${k + 1} 个角</text>`;
+        if (!done) {
+          const rest = t[idx[idx.length - 1]].rest;
+          if (rest != null) {
+            svg += `<line class="ch8l-stair-rest" x1="${x0 - 4}" x2="${x1 + 10}" y1="${y(rest)}" y2="${y(rest)}"/><text class="ch8l-stair-rest-label" x="${x1 + 14}" y="${y(rest) + 4}">其余元素最低 ${rest} 次</text>`;
+          }
+        }
+      });
+      t.forEach((b, i) => {
+        const done = b.k < state.k || finished;
+        const now = i === t.length - 1 && !finished;
+        const h = b.deg == null ? 0 : Math.max(3, b.deg * unit);
+        const cls = `ch8l-stair-bar${done ? " is-done" : ""}${now ? " is-now" : ""}`;
+        svg += b.deg == null
+          ? `<line class="ch8l-stair-zero" x1="${xs[i]}" x2="${xs[i] + bw}" y1="${base}" y2="${base}"/>`
+          : `<rect class="${cls}" x="${xs[i]}" y="${base - h}" width="${bw}" height="${h}" rx="3"/>`;
+        svg += `<text class="ch8l-stair-val" x="${xs[i] + bw / 2}" y="${base - h - 5}" text-anchor="middle">${b.deg == null ? "0 多项式" : b.deg}</text>`;
+        svg += `<text class="ch8l-stair-step" x="${xs[i] + bw / 2}" y="${base + 14}" text-anchor="middle">${i}</text>`;
+      });
+      svg += `<line class="ch8l-stair-axis" x1="${left}" x2="${x}" y1="${base}" y2="${base}"/>`;
+      return `<p class="ch8l-trail-title">角元的次数：每根柱是一步之后的角元（横轴是步数）</p><div class="ch8l-stair-wrap"><svg class="ch8l-stair" width="${width}" height="${height}" viewBox="0 0 ${width} ${height}" role="img" aria-label="每一步之后角元的次数">${svg}</svg></div>`;
+    }
+
     function redraw() {
       const open = Boolean(flow?.predicted);
       const info = analyse();
@@ -493,17 +583,7 @@
       );
       board.style.setProperty("--n", N);
       board.innerHTML = head + rows.join("");
-      const top = Math.max(1, ...state.trail.map((t) => t.deg ?? 0));
-      trail.innerHTML = `<p class="ch8l-trail-title">角元的次数（每组是一个角，每根柱是一次变换之后）</p><div class="ch8l-trail-bars">${state.trail
-        .map((t, i) => {
-          const last = i === state.trail.length - 1;
-          const stage = t.k < k || finished ? " is-done" : "";
-          const h = t.deg == null ? 0 : (t.deg + 1) / (top + 1);
-          const label = t.deg == null ? "0" : String(t.deg);
-          const newStage = i > 0 && state.trail[i - 1].k !== t.k ? " is-new-stage" : "";
-          return `<i class="ch8l-trail-bar${stage}${last ? " is-now" : ""}${newStage}" style="--h:${h.toFixed(3)}" title="第 ${t.k + 1} 阶角元：${t.deg == null ? "零" : `${t.deg} 次`}"><b>${t.deg == null ? "·" : label}</b></i>`;
-        })
-        .join("")}</div>`;
+      trail.innerHTML = staircase(finished);
       board.querySelectorAll("[data-cell]").forEach((b) =>
         b.addEventListener("click", () => {
           const [i, j] = b.dataset.cell.split(",").map(Number);
@@ -599,6 +679,7 @@
     diag: {
       label: "diag(λ, λ+1, λ(λ+1))",
       k: 2,
+      asksValue: true,
       A: () => P.matrix([[[0, 1], 0, 0], [0, [1, 1], 0], [0, 0, [0, 1, 1]]]),
       predict: {
         question: `${tex("A(\\lambda)=\\operatorname{diag}(\\lambda,\\ \\lambda+1,\\ \\lambda(\\lambda+1))")}。它的 2 阶行列式因子 ${tex("D_2(\\lambda)")} 是什么？`,
@@ -614,6 +695,7 @@
     jordan: {
       label: "λE−A，A 是 3 阶若尔当块",
       k: 2,
+      asksValue: true,
       A: () => P.charMatrix([[2, 0, 0], [1, 2, 0], [0, 1, 2]]),
       predict: {
         question: `${tex("A=\\begin{pmatrix}2&0&0\\\\1&2&0\\\\0&1&2\\end{pmatrix}")}。${tex("\\lambda E-A")} 的 2 阶行列式因子 ${tex("D_2(\\lambda)")} 是什么？`,
@@ -643,12 +725,16 @@
     const matHost = el("div", "ch8l-mat");
     const wall = el("div", "ch8l-wall");
     const wallHead = el("p", "ch8l-wall-head");
+    // Dₖ before the first transformation and now, side by side
+    const compare = el("div", "ch8l-compare");
     const stageBox = el("div", "ch8l-stagebox");
-    stageBox.append(matHost, wallHead, wall);
+    stageBox.append(matHost, compare, wallHead, wall);
     ui.stage.append(stageBox);
+    let start = null;
 
     function reset() {
       state.A = MINOR_PRESETS[state.key].A();
+      start = state.A.map((r) => r.slice());
       state.k = MINOR_PRESETS[state.key].k;
       state.picked = 0;
       state.ops = [];
@@ -743,6 +829,18 @@
         }),
       );
 
+      compare.hidden = !(open && state.ops.length);
+      if (!compare.hidden) {
+        const sub = "₁₂₃"[state.k - 1];
+        const before = P.minors(start, state.k);
+        const changed = list.filter((x, i) => P.latex(x.value) !== P.latex(before[i].value)).length;
+        const Dk0 = P.determinantFactors(start)[state.k - 1] || P.make([0]);
+        const Dk1 = P.determinantFactors(state.A)[state.k - 1] || P.make([0]);
+        const same = P.eq(Dk0, Dk1);
+        const dk = (x) => K.hlHtml(tex(K.hlTex(`D_${state.k}=${pfac(x)}`)), "subspace");
+        compare.innerHTML = `<div class="ch8l-compare-cell"><small>变换前</small><b>${dk(Dk0)}</b><p>${state.k} 阶子式 ${tex(before.map((x) => pfac(x.value)).join(",\\ "))}</p></div>
+          <div class="ch8l-compare-cell"><small>做了 ${state.ops.length} 次变换后</small><b>${dk(Dk1)}</b><p>${list.length} 个 ${state.k} 阶子式中 ${changed} 个变了${same ? `，D${sub} 没有变` : ""}</p></div>`;
+      }
       if (!open) {
         factorCard.innerHTML = `<h4>行列式因子</h4>${waitNote("Dₖ 与 dₖ")}`;
         opCard.innerHTML = `<h4>初等变换</h4>${waitNote("操作按钮")}`;
@@ -750,7 +848,10 @@
       }
       const D = P.determinantFactors(state.A);
       const d = P.invariantFactors(state.A);
-      factorCard.innerHTML = `<h4>行列式因子与不变因子</h4><ul class="ch8l-list">${D.map(
+      // when the question asks for the value of D₂, the list waits until the student has acted
+      factorCard.innerHTML = MINOR_PRESETS[state.key].asksValue && !flow?.revealed
+        ? `<h4>行列式因子与不变因子</h4><p class="ch7l-muted">从墙上的子式找出公因式，或做一次初等变换，Dₖ 与 dₖ 随后出现。</p>`
+        : `<h4>行列式因子与不变因子</h4><ul class="ch8l-list">${D.map(
         (x, i) => `<li class="${i + 1 === state.k ? "is-on" : ""}">${tex(`D_${i + 1}=${pfac(x)}`)}</li>`,
       ).join("")}</ul><ul class="ch8l-list">${d.map((x, i) => `<li>${tex(`d_${i + 1}=${pfac(x)}`)}</li>`).join("")}</ul>`;
       opCard.innerHTML = `<h4>初等变换</h4><div class="ch7l-actions"><button type="button" class="ch7l-btn is-primary" data-op>随机做一次初等变换</button><button type="button" class="ch7l-btn" data-reset${state.ops.length ? "" : " disabled"}>还原</button></div>${
@@ -770,7 +871,7 @@
     }
 
     function newFlow() {
-      flow = gate(ui.gateHost, ui.result, { ...MINOR_PRESETS[state.key].predict, actHint: "已记下你的预测。做一次初等变换，或换一个阶数看看，结论随后出现。" });
+      flow = gate(ui.gateHost, ui.result, { ...MINOR_PRESETS[state.key].predict, actHint: "已记下你的预测。做一次初等变换，或换一个阶数看看，结论随后出现。", onReveal: () => redraw() });
     }
 
     function orderChips() {
@@ -823,17 +924,17 @@
   const DIVISOR_PRESETS = {
     split: {
       label: "由不变因子求初等因子",
-      rows: [{}, { a: 1 }, { a: 2, b: 1 }],
+      rows: [{}, {}, { a: 1 }, { a: 2, b: 1 }],
       start: "inv",
       predict: {
-        question: `三阶矩阵 A 的不变因子是 ${tex("1,\\ \\lambda-1,\\ (\\lambda-1)^2(\\lambda+2)")}。A 的初等因子是哪些？`,
+        question: `四阶矩阵 A 的不变因子是 ${tex("1,\\ 1,\\ \\lambda-1,\\ (\\lambda-1)^2(\\lambda+2)")}。A 的初等因子是哪些？`,
         options: [
           { text: tex("\\lambda-1,\\ (\\lambda-1)^2,\\ \\lambda+2"), correct: true },
           { text: tex("(\\lambda-1)^3,\\ \\lambda+2"), why: "每个不变因子各自分解，出现在不同不变因子中的同一个素因式方幂分别计数，不相乘合并。" },
           { text: tex("\\lambda-1,\\ (\\lambda-1)^2(\\lambda+2)"), why: "(λ−1)²(λ+2) 还要拆成 (λ−1)² 与 λ+2 两个方幂。" },
           { text: tex("\\lambda-1,\\ \\lambda+2"), why: "初等因子是带重数、带幂次的，(λ−1)² 与 λ−1 都要列出。" },
         ],
-        conclusion: "把每个次数大于零的不变因子分解成素因式的方幂：d₂=λ−1，d₃=(λ−1)²·(λ+2)。全部方幂合在一起就是初等因子 λ−1, (λ−1)², λ+2。同一个素因式在不同的 dₖ 里出现，就各算一个初等因子。",
+        conclusion: "把每个次数大于零的不变因子分解成素因式的方幂：d₃=λ−1，d₄=(λ−1)²·(λ+2)。全部方幂合在一起就是初等因子 λ−1, (λ−1)², λ+2，次数之和 1+2+1=4 等于 A 的阶数。同一个素因式在不同的 dₖ 里出现，就各算一个初等因子。",
       },
     },
     field: {
@@ -1129,7 +1230,7 @@
           if (r < Lr.firstRow) return;
           write(Lr.left - 14, Lr.top + (r - Lr.firstRow) * (Lr.bh + 14) + Lr.bh / 2, `d${"₁₂₃₄₅"[r]}`, "muted", { align: "right", size: 14, weight: 700 });
         });
-        if (Lr.firstRow > 0) write(Lr.left, Lr.top - 24, `d₁${Lr.firstRow > 1 ? `=…=d${"₁₂₃₄₅"[Lr.firstRow - 1]}` : ""}=1`, "faint", { size: 12.5 });
+        if (Lr.firstRow > 0) write(Lr.left, Lr.top - 24, `d₁${Lr.firstRow > 1 ? `=${Lr.firstRow > 2 ? "…=" : ""}d${"₁₂₃₄₅"[Lr.firstRow - 1]}` : ""}=1`, "faint", { size: 12.5 });
       } else {
         const top = Lr.top + (Lc.top - Lr.top) * eDrop;
         write(Lr.left, top - 24, `初等因子（${state.field === "C" ? "复数域" : "实数域"}上共 ${blocks().length} 个）`, "muted", { size: 13, weight: 700 });
@@ -1272,7 +1373,11 @@
     function redraw() {
       const open = Boolean(flow?.predicted);
       const preset = DIVISOR_PRESETS[state.key];
-      plane.setDraw((d) => draw(d, open, preset));
+      const givenInv = preset.start === "inv";
+      // the side that answers the question stays closed until the student has acted
+      const shown = Boolean(flow?.revealed);
+      const later = (what) => `<p class="ch7l-muted">切换排法或数域之后，${what}在这里出现。</p>`;
+      plane.setDraw((d) => draw(d, open && (shown || !givenInv), preset));
 
       const rowsTex = preset.rows.map((row) => {
         const list = Object.entries(row).flatMap(([p, e]) =>
@@ -1281,12 +1386,11 @@
         return list.length ? list.map((b) => (list.length > 1 && b.e === 1 ? `(${PRIMES[b.p].tex})` : btex(b))).join("") : "1";
       });
       const eds = blocks().map(btex);
-      const givenInv = preset.start === "inv";
       invCard.innerHTML = `<h4>不变因子</h4>${
-        open || givenInv ? `<ul class="ch8l-list">${rowsTex.map((x, i) => `<li>${tex(`d_${i + 1}=${x}`)}</li>`).join("")}</ul>` : waitNote("不变因子")
+        givenInv || shown ? `<ul class="ch8l-list">${rowsTex.map((x, i) => `<li>${tex(`d_${i + 1}=${x}`)}</li>`).join("")}</ul>` : open ? later("不变因子") : waitNote("不变因子")
       }`;
       edCard.innerHTML = `<h4>初等因子（${state.field === "C" ? "复数域" : "实数域"}）</h4>${
-        open || !givenInv ? `<p>${tex(eds.join(",\\ "))}</p><p class="ch7l-muted">共 ${eds.length} 个。</p>` : waitNote("初等因子")
+        !givenInv || shown ? `<p>${tex(eds.join(",\\ "))}</p><p class="ch7l-muted">共 ${eds.length} 个。</p>` : open ? later("初等因子") : waitNote("初等因子")
       }`;
       ui.bars[1].querySelectorAll("button").forEach((b) => (b.disabled = !open));
     }
@@ -1349,7 +1453,7 @@
       anim = { from: new Map(), t: 1, raf: 0 };
       split = { s: 0, target: 0, raf: 0, timer: 0, note: null };
       viewChips();
-      flow = gate(ui.gateHost, ui.result, { ...DIVISOR_PRESETS[key].predict, actHint: "已记下你的预测。切换排法或数域，结论随后出现。" });
+      flow = gate(ui.gateHost, ui.result, { ...DIVISOR_PRESETS[key].predict, actHint: "已记下你的预测。切换排法或数域，结论随后出现。", onReveal: () => redraw() });
       redraw();
     }
 
@@ -1422,7 +1526,8 @@
       task: "N=A−2E。ker N ⊆ ker N² ⊆ ⋯ 一层层长大，第 k 层新增的维数 bₖ 等于阶数不小于 k 的若尔当块的个数。逐层往上，看链怎样搭成塔。",
     });
     const [matCard, tableCard] = ui.cards;
-    const state = { key: "a", k: 1 };
+    // k = the kernel layer reached so far; 0 = nothing climbed yet (only the zero vector)
+    const state = { key: "a", k: 0 };
     let flow = null;
     ui.gateHost.addEventListener("click", () => redraw());
     const plane = K.plane2d(ui.stage, { extent: 3, hint: "", label: "若尔当链组成的塔与核空间的维数" });
@@ -1482,26 +1587,33 @@
         const dx = Math.min(86, (towerW - 70) / Math.max(chains.length, 2));
         const x0 = (narrow ? 64 : 92) + dx / 2;
         const R = narrow ? 13 : 16;
-        /* ker N^j bands */
-        for (let j = top; j >= 1; j -= 1) {
+        /* ker N^j bands: the layers reached so far, plus the next one as an empty dashed frame */
+        for (let j = Math.min(top, k + 1); j >= 1; j -= 1) {
           const yTop = baseY - (j - 0.5) * gapY;
           const on = j <= k;
           ctx.save();
-          roundRect(ctx, 12, yTop, towerW - 12, baseY + gapY * 0.5 - yTop - 8 + (j === 1 ? 0 : 0), 12);
+          roundRect(ctx, 12, yTop, towerW - 12, baseY + gapY * 0.5 - yTop - 8, 12);
           ctx.fillStyle = d.alpha(d.color("subspace"), on ? 0.07 : 0.02);
           ctx.fill();
           if (j === k) {
             ctx.lineWidth = 1.6;
             ctx.strokeStyle = d.alpha(d.color("subspace"), 0.7);
             ctx.stroke();
+          } else if (!on) {
+            ctx.setLineDash([5, 5]);
+            ctx.lineWidth = 1.2;
+            ctx.strokeStyle = d.alpha(d.color("subspace"), 0.45);
+            ctx.stroke();
           }
           ctx.restore();
           write(20, yTop + 14, `ker N${j > 1 ? "²³⁴"[j - 2] : ""}`, on ? "subspace" : "faint", { size: 12, weight: 700 });
         }
+        if (k === 0) write(towerW / 2 + 6, baseY - 0.5 * gapY - 28, "按“往上一层”，求出 ker N", "faint", { align: "center", size: 13 });
         /* chains: level 1 at the bottom is the eigenvector; the generator sits on top */
         chains.forEach((len, c) => {
           const x = x0 + c * dx;
-          for (let lv = 1; lv <= len; lv += 1) {
+          // only the levels already reached are drawn: higher links stay unknown
+          for (let lv = 1; lv <= Math.min(len, k); lv += 1) {
             const y = baseY - (lv - 1) * gapY;
             const on = lv <= k;
             if (lv > 1) {
@@ -1537,17 +1649,18 @@
             ctx.textAlign = "center";
             ctx.textBaseline = "middle";
             ctx.fillStyle = on ? (d.pal.dark ? "#0e121b" : "#ffffff") : d.color("faint");
-            ctx.fillText(`${NAMES[c]}${SUB[idx]}`, x, y + 1);
+            // the index counts down from the top of the chain, so it waits until the tower is complete
+            ctx.fillText(k >= top ? `${NAMES[c]}${SUB[idx]}` : NAMES[c], x, y + 1);
             ctx.restore();
           }
-          write(x, baseY + R + 14, "↓0", "faint", { align: "center", size: 11 });
+          if (k >= 1) write(x, baseY + R + 14, "↓0", "faint", { align: "center", size: 11 });
         });
         /* staircase: ν_j bars */
         const bx = towerW + (narrow ? 14 : 30);
         const bw = Math.min(44, (w - bx - 16) / (top + 1) - 8);
         const unitH = (h - 120) / n;
         write(bx, 26, "νⱼ = dim ker Nʲ", "muted", { size: 12.5, weight: 700 });
-        for (let j = 1; j <= top; j += 1) {
+        for (let j = 1; j <= k; j += 1) {
           const x = bx + (j - 1) * (bw + 8);
           const on = j <= k;
           const hh = nu[j] * unitH;
@@ -1577,7 +1690,7 @@
         tableCard.innerHTML = `<h4>逐层计数</h4>${waitNote("核空间的维数")}`;
         return;
       }
-      controls.innerHTML = `<button type="button" class="ch7l-btn" data-down${k <= 1 ? " disabled" : ""}>往下一层</button><button type="button" class="ch7l-btn is-primary" data-up${k >= top ? " disabled" : ""}>往上一层</button><span class="ch7l-muted">当前：ker N${k > 1 ? "²³⁴"[k - 2] : ""}，维数 ${nu[k]}</span>`;
+      controls.innerHTML = `<button type="button" class="ch7l-btn" data-down${k <= 0 ? " disabled" : ""}>往下一层</button><button type="button" class="ch7l-btn is-primary" data-up${k >= top ? " disabled" : ""}>往上一层</button><span class="ch7l-muted">${k ? `当前：ker N${k > 1 ? "²³⁴"[k - 2] : ""}，维数 ${nu[k]}` : "当前：只有零向量"}</span>`;
       // the conclusion (all block sizes) opens only once the tower reaches the top layer
       controls.querySelector("[data-up]").addEventListener("click", () => {
         state.k = Math.min(top, k + 1);
@@ -1585,20 +1698,22 @@
         redraw();
       });
       controls.querySelector("[data-down]").addEventListener("click", () => {
-        state.k = Math.max(1, k - 1);
+        state.k = Math.max(0, k - 1);
         redraw();
       });
       const rows = [];
       for (let j = 1; j <= k; j += 1)
         rows.push(`<tr><td>${j}</td><td>${n - nu[j]}</td><td>${nu[j]}</td><td>${b[j]}</td></tr>`);
-      let html = `<h4>逐层计数</h4><table class="ch7l-table"><thead><tr><th>j</th><th>rank Nʲ</th><th>νⱼ</th><th>bⱼ=νⱼ−νⱼ₋₁</th></tr></thead><tbody>${rows.join("")}</tbody></table>`;
+      let html = `<h4>逐层计数</h4>${
+        k ? `<table class="ch7l-table"><thead><tr><th>j</th><th>rank Nʲ</th><th>νⱼ</th><th>bⱼ=νⱼ−νⱼ₋₁</th></tr></thead><tbody>${rows.join("")}</tbody></table>` : ""
+      }`;
       if (k >= top) {
         const sizes = chains.slice();
         const blocks = sizes.map((s) => `J(2,${s})`).join(",\\ ");
         const ed = sizes.map((s) => (s > 1 ? `(\\lambda-2)^{${s}}` : "\\lambda-2")).join(",\\ ");
         html += `<p class="ch7l-ok">ν 已经等于 ${n}，塔搭完了。</p><p>${tex(`J=\\operatorname{diag}(${blocks})`)}</p><p>初等因子 ${tex(ed)}</p>`;
       } else {
-        html += `<p class="ch7l-muted">继续往上一层。</p>`;
+        html += `<p class="ch7l-muted">${k ? "继续往上一层。" : "从零向量出发，按“往上一层”。"}</p>`;
       }
       tableCard.innerHTML = html;
     }
@@ -1608,7 +1723,7 @@
       Object.entries(TOWER_PRESETS).map(([key, v]) => [key, v.label]),
       (key) => {
         state.key = key;
-        state.k = 1;
+        state.k = 0;
         flow = gate(ui.gateHost, ui.result, { ...TOWER_PRESETS[key].predict, actHint: "已记下你的预测。逐层往上数一数，结论随后出现。" });
         redraw();
       },
@@ -1822,7 +1937,7 @@
         ctx.setLineDash([]);
         arrowHead(x2, y + R + 2, -Math.PI / 2, color);
         ctx.restore();
-        write((x1 + x2) / 2, y + depth * 0.78 + 14, minus(c), c === 0 ? "faint" : "image", { size: 13 });
+        write((x1 + x2) / 2, y + depth * 0.78 + 14, `−a${"₀₁"[i]}=${minus(c)}`, c === 0 ? "faint" : "image", { size: 13 });
       });
       {
         const c = coef[2];
@@ -1842,7 +1957,7 @@
         ctx.arc(xs[2], y - R - 18, 18, Math.PI * 0.85, Math.PI * 2.15);
         ctx.stroke();
         ctx.restore();
-        write(xs[2], y - R - 50, `${minus(c)}`, c === 0 ? "faint" : "image", { size: 13 });
+        write(xs[2], y - R - 50, `−a₂=${minus(c)}`, c === 0 ? "faint" : "image", { size: 13 });
       }
       /* nodes; the vector reached so far (Cᵏe₁) is drawn in the drag colour with a glow */
       const reachedName = ["e₁", "Ce₁", "C²e₁"];

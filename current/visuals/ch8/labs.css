@@ -183,6 +183,47 @@
   box-shadow: inset 0 0 0 1.5px var(--accent);
 }
 
+/* Dₖ before the first transformation and now */
+.ch8l-compare {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.ch8l-compare[hidden] {
+  display: none;
+}
+
+.ch8l-compare-cell {
+  display: grid;
+  gap: 4px;
+  align-content: start;
+  min-width: 0;
+  padding: 10px 12px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: var(--surface-solid);
+}
+
+.ch8l-compare-cell > small {
+  color: var(--muted);
+  font-size: 12.5px;
+  font-weight: 650;
+}
+
+.ch8l-compare-cell > b {
+  font-size: 16px;
+  font-weight: 400;
+}
+
+.ch8l-compare-cell > p {
+  margin: 0;
+  overflow-x: auto;
+  color: var(--muted);
+  font-size: 13px;
+  line-height: 1.6;
+}
+
 .ch8l-wall-head {
   margin: 4px 0 0;
   color: var(--muted);

@@ -315,8 +315,9 @@ body.dark .ch7l-predict-q > span {
   line-height: 1.7;
 }
 
+/* after the reveal the feedback line carries the verdict (kit.js predictFlow) */
 .ch7l-predict.is-done .ch7l-predict-feedback {
-  display: none;
+  font-weight: 650;
 }
 
 .ch7l-result {

@@ -364,7 +364,9 @@
       $(root,'[data-s4-t]').value=String(t);
       $(root,'[data-s4-t-value]').textContent=fracStr(t);
       // shape names would give the boundary away, so they join the presets after the prediction
-      $$(root,'[data-s4-preset]').forEach(b=>{const pk=Math.round(Number(b.dataset.s4Preset)*4);b.classList.toggle('is-active',pk===k);b.textContent=`t=${fracStr(pk/4)}${open?` · ${nameOf(pk)}`:''}`;});
+      // the shape names (碗、山谷、马鞍) answer the prediction: they join the chips once it is revealed
+      const named=!gate||Boolean(gate.revealed);
+      $$(root,'[data-s4-preset]').forEach(b=>{const pk=Math.round(Number(b.dataset.s4Preset)*4);b.classList.toggle('is-active',pk===k);b.textContent=`t=${fracStr(pk/4)}${named?` · ${nameOf(pk)}`:''}`;});
       const full=Boolean(!gate||gate.revealed);
       if(labelsShown!==full){labelsShown=full;$$(root,'[data-s4-label]').forEach(b=>{b.innerHTML=inline(S4_LABELS[b.dataset.s4Label][full?1:0]);});}
       $(root,'[data-s4-matrix]').innerHTML=fracMatrix(A);

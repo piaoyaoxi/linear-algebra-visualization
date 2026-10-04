@@ -91,11 +91,14 @@ async function drag(page, view, from, to) {
   await page.mouse.down();
   for (let i = 1; i <= 8; i += 1) await page.mouse.move(a.x + ((b.x - a.x) * i) / 8, a.y + ((b.y - a.y) * i) / 8);
   await page.mouse.up();
+  await page.waitForTimeout(250);
   await page.waitForTimeout(80);
 }
 
 const predict = (page, i) => page.locator(`[data-ch9-predict] [data-i="${i}"]`).click();
-const chip = (page, key) => page.locator(`.ch9l-toolbar [data-key="${key}"]`).click();
+// the gate reveals once the readouts have changed, a moment after the action
+const settle = (page) => page.waitForTimeout(1200);
+const chip = async (page, key) => { await page.locator(`.ch9l-toolbar [data-key="${key}"]`).click(); await settle(page); };
 const resultShown = (page) => page.locator("[data-ch9-result]").isVisible();
 
 async function exerciseLabs(page) {
@@ -106,7 +109,8 @@ async function exerciseLabs(page) {
   await predict(page, 1);
   expect(!(await resultShown(page)), "§1: conclusion waits for an action after the prediction");
   expect((await page.locator("[data-ch9-predict] .is-right, [data-ch9-predict] .is-wrong").count()) === 0, "§1: no verdict before an action");
-  await chip(page, "diag");
+  // a real change of G is the action (re-clicking the active chip changes nothing)
+  await chip(page, "dot");
   expect(await resultShown(page), "§1: conclusion after prediction and action");
   await chip(page, "bad");
   expect((await text(page, "[data-ip-status]")).includes("不正定"), "§1: indefinite G flagged");
@@ -155,8 +159,9 @@ async function exerciseLabs(page) {
   expect((await text(page, "[data-ch9-readout=ortho]")).includes("≠"), "§4: squeeze changes a length");
   await predict(page, 0);
   expect(!(await resultShown(page)), "§4: conclusion waits for an action after the prediction");
-  await chip(page, "squeeze");
+  await chip(page, "refl");
   expect(await resultShown(page), "§4: conclusion after prediction and action");
+  await chip(page, "squeeze");
   expect((await text(page, "[data-ortho-marks]")).includes("有长度被改变"), "§4: squeeze drops the length ticks");
   await chip(page, "rot");
   expect((await text(page, "[data-ortho-marks]")).includes("长度不变"), "§4: rotation keeps the length ticks");
@@ -165,11 +170,14 @@ async function exerciseLabs(page) {
   expect((await page.locator("[data-sub-perp]").count()) === 0, "§5: W⊥ hidden before prediction");
   await predict(page, 0);
   expect((await page.locator("[data-sub-perp]").count()) === 0, "§5: W⊥ waits for an action after the prediction");
+  // resetting α where it already is changes nothing, so it is not the action
   await page.locator("[data-sub-reset]").click();
-  expect((await page.locator("[data-sub-perp]").count()) === 1, "§5: W⊥ revealed");
+  await settle(page);
+  expect((await page.locator("[data-sub-perp]").count()) === 0, "§5: a reset that changes nothing does not reveal");
   const sub = await text(page, "[data-ch9-readout=sub]");
   await drag(page, "scene", [0.5, -1.5, 2], [1, 1, 1]);
   expect((await text(page, "[data-ch9-readout=sub]")) !== sub, "§5: dragging α updates the decomposition");
+  expect((await page.locator("[data-sub-perp]").count()) === 1, "§5: W⊥ revealed after dragging α");
   await chip(page, "line");
   expect((await text(page, "[data-sub-perp]")).includes("= 2"), "§5: a line has a 2-dimensional complement");
 
@@ -180,6 +188,7 @@ async function exerciseLabs(page) {
   expect(!(await resultShown(page)), "§6: conclusion waits for an action after the prediction");
   expect(!(await page.locator("[data-sp-play]").isDisabled()), "§6: animation opens after the prediction");
   await page.locator("[data-sp-s]").fill("3");
+  await settle(page);
   expect(await resultShown(page), "§6: conclusion after prediction and action");
   expect((await text(page, "[data-sp-steps] .is-active")).includes("③"), "§6: slider reaches step 3");
   await chip(page, "nonsym");
@@ -191,6 +200,7 @@ async function exerciseLabs(page) {
   await predict(page, 0);
   expect((await page.locator("[data-ls-best]").count()) === 0, "§7: best line waits for an action after the prediction");
   await page.locator("[data-ls-c]").fill("1");
+  await settle(page);
   expect((await page.locator("[data-ls-best]").count()) === 1, "§7: best line revealed");
   expect((await text(page, "[data-ls-tri]")).includes("直角三角形"), "§7: right triangle b–p–Ax");
   expect((await text(page, "[data-ls-tri]")).replace(/\s/g, "").includes("=8=") && (await text(page, "[data-ls-tri]")).replace(/\s/g, "").includes("6+2"), "§7: 8 = 6 + 2 for C = D = 1");

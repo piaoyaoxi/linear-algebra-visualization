@@ -1012,9 +1012,9 @@
       question: `实系数二次多项式 ${tex("x^2+px+q")} 有一个根 ${tex("\\alpha=1+\\tfrac32 i")}。另一个根 ${tex("\\beta")} 在哪里？`,
       options: [
         [`${tex("\\bar\\alpha=1-\\tfrac32 i")}：与 α 关于实轴对称`, true, ""],
-        [`${tex("-\\alpha=-1-\\tfrac32 i")}：与 α 关于原点对称`, false, `这时 ${tex("\\alpha\\beta=-\\alpha^2=\\tfrac54-3i")}，常数项不是实数。`],
+        [`${tex("-\\alpha=-1-\\tfrac32 i")}：与 α 关于原点对称`, false, `若 ${tex("\\beta=-\\alpha")}，则 ${tex("\\alpha\\beta=-\\alpha^2=\\tfrac54-3i")}，常数项不是实数。`],
         ["实轴上的某一点", false, `β 是实数时 ${tex("\\alpha+\\beta")} 的虚部仍是 ${tex("\\tfrac32")}，一次项系数不是实数。`],
-        [`${tex("-\\bar\\alpha=-1+\\tfrac32 i")}：与 α 关于虚轴对称`, false, `这时 ${tex("\\alpha+\\beta=3i")}，一次项系数不是实数。`],
+        [`${tex("-\\bar\\alpha=-1+\\tfrac32 i")}：与 α 关于虚轴对称`, false, `若 ${tex("\\beta=-\\bar\\alpha")}，则 ${tex("\\alpha+\\beta=3i")}，一次项系数不是实数。`],
       ],
       right: `✓ 根之和 ${tex("-p")} 是实数，β 在水平线 ${tex("\\operatorname{Im}\\beta=-\\tfrac32")} 上；根之积 ${tex("q")} 是实数，β 在过原点、方向为 ${tex("\\bar\\alpha")} 的直线上（${tex("\\beta=t\\bar\\alpha")}，t 为实数）。两条线只交于 ${tex("\\bar\\alpha")}，此时 ${tex("q=\\alpha\\bar\\alpha=|\\alpha|^2")}。`,
       onPick: () => { lockables.forEach((node) => { node.disabled = false; }); updateDom(); },

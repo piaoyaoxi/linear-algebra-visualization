@@ -752,6 +752,9 @@
     ro.observe(canvas);
     const themeObserver = new MutationObserver(() => render());
     themeObserver.observe(document.body, { attributes: true, attributeFilter: ["class"] });
+    // during a light/dark switch the colour tokens morph frame by frame: follow them
+    const onThemeMix = () => { if (canvas.isConnected) render(); };
+    window.addEventListener("la-thememix", onThemeMix);
     requestAnimationFrame(resize);
 
     return {
@@ -789,6 +792,7 @@
         cancelAnimationFrame(fitAnim);
         ro.disconnect();
         themeObserver.disconnect();
+        window.removeEventListener("la-thememix", onThemeMix);
         wrap.remove();
       },
     };

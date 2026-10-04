@@ -1,8 +1,9 @@
 (() => {
-  const ASSETS = {
-    luna: "./assets/theme/luna-alpha.webp?v=21h",
-    sol: "./assets/theme/sol-alpha.webp?v=21h",
-  };
+  // phones get the art alone: the words Luna / Sol do not fit a portrait screen
+  const PHONE = window.matchMedia("(max-width: 720px)");
+  const ASSETS = PHONE.matches
+    ? { luna: "./assets/theme/luna-mark-alpha.webp?v=t4", sol: "./assets/theme/sol-mark-alpha.webp?v=t4" }
+    : { luna: "./assets/theme/luna-alpha.webp?v=21h", sol: "./assets/theme/sol-alpha.webp?v=21h" };
 
   /**
    * Timeline (full duration):
@@ -69,6 +70,74 @@
 
   const TOKEN_KEYS = Object.keys(LIGHT);
 
+  /*
+   * Every other colour token the stylesheets define for :root (light) and body.dark
+   * (dark) — sidebar, canvas, prediction, glass… — read when a switch starts, so tokens
+   * added later morph with the page instead of jumping when the class flips.
+   */
+  let dynamic = { keys: [], light: {}, dark: {} };
+  let probe = null;
+
+  function toRgba(value) {
+    if (!probe) {
+      probe = document.createElement("i");
+      probe.hidden = true;
+      document.documentElement.append(probe);
+    }
+    probe.style.color = "";
+    probe.style.color = value;
+    if (!probe.style.color) return null;
+    const c = getComputedStyle(probe).color;
+    let m = c.match(/^rgba?\(([^)]+)\)/);
+    if (m) {
+      const p = m[1].split(/[\s,/]+/).filter(Boolean).map(Number);
+      return [p[0], p[1], p[2], p.length > 3 ? p[3] : 1];
+    }
+    m = c.match(/^color\(srgb ([^)]+)\)/);
+    if (m) {
+      const p = m[1].split(/[\s/]+/).filter(Boolean).map(Number);
+      return [p[0] * 255, p[1] * 255, p[2] * 255, p.length > 3 ? p[3] : 1];
+    }
+    return null;
+  }
+
+  function collectTokens() {
+    const light = {};
+    const dark = {};
+    for (const sheet of document.styleSheets) {
+      let rules;
+      try {
+        rules = sheet.cssRules;
+      } catch (error) {
+        continue;
+      }
+      for (const rule of rules) {
+        if (!rule.selectorText || !rule.style) continue;
+        const parts = rule.selectorText.split(",").map((x) => x.trim());
+        const target = parts.includes("body.dark") ? dark : parts.some((x) => x === ":root" || x === "html") ? light : null;
+        if (!target) continue;
+        for (const name of rule.style) if (name.startsWith("--")) target[name] = rule.style.getPropertyValue(name).trim();
+      }
+    }
+    const resolve = (value, palette, depth = 0) =>
+      depth > 6 ? value : value.replace(/var\((--[\w-]+)\s*(?:,\s*([^()]+))?\)/g, (_, name, fallback) => resolve(palette[name] ?? fallback ?? "", palette, depth + 1));
+    const darkFull = { ...light, ...dark };
+    const keys = [];
+    const out = { keys, light: {}, dark: {} };
+    for (const name of Object.keys(darkFull)) {
+      if (TOKEN_KEYS.includes(name)) continue;
+      const a = toRgba(resolve(light[name] ?? darkFull[name], light));
+      const b = toRgba(resolve(darkFull[name], darkFull));
+      if (!a || !b || a.every((x, i) => Math.abs(x - b[i]) < 1e-3)) continue;
+      keys.push(name);
+      out.light[name] = a;
+      out.dark[name] = b;
+    }
+    return out;
+  }
+
+  let mixFrame = 0;
+
   let active = false;
   let overlay = null;
   let art = null;
@@ -116,7 +185,8 @@
           resolve(img);
           return;
         }
-        img.decode().then(() => resolve(img), reject);
+        // Safari can reject decode() on an image that has already loaded: it is still usable
+        img.decode().then(() => resolve(img), () => resolve(img));
       };
       img.onerror = reject;
       img.src = src;
@@ -165,6 +235,9 @@
     TOKEN_KEYS.forEach((key) => {
       document.body.style.removeProperty(key);
     });
+    dynamic.keys.forEach((key) => {
+      document.body.style.removeProperty(key);
+    });
     document.body.style.removeProperty("--shadow");
     document.body.style.removeProperty("--shadow-soft");
     document.body.style.removeProperty("--theme-mix");
@@ -199,6 +272,17 @@
       if (key === "--shadow-rgb") return;
       document.body.style.setProperty(key, cssColor(mixChannel(from[key], to[key], mix)));
     });
+    const goingDark = from === LIGHT;
+    const a = goingDark ? dynamic.light : dynamic.dark;
+    const b = goingDark ? dynamic.dark : dynamic.light;
+    dynamic.keys.forEach((key) => {
+      document.body.style.setProperty(key, cssColor(mixChannel(a[key], b[key], mix)));
+    });
+    // canvases paint their colours from these tokens: let them redraw along the way
+    mixFrame += 1;
+    if (mixFrame % 2 === 0) window.dispatchEvent(new Event("la-thememix"));
+    // older labs (chapters 1, 2, 4, 5) repaint on resize: nudge them a few times a second
+    if (mixFrame % 6 === 0) window.dispatchEvent(new Event("resize"));
 
     const shadow = mixChannel(from["--shadow-rgb"], to["--shadow-rgb"], mix);
     const softA = lerp(0.1, 0.24, mix);
@@ -311,6 +395,11 @@
 
     const goingDark = !document.body.classList.contains("dark");
     const targetTheme = goingDark ? "dark" : "light";
+    try {
+      dynamic = collectTokens();
+    } catch (error) {
+      dynamic = { keys: [], light: {}, dark: {} };
+    }
     const mode = goingDark ? "luna" : "sol";
     const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
     const timing = reduced ? REDUCED : NORMAL;
@@ -365,8 +454,13 @@
 
     ready
       .then((img) => {
-        art.src = img.src;
-        return art.decode?.();
+        // a fresh element per switch: reusing one <img> and swapping luna → sol made
+        // Safari's decode() reject, which dropped the sun animation
+        const fresh = art.cloneNode(false);
+        fresh.src = img.src;
+        art.replaceWith(fresh);
+        art = fresh;
+        return Promise.resolve(fresh.decode?.()).catch(() => {});
       })
       .then(run)
       .catch((error) => {

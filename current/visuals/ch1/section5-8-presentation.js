@@ -49,6 +49,8 @@
     }
     const shared = () => fRoots().filter((r) => r.m >= 2).map((r) => r.x);
     let gate = null;
+    // the last pair u ≠ v: once the roots merge, its f′ stays as a ghost
+    let apart = { u: state.u, v: state.v };
 
     function glow(ctx, p, color) {
       ctx.save();
@@ -97,9 +99,26 @@
         [["u", state.u], ["v", state.v]].forEach(([name, val]) => { const s = fc.toScreen(Number(val), 0); ctx.fillText(name, s.x, s.y - 12); });
         ctx.restore();
       }
-      // lower: f′ on the same x-scale
-      const dc = M().drawPolynomial(dCanvas, dp, { bounds: dBounds, series: [{ p: dp, color: pal.v2, width: 2.4 }] });
+      // lower: f′ on the same x-scale; after a merge the f′ from before it stays as a ghost
+      const ghost = state.mode === "merge" && merged() && open
+        ? M().polyDerivative(M().polyMul(M().poly([M().rNeg(R(apart.u)), 1]), M().poly([M().rNeg(R(apart.v)), 1])))
+        : null;
+      const dSeries = [{ p: dp, color: pal.v2, width: 2.4 }];
+      if (ghost) dSeries.unshift({ p: ghost, color: pal.v2, width: 2, dash: [6, 5], alpha: 0.35 });
+      const dc = M().drawPolynomial(dCanvas, dp, { bounds: dBounds, series: dSeries });
       ctx = dCanvas.getContext("2d");
+      if (ghost) {
+        const z = M().rDiv(M().rAdd(R(apart.u), R(apart.v)), M().R(2));
+        const s = dc.toScreen(M().rToNum(z), 0);
+        ctx.save(); ctx.globalAlpha = 0.45; ctx.strokeStyle = pal.v2; ctx.lineWidth = 1.6; ctx.setLineDash([3, 3]);
+        ctx.beginPath(); ctx.arc(s.x, s.y, 5.5, 0, Math.PI * 2); ctx.stroke();
+        ctx.setLineDash([]); ctx.globalAlpha = 0.8; ctx.font = font(12, 600); ctx.fillStyle = pal.muted; ctx.textAlign = "center";
+        ctx.lineWidth = 4; ctx.strokeStyle = pal.paper;
+        const t = "合并前的 f′";
+        const gy = dc.toScreen(M().rToNum(z), -4.4).y;
+        ctx.strokeText(t, s.x, gy); ctx.fillText(t, s.x, gy);
+        ctx.restore();
+      }
       const dh = dCanvas.getBoundingClientRect().height;
       common.forEach((x) => guide(ctx, dc, M().rToNum(x), dh, pal.axis));
       fRoots().forEach((r) => {
@@ -124,6 +143,7 @@
     }
 
     function paint() {
+      if (state.mode === "merge" && !merged()) apart = { u: state.u, v: state.v };
       const p = currentPoly();
       const dp = M().polyDerivative(p);
       const gcd = M().polyGcd(p, dp);
@@ -200,7 +220,7 @@
 
   // §7 — evaluation, root bound, interpolation
   function mountPolynomialFunctions(root) {
-    const state = { mode: "eval", p: M().poly([1, -2, 0, 1]), a: 1, degree: 3, roots: 2, nodes: [{ x: M().R(0), y: M().R(1) }, { x: M().R(1), y: M().R(2) }, { x: M().R(2), y: M().R(5) }] };
+    const state = { mode: "roots", p: M().poly([1, -2, 0, 1]), a: 1, degree: 3, roots: 2, nodes: [{ x: M().R(0), y: M().R(1) }, { x: M().R(1), y: M().R(2) }, { x: M().R(2), y: M().R(5) }] };
     const bounds = { xMin: -2.5, xMax: 3.5, yMin: -4, yMax: 10 };
     function paintEval() {
       const h = M().hornerSteps(state.p, M().parseR(state.a));
@@ -386,7 +406,7 @@
 
   function interactive7(el, section) {
     lab(el, "评价、根数与插值", section.interactive.description,
-      `<button type="button" data-mode="eval" class="is-active">评价 / Horner</button><button type="button" data-mode="roots">根数上界</button><button type="button" data-mode="interp">Lagrange 插值</button>`,
+      `<button type="button" data-mode="roots" class="is-active">根数上界</button><button type="button" data-mode="eval">评价 / Horner</button><button type="button" data-mode="interp">Lagrange 插值</button>`,
       `<div class="ch1-two-col"><div class="ch1-stage"><canvas data-canvas aria-label="多项式函数实验图"></canvas></div><div class="ch1-panel"><section data-eval-panel><div class="ch1-controls"><button type="button" data-eval-preset="default">三次示例</button><button type="button" data-eval-preset="root">有整数根示例</button></div><label class="ch1-slider-row"><span>a</span><input data-a type="range" min="-2" max="3" step="1" value="1"><output data-a-value></output></label><div class="ch1-equation-grid"><div><span>f</span><strong data-eval-poly></strong></div><div><span>f(a)</span><strong data-fa></strong></div></div><div data-factor class="ch1-status"></div><div class="ch1-ledger" data-horner></div></section><section data-root-panel hidden><label class="ch1-slider-row"><span>次数 n</span><input data-degree type="range" min="1" max="6" value="3"><output data-degree-value></output></label><label class="ch1-slider-row"><span>不同根数 m</span><input data-root-count type="range" min="1" max="7" value="2"><output data-roots-value></output></label><div data-root-status class="ch1-status"></div><div class="ch1-callout"><strong data-root-title>构造结果</strong><p data-root-poly></p></div></section><section data-interp-panel hidden><div class="ch1-node-grid">${[0,1,2].map((i) => `<label>节点 ${i}<span>x</span><input type="text" value="${i}" data-node-x="${i}"><span>y</span><input type="text" value="${[1,2,5][i]}" data-node-y="${i}"></label>`).join("")}</div><p class="ch1-error" data-interp-error aria-live="polite"></p><div class="ch1-result-band"><div><span>插值多项式</span><strong data-interp-poly></strong></div></div><div class="ch1-compare" data-bases></div></section></div></div>`);
     // the prediction sits above the mode buttons, right under the title
     const gateBox = document.createElement("div");

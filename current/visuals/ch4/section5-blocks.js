@@ -100,7 +100,7 @@
         <b class="blk-op">×</b>
         <div class="blk-mat"><span>B</span>${gridHtml(B, q, state.bCol, range(0, 4), cols, { rowTone: inner, sel: { col: j - 1 } })}</div>
         <b class="blk-op">=</b>
-        <div class="blk-mat"><span>C=AB</span>${gridHtml(C, state.aRow, state.bCol, rows, cols, { cls: "is-result", sel: { row: i - 1, col: j - 1 } })}</div>
+        <div class="blk-mat${open && !ok ? " is-void" : ""}"><span>${open && !ok ? "C=AB：块乘积无定义" : "C=AB"}</span>${gridHtml(C, state.aRow, state.bCol, open && !ok ? [] : rows, open && !ok ? [] : cols, { cls: "is-result", sel: open && !ok ? {} : { row: i - 1, col: j - 1 } })}</div>
         ${open ? sizesHtml(i, j, rows.length, cols.length, p, q) : ""}`;
       root.querySelectorAll("[data-v]").forEach((n) => {
         const k = n.dataset.v;

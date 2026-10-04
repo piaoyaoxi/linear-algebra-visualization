@@ -178,6 +178,8 @@ async function checkMultivariateLayout(page, viewport) {
 async function operate(page, section, viewport, theme) {
   const detail = (viewport.name === "desktop" && theme === "light") || (viewport.name === "mobile" && theme === "dark");
   if (section === "univariate-polynomials") {
+    ensure(!(await page.locator("#univariate-polynomials-interactive .ch1-more-ops").evaluate((d) => d.open)), "§2: the operations workbench should start folded");
+    await page.locator("#univariate-polynomials-interactive .ch1-more-ops > summary").click();
     const initialRows = await page.locator("[data-contributions] tr td:not([colspan])").count();
     ensure(initialRows > 0, "§2: contribution table is empty on load (multiplication should be the default view)");
     await clickIf(page, '[data-mode="mul"]'); if (await page.locator("[data-k]").count()) await page.locator("[data-k]").fill("4");

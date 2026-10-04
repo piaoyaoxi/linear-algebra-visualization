@@ -39,13 +39,14 @@
       ];
     }
 
-    function writeControls(matrix) {
-      const values = { a: matrix[0][0], b: matrix[0][1], c: matrix[1][0], d: matrix[1][1] };
-      Object.entries(values).forEach(([key, value]) => {
+    // labels = the settled matrix: while a preset slides, the sliders move but the numbers show where it lands
+    function writeControls(matrix, labels = matrix) {
+      const values = { a: [0, 0], b: [0, 1], c: [1, 0], d: [1, 1] };
+      Object.entries(values).forEach(([key, [i, j]]) => {
         const input = root.querySelector(`[data-key="${key}"]`);
         const label = root.querySelector(`[data-val="${key}"]`);
-        if (input) input.value = String(value);
-        if (label) label.textContent = M().formatFrac(value);
+        if (input) input.value = String(matrix[i][j]);
+        if (label) label.textContent = M().formatFrac(labels[i][j]);
       });
     }
 
@@ -71,30 +72,41 @@
       state.view = M().drawTransformScene(canvas, matrix, {
         firstLabel: "第 1 列",
         secondLabel: "第 2 列",
-        caption: `det = ${M().formatFrac(M().det2(matrix))} · 可拖动两个箭头端点`,
+        caption: `det = ${M().formatFrac(M().det2(state.target || matrix))} · 可拖动两个箭头端点`,
         orientation: open(),
       });
-      writeControls(matrix);
-      syncReadout(matrix);
+      writeControls(matrix, state.target || matrix);
+      syncReadout(state.target || matrix);
     }
 
+    // a new preset interrupts a running one: it starts from where the columns are now
+    let run = 0;
     async function goTo(target) {
-      if (state.animating) return;
+      const id = ++run;
+      M().cancelAnim(canvas);
+      M().matrixState.set(canvas, M().cloneMat(state.matrix));
       state.animating = true;
+      state.target = M().cloneMat(target);
+      writeControls(state.matrix, target);
+      syncReadout(target);
       try {
         await M().animateMatrix(canvas, target, {
           duration: 650,
           drawOptions: { firstLabel: "第 1 列", secondLabel: "第 2 列", orientation: open() },
           onUpdate(current) {
             state.matrix = M().cloneMat(current);
-            writeControls(current);
-            syncReadout(current);
+            writeControls(current, target);
           },
         });
+        if (id !== run) return;
         state.matrix = M().cloneMat(target);
+        state.target = null;
         draw(state.matrix);
       } finally {
-        state.animating = false;
+        if (id === run) {
+          state.animating = false;
+          state.target = null;
+        }
       }
     }
 

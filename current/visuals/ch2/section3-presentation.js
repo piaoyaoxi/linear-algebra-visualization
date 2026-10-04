@@ -92,9 +92,10 @@
           const usedElsewhere = chosen.some((value, otherRow) => otherRow !== row && value === col);
           if (repeated) {
             const onPath = selected && copies[row] === 1;
-            return `<td class="${onPath ? "is-selected" : ""}"><span data-repeat-r="${row}" data-repeat-c="${col}">${labelAt(row, col)}</span></td>`;
+            return `<td class="${onPath ? "is-selected" : ""}${onPath && triangular && row > col ? " is-zero-hit" : ""}"><span data-repeat-r="${row}" data-repeat-c="${col}">${labelAt(row, col)}</span></td>`;
           }
-          return `<td class="${selected ? "is-selected" : ""}${usedElsewhere ? " is-locked-col" : ""}"><button type="button" data-main-r="${row}" data-main-c="${col}" data-r="${row}" data-c="${col}" aria-pressed="${selected}" ${usedElsewhere && !selected ? "disabled" : ""}>${labelAt(row, col)}</button></td>`;
+          const hit = selected && triangular && row > col && !copies[row];
+          return `<td class="${selected ? "is-selected" : ""}${hit ? " is-zero-hit" : ""}${usedElsewhere ? " is-locked-col" : ""}"><button type="button" data-main-r="${row}" data-main-c="${col}" data-r="${row}" data-c="${col}" aria-pressed="${selected}" ${usedElsewhere && !selected ? "disabled" : ""}>${labelAt(row, col)}</button></td>`;
         }).join("")}</tr>
       `).join("");
     }
@@ -114,6 +115,7 @@
         button.addEventListener("click", () => {
           const row = Number(button.dataset.r);
           const col = Number(button.dataset.c);
+          tour += 1;
           chosen[row] = chosen[row] === col ? null : col;
           const message = root.querySelector("[data-select-msg]");
           message.textContent = "继续选择：每行每列恰好一个。";
@@ -148,11 +150,31 @@
       schedulePath();
     }
 
+    /*
+     * On the upper triangular matrix, walk the six paths one by one: each path is drawn on the
+     * matrix and the zero below the diagonal it picks is circled; the main diagonal comes last.
+     */
+    let tour = 0;
+    const TOUR = ["132", "213", "231", "312", "321", "123"];
+    const markTerm = (key) => root.querySelectorAll("[data-six]").forEach((item) => item.classList.toggle("is-active", item.dataset.six === key));
+    async function walkPaths() {
+      const token = ++tour;
+      for (const key of TOUR) {
+        if (token !== tour || !triangular) return;
+        chosen = key.split("").map((value) => Number(value) - 1);
+        markTerm(key);
+        render();
+        if (!M().reducedMotion()) await new Promise((resolve) => setTimeout(resolve, 950));
+      }
+    }
+
     root.querySelector("[data-select-reset]").addEventListener("click", () => {
+      tour += 1;
       chosen = Array(n).fill(null);
       render();
     }, { signal });
     root.querySelector("[data-select-231]").addEventListener("click", async () => {
+      tour += 1;
       chosen = Array(n).fill(null);
       render();
       const path = [1, 2, 0];
@@ -169,6 +191,8 @@
       render();
       if (triangular) gate?.acted();
       paintTerms();
+      if (triangular) walkPaths();
+      else tour += 1;
     }, { signal });
 
     const terms = root.querySelector("[data-six-terms]");
@@ -178,6 +202,7 @@
     }).join("");
     terms.querySelectorAll("[data-six]").forEach((button) => {
       button.addEventListener("click", () => {
+        tour += 1;
         chosen = button.dataset.six.split("").map((value) => Number(value) - 1);
         terms.querySelectorAll("button").forEach((item) => item.classList.toggle("is-active", item === button));
         render();

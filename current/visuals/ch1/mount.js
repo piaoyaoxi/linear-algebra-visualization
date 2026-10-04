@@ -181,7 +181,13 @@
     graph.append(stage);
 
     workflow.append(editor, operation, result, explanation, graph);
-    (opener || lab.querySelector(":scope > .ch1-lab-head")).after(workflow);
+    // the section's question is the middle 0; the operations workbench folds away under it
+    const more = document.createElement("details");
+    more.className = "ch1-more-ops";
+    more.innerHTML = `<summary><span>更多运算</span><small>加、减、数乘与乘法：输入两组系数，读出结果的每一项</small></summary>`;
+    more.append(workflow);
+    more.addEventListener("toggle", () => { if (more.open) window.dispatchEvent(new Event("resize")); });
+    (opener || lab.querySelector(":scope > .ch1-lab-head")).after(more);
     sourcePair.remove();
     explanationPair.remove();
     sourcePanel.remove();

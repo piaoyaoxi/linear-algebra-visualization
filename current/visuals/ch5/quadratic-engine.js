@@ -691,7 +691,8 @@
             else if (highlight.twin && highlight.i === j && highlight.j === i && i !== j) cls = " is-twin";
             else if (!highlight.twin && highlight.i === j && highlight.j === i && i !== j) cls = " is-twin";
           }
-          return `<span class="ch5-cell${cls}" data-i="${i}" data-j="${j}">${formatNum(v, digits)}</span>`;
+          // shown with a true minus sign; data-v keeps the number for the canvases that read it
+          return `<span class="ch5-cell${cls}" data-i="${i}" data-j="${j}" data-v="${Number(v)}">${formatNum(v, digits).replace(/^-/, "−")}</span>`;
         })
         .join("");
       return `<div class="ch5-matrix-row">${cells}</div>`;

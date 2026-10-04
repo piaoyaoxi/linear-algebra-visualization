@@ -93,16 +93,18 @@
     function paintTiles(A, B, stage) {
       const dA = Math.round(M().det2(A));
       const dB = Math.round(M().det2(B));
-      const group = (label, cols, rows, sign, cls) => {
+      // the signed area is written on the block itself
+      const group = (label, cols, rows, sign, cls, value) => {
         const cells = cols * rows;
+        const tag = `<b class="ch2-tile-val">${value}</b>`;
         const body = cells === 0
           ? `<div class="ch2-tiles is-zero"><i>0</i></div>`
           : `<div class="ch2-tiles${sign < 0 ? " is-flipped" : ""}" style="--cols:${cols}">${Array.from({ length: cells }, (_, k) => `<i class="${cls}"></i>`).join("")}</div>`;
-        return `<figure class="ch2-tile-group">${body}<figcaption>${label}</figcaption></figure>`;
+        return `<figure class="ch2-tile-group">${tag}${body}<figcaption>${label}</figcaption></figure>`;
       };
-      const parts = [group(`单位正方形：1`, 1, 1, 1, "is-unit")];
-      if (stage >= 1) parts.push(`<b class="ch2-tile-op">×${n(dB)}</b>`, group(`经过 B：${n(dB)}`, Math.abs(dB), 1, Math.sign(dB), "is-b"));
-      if (stage >= 2) parts.push(`<b class="ch2-tile-op">×${n(dA)}</b>`, group(`再经过 A：${n(dA * dB)}`, Math.abs(dB), Math.abs(dA), Math.sign(dA * dB), "is-ab"));
+      const parts = [group(`单位正方形：1`, 1, 1, 1, "is-unit", "1")];
+      if (stage >= 1) parts.push(`<b class="ch2-tile-op">×${n(dB)}</b>`, group(`经过 B：${n(dB)}`, Math.abs(dB), 1, Math.sign(dB), "is-b", `det B = ${n(dB)}`));
+      if (stage >= 2) parts.push(`<b class="ch2-tile-op">×${n(dA)}</b>`, group(`再经过 A：${n(dA * dB)}`, Math.abs(dB), Math.abs(dA), Math.sign(dA * dB), "is-ab", `det(AB) = ${n(dA * dB)}`));
       tiles.innerHTML = parts.join("");
     }
 
@@ -140,13 +142,13 @@
       try {
         idle(A, B);
         run = id;
-        liveLabel.textContent = "当前有向面积";
+        liveLabel.textContent = "当前有向面积（动画中）";
         dab.textContent = "1";
         status.textContent = "第一步：作用 B。";
         await M().animateMatrix(cB, B, {
           duration: 700,
           drawOptions: { firstLabel: "Be₁", secondLabel: "Be₂", caption: "第一步：I → B", ghost: I },
-          onUpdate(m) { dab.textContent = M().formatNum(M().det2(m), 2); },
+          onUpdate(m) { dab.textContent = `≈ ${M().formatNum(M().det2(m), 2)}`; },
         });
         if (id !== run) return;
         dab.textContent = n(dB);
@@ -158,7 +160,7 @@
         await M().animateMatrix(cAB, AB, {
           duration: 780,
           drawOptions: { firstLabel: "ABe₁", secondLabel: "ABe₂", caption: "第二步：B → AB", ghost: B },
-          onUpdate(m) { dab.textContent = M().formatNum(M().det2(m), 2); },
+          onUpdate(m) { dab.textContent = `≈ ${M().formatNum(M().det2(m), 2)}`; },
         });
         if (id !== run) return;
         // final, exact values only

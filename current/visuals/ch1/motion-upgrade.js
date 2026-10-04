@@ -24,6 +24,37 @@
     ctx.closePath();
   }
 
+  /*
+   * Canvas text with ᾱ: the bundled fonts have no precomposed ᾱ and set a combining
+   * macron off-centre, so the bar is drawn over a plain α. Honours textAlign; with
+   * stroke = true it paints the paper halo first.
+   */
+  const BAR = /\u1FB1|\u03B1\u0304/g;
+  function fillBarText(ctx, text, x, y, stroke = false) {
+    if (!BAR.test(text)) { BAR.lastIndex = 0; if (stroke) ctx.strokeText(text, x, y); ctx.fillText(text, x, y); return; }
+    BAR.lastIndex = 0;
+    const plain = text.replace(BAR, "\u03B1");
+    const marks = [];
+    let offset = 0;
+    text.replace(BAR, (m, i) => { marks.push(i - offset); offset += m.length - 1; return m; });
+    const align = ctx.textAlign;
+    const total = ctx.measureText(plain).width;
+    const left = align === "right" || align === "end" ? x - total : align === "center" ? x - total / 2 : x;
+    ctx.save();
+    ctx.textAlign = "left";
+    if (stroke) ctx.strokeText(plain, left, y);
+    ctx.fillText(plain, left, y);
+    const size = parseFloat((ctx.font.match(/(\d+(?:\.\d+)?)px/) || [0, 13])[1]);
+    const top = ctx.textBaseline === "middle" ? y - size * 0.42 : ctx.textBaseline === "top" ? y + size * 0.08 : y - size * 0.92;
+    marks.forEach((i) => {
+      const a = left + ctx.measureText(plain.slice(0, i)).width;
+      const w = ctx.measureText("\u03B1").width;
+      ctx.beginPath(); ctx.moveTo(a + w * 0.12, top); ctx.lineTo(a + w * 0.88, top);
+      ctx.lineWidth = Math.max(1, size / 13); ctx.strokeStyle = ctx.fillStyle; ctx.stroke();
+    });
+    ctx.restore();
+  }
+
   function drawPill(ctx, x, y, width, height, text, palette, options = {}) {
     ctx.save();
     ctx.globalAlpha = options.alpha ?? 1;
@@ -37,7 +68,7 @@
     ctx.font = `${options.weight || 650} ${options.fontSize || 13}px 'LA Serif Latin', 'LA Serif SC', 'Songti SC', serif`;
     ctx.textAlign = "center";
     ctx.textBaseline = "middle";
-    ctx.fillText(text, x + width / 2, y + height / 2 + 0.5);
+    fillBarText(ctx, text, x + width / 2, y + height / 2 + 0.5);
     ctx.restore();
   }
 
@@ -639,7 +670,7 @@
       ctx.font = "700 13px 'LA Serif Latin', 'LA Serif SC', 'Songti SC', serif";
       ctx.textAlign = "left";
       ctx.textBaseline = "middle";
-      ctx.fillText(label, point.x + 12, point.y + (options.labelBelow ? 16 : -12));
+      fillBarText(ctx, label, point.x + 12, point.y + (options.labelBelow ? 16 : -12));
       ctx.restore();
     }
 
@@ -688,25 +719,66 @@
       const midOnAxis = Math.abs(state.alpha.im + state.beta.im) < 1e-9;
       const halo = (text, x, y, color, align = "left") => {
         ctx.save(); ctx.font = "600 12.5px 'LA Serif Latin', 'LA Serif SC', 'Songti SC', serif"; ctx.textAlign = align; ctx.textBaseline = "middle";
-        ctx.lineWidth = 4; ctx.strokeStyle = palette.paper; ctx.strokeText(text, x, y);
-        ctx.fillStyle = color; ctx.fillText(text, x, y); ctx.restore();
+        ctx.lineWidth = 4; ctx.strokeStyle = palette.paper; ctx.fillStyle = color;
+        fillBarText(ctx, text, x, y, true); ctx.restore();
       };
 
       if (open) {
-        // circle |z| = |α|: ᾱ lies on it, and αᾱ = |α|²
-        const radius = Math.hypot(state.alpha.re, state.alpha.im);
-        if (radius > 1e-9) {
-          const edge = cam.toScreen(radius, 0);
+        /*
+         * Where each coefficient is real (α = a+bi fixed):
+         *   α+β ∈ ℝ  ⇔  Im β = −b          (horizontal line, purple like the midpoint)
+         *   αβ  ∈ ℝ  ⇔  a·Im β + b·Re β = 0 ⇔ β = tᾱ, t ∈ ℝ  (line through 0 along ᾱ, green)
+         * For b ≠ 0 the two lines meet only at ᾱ.
+         */
+        const { re: a, im: b } = state.alpha;
+        const { re: x, im: y } = state.beta;
+        const sumReal = Math.abs(b + y) < 1e-9;
+        const productReal = Math.abs(a * y + b * x) < 1e-9;
+        const tl = cam.toScreen(bounds.xMin, bounds.yMax);
+        const br = cam.toScreen(bounds.xMax, bounds.yMin);
+        const strokeLine = (p, q, color, dash, lit) => {
           ctx.save();
-          ctx.strokeStyle = palette.image; ctx.globalAlpha = 0.55; ctx.lineWidth = 1.2; ctx.setLineDash([5, 5]);
-          ctx.beginPath(); ctx.arc(origin.x, origin.y, Math.abs(edge.x - origin.x), 0, Math.PI * 2); ctx.stroke();
+          ctx.beginPath(); ctx.rect(tl.x, tl.y, br.x - tl.x, br.y - tl.y); ctx.clip();
+          if (lit) {
+            ctx.globalAlpha = 0.18; ctx.strokeStyle = color; ctx.lineWidth = 7;
+            ctx.beginPath(); ctx.moveTo(p.x, p.y); ctx.lineTo(q.x, q.y); ctx.stroke();
+          }
+          ctx.globalAlpha = lit ? 0.95 : 0.6; ctx.strokeStyle = color; ctx.lineWidth = lit ? 1.8 : 1.2; ctx.setLineDash(dash);
+          ctx.beginPath(); ctx.moveTo(p.x, p.y); ctx.lineTo(q.x, q.y); ctx.stroke();
           ctx.restore();
-          ctx.save(); ctx.strokeStyle = palette.axis; ctx.setLineDash([2, 3]); ctx.lineWidth = 1;
-          ctx.beginPath(); ctx.moveTo(origin.x, origin.y); ctx.lineTo(alpha.x, alpha.y); ctx.stroke(); ctx.restore();
-          // name the circle at its lower-left, away from the roots and the midpoint
-          const r = Math.abs(edge.x - origin.x);
-          halo("|z| = |α|", Math.max(76, origin.x - r * 0.72 - 6), Math.min(height - 20, origin.y + r * 0.72 + 12), palette.image, "right");
+        };
+        // the label goes to whichever end of the line is farther from the roots
+        const endLabel = (ends, textValue, color) => {
+          const score = (e) => Math.min(Math.hypot(e.x - alpha.x, e.y - alpha.y), Math.hypot(e.x - beta.x, e.y - beta.y), Math.hypot(e.x - mid.x, e.y - mid.y));
+          const e = score(ends[0]) >= score(ends[1]) ? ends[0] : ends[1];
+          const right = e.x > origin.x;
+          halo(textValue, e.x + (right ? -4 : 4), e.y + (e.y < origin.y ? 14 : -14), color, right ? "right" : "left");
+        };
+        const realAlpha = Math.abs(b) < 1e-9;
+        if (realAlpha) {
+          // α real: both lines are the real axis
+          strokeLine(cam.toScreen(bounds.xMin, 0), cam.toScreen(bounds.xMax, 0), palette.subspace, [], sumReal);
+          endLabel([cam.toScreen(bounds.xMin + 0.2, 0), cam.toScreen(bounds.xMax - 0.2, 0)], "β 为实数：和、积都是实数", palette.subspace);
+        } else {
+          const h0 = cam.toScreen(bounds.xMin, -b);
+          const h1 = cam.toScreen(bounds.xMax, -b);
+          strokeLine(h0, h1, palette.image, [6, 5], sumReal);
+          const len = Math.hypot(a, b);
+          const reach = 9 / len;
+          strokeLine(cam.toScreen(-reach * a, reach * b), cam.toScreen(reach * a, -reach * b), palette.subspace, [], productReal);
+          endLabel([cam.toScreen(bounds.xMin + 0.15, -b), cam.toScreen(bounds.xMax - 0.15, -b)], "α+β 为实数", palette.image);
+          // the product label sits where the green line leaves the plotted square
+          const k = Math.min(Math.abs(2.75 / a) || Infinity, Math.abs(2.75 / b));
+          endLabel([cam.toScreen(k * a, -k * b), cam.toScreen(-k * a, k * b)], "αβ 为实数（β = tᾱ）", palette.subspace);
+          // their only common point, marked once the prediction has been checked
+          if (gate?.revealed || locked) {
+            const c = cam.toScreen(a, -b);
+            ctx.save(); ctx.globalAlpha = 0.2; ctx.fillStyle = palette.subspace;
+            ctx.beginPath(); ctx.arc(c.x, c.y, 15, 0, Math.PI * 2); ctx.fill(); ctx.restore();
+          }
         }
+        ctx.save(); ctx.strokeStyle = palette.axis; ctx.setLineDash([2, 3]); ctx.lineWidth = 1;
+        ctx.beginPath(); ctx.moveTo(origin.x, origin.y); ctx.lineTo(alpha.x, alpha.y); ctx.stroke(); ctx.restore();
         // the segment between the two roots, and its midpoint (α+β)/2
         ctx.save();
         ctx.setLineDash([5, 6]); ctx.strokeStyle = palette.axis; ctx.globalAlpha = 0.7; ctx.lineWidth = 1.5;
@@ -788,9 +860,11 @@
       setTex(root.querySelector("[data-factor]"), exactReal
         ? realQuadraticTex(c.sum.re, c.product.re)
         : `x^2-\\left(${complexTex(c.sum)}\\right)x+\\left(${complexTex(c.product)}\\right)`);
-      root.querySelector("[data-geometry-copy]").textContent = state.mode === "R"
-        ? "中点 a 在实轴上，根之和 2a 是实数；ᾱ 在半径 |α| 的圆上，根之积 |α|² 是实数。"
-        : "拖动 β，让根之和与根之积都变成实数。紫色点是中点 (α+β)/2，虚线圆的半径是 |α|。";
+      const geometryCopy = state.mode === "R"
+        ? `${tex("\\bar\\alpha")} 同时在两条线上：在紫色虚线上，根之和 2a 是实数；在过原点的绿线上，根之积 ${tex("|\\alpha|^2")} 是实数。`
+        : "紫色虚线上 α+β 是实数，过原点的绿线上 αβ 是实数。把 β 拖到两条线上看看。";
+      const geometryNode = root.querySelector("[data-geometry-copy]");
+      if (geometryNode.dataset.copy !== geometryCopy) { geometryNode.dataset.copy = geometryCopy; geometryNode.innerHTML = geometryCopy; }
       if (!open) {
         setText(root.querySelector("[data-beta]"), "预测后显示");
         setText(root.querySelector("[data-sum]"), "—");
@@ -810,8 +884,8 @@
       root.querySelector("[data-canvas-hint]").textContent = !open
         ? "先在上方作出预测，再拖动 β"
         : state.mode === "R"
-          ? "拖动 α：ᾱ 关于实轴镜像跟随，中点始终在实轴上"
-          : "拖动离指针最近的根，看中点何时落到实轴上";
+          ? "拖动 α：共轭根关于实轴镜像跟随，两条线始终交在共轭根处"
+          : "拖动离指针最近的根，看它何时落到两条线上";
       draw();
     }
 
@@ -942,7 +1016,7 @@
         ["实轴上的某一点", false, `β 是实数时 ${tex("\\alpha+\\beta")} 的虚部仍是 ${tex("\\tfrac32")}，一次项系数不是实数。`],
         [`${tex("-\\bar\\alpha=-1+\\tfrac32 i")}：与 α 关于虚轴对称`, false, `这时 ${tex("\\alpha+\\beta=3i")}，一次项系数不是实数。`],
       ],
-      right: `✓ 根之和 ${tex("-p")} 是实数，中点 ${tex("\\tfrac{\\alpha+\\beta}{2}")} 就在实轴上；根之积 ${tex("q")} 是实数，β 又落在半径 ${tex("|\\alpha|")} 的圆上。两条同时成立，只有 ${tex("\\beta=\\bar\\alpha")}，此时 ${tex("q=\\alpha\\bar\\alpha=|\\alpha|^2")}。`,
+      right: `✓ 根之和 ${tex("-p")} 是实数，β 在水平线 ${tex("\\operatorname{Im}\\beta=-\\tfrac32")} 上；根之积 ${tex("q")} 是实数，β 在过原点、方向为 ${tex("\\bar\\alpha")} 的直线上（${tex("\\beta=t\\bar\\alpha")}，t 为实数）。两条线只交于 ${tex("\\bar\\alpha")}，此时 ${tex("q=\\alpha\\bar\\alpha=|\\alpha|^2")}。`,
       onPick: () => { lockables.forEach((node) => { node.disabled = false; }); updateDom(); },
     });
     if (gate) lockables.forEach((node) => { node.disabled = true; });

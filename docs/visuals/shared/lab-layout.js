@@ -66,20 +66,62 @@
    */
   const CLOSERS = "，。；：、）！？";
   function gluePunctuation(lab) {
+    // hand-written wrappers around a whole formula (some labs): unwrap, then glue as below
+    lab.querySelectorAll(".la-keep").forEach((keep) => {
+      if (keep.querySelector(".la-punct") || !keep.querySelector(":scope > .tex-inline")) return;
+      keep.replaceWith(...keep.childNodes);
+    });
     lab.querySelectorAll(".tex-inline").forEach((formula) => {
       const next = formula.nextSibling;
       if (!next || next.nodeType !== Node.TEXT_NODE || !CLOSERS.includes(next.textContent.charAt(0))) return;
-      if (formula.parentElement?.classList.contains("la-keep")) return;
+      if (formula.parentElement?.classList.contains("la-keep") || formula.querySelector(".la-keep")) return;
+      const mark = document.createElement("span");
+      mark.className = "la-punct";
+      mark.textContent = next.textContent.charAt(0);
+      // only the formula's last piece is glued to the mark, so a long formula can still
+      // break in the middle and the mark stays right after its end
+      const html = formula.querySelector(".katex-html");
+      const bases = html ? [...html.children].filter((c) => c.classList.contains("base")) : [];
       const keep = document.createElement("span");
       keep.className = "la-keep";
-      formula.before(keep);
-      keep.append(formula, document.createTextNode(next.textContent.charAt(0)));
+      if (bases.length) {
+        const last = bases[bases.length - 1];
+        last.before(keep);
+        keep.append(last, mark);
+      } else {
+        formula.before(keep);
+        keep.append(formula, mark);
+      }
       next.textContent = next.textContent.slice(1);
       if (!next.textContent) next.remove();
     });
   }
 
+  /*
+   * An inline formula wider than its paragraph (a matrix cannot wrap) gets a line of
+   * its own that scrolls sideways, instead of running past the card's edge on phones.
+   */
+  function fitWideFormulas(root) {
+    root.querySelectorAll(".tex-inline").forEach((formula) => {
+      const block = formula.parentElement?.closest("p, li, div, dd, td, label, figcaption");
+      if (!block || !formula.offsetParent) return;
+      formula.classList.remove("la-wide");
+      const cs = getComputedStyle(block);
+      const room = block.clientWidth - parseFloat(cs.paddingLeft) - parseFloat(cs.paddingRight);
+      // a formula that already wraps onto several lines fits; only a single unbreakable run is too wide
+      const pieces = formula.querySelector(".katex-html")?.getClientRects().length ?? 1;
+      // the box itself may be capped at the paragraph width while the formula inside runs on
+      const inner = formula.querySelector(".katex")?.getBoundingClientRect().width ?? 0;
+      const width = Math.max(formula.getBoundingClientRect().width, inner, formula.scrollWidth);
+      if (pieces <= 1 && width > room + 1) formula.classList.add("la-wide");
+    });
+  }
+
   function normalize() {
+    // the whole lesson, not only the labs: examples, theorems and self-tests too
+    const main = document.querySelector("main") || document.body;
+    gluePunctuation(main);
+    fitWideFormulas(main);
     const labs = document.querySelectorAll(LAB);
     if (!labs.length) return;
     const prefix = figurePrefix();
@@ -100,6 +142,8 @@
         const spare = side.getBoundingClientRect().bottom - last.getBoundingClientRect().bottom;
         if (spare > 0 && spare < 120) last.classList.add("la-fill");
       });
+      placeResult(lab, row);
+      fillFrame(lab, row);
       gatePrimary(lab);
       lab.classList.add("la-laid-out");
       // a wide row of presets would squeeze the title: put it on its own row instead
@@ -109,6 +153,54 @@
         if (head.getBoundingClientRect().width < 360) lab.classList.add("la-stack");
       }
     });
+  }
+
+  /*
+   * When the side column runs far below the canvas (typically once the conclusion
+   * opens), the conclusion moves under both columns as a full-width card, so the
+   * canvas column does not end in a large empty space.
+   */
+  const RESULT = ".ch3l-result, .ch6l-result, .ch7l-result, .ch9l-result";
+  function contentBottom(el) {
+    let bottom = el.getBoundingClientRect().top;
+    el.querySelectorAll("canvas, svg, img, button, input, select, p, figcaption, span, b, strong").forEach((n) => {
+      if (!n.offsetParent || (n.closest("svg") && n.tagName.toLowerCase() !== "svg")) return;
+      bottom = Math.max(bottom, n.getBoundingClientRect().bottom);
+    });
+    return bottom;
+  }
+  function placeResult(lab, row) {
+    if (!row) return;
+    const side = row.querySelector(SIDE);
+    const result = side?.querySelector(`:scope > ${RESULT}, ${RESULT}`);
+    if (!side || !result || result.hidden || !result.offsetParent) return;
+    const stage = [...row.children].find((c) => c !== side && !c.contains(side) && c.querySelector(FRAME));
+    if (!stage) return;
+    // single column (narrow screens): the result is already below the canvas
+    if (Math.abs(stage.getBoundingClientRect().top - side.getBoundingClientRect().top) > 40) return;
+    const gap = side.getBoundingClientRect().bottom - contentBottom(stage);
+    if (gap > 140) {
+      result.classList.add("la-result-wide");
+      row.after(result);
+    }
+  }
+
+  /* What is still left over is taken up by the canvas frame (the canvas sits centred in it). */
+  function fillFrame(lab, row) {
+    if (!row) return;
+    const side = row.querySelector(SIDE);
+    const frame = row.querySelector(FRAME);
+    if (!side || !frame) return;
+    frame.style.minHeight = "";
+    frame.classList.remove("la-frame-fill");
+    const stage = [...row.children].find((c) => c !== side && !c.contains(side) && c.contains(frame));
+    if (!stage || Math.abs(stage.getBoundingClientRect().top - side.getBoundingClientRect().top) > 40) return;
+    // only when the frame is the last big thing in its column (captions may follow it)
+    const gap = side.getBoundingClientRect().bottom - contentBottom(stage);
+    if (gap > 40 && gap < 480) {
+      frame.style.minHeight = `${Math.round(frame.getBoundingClientRect().height + gap)}px`;
+      frame.classList.add("la-frame-fill");
+    }
   }
 
   /*
@@ -153,7 +245,8 @@
 
   const start = () => {
     const main = document.querySelector("main") || document.body;
-    new MutationObserver(schedule).observe(main, { childList: true, subtree: true });
+    // also when something hidden opens (an answer, a conclusion): it needs the same layout pass
+    new MutationObserver(schedule).observe(main, { childList: true, subtree: true, attributes: true, attributeFilter: ["hidden", "open"] });
     window.addEventListener("resize", schedule, { passive: true });
     schedule();
   };

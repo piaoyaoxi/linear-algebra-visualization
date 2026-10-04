@@ -998,6 +998,10 @@ body.dark :is(main, #la) .ch2-meter-card {
   background: var(--surface-solid);
 }
 
+:is(main, #la) .ch2-tuning {
+  padding: 10px 14px;
+}
+
 :is(main, #la) .ch2-ledger > strong {
   color: var(--muted);
   font-size: 12.5px;
@@ -2227,6 +2231,8 @@ body.dark :is(main, #la) :is(.lesson-page-section, #lb) .inverse-control-panel {
   border-radius: 10px;
   background: var(--surface-solid);
   box-shadow: none;
+  /* a bordered card needs room inside (chapter 1 set its rows to 20px 0) */
+  padding: 18px 22px;
 }
 
 :is(main, #la) :is(.lesson-page-section, #lb) .definition-row.is-anchor {
@@ -3471,5 +3477,19 @@ body.dark :is(main, #la) :is(.lesson-page-section, #lb) .basis-label rect {
     min-height: 1.9rem;
     padding: 0 3px;
     font-size: 12.5px;
+  }
+}
+
+/* §6 (two columns): the f graph grows to the bottom of the readouts, so the left column does not end early */
+@media (min-width: 901px) {
+  :is(main, #la) .ch1-section-multiple-factors .ch1-two-col > .ch1-merge-stages {
+    align-self: stretch;
+    grid-template-rows: minmax(340px, 1fr) auto auto;
+    align-content: stretch;
+  }
+
+  :is(main, #la) .ch1-section-multiple-factors .ch1-merge-stages > .ch1-stage:not(.is-short) {
+    height: auto;
+    max-height: none;
   }
 }

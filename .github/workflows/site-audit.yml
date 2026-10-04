@@ -5,6 +5,7 @@ on:
     paths:
       - "current/**"
       - ".github/scripts/site-audit.mjs"
+      - ".github/scripts/theme-transition-check.mjs"
       - ".github/workflows/site-audit.yml"
       - ".github/scripts/check-font-coverage.py"
   workflow_dispatch:
@@ -47,6 +48,9 @@ jobs:
 
       - name: Audit every lesson section
         run: node .github/scripts/site-audit.mjs
+
+      - name: Light/dark switch moves every part together
+        run: node .github/scripts/theme-transition-check.mjs
 
       - name: Upload report
         if: always()

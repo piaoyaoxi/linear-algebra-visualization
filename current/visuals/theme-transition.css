@@ -229,7 +229,9 @@ body.theme-transitioning::before {
     --theme-tx-blur: 11px;
   }
 
+  /* the art-only images: keep the curved edge of the moon / sun on screen */
   .theme-transition__art {
+    object-position: right center;
     transform: scale(1.008);
   }
 }

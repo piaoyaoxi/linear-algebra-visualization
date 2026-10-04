@@ -1220,3 +1220,17 @@ body .ch3-meter.is-3:has(> [data-stage-card]) > .ch3-meter-card:not([data-stage-
 body .ch3-meter.is-3 > [data-stage-card] > span {
   white-space: nowrap;
 }
+
+/* Canvas wash (was a fixed white in styles.css): a token, so it morphs with the light/dark switch */
+:root {
+  --canvas-wash: rgba(255, 255, 255, 0.66);
+}
+
+body.dark {
+  --canvas-wash: rgba(255, 255, 255, 0.04);
+}
+
+canvas,
+body.dark canvas {
+  background: var(--canvas-wash);
+}

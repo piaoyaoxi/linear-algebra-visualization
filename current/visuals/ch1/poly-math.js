@@ -575,8 +575,11 @@
     });
     observer.observe(root);
     observers.set(root, observer);
+    // follow the colour tokens while the light/dark switch morphs them
+    const onThemeMix = () => { if (root.isConnected) draw(); else window.removeEventListener("la-thememix", onThemeMix); };
+    window.addEventListener("la-thememix", onThemeMix);
     draw();
-    return () => observer.disconnect();
+    return () => { observer.disconnect(); window.removeEventListener("la-thememix", onThemeMix); };
   }
 
   window.Ch1Math = {

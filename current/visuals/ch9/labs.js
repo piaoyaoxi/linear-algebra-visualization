@@ -89,6 +89,9 @@
   }
 
   /* ---------- shared UI ---------- */
+  /* a formula and the punctuation after it stay on one line */
+  const keep = (html) => `<span class="la-keep">${html}</span>`;
+
   function el(tag, cls, html) {
     const node = document.createElement(tag);
     if (cls) node.className = cls;
@@ -382,7 +385,7 @@
     const toolbar = el("div", "ch9l-toolbar");
     lab.append(toolbar);
     const { stage, side } = stageLayout(lab);
-    const scene = S().create(stage, { range: 2, label: "施密特正交化的三维图", yaw: -0.55, pitch: 0.38, hint: "拖动空白处旋转 · 拖动圆点改变 α₃", spreadLabels: true });
+    const scene = S().create(stage, { range: 2, label: "施密特正交化的三维图", yaw: -0.55, pitch: 0.38, hint: "拖动空白处旋转 · 拖动圆点改变 α₃", spreadLabels: true, labelSafe: true });
     lab.ch9Views = { scene };
     const stepCard = el("div", "ch9l-card");
     stepCard.innerHTML = `<div class="ch9l-steps" data-gs-steps></div>
@@ -421,8 +424,10 @@
         const faded = step >= 4 ? 0.3 : step >= 1 ? 0.55 : 1;
         // the plane's name sits on the side away from the vectors, so it stays clear of their labels
         if (step >= 3) objs.push({ type: "plane", n: V.cross(b1, b2), d: 0, color: "subspace", alpha: 0.13, label: "span{β₁,β₂}", labelAt: V.mul(V.add(V.norm(b1), V.norm(b2)), -1.1) });
-        state.a.forEach((v, i) => objs.push({ type: "arrow", to: v, color: colors[i], alpha: faded, width: 2.2, label: step >= 4 ? undefined : `α${"₁₂₃"[i]}` }));
-        if (step >= 1 && step < 4) objs.push({ type: "arrow", to: b1, color: "v1", width: 3.2, label: "β₁" });
+        // a faded αᵢ loses its name once βᵢ is drawn: β₁=α₁ carries one label, α₂ is replaced in step 3
+        const named = (i) => step < 4 && !(i === 0 && step >= 1) && !(i === 1 && step >= 3);
+        state.a.forEach((v, i) => objs.push({ type: "arrow", to: v, color: colors[i], alpha: faded, width: 2.2, label: named(i) ? `α${"₁₂₃"[i]}` : undefined }));
+        if (step >= 1 && step < 4) objs.push({ type: "arrow", to: b1, color: "v1", width: 3.2, label: "β₁=α₁" });
         if (step >= 2 && step < 4) {
           objs.push({ type: "segment", a: state.a[1], b: p2, color: "axis", dash: [5, 4], width: 1.6 });
           objs.push({ type: "point", p: p2, color: "axis", r: 4 });
@@ -817,7 +822,7 @@
         question: `${tex("A=\\operatorname{diag}(2,\\tfrac12)")} 的行列式为 1，它保持面积。A 是正交变换吗？`,
         options: [
           { text: `不是：它把 ${tex("\\varepsilon_1")} 拉长到长度 2`, correct: true },
-          { text: "是：行列式为 1 的变换都是旋转", why: "点选这个矩阵，看单位圆变成了什么。" },
+          { text: "是：行列式为 1 的变换都是旋转", why: `行列式为 1 只说明面积不变。选 ${tex("\\operatorname{diag}(2,\\tfrac12)")}：单位圆变成了椭圆，长度被改变。` },
           { text: "是：单位圆的像面积不变", why: "面积不变，形状却变了：长度和夹角都可能改变。" },
           { text: "要看 x 取在哪里", why: "正交变换要求对所有 x 保持长度；只要有一个 x 被拉长就不是。" },
         ],
@@ -851,7 +856,7 @@
     const toolbar = el("div", "ch9l-toolbar");
     lab.append(toolbar);
     const { stage, side } = stageLayout(lab);
-    const scene = S().create(stage, { range: 2.5, label: "子空间 W 与正交补", yaw: 0.8, pitch: 0.3, hint: "拖动空白处旋转 · 拖动圆点改变 w、α", spreadLabels: true });
+    const scene = S().create(stage, { range: 2.5, label: "子空间 W 与正交补", yaw: 0.8, pitch: 0.3, hint: "拖动空白处旋转 · 拖动圆点改变 w、α", spreadLabels: true, labelSafe: true });
     lab.ch9Views = { scene };
     const tools = el("div", "ch9l-actions");
     tools.innerHTML = `${btn("沿 W⊥ 看", "data-sub-look")}${btn("侧面看 W", "data-sub-side")}${btn("默认视角", "data-sub-reset")}`;
@@ -941,12 +946,13 @@
       ]);
 
       const lines = [`<h4>当前读数</h4>`];
-      lines.push(`<p>${tex(`W=\\operatorname{span}\\{${c.ws.map(vtex).join(",") || "0"}\\}`)}，${tex(`\\dim W=${c.r}`)}</p>`);
+      lines.push(`<p>${keep(`${tex(`W=\\operatorname{span}\\{${c.ws.map(vtex).join(",") || "0"}\\}`)}，`)}${tex(`\\dim W=${c.r}`)}</p>`);
       if (state.revealed) {
-        lines.push(`<p data-sub-perp>${tex(`W^\\perp=\\operatorname{span}\\{${c.perp.map(vtex).join(",") || "0"}\\}`)}，${tex(`\\dim W^\\perp=${c.perp.length}`)}</p>`);
+        lines.push(`<p data-sub-perp>${keep(`${tex(`W^\\perp=\\operatorname{span}\\{${c.perp.map(vtex).join(",") || "0"}\\}`)}，`)}${tex(`\\dim W^\\perp=${c.perp.length}`)}</p>`);
         lines.push(`<p>${tex(`\\alpha=\\alpha_1+\\alpha_2=${vtex(c.a1)}+${vtex(c.a2)}`)}</p>`);
         const checks = c.basis.map((b) => lf(dotF(c.a2, b)));
-        if (checks.length) lines.push(`<p class="ch9l-ok">${checks.map((v, i) => tex(`(\\alpha_2,${vtex(c.basis[i])})=${v}`)).join("，")}：${tex("\\alpha_2\\in W^\\perp")}。</p>`);
+        // each formula keeps the mark after it, so no line starts with ，or ：
+        if (checks.length) lines.push(`<p class="ch9l-ok">${checks.map((v, i) => keep(`${tex(`(\\alpha_2,${vtex(c.basis[i])})=${v}`)}${i < checks.length - 1 ? "，" : "："}`)).join("")}${keep(`${tex("\\alpha_2\\in W^\\perp")}。`)}</p>`);
         lines.push(`<p class="ch9l-muted">${tex(`\\dim W+\\dim W^\\perp=${c.r}+${c.perp.length}=${c.r + c.perp.length}`)}</p>`);
       } else {
         lines.push(`<p class="ch9l-muted">作出预测并动手操作后，显示 W⊥ 和 α 的分解。</p>`);
@@ -1066,9 +1072,20 @@
         if (state.revealed) objs.push({ type: "curve", pts: circle.map((p) => p && ap(An, p)), closed: true, color: "image", dash: [3, 5], width: 1.6 });
         const T = transformAt(state.s, pre);
         objs.push({ type: "curve", pts: circle.map((p) => p && ap(T, p)), closed: true, color: "image", width: 2.8, fill: true, fillAlpha: 0.07 });
-        const flag = [[0.35, 0.1], [0.75, 0.1], [0.75, 0.32]].map((p) => ap(T, p));
-        objs.push({ type: "polygon", pts: flag, color: "image", fillAlpha: 0.3, width: 1.2 });
-        if (state.revealed) pre.eig.forEach(([l, v], i) => objs.push({ type: "arrow", to: ap(T, unit2(v)), color: i ? "v2" : "v1", width: 3, label: `q${"₁₂"[i]}` }));
+        if (state.revealed)
+          pre.eig.forEach(([l, v], i) => {
+            const tip = ap(T, unit2(v));
+            objs.push({ type: "arrow", to: tip, color: i ? "v2" : "v1", width: 3, label: `q${"₁₂"[i]}` });
+            // once Λ has acted, the arrow is a semi-axis of the ellipse: its length is |λ|.
+            // The other half of that axis is drawn dashed and carries the length.
+            if (state.s >= 2) {
+              const back = [-tip[0], -tip[1]];
+              const len = Math.hypot(tip[0], tip[1]) || 1;
+              const side = [(-tip[1] / len) * 0.3, (tip[0] / len) * 0.3];
+              objs.push({ type: "segment", a: [0, 0], b: back, color: i ? "v2" : "v1", dash: [5, 4], width: 1.4, alpha: 0.6 });
+              objs.push({ type: "label", p: [back[0] / 2 + side[0], back[1] / 2 + side[1]], text: `半轴长 ${Math.abs(l)}`, color: i ? "v2" : "v1", align: "center", dx: 0, dy: 0, font: "600 13px 'LA Serif Latin', 'LA Serif SC', 'Songti SC', serif" });
+            }
+          });
         return objs;
       });
       const stepIdx = state.s < 1 ? 0 : state.s < 2 ? 1 : 2;
@@ -1235,7 +1252,7 @@
           const gLen = V().len(V().sub(Ax, p));
           // the right triangle b–p–Ax: legs e (⊥ W) and p−Ax (in W), hypotenuse b−Ax
           if (eLen > 1e-9 && gLen > 1e-9) {
-            objs.push({ type: "polygon", pts: [state.b, p, Ax], color: "image", alpha: 0.1, strokeAlpha: 0 });
+            objs.push({ type: "polygon", pts: [state.b, p, Ax], color: "image", alpha: 0.1, strokeAlpha: 0, keepClear: true });
             objs.push({ type: "segment", a: p, b: Ax, color: "image", width: 2.2 });
             objs.push({ type: "segment", a: state.b, b: Ax, color: "axis", width: 1.6 });
             objs.push(...rightAngle3(p, V().sub(state.b, p), V().sub(Ax, p), 0.32).map((o) => ({ ...o, width: 1.8 })));

@@ -131,6 +131,7 @@
     // positions x′ has visited on the slice x+σ⁻¹(0): every one maps to the same σx
     const trail = new Map();
     let slideTimer = 0;
+    let startW = null;
     const remember = () => trail.set(state.w.join(","), state.w.slice());
 
     const mode = () => KERNEL_MODES[state.key];
@@ -275,18 +276,21 @@
         state.w = w.map((c) => c + 0);
         remember();
       };
+      // the sweep ends back at the starting offset, so x′ does not stop on top of x
+      const home = startW ? [startW] : [];
       if (reduce) {
-        stops.forEach(visit);
+        [...stops, ...home].forEach(visit);
         redraw();
         flow?.acted();
         return;
       }
+      const path = [...stops, ...home];
       let i = 0;
       slideTimer = setInterval(() => {
-        visit(stops[i]);
+        visit(path[i]);
         redraw();
         i += 1;
-        if (i >= stops.length) {
+        if (i >= path.length) {
           clearInterval(slideTimer);
           flow?.acted();
         }
@@ -313,10 +317,11 @@
         return k.map((c) => -c);
       };
       state.w = ker.length === 1 ? start() : [-1.5, 1.5, 0];
+      startW = state.w.slice();
       scene?.destroy();
       // the old scene's caption (added by lab-layout.js) goes with it
       stage.querySelectorAll(".la-figcaption").forEach((n) => n.remove());
-      scene = S().create(stage, { range: 3, label: "核、值域与一个点的像", hint: "拖动空白处旋转 · 拖动金色圆点 x 或 x′", yaw: -0.9, pitch: 0.35, axisNames: mode().axes });
+      scene = S().create(stage, { range: 3, label: "核、值域与一个点的像", hint: "拖动空白处旋转 · 拖动金色圆点 x 或 x′", yaw: -0.9, pitch: 0.35, axisNames: mode().axes, spreadLabels: true, labelSafe: true });
       handles();
       flow = K.predictFlow(gateHost, result, { ...mode().predict, onReveal: redraw });
       redraw();

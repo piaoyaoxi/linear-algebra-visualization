@@ -350,7 +350,9 @@
   }
 
   /*
-   * plane2d(host, { extent, label, hint })
+   * plane2d(host, { extent, label, hint, spreadLabels })
+   *   spreadLabels   opt-in: labels are placed after the drawing, off other labels,
+   *                  drag handles and arrow shafts, and inside the canvas
    *   setDraw(fn)    fn(d) is called on every render with a drawing API d
    *   setHandles([{ get, set, snap, color, hidden }])
    *   on("change", fn) / on("end", fn)
@@ -383,6 +385,10 @@
     const ctx = canvas.getContext("2d");
     let size = { w: 0, h: 0, dpr: 1 };
     let axisNameBoxes = [];
+    // with spreadLabels: labels wait until the drawing is done, arrows leave their shafts
+    let pendingLabels = [];
+    let shafts = [];
+    let arrowCount = 0;
 
     const scale = () => Math.min(size.w, size.h) / (2 * extent);
     const P = ([x, y]) => [size.w / 2 + x * scale(), size.h / 2 - y * scale()];
@@ -549,10 +555,13 @@
           ctx.closePath();
           ctx.fill();
           ctx.restore();
+          arrowCount += 1;
+          const owner = arrowCount;
+          if (options.spreadLabels) shafts.push({ a: A, b: B, owner });
           if (opts.label) {
             const ux = Math.cos(ang);
             const uy = Math.sin(ang);
-            d.text(to, opts.label, color, { dx: ux * 16 + (opts.ldx || 0), dy: uy * 16 + (opts.ldy || 0), font: "700 14px 'LA Serif Latin', 'LA Serif SC', 'Songti SC', serif", align: "center" });
+            d.text(to, opts.label, color, { dx: ux * 16 + (opts.ldx || 0), dy: uy * 16 + (opts.ldy || 0), font: "700 14px 'LA Serif Latin', 'LA Serif SC', 'Songti SC', serif", align: "center", owner });
           }
         },
         point(p, color, opts = {}) {
@@ -623,6 +632,11 @@
           if (left() < 4) tx += 4 - left();
           if (left() + tw > size.w - 4) tx -= left() + tw - (size.w - 4);
           ty = Math.max(10, Math.min(size.h - 10, ty));
+          if (options.spreadLabels && !opts.isAxisName) {
+            pendingLabels.push({ str, x: left(), y: ty, w: tw, font: ctx.font, color: res(color), owner: opts.owner });
+            ctx.restore();
+            return;
+          }
           if (!opts.isAxisName) {
             const hit = (r) => left() < r.x + r.w && left() + tw > r.x && Math.abs(ty - r.y) < 14;
             const r = axisNameBoxes.find(hit);
@@ -632,6 +646,7 @@
             axisNameBoxes.push({ x: left(), y: ty, w: tw });
           }
           ctx.lineWidth = 4;
+          ctx.lineJoin = "round";
           ctx.strokeStyle = pal.dark ? "rgba(14,18,27,.85)" : "rgba(255,255,255,.9)";
           ctx.strokeText(str, tx, ty);
           ctx.fillStyle = res(color);
@@ -648,6 +663,9 @@
       ctx.setTransform(size.dpr, 0, 0, size.dpr, 0, 0);
       ctx.clearRect(0, 0, size.w, size.h);
       axisNameBoxes = [];
+      pendingLabels = [];
+      shafts = [];
+      arrowCount = 0;
       drawFn(api(pal));
       handles.forEach((h) => {
         if (h.hidden?.()) return;
@@ -661,6 +679,54 @@
         ctx.lineWidth = active ? 3 : 2.4;
         ctx.strokeStyle = pal[h.color] || h.color || pal.accent;
         ctx.stroke();
+        ctx.restore();
+      });
+      if (options.spreadLabels) placeLabels(pal);
+    }
+
+    /* Opt-in label placement: try a few offsets, keep off labels, handles and shafts. */
+    function placeLabels(pal) {
+      const gap = 5;
+      const placed = axisNameBoxes.map((r) => ({ ...r }));
+      const knobs = handles.filter((h) => !h.hidden?.()).map((h) => P(h.get()));
+      const meets = (a, b) => a.x < b.x + b.w + gap && a.x + a.w + gap > b.x && Math.abs(a.y - b.y) < 15;
+      const onKnob = (r) =>
+        knobs.some(([hx, hy]) => {
+          const nx = Math.max(r.x, Math.min(r.x + r.w, hx));
+          const ny = Math.max(r.y - 8, Math.min(r.y + 8, hy));
+          return Math.hypot(nx - hx, ny - hy) < 12;
+        });
+      const onShaft = (r, owner) =>
+        shafts.some((sh) => {
+          if (sh.owner === owner) return false;
+          const len = Math.hypot(sh.b[0] - sh.a[0], sh.b[1] - sh.a[1]);
+          const n = Math.max(2, Math.ceil(len / 3));
+          for (let i = 0; i <= n; i += 1) {
+            const x = sh.a[0] + ((sh.b[0] - sh.a[0]) * i) / n;
+            const y = sh.a[1] + ((sh.b[1] - sh.a[1]) * i) / n;
+            if (x > r.x - 2 && x < r.x + r.w + 2 && y > r.y - 8 && y < r.y + 8) return true;
+          }
+          return false;
+        });
+      const inside = (r) => r.x >= 4 && r.x + r.w <= size.w - 4 && r.y >= 10 && r.y <= size.h - 10;
+      pendingLabels.forEach((lab) => {
+        const { w } = lab;
+        const tries = [[0, 0], [0, -16], [0, 16], [w * 0.6, 0], [-w * 0.6, 0], [w * 0.6, -16], [-w * 0.6, -16], [w * 0.6, 16], [-w * 0.6, 16], [0, -30], [0, 30], [w + 8, 0], [-w - 8, 0]];
+        const at = ([ox, oy]) => ({ x: lab.x + ox, y: lab.y + oy, w });
+        const free = (r) => inside(r) && !placed.some((q) => meets(r, q)) && !onKnob(r);
+        let best = tries.map(at).find((r) => free(r) && !onShaft(r, lab.owner)) || tries.map(at).find(free) || at([0, 0]);
+        best = { ...best, x: Math.max(4, Math.min(size.w - 4 - w, best.x)), y: Math.max(10, Math.min(size.h - 10, best.y)) };
+        placed.push(best);
+        ctx.save();
+        ctx.font = lab.font;
+        ctx.textAlign = "left";
+        ctx.textBaseline = "middle";
+        ctx.lineWidth = 4;
+        ctx.lineJoin = "round";
+        ctx.strokeStyle = pal.dark ? "rgba(14,18,27,.85)" : "rgba(255,255,255,.9)";
+        ctx.strokeText(lab.str, best.x, best.y);
+        ctx.fillStyle = lab.color;
+        ctx.fillText(lab.str, best.x, best.y);
         ctx.restore();
       });
     }

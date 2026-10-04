@@ -71,16 +71,17 @@
       task: `${tex("P[x]_3")} 中取基 ${tex("1,x,x^2")}，每个多项式 ${tex("a_0+a_1x+a_2x^2")} 对应坐标 ${tex("(a_0,a_1,a_2)")}。左图是曲线，右图是坐标点；拖动右图的圆点，左边的曲线跟着变。`,
     });
     const PRESETS = {
-      lay: { label: "1+2x²，4+x+5x²，3+2x", polys: [[1, 0, 2], [4, 1, 5], [3, 2, 0]], range: 5.5 },
-      basis: { label: "1+x，x+x²，1+x²", polys: [[1, 1, 0], [0, 1, 1], [1, 0, 1]], range: 3.5 },
+      lay: { label: "1+2x²，4+x+5x²，3+2x", polys: [[1, 0, 2], [4, 1, 5], [3, 2, 0]], range: 5.5, cam: { yaw: -0.75, pitch: 0.36 } },
+      // seen from here the chain 2p₂ → +p₃ bends visibly instead of lining up with q
+      basis: { label: "1+x，x+x²，1+x²", polys: [[1, 1, 0], [0, 1, 1], [1, 0, 1]], range: 3.5, cam: { yaw: -1.9, pitch: 0.45 } },
     };
     const Q = [1, 2, 3];
-    const state = { polys: PRESETS.lay.polys.map((p) => p.slice()), c: [F(0), F(0), F(0)], revealed: false };
+    const state = { key: "lay", polys: PRESETS.lay.polys.map((p) => p.slice()), c: [F(0), F(0), F(0)], revealed: false };
 
     const toolbar = el("div", "ch6l-toolbar");
     lab.append(toolbar);
     const { plotBox, right } = pairViews(lab, "函数图像", `坐标空间（基 ${tex("1,x,x^2")}）`);
-    const scene = S().create(right, { range: 5.5, label: "三个多项式的坐标点", hint: "拖动圆点改变多项式 · 拖动空白处旋转", axisNames: ["1", "x", "x²"], yaw: -0.75, pitch: 0.36 });
+    const scene = S().create(right, { range: 5.5, label: "三个多项式的坐标点", hint: "拖动圆点改变多项式 · 拖动空白处旋转", axisNames: ["1", "x", "x²"], yaw: -0.75, pitch: 0.36, spreadLabels: true, labelSafe: true });
     const grid = el("div", "ch6l-grid2");
     const controls = el("div", "ch6l-card");
     const info = el("div", "ch6l-card");
@@ -206,10 +207,11 @@
     }
 
     function load(key) {
+      state.key = key;
       state.polys = PRESETS[key].polys.map((p) => p.slice());
       state.c = [F(0), F(0), F(0)];
       controls.querySelectorAll("input[type=range]").forEach((input) => (input.value = "0"));
-      scene.resetView(false);
+      scene.setCamera(PRESETS[key].cam, false);
       scene.setRange(PRESETS[key].range, false);
       redraw();
       acted();
@@ -227,7 +229,7 @@
       acted();
       solve();
     });
-    controls.querySelector("[data-reset]").addEventListener("click", () => scene.resetView());
+    controls.querySelector("[data-reset]").addEventListener("click", () => scene.setCamera(PRESETS[state.key].cam));
     controls.querySelector("[data-look]").addEventListener("click", () => {
       const ps = polysF();
       const nonzero = ps.find((p) => p.some((x) => !M().isZero(x)));
@@ -274,7 +276,7 @@
     const toolbar = el("div", "ch6l-toolbar");
     lab.append(toolbar);
     const { plotBox, right } = pairViews(lab, "函数图像", `旧坐标空间（基 ${tex("1,x,x^2")}）`);
-    const scene = S().create(right, { range: 3, label: "新基向量与固定的坐标点", hint: "拖动空白处旋转", axisNames: ["1", "x", "x²"], yaw: -0.6, pitch: 0.4 });
+    const scene = S().create(right, { range: 3, label: "新基向量与固定的坐标点", hint: "拖动空白处旋转", axisNames: ["1", "x", "x²"], yaw: -0.6, pitch: 0.4, spreadLabels: true, labelSafe: true });
     const controls = el("div", "ch6l-controls is-one");
     controls.innerHTML = rangeInput(tex("a"), "a", -2, 2, 0.5, 0);
     lab.append(controls);
@@ -324,20 +326,20 @@
           ...(state.revealed ? [["image", "前两项（切线）"]] : []),
         ]);
 
+      const cols = [0, 1, 2].map((j) => A.map((r) => num(r[j])));
+      const chain = [[0, 0, 0]];
+      if (state.revealed) cols.forEach((c, j) => chain.push(S().vec.add(chain[chain.length - 1], S().vec.mul(c, num(Y[j])))));
       scene.setObjects(() => {
-        const cols = [0, 1, 2].map((j) => A.map((r) => num(r[j])));
         const objs = cols.map((c, j) => ({ type: "arrow", to: c, color: COLORS[j], width: 2.2, alpha: 0.85, label: `η${SUB[j]}` }));
-        if (state.revealed) {
-          let tail = [0, 0, 0];
-          cols.forEach((c, j) => {
-            const head = S().vec.add(tail, S().vec.mul(c, num(Y[j])));
-            if (S().vec.len(S().vec.sub(head, tail)) > 1e-9) objs.push({ type: "arrow", from: tail, to: head, color: COLORS[j], width: 3.4 });
-            tail = head;
-          });
-        }
+        chain.slice(1).forEach((head, j) => {
+          const tail = chain[j];
+          if (S().vec.len(S().vec.sub(head, tail)) > 1e-9) objs.push({ type: "arrow", from: tail, to: head, color: COLORS[j], width: 3.4 });
+        });
         objs.push({ type: "point", p: X.map(num), color: "text", r: 7, label: "X" });
         return objs;
       });
+      // zoom so the basis vectors and the chain fill the view
+      scene.fitRange([...cols, ...chain, X.map(num)], { pad: 1.25, min: 1.5, max: 5 });
 
       const check = M().matVec(A, Y).every((x, i) => M().eq(x, X[i]));
       info.innerHTML = `<div>${colourColumnsHtml(texD(`A_a=${colourColumnsTex(A)}`), COLORS)}</div>
@@ -431,12 +433,12 @@
     const toolbar = el("div", "ch6l-toolbar");
     lab.append(toolbar);
     const { stage, side } = stageBody(lab);
-    const scene = S().create(stage, { range: 2.5, label: "两个子空间、它们的交与和", yaw: -0.85, pitch: 0.38 });
+    const scene = S().create(stage, { range: 2.5, label: "两个子空间、它们的交与和", yaw: -0.85, pitch: 0.38, spreadLabels: true, labelSafe: true });
     const info = el("div", "ch6l-card");
     const tools = el("div", "ch6l-actions");
     tools.innerHTML = `<button type="button" class="ch6l-btn" data-look>沿交线看</button><button type="button" class="ch6l-btn" data-reset>回到默认视角</button>`;
     const gateHost = el("div");
-    const result = K().resultBox(`<p>维数公式 ${tex("\\dim U+\\dim W=\\dim(U+W)+\\dim(U\\cap W)")}。在 ${tex("\\mathbb R^3")} 中 ${tex("\\dim(U+W)\\le3")}，所以两个平面的交至少是 ${tex("2+2-3=1")} 维：沿交线看，两个平面都缩成直线，交点就是那条公共直线。平面与直线一般只交于原点，和是 ${tex("\\mathbb R^3")}；直线落进平面后，交是这条直线，和退回平面。</p>`);
+    const result = K().resultBox(`<p>维数公式 <span class="la-keep">${tex("\\dim U+\\dim W=\\dim(U+W)+\\dim(U\\cap W)")}。</span>在 ${tex("\\mathbb R^3")} 中 ${tex("\\dim(U+W)\\le3")}，所以两个平面的交至少是 ${tex("2+2-3=1")} 维：沿交线看，两个平面都缩成直线，交点就是那条公共直线。平面与直线一般只交于原点，和是 ${tex("\\mathbb R^3")}；直线落进平面后，交是这条直线，和退回平面。</p>`);
     side.append(info, tools, gateHost, result);
 
     function compute() {
@@ -475,7 +477,12 @@
         U.forEach((v, i) => objs.push({ type: "arrow", to: v.map(num), color: "v1", width: 2.4, label: ghost ? undefined : `u${SUB[i]}`, ghost }));
         W.forEach((v, i) => objs.push({ type: "arrow", to: v.map(num), color: "v2", width: 2.4, label: ghost ? undefined : `w${SUB[i]}`, ghost }));
         if (state.revealed) {
-          alphas.forEach((v, i) => objs.push({ type: "arrow", to: v.map(num), color: "subspace", width: 3.4, label: name("α", i, alphas.length) }));
+          // a long primitive vector would leave the view; any non-zero multiple is a basis of U∩W
+          const fit = (v) => {
+            const len = S().vec.len(v);
+            return len > 2.2 ? S().vec.mul(v, 1.6 / len) : v;
+          };
+          alphas.forEach((v, i) => objs.push({ type: "arrow", to: fit(v.map(num)), color: "subspace", width: 3.4, label: name("α", i, alphas.length) }));
           betas.forEach((v, i) => objs.push({ type: "arrow", to: v.map(num), color: "v1", width: 3.4, label: name("β", i, betas.length) }));
           gammas.forEach((v, i) => objs.push({ type: "arrow", to: v.map(num), color: "v2", width: 3.4, label: name("γ", i, gammas.length) }));
         }
@@ -575,7 +582,7 @@
         },
         result: (kind) =>
           ({
-            direct: `<p>${tex("U\\cap W=\\{0\\}")} 且 ${tex("\\dim U+\\dim W=3")}，所以 ${tex("\\mathbb R^3=U\\oplus W")}，每个 ${tex("v")} 恰有一种分解 ${tex("v=u'+w'")}。分解沿着 ${tex("U")} 的方向，画出的平行四边形一般不是矩形。直线越贴近平面，${tex("u'=tu")} 中的 ${tex("t=v_3/u_3")} 越大，两个分量越长。</p>`,
+            direct: `<p>${tex("U\\cap W=\\{0\\}")} 且 <span class="la-keep">${tex("\\dim U+\\dim W=3")}，</span>所以 <span class="la-keep">${tex("\\mathbb R^3=U\\oplus W")}，</span>每个 ${tex("v")} 恰有一种分解 ${tex("v=u'+w'")}。分解沿着 ${tex("U")} 的方向，画出的平行四边形一般不是矩形。直线越贴近平面，${tex("u'=tu")} 中的 ${tex("t=v_3/u_3")} 越大，两个分量越长。</p>`,
             outside: `<p>现在 ${tex("u")} 落进了 ${tex("W")}：${tex("U\\subset W")}，${tex("U\\cap W=U")}，${tex("U+W=W")} 只是平面，不再是直和。${tex("v")} 在平面外，没有任何分解；把 ${tex("v")} 也放进平面，分解就有无穷多种。</p>`,
             inside: `<p>现在 ${tex("u")} 和 ${tex("v")} 都在 ${tex("W")} 里：${tex("U\\subset W")}，${tex("U\\cap W=U\\ne\\{0\\}")}，${tex("U+W=W")} 不是直和。图中两个不同的平行四边形给出同一个 ${tex("v")}：沿 ${tex("U")} 走多少都可以，分解有无穷多种。</p>`,
           })[kind],
@@ -809,7 +816,7 @@
     const toolbar = el("div", "ch6l-toolbar");
     lab.append(toolbar);
     const { plotBox, right } = pairViews(lab, `${tex("P[x]_3")} 中的三条曲线`, `像所在的 ${tex("\\mathbb R^3")}`);
-    const scene = S().create(right, { range: 1.7, label: "像与平行四边形", hint: "拖动圆点改变多项式 · 拖动空白处旋转", yaw: 2.7, pitch: 0.65, spreadLabels: true });
+    const scene = S().create(right, { range: 1.7, label: "像与平行四边形", hint: "拖动圆点改变多项式 · 拖动空白处旋转", yaw: 2.7, pitch: 0.65, spreadLabels: true, labelSafe: true });
     const info = el("div", "ch6l-status");
     const gateHost = el("div");
     const result = K().resultBox(`<p>${tex("\\tau")} 保持加法和数乘：${tex("(p+q)(k)=p(k)+q(k)")}。它是单射，因为次数小于 3 的多项式若有 0、1、2 三个根，只能是零多项式；两边维数都是 3，所以 ${tex("\\tau")} 也是满射，是同构。拖动 ${tex("\\tau(p)")} 时，左图的曲线始终穿过三个指定高度的点，这就是插值。同构不唯一：${tex("\\sigma")} 与 ${tex("\\tau")} 是两个不同的同构。第三种对应把平方作用在系数上，${tex("p+q")} 的像离开第四个顶点，它不保持加法。</p>`);
@@ -867,15 +874,18 @@
       scene.setObjects(() => {
         const [P, Q, Sn, C] = [ip, iq, is, corner].map((v) => v.map(num));
         const objs = [
+          // placed first, so the vertex keeps its label next to it
+          ...(closes ? [] : [{ type: "label", p: C, text: "第四个顶点", color: "axis", font: "600 14px 'LA Serif Latin', 'LA Serif SC', 'Songti SC', serif" }]),
           { type: "polygon", pts: [[0, 0, 0], P, C, Q], color: "axis", alpha: 0.06, strokeAlpha: 0.6, dash: [5, 4] },
           { type: "arrow", to: P, color: "v1", width: 2.8, label: `${name}(p)` },
           { type: "arrow", to: Q, color: "v2", width: 2.8, label: `${name}(q)` },
-          { type: "arrow", to: Sn, color: "image", width: 3.2, label: `${name}(p+q)` },
+          // with a gap at the tip, the label moves to the shaft so it stays off the gap
+          { type: "arrow", to: Sn, color: "image", width: 3.2, label: `${name}(p+q)`, ...(closes ? {} : { labelAt: S().vec.mul(Sn, 0.55) }) },
         ];
         if (!closes) {
           // the gap that additivity would close, in the second-vector / error colour
-          objs.push({ type: "segment", a: Sn, b: C, color: "v2", width: 3 });
-          objs.push({ type: "point", p: C, color: "axis", r: 5.5, hollow: true, label: "第四个顶点" });
+          objs.push({ type: "segment", a: Sn, b: C, color: "v2", width: 3.4, glow: true });
+          objs.push({ type: "point", p: C, color: "axis", r: 5.5, hollow: true });
         }
         return objs;
       });
@@ -903,6 +913,11 @@
     K().chips(toolbar, Object.entries(MODES).map(([k, v]) => [k, v.label]), (k) => {
       state.mode = k;
       redraw();
+      // without handles to drag, magnify the parallelogram so the gap is easy to see
+      if (k === "square") {
+        const s = add(state.p, state.q);
+        scene.fitView([[0, 0, 0], image(state.p), image(state.q), image(s), add(image(state.p), image(state.q))].map((v) => v.map(num)), { pad: 1.35, max: 2 });
+      } else scene.resetFit();
       gate?.acted();
     }, "coef");
     gate = K().predictGate(

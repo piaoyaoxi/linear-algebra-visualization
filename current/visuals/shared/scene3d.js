@@ -17,6 +17,7 @@
  * Optional object flags (all backward compatible):
  *   ghost: true     the previous state of an object: same colour, dashed, ~35% alpha
  *   glow: true | k  highlight: a wide underlay in the same colour (k scales its strength)
+ *   keepClear: true (polygon) an axis name that would fall inside this polygon is not drawn
  * Optional scene options:
  *   spreadLabels    nudge overlapping labels apart in screen space
  *   labelSafe       (with spreadLabels) treat each drag handle as a centred 26px obstacle,
@@ -245,6 +246,8 @@
       ctx.textBaseline = "middle";
       const pal = palette(host);
       ctx.lineWidth = 4;
+      // round joins: a mitred halo grows spikes on letters such as v
+      ctx.lineJoin = "round";
       ctx.strokeStyle = pal.dark ? "rgba(14,18,27,.85)" : "rgba(255,255,255,.9)";
       ctx.strokeText(text, x, y);
       ctx.fillStyle = color;
@@ -261,6 +264,8 @@
 
       const prims = [];
       const labels = [];
+      // polygons flagged keepClear: axis names never sit inside them
+      const clear = [];
 
       // Frame: faint cube edges and coordinate axes.
       if (options.frame !== false) {
@@ -271,7 +276,7 @@
         const names = options.axisNames || ["x₁", "x₂", "x₃"];
         [[1, 0, 0], [0, 1, 0], [0, 0, 1]].forEach((e, i) => {
           prims.push({ kind: "seg", a: V.mul(e, -L), b: V.mul(e, L), color: pal.muted, width: 1, alpha: 0.55 });
-          labels.push({ p: V.mul(e, L * 1.08), text: names[i], color: pal.muted, font: "600 12px 'LA Serif Latin', 'LA Serif SC', 'Songti SC', serif" });
+          labels.push({ p: V.mul(e, L * 1.08), text: names[i], color: pal.muted, font: "600 12px 'LA Serif Latin', 'LA Serif SC', 'Songti SC', serif", axis: true });
         });
       }
 
@@ -286,6 +291,7 @@
             if (o.label) labels.push({ p: o.labelAt || poly[0], text: o.label, color });
           }
         } else if (o.type === "polygon") {
+          if (o.keepClear) clear.push(o.pts);
           prims.push({ kind: "poly", pts: o.pts, fill: withAlpha(color, o.alpha ?? (o.ghost ? 0.035 : 0.18)), stroke: withAlpha(color, o.strokeAlpha ?? (o.ghost ? 0.35 : 0.8)), width: o.width || 1.2, dash: o.dash || (o.ghost ? GHOST_DASH : undefined), glow: glowOf(o), color });
         } else if (o.type === "box") {
           const [u, v, w] = o.vectors;
@@ -440,8 +446,18 @@
       }
       // arrow shafts in screen space, so spread labels also keep off other arrows
       const shafts = options.spreadLabels ? prims.filter((p) => p.kind === "arrow").map((p) => [project(p.a, b), project(p.b, b)]) : [];
+      const inside = (pt, poly) => {
+        let hit = false;
+        for (let i = 0, j = poly.length - 1; i < poly.length; j = i, i += 1) {
+          const [a, c] = [poly[i], poly[j]];
+          if (a.y > pt.y !== c.y > pt.y && pt.x < ((c.x - a.x) * (pt.y - a.y)) / (c.y - a.y || 1e-9) + a.x) hit = !hit;
+        }
+        return hit;
+      };
+      const clearScreen = clear.map((pts) => pts.map((p) => project(p, b)));
       labels.forEach((lab) => {
         const q = project(lab.p, b);
+        if (lab.axis && clearScreen.some((poly) => inside(q, poly))) return;
         let x = q.x + (lab.dx || 6);
         let y = q.y + (lab.dy || -6);
         if (options.spreadLabels) {

@@ -104,15 +104,46 @@
       }),
     );
     const lab = host.closest(".ch3l-lab") || host.parentElement;
+    /*
+     * Acting means changing what the lab reports. Rotating the camera, a view-only
+     * button or a click on the text leaves the readouts as they were, so it does
+     * not count; moving b, v₃, c or running a step changes them.
+     */
+    const state = () => {
+      const parts = [];
+      const walk = document.createTreeWalker(lab, NodeFilter.SHOW_TEXT);
+      while (walk.nextNode()) {
+        const node = walk.currentNode;
+        if (node.parentElement?.closest(".ch3l-predict, button, .ch3l-head, .la-figcaption, .la3d-hint, .katex-mathml")) continue;
+        parts.push(node.textContent.trim());
+      }
+      lab.querySelectorAll("input").forEach((input) => parts.push(input.value));
+      return parts.join("|");
+    };
+    // the readouts at the moment of the pick; refreshed once after the lab's own redraw,
+    // unless the student has already acted by then
+    let before = null;
+    let touched = false;
+    box.querySelectorAll("[data-i]").forEach((b) => b.addEventListener("click", () => {
+      if (before != null) return;
+      before = state();
+      requestAnimationFrame(() => { if (!touched && !revealed) before = state(); });
+    }));
+    const check = () => {
+      if (choice == null || revealed || before == null) return;
+      if (state() !== before) reveal();
+    };
     const acted = (event) => {
       if (choice == null || revealed || box.contains(event.target)) return;
-      reveal();
+      touched = true;
+      // the lab redraws its readouts after its own handlers, and animations finish later
+      setTimeout(check, 60);
+      setTimeout(check, 400);
+      setTimeout(check, 1100);
     };
-    ["pointerup", "input", "change", "keyup"].forEach((type) => lab?.addEventListener(type, acted));
-    lab?.addEventListener("click", (event) => {
-      const b = event.target.closest("button");
-      if (b && !b.disabled) acted(event);
-    });
+    ["pointerup", "input", "change", "keyup", "click"].forEach((type) => lab?.addEventListener(type, acted));
+    // dragging a handle on the canvas is acting even when the readouts are still hidden
+    lab?.addEventListener("la-handle-move", () => { if (choice != null && before != null) reveal(); });
     return box;
   }
 

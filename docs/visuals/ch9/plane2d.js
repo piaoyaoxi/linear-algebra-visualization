@@ -474,6 +474,8 @@
       if (p[0] === cur[0] && p[1] === cur[1]) return;
       h.set(p);
       listeners.change.forEach((fn) => fn(h));
+      // a handle really moved: prediction gates count it as acting
+      canvas.dispatchEvent(new CustomEvent("la-handle-move", { bubbles: true }));
       render();
     }
 

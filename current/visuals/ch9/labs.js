@@ -161,13 +161,44 @@
     };
     const actRoot = spec.manual ? null : spec.defer || host.closest("[data-ch9-lab]");
     if (actRoot) {
+      /*
+       * Acting means changing what the lab reports: rotating the camera, a view
+       * button or an empty click leaves the readouts as they were and does not count.
+       */
+      const state = () => {
+        const parts = [];
+        const walk = document.createTreeWalker(actRoot, NodeFilter.SHOW_TEXT);
+        while (walk.nextNode()) {
+          const node = walk.currentNode;
+          if (node.parentElement?.closest("[data-ch9-predict], button, .ch9l-head, .la-figcaption, .ch9p-hint, .la3d-hint, .katex-mathml, [data-ch9-result]")) continue;
+          parts.push(node.textContent.trim());
+        }
+        actRoot.querySelectorAll("input").forEach((input) => parts.push(input.value));
+        return parts.join("|");
+      };
+      // the readouts at the moment of the pick; refreshed once after the lab's own redraw,
+      // unless the student has already acted by then
+      let before = null;
+      let touched = false;
+      box.querySelectorAll("[data-i]").forEach((b) => b.addEventListener("click", () => {
+        if (before != null) return;
+        before = state();
+        requestAnimationFrame(() => { if (!touched && !answered) before = state(); });
+      }));
+      const check = () => {
+        if (!picked || answered || before == null) return;
+        if (state() !== before) verdict(picked);
+      };
       const act = (e) => {
         if (!picked || answered || box.contains(e.target)) return;
-        if (e.type === "click" && !e.target.closest("button")) return;
-        if (e.type === "pointerup" && !e.target.closest("canvas, svg")) return;
-        verdict(picked);
+        touched = true;
+        setTimeout(check, 60);
+        setTimeout(check, 400);
+      setTimeout(check, 1100);
       };
-      ["input", "change", "pointerup", "click"].forEach((t) => actRoot.addEventListener(t, act));
+      ["input", "change", "pointerup", "click", "keyup"].forEach((t) => actRoot.addEventListener(t, act));
+      // dragging a handle on the canvas is acting even when the readouts are still hidden
+      actRoot.addEventListener("la-handle-move", () => { if (picked && !answered && before != null) verdict(picked); });
     }
     return box;
   }

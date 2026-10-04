@@ -696,7 +696,8 @@
       A: [["1/2", "3/10"], [0, "4/5"]],
       vecs: [[1, 0], [1, 1]],
       lambdas: ["1/2", "4/5"],
-      x0: [2.5, 2],
+      // x₀ = 2η₁ + η₂ starts away from the η₂ line, so the path visibly bends onto it
+      x0: [3, 1],
       extent: 3.2,
       predict: {
         question: "点会趋向原点。最后几步，它贴着哪条特征直线进来？",
@@ -770,7 +771,7 @@
       title: "反复作用 A，点跑向哪里",
       task: "拖动金色的 x₀，然后按“作用一次”。蓝、朱两支箭头是 xₖ 的两个特征分量，每按一次各乘自己的 λ；紫色折线是轨迹。",
     });
-    const state = { key: "attract", x0: [2.5, 2], k: 0 };
+    const state = { key: "attract", x0: [3, 1], k: 0 };
     const toolbar = el("div", "ch7l-toolbar");
     const body = el("div", "ch7l-body");
     const stage = el("div", "ch7l-stage");

@@ -457,9 +457,17 @@
           const nImg = V().cross(imgs[0], imgs[1]);
           // AW stays on the picture as a ghost, also when it lands on W
           if (V().len(nImg) > 1e-9) objs.push({ type: "plane", n: nImg, d: 0, color: "image", ghost: true, alpha: r.inv ? 0.03 : 0.06, strokeAlpha: 0.6, width: 1.4, label: r.inv ? undefined : "AW" });
-          r.basis.map(numVec).forEach((w, i) => {
-            objs.push({ type: "arrow", to: scaled(w, 1.4), color: W, width: 2.2, label: `w${"₁₂"[i]}` });
-            objs.push({ type: "arrow", to: scaled(imgs[i], 1.4 * (V().len(imgs[i]) / V().len(w))), color: "image", width: 2.2, label: `Aw${"₁₂"[i]}` });
+          const ws = r.basis.map(numVec);
+          const tipsW = ws.map((w) => scaled(w, 1.4));
+          const tipsA = imgs.map((a, i) => scaled(a, 1.4 * (V().len(a) / V().len(ws[i]))));
+          // when Awᵢ lands exactly on w_j (e.g. w₂ = Aw₁) the two arrows share one label
+          const same = (p, q) => V().len(V().sub(p, q)) < 0.05;
+          const namesW = ws.map((_, j) => `w${"₁₂"[j]}`);
+          const merged = tipsA.map((a) => tipsW.findIndex((w) => same(a, w)));
+          merged.forEach((j, i) => { if (j >= 0) namesW[j] += `=Aw${"₁₂"[i]}`; });
+          ws.forEach((w, i) => {
+            objs.push({ type: "arrow", to: tipsW[i], color: W, width: 2.2, label: namesW[i] });
+            objs.push({ type: "arrow", to: tipsA[i], color: "image", width: 2.2, label: merged[i] >= 0 ? undefined : `Aw${"₁₂"[i]}` });
           });
           objs.push({ type: "segment", a: [0, 0, 0], b: n, color: "drag", width: 1.4, dash: [3, 3] });
           objs.push({ type: "label", p: n, text: "法向 n", color: "drag" });

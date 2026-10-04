@@ -659,8 +659,11 @@
         p = V.add(start, V.add(V.mul(b.right, dx), V.mul(b.up, dy)));
       }
       p = clampCube(p.map((x) => snapValue(x, h.snap)));
+      const moved = (h.get() || []).some((x, i) => Math.abs(x - p[i]) > 1e-12);
       h.set(p);
       listeners.change.forEach((f) => f(h));
+      // a handle really moved (camera rotation never sends this): prediction gates count it as acting
+      if (moved) canvas.dispatchEvent(new CustomEvent("la-handle-move", { bubbles: true }));
       render();
     }
 

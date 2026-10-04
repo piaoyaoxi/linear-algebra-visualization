@@ -115,6 +115,10 @@
     };
     const sub = (r, c) => `a_{${r + 1}${c + 1}}`;
     function renderLeibniz() {
+      // the six-term panel explains the answer, so it opens with the verdict
+      const panel = root.querySelector("[data-leibniz]");
+      panel.hidden = !open();
+      if (!open()) return;
       const { row: i, col: j } = active;
       const terms = PERMS.map((p) => ({
         p,

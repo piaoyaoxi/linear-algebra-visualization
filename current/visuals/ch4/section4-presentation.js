@@ -552,9 +552,10 @@
       setArrow(elements.basisY, elements.basisYHead, origin, basisY, 15, 4.2);
       setArrow(elements.vector, elements.vectorHead, origin, vectorTip, 14, 3.8);
       setDot(elements.originDot, origin);
-      // two-factor presets: name the vectors by the nearest settled product (I, S, A=RS, S, I)
+      // two-factor presets: name the vectors by the last finished product (I, S, A=RS, S, I);
+      // the name changes only when the next step has arrived
       const factorNames = preset.factors ? preset.factorNames : null;
-      const settled = factorNames ? Math.round(journey * 2) : -1;
+      const settled = factorNames ? Math.min(4, Math.floor(journey * 2 + 0.04)) : -1;
       const prefix = factorNames ? ["", factorNames[0], "A", factorNames[0], ""][settled] : stage === 1 ? "A" : "";
       setLabel(elements.basisXLabel, basisX, `${prefix}e₁`);
       setLabel(elements.basisYLabel, basisY, `${prefix}e₂`);

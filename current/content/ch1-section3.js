@@ -38,7 +38,7 @@ defineChapter1Section("polynomial-divisibility", {
     type: "slot",
     title: "长除法",
     description: "逐步做首项相除、乘回、相减。",
-    task: "先预测，再点“下一步”做完 x⁴−1 除以 x²+x+1：看余式次数阶梯每步下降多少、在哪里落到 deg g 以下；再换到“整除”示例比较结束时的余式。",
+    task: "先猜一猜，再点“下一步”做完 x⁴−1 除以 x²+x+1：看余式次数阶梯每步下降多少、在哪里落到 deg g 以下；再换到“整除”示例比较结束时的余式。",
   },
   example: {
     title: "例题：完成一次带余除法",

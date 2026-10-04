@@ -124,8 +124,8 @@
     spec = { ...spec, options: window.LAStableShuffle ? window.LAStableShuffle(spec.options, spec.question) : spec.options };
     const box = el("div", "ch9l-predict");
     box.dataset.ch9Predict = "";
-    box.innerHTML = `<div class="ch9l-predict-q"><span>先预测</span><p>${spec.question}</p></div>
-      <div class="ch9l-predict-options">${spec.options.map((o, i) => `<button type="button" data-i="${i}">${o.text}</button>`).join("")}</div>
+    box.innerHTML = `<div class="ch9l-predict-q"><span>先猜一猜</span><p>${spec.question}</p></div>
+      <div class="ch9l-predict-options">${spec.options.map((o, i) => `<button type="button" data-i="${i}" data-ok="${o.correct ? "true" : "false"}" data-why="${String(o.why || "").replace(/&/g, "&amp;").replace(/"/g, "&quot;")}">${o.text}</button>`).join("")}</div>
       <p class="ch9l-predict-feedback" hidden></p>`;
     host.append(box);
     const feedback = box.querySelector(".ch9l-predict-feedback");
@@ -137,7 +137,7 @@
       box.querySelectorAll("[data-i]").forEach((x) => x.classList.remove("is-right", "is-wrong", "is-picked"));
       b.classList.add(o.correct ? "is-right" : "is-wrong");
       feedback.hidden = false;
-      feedback.innerHTML = o.correct ? `✓ ${spec.right}` : `再对照图形想一想：${o.why || "动手操作后看看发生了什么。"}`;
+      feedback.innerHTML = o.correct ? `✓ ${spec.right}` : `再看看图：${o.why || "动手操作后看看发生了什么。"}`;
       if (!answered) {
         answered = true;
         box.dataset.answered = "true";
@@ -154,7 +154,7 @@
         box.dataset.picked = "true";
         box.querySelectorAll("[data-i]").forEach((x) => x.classList.toggle("is-picked", x === b));
         feedback.hidden = false;
-        feedback.textContent = spec.actHint || "已记下你的预测。现在动手操作一次，结论随后出现。";
+        feedback.textContent = spec.actHint || "记下了你的猜测。现在动手操作一次，结论随后出现。";
         if (first) spec.onPick?.();
       }),
     );
@@ -390,7 +390,7 @@
     const stepCard = el("div", "ch9l-card");
     stepCard.innerHTML = `<div class="ch9l-steps" data-gs-steps></div>
       <div class="ch9l-actions">${btn("上一步", "data-gs-prev")}${btn("下一步", "data-gs-next data-la-free", "is-primary")}${btn("沿平面看", "data-gs-look")}${btn("默认视角", "data-gs-reset")}</div>
-      <p class="ch9l-note" data-gs-note hidden>先回答下面的预测，再执行第三步。</p>`;
+      <p class="ch9l-note" data-gs-note hidden>先猜一猜下面的问题，再执行第三步。</p>`;
     const info = el("div", "ch9l-card");
     info.dataset.ch9Readout = "gs";
     const gateHost = el("div");
@@ -520,7 +520,7 @@
         ],
         right: `投影 ${tex("=\\tfrac{(\\alpha_3,\\beta_1)}{(\\beta_1,\\beta_1)}\\beta_1+\\tfrac{(\\alpha_3,\\beta_2)}{(\\beta_2,\\beta_2)}\\beta_2")}。执行第三步，再点“沿平面看”。`,
         manual: true,
-        actHint: "已记下你的预测。执行到第三步，结论随后出现。",
+        actHint: "记下了你的猜测。执行到第三步，结论随后出现。",
         onPick: () => {
           state.predicted = true;
           redraw();
@@ -669,7 +669,7 @@
         ],
         right: `例如 ${tex("f_1=(\\tfrac35,\\tfrac15),\\ f_2=(-\\tfrac45,\\tfrac75)")}：两个端点都在单位椭圆上，f₂ 平行于 f₁ 处的切线；${tex("B=I")}，右边的紫色曲线与虚线单位圆重合。`,
         defer: lab,
-        actHint: "已记下你的预测。换一组基或拖动 f₁、f₂，结论随后出现。",
+        actHint: "记下了你的猜测。换一组基或拖动 f₁、f₂，结论随后出现。",
       },
       () => {
         state.revealed = true;
@@ -828,7 +828,7 @@
         ],
         right: `单位圆变成半轴为 2 和 ${tex("\\tfrac12")} 的椭圆；${tex("Q^TQ=\\operatorname{diag}(4,\\tfrac14)\\ne I")}。对默认的 x、y，像上没有刻痕，∠(Qx,Qy) 的弧是虚线。`,
         defer: lab,
-        actHint: "已记下你的预测。选一个矩阵或拖动 x、y，结论随后出现。",
+        actHint: "记下了你的猜测。选一个矩阵或拖动 x、y，结论随后出现。",
       },
       () => {
         state.revealed = true;
@@ -851,7 +851,7 @@
     const lab = labShell(root, {
       kind: "orthogonal-complement",
       title: "W 与它的正交补 W⊥",
-      task: "W 由 w₁（和 w₂）张成，三个圆点都能拖动（每次半格）。作出预测并动手操作后，图中出现 W⊥，以及 α 沿 W 与 W⊥ 的分解。",
+      task: "W 由 w₁（和 w₂）张成，三个圆点都能拖动（每次半格）。猜过并动手操作后，图中出现 W⊥，以及 α 沿 W 与 W⊥ 的分解。",
     });
     const toolbar = el("div", "ch9l-toolbar");
     lab.append(toolbar);
@@ -955,7 +955,7 @@
         if (checks.length) lines.push(`<p class="ch9l-ok">${checks.map((v, i) => keep(`${tex(`(\\alpha_2,${vtex(c.basis[i])})=${v}`)}${i < checks.length - 1 ? "，" : "："}`)).join("")}${keep(`${tex("\\alpha_2\\in W^\\perp")}。`)}</p>`);
         lines.push(`<p class="ch9l-muted">${tex(`\\dim W+\\dim W^\\perp=${c.r}+${c.perp.length}=${c.r + c.perp.length}`)}</p>`);
       } else {
-        lines.push(`<p class="ch9l-muted">作出预测并动手操作后，显示 W⊥ 和 α 的分解。</p>`);
+        lines.push(`<p class="ch9l-muted">猜过并动手操作后，显示 W⊥ 和 α 的分解。</p>`);
       }
       info.innerHTML = lines.join("");
       tools.querySelector("[data-sub-look]").textContent = c.r === 1 ? "沿 W 看" : "沿 W⊥ 看";
@@ -984,7 +984,7 @@
         ],
         right: `${tex("(1,-1,1)")} 与 ${tex("(1,1,0)")}、${tex("(0,1,1)")} 的内积都是 0。α 拆成 W 里的 α₁ 与 W⊥ 里的 α₂；在垂足 α₁ 处，α₂ 与 W 中两个互相垂直的方向都成直角。`,
         defer: lab,
-        actHint: "已记下你的预测。拖动 α 或旋转画面，W⊥ 随后出现。",
+        actHint: "记下了你的猜测。拖动 α 或旋转画面，W⊥ 随后出现。",
       },
       () => {
         state.revealed = true;
@@ -1100,7 +1100,7 @@
 
       const lines = [`<h4>当前读数</h4>`, `<p>${tex(`A=${M().latexMatrix(e.A)}`)}${e.sym ? "，对称" : `，${tex("A^T\\ne A")}`}</p>`];
       if (!state.revealed) {
-        lines.push(`<p class="ch9l-muted">先预测椭圆长轴的方向，再播放三步。</p>`);
+        lines.push(`<p class="ch9l-muted">先猜一猜椭圆长轴的方向，再播放三步。</p>`);
         info.innerHTML = lines.join("");
         return;
       }
@@ -1166,7 +1166,7 @@
           { text: `沿 ${tex("(1,-1)")}，长 1`, why: "那是短轴：λ=1 的特征方向。" },
         ],
         right: `${tex("(1,1)")} 是属于 3 的特征向量，${tex("(-1,1)")} 是属于 1 的特征向量，两者正交。播放三步，紫色虚线是 A 直接作用的结果。`,
-        actHint: "已记下你的预测。播放三步或拖动进度条，结论随后出现。",
+        actHint: "记下了你的猜测。播放三步或拖动进度条，结论随后出现。",
         onPick: () => {
           state.picked = true;
           redraw();
@@ -1298,7 +1298,7 @@
         parts.push(`<p class="ch9l-ok">${tex(`(e,a_1)=${lf(dotF(s.e, A.map((r) => r[0])))},\\ (e,a_2)=${lf(dotF(s.e, A.map((r) => r[1])))}`)}：e 垂直于 W。</p>`);
         parts.push(`<p data-ls-tri>${M().isZero(s.gap) || M().isZero(s.best) ? "" : "直角三角形 b–p–Ax（直角在 p）："}${tex(`|b-Ax|^2=${lf(s.sse)}=|e|^2+|p-Ax|^2=${lf(s.best)}+${lf(s.gap)}`)}</p>`);
         if (M().isZero(s.gap)) parts.push(`<p class="ch9l-ok">试的直线就是最佳直线。</p>`);
-      } else parts.push(`<p class="ch9l-muted">调 C、D 让 ${tex("|b-Ax|^2")} 尽量小；作出预测并动手操作后，显示最佳直线与投影。</p>`);
+      } else parts.push(`<p class="ch9l-muted">调 C、D 让 ${tex("|b-Ax|^2")} 尽量小；猜过并动手操作后，显示最佳直线与投影。</p>`);
       status.innerHTML = parts.join("");
       controls.querySelector("[data-ls-triview]").disabled = !state.revealed;
     }
@@ -1361,7 +1361,7 @@
         ],
         right: `这里 ${tex("\\hat x=(2,0)")}，最佳直线是 ${tex("y=2")}，${tex("e=(1,-2,1)")}，正好沿 W 的法向。b、p、Ax 围成直角三角形，直角在 p：${tex("|b-Ax|^2=|e|^2+|p-Ax|^2")}，所以 Ax 取 p 时最小。`,
         defer: lab,
-        actHint: "已记下你的预测。调 C、D 或拖动 b，结论随后出现。",
+        actHint: "记下了你的猜测。调 C、D 或拖动 b，结论随后出现。",
       },
       () => {
         state.revealed = true;

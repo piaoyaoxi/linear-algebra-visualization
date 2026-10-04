@@ -79,7 +79,7 @@
       const container = root.querySelector("[data-route-list]");
       // before the prediction the routes are locked and their counts hidden
       const locked = gate && !gate.picked;
-      container.innerHTML = routes.map((item) => `<button type="button" class="${open() && route.type === item.type && route.index === item.index ? "is-active" : ""}" data-route-type="${item.type}" data-route-index="${item.index}" ${locked ? 'disabled title="先在上方作出预测"' : ""}>${item.type === "row" ? `第 ${item.index + 1} 行` : `第 ${item.index + 1} 列`}${open() ? ` · ${item.cost} 个非零项` : ""}</button>`).join("");
+      container.innerHTML = routes.map((item) => `<button type="button" class="${open() && route.type === item.type && route.index === item.index ? "is-active" : ""}" data-route-type="${item.type}" data-route-index="${item.index}" ${locked ? 'disabled title="先在上方猜一猜"' : ""}>${item.type === "row" ? `第 ${item.index + 1} 行` : `第 ${item.index + 1} 列`}${open() ? ` · ${item.cost} 个非零项` : ""}</button>`).join("");
       container.querySelectorAll("button").forEach((button) => {
         button.addEventListener("click", () => {
           route = { type: button.dataset.routeType, index: Number(button.dataset.routeIndex) };
@@ -254,7 +254,7 @@
           <div class="ch2-leibniz" data-leibniz aria-live="polite"></div>
           <div class="ch2-route-explorer">
             <div class="ch2-presets ch2-route-list" data-route-list></div>
-            <div class="ch2-note" data-route-wait>选好预测后，点一条展开路线，看它的各项怎样相加。</div>
+            <div class="ch2-note" data-route-wait>猜好之后，点一条展开路线，看它的各项怎样相加。</div>
             <div class="ch2-note" data-route-reading hidden><strong data-route-title></strong> · <span data-cost></span><div class="ch2-cof-tiles" data-expand></div><span data-omitted></span></div>
           </div>
         </div>`;

@@ -253,8 +253,8 @@
     resultBox.hidden = true;
     resultBox.innerHTML = "";
     const box = el("div", "ch7l-predict");
-    box.innerHTML = `<div class="ch7l-predict-q"><span>先预测</span><p>${spec.question}</p></div>
-      <div class="ch7l-predict-options">${spec.options.map((o, i) => `<button type="button" data-i="${i}">${o.text}</button>`).join("")}</div>
+    box.innerHTML = `<div class="ch7l-predict-q"><span>先猜一猜</span><p>${spec.question}</p></div>
+      <div class="ch7l-predict-options">${spec.options.map((o, i) => `<button type="button" data-i="${i}" data-ok="${o.correct ? "true" : "false"}" data-why="${String(o.why || "").replace(/&/g, "&amp;").replace(/"/g, "&quot;")}">${o.text}</button>`).join("")}</div>
       <p class="ch7l-predict-feedback" hidden></p>`;
     gateHost.append(box);
     const feedback = box.querySelector(".ch7l-predict-feedback");
@@ -265,12 +265,12 @@
       state.revealed = true;
       const o = spec.options[state.choice];
       const verdict = o.correct
-        ? `<span class="ch7l-ok">预测正确。</span>`
-        : `<span class="ch7l-bad">和图中看到的不一致。</span>${o.why ? ` ${o.why}` : ""}`;
+        ? `<span class="ch7l-ok">猜对了。</span>`
+        : `<span class="ch7l-bad">再看看图。</span>${o.why ? ` ${o.why}` : ""}`;
       resultBox.innerHTML = `<strong>结论</strong><p>${verdict}</p><p>${spec.conclusion}</p>`;
       resultBox.hidden = false;
       // the “act now” hint has done its job: the box now shows the verdict instead
-      feedback.innerHTML = o.correct ? `<span class="ch7l-ok">✓ 预测正确，结论见下方。</span>` : `<span class="ch7l-bad">× 和图中看到的不一致，结论见下方。</span>`;
+      feedback.innerHTML = o.correct ? `<span class="ch7l-ok">✓ 猜对了，结论见下方。</span>` : `<span class="ch7l-bad">× 再看看图，结论见下方。</span>`;
       box.classList.add("is-done");
       spec.onReveal?.();
     }
@@ -281,7 +281,7 @@
         state.choice = Number(b.dataset.i);
         box.querySelectorAll("[data-i]").forEach((x) => x.classList.toggle("is-picked", x === b));
         feedback.hidden = false;
-        feedback.textContent = spec.actHint || "已记下你的预测。现在动手操作，结论随后出现。";
+        feedback.textContent = spec.actHint || "记下了你的猜测。现在动手操作，结论随后出现。";
         reveal();
       }),
     );

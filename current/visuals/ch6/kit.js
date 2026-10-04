@@ -42,8 +42,8 @@
   function predictGate(host, spec, onReveal) {
     spec = { ...spec, options: window.LAStableShuffle ? window.LAStableShuffle(spec.options, spec.question) : spec.options };
     const box = el("div", "ch6l-predict");
-    box.innerHTML = `<div class="ch6l-predict-q"><span>先预测</span><p>${spec.question}</p></div>
-      <div class="ch6l-predict-options">${spec.options.map((o, i) => `<button type="button" data-i="${i}">${o.text}</button>`).join("")}</div>
+    box.innerHTML = `<div class="ch6l-predict-q"><span>先猜一猜</span><p>${spec.question}</p></div>
+      <div class="ch6l-predict-options">${spec.options.map((o, i) => `<button type="button" data-i="${i}" data-ok="${o.correct ? "true" : "false"}" data-why="${String(o.why || "").replace(/&/g, "&amp;").replace(/"/g, "&quot;")}">${o.text}</button>`).join("")}</div>
       <p class="ch6l-predict-feedback" hidden></p>`;
     host.append(box);
     const feedback = box.querySelector(".ch6l-predict-feedback");
@@ -57,7 +57,7 @@
         if (i === state.choice) x.classList.add(o.correct ? "is-right" : "is-wrong");
       });
       feedback.hidden = false;
-      feedback.innerHTML = o.correct ? `✓ ${spec.right}` : `再对照图形想一想：${o.why || "动手操作后看看发生了什么。"}`;
+      feedback.innerHTML = o.correct ? `✓ ${spec.right}` : `再看看图：${o.why || "动手操作后看看发生了什么。"}`;
     }
 
     function reveal() {
@@ -74,7 +74,7 @@
         if (state.revealed) return grade();
         buttons.forEach((x) => x.classList.toggle("is-picked", x === b));
         feedback.hidden = false;
-        feedback.textContent = spec.actHint || "已记下你的预测。现在动手操作一次，结论随后出现。";
+        feedback.textContent = spec.actHint || "记下了你的猜测。现在动手操作一次，结论随后出现。";
       }),
     );
 

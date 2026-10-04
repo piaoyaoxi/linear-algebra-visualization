@@ -108,7 +108,7 @@ test.describe("Chapter 2 desktop visual system", () => {
     // predict, then act: the verdict waits for the first action
     const gate = page.locator("#determinant-intro-interactive .ch3l-predict");
     await gate.locator(".ch3l-predict-options > button", { hasText: /^负$/ }).click();
-    await expect(gate.locator(".ch3l-predict-feedback")).toContainText("已记下");
+    await expect(gate.locator(".ch3l-predict-feedback")).toContainText("记下了");
     await page.locator('[data-preset="shear"]').click();
     await expect(gate.locator(".ch3l-predict-feedback")).toContainText("顺时针为负");
     await expect(page.locator("[data-det]")).toHaveText("1");

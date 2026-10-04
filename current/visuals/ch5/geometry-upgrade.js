@@ -79,7 +79,7 @@
       right:`✓ 两根杆顶在同一个水平面上：${inline('y^TBy=y^T(C^TAC)y=(Cy)^TA(Cy)=x^TAx')}。所以换变量后，新矩阵就是 ${inline('C^TAC')}。`,
       onReveal:()=>paint(),
     });
-    function paint(){const C=presets[state.p],B=M().symmetrize(M().congruence(A,C)),y=vectors[state.v],x=M().matVec(C,y),l=M().qForm(A,x),r=M().qForm(B,y),det=M().det2(C),ok=Math.abs(det)>1e-8;surface($(root,'[data-s1-a-canvas]'),A,'A · 原坐标',x);surface($(root,'[data-s1-b-canvas]'),B,'B · 新坐标',y);$(root,'[data-s1-c]').innerHTML=M().matrixHtml(C);$(root,'[data-s1-b]').innerHTML=M().matrixHtml(B);$(root,'[data-s1-det]').textContent=fmt(det,4);$(root,'[data-s1-x]').textContent=`(${x.map(v=>fmt(v)).join(', ')})`;const open=!gate||gate.revealed;lab.toggleAttribute('data-s1-open',open);$(root,'[data-s1-left]').textContent=open?fmt(l,4):'?';$(root,'[data-s1-right]').textContent=open?fmt(r,4):'?';$(root,'[data-s1-eq]').textContent=open?'=':'?';$(root,'[data-s1-eq-copy]').textContent=open?`同一高度 ${fmt(l,4)}`:'两根高度杆';const s=$(root,'[data-s1-status]');if(!open){s.className='ch5-status';s.textContent='先预测';$(root,'[data-s1-title]').textContent='选好预测后换一种替换';$(root,'[data-s1-copy]').textContent='看两根高度杆的顶端：它们是否落在同一个水平面上。';return;}s.className=`ch5-status ${ok?'is-ok':'is-warn'}`;s.textContent=ok?'合同成立':'不是合同';$(root,'[data-s1-title]').textContent=ok?'坐标换了，二次型没有换':'一个方向被压掉，无法反解';$(root,'[data-s1-copy]').textContent=ok?'det C≠0，新旧变量可互相恢复；两根高度杆顶在同一个水平面上。':'代数恒等式仍成立，但 det C=0，所以这不是非退化变量替换，也不能称为合同。';}
+    function paint(){const C=presets[state.p],B=M().symmetrize(M().congruence(A,C)),y=vectors[state.v],x=M().matVec(C,y),l=M().qForm(A,x),r=M().qForm(B,y),det=M().det2(C),ok=Math.abs(det)>1e-8;surface($(root,'[data-s1-a-canvas]'),A,'A · 原坐标',x);surface($(root,'[data-s1-b-canvas]'),B,'B · 新坐标',y);$(root,'[data-s1-c]').innerHTML=M().matrixHtml(C);$(root,'[data-s1-b]').innerHTML=M().matrixHtml(B);$(root,'[data-s1-det]').textContent=fmt(det,4);$(root,'[data-s1-x]').textContent=`(${x.map(v=>fmt(v)).join(', ')})`;const open=!gate||gate.revealed;lab.toggleAttribute('data-s1-open',open);$(root,'[data-s1-left]').textContent=open?fmt(l,4):'?';$(root,'[data-s1-right]').textContent=open?fmt(r,4):'?';$(root,'[data-s1-eq]').textContent=open?'=':'?';$(root,'[data-s1-eq-copy]').textContent=open?`同一高度 ${fmt(l,4)}`:'两根高度杆';const s=$(root,'[data-s1-status]');if(!open){s.className='ch5-status';s.textContent='先猜一猜';$(root,'[data-s1-title]').textContent='猜好之后换一种替换';$(root,'[data-s1-copy]').textContent='看两根高度杆的顶端：它们是否落在同一个水平面上。';return;}s.className=`ch5-status ${ok?'is-ok':'is-warn'}`;s.textContent=ok?'合同成立':'不是合同';$(root,'[data-s1-title]').textContent=ok?'坐标换了，二次型没有换':'一个方向被压掉，无法反解';$(root,'[data-s1-copy]').textContent=ok?'det C≠0，新旧变量可互相恢复；两根高度杆顶在同一个水平面上。':'代数恒等式仍成立，但 det C=0，所以这不是非退化变量替换，也不能称为合同。';}
     $$(root,'[data-s1-preset]').forEach(b=>b.addEventListener('click',()=>{state.p=b.dataset.s1Preset;$$(root,'[data-s1-preset]').forEach(x=>x.classList.toggle('is-active',x===b));if(gate?.picked&&state.p!=='identity')gate.acted();paint();},{signal:ctl.signal}));$$(root,'[data-s1-y]').forEach(b=>b.addEventListener('click',()=>{state.v=b.dataset.s1Y;$$(root,'[data-s1-y]').forEach(x=>x.classList.toggle('is-active',x===b));if(gate?.picked&&state.p!=='identity')gate.acted();paint();},{signal:ctl.signal}));window.addEventListener('resize',paint,{signal:ctl.signal,passive:true});paint();return()=>ctl.abort();
   }
 
@@ -232,7 +232,7 @@
       signWheel($(root,'[data-s3-a-wheel]'),A,'A 的符号轮');signWheel($(root,'[data-s3-b-wheel]'),B,'B 的符号轮');
       $(root,'[data-s3-singular]').disabled=!open;
       const s=$(root,'[data-s3-status]');
-      if(!open){s.className='ch5-status';s.textContent='先预测';$(root,'[data-s3-title]').textContent='选好预测后拖动 h';$(root,'[data-s3-copy]').textContent='盯住右边的曲面和符号轮：蓝色弧是 q<0 的方向。';return;}
+      if(!open){s.className='ch5-status';s.textContent='先猜一猜';$(root,'[data-s3-title]').textContent='猜好之后拖动 h';$(root,'[data-s3-copy]').textContent='盯住右边的曲面和符号轮：蓝色弧是 q<0 的方向。';return;}
       s.className=`ch5-status ${ok&&same?'is-ok':'is-warn'}`;s.textContent=ok?(same?'惯性锁定':'数值异常'):'合同停止';
       $(root,'[data-s3-title]').textContent=ok?'形状被拉斜，符号骨架没有变':'一个方向被真正丢失';
       $(root,'[data-s3-copy]').textContent=ok?'det C≠0，正、负、零方向数量与 A 完全一致。':'det C=0，平面被压到一条线；此时替换不可逆，已经离开合同的前提。';
@@ -284,7 +284,7 @@
     ctx.textAlign = "center";
     if (!open) {
       ctx.fillStyle = p.muted; ctx.font = `600 22px ${font}`; ctx.fillText("?", cx, cy + 8);
-      ctx.font = `13px ${font}`; ctx.fillText("先预测，再看每个方向的正负", cx, height - 18);
+      ctx.font = `13px ${font}`; ctx.fillText("先猜一猜，再看每个方向的正负", cx, height - 18);
       ctx.textAlign = "left";
       return;
     }
@@ -378,7 +378,7 @@
       $(root,'[data-s4-min]').textContent=open?fracStr(1-ak/4):'?';
       s4Wheel($(root,'[data-s4-scan]'),k,open);
       const status=$(root,'[data-s4-status]'),title=$(root,'[data-s4-title]'),copy=$(root,'[data-s4-scan-copy]');
-      if(!open){status.className='ch5-status';status.textContent='先预测';title.textContent='先在上方选一个预测';copy.textContent='选好以后把 t 从 0 往右拖。曲面底面会画出等高线，方向轮会按 q 的正负着色。';return;}
+      if(!open){status.className='ch5-status';status.textContent='先猜一猜';title.textContent='先在上方选一个猜测';copy.textContent='选好以后把 t 从 0 往右拖。曲面底面会画出等高线，方向轮会按 q 的正负着色。';return;}
       status.className=`ch5-status ${type==='inside'?'is-ok':'is-warn'}`;
       status.textContent=type==='inside'?'正定':type==='edge'?'半正定':'不定';
       if(type==='inside'){title.textContent='每个方向都向上：碗面';copy.textContent=k===0?'底面的等高线是圆，方向轮全在 0 上方；Δ₁>0，Δ₂>0。':'底面的等高线是椭圆，t 离 0 越远越狭长；方向轮全在 0 上方，Δ₁>0，Δ₂>0。';}

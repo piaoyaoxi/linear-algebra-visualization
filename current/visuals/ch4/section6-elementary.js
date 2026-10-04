@@ -346,7 +346,7 @@
           ? `网格依次经过 ${tex("E_1")}、${tex("E_2")}、${tex("E_3")}、${tex("E_4")} 四步。`
           : `再作用 ${BUILD.length - k} 步到达 A。`;
       // data-la-free: this button waits for the build prediction, which this lab tracks itself
-      side.innerHTML = `<div class="ch3l-actions"><button type="button" class="ch3l-btn is-primary" data-next data-la-free${!picked || k >= BUILD.length ? " disabled" : ""}${picked ? "" : ' title="先在上方作出预测"'}>作用下一步</button><button type="button" class="ch3l-btn" data-restart>重来</button></div>
+      side.innerHTML = `<div class="ch3l-actions"><button type="button" class="ch3l-btn is-primary" data-next data-la-free${!picked || k >= BUILD.length ? " disabled" : ""}${picked ? "" : ' title="先在上方猜一猜"'}>作用下一步</button><button type="button" class="ch3l-btn" data-restart>重来</button></div>
         <div class="ch3l-card"><h4>目标 ${tex(`A=${texM(TARGET)}`)}</h4><ol class="el6-steps">${list}</ol></div>
         <div class="ch3l-card"><h4>当前乘积</h4>${texD(`${chainTex(k)}=${texM(chainAt(k))}`)}<p>${note}</p></div>`;
       side.querySelector("[data-next]").addEventListener("click", () => {
@@ -417,7 +417,7 @@
 
     // Prediction before the first exploration result is explained.
     const gate = root.querySelector('[data-el-gate="single"]');
-    gate.innerHTML = `<div class="ch3l-predict"><div class="ch3l-predict-q"><span>先预测</span><p>${tex("R_2\\leftarrow R_2+2R_1")} 对应的 ${tex("E=\\begin{pmatrix}1&0\\\\2&1\\end{pmatrix}")} 会把单位正方形变成什么？</p></div>
+    gate.innerHTML = `<div class="ch3l-predict"><div class="ch3l-predict-q"><span>先猜一猜</span><p>${tex("R_2\\leftarrow R_2+2R_1")} 对应的 ${tex("E=\\begin{pmatrix}1&0\\\\2&1\\end{pmatrix}")} 会把单位正方形变成什么？</p></div>
       <div class="ch3l-predict-options">${(window.LAStableShuffle || ((a) => a))([
         ["沿竖直方向剪切，面积不变", true, ""],
         ["沿水平方向剪切，面积不变", false, "E 改变的是第 2 个坐标：(x,y) 变成 (x, 2x+y)。"],
@@ -437,14 +437,14 @@
       gate.querySelector(".ch3l-predict").classList.add("is-done");
       fb.innerHTML = ok
         ? "✓ 每个点的 y 坐标加上 2x，x 坐标不变：竖直方向的剪切。倍加矩阵的行列式为 1，所以面积不变，这正是第二章“倍加不改变行列式”的几何原因。"
-        : `和图中看到的不一致：${picked.dataset.why}`;
+        : `再看看图：${picked.dataset.why}`;
     };
     gate.querySelectorAll("[data-i]").forEach((b) => b.addEventListener("click", () => {
       if (revealed) return;
       picked = b;
       gate.querySelectorAll("[data-i]").forEach((x) => x.classList.toggle("is-picked", x === b));
       fb.hidden = false;
-      fb.textContent = "已记下你的预测。现在动手操作一次，结论随后出现。";
+      fb.textContent = "记下了你的猜测。现在动手操作一次，结论随后出现。";
     }));
     // a click in either prediction box is not an action on the lab
     const acted = (e) => { if (!e.target.closest("[data-el-gate]")) reveal(); };
@@ -470,7 +470,7 @@
       manual: true,
       onPick: () => {
         const note = buildBox.querySelector(".ch3l-predict-feedback");
-        if (note) note.textContent = "已记下你的预测。按“作用下一步”走完四步，结论随后出现。";
+        if (note) note.textContent = "记下了你的猜测。按“作用下一步”走完四步，结论随后出现。";
         if (state.mode === "build") buildSide();
       },
     }) || null;

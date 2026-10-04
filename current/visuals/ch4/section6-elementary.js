@@ -53,7 +53,7 @@
       const E = op.row === 0 ? [[op.k, 0], [0, 1]] : [[1, 0], [0, op.k]];
       const axis = op.row === 0 ? "x" : "y";
       const times = tex(fmt(Math.abs(op.k)));
-      return { E, label: `R_${op.row + 1}\\leftarrow ${fmt(op.k)}R_${op.row + 1}`, inv: `R_${op.row + 1}\\leftarrow ${fmt(1 / op.k)}R_${op.row + 1}`, geo: op.k < 0 ? `沿 ${axis} 方向伸缩 ${times} 倍并翻转` : `沿 ${axis} 方向伸缩 ${times} 倍`, det: op.k };
+      return { E, label: `R_${op.row + 1}\\leftarrow ${fmt(op.k)}R_${op.row + 1}`, inv: `R_${op.row + 1}\\leftarrow ${fmt(1 / op.k)}R_${op.row + 1}`, geo: Math.abs(op.k) === 1 ? (op.k < 0 ? `沿 ${axis} 方向翻转，长度不变` : "每个点都不动") : op.k < 0 ? `沿 ${axis} 方向伸缩 ${times} 倍并翻转` : `沿 ${axis} 方向伸缩 ${times} 倍`, det: op.k };
     }
     // add: R_i <- R_i + c R_j
     const E = [[1, 0], [0, 1]];
@@ -317,7 +317,7 @@
       if (state.op.type === "scale") param = `<label class="ch3l-range"><span>${tex("k")}</span><input type="range" min="-2" max="3" step="0.5" value="${state.op.k}" data-k /><b>${txt(state.op.k)}</b></label><div class="ch3l-actions">${[0, 1].map((r) => `<button type="button" class="ch3l-chip${state.op.row === r ? " is-active" : ""}" data-row="${r}">第 ${r + 1} 行</button>`).join("")}</div>`;
       if (state.op.type === "add") param = `<label class="ch3l-range"><span>${tex("c")}</span><input type="range" min="-2" max="2" step="0.5" value="${state.op.c}" data-c /><b>${txt(state.op.c)}</b></label><div class="ch3l-actions">${[1, 0].map((r) => `<button type="button" class="ch3l-chip${state.op.row === r ? " is-active" : ""}" data-row="${r}">${tex(r === 1 ? "R_2\\leftarrow R_2+cR_1" : "R_1\\leftarrow R_1+cR_2")}</button>`).join("")}</div>`;
       side.innerHTML = `<div class="ch3l-card"><h4>选择一次行变换</h4><div class="ch3l-actions">${typeBtn("swap", "换行")}${typeBtn("scale", "倍乘")}${typeBtn("add", "倍加")}</div>${param}</div>
-        <div class="ch3l-card"><h4>对 I 做 ${tex(e.label)}</h4>${texD(`I=${texM(I)}\\ \\longrightarrow\\ E=${texM(e.E)}`)}<p>${e.geo}</p><p>${tex(`\\det E=${fmt(e.det)}`)}：单位正方形的面积变为原来的 ${tex(fmt(Math.abs(e.det)))} 倍${e.det < 0 ? "，定向翻转" : ""}。</p><p class="ch3l-muted">逆变换 ${tex(e.inv)}，所以 E 可逆。</p></div>`;
+        <div class="ch3l-card"><h4>对 I 做 ${tex(e.label)}</h4>${texD(`I=${texM(I)}\\ \\longrightarrow\\ E=${texM(e.E)}`)}<p>${e.geo}</p><p>${tex(`\\det E=${fmt(e.det)}`)}：${Math.abs(e.det) === 1 ? "单位正方形的面积不变" : `单位正方形的面积变为原来的 ${tex(fmt(Math.abs(e.det)))} 倍`}${e.det < 0 ? "，定向翻转" : ""}。</p><p class="ch3l-muted">逆变换 ${tex(e.inv)}，所以 E 可逆。</p></div>`;
       side.querySelectorAll("[data-type]").forEach((b) => b.addEventListener("click", () => {
         const t = b.dataset.type;
         state.op = t === "swap" ? { type: "swap" } : t === "scale" ? { type: "scale", row: 1, k: 2 } : { type: "add", row: 1, c: 2 };

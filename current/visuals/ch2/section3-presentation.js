@@ -40,13 +40,6 @@
       }
     }
 
-    const repeatMaps = {
-      132: [0, 0, 1],
-      213: [0, 1, 1],
-      231: [0, 0, 1],
-      312: [0, 1, 1],
-    };
-
     function labelAt(row, col) {
       if (triangular && row > col) return tex("0");
       return aEntry(row + 1, col + 1);
@@ -66,14 +59,10 @@
           if (svg) svg.innerHTML = "";
           return;
         }
-        const key = permutation.join("");
-        const copies = repeatMaps[key] || [0, 0, 0];
+        // every path stays inside the matrix: one segment from each row's choice to the next row's
         const sceneRect = scene.getBoundingClientRect();
         const points = permutation.map((col, row) => {
-          const selector = copies[row]
-            ? `[data-repeat-r="${row}"][data-repeat-c="${col - 1}"]`
-            : `[data-main-r="${row}"][data-main-c="${col - 1}"]`;
-          const node = root.querySelector(selector);
+          const node = root.querySelector(`[data-main-r="${row}"][data-main-c="${col - 1}"]`);
           const rect = node.getBoundingClientRect();
           return { x: rect.left - sceneRect.left + rect.width / 2, y: rect.top - sceneRect.top + rect.height / 2 };
         });
@@ -85,17 +74,14 @@
       });
     }
 
-    function matrixRows(repeated = false, copies = [0, 0, 0]) {
+    function matrixRows() {
       return Array.from({ length: n }, (_, row) => `
         <tr>${Array.from({ length: n }, (_, col) => {
           const selected = chosen[row] === col;
           const usedElsewhere = chosen.some((value, otherRow) => otherRow !== row && value === col);
-          if (repeated) {
-            const onPath = selected && copies[row] === 1;
-            return `<td class="${onPath ? "is-selected" : ""}${onPath && triangular && row > col ? " is-zero-hit" : ""}"><span data-repeat-r="${row}" data-repeat-c="${col}">${labelAt(row, col)}</span></td>`;
-          }
-          const hit = selected && triangular && row > col && !copies[row];
-          return `<td class="${selected ? "is-selected" : ""}${hit ? " is-zero-hit" : ""}${usedElsewhere ? " is-locked-col" : ""}"><button type="button" data-main-r="${row}" data-main-c="${col}" data-r="${row}" data-c="${col}" aria-pressed="${selected}" ${usedElsewhere && !selected ? "disabled" : ""}>${labelAt(row, col)}</button></td>`;
+          const hit = selected && triangular && row > col;
+          const zero = triangular && row > col;
+          return `<td class="${selected ? "is-selected" : ""}${hit ? " is-zero-hit" : ""}${zero ? " is-zero-cell" : ""}${usedElsewhere ? " is-locked-col" : ""}"><button type="button" data-main-r="${row}" data-main-c="${col}" data-r="${row}" data-c="${col}" aria-pressed="${selected}" ${usedElsewhere && !selected ? "disabled" : ""}>${labelAt(row, col)}</button></td>`;
         }).join("")}</tr>
       `).join("");
     }
@@ -103,13 +89,7 @@
     function render() {
       const table = root.querySelector("[data-select-table]");
       const permutation = currentPermutation();
-      const key = permutation?.join("") || "";
-      const copies = repeatMaps[key] || [0, 0, 0];
-      const repeat = root.querySelector("[data-repeat-view]");
-      const repeatTable = root.querySelector("[data-repeat-table]");
-      table.innerHTML = matrixRows(false, copies);
-      repeat.hidden = !repeatMaps[key];
-      repeatTable.innerHTML = matrixRows(true, copies);
+      table.innerHTML = matrixRows();
 
       table.querySelectorAll("button").forEach((button) => {
         button.addEventListener("click", () => {
@@ -130,7 +110,6 @@
         root.querySelector("[data-sign-out]").textContent = "—";
         root.querySelector("[data-zero-out]").textContent = "—";
         root.querySelector("[data-term-path]").innerHTML = "";
-        root.querySelector("[data-repeat-caption]").textContent = "";
         return;
       }
       const sign = M().signFromPerm(permutation);
@@ -139,9 +118,6 @@
       root.querySelector("[data-term-out]").innerHTML = productTermHtml(permutation);
       root.querySelector("[data-sign-out]").textContent = sign > 0 ? "+" : "−";
       root.querySelector("[data-zero-out]").textContent = containsForcedZero ? "合法，但贡献为 0" : "合法，可能非零";
-      root.querySelector("[data-repeat-caption]").textContent = repeatMaps[key]
-        ? "灰色虚线行列式是同一矩阵的周期延伸，只为让取项路径连续。"
-        : "这条路径在原行列式内已经连续，不需要重复视图。";
       const message = root.querySelector("[data-select-msg]");
       message.textContent = containsForcedZero
         ? "这条路径满足每行每列各一次，因此是合法项；上三角结构使它选中了主对角线下方的零。"
@@ -258,13 +234,8 @@
                 <span>原行列式</span>
                 <table class="ch2-matrix-table ch2-term-matrix" data-select-table aria-label="三阶行列式取项网格"></table>
               </div>
-              <div class="ch2-determinant-view is-repeat" data-repeat-view hidden>
-                <span>重复视图</span>
-                <table class="ch2-matrix-table ch2-term-matrix" data-repeat-table aria-hidden="true"></table>
-              </div>
             </div>
             <div class="ch2-term-reading">
-              <p class="ch2-term-caption" data-repeat-caption></p>
               <div class="ch2-term-flow" aria-live="polite">
                 <span>排列 <strong data-perm-out>未完成</strong></span>
                 <i>→</i><span>符号 <strong data-sign-out>—</strong></span>

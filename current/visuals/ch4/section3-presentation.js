@@ -232,9 +232,24 @@
           }
         }
       }
-      drawArrow(ctx, origin, gp(1, 0), palette.v1, options.ghostLabels?.[0] ?? "", 2.2);
-      drawArrow(ctx, origin, gp(0, 1), palette.v2, options.ghostLabels?.[1] ?? "", 2.2);
+      drawArrow(ctx, origin, gp(1, 0), palette.v1, "", 2.2);
+      drawArrow(ctx, origin, gp(0, 1), palette.v2, "", 2.2);
       ctx.restore();
+      // the ghost's names stay readable: same colours, stronger than the dashed strokes
+      [[gp(1, 0), palette.v1, options.ghostLabels?.[0]], [gp(0, 1), palette.v2, options.ghostLabels?.[1]]].forEach(([tip, color, name]) => {
+        if (!name || Math.hypot(tip.x - origin.x, tip.y - origin.y) < 3) return;
+        // a ghost column that coincides with a current one is already named by it
+        if ([point(1, 0, true), point(0, 1, true)].some((q) => Math.hypot(q.x - tip.x, q.y - tip.y) < 4)) return;
+        ctx.save();
+        ctx.globalAlpha = 0.75;
+        ctx.font = "italic 600 13px 'LA Serif Latin', 'LA Serif SC', 'Songti SC', serif";
+        ctx.lineWidth = 3;
+        ctx.strokeStyle = palette.paper;
+        ctx.fillStyle = color;
+        ctx.strokeText(name, tip.x + 8, tip.y - 8);
+        ctx.fillText(name, tip.x + 8, tip.y - 8);
+        ctx.restore();
+      });
     }
 
     const firstEnd = point(1, 0, true);
@@ -546,8 +561,8 @@
       abStage.textContent = "第 2 步：作用 A";
       baStage.textContent = "第 2 步：作用 B";
       await Promise.all([
-        animateCanvasTo(abCanvas, PRODUCT_AB, { drawOptions: { firstLabel: "ABe₁", secondLabel: "ABe₂", ghost: PRODUCT_B } }),
-        animateCanvasTo(baCanvas, PRODUCT_BA, { drawOptions: { firstLabel: "BAe₁", secondLabel: "BAe₂", ghost: PRODUCT_A } }),
+        animateCanvasTo(abCanvas, PRODUCT_AB, { drawOptions: { firstLabel: "ABe₁", secondLabel: "ABe₂", ghost: PRODUCT_B, ghostLabels: ["Be₁", "Be₂"] } }),
+        animateCanvasTo(baCanvas, PRODUCT_BA, { drawOptions: { firstLabel: "BAe₁", secondLabel: "BAe₂", ghost: PRODUCT_A, ghostLabels: ["Ae₁", "Ae₂"] } }),
       ]);
       if (id !== run) return;
       abStage.textContent = "最终面积 2";

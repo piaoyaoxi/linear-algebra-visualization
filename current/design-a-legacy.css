@@ -2777,18 +2777,18 @@ body.dark :is(main, #la) :is(.lesson-page-section, #lb) .basis-label rect {
   fill: var(--cv-subspace);
 }
 
-/* ch5 §2: top-view contour inset in the corner of the surface */
+/* ch5 §2: the top-view contours sit below the surface, with their caption beside them */
 :is(main, #la) .qv-s2-stage {
   position: relative;
   min-width: 0;
 }
 
 :is(main, #la) .qv-s2-inset {
-  position: absolute;
-  left: 10px;
-  bottom: 10px;
-  width: 168px;
-  margin: 0;
+  display: grid;
+  grid-template-columns: 168px minmax(0, 1fr);
+  gap: 12px;
+  align-items: center;
+  margin: 10px 0 0;
   padding: 6px;
   border: 1px solid var(--line);
   border-radius: 8px;
@@ -2802,21 +2802,18 @@ body.dark :is(main, #la) :is(.lesson-page-section, #lb) .basis-label rect {
 }
 
 :is(main, #la) .qv-s2-inset > figcaption {
-  margin-top: 4px;
   color: var(--muted);
-  font-size: 12px;
-  line-height: 1.4;
+  font-size: 13px;
+  line-height: 1.6;
 }
 
-@media (max-width: 680px) {
+@media (max-width: 420px) {
   :is(main, #la) .qv-s2-inset {
-    position: static;
-    width: auto;
-    margin-top: 10px;
+    grid-template-columns: 150px minmax(0, 1fr);
   }
 
   :is(main, #la) .qv-s2-inset > canvas {
-    height: 180px;
+    height: 136px;
   }
 }
 
@@ -3355,4 +3352,124 @@ body.dark :is(main, #la) :is(.lesson-page-section, #lb) .basis-label rect {
   border: 1px solid var(--line);
   border-radius: 8px;
   background: var(--cv-paper);
+}
+
+/* ch1 §4: the gcd marked inside every ledger row once the run ends */
+:is(main, #la) .ch1-euclid-step-copy .ch1-common-factor {
+  padding: 0 2px;
+  border-radius: 4px;
+  background: color-mix(in srgb, var(--cv-image) 16%, transparent);
+  color: var(--cv-image);
+  font-weight: inherit;
+}
+
+:is(main, #la) .ch1-euclid-step-copy .ch1-euclid-common {
+  color: var(--text-2);
+  font-size: 14px;
+  line-height: 1.7;
+}
+
+/* ch2 §1: the 状态 tile keeps “方向保持 / 方向翻转” on one line */
+:is(main, #la) .ch2-meter:has(> .ch2-meter-card > [data-status]) {
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) max-content;
+}
+
+:is(main, #la) .ch2-meter-card > [data-status] {
+  white-space: nowrap;
+}
+
+/* ch2 §3: the zeros below the diagonal stay legible while their column is locked */
+:is(main, #la) .ch2-term-matrix td.is-zero-cell > button {
+  color: var(--bad-text);
+  font-weight: 600;
+}
+
+:is(main, #la) .ch2-term-matrix td.is-zero-cell.is-locked-col:not(.is-selected) {
+  opacity: 0.55;
+}
+
+/* ch2 §7: A, A₁, A₂ side by side, each label above its matrix */
+:is(main, #la) .ch2-cramer-mats {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+  align-items: start;
+}
+
+:is(main, #la) .ch2-cramer-mats > div {
+  display: grid;
+  gap: 4px;
+  justify-items: start;
+  min-width: 0;
+}
+
+:is(main, #la) .ch2-cramer-mats > div > span {
+  max-width: 100%;
+  overflow-x: auto;
+}
+
+/* ch2 §5: the stepper row, then the comparison row for swap and row scaling */
+:is(main, #la) .ch2-elim-compare {
+  align-items: center;
+  margin-top: 8px;
+}
+
+:is(main, #la) .ch2-elim-compare > span {
+  color: var(--muted);
+  font-size: 13px;
+}
+
+/* ch4 §3: the area tiles and the det(AB)=det(BA) conclusion wait until the products have played */
+:is(main, #la) :is(.lesson-page-section, #lb) [data-s3-product-answer][hidden] {
+  display: none;
+}
+
+/* ch4 §5: after the verdict, one line reads the current cuts */
+:is(main, #la) :is(.lesson-page-section, #lb) .blk-lab .blk-now {
+  display: inline-block;
+  margin-top: 4px;
+  color: var(--text-2);
+}
+
+/* ch4 §2: the A(Bx)=(AB)x conclusion stays hidden until the composition has played */
+:is(main, #la) :is(.lesson-page-section, #lb) .s2c-conclusion[hidden] {
+  display: none;
+}
+
+/* ch2 §6: the Leibniz panel takes no space until it is revealed */
+:is(main, #la) .ch2-leibniz[hidden] {
+  display: none;
+}
+
+/* ch5 §3 on phones: C, A and B side by side in one row */
+@media (max-width: 680px) {
+  :is(main, #la) .qv-data:has([data-s3-c]) {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 8px;
+  }
+
+  :is(main, #la) .qv-data:has([data-s3-c]) > .qv-values {
+    grid-column: 1 / -1;
+  }
+
+  :is(main, #la) .qv-data:has([data-s3-c]) > div:not(.qv-values) {
+    gap: 6px;
+    padding: 8px;
+  }
+
+  :is(main, #la) .qv-data:has([data-s3-c]) .ch5-matrix {
+    gap: 4px;
+    padding: 5px;
+  }
+
+  :is(main, #la) .qv-data:has([data-s3-c]) .ch5-matrix-row {
+    grid-auto-columns: minmax(2.2rem, auto);
+    gap: 4px;
+  }
+
+  :is(main, #la) .qv-data:has([data-s3-c]) .ch5-cell {
+    min-height: 1.9rem;
+    padding: 0 3px;
+    font-size: 12.5px;
+  }
 }

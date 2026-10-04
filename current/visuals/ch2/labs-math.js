@@ -296,6 +296,23 @@
       ctx.lineTo(to.x, to.y);
       ctx.stroke();
       ctx.restore();
+      if (options.guideLabel) {
+        // named halfway along the slide, a little off the line on its upper side
+        const mid = map(point[0] + dir[0] * 0.5, point[1] + dir[1] * 0.5);
+        const sx = to.x - from.x;
+        const sy = to.y - from.y;
+        const sl = Math.hypot(sx, sy) || 1;
+        let nx = -sy / sl;
+        let ny = sx / sl;
+        if (ny > 0) { nx = -nx; ny = -ny; }
+        ctx.save();
+        ctx.fillStyle = palette.v2;
+        ctx.font = "italic 600 14px 'LA Serif Latin', 'LA Serif SC', 'Songti SC', serif";
+        ctx.textAlign = "center";
+        ctx.textBaseline = "middle";
+        ctx.fillText(options.guideLabel, mid.x + nx * 14, mid.y + ny * 14);
+        ctx.restore();
+      }
     }
 
     const p0 = map(0, 0);

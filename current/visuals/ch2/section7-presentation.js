@@ -138,8 +138,10 @@
     const revealed = () => !gate || gate.revealed;
 
     function matrixHtml(matrix) {
-      const e = (value) => ratio(value, 10).tex;
-      return tex(`\\begin{bmatrix}${e(matrix[0][0])}&${e(matrix[0][1])}\\\\${e(matrix[1][0])}&${e(matrix[1][1])}\\end{bmatrix}`);
+      // matrix entries use full-size fractions so they read at the same size as the integers
+      const e = (value) => ratio(value, 10).tex.replace("\\tfrac", "\\dfrac");
+      const gap = [matrix[0][0], matrix[0][1], matrix[1][0], matrix[1][1]].some((v) => v % 10) ? "[4pt]" : "";
+      return tex(`\\begin{bmatrix}${e(matrix[0][0])}&${e(matrix[0][1])}\\\\${gap}${e(matrix[1][0])}&${e(matrix[1][1])}\\end{bmatrix}`);
     }
 
     function cameraFor(states) {
@@ -696,7 +698,7 @@
                 <div class="ch2-meter-card"><strong>D₁</strong><span data-d1></span></div>
                 <div class="ch2-meter-card"><strong>D₂</strong><span data-d2></span></div>
               </div>
-              <div class="ch2-note"><strong>A</strong> <span data-a-matrix></span><br /><strong>A₁</strong> <span data-a1-matrix></span><br /><strong>A₂</strong> <span data-a2-matrix></span></div>
+              <div class="ch2-note ch2-cramer-mats"><div><strong>A</strong><span data-a-matrix></span></div><div><strong>A₁</strong><span data-a1-matrix></span></div><div><strong>A₂</strong><span data-a2-matrix></span></div></div>
               <div data-sol class="ch2-note" aria-live="polite"></div>
               </div>
             </div>

@@ -32,22 +32,13 @@ test.describe("Chapter 2 precision review", () => {
       await expect(page.locator("[data-term-path] line")).toHaveCount(2);
       await expect(page.locator("[data-select-table] td.is-selected")).toHaveCount(3);
 
-      const shouldRepeat = !["123", "321"].includes(permutation);
-      if (shouldRepeat) await expect(page.locator("[data-repeat-view]")).toBeVisible();
-      else await expect(page.locator("[data-repeat-view]")).toBeHidden();
+      await expect(page.locator("[data-repeat-view]")).toHaveCount(0);
 
       const alignment = await page.evaluate(() => {
         const scene = document.querySelector("[data-term-scene]").getBoundingClientRect();
         const chosen = [...document.querySelectorAll("[data-select-table] td.is-selected button")];
-        const repeated = document.querySelector("[data-repeat-view]");
-        const key = document.querySelector("[data-perm-out]").textContent.trim();
-        const copyRows = { 132: [0, 0, 1], 213: [0, 1, 1], 231: [0, 0, 1], 312: [0, 1, 1] }[key] || [0, 0, 0];
-        const points = chosen.map((button, row) => {
-          const col = Number(button.dataset.mainC);
-          const target = copyRows[row]
-            ? repeated.querySelector(`[data-repeat-r="${row}"][data-repeat-c="${col}"]`)
-            : button;
-          const rect = target.getBoundingClientRect();
+        const points = chosen.map((button) => {
+          const rect = button.getBoundingClientRect();
           return { x: rect.left - scene.left + rect.width / 2, y: rect.top - scene.top + rect.height / 2 };
         });
         return [...document.querySelectorAll("[data-term-path] line")].flatMap((line, index) => [
@@ -70,10 +61,10 @@ test.describe("Chapter 2 precision review", () => {
 test.describe("Chapter 2 precision mobile", () => {
   test.use({ viewport: { width: 390, height: 844 }, reducedMotion: "reduce" });
 
-  test("§3 keeps the repeated determinant and path inside the viewport", async ({ page }) => {
+  test("§3 keeps the matrix and its path inside the viewport", async ({ page }) => {
     await openLesson(page, "n-order-determinant");
     await page.locator('[data-six="231"]').click();
-    await expect(page.locator("[data-repeat-view]")).toBeVisible();
+    await expect(page.locator("[data-repeat-view]")).toHaveCount(0);
     await expect(page.locator("[data-term-path] line")).toHaveCount(2);
     const overflow = await page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth);
     expect(overflow).toBeLessThanOrEqual(2);

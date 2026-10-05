@@ -212,6 +212,22 @@
   padding: 0;
 }
 
+/*
+ * Phones (≤720px): the lab card is one box; a panel inside it is a second one. A box inside
+ * that panel is one too many, so on phones the middle layer becomes a heading on a hairline
+ * (round-4 rule; desktop keeps both layers). §4 ledger, §2/§6 result band, §2 coefficient
+ * strips and graph, §3/§4 staircase and §10 tiles below.
+ */
+@media (max-width: 720px) {
+  :is(main, #la) .ch1-lab .ch1-euclid-panel {
+    padding: 14px 0 0;
+    border: 0;
+    border-top: 1px solid var(--line);
+    border-radius: 0;
+    background: none;
+  }
+}
+
 :is(main, #la) .ch1-ledger > div.is-current,
 :is(main, #la) .ch1-section-gcd-polynomials .ch1-ledger > div.is-current {
   border-radius: 6px;
@@ -324,6 +340,17 @@
   line-height: 1.6;
 }
 
+@media (max-width: 720px) {
+  :is(main, #la) .ch1-lab .ch1-result-band,
+  :is(main, #la) .ch1-more-ops .ch1-coeff-card {
+    padding: 12px 0 0;
+    border: 0;
+    border-top: 1px solid var(--line);
+    border-radius: 0;
+    background: none;
+  }
+}
+
 /* canvas frames */
 :is(main, #la) :is(.ch1-stage, .ch1-complex-canvas-shell, .ch1-long-division-stage),
 :is(main, #la) .ch1-guided-lab .ch1-stage,
@@ -338,6 +365,20 @@
 :is(main, #la) .ch1-graph-details .ch1-stage {
   border-width: 1px 0 0;
   border-radius: 0 0 10px 10px;
+}
+
+@media (max-width: 720px) {
+  :is(main, #la) .ch1-lab .ch1-graph-details {
+    border: 0;
+    border-top: 1px solid var(--line);
+    border-radius: 0;
+    background: none;
+  }
+
+  :is(main, #la) .ch1-lab .ch1-graph-details .ch1-stage {
+    border-width: 1px;
+    border-radius: 8px;
+  }
 }
 
 :is(main, #la) :is(.ch1-canvas-caption, .ch1-ld-caption) {
@@ -394,6 +435,19 @@
   border-radius: 10px;
   background: var(--surface-soft);
   color: var(--text-2);
+}
+
+/* phones: the tiles inside the §10 inspector and module become rows on hairlines */
+@media (max-width: 720px) {
+  :is(main, #la) :is(.ch1-multivariate-inspector, .ch1-multivariate-module) .ch1-axis-key-grid > div,
+  :is(main, #la) .ch1-multivariate-module .ch1-multivariate-layer-card,
+  :is(main, #la) :is(.ch1-multivariate-inspector, .ch1-multivariate-module) :is(.ch1-multivariate-summary, .ch1-multivariate-product-result) {
+    padding: 10px 0 0;
+    border: 0;
+    border-top: 1px solid var(--line);
+    border-radius: 0;
+    background: none;
+  }
 }
 
 /* tables */
@@ -3234,9 +3288,16 @@ body.dark :is(main, #la) :is(.lesson-page-section, #lb) .basis-label rect {
 }
 
 @media (max-width: 720px) {
+  :is(main, #la) .ch1-more-ops {
+    border: 0;
+    border-top: 1px solid var(--line);
+    border-radius: 0;
+    background: none;
+  }
+
   :is(main, #la) .ch1-more-ops > summary,
   :is(main, #la) .ch1-more-ops > .ch1-coeff-workflow {
-    padding-inline: 12px;
+    padding-inline: 0;
   }
 }
 
@@ -3275,6 +3336,25 @@ body.dark :is(main, #la) :is(.lesson-page-section, #lb) .basis-label rect {
 @media (max-width: 560px) {
   :is(main, #la) .ch1-stairs-pair {
     grid-template-columns: 1fr;
+  }
+}
+
+/* phones: the staircase is drawn on the card itself; the compared case sits under a hairline */
+@media (max-width: 720px) {
+  :is(main, #la) .ch1-lab .ch1-stairs,
+  :is(main, #la) .ch1-stairs-pair > figure {
+    background: none;
+  }
+
+  :is(main, #la) .ch1-stairs-pair > figure {
+    padding: 0;
+  }
+
+  :is(main, #la) .ch1-stairs-pair > figure.is-compare {
+    padding-top: 10px;
+    border: 0;
+    border-top: 1px solid var(--line);
+    border-radius: 0;
   }
 }
 

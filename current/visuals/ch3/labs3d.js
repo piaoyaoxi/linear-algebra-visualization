@@ -169,6 +169,57 @@
     return box;
   }
 
+  /*
+   * An arrow seen end-on (looking along v₁, say) shrinks to a dot at its tail; its label
+   * would sit on the other arrows there, so it is left out. Called inside a scene's
+   * objects function, so it follows the camera.
+   */
+  function hideEndOnLabels(scene, objs) {
+    objs.forEach((o) => {
+      if (o.type !== "arrow" || !o.label) return;
+      const a = scene.project(o.from || [0, 0, 0]);
+      const b = scene.project(o.to);
+      if (Math.hypot(b.x - a.x, b.y - a.y) < 12) o.label = undefined;
+    });
+    return objs;
+  }
+
+  /*
+   * Of the candidate anchors, the one whose label lies farthest on screen from the other
+   * points. A label is drawn to the right of its anchor: [dx, dy] is its centre.
+   */
+  function farthestAnchor(scene, candidates, others, [dx, dy] = [0, 0]) {
+    const at = (p) => scene.project(p);
+    const rest = others.map(at);
+    let best = candidates[0];
+    let bestDist = -1;
+    candidates.forEach((c) => {
+      const q = at(c);
+      const d = Math.min(...rest.map((r) => Math.hypot(q.x + dx - r.x, q.y + dy - r.y)));
+      if (d > bestDist) {
+        best = c;
+        bestDist = d;
+      }
+    });
+    return best;
+  }
+
+  /*
+   * An invisible keepClear square around a point, facing the camera: an axis name that
+   * would sit on the point (e.g. x₀ on the x₁ axis) is left out.
+   */
+  function clearAround(scene, p, px = 14) {
+    const { yaw, pitch } = scene.camera;
+    const right = [-Math.sin(yaw), Math.cos(yaw), 0];
+    const d = [Math.cos(pitch) * Math.cos(yaw), Math.cos(pitch) * Math.sin(yaw), Math.sin(pitch)];
+    const up = S().vec.cross(d, right);
+    const o = scene.project([0, 0, 0]);
+    const e = scene.project(right);
+    const k = px / (Math.hypot(e.x - o.x, e.y - o.y) || 1);
+    const corner = (a, b) => S().vec.add(p, S().vec.add(S().vec.mul(right, a * k), S().vec.mul(up, b * k)));
+    return { type: "polygon", pts: [corner(-1, -1), corner(1, -1), corner(1, 1), corner(-1, 1)], color: "axis", alpha: 0, strokeAlpha: 0, keepClear: true };
+  }
+
   function labShell(root, { title, task }) {
     root.innerHTML = `<h2>交互实验</h2>`;
     const lab = el("section", "ch3l-lab");
@@ -601,7 +652,7 @@
           }
         }
         vs.forEach((v, i) => objs.push({ type: "arrow", to: v, color: colors[i], label: `v${"₁₂₃"[i]}` }));
-        return objs;
+        return hideEndOnLabels(scene, objs);
       });
       scene.setHandles(
         state.v.slice(0, state.stage).map((_, i) => ({
@@ -1082,10 +1133,28 @@
         const gp = gb ? M().particularSolution(A.map((r, i) => [...r, F(gb[i])])) : null;
         if (gp?.ok) {
           const g = vecNum(gp.x);
-          if (ns.length === 1) objs.push({ type: "line", p: g, dir: ns[0], color: "drag", width: 3, ghost: true, alpha: 0.5, label: "原来的解集" });
+          const L = scene.range;
+          // “原来的解集” goes where it stays clear of the point x, the current solution set
+          // and the null space (and their labels), so each name stays next to its own object
+          const ghostCentre = [38, -11];
+          const axisNames = [[1, 0, 0], [0, 1, 0], [0, 0, 1]].map((e) => e.map((c) => c * L * 1.08));
+          if (ns.length === 1) {
+            const V = S().vec;
+            const seg = S().clipLine(g, ns[0], L);
+            const samples = (sg) => (sg ? [0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1].map((t) => V.add(sg[0], V.mul(V.sub(sg[1], sg[0]), t))) : []);
+            const others = [...samples(S().clipLine(xp, ns[0], L)), ...samples(S().clipLine([0, 0, 0], ns[0], L)), x, xp, ...axisNames];
+            // the two ends of the old line, and a little beyond each end
+            const u = V.mul(V.norm(ns[0]), 0.12 * L);
+            const along = seg ? [seg[0], seg[1], V.sub(seg[0], u), V.add(seg[1], u)] : [];
+            const labelAt = along.length ? farthestAnchor(scene, along, others, ghostCentre) : undefined;
+            objs.push({ type: "line", p: g, dir: ns[0], color: "drag", width: 3, ghost: true, alpha: 0.5, label: "原来的解集", labelAt });
+          }
           if (ns.length === 2) {
             const n = S().vec.cross(ns[0], ns[1]);
-            objs.push({ type: "plane", n, d: S().vec.dot(n, g), color: "drag", ghost: true, alpha: 0.05, label: "原来的解集" });
+            const poly = S().clipPlane(n, S().vec.dot(n, g), L);
+            const others = [...aug, ...hom].map((r) => S().clipPlane(vecNum(r.slice(0, 3)), num(r[3]), L)[0]).filter(Boolean).concat([x], axisNames);
+            const labelAt = poly.length && others.length ? farthestAnchor(scene, poly, others, ghostCentre) : undefined;
+            objs.push({ type: "plane", n, d: S().vec.dot(n, g), color: "drag", ghost: true, alpha: 0.05, label: "原来的解集", labelAt });
           }
         }
         if (ns.length === 1) {
@@ -1097,6 +1166,7 @@
         objs.push({ type: "arrow", to: xp, color: "v1", width: 2.4 });
         if (S().vec.len(S().vec.sub(x, xp)) > 1e-9) objs.push({ type: "arrow", from: xp, to: x, color: "subspace", width: 2.4 });
         objs.push({ type: "point", p: x, color: "drag", r: 6, label: "x" });
+        objs.push(clearAround(scene, x));
         return objs;
       });
       const Ax = M().matVec(A, x.map(F));

@@ -52,7 +52,7 @@ defineChapter6Section("direct-sum", {
       `存在：${texInline("A=\\frac{A+A^T}2+\\frac{A-A^T}2")}，前者对称，后者反对称。`,
       `唯一：若 ${texInline("B")} 既对称又反对称，则 ${texInline("B=B^T=-B")}，${texInline("B=O")}，两个子空间的交为零。`,
       `维数核对：${texInline("\\frac{n(n+1)}2+\\frac{n(n-1)}2=n^2")}。`,
-      `代入：${texInline("\\frac{A+A^T}2=\\begin{pmatrix}1&1\\\\1&3\\end{pmatrix}")}，${texInline("\\frac{A-A^T}2=\\begin{pmatrix}0&1\\\\-1&0\\end{pmatrix}")}。前两个选项的第二项都不是反对称矩阵。`,
+      `代入：${texInline("\\frac{A+A^T}2=\\begin{pmatrix}1&1\\\\1&3\\end{pmatrix}")}，${texInline("\\frac{A-A^T}2=\\begin{pmatrix}0&1\\\\-1&0\\end{pmatrix}")}。另外两种拆法的第二项 ${texInline("\\begin{pmatrix}0&2\\\\0&0\\end{pmatrix}")}、${texInline("\\begin{pmatrix}0&0\\\\-2&0\\end{pmatrix}")} 都不是反对称矩阵。`,
     ],
   },
   quiz: [

@@ -57,8 +57,8 @@ defineChapter8Section("jordan-derivation", {
     ],
     steps: [
       `初等因子是 ${texInline(String.raw`\lambda-1,\ (\lambda-1)^2`)}，对应若尔当块 ${texInline("J(1,1)")} 与 ${texInline("J(1,2)")}。`,
-      `拼起来是 ${texInline(String.raw`\operatorname{diag}(J(1,2),J(1,1))`)}，即第一个矩阵（块的次序可以交换）。`,
-      `第二个是 ${texInline("J(1,3)")}，初等因子为 ${texInline(String.raw`(\lambda-1)^3`)}；单位矩阵的初等因子是三个 ${texInline(String.raw`\lambda-1`)}；最后一个的特征多项式是 ${texInline(String.raw`(\lambda-1)^2(\lambda-2)`)}。`,
+      `拼起来是 ${texInline(String.raw`\operatorname{diag}(J(1,2),J(1,1))`)}，即 ${texInline(String.raw`\begin{pmatrix}1&0&0\\1&1&0\\0&0&1\end{pmatrix}`)}（块的次序可以交换）。`,
+      `主对角线下方有两个 1 的那一个是 ${texInline("J(1,3)")}，初等因子为 ${texInline(String.raw`(\lambda-1)^3`)}；单位矩阵的初等因子是三个 ${texInline(String.raw`\lambda-1`)}；右下角为 2 的那一个，特征多项式是 ${texInline(String.raw`(\lambda-1)^2(\lambda-2)`)}。`,
     ],
   },
   quiz: [

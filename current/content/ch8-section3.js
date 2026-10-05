@@ -58,7 +58,7 @@ defineChapter8Section("invariant-factors", {
     steps: [
       `${texInline(String.raw`d_1=D_1=1`)}，${texInline(String.raw`d_2=D_2/D_1=\lambda-1`)}。`,
       `${texInline(String.raw`d_3=D_3/D_2=(\lambda-1)^3(\lambda+2)/(\lambda-1)=(\lambda-1)^2(\lambda+2)`)}。核对：${texInline(String.raw`d_1\mid d_2\mid d_3`)}，乘积为 ${texInline("D_3")}。`,
-      `把 ${texInline("D_3")} 直接当作 ${texInline("d_3")}，乘积会多出 ${texInline(String.raw`\lambda-1`)}；${texInline(String.raw`(\lambda-1)(\lambda+2)`)} 使乘积少一个因子 ${texInline(String.raw`\lambda-1`)}；最后一组的 ${texInline("d_1")} 应为 ${texInline("D_1=1")}。`,
+      `把 ${texInline("D_3")} 直接当作 ${texInline("d_3")}，乘积会多出 ${texInline(String.raw`\lambda-1`)}；${texInline(String.raw`(\lambda-1)(\lambda+2)`)} 使乘积少一个因子 ${texInline(String.raw`\lambda-1`)}；以 ${texInline(String.raw`\lambda-1,\ \lambda-1`)} 开头的那一组，${texInline("d_1")} 应为 ${texInline("D_1=1")}。`,
     ],
   },
   quiz: [

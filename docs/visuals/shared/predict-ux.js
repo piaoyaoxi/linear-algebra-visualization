@@ -101,8 +101,10 @@
         buttons().forEach((b) => b.classList.remove("is-right", "is-wrong", "is-picked"));
         answer?.classList.add("is-answer");
         unsure.classList.add("is-picked");
-        const text = answer ? plain(answer.innerHTML) : "";
-        const lead = text ? `答案是“${text}”` : "答案";
+        // the option itself, formulas included (flattened text loses ≠, exponents …)
+        const copy = answer?.cloneNode(true);
+        copy?.querySelectorAll(".la-mine").forEach((n) => n.remove());
+        const lead = copy && plain(copy.innerHTML) ? `答案是“${copy.innerHTML.trim()}”` : "答案";
         const lab = box.closest("section, [id$='-interactive']") || box.parentElement;
         const feedback = box.querySelector(FEEDBACK);
         if (feedback) {
@@ -113,10 +115,18 @@
         }
         // the ch7 kit repeats the verdict at the top of its conclusion box
         lab?.querySelectorAll("[class$='-ok']").forEach((n) => {
-          if (n.textContent.trim() === "猜对了。") n.textContent = `${lead}。`;
+          if (n.textContent.trim() === "猜对了。") n.innerHTML = `${lead}。`;
         });
       } else {
-        const mine = buttons().find((b) => b.classList.contains("is-right") || b.classList.contains("is-wrong"));
+        // kits mark the guess as right/wrong, or (the ch7 kit) leave it only “picked”
+        let mine = buttons().find((b) => b.classList.contains("is-right") || b.classList.contains("is-wrong"));
+        if (!mine) {
+          mine = buttons().find((b) => b.classList.contains("is-picked"));
+          if (mine) {
+            mine.classList.remove("is-picked");
+            mine.classList.add(mine.dataset.ok === "true" ? "is-right" : "is-wrong");
+          }
+        }
         if (mine && !mine.querySelector(".la-mine")) {
           const badge = document.createElement("em");
           badge.className = "la-mine";

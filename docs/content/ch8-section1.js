@@ -51,7 +51,7 @@ defineChapter8Section("lambda-matrix", {
       { text: texInline(String.raw`\begin{pmatrix}\lambda&\lambda\\1&1\end{pmatrix}`) },
     ],
     steps: [
-      `逐个算行列式：${texInline(String.raw`\lambda\cdot\lambda-(\lambda+1)(\lambda-1)=1`)}，是非零常数，所以第一个可逆，逆矩阵为 ${texInline(String.raw`\begin{pmatrix}\lambda&-\lambda-1\\1-\lambda&\lambda\end{pmatrix}`)}。`,
+      `逐个算行列式：${texInline(String.raw`\lambda\cdot\lambda-(\lambda+1)(\lambda-1)=1`)}，是非零常数，所以 ${texInline(String.raw`\begin{pmatrix}\lambda&\lambda+1\\\lambda-1&\lambda\end{pmatrix}`)} 可逆，逆矩阵为 ${texInline(String.raw`\begin{pmatrix}\lambda&-\lambda-1\\1-\lambda&\lambda\end{pmatrix}`)}。`,
       `${texInline(String.raw`\begin{vmatrix}2&0\\0&\lambda\end{vmatrix}=2\lambda`)}，不是常数，逆矩阵中会出现 ${texInline(String.raw`\tfrac1\lambda`)}。`,
       `${texInline(String.raw`\begin{vmatrix}\lambda&1\\-1&\lambda\end{vmatrix}=\lambda^2+1`)}，在实数处都不为零，但它不是常数，逆矩阵的元素带分母 ${texInline(String.raw`\lambda^2+1`)}。`,
       `${texInline(String.raw`\begin{vmatrix}\lambda&\lambda\\1&1\end{vmatrix}=0`)}，两列相同，秩为 1。`,

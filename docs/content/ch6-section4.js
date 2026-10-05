@@ -51,7 +51,7 @@ defineChapter6Section("change-of-basis", {
       `新基在旧基下的坐标：${texInline("1\\to(1,0,0)^T")}，${texInline("x-1\\to(-1,1,0)^T")}，${texInline("(x-1)^2=1-2x+x^2\\to(1,-2,1)^T")}，按列排成 ${texInline("A")}。`,
       `旧坐标 ${texInline("X=(2,3,1)^T")}。由 ${texInline("X=AY")} 得 ${texInline("Y=A^{-1}X")}，其中 ${texInline("A^{-1}=\\begin{pmatrix}1&1&1\\\\0&1&2\\\\0&0&1\\end{pmatrix}")} 是由新基到旧基的过渡矩阵。`,
       `${texInline("Y=A^{-1}X=(6,5,1)^T")}，即 ${texInline("p=6+5(x-1)+(x-1)^2")}；也可以直接算 ${texInline("p(1)=6,\\ p'(1)=5,\\ \\tfrac12p''(1)=1")}。`,
-      `验证 ${texInline("AY=(6-5+1,\\ 5-2,\\ 1)^T=(2,3,1)^T=X")}。最后一个选项把公式写成了 ${texInline("Y=AX")}；第一个选项把 ${texInline("A")} 与 ${texInline("A^{-1}")} 弄反了。`,
+      `验证 ${texInline("AY=(6-5+1,\\ 5-2,\\ 1)^T=(2,3,1)^T=X")}。${texInline("Y=(0,1,1)^T")} 那一项把公式写成了 ${texInline("Y=AX")}；${texInline("A")} 写成 ${texInline("\\begin{pmatrix}1&1&1\\\\0&1&2\\\\0&0&1\\end{pmatrix}")} 的那一项把 ${texInline("A")} 与 ${texInline("A^{-1}")} 弄反了；${texInline("Y=(2,3,1)^T")} 那一项直接把旧坐标当成了新坐标。`,
     ],
   },
   quiz: [

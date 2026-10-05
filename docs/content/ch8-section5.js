@@ -58,7 +58,7 @@ defineChapter8Section("elementary-divisors", {
     steps: [
       `λ 的方幂从高到低是 ${texInline(String.raw`\lambda^2,\ \lambda,\ \lambda`)}，λ−1 的方幂只有 ${texInline(String.raw`\lambda-1`)}。`,
       `各取最高次：${texInline(String.raw`d_5=\lambda^2(\lambda-1)`)}；再取次高：${texInline(String.raw`d_4=\lambda`)}；再下一层：${texInline(String.raw`d_3=\lambda`)}；其余 ${texInline("d_2=d_1=1")}。`,
-      `把 λ 与 λ² 合成 λ³ 会改变初等因子；${texInline(String.raw`1,1,1,\lambda^2,\lambda^2(\lambda-1)`)} 的初等因子是 λ², λ², λ−1；最后一组不满足依次整除。`,
+      `把 λ 与 λ² 合成 λ³ 会改变初等因子；${texInline(String.raw`1,1,1,\lambda^2,\lambda^2(\lambda-1)`)} 的初等因子是 λ², λ², λ−1；${texInline(String.raw`\lambda,\lambda,\lambda^2,\lambda-1,1`)} 那一组不满足依次整除（${texInline(String.raw`\lambda^2`)} 不整除 ${texInline(String.raw`\lambda-1`)}）。`,
     ],
   },
   quiz: [

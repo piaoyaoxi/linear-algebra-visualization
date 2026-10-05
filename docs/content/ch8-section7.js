@@ -52,8 +52,8 @@ defineChapter8Section("rational-canonical-form", {
     ],
     steps: [
       `次数大于零的不变因子是 ${texInline(String.raw`\lambda-1`)} 与 ${texInline(String.raw`(\lambda-1)(\lambda+2)=\lambda^2+\lambda-2`)}。`,
-      `${texInline(String.raw`\lambda-1`)} 的伴随矩阵是 ${texInline("(1)")}；${texInline(String.raw`\lambda^2+\lambda-2`)} 中 ${texInline("a_0=-2,\\ a_1=1")}，伴随矩阵是 ${texInline(String.raw`\begin{pmatrix}0&2\\1&-1\end{pmatrix}`)}。拼起来得第一个矩阵。`,
-      `第二个最后一列没有变号；第三个是若尔当形，它与 A 相似，但不是有理标准形；第四个是特征多项式 ${texInline(String.raw`\lambda^3-3\lambda+2`)} 的伴随矩阵，它的不变因子是 ${texInline(String.raw`1,1,(\lambda-1)^2(\lambda+2)`)}，与 A 不相似。`,
+      `${texInline(String.raw`\lambda-1`)} 的伴随矩阵是 ${texInline("(1)")}；${texInline(String.raw`\lambda^2+\lambda-2`)} 中 ${texInline("a_0=-2,\\ a_1=1")}，伴随矩阵是 ${texInline(String.raw`\begin{pmatrix}0&2\\1&-1\end{pmatrix}`)}。拼起来得 ${texInline(String.raw`\begin{pmatrix}1&0&0\\0&0&2\\0&1&-1\end{pmatrix}`)}。`,
+      `最后一列为 ${texInline(String.raw`(0,-2,1)^T`)} 的那一个没有变号；${texInline(String.raw`\operatorname{diag}(1,1,-2)`)} 是若尔当形，它与 A 相似，但不是有理标准形；左下方是 1、最后一列为 ${texInline(String.raw`(-2,3,0)^T`)} 的那一个是特征多项式 ${texInline(String.raw`\lambda^3-3\lambda+2`)} 的伴随矩阵，它的不变因子是 ${texInline(String.raw`1,1,(\lambda-1)^2(\lambda+2)`)}，与 A 不相似。`,
     ],
   },
   quiz: [

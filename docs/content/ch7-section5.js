@@ -49,8 +49,8 @@ defineChapter7Section("diagonal-matrices", {
     steps: [
       `${texInline(String.raw`|\lambda E-A|=(\lambda-4)(\lambda-3)-2=(\lambda-5)(\lambda-2)`)}。`,
       `${texInline(String.raw`\lambda=5`)}：${texInline("x_1=x_2")}，取 ${texInline(String.raw`X_1=(1,1)^T`)}；${texInline(String.raw`\lambda=2`)}：${texInline("2x_1+x_2=0")}，取 ${texInline(String.raw`X_2=(1,-2)^T`)}。`,
-      `${texInline(String.raw`X=\begin{pmatrix}1&1\\1&-2\end{pmatrix}`)}，${texInline(String.raw`X^{-1}=\tfrac13\begin{pmatrix}2&1\\1&-1\end{pmatrix}`)}，${texInline(String.raw`A^n=X\operatorname{diag}(5^n,2^n)X^{-1}`)}，乘出来就是选项 A。`,
-      `检验 n=1：${texInline(String.raw`\tfrac13\begin{pmatrix}12&3\\6&9\end{pmatrix}=A`)}。最后一个选项把 ${texInline(String.raw`5^n,2^n`)} 与 X 的列配错了，n=1 时得不到 A。`,
+      `${texInline(String.raw`X=\begin{pmatrix}1&1\\1&-2\end{pmatrix}`)}，${texInline(String.raw`X^{-1}=\tfrac13\begin{pmatrix}2&1\\1&-1\end{pmatrix}`)}，${texInline(String.raw`A^n=X\operatorname{diag}(5^n,2^n)X^{-1}`)}，乘出来就是左上角为 ${texInline(String.raw`\tfrac13(2\cdot5^n+2^n)`)} 的那一项。`,
+      `检验 n=1：${texInline(String.raw`\tfrac13\begin{pmatrix}12&3\\6&9\end{pmatrix}=A`)}。左上角为 ${texInline(String.raw`\tfrac13(2\cdot2^n+5^n)`)} 的那一项把 ${texInline(String.raw`5^n,2^n`)} 与 X 的列配错了，n=1 时得不到 A。`,
     ],
   },
   quiz: [

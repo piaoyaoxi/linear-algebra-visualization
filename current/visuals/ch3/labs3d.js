@@ -129,9 +129,26 @@
       before = state();
       requestAnimationFrame(() => { if (!touched && !revealed) before = state(); });
     }));
+    /*
+     * Optional spec.inExample(): the question is about one case of the lab. An action in
+     * another case keeps the guess and shows spec.elsewhere (a hint) instead of the verdict.
+     */
+    let changed = false;
+    const judge = () => {
+      if (spec.inExample && !spec.inExample()) {
+        const hint = typeof spec.elsewhere === "function" ? spec.elsewhere() : spec.elsewhere;
+        if (hint) {
+          feedback.hidden = false;
+          feedback.innerHTML = hint;
+        }
+        return;
+      }
+      reveal();
+    };
     const check = () => {
       if (choice == null || revealed || before == null) return;
-      if (state() !== before) reveal();
+      if (state() !== before) changed = true;
+      if (changed) judge();
     };
     const acted = (event) => {
       if (choice == null || revealed || box.contains(event.target)) return;
@@ -143,7 +160,12 @@
     };
     ["pointerup", "input", "change", "keyup", "click"].forEach((type) => lab?.addEventListener(type, acted));
     // dragging a handle on the canvas is acting even when the readouts are still hidden
-    lab?.addEventListener("la-handle-move", () => { if (choice != null && before != null) reveal(); });
+    lab?.addEventListener("la-handle-move", () => {
+      if (choice == null || before == null || revealed) return;
+      changed = true;
+      // with inExample the verdict waits for the release, so the box does not grow mid-drag
+      if (!spec.inExample) judge();
+    });
     return box;
   }
 
@@ -538,9 +560,11 @@
   function dependenceLab(root) {
     const lab = labShell(root, {
       title: "第三个向量有没有带来新方向",
-      task: "v₁、v₂ 张成一个过原点的平面。拖动 v₃（每次移动半格），看平行六面体的体积：体积为 0 的那一刻，v₃ 落进了平面，三个向量线性相关。",
+      task: "v₁、v₂ 张成一个过原点的平面。上下拖动 v₃（每次移动半格），看平行六面体的体积：体积为 0 的那一刻，v₃ 落进了平面，三个向量线性相关。",
     });
-    const state = { v: [[1, 0, 1], [0, 1, 1], [1, 1, 0]], stage: 3, showDrop: false };
+    // free: after the reveal every vector can be dragged anywhere; before it, v₁ and v₂ stay
+    // as in the question and v₃ moves straight up and down, so (1,1,2) can be reached
+    const state = { v: [[1, 0, 1], [0, 1, 1], [1, 1, 0]], stage: 3, showDrop: false, free: false };
     const toolbar = el("div", "ch3l-toolbar");
     lab.append(toolbar);
     const body = el("div", "ch3l-body");
@@ -583,12 +607,13 @@
         state.v.slice(0, state.stage).map((_, i) => ({
           color: "drag",
           snap: 0.5,
+          ...(state.free ? {} : { mode: "line", dir: [0, 0, 1] }),
           get: () => state.v[i],
           set: (p) => {
             state.v[i] = p;
             redraw();
           },
-        })),
+        })).filter((_, i) => state.free || i === 2),
       );
       const matrix = [0, 1, 2].map((r) => state.v.slice(0, state.stage).map((v) => F(v[r])));
       const rank = M().rankOf(matrix);
@@ -638,10 +663,14 @@
           { text: "取决于视角", why: "体积由三个向量决定，与观察方向无关。" },
         ],
         right: "(1,1,2)=v₁+v₂ 落在平面里，六面体被压扁。点“沿平面看”，三个向量排成一条线。",
+        // judged only when v₃ reaches (1,1,2) with v₁, v₂ as in the question
+        inExample: () => state.stage === 3 && [[1, 0, 1], [0, 1, 1], [1, 1, 2]].every((target, i) => target.every((x, k) => state.v[i][k] === x)),
+        elsewhere: () => (state.stage === 3 ? "接着把 v₃ 拖到 (1,1,2)，再看体积。" : "这道题问三个向量的体积：换回“加入 v₃”，把 v₃ 拖到 (1,1,2) 再看结果。"),
       },
       () => {
         result.hidden = false;
         state.showDrop = true;
+        state.free = true;
         redraw();
       },
     );

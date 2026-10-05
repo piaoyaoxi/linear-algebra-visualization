@@ -3460,6 +3460,11 @@ body.dark :is(main, #la) :is(.lesson-page-section, #lb) .basis-label rect {
   line-height: 1.7;
 }
 
+/* “B=(x−1)(x²+x+1)，” stays on one line; the line breaks between A=…, B=… and r=… */
+:is(main, #la) .ch1-euclid-common > .ch1-keep {
+  white-space: nowrap;
+}
+
 /* ch2 §1: the 状态 tile keeps “方向保持 / 方向翻转” on one line */
 :is(main, #la) .ch2-meter:has(> .ch2-meter-card > [data-status]) {
   grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) max-content;

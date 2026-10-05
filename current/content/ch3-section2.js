@@ -26,7 +26,7 @@ defineChapter3Section("n-vector-space", {
           q: `A 是 3×2 矩阵时，行图景和列图景分别画在哪个空间里？`,
           a: `行图景：三个方程是 ${texInline("\\mathbb R^2")} 中的三条直线，解是它们的公共点。列图景：两个列向量在 ${texInline("\\mathbb R^3")} 中组合出 b。`,
         },
-        tex: String.raw`\underbrace{\begin{cases}a_{11}x_1+\cdots+a_{1n}x_n=b_1\\ \quad\vdots\\ a_{m1}x_1+\cdots+a_{mn}x_n=b_m\end{cases}}_{\text{按行：m 个方程}}\iff \underbrace{x_1a_1+\cdots+x_na_n=b}_{\text{按列：一个向量等式}}`,
+        tex: String.raw`\underbrace{\begin{cases}a_{11}x_1+\cdots+a_{1n}x_n=b_1\\ \quad\vdots\\ a_{m1}x_1+\cdots+a_{mn}x_n=b_m\end{cases}}_{\text{按行读是 }m\text{ 个方程}}\iff \underbrace{x_1a_1+\cdots+x_na_n=b}_{\text{按列读是一个向量等式}}`,
         text: `按行读，每个方程是输入空间 ${texInline("F^n")} 里的一个约束，解是所有约束的公共点；按列读，${texInline("x")} 是列向量的权重，${texInline("Ax")} 落在输出空间 ${texInline("F^m")} 里。同一个 x 让两种读法同时成立。`,
       },
     ],

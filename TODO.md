@@ -336,7 +336,7 @@ _dev/research/3b1b_eola_chapter10.py
 
 未完成（按这个顺序接着做）：
 1. 全站排版第一步：`current/visuals/shared/typeset.js`（Intl.Segmenter 按词断行 + 段末最后一个词连同标点不拆 + `text-wrap: balance/pretty`；KaTeX 的 .base 按关系符号分组，只在 = 后断行，组宽超过容器时退回默认），并把检查接入 `site-audit.mjs`。做到一半的改动在 `docs/handoff/typo-stage-a-wip.diff`（基于 69b1e81，`git apply --3way`；learn.html 的 ?v= 行要手动合）。扫描工具：`SITE_BASE=… ONLY=… node .github/scripts/typo-scan.mjs`，报三类问题：孤字（orphan）、公式在 + 后断行（binbreak）、公式里有中文标点（cjkmath）。答案揭晓后才出现的读数要动手揭晓后再查。
-2. 全站排版第二步：章节编号与卡片编号统一样式、按基线对齐；先量再修公式/西文偏低与 KaTeX 字号；¼ 字宽中西文间距；选中选项对齐；“再看看图：”的重复在 `visuals/shared/predict-ux.js` 一处统一处理（第三章已在本地修过）。
+2. 全站排版第二步：章节编号与卡片编号统一样式、按基线对齐；先量再修公式/西文偏低与 KaTeX 字号；¼ 字宽中西文间距；选中选项对齐；“再看看图：”的重复在 `visuals/shared/predict-ux.js` 一处统一处理（第三章已在本分支单独修过，统一处理后可去掉那份局部修改）。
 3. 第二章：I→E；Sarrus→对角线法则；§8“而非重新从单位形开始”、§2 辨析里描述界面的话；自测删到约 4 道；§6 判定时机（只问第 2 行）；§7 标签重叠、预设在最下面、标题与预测框之间夹着说明卡；§8 手机框中框。
 4. 第四章：I→E（§6 已是 E）；§2“后面的交互始终使用同一组矩阵”、§4“第三节已经给出……”、自测“本节为什么不展开增广矩阵求逆算法？”；§1–§4 自测删到约 4 道；§6 判定时机（默认换行，题目问倍加）；手机 §2“加法与数乘”被截断、§2–§4 框中框；main 上原有的全站审计失败 ch4/matrix-inverse @1440“page style leaks into formula \operatorname{rank}(A)”。
 5. 第五章：§1“本节只解决两个问题……”、§2“后续连接……”、§4“只作连接，不替代……”“正定不是……也不是……”；Sylvester 惯性定律→惯性定理、Sylvester 判别→顺序主子式判别；自测删到约 4 道，§4 自测 2 补反例 diag(0,−1)；§2 换例子后题目仍描述旧二次型、右侧卡片半空；各节标题与预测框之间夹着说明卡；各实验手机框中框。

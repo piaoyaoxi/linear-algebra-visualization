@@ -203,7 +203,7 @@
       ["方阵", "\\begin{bmatrix}1&2\\\\3&4\\end{bmatrix}"],
       ["长方形矩阵", "\\begin{bmatrix}1&2&3\\\\4&5&6\\end{bmatrix}"],
       ["零矩阵", "\\begin{bmatrix}0&0\\\\0&0\\end{bmatrix}"],
-      ["单位矩阵", "I=\\begin{bmatrix}1&0\\\\0&1\\end{bmatrix}"],
+      ["单位矩阵", "E=\\begin{bmatrix}1&0\\\\0&1\\end{bmatrix}"],
     ];
 
     return types

@@ -29,7 +29,7 @@ defineChapter4Section("matrix-operations", {
     { label: "乘法条件", text: `若 ${texInline("A")} 为 ${texInline("m\\times n")}，${texInline("B")} 为 ${texInline("n\\times p")}，则 ${texInline("AB")} 为 ${texInline("m\\times p")}。` },
     { label: "行乘列", text: `${texInline("(AB)_{ij}=\\sum_{k=1}^{n}a_{ik}b_{kj}")}。` },
     { label: "复合顺序", text: `${texInline("ABx=A(Bx)")}；靠近输入的矩阵先作用。` },
-    { label: "单位矩阵", text: `${texInline("IA=A")} 且 ${texInline("AI=A")}。` },
+    { label: "单位矩阵", text: `${texInline("EA=A")} 且 ${texInline("AE=A")}。` },
     { label: "结合律", text: `${texInline("(AB)C=A(BC)")}；打包方式可以改变，实际作用顺序保持不变。` },
     { label: "通常不交换", text: `${texInline("AB")} 与 ${texInline("BA")} 通常不同，但某些特殊矩阵仍然可以交换。` },
   ],

@@ -564,7 +564,7 @@
     status.dataset.ch9Readout = "iso";
     const gateHost = el("div");
     const result = resultBox(
-      `<p>${tex("(\\alpha,\\beta)=X^TBY")}，其中 ${tex("B=C^TGC")} 是 ${tex("f_1,f_2")} 的度量矩阵，C 是从 ${tex("\\varepsilon_1,\\varepsilon_2")} 到 ${tex("f_1,f_2")} 的过渡矩阵。σ 保持内积 ⇔ ${tex("B=I")} ⇔ ${tex("f_1,f_2")} 是标准正交基。每个 n 维欧氏空间都有标准正交基，所以都同构于 ${tex("\\mathbb R^n")}。</p>`,
+      `<p>${tex("(\\alpha,\\beta)=X^TBY")}，其中 ${tex("B=C^TGC")} 是 ${tex("f_1,f_2")} 的度量矩阵，C 是从 ${tex("\\varepsilon_1,\\varepsilon_2")} 到 ${tex("f_1,f_2")} 的过渡矩阵。σ 保持内积 ⇔ ${tex("B=E")} ⇔ ${tex("f_1,f_2")} 是标准正交基。每个 n 维欧氏空间都有标准正交基，所以都同构于 ${tex("\\mathbb R^n")}。</p>`,
     );
     lab.append(status, gateHost, result);
     const G = matF(ISO_G);
@@ -667,7 +667,7 @@
           { text: "任意一组基都可以", why: "看右图：标准基的像是一个椭圆，长度被改变了。" },
           { text: `只有 ${tex("f_1=\\varepsilon_1,\\ f_2=\\varepsilon_2")}`, why: `${tex("(\\varepsilon_1,\\varepsilon_1)=2")}，标准基在 V 里不是单位向量。` },
         ],
-        right: `例如 ${tex("f_1=(\\tfrac35,\\tfrac15),\\ f_2=(-\\tfrac45,\\tfrac75)")}：两个端点都在单位椭圆上，f₂ 平行于 f₁ 处的切线；${tex("B=I")}，右边的紫色曲线与虚线单位圆重合。`,
+        right: `例如 ${tex("f_1=(\\tfrac35,\\tfrac15),\\ f_2=(-\\tfrac45,\\tfrac75)")}：两个端点都在单位椭圆上，f₂ 平行于 f₁ 处的切线；${tex("B=E")}，右边的紫色曲线与虚线单位圆重合。`,
         defer: lab,
         actHint: "记下了你的猜测。换一组基或拖动 f₁、f₂，结论随后出现。",
       },
@@ -710,7 +710,7 @@
     info.dataset.ch9Readout = "ortho";
     const gateHost = el("div");
     const result = resultBox(
-      `<p>保持内积 ⇔ 保持长度 ⇔ 把标准正交基变成标准正交基 ⇔ 矩阵满足 ${tex("Q^TQ=I")}。${tex("\\det Q=\\pm1")} 只是必要条件：${tex("\\operatorname{diag}(2,\\tfrac12)")} 保持面积，却把 ${tex("\\varepsilon_1")} 拉长一倍。${tex("\\det Q=1")} 的是旋转（第一类），${tex("\\det Q=-1")} 的是反射（第二类）。</p>`,
+      `<p>保持内积 ⇔ 保持长度 ⇔ 把标准正交基变成标准正交基 ⇔ 矩阵满足 ${tex("Q^TQ=E")}。${tex("\\det Q=\\pm1")} 只是必要条件：${tex("\\operatorname{diag}(2,\\tfrac12)")} 保持面积，却把 ${tex("\\varepsilon_1")} 拉长一倍。${tex("\\det Q=1")} 的是旋转（第一类），${tex("\\det Q=-1")} 的是反射（第二类）。</p>`,
     );
     side.append(info, gateHost, result);
     const state = { key: "rot", x: [1.5, 0.5], y: [0, 1], revealed: false };
@@ -788,7 +788,7 @@
       const Qy = M().matVec(Q, y);
       const cmp = (a, b) => (M().eq(a, b) ? "=" : "\\ne");
       let verdict;
-      if (orth) verdict = `<p class="ch9l-ok" data-ortho-status>${tex("Q^TQ=I")}，正交变换，${det.n > 0 ? "第一类（旋转）" : "第二类（关于绿色虚线的反射）"}。</p>`;
+      if (orth) verdict = `<p class="ch9l-ok" data-ortho-status>${tex("Q^TQ=E")}，正交变换，${det.n > 0 ? "第一类（旋转）" : "第二类（关于绿色虚线的反射）"}。</p>`;
       else {
         const c1 = [Q[0][0], Q[1][0]];
         const c2 = [Q[0][1], Q[1][1]];

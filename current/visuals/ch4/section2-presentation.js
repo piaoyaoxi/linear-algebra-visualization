@@ -156,8 +156,8 @@
           <div class="s2-law-grid">
             <article class="s2-law-card">
               <span class="s2-card-kicker">单位矩阵</span>
-              <div class="s2-machine-line"><strong>A</strong><i>→ I →</i><strong>A</strong></div>
-              <p>${mathInline("IA=A")} 与 ${mathInline("AI=A")} 都表示穿过一个不改变对象的过程。</p>
+              <div class="s2-machine-line"><strong>A</strong><i>→ E →</i><strong>A</strong></div>
+              <p>${mathInline("EA=A")} 与 ${mathInline("AE=A")} 都表示穿过一个不改变对象的过程。</p>
             </article>
             <article class="s2-law-card">
               <span class="s2-card-kicker">结合律</span>

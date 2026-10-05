@@ -8,7 +8,7 @@
  * Only what changed is processed again; the script ignores its own edits.
  */
 (() => {
-  const CJK = /[㐀-鿿豈-﫿]/g;
+  const CJK = /[\u3400-\u9fff\uf900-\ufaff]/g;
   const PUNCT = /^[\s，。：；、！？）」』”’》〉…—·,.;:!?)\]]+$/;
   const SKIP = ".katex, svg, canvas, script, style, textarea, input, select, code, pre, la-t, [contenteditable]";
   const segmenter = typeof Intl !== "undefined" && Intl.Segmenter ? new Intl.Segmenter("zh", { granularity: "word" }) : null;

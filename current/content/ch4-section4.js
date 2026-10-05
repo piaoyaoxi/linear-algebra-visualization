@@ -18,7 +18,7 @@ defineChapter4Section("matrix-inverse", {
       "依次闪过缩放、旋转、剪切和镜像：缩放取倒数，旋转转向相反，剪切系数变号，镜像再做一次回到原处。",
       "短暂对照投影：两个不同输入落到同一输出，只保留一句结论——信息一旦合并，反向过程便不再唯一。",
       "展示 x 先经过 B、再经过 A；错误地先撤销 B 时无法复原，改为先 A^{-1}、再 B^{-1} 后回到 x。",
-      "画面收束到 AA^{-1}=A^{-1}A=I 与 (AB)^{-1}=B^{-1}A^{-1}。",
+      "画面收束到 AA^{-1}=A^{-1}A=E 与 (AB)^{-1}=B^{-1}A^{-1}。",
     ],
     ttsDraft:
       "逆矩阵把已经发生的矩阵作用完整撤销。单个过程按相反方式执行；多个过程组成复合后，撤销必须从最后一步开始。因此 AB 的逆按相反顺序书写：B 的逆乘 A 的逆。",
@@ -26,7 +26,7 @@ defineChapter4Section("matrix-inverse", {
   concepts: [
     {
       label: "逆矩阵的定义",
-      text: `${texInline("A^{-1}A=AA^{-1}=I")}。先做 A，再做 ${texInline("A^{-1}")}，会回到原来的输入。`,
+      text: `${texInline("A^{-1}A=AA^{-1}=E")}。先做 A，再做 ${texInline("A^{-1}")}，会回到原来的输入。`,
     },
     {
       label: "方阵限制",
@@ -85,7 +85,7 @@ defineChapter4Section("matrix-inverse", {
       `交换主对角元素并改变副对角元素符号，得到 ${texInline("\\begin{bmatrix}1&-1\\\\-1&3\\end{bmatrix}")}。`,
       `除以行列式 2：${texInline("A^{-1}=\\frac12\\begin{bmatrix}1&-1\\\\-1&3\\end{bmatrix}")}。`,
       `在 ${texInline("Ax=b")} 左侧乘 ${texInline("A^{-1}")}，得到 ${texInline("x=A^{-1}b=\\frac12\\begin{bmatrix}1&-1\\\\-1&3\\end{bmatrix}\\begin{bmatrix}7\\\\3\\end{bmatrix}=\\begin{bmatrix}2\\\\1\\end{bmatrix}")}。`,
-      `最后代回：${texInline("A\\begin{bmatrix}2\\\\1\\end{bmatrix}=\\begin{bmatrix}7\\\\3\\end{bmatrix}")}；同时可检查 ${texInline("AA^{-1}=I")}。`,
+      `最后代回：${texInline("A\\begin{bmatrix}2\\\\1\\end{bmatrix}=\\begin{bmatrix}7\\\\3\\end{bmatrix}")}；同时可检查 ${texInline("AA^{-1}=E")}。`,
     ],
   },
   quiz: [
@@ -111,11 +111,11 @@ defineChapter4Section("matrix-inverse", {
     },
     {
       question: "用伴随矩阵求逆时，代数余子式矩阵为什么还要转置？",
-      answer: `伴随矩阵 ${texInline("A^{*}")} 按定义是代数余子式矩阵的转置；只有完成转置后才满足 ${texInline("AA^{*}=A^{*}A=\\det(A)I")}。`,
+      answer: `伴随矩阵 ${texInline("A^{*}")} 按定义是代数余子式矩阵的转置；只有完成转置后才满足 ${texInline("AA^{*}=A^{*}A=\\det(A)E")}。`,
     },
     {
       question: "本节为什么不展开增广矩阵求逆算法？",
-      answer: `本节只记录 ${texInline("[A\\mid I]\\to[I\\mid A^{-1}]")} 的结果形式；行变换机制与算法将在 §6 初等矩阵中系统说明。`,
+      answer: `本节只记录 ${texInline("[A\\mid E]\\to[E\\mid A^{-1}]")} 的结果形式；行变换机制与算法将在 §6 初等矩阵中系统说明。`,
     },
   ],
   summary: [
@@ -126,7 +126,7 @@ defineChapter4Section("matrix-inverse", {
     "下一节将把大矩阵按行列切成块，用结构化的方式组织运算。",
   ],
   exercises: [
-    `证明：若 ${texInline("AB=BA=I")} 且 ${texInline("AC=CA=I")}，则 ${texInline("B=C")}。`,
+    `证明：若 ${texInline("AB=BA=E")} 且 ${texInline("AC=CA=E")}，则 ${texInline("B=C")}。`,
     `设 ${texInline("A,B")} 可逆，分别验证 ${texInline("B^{-1}A^{-1}")} 是 ${texInline("AB")} 的左逆和右逆。`,
     `对 ${texInline("A=\\begin{bmatrix}1&2&0\\\\0&1&1\\\\1&0&1\\end{bmatrix}")} 写出元素 ${texInline("a_{12}")} 的余子矩阵、余子式与代数余子式。`,
   ],

@@ -39,7 +39,7 @@
     formal.innerHTML = formalShell(
       "可逆的本质是信息可以倒推",
       "逆矩阵表示一次反向过程：先经过 A，再经过逆矩阵，所有输入都能准确回到原处。公式中的 I 记录的正是这个回到原处的结果。",
-      display("A^{-1}A=AA^{-1}=I"),
+      display("A^{-1}A=AA^{-1}=E"),
       [metaRow("谁可能有逆", "首先必须是方阵；输入和输出维数要相同。"), metaRow("二维信号", `${inline("\\det(A)\\ne0")} 表示没有面积坍缩。`), metaRow("方程组", `${inline("Ax=b")} 对每个 b 有唯一解，说明输出能唯一倒推输入。`)].join(""),
       [definition("几何语言", "可逆：两个独立方向仍然独立，平面仍然铺满平面；不可逆：至少一个方向被压没。"), definition("代数语言", "对 n 阶矩阵，可逆、秩为 n、行列式非零、列向量线性无关、行最简形为 I 是一组等价条件。"), definition("计算语言", "在 2 阶情形，可以使用公式；在更一般情形，后面的初等矩阵会给出系统的求逆方法。")].join(""),
       "不要混淆",
@@ -64,9 +64,9 @@
   }
 
   const elementaryStates = [
-    { label: "第 1 步 / 3：写下同一个行操作", note: `目标操作是 ${inline("R_2\\leftarrow R_2-3R_1")}。先不要急着改 A；先问“这条规则施加到单位矩阵上会发生什么”。`, leftTitle: "单位矩阵 I", left: "I=\\begin{pmatrix}1&0\\\\0&1\\end{pmatrix}", rightTitle: "原矩阵 A", right: "A=\\begin{pmatrix}1&2\\\\3&7\\end{pmatrix}", caption: "同一个操作会同时解释两件事：它怎样变出 E，又怎样改变 A。" },
-    { label: "第 2 步 / 3：把操作施加到 I，得到 E", note: `对 I 做 ${inline("R_2\\leftarrow R_2-3R_1")}，第二行从 ${inline("(0,1)")} 变成 ${inline("(-3,1)")}。这就是对应的初等矩阵。`, leftTitle: "得到初等矩阵 E", left: "E=\\begin{pmatrix}1&0\\\\-3&1\\end{pmatrix}", rightTitle: "A 还没有计算", right: "A=\\begin{pmatrix}1&2\\\\3&7\\end{pmatrix}", caption: "构造 E 的方法很直接：对单位矩阵做同样的操作。" },
-    { label: "第 3 步 / 3：左乘 E，就是对 A 做同一行变换", note: `现在计算 ${inline("EA")}。E 的第二行是 ${inline("(-3,1)")}，所以它会取 ${inline("-3R_1+R_2")}，这正是目标行操作。`, leftTitle: "左乘 E", left: "EA=\\begin{pmatrix}1&0\\\\-3&1\\end{pmatrix}\\begin{pmatrix}1&2\\\\3&7\\end{pmatrix}", rightTitle: "变换后的矩阵", right: "EA=\\begin{pmatrix}1&2\\\\0&1\\end{pmatrix}", caption: "因此“对 A 做一次行变换”和“左乘对应的初等矩阵 E”是同一件事。" },
+    { label: "第 1 步 / 3：写下同一个行操作", note: `目标操作是 ${inline("R_2\\leftarrow R_2-3R_1")}。先不要急着改 A；先问“这条规则施加到单位矩阵 E 上会发生什么”。`, leftTitle: "单位矩阵 E", left: "E=\\begin{pmatrix}1&0\\\\0&1\\end{pmatrix}", rightTitle: "原矩阵 A", right: "A=\\begin{pmatrix}1&2\\\\3&7\\end{pmatrix}", caption: "同一个操作会同时解释两件事：它怎样变出 P，又怎样改变 A。" },
+    { label: "第 2 步 / 3：把操作施加到 E，得到 P", note: `对 E 做 ${inline("R_2\\leftarrow R_2-3R_1")}，第二行从 ${inline("(0,1)")} 变成 ${inline("(-3,1)")}。这就是对应的初等矩阵。`, leftTitle: "得到初等矩阵 P", left: "P=\\begin{pmatrix}1&0\\\\-3&1\\end{pmatrix}", rightTitle: "A 还没有计算", right: "A=\\begin{pmatrix}1&2\\\\3&7\\end{pmatrix}", caption: "构造 P 的方法很直接：对单位矩阵做同样的操作。" },
+    { label: "第 3 步 / 3：左乘 P，就是对 A 做同一行变换", note: `现在计算 ${inline("PA")}。P 的第二行是 ${inline("(-3,1)")}，所以它会取 ${inline("-3R_1+R_2")}，这正是目标行操作。`, leftTitle: "左乘 P", left: "PA=\\begin{pmatrix}1&0\\\\-3&1\\end{pmatrix}\\begin{pmatrix}1&2\\\\3&7\\end{pmatrix}", rightTitle: "变换后的矩阵", right: "PA=\\begin{pmatrix}1&2\\\\0&1\\end{pmatrix}", caption: "因此“对 A 做一次行变换”和“左乘对应的初等矩阵 P”是同一件事。" },
   ];
 
   function elementaryView(index) {
@@ -78,10 +78,10 @@
     if (!formal) return;
     formal.innerHTML = formalShell(
       "初等矩阵就是“把操作写成矩阵”",
-      "只要理解一条原则，初等矩阵就不神秘：先把某个行变换施加到单位矩阵，得到 E；再左乘 E，就会把同一条行规则施加到任意矩阵 A。",
-      display("E\\,A=\\text{对 }A\\text{ 做对应的行变换}"),
+      "只要理解一条原则，初等矩阵就不神秘：先把某个行变换施加到单位矩阵，得到 P；再左乘 P，就会把同一条行规则施加到任意矩阵 A。",
+      display("P\\,A=\\text{对 }A\\text{ 做对应的行变换}"),
       [metaRow("换行", "交换两行；反向操作仍是交换同两行。"), metaRow("倍乘", "一行乘非零数；反向操作是乘倒数。"), metaRow("倍加", "一行加另一行的倍数；反向操作是加相反数倍。")].join(""),
-      [definition("怎样构造 E", "对单位矩阵 I 做同一个行变换。得到的结果就是初等矩阵 E。"), definition("为什么是左乘", "左侧矩阵的每一行会组合右侧矩阵的各行。因此 E 的行规则会直接重组 A 的行。"), definition("为什么可逆", "三类初等操作都有明确的反向操作；反向操作对应的初等矩阵就是 E 的逆。")].join(""),
+      [definition("怎样构造 P", "对单位矩阵 E 做同一个行变换。得到的结果就是初等矩阵 P。"), definition("为什么是左乘", "左侧矩阵的每一行会组合右侧矩阵的各行。因此 P 的行规则会直接重组 A 的行。"), definition("为什么可逆", "三类初等操作都有明确的反向操作；反向操作对应的初等矩阵就是 P 的逆。")].join(""),
       "向后连接",
       "这一节把消元和矩阵乘法接起来。§7 的分块初等变换只是把“行”升级成“矩阵块”，逻辑不会变。",
     );
@@ -90,7 +90,7 @@
   function renderSection6Interactive(section) {
     if (!section) return;
     let step = 0;
-    section.innerHTML = `<h2>逐步演示</h2><div class="core-lab"><div class="core-lab-head"><h3>同一行操作，先作用于 I，再作用于 A</h3><p>把三步按顺序走完：你会看到 E 从哪里来，以及为什么 EA 就是行变换后的 A。</p></div><div class="core-lab-panel" data-elementary-panel>${elementaryView(step)}</div><div class="elementary-controls"><button type="button" class="button" data-elementary-prev disabled>上一步</button><button type="button" class="button primary" data-elementary-next>下一步</button><button type="button" class="button" data-elementary-reset>重新开始</button></div></div>`;
+    section.innerHTML = `<h2>逐步演示</h2><div class="core-lab"><div class="core-lab-head"><h3>同一行操作，先作用于 E，再作用于 A</h3><p>把三步按顺序走完：你会看到 P 从哪里来，以及为什么 PA 就是行变换后的 A。</p></div><div class="core-lab-panel" data-elementary-panel>${elementaryView(step)}</div><div class="elementary-controls"><button type="button" class="button" data-elementary-prev disabled>上一步</button><button type="button" class="button primary" data-elementary-next>下一步</button><button type="button" class="button" data-elementary-reset>重新开始</button></div></div>`;
     const panel = section.querySelector("[data-elementary-panel]");
     const previous = section.querySelector("[data-elementary-prev]");
     const next = section.querySelector("[data-elementary-next]");

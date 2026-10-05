@@ -55,8 +55,8 @@ defineChapter4Section("block-elementary-applications", {
   intro: "§6 里的一行可以加上另一行的倍数；到了这里，一整块行也可以加上另一块行左乘某个合适矩阵的结果。规则没有变，只是“倍数”升级成了尺寸匹配的矩阵块。",
   concepts: [
     { label: "块行操作", text: "例如 R₂ ← R₂ − C R₁；其中 C 的尺寸必须刚好能把第一块行变成第二块行的尺寸。" },
-    { label: "块初等矩阵", text: "把同样操作施加到分块单位矩阵，就得到对应的分块初等矩阵 E。" },
-    { label: "左乘仍改行", text: "左乘 E 时，E 的块行会组合原矩阵的块行，因此它实现的仍是行操作。" },
+    { label: "块初等矩阵", text: "把同样操作施加到分块单位矩阵，就得到对应的分块初等矩阵 P。" },
+    { label: "左乘仍改行", text: "左乘 P 时，P 的块行会组合原矩阵的块行，因此它实现的仍是行操作。" },
     { label: "应用", text: "块消元让耦合系统变成块上三角或块对角结构，从而可以按块回代。" },
   ],
   textbook: { reference: "北大版《高等代数》第四章", page: "", items: ["分块乘法中的初等变换", "块行操作的尺寸条件", "块消元", "应用举例"] },
@@ -71,7 +71,7 @@ defineChapter4Section("block-elementary-applications", {
       { text: `必须先求 ${texInline("C^{-1}")}；若 C 不可逆，就无法进行块消元。` },
     ],
     steps: [
-      `写成 ${texInline("\\begin{pmatrix}I&0\\\\C&I\\end{pmatrix}\\begin{pmatrix}x\\\\y\\end{pmatrix}=\\begin{pmatrix}f\\\\g\\end{pmatrix}")}。`,
+      `写成 ${texInline("\\begin{pmatrix}E&0\\\\C&E\\end{pmatrix}\\begin{pmatrix}x\\\\y\\end{pmatrix}=\\begin{pmatrix}f\\\\g\\end{pmatrix}")}。`,
       `对第二块行执行 ${texInline("R_2\\leftarrow R_2-CR_1")}，左下块 C 被消去，右侧变为 ${texInline("g-Cf")}。`,
       `得到 ${texInline("x=f")}，${texInline("y=g-Cf")}。这里没有神秘公式，只是把普通消元的“倍数”替换成了矩阵块 C。`,
     ],
@@ -82,5 +82,5 @@ defineChapter4Section("block-elementary-applications", {
     { question: "块消元后为什么更容易解系统？", answer: "因为耦合块被消去后，系统变成块上三角或块对角形式，可以先解上面的块，再按块回代。" },
   ],
   summary: ["分块初等变换是普通行变换在块层面的延伸。", "左乘分块初等矩阵仍然改变块行。", "块消元的目的，是把耦合结构改写成可以按块求解的结构。"],
-  exercises: [`验证 ${texInline("\\begin{pmatrix}I&0\\\\-C&I\\end{pmatrix}\\begin{pmatrix}I&0\\\\C&I\\end{pmatrix}=\\begin{pmatrix}I&0\\\\0&I\\end{pmatrix}")}。`],
+  exercises: [`验证 ${texInline("\\begin{pmatrix}E&0\\\\-C&E\\end{pmatrix}\\begin{pmatrix}E&0\\\\C&E\\end{pmatrix}=\\begin{pmatrix}E&0\\\\0&E\\end{pmatrix}")}。`],
 });

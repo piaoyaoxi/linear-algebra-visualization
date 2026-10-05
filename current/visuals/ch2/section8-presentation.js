@@ -40,7 +40,7 @@
   }
 
   /*
-   * Product rule lab: the unit square goes I → B → AB.
+   * Product rule lab: the unit square goes E → B → AB.
    * Area tiles: 1 tile → |det B| tiles → |det B| columns of |det A| tiles,
    * so “each tile of B's image is multiplied by det A” is visible as a grid.
    * Mid-animation the live value is the current signed area; det(AB) appears at the end.
@@ -147,7 +147,7 @@
         status.textContent = "第一步：作用 B。";
         await M().animateMatrix(cB, B, {
           duration: 700,
-          drawOptions: { firstLabel: "Be₁", secondLabel: "Be₂", caption: "第一步：I → B", ghost: I },
+          drawOptions: { firstLabel: "Be₁", secondLabel: "Be₂", caption: "第一步：E → B", ghost: I },
           onUpdate(m) { dab.textContent = `≈ ${M().formatNum(M().det2(m), 2)}`; },
         });
         if (id !== run) return;
@@ -193,7 +193,7 @@
       if (!finished) { idle(current.A, current.B); return; }
       const AB = M().mul2(current.A, current.B);
       M().drawTransformScene(cI, I, { firstLabel: "e₁", secondLabel: "e₂", caption: "单位正方形" });
-      M().drawTransformScene(cB, current.B, { firstLabel: "Be₁", secondLabel: "Be₂", caption: "第一步：I → B", ghost: I });
+      M().drawTransformScene(cB, current.B, { firstLabel: "Be₁", secondLabel: "Be₂", caption: "第一步：E → B", ghost: I });
       M().drawTransformScene(cAB, AB, { firstLabel: "ABe₁", secondLabel: "ABe₂", caption: "第二步：B → AB", ghost: current.B });
     }, { signal, passive: true });
 
@@ -229,7 +229,7 @@
           ])}
         `) + module("03", "重要推论", "乘法规则把多个结论压缩成一行计算。", `
           <div class="ch2-card-grid">
-            <article class="ch2-card"><span class="kicker">逆矩阵</span><h4>${tex("\\det(A^{-1})=1/\\det(A)")}</h4><p>由 det(I)=det(A)det(A⁻¹)。</p></article>
+            <article class="ch2-card"><span class="kicker">逆矩阵</span><h4>${tex("\\det(A^{-1})=1/\\det(A)")}</h4><p>由 det(E)=det(A)det(A⁻¹)。</p></article>
             <article class="ch2-card"><span class="kicker">矩阵幂</span><h4>${tex("\\det(A^m)=\\det(A)^m")}</h4><p>重复复合，倍率重复相乘。</p></article>
             <article class="ch2-card"><span class="kicker">相似</span><h4>${tex("\\det(P^{-1}AP)=\\det(A)")}</h4><p>换基前后的两个 P 因子相互抵消。</p></article>
           </div>
@@ -248,7 +248,7 @@
           <div class="ch2-lab-head"><h3>两次变换，面积倍率相乘</h3><p>单位正方形先经过 B，再从 B 的结果出发经过 A，合起来就是 AB。</p></div>
           <div data-prod-gate></div>
           <div class="ch2-presets">
-            <button type="button" class="is-primary" data-prod-replay>播放 I → B → AB</button>
+            <button type="button" class="is-primary" data-prod-replay>播放 E → B → AB</button>
             <button type="button" class="is-active" data-prod-preset="scale">两次缩放</button>
             <button type="button" data-prod-preset="shearScale">剪切后缩放</button>
             <button type="button" data-prod-preset="mirrorRotate">镜像后旋转</button>
@@ -256,8 +256,8 @@
             <button type="button" data-prod-preset="project">含投影</button>
           </div>
           <div class="ch2-stage-row">
-            <div class="ch2-stage-panel"><div class="ch2-stage"><canvas data-c-i aria-label="单位正方形"></canvas></div><div class="ch2-stage-caption">I · 单位正方形</div></div>
-            <div class="ch2-stage-panel"><div class="ch2-stage"><canvas data-c-b aria-label="经过 B 的图形"></canvas></div><div class="ch2-stage-caption">第一步 · I → B</div></div>
+            <div class="ch2-stage-panel"><div class="ch2-stage"><canvas data-c-i aria-label="单位正方形"></canvas></div><div class="ch2-stage-caption">E · 单位正方形</div></div>
+            <div class="ch2-stage-panel"><div class="ch2-stage"><canvas data-c-b aria-label="经过 B 的图形"></canvas></div><div class="ch2-stage-caption">第一步 · E → B</div></div>
             <div class="ch2-stage-panel"><div class="ch2-stage"><canvas data-c-ab aria-label="从 B 经过 A 到 AB 的图形"></canvas></div><div class="ch2-stage-caption">第二步 · B → AB（虚线是 B 的结果）</div></div>
           </div>
           <div class="ch2-tile-row" data-prod-tiles aria-label="面积块"></div>

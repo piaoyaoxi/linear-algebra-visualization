@@ -14,7 +14,7 @@ defineChapter2Section("determinant-intro", {
     "从矩阵的两列直接读出变换后的平行四边形。",
     "区分 det(A)、|det(A)| 与普通几何面积所表达的信息。",
     "用 det(A)=0 解释维度塌缩、不可逆与唯一解失效。",
-    "说明 det(A)=1 为什么不等于 A=I。",
+    "说明 det(A)=1 为什么不等于 A=E。",
   ],
   checkpoints: [
     { label: "先看图形", text: "固定单位正方形，观察两列向量怎样决定变换后的平行四边形。" },
@@ -62,7 +62,7 @@ defineChapter2Section("determinant-intro", {
     title: "例题：det=1 为什么不代表没有变换",
     question: `设 ${texInline("A=\\begin{bmatrix}1&2\\\\0&1\\end{bmatrix}")}。计算 ${texInline("\\det(A)")}，说明单位正方形的面积、定向和形状怎样变化，并判断 ${texInline("A")} 是否等于单位矩阵。`,
     choices: [
-      { correct: true, text: `${texInline("\\det(A)=1")}；面积不变、定向保持，但图形发生剪切，所以 ${texInline("A\\ne I")}。` },
+      { correct: true, text: `${texInline("\\det(A)=1")}；面积不变、定向保持，但图形发生剪切，所以 ${texInline("A\\ne E")}。` },
       { text: `${texInline("\\det(A)=1")}，因此所有向量都保持不变。` },
       { text: `${texInline("\\det(A)=0")}；非零的非对角元会造成塌缩。` },
       { text: `${texInline("\\det(A)=-1")}；剪切必然翻转定向。` },
@@ -71,13 +71,13 @@ defineChapter2Section("determinant-intro", {
       `按二阶公式：${texInline("\\det(A)=1\\cdot1-2\\cdot0=1")}。`,
       "绝对值为 1，所以单位面积仍变为单位面积。",
       "结果为正，所以有序方向保持；结果非零，所以平面没有塌缩。",
-      `第二列由 ${texInline("e_2")} 变为 ${texInline("2e_1+e_2")}，网格发生剪切，因此 ${texInline("A\\ne I")}。`,
+      `第二列由 ${texInline("e_2")} 变为 ${texInline("2e_1+e_2")}，网格发生剪切，因此 ${texInline("A\\ne E")}。`,
     ],
   },
   quiz: [
     { question: "行列式的结果属于矩阵还是标量？", answer: "标量。" },
     { question: `${texInline("\\det(A)=2")} 与 ${texInline("\\det(A)=-2")} 的共同点和差别是什么？`, answer: "面积倍率都为 2；前者保持定向，后者翻转定向。" },
-    { question: `${texInline("\\det(A)=1")} 是否推出 ${texInline("A=I")}？`, answer: "不能。剪切、旋转等许多非单位矩阵也有行列式 1。" },
+    { question: `${texInline("\\det(A)=1")} 是否推出 ${texInline("A=E")}？`, answer: "不能。剪切、旋转等许多非单位矩阵也有行列式 1。" },
     { question: "两列共线时为什么得到零行列式？", answer: "它们张成的平行四边形高度为零，二维面积消失。" },
     { question: "为什么 det<0 不能解释成‘面积为负’？", answer: "负号记录有序方向翻转；普通几何面积仍为 |det|。" },
     { question: "二维中 det 非零与可逆有什么关系？", answer: "det 非零表示没有丢失维度，线性变换可逆。" },

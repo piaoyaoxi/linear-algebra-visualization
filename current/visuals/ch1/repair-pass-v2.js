@@ -57,20 +57,125 @@
     return parts.join(" ") || "0";
   }
 
+  /*
+   * In the SVG a coefficient p/q is a small stacked fraction (“1/2x” reads as 1/(2x)).
+   * A term with a fraction becomes tspans: segments (sign, variable) and data-num/data-den
+   * pairs; layoutFractions() measures them and places them, and draws the bar.
+   */
+  const SVG_NS = "http://www.w3.org/2000/svg";
+
+  function termPieces(poly, degree, first) {
+    const value = coefficient(poly, degree);
+    if (M().rIsZero(value)) return null;
+    const negative = value.n < 0;
+    const n = Math.abs(value.n);
+    const sign = negative ? "−" : first ? "" : "+";
+    const pieces = [];
+    if (sign) pieces.push({ text: sign, gap: first ? 0.04 : 0.3 });
+    if (value.d !== 1) pieces.push({ num: String(n), den: String(value.d) });
+    else if (degree === 0 || n !== 1) pieces.push({ text: String(n) });
+    if (degree > 0) pieces.push({ text: variable(degree) });
+    return pieces;
+  }
+
+  // markup for the inside of a <text>; `fraction` tells whether it needs layoutFractions()
+  function svgPieces(pieces) {
+    const fraction = pieces.some((piece) => piece.den);
+    if (!fraction) {
+      return { fraction, markup: svgEscape(pieces.map((piece) => `${piece.text}${piece.gap > 0.1 ? " " : ""}`).join("")) };
+    }
+    const markup = pieces.map((piece) => (piece.den
+      ? `<tspan class="ch1-ld-frac" data-num>${piece.num}</tspan><tspan class="ch1-ld-frac" data-den data-gap="${piece.gap || 0}">${piece.den}</tspan>`
+      : `<tspan data-gap="${piece.gap || 0}">${svgEscape(piece.text)}</tspan>`)).join("");
+    return { fraction, markup };
+  }
+
+  // a whole polynomial (divisor, product label) as the inside of one <text>
+  function svgPolynomial(poly, suffix = "") {
+    if (M().isZeroPoly(poly)) return svgPieces([{ text: `0${suffix}` }]);
+    const pieces = [];
+    for (let degree = M().deg(poly); degree >= 0; degree -= 1) {
+      const term = termPieces(poly, degree, pieces.length === 0);
+      if (!term) continue;
+      if (pieces.length) pieces.at(-1).gap = Math.max(pieces.at(-1).gap || 0, 0.3);
+      pieces.push(...term);
+    }
+    if (suffix) {
+      pieces.at(-1).gap = Math.max(pieces.at(-1).gap || 0, 0.25);
+      pieces.push({ text: suffix });
+    }
+    return svgPieces(pieces);
+  }
+
+  function svgText(attrs, content, anchorEnd = false) {
+    if (!content.fraction) return `<text ${attrs}${anchorEnd ? ' text-anchor="end"' : ""}>${content.markup}</text>`;
+    // every piece gets its own x, so the anchor is applied by the layout, not by the browser
+    return `<text ${attrs} data-frac${anchorEnd ? ' data-anchor="end"' : ""}>${content.markup}</text>`;
+  }
+
+  function layoutFractions(svg) {
+    if (!svg?.isConnected) return;
+    svg.querySelectorAll(".ch1-ld-frac-bar").forEach((bar) => bar.remove());
+    svg.querySelectorAll("text[data-frac]").forEach((text) => {
+      const size = parseFloat(getComputedStyle(text).fontSize) || 25;
+      const y = Number(text.getAttribute("y"));
+      const kids = [...text.children];
+      const items = [];
+      for (let i = 0; i < kids.length; i += 1) {
+        const node = kids[i];
+        if (node.hasAttribute("data-num")) {
+          const den = kids[i + 1];
+          i += 1;
+          const wn = node.getComputedTextLength();
+          const wd = den.getComputedTextLength();
+          items.push({ num: node, den, wn, wd, inner: Math.max(wn, wd), w: Math.max(wn, wd) + (0.2 + Number(den.dataset.gap || 0)) * size });
+        } else {
+          items.push({ seg: node, w: node.getComputedTextLength() + Number(node.dataset.gap || 0) * size });
+        }
+      }
+      const total = items.reduce((sum, item) => sum + item.w, 0);
+      let x = Number(text.getAttribute("x")) - (text.dataset.anchor === "end" ? total : 0);
+      items.forEach((item) => {
+        if (item.seg) {
+          item.seg.setAttribute("x", x.toFixed(2));
+          item.seg.setAttribute("y", y);
+        } else {
+          const left = x + 0.1 * size;
+          item.num.setAttribute("x", (left + (item.inner - item.wn) / 2).toFixed(2));
+          item.num.setAttribute("y", (y - 0.4 * size).toFixed(2));
+          item.den.setAttribute("x", (left + (item.inner - item.wd) / 2).toFixed(2));
+          item.den.setAttribute("y", (y + 0.26 * size).toFixed(2));
+          // the bar is a filled path with the text's classes, so it has the same fill in both themes
+          const bar = document.createElementNS(SVG_NS, "path");
+          const bx = (left - 0.03 * size).toFixed(2);
+          const bw = (item.inner + 0.06 * size).toFixed(2);
+          const bh = Math.max(1.2, 0.055 * size).toFixed(2);
+          bar.setAttribute("class", `${text.getAttribute("class")} ch1-ld-frac-bar`);
+          bar.setAttribute("d", `M${bx} ${(y - 0.3 * size).toFixed(2)}h${bw}v${bh}h-${bw}z`);
+          text.after(bar);
+        }
+        x += item.w;
+      });
+    });
+  }
+
   function termRow(poly, maxDegree, y, config) {
     if (M().isZeroPoly(poly)) {
       const x = config.x0 + maxDegree * config.columnWidth;
       return `<text class="ch1-ld-term${config.newDegree === 0 ? " is-new-quotient" : ""}" x="${x}" y="${y}"${config.newDegree === 0 ? " data-new-quotient" : ""}>0</text>`;
     }
     const output = [];
+    const top = M().deg(poly);
     for (let degree = maxDegree; degree >= 0; degree -= 1) {
-      const text = term(poly, degree);
-      if (!text) continue;
+      const pieces = degree > top ? null : termPieces(poly, degree, degree === top);
+      if (!pieces) continue;
       const x = config.x0 + (maxDegree - degree) * config.columnWidth;
       const isFocus = degree === config.focusDegree;
       const isNew = degree === config.newDegree;
       const classes = ["ch1-ld-term", isFocus ? "is-focus" : "", isNew ? "is-new-quotient" : ""].filter(Boolean).join(" ");
-      output.push(`<text class="${classes}" x="${x}" y="${y}"${isNew ? " data-new-quotient" : ""}>${svgEscape(text)}</text>`);
+      const text = svgText(`class="${classes}" x="${x}" y="${y}"`, svgPieces(pieces));
+      // the new quotient term fades in as a group, so a fraction bar moves with it
+      output.push(isNew ? `<g data-new-quotient>${text}</g>` : text);
     }
     return output.join("");
   }
@@ -148,8 +253,9 @@
         const remainderY = productY + 67;
         const isNew = stepIndex === animatedIndex;
         const lineStart = x0 + (maxDegree - M().deg(step.before)) * columnWidth - 10;
-        rows.push(`<g${isNew ? ' data-new-product opacity="0.12" transform="translate(0,-66)"' : ""}>`);
-        rows.push(`<text class="ch1-ld-product-label" x="22" y="${productY}">${svgEscape(`${polynomial(step.term)} · g(x)`)}</text>`);
+        // the new product slides in from just above its row, clear of the remainder above it
+        rows.push(`<g${isNew ? ' data-new-product opacity="0" transform="translate(0,-18)"' : ""}>`);
+        rows.push(svgText(`class="ch1-ld-product-label" x="22" y="${productY}"`, svgPolynomial(step.term, "· g(x)")));
         rows.push(`<text class="ch1-ld-minus" x="195" y="${productY}">−</text>`);
         rows.push(termRow(step.product, maxDegree, productY, { x0, columnWidth, focusDegree: isNew ? activeDegree : null }));
         rows.push("</g>");
@@ -159,16 +265,14 @@
         rows.push("</g>");
       });
 
-      // fraction coefficients make every term wider; phones shrink the glyphs for them
-      const fractional = [state.example.f, state.example.g, quotient].some((value) => polynomial(value).includes("/"))
-        || rows.join("").includes("/");
-      return `<svg data-division-svg data-animation-progress="0" viewBox="0 0 ${width} ${height}" role="img" aria-label="标准多项式长除法"${fractional ? ' class="has-fractions"' : ""}>
+      // stacked fractions are no wider than whole numbers, so the glyphs keep their size on phones
+      return `<svg data-division-svg data-animation-progress="0" viewBox="0 0 ${width} ${height}" role="img" aria-label="标准多项式长除法">
         <text class="ch1-ld-label" x="174" y="57" text-anchor="end">商</text>
         ${state.steps[index]?.kind === "start" ? "" : termRow(quotient, maxDegree, 59, { x0, columnWidth, newDegree: newQuotientDegree })}
         <path class="ch1-ld-bracket" d="M188 91 H${width - 34} M188 91 V154"></path>
         <text class="ch1-ld-label is-role" x="174" y="113" text-anchor="end">除式</text>
         <text class="ch1-ld-label is-role" x="${x0 - 10}" y="113">被除式</text>
-        <text class="ch1-ld-divisor-text" x="174" y="141" text-anchor="end">${svgEscape(polynomial(state.example.g))}</text>
+        ${svgText('class="ch1-ld-divisor-text" x="174" y="141"', svgPolynomial(state.example.g), true)}
         ${termRow(state.example.f, maxDegree, 141, { x0, columnWidth, focusDegree: activeDegree })}
         ${rows.join("")}
       </svg>`;
@@ -192,8 +296,8 @@
         root.querySelector("[data-focus]").textContent = "先比较被除式和除式的最高次项。";
         root.querySelector("[data-note]").textContent = `用 x${superscripts[M().deg(state.example.f) - M().deg(state.example.g)] || ""} 消去当前最高次项。`;
       } else if (step.kind === "eliminate") {
-        root.querySelector("[data-focus]").textContent = `商中加入 ${polynomial(step.term)}，乘回除式并在同次项下方对齐。`;
-        root.querySelector("[data-note]").textContent = M().isZeroPoly(step.r) ? "相减后余式归零。" : `相减后得到 ${polynomial(step.r)}，余式次数降为 ${M().deg(step.r)}。`;
+        root.querySelector("[data-focus]").innerHTML = `商中加入 ${tex(M().formatPolyTex(step.term))}，乘回除式并在同次项下方对齐。`;
+        root.querySelector("[data-note]").innerHTML = M().isZeroPoly(step.r) ? "相减后余式归零。" : `相减后得到 ${tex(M().formatPolyTex(step.r))}，余式次数降为 ${M().deg(step.r)}。`;
       } else {
         root.querySelector("[data-focus]").textContent = divides ? "余式归零，除法结束。" : "余式次数已经低于除式次数，除法结束。";
         root.querySelector("[data-note]").textContent = divides ? "因此 f(x)=q(x)g(x)。" : `最终 deg r=${M().deg(step.r)}<deg g=${M().deg(state.example.g)}。`;
@@ -220,6 +324,7 @@
 
     function render() {
       svgNode().outerHTML = scene(state.index);
+      layoutFractions(svgNode());
       updateText(state.index);
       updateButtons();
     }
@@ -241,6 +346,7 @@
         return;
       }
       svgNode().outerHTML = scene(targetIndex, targetIndex);
+      layoutFractions(svgNode());
       updateText(targetIndex);
       state.animation = { targetIndex };
       updateButtons();
@@ -261,8 +367,8 @@
         }
         const p = ease(progress / 0.48);
         if (product) {
-          product.setAttribute("opacity", String(0.12 + 0.88 * p));
-          product.setAttribute("transform", `translate(0,${-66 * (1 - p)})`);
+          product.setAttribute("opacity", String(p));
+          product.setAttribute("transform", `translate(0,${-18 * (1 - p)})`);
         }
         const l = ease((progress - 0.37) / 0.22);
         if (line) line.setAttribute("stroke-dashoffset", String(1 - l));
@@ -334,6 +440,8 @@
       stop();
       cancelAnimationFrame(state.raf);
     });
+    document.fonts?.ready.then(() => layoutFractions(svgNode()));
+    window.ch1Listen?.(window, "resize", () => layoutFractions(svgNode()), { passive: true });
     gate = window.LAPredictGate?.mount(root.querySelector("[data-division-gate]"), {
       root,
       manual: true,

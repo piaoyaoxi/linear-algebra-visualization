@@ -352,6 +352,11 @@
   background: var(--line);
 }
 
+/* long division: a fraction coefficient is set small above and below a bar */
+:is(main, #la) .ch1-long-division-stage tspan.ch1-ld-frac {
+  font-size: 66%;
+}
+
 :is(main, #la) .ch1-ld-progress > span.is-current,
 :is(main, #la) .ch1-ld-progress > span.is-done {
   background: var(--accent);

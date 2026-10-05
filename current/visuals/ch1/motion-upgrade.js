@@ -977,7 +977,9 @@
       const world = pointerWorld(event);
       const da = Math.hypot(world.x - state.alpha.re, world.y - state.alpha.im);
       const db = Math.hypot(world.x - state.beta.re, world.y - state.beta.im);
-      state.dragging = state.mode === "R" || da <= db ? "alpha" : "beta";
+      // until the answer is shown, α stays where the question puts it: only β moves freely
+      const free = gate && !gate.revealed;
+      state.dragging = state.mode === "R" ? "alpha" : free ? "beta" : da <= db ? "alpha" : "beta";
       canvas.setPointerCapture(event.pointerId);
       setPoint(state[state.dragging], world);
     });
@@ -996,12 +998,14 @@
       const delta = event.shiftKey ? 0.5 : 0.25;
       if (!["ArrowLeft", "ArrowRight", "ArrowUp", "ArrowDown"].includes(event.key)) return;
       event.preventDefault();
-      const next = { ...state.alpha };
-      if (event.key === "ArrowLeft") next.re -= delta;
-      if (event.key === "ArrowRight") next.re += delta;
-      if (event.key === "ArrowUp") next.im += delta;
-      if (event.key === "ArrowDown") next.im -= delta;
-      setPoint(state.alpha, next);
+      // the arrow keys move the root a drag would move: β while it is free, α under the lock
+      const target = state.mode === "R" ? state.alpha : state.beta;
+      const next = { x: target.re, y: target.im };
+      if (event.key === "ArrowLeft") next.x -= delta;
+      if (event.key === "ArrowRight") next.x += delta;
+      if (event.key === "ArrowUp") next.y += delta;
+      if (event.key === "ArrowDown") next.y -= delta;
+      setPoint(target, next);
     });
 
     const lockables = [...root.querySelectorAll("[data-mode], [data-preset], [data-re], [data-im], [data-bre], [data-bim]")];

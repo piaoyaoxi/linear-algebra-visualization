@@ -20,9 +20,9 @@
       "消元的三个动作照样适用：消去一个变量，回代求另一个变量，最后验解。运算对象从线性方程的行换成了一元多项式的系数表。",
       module(
         "01",
-        "结式矩阵与结式",
+        "Sylvester 矩阵与结式",
         "公共根问题被编码为一个行列式",
-        `<div class="ch3-theorem-row"><div>${texD(String.raw`\operatorname{Res}_x(f,g)=\det S_x(f,g)`)}</div><p>把 f、g 按 x 的次数排列系数并错位堆叠，得到结式矩阵。次数正常时，行列式为零恰好表示两多项式关于 x 有公共根。</p></div>`,
+        `<div class="ch3-theorem-row"><div>${texD(String.raw`\operatorname{Res}_x(f,g)=\det S_x(f,g)`)}</div><p>把 f、g 按 x 的次数排列系数并错位堆叠，得到Sylvester 矩阵。次数正常时，行列式为零恰好表示两多项式关于 x 有公共根。</p></div>`,
       ) +
         module(
           "02",
@@ -137,7 +137,7 @@
     root.innerHTML = `
       <h2>交互实验</h2>
       <div class="ch3-lab" data-ch3-lab="resultant">
-        <div class="ch3-lab-head"><h3>从曲线交点到一元方程</h3><p>每点一次“下一步”只做一个代数动作：整理、写结式矩阵、求结式、解候选根、回代。第 4 步把候选值画成直线，第 5 步只留下两条曲线的公共点；选“抛物线与切线”，看二重根怎样对应相切。</p></div>
+        <div class="ch3-lab-head"><h3>从曲线交点到一元方程</h3><p>每点一次“下一步”只做一个代数动作：整理、写Sylvester 矩阵、求结式、解候选根、回代。第 4 步把候选值画成直线，第 5 步只留下两条曲线的公共点；选“抛物线与切线”，看二重根怎样对应相切。</p></div>
         <div data-resultant-gate></div>
         <div class="ch3-presets">
           <button type="button" class="is-active" data-preset="crossing">圆与割线</button>
@@ -166,7 +166,7 @@
         </div>
         <div class="ch3-resultant-steps">
           <section data-step="1"><h4>1 · 按消元变量整理</h4><div data-polys></div></section>
-          <section data-step="2"><h4>2 · 结式矩阵</h4><div data-sylvester></div></section>
+          <section data-step="2"><h4>2 · Sylvester 矩阵</h4><div data-sylvester></div></section>
           <section data-step="3"><h4>3 · 结式</h4><div data-resultant></div></section>
           <section data-step="4"><h4>4 · 候选根</h4><div data-candidates></div></section>
           <section data-step="5"><h4>5 · 回代验解</h4><div data-verification></div></section>
@@ -320,7 +320,7 @@
         `先观察两条曲线，并决定消去 ${mode.variable}、保留 ${mode.kept}。`,
         `把两个方程都看成关于 ${mode.variable} 的多项式，其系数只含 ${mode.kept}。`,
         "按次数错位排列系数；矩阵大小由两个多项式的次数决定。",
-        `取结式矩阵的行列式，得到只含 ${mode.kept} 的结式。`,
+        `取Sylvester 矩阵的行列式，得到只含 ${mode.kept} 的结式。`,
         `解结式，得到 ${mode.kept} 的候选值；重数记录在候选中。`,
         "把候选值代回原方程，求另一坐标并逐点验证。",
       ];

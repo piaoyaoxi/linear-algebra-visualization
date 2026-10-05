@@ -1414,12 +1414,20 @@ body.lg-scrolled .topbar::after {
   opacity: 1;
 }
 
-/* under a status bar (iPhone) the edge is always there: the status bar text needs it */
-@supports (padding-top: env(safe-area-inset-top)) {
-  @media (max-width: 1080px) {
-    body .topbar::before,
-    body .topbar::after {
-      opacity: 1;
-    }
+/*
+ * iPhone / iPad Safari draws its own scroll-edge effect under the status bar (content
+ * blurs and fades as it scrolls up behind the clock), as on the home page. Our tinted
+ * layers would cover that area, so on iOS they are left out (-webkit-touch-callout is
+ * supported only there). Desktop and Android keep the light edge above.
+ */
+@supports (-webkit-touch-callout: none) {
+  body .topbar::before,
+  body .topbar::after {
+    display: none;
   }
+}
+
+html.la-ios body .topbar::before,
+html.la-ios body .topbar::after {
+  display: none;
 }

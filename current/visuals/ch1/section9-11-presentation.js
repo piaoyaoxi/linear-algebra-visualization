@@ -43,7 +43,7 @@
       eisenstein: {
         label: "x⁵+10x+5",
         poly: M().polyFrom(["5", "10", "0", "0", "0", "1"]),
-        note: "用 p=5 满足 Eisenstein 三条件。",
+        note: "取 p=5，满足艾森斯坦判别法的三个条件。",
       },
       quartic: {
         label: "x⁴+4",
@@ -359,8 +359,8 @@
       details: [
         { title: "清分母与本原化", html: "先乘最小公倍数得到整系数，再提出系数最大公因数；剩余本原部分承载真正的分解问题。" },
         { title: "有理根候选", html: `既约根 ${tex("p/q")} 必满足 ${tex("p\\mid a_0,q\\mid a_n")}；这是候选条件，不是自动判根。` },
-        { title: "Eisenstein 三门", html: "素数 p 不整除首项，整除其余所有系数，且 p² 不整除常数项。" },
-        { title: "逻辑方向", html: "有理根和 Eisenstein 都是工具。判据失败应写“未得到结论”，不能反写成“可约”。" },
+        { title: "艾森斯坦判别法", html: "素数 p 不整除首项，整除其余所有系数，且 p² 不整除常数项。" },
+        { title: "逻辑方向", html: "有理根和艾森斯坦判别法都是工具。判据失败应写“未得到结论”，不能反写成“可约”。" },
       ],
       cards: [
         { kicker: "候选", title: "约分、去重、含正负", html: "筛选器显示每个候选的精确代值。" },
@@ -408,7 +408,7 @@
 
   function interactive9(el) {
     el.innerHTML = `<h2>交互实验</h2><div class="ch1-lab">
-      <div class="ch1-lab-head"><h3>有理根筛选器与素数透镜</h3><p>候选根显示精确代值；Eisenstein 失败只写“未判定”，绝不误报“可约”。</p></div>
+      <div class="ch1-lab-head"><h3>有理根筛选器与素数透镜</h3><p>候选根显示精确代值；艾森斯坦判别法的条件不满足时只写“未判定”，绝不误报“可约”。</p></div>
       <div class="ch1-control-groups">
         <div class="ch1-controls">
           <button type="button" class="is-active" data-rational-example="root">2x³+x²−x−1</button>
@@ -433,7 +433,7 @@
           <div class="ch1-candidate-grid" data-candidates></div>
         </section>
         <section class="ch1-panel">
-          <h4>Eisenstein：p=<span data-prime-value></span></h4>
+          <h4>艾森斯坦判别法：p=<span data-prime-value></span></h4>
           <div class="ch1-check-list" data-eisenstein-checks></div>
           <div><span data-eisenstein-status></span></div>
         </section>

@@ -51,6 +51,8 @@ for (const width of widths) {
         if (el.closest(".katex, svg, canvas, script, style, [hidden]")) return false;
         const d = getComputedStyle(el).display;
         if (d === "inline" || d === "contents" || d === "none") return false;
+        // vertical labels stack characters on purpose
+        if (getComputedStyle(el).writingMode.startsWith("vertical")) return false;
         // must own text directly (text node or inline children)
         return [...el.childNodes].some((n) => (n.nodeType === 3 && n.textContent.trim()) || (n.nodeType === 1 && getComputedStyle(n).display.startsWith("inline")));
       });

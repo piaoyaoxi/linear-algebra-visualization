@@ -1,0 +1,194 @@
+/*
+ * Chinese line breaking for the lesson page (styles in design-a.css):
+ *  1. no line holds a single character alone: the last words of every text block, with
+ *     the punctuation after them, stay together on one line (<la-t>);
+ *  2. an inline formula breaks only after a relation (=, ≤, ∈ …), never after + or −:
+ *     the pieces between two relations are grouped (<la-mg>); a group wider than its line
+ *     is given back its default break points.
+ * Only what changed is processed again; the script ignores its own edits.
+ */
+(() => {
+  const CJK = /[㐀-鿿豈-﫿]/g;
+  const PUNCT = /^[\s，。：；、！？）」』”’》〉…—·,.;:!?)\]]+$/;
+  const SKIP = ".katex, svg, canvas, script, style, textarea, input, select, code, pre, la-t, [contenteditable]";
+  const segmenter = typeof Intl !== "undefined" && Intl.Segmenter ? new Intl.Segmenter("zh", { granularity: "word" }) : null;
+  const cjkCount = (s) => (s.match(CJK) || []).length;
+
+  /* the last non-empty piece of inline content of a block: a text node, or null */
+  function tailText(block) {
+    let node = block.lastChild;
+    while (node) {
+      if (node.nodeType === Node.TEXT_NODE) {
+        if (node.textContent.trim()) return node;
+        node = node.previousSibling;
+        continue;
+      }
+      if (node.nodeType !== Node.ELEMENT_NODE) {
+        node = node.previousSibling;
+        continue;
+      }
+      if (node.matches(SKIP) || node.classList.contains("katex") || node.classList.contains("tex")) return null;
+      const display = getComputedStyle(node).display;
+      if (display === "none") {
+        node = node.previousSibling;
+        continue;
+      }
+      if (display !== "inline") return null;
+      // descend into an inline element from its end
+      if (node.lastChild) {
+        node = node.lastChild;
+        continue;
+      }
+      node = node.previousSibling;
+    }
+    return null;
+  }
+
+  /* where the kept tail starts: the trailing punctuation and enough last words for two characters */
+  function tailStart(text) {
+    if (cjkCount(text) < 2) return -1;
+    const pieces = segmenter ? [...segmenter.segment(text)].map((s) => s.segment) : [...text];
+    let kept = "";
+    let start = text.length;
+    for (let i = pieces.length - 1; i >= 0; i -= 1) {
+      const piece = pieces[i];
+      kept = piece + kept;
+      start -= piece.length;
+      if (PUNCT.test(piece)) continue;
+      if (cjkCount(kept) >= 2 || kept.replace(PUNCT, "").length >= 4) break;
+    }
+    // never more than a short phrase: a long tail would leave a ragged line before it
+    if (kept.length > 10) return -1;
+    // a short label (“第 1 行”) is kept whole
+    return start >= 0 ? start : -1;
+  }
+
+  function keepTail(block) {
+    // a column narrower than about two characters stacks its text on purpose
+    if (block.clientWidth < parseFloat(getComputedStyle(block).fontSize) * 2.5) return;
+    const node = tailText(block);
+    if (!node || node.parentElement?.closest("la-t")) return;
+    const start = tailStart(node.textContent);
+    if (start < 0) return;
+    const tail = start > 0 ? node.splitText(start) : node;
+    const keep = document.createElement("la-t");
+    tail.before(keep);
+    keep.append(tail);
+  }
+
+  const isBlock = (el) => {
+    if (el.matches(SKIP) || el.closest(".katex, svg, canvas, [hidden]")) return false;
+    const display = getComputedStyle(el).display;
+    return display !== "inline" && display !== "contents" && display !== "none";
+  };
+
+  /* formulas: group the KaTeX pieces so a line only breaks after a relation */
+  // a piece is a KaTeX .base, or the wrapper lab-layout.js puts around the last one (with its 。)
+  const pieceBase = (item) => (item.classList.contains("base") ? item : [...item.querySelectorAll(".base")].pop());
+  const endsWithRelation = (item) => {
+    const base = pieceBase(item);
+    if (!base) return false;
+    const kids = [...base.children].filter((c) => !c.classList.contains("strut") && !c.classList.contains("mspace"));
+    const last = kids[kids.length - 1];
+    return Boolean(last && (last.classList.contains("mrel") || last.classList.contains("mpunct")));
+  };
+
+  function groupFormula(katex) {
+    const html = katex.querySelector(":scope > .katex-html");
+    if (!html || katex.closest(".katex-display") || html.dataset.laGrouped) return;
+    html.dataset.laGrouped = "1";
+    const bases = [...html.children].filter((c) => c.classList.contains("base") || (c.classList.contains("la-keep") && c.querySelector(".base")));
+    if (bases.length < 2) return;
+    const groups = [];
+    let current = [];
+    bases.forEach((base) => {
+      current.push(base);
+      if (endsWithRelation(base)) {
+        groups.push(current);
+        current = [];
+      }
+    });
+    if (current.length) groups.push(current);
+    groups.forEach((group) => {
+      if (group.length < 2) return;
+      const wrap = document.createElement("la-mg");
+      group[0].before(wrap);
+      group.forEach((base) => wrap.append(base));
+    });
+    fitGroups(katex);
+  }
+
+  /* a group wider than the line cannot stay unbroken: give its pieces back */
+  function fitGroups(katex) {
+    const block = katex.closest("p, li, dd, dt, td, th, div, label, button, figcaption, summary, h1, h2, h3, h4") || katex.parentElement;
+    if (!block) return;
+    const cs = getComputedStyle(block);
+    const room = block.clientWidth - parseFloat(cs.paddingLeft) - parseFloat(cs.paddingRight);
+    katex.querySelectorAll("la-mg").forEach((group) => {
+      if (room > 0 && group.getBoundingClientRect().width > room + 1) group.replaceWith(...group.childNodes);
+    });
+  }
+
+  function process(root) {
+    if (!root || !root.isConnected) return;
+    const scope = root.nodeType === Node.ELEMENT_NODE ? root : root.parentElement;
+    if (!scope) return;
+    const main = document.querySelector("main") || document.body;
+    if (!main.contains(scope)) return;
+    // the blocks inside the changed part, and the block that contains it
+    const blocks = [...scope.querySelectorAll("*")].filter(isBlock);
+    let up = scope;
+    while (up && up !== main && !isBlock(up)) up = up.parentElement;
+    if (up && up !== main) blocks.push(up);
+    if (isBlock(scope)) blocks.push(scope);
+    [...new Set(blocks)].forEach(keepTail);
+    scope.querySelectorAll(".katex").forEach(groupFormula);
+    scope.closest?.(".katex") && groupFormula(scope.closest(".katex"));
+  }
+
+  let observer = null;
+  let pending = new Set();
+  let queued = false;
+  const flush = () => {
+    queued = false;
+    const roots = [...pending];
+    pending = new Set();
+    observer?.disconnect();
+    try {
+      roots.forEach(process);
+    } finally {
+      observer?.observe(document.querySelector("main") || document.body, OBSERVE);
+    }
+  };
+  const OBSERVE = { childList: true, subtree: true, characterData: true, attributes: true, attributeFilter: ["hidden", "open"] };
+  const schedule = (node) => {
+    pending.add(node);
+    if (queued) return;
+    queued = true;
+    requestAnimationFrame(() => setTimeout(flush, 30));
+  };
+
+  let resizeTimer = 0;
+  const onResize = () => {
+    clearTimeout(resizeTimer);
+    resizeTimer = setTimeout(() => document.querySelectorAll("main .katex").forEach(fitGroups), 200);
+  };
+
+  const start = () => {
+    const main = document.querySelector("main") || document.body;
+    observer = new MutationObserver((records) => {
+      records.forEach((record) => {
+        if (record.type === "characterData") schedule(record.target.parentElement);
+        else if (record.type === "attributes") schedule(record.target);
+        else {
+          record.addedNodes.forEach((n) => schedule(n.nodeType === Node.ELEMENT_NODE ? n : record.target));
+        }
+      });
+    });
+    observer.observe(main, OBSERVE);
+    window.addEventListener("resize", onResize, { passive: true });
+    schedule(main);
+  };
+  if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", start);
+  else start();
+})();

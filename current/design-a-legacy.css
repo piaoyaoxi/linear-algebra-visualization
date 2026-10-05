@@ -2752,6 +2752,21 @@ body.dark :is(main, #la) :is(.lesson-page-section, #lb) .basis-label rect {
   background: var(--surface-soft);
 }
 
+/* ch5 §1: the step names (代入, 转置, 合并) keep one line; the formula boxes give up the room */
+:is(main, #la) .ch5s1-derivation > span {
+  white-space: nowrap;
+}
+
+@media (min-width: 801px) {
+  :is(main, #la) .ch5s1-derivation {
+    grid-template-columns: minmax(96px, 0.7fr) auto minmax(150px, 1fr) auto minmax(120px, 0.8fr) auto minmax(160px, 1fr);
+  }
+
+  :is(main, #la) .ch5s1-derivation > div {
+    min-width: 0;
+  }
+}
+
 :is(main, #la) :is(.ch5s1-matrix-map, .ch5s1-term-list) > button {
   border: 1px solid var(--line);
   border-radius: 8px;

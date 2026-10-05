@@ -428,11 +428,15 @@ body :is(.ch3l-predict-options, .ch6l-predict-options, .ch7l-predict-options, .c
   border-radius: 8px;
   background: var(--surface-solid);
   color: var(--text);
+  /* an option that wraps reads like the others (a button would centre it) */
+  text-align: left;
 }
 
+/* picked = border + inner stroke (spec §4); the weight stays, so the text does not reflow */
 body :is(.ch3l-predict-options, .ch6l-predict-options, .ch7l-predict-options, .ch9l-predict-options) > button.is-picked {
   border-color: var(--cv-drag);
   box-shadow: inset 0 0 0 1px var(--cv-drag);
+  font-weight: inherit;
 }
 
 body :is(.ch3l-predict-options, .ch6l-predict-options, .ch7l-predict-options, .ch9l-predict-options) > button.is-right {
@@ -1197,6 +1201,33 @@ body .la-punct {
   font-size: calc(1em / 1.06);
   font-style: normal;
   font-weight: inherit;
+}
+
+/* ---------- round 3: line breaking (with visuals/shared/typeset.js) ---------- */
+
+/* no line holds one character alone: paragraphs avoid a short last line … */
+body main {
+  text-wrap: pretty;
+}
+
+/* … and short texts (titles, questions, options, chips, captions) share their lines evenly */
+@supports (text-wrap-style: balance) {
+  body main :is(h1, h2, h3, h4, h5, h6, summary, figcaption, legend, .lead, .la-figcaption, .lx-q, [class*="predict-q"], [class*="predict-options"], [class*="toolbar"], [class*="chip"]) {
+    text-wrap-style: balance;
+  }
+}
+
+@supports not (text-wrap-style: balance) {
+  body main :is(h1, h2, h3, h4, summary, figcaption, .lead, .la-figcaption) {
+    text-wrap: balance;
+  }
+}
+
+/* what typeset.js keeps on one line: a word, the last words of a block, a formula between two relations */
+la-w,
+la-t,
+la-mg {
+  white-space: nowrap;
 }
 
 /* ch8 §3: the minors before the first transformation, one unbroken formula per item */

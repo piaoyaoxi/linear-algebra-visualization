@@ -3,6 +3,10 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <script>
+      // iPhone / iPad: Safari draws its own top scroll-edge effect (see design-a.css)
+      if (/iPhone|iPad|iPod/.test(navigator.userAgent) || (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1)) document.documentElement.classList.add("la-ios");
+    </script>
     <title>高等代数可视化</title>
     <link rel="icon" href="data:," />
     <link rel="preload" as="image" href="./assets/theme/luna-alpha.webp?v=21h" />
@@ -53,7 +57,7 @@
     <link rel="stylesheet" href="./visuals/sidebar.css?v=sb2" />
     <link rel="stylesheet" href="./visuals/search.css?v=sr1" />
     <link rel="stylesheet" href="./visuals/shared/lesson-extras.css?v=s3" />
-    <link rel="stylesheet" href="./design-a.css?v=i4a" />
+    <link rel="stylesheet" href="./design-a.css?v=i4c" />
     <link rel="stylesheet" href="./design-a-legacy.css?v=t4c" />
     <script defer src="./vendor/katex/katex.min.js"></script>
     <script defer src="./app.js?v=c2"></script>

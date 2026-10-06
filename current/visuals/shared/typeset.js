@@ -6,7 +6,8 @@
  *     the pieces between two relations are grouped (<la-mg>); a group wider than its line
  *     is given back its default break points;
  *  3. between Chinese text and an inline formula: a quarter-em space (<la-sp>);
- *  4. in short texts (titles, questions, options) a word stays whole (<la-w>).
+ *  4. in short texts (titles, questions, options) a word stays whole (<la-w>);
+ *  5. a sentence with formulas inside a flex or grid box flows as text again (<la-run>).
  * Only what changed is processed again; the script ignores its own edits.
  */
 (() => {
@@ -113,7 +114,7 @@
   }
 
   /* short texts (titles, questions, options, captions): a word is never split over two lines */
-  const SHORT = "h1, h2, h3, h4, summary, figcaption, legend, .la-figcaption, [class*='predict-q'] p, [class*='predict-options'] > button, button[data-i], .example-choice-copy, .lesson-page-section > ul > li, [class$='-head'] > *, .lead";
+  const SHORT = "h1, h2, h3, h4, summary, figcaption, legend, .la-figcaption, [class*='predict-q'] p, [class*='predict-options'] > button, button[data-i], .example-choice-copy, li, [class$='-head'] > *, .lead";
   const WORD = /^[\u3400-\u9fff\uf900-\ufaff]{2,5}$/;
   function keepWords(block) {
     if (!segmenter || block.dataset.laWords || block.textContent.length > 140) return;
@@ -143,6 +144,30 @@
       });
       if (plain) frag.append(plain);
       node.replaceWith(frag);
+    });
+  }
+
+  /*
+   * A flex or grid box makes every loose text run and every formula an item of its own, so
+   * a sentence “文字 公式 文字” inside one falls apart into a column or wide gaps. Such a
+   * sentence is wrapped (<la-run>) and flows as ordinary text again.
+   */
+  const INLINE = ".tex, la-sp, la-t, la-w, b, strong, em, i, sub, sup, a, code";
+  function joinRuns(box) {
+    if (box.closest(".katex, svg")) return;
+    const runs = [[]];
+    [...box.childNodes].forEach((n) => {
+      const inline = n.nodeType === Node.TEXT_NODE || (n.nodeType === Node.ELEMENT_NODE && n.matches(INLINE));
+      if (inline) runs[runs.length - 1].push(n);
+      else runs.push([]);
+    });
+    runs.forEach((run) => {
+      const texts = run.filter((n) => n.nodeType === Node.TEXT_NODE && cjkCount(n.textContent) > 0);
+      if (texts.length < 2 || !run.some((n) => n.nodeType === Node.ELEMENT_NODE && n.matches(".tex"))) return;
+      while (run.length && run[0].nodeType === Node.TEXT_NODE && !run[0].textContent.trim()) run.shift();
+      const wrap = document.createElement("la-run");
+      run[0].before(wrap);
+      run.forEach((n) => wrap.append(n));
     });
   }
 
@@ -274,6 +299,11 @@
     const main = document.querySelector("main") || document.body;
     if (!main.contains(scope)) return;
     // the blocks inside the changed part, and the block that contains it
+    const all = [...scope.querySelectorAll("*")];
+    if (scope.nodeType === Node.ELEMENT_NODE) all.push(scope);
+    all.forEach((el) => {
+      if (/flex|grid/.test(getComputedStyle(el).display)) joinRuns(el);
+    });
     const blocks = [...scope.querySelectorAll("*")].filter(isBlock);
     let up = scope;
     while (up && up !== main && !isBlock(up)) up = up.parentElement;

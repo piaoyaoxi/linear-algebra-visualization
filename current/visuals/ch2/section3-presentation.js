@@ -200,18 +200,18 @@
         "n 阶定义：带符号的合法取项求和",
         "合法取项解决‘选哪些元素’，排列奇偶解决‘带什么符号’。两部分合在一起得到统一定义。",
         module("01", "Leibniz 定义", "每个排列生成且只生成一个乘积项。", `
-          <article class="ch2-def ch2-formula-block"><span class="kicker">定义</span><strong>${display("\\det(A)=\\sum_{\\sigma\\in S_n}\\operatorname{sgn}(\\sigma)\\prod_{i=1}^{n}a_{i,\\sigma(i)}")}</strong><p>求和范围 ${tex("S_n")} 包含全部 n! 个排列。第 i 行选择第 σ(i) 列，因此每行每列各出现一次。</p></article>
-        `) + module("02", "从一般定义回到二阶与三阶", "熟悉公式只是列出较小 n 的全部排列。", `
+          <article class="ch2-def ch2-formula-block"><span class="kicker">定义</span><strong>${display("\\det(A)=\\sum_{\\sigma\\in S_n}\\operatorname{sgn}(\\sigma)\\prod_{i=1}^{n}a_{i,\\sigma(i)}")}</strong><p>求和范围 ${tex("S_n")} 包含全部 ${tex("n!")} 个排列。第 ${tex("i")} 行选择第 ${tex("\\sigma(i)")} 列，因此每行每列各出现一次。</p></article>
+        `) + module("02", "从一般定义回到二阶与三阶", `熟悉公式只是列出较小 ${tex("n")} 的全部排列。`, `
           <div class="ch2-card-grid">
-            <article class="ch2-card"><span class="kicker">n=2</span><h4>${tex("a_{11}a_{22}-a_{12}a_{21}")}</h4><p>排列 12 为偶，21 为奇。</p></article>
-            <article class="ch2-card"><span class="kicker">n=3</span><h4>三正三负，共六项</h4><p>对角线法则可辅助记忆三阶，定义仍来自六个排列。</p></article>
+            <article class="ch2-card"><span class="kicker">${tex("n=2")}</span><h4>${tex("a_{11}a_{22}-a_{12}a_{21}")}</h4><p>排列 ${tex("12")} 为偶，${tex("21")} 为奇。</p></article>
+            <article class="ch2-card"><span class="kicker">${tex("n=3")}</span><h4>三正三负，共六项</h4><p>对角线法则可辅助记忆三阶，定义仍来自六个排列。</p></article>
             <article class="ch2-card"><span class="kicker">合法与非零</span><h4>两个概念必须分开</h4><p>路径合法只说明下标结构正确；若选中零元素，该项仍贡献 0。</p></article>
           </div>
           <article class="ch2-def ch2-formula-block"><span class="kicker">三阶完整展开</span><strong>${display("\\begin{aligned}\\det(A)={}&a_{11}a_{22}a_{33}+a_{12}a_{23}a_{31}+a_{13}a_{21}a_{32}\\\\&-a_{13}a_{22}a_{31}-a_{12}a_{21}a_{33}-a_{11}a_{23}a_{32}\\end{aligned}")}</strong></article>
         `) + module("03", "上三角矩阵为什么只剩一项", "零结构会消去除恒等排列外的所有合法路径。", proofSteps([
-          "恒等排列 σ(i)=i 选择主对角线，得到 a₁₁a₂₂⋯aₙₙ。",
-          "若 σ 不是恒等排列，则必存在某个 i 使 σ(i)&lt;i。",
-          "上三角矩阵在 i>j 时有 aᵢⱼ=0，因此该排列项含有零因子。",
+          `恒等排列 ${tex("\\sigma(i)=i")} 选择主对角线，得到 ${tex("a_{11}a_{22}\\cdots a_{nn}")}。`,
+          `若 ${tex("\\sigma")} 不是恒等排列，则必存在某个 ${tex("i")} 使 ${tex("\\sigma(i)<i")}。`,
+          `上三角矩阵在 ${tex("i>j")} 时有 ${tex("a_{ij}=0")}，因此该排列项含有零因子。`,
           "所以只有恒等排列项可能非零，行列式等于主对角线乘积。",
         ]) + misconception([
           "合法项必须同时满足每行与每列各一次；只满足列条件仍可能遗漏某一行。",

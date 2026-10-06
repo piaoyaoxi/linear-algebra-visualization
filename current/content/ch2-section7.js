@@ -3,7 +3,7 @@ defineChapter2Section("cramer-rule", {
   textbookSection: "克拉默（Cramer）法则",
   title: "克拉默（Cramer）法则",
   navTitle: "克拉默法则",
-  question: "为什么把系数矩阵的第 i 列换成常数列后，两个行列式的比值恰好给出第 i 个未知量？",
+  question: `为什么把系数矩阵的第 ${texInline("i")} 列换成常数列后，两个行列式的比值恰好给出第 ${texInline("i")} 个未知量？`,
   goal: `在 ${texInline("\\det(A)\\ne0")} 的前提下构造替换矩阵 ${texInline("A_i")}，理解 ${texInline("x_i=\\det(A_i)/\\det(A)")} 的列线性推导与二维有向面积比，并正确区分 ${texInline("\\det(A)=0")} 时的无解与无穷多解。`,
   tags: ["克拉默法则", "替换列", "唯一解"],
   prerequisites: [
@@ -23,7 +23,7 @@ defineChapter2Section("cramer-rule", {
     { label: "最后检查分母", text: "只有 det(A)≠0 才能相除；D=0 时必须回到列空间或消元判断相容性。" },
   ],
   intro:
-    `方程 ${texInline("Ax=b")} 表示常数向量 b 是 A 的列向量的线性组合。当 ${texInline("\\det(A)\\ne0")} 时，这组列向量构成一组基，坐标唯一。把第 i 列替换成 b 后，行列式的分别线性会自动留下系数 ${texInline("x_i")}。公式中的分母正是唯一解存在的结构条件。`,
+    `方程 ${texInline("Ax=b")} 表示常数向量 ${texInline("b")} 是 ${texInline("A")} 的列向量的线性组合。当 ${texInline("\\det(A)\\ne0")} 时，这组列向量构成一组基，坐标唯一。把第 ${texInline("i")} 列替换成 ${texInline("b")} 后，行列式的分别线性会自动留下系数 ${texInline("x_i")}。公式中的分母正是唯一解存在的结构条件。`,
   videoPlan: {
     title: "克拉默法则为什么是有向体积比",
     duration: "约 2 分钟",
@@ -76,20 +76,20 @@ defineChapter2Section("cramer-rule", {
       `替换第 1 列：${texInline("D_1=\\det\\begin{bmatrix}5&1\\\\5&3\\end{bmatrix}=10")}，所以 ${texInline("x=2")}。`,
       `替换第 2 列：${texInline("D_2=\\det\\begin{bmatrix}2&5\\\\1&5\\end{bmatrix}=5")}，所以 ${texInline("y=1")}。`,
       `回代：${texInline("2\\cdot2+1=5")}，${texInline("2+3\\cdot1=5")}，两个方程均成立。`,
-      "几何上，b=2a₁+a₂；两个行列式之比分别读出这两个坐标。",
+      `几何上，${texInline("b=2a_1+a_2")}；两个行列式之比分别读出这两个坐标。`,
     ],
   },
   quiz: [
     { question: "克拉默法则的必要前提是什么？", answer: "系数矩阵为方阵且行列式非零。" },
-    { question: "A₂ 怎样构造？", answer: "把 A 的第 2 列替换成 b，其余列保持不变。" },
-    { question: "D=0 是否必然无解？", answer: "不必然，也可能有无穷多解。" },
-    { question: "齐次方程 Ax=0 在 det(A)≠0 时有几个解？", answer: "只有零解。" },
+    { question: `${texInline("A_2")} 怎样构造？`, answer: `把 ${texInline("A")} 的第 2 列替换成 ${texInline("b")}，其余列保持不变。` },
+    { question: `${texInline("D=0")} 是否必然无解？`, answer: "不必然，也可能有无穷多解。" },
+    { question: `齐次方程 ${texInline("Ax=0")} 在 ${texInline("\\det(A)\\ne0")} 时有几个解？`, answer: "只有零解。" },
   ],
   summary: [
-    "det(A) 非零时，A 的列构成基，方程组有唯一坐标。",
-    "替换第 i 列并利用列线性可得 det(Aᵢ)=xᵢdet(A)。",
-    "二维中，Dᵢ/D 是替换列后有向面积与原基底有向面积之比。",
-    "D=0 时应停止使用克拉默公式，回到列空间、秩或消元判断无解与无穷多解。",
+    `${texInline("\\det(A)")} 非零时，${texInline("A")} 的列构成基，方程组有唯一坐标。`,
+    `替换第 ${texInline("i")} 列并利用列线性可得 ${texInline("\\det(A_i)=x_i\\det(A)")}。`,
+    `二维中，${texInline("D_i/D")} 是替换列后有向面积与原基底有向面积之比。`,
+    `${texInline("D=0")} 时应停止使用克拉默公式，回到列空间、秩或消元判断无解与无穷多解。`,
   ],
   bridge: "最后一节把‘沿一行展开’推广到多个行的子式配对，并证明连续两个线性变换的有向体积倍率相乘。",
   exercises: [

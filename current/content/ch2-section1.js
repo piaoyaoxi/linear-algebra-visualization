@@ -78,13 +78,13 @@ defineChapter2Section("determinant-intro", {
     { question: `${texInline("\\det(A)=2")} 与 ${texInline("\\det(A)=-2")} 的共同点和差别是什么？`, answer: "面积倍率都为 2；前者保持定向，后者翻转定向。" },
     { question: `${texInline("\\det(A)=1")} 是否推出 ${texInline("A=E")}？`, answer: "不能。剪切、旋转等许多非单位矩阵也有行列式 1。" },
     { question: "两列共线时为什么得到零行列式？", answer: "它们张成的平行四边形高度为零，二维面积消失。" },
-    { question: "二维中 det 非零与可逆有什么关系？", answer: "det 非零表示没有丢失维度，线性变换可逆。" },
+    { question: `二维中 ${texInline("\\det")} 非零与可逆有什么关系？`, answer: `${texInline("\\det")} 非零表示没有丢失维度，线性变换可逆。` },
   ],
   summary: [
     "行列式把倍率、定向和维度是否塌缩压缩进一个标量。",
-    "二维中 |det| 是面积倍率，det 的符号记录定向。",
-    "det=0 对应列向量线性相关，也预告了不可逆与方程组失去唯一解。",
-    "det=1 只说明有向面积倍率为 1，不说明矩阵等于单位矩阵。",
+    `二维中 ${texInline("|\\det|")} 是面积倍率，${texInline("\\det")} 的符号记录定向。`,
+    `${texInline("\\det=0")} 对应列向量线性相关，也预告了不可逆与方程组失去唯一解。`,
+    `${texInline("\\det=1")} 只说明有向面积倍率为 1，不说明矩阵等于单位矩阵。`,
   ],
   bridge: "高阶行列式会出现许多乘积项。下一节先解决这些项前面的正负号从哪里来：答案隐藏在排列的奇偶性中。",
   exercises: [

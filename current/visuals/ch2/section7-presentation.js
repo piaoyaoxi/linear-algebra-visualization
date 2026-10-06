@@ -123,14 +123,14 @@
       root: lab,
       manual: true,
       key: "visuals/ch2/section7-presentation.js#near",
-      question: "图中 a₁、a₂ 几乎平行，D 很小但不为 0。让 b₂ 只减小 1/10，解 x₁、x₂ 会怎样？",
+      question: `图中 ${tex("a_1")}、${tex("a_2")} 几乎平行，${tex("D")} 很小但不为 0。让 ${tex("b_2")} 只减小 1/10，解 ${tex("x_1")}、${tex("x_2")} 会怎样？`,
       options: [
         ["仍是唯一解，但变化很大", true, ""],
         ["仍是唯一解，只变化一点点", false, "放大框里，b 只挪了一点，沿 a₂ 滑回 a₁ 所在直线的落点 x₁a₁ 却移出一大段。"],
         ["变成无解", false, "D≠0 时，a₁、a₂ 能组合出平面上的任何 b，解一定存在。"],
         ["变成无穷多解", false, "无穷多解要求 D=0；D≠0 时只有一组 x₁、x₂。"],
       ],
-      right: "✓ D≠0，解仍唯一。a₂ 几乎与 a₁ 平行，b 要沿 a₂ 走很远才能滑回 a₁ 所在直线，所以 b 稍一挪动，落点 x₁a₁ 就移出一大段。xᵢ=Dᵢ/D 的分母越小，解对 b 越敏感。",
+      right: `✓ ${tex("D\\ne0")}，解仍唯一。${tex("a_2")} 几乎与 ${tex("a_1")} 平行，${tex("b")} 要沿 ${tex("a_2")} 走很远才能滑回 ${tex("a_1")} 所在直线，所以 ${tex("b")} 稍一挪动，落点 ${tex("x_1a_1")} 就移出一大段。${tex("x_i=D_i/D")} 的分母越小，解对 ${tex("b")} 越敏感。`,
       onPick: () => render(),
       onReveal: () => render(),
     });
@@ -549,36 +549,38 @@
       const residual = root.querySelector("[data-residual]");
       const proof = root.querySelector("[data-slide-proof]");
       if (ex.D !== 0) {
-        const x1 = ratio(ex.D1, ex.D).text;
-        const x2 = ratio(ex.D2, ex.D).text;
+        const x1 = ratio(ex.D1, ex.D).tex;
+        const x2 = ratio(ex.D2, ex.D).tex;
+        const xs = (a, b) => `${tex(`x_1=${a}`)}，${tex(`x_2=${b}`)}`;
         const old = ghost ? exact(ghost) : null;
-        const before = old && old.D !== 0 ? `（改动前：x₁=${ratio(old.D1, old.D).text}，x₂=${ratio(old.D2, old.D).text}）` : "";
+        const before = old && old.D !== 0 ? `（改动前：${xs(ratio(old.D1, old.D).tex, ratio(old.D2, old.D).tex)}）` : "";
+        const thin = `<strong>两列接近共线，${tex("D")} 很小但不为 0</strong>`;
         if (ex.near) {
           // the size of the jump answers the prediction: x stays hidden until a prediction is picked
           solution.innerHTML = !picked()
-            ? "<strong>两列接近共线，D 很小但不为 0</strong>　x₁=?，x₂=?。"
+            ? `${thin}　${xs("?", "?")}。`
             : !revealed()
-              ? `<strong>两列接近共线，D 很小但不为 0</strong>　x₁=${x1}，x₂=${x2}${before}。`
-              : `<strong>唯一但敏感</strong>　x₁=${x1}，x₂=${x2}${before}。两列接近共线，D 很小，b 的微小变化会被 Dᵢ/D 放大。`;
+              ? `${thin}　${xs(x1, x2)}${before}。`
+              : `<strong>唯一但敏感</strong>　${xs(x1, x2)}${before}。两列接近共线，${tex("D")} 很小，${tex("b")} 的微小变化会被 ${tex("D_i/D")} 放大。`;
           solution.className = "ch2-note is-zero";
         } else {
-          solution.innerHTML = `<strong>唯一解</strong>　x₁=${x1}，x₂=${x2}${before}。分子有向面积分别是原有向面积的 x₁、x₂ 倍。`;
+          solution.innerHTML = `<strong>唯一解</strong>　${xs(x1, x2)}${before}。分子有向面积分别是原有向面积的 ${tex("x_1")}、${tex("x_2")} 倍。`;
           solution.className = "ch2-note is-positive";
         }
-        residual.innerHTML = `重构：${tex(`x_1a_1+x_2a_2=\\left(${ratio(t.b1, 10).tex},\\,${ratio(t.b2, 10).tex}\\right)^T`)}，正好回到 b。`;
+        residual.innerHTML = `重构：${tex(`x_1a_1+x_2a_2=\\left(${ratio(t.b1, 10).tex},\\,${ratio(t.b2, 10).tex}\\right)^T`)}，正好回到 ${tex("b")}。`;
         residual.className = "ch2-note is-positive";
-        proof.innerHTML = `${tex("D_1=\\det(b,a_2)=\\det(x_1a_1,a_2)=x_1D")}：把 b 沿 a₂ 方向滑到 x₁a₁，底边改变但有向面积不变。`;
+        proof.innerHTML = `${tex("D_1=\\det(b,a_2)=\\det(x_1a_1,a_2)=x_1D")}：把 ${tex("b")} 沿 ${tex("a_2")} 方向滑到 ${tex("x_1a_1")}，底边改变但有向面积不变。`;
       } else {
         const infinite = ex.kind === "infinite";
         solution.innerHTML = infinite
-          ? "<strong>D=0 · 无穷多解</strong>　b 仍落在塌缩后的列空间中；克拉默公式没有非零分母，改用消元描述自由变量。"
-          : "<strong>D=0 · 无解</strong>　b 不在列空间中；塌缩后的列向量无法合成 b。";
+          ? `<strong>${tex("D=0")} · 无穷多解</strong>　${tex("b")} 仍落在塌缩后的列空间中；克拉默公式没有非零分母，改用消元描述自由变量。`
+          : `<strong>${tex("D=0")} · 无解</strong>　${tex("b")} 不在列空间中；塌缩后的列向量无法合成 ${tex("b")}。`;
         solution.className = infinite ? "ch2-note is-zero" : "ch2-note is-negative";
-        residual.textContent = infinite ? "列组合能够到达 b，但表示不唯一。" : "任何列向量组合都无法到达 b。";
+        residual.innerHTML = infinite ? `列组合能够到达 ${tex("b")}，但表示不唯一。` : `任何列向量组合都无法到达 ${tex("b")}。`;
         residual.className = infinite ? "ch2-note is-zero" : "ch2-note is-negative";
-        proof.textContent = infinite
-          ? "两列压到同一条列空间直线上，b 也在线上：可以到达，但表示不唯一。"
-          : "两列压到同一条列空间直线上，b 却离开直线：任何列组合都无法到达。";
+        proof.innerHTML = infinite
+          ? `两列压到同一条列空间直线上，${tex("b")} 也在线上：可以到达，但表示不唯一。`
+          : `两列压到同一条列空间直线上，${tex("b")} 却离开直线：任何列组合都无法到达。`;
       }
 
       KEYS.forEach((key) => {
@@ -691,24 +693,24 @@
       if (!formal) return;
       formal.innerHTML = formalShell(
         "克拉默法则来自列线性",
-        "把 b 放进第 i 列后，沿这一列的线性展开会自动消去所有含重复列的项，只留下 xᵢdet(A)。二维面积比给出同一结论的几何版本。",
-        module("01", "替换列推导", "先写 b 的列组合，再利用重复列为零。", proofSteps([
+        `把 ${tex("b")} 放进第 ${tex("i")} 列后，沿这一列的线性展开会自动消去所有含重复列的项，只留下 ${tex("x_i\\det(A)")}。二维面积比给出同一结论的几何版本。`,
+        module("01", "替换列推导", `先写 ${tex("b")} 的列组合，再利用重复列为零。`, proofSteps([
           `${tex("b=x_1a_1+\\cdots+x_na_n")}。`,
-          `在 ${tex("A_i")} 中把第 i 列替换为 b，并对该列使用分别线性。`,
-          "当 b 的展开项使用 aⱼ（j≠i）时，矩阵中出现两列 aⱼ，行列式为 0。",
-          `只剩 ${tex("\\det(A_i)=x_i\\det(A)")}；当 det(A)≠0 时可除得公式。`,
+          `在 ${tex("A_i")} 中把第 ${tex("i")} 列替换为 ${tex("b")}，并对该列使用分别线性。`,
+          `当 ${tex("b")} 的展开项使用 ${tex("a_j")}（${tex("j\\ne i")}）时，矩阵中出现两列 ${tex("a_j")}，行列式为 0。`,
+          `只剩 ${tex("\\det(A_i)=x_i\\det(A)")}；当 ${tex("\\det(A)\\ne0")} 时可除得公式。`,
         ]) + `
           <article class="ch2-def ch2-formula-block"><span class="kicker">公式</span><strong>${display("x_i=\\frac{\\det(A_i)}{\\det(A)}")}</strong><p>分母非零是公式成立与唯一解存在的共同条件。</p></article>
-        `) + module("02", "D=0 与接近 D=0 是两种边界", "一个决定解的类型，另一个提醒坐标对扰动敏感。", `
+        `) + module("02", `${tex("D=0")} 与接近 ${tex("D=0")} 是两种边界`, "一个决定解的类型，另一个提醒坐标对扰动敏感。", `
           <div class="ch2-card-grid">
-            <article class="ch2-card"><span class="kicker">D=0 且相容</span><h4>无穷多解</h4><p>b 落在塌缩后的列空间中，表示不唯一。</p></article>
-            <article class="ch2-card"><span class="kicker">D=0 且不相容</span><h4>无解</h4><p>b 离开列空间，任何列组合都无法到达它。</p></article>
-            <article class="ch2-card"><span class="kicker">D 很小但非零</span><h4>唯一但敏感</h4><p>两列接近共线，Dᵢ/D 会放大输入中的微小变化。</p></article>
+            <article class="ch2-card"><span class="kicker">${tex("D=0")} 且相容</span><h4>无穷多解</h4><p>${tex("b")} 落在塌缩后的列空间中，表示不唯一。</p></article>
+            <article class="ch2-card"><span class="kicker">${tex("D=0")} 且不相容</span><h4>无解</h4><p>${tex("b")} 离开列空间，任何列组合都无法到达它。</p></article>
+            <article class="ch2-card"><span class="kicker">${tex("D")} 很小但非零</span><h4>唯一但敏感</h4><p>两列接近共线，${tex("D_i/D")} 会放大输入中的微小变化。</p></article>
           </div>
         `) + misconception([
-          "替换的是第 i 列，因为 Ax 是列向量的线性组合。",
-          "D=0 只说明克拉默公式不可用；无解与无穷多解需要继续判定。",
-          "D 很小不等于 D=0；理论上仍可能有唯一解，但数值会变得敏感。",
+          `替换的是第 ${tex("i")} 列，因为 ${tex("Ax")} 是列向量的线性组合。`,
+          `${tex("D=0")} 只说明克拉默公式不可用；无解与无穷多解需要继续判定。`,
+          `${tex("D")} 很小不等于 ${tex("D=0")}；理论上仍可能有唯一解，但数值会变得敏感。`,
         ]),
       );
     },
@@ -723,19 +725,19 @@
             <div class="ch2-presets ch2-cramer-presets">
               <button type="button" class="is-active" data-cramer-near>接近奇异</button>
               <button type="button" data-cramer-ex>唯一解示例</button>
-              <button type="button" data-cramer-sing>D=0 · 无穷多解</button>
-              <button type="button" data-cramer-none>D=0 · 无解</button>
+              <button type="button" data-cramer-sing>${tex("D=0")} · 无穷多解</button>
+              <button type="button" data-cramer-none>${tex("D=0")} · 无解</button>
             </div>
             <div class="ch2-cramer-main">
               <div class="ch2-stage"><canvas data-cramer-canvas aria-label="克拉默法则列向量与常数向量画布"></canvas></div>
               <div class="ch2-side">
-              <div class="ch2-presets ch2-cramer-act"><button type="button" class="is-primary" data-cramer-nudge>b₂ 减小 1/10</button></div>
+              <div class="ch2-presets ch2-cramer-act"><button type="button" class="is-primary" data-cramer-nudge>${tex("b_2")} 减小 1/10</button></div>
               <div class="ch2-meter">
-                <div class="ch2-meter-card" data-d-card><strong>D</strong><span data-d></span></div>
-                <div class="ch2-meter-card"><strong>D₁</strong><span data-d1></span></div>
-                <div class="ch2-meter-card"><strong>D₂</strong><span data-d2></span></div>
+                <div class="ch2-meter-card" data-d-card><strong>${tex("D")}</strong><span data-d></span></div>
+                <div class="ch2-meter-card"><strong>${tex("D_1")}</strong><span data-d1></span></div>
+                <div class="ch2-meter-card"><strong>${tex("D_2")}</strong><span data-d2></span></div>
               </div>
-              <div class="ch2-note ch2-cramer-mats"><div><strong>A</strong><span data-a-matrix></span></div><div><strong>A₁</strong><span data-a1-matrix></span></div><div><strong>A₂</strong><span data-a2-matrix></span></div></div>
+              <div class="ch2-note ch2-cramer-mats"><div><strong>${tex("A")}</strong><span data-a-matrix></span></div><div><strong>${tex("A_1")}</strong><span data-a1-matrix></span></div><div><strong>${tex("A_2")}</strong><span data-a2-matrix></span></div></div>
               <div data-sol class="ch2-note" aria-live="polite"></div>
               </div>
             </div>
@@ -744,8 +746,8 @@
               <div data-residual class="ch2-note" aria-live="polite"></div>
             </div>
             <div class="ch2-cramer-controls">
-              <details class="ch2-tuning"><summary>调整 a₁、a₂ 与 b</summary><div class="ch2-sliders">
-                ${["a11", "a12", "a21", "a22", "b1", "b2"].map((key) => `<label><span>${key}</span><input data-k="${key}" type="range" min="-6" max="6" step="0.1" aria-label="${key}" /><span data-v="${key}"></span></label>`).join("")}
+              <details class="ch2-tuning"><summary>调整 ${tex("a_1")}、${tex("a_2")} 与 ${tex("b")}</summary><div class="ch2-sliders">
+                ${["a11", "a12", "a21", "a22", "b1", "b2"].map((key) => `<label><span>${tex(key.replace(/(\d+)$/, "_{$1}"))}</span><input data-k="${key}" type="range" min="-6" max="6" step="0.1" aria-label="${key}" /><span data-v="${key}"></span></label>`).join("")}
               </div></details>
             </div>
           </div>

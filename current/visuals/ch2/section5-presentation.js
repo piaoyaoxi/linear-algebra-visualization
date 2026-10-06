@@ -25,20 +25,20 @@
     const ledger = [];
     const history = [];
     let busy = false;
-    let focus = { row: 1, col: 0, text: "先利用第 1 行，把 a₂₁ 消成 0。" };
+    let focus = { row: 1, col: 0, text: `先利用第 1 行，把 ${tex("a_{21}")} 消成 0。` };
     const lab = root.querySelector(".ch2-lab");
     const gate = window.LAPredictGate?.mount(root.querySelector("[data-elim-gate]"), {
       root: lab,
       manual: true,
       key: "visuals/ch2/section5-presentation.js#elim",
-      question: "只用两次倍加（某行减去另一行的倍数）把矩阵化成上三角。原来的 det 和上三角矩阵的对角线乘积有什么关系？",
+      question: `只用两次倍加（某行减去另一行的倍数）把矩阵化成上三角。原来的 ${tex("\\det")} 和上三角矩阵的对角线乘积有什么关系？`,
       options: [
         ["相等", true, ""],
         ["差一个负号", false, "只有交换两行才变号；两次倍加不改变 det。"],
-        ["还要除以消元用到的系数 ½、⅘", false, "倍加的系数不进入账本：倍加让 det 乘 1。"],
-        ["上三角矩阵读不出 det", false, "上三角矩阵的 det 就是对角线乘积。"],
+        [`还要除以消元用到的系数 ${tex("\\tfrac12")}、${tex("\\tfrac45")}`, false, "倍加的系数不进入账本：倍加让 det 乘 1。"],
+        [`上三角矩阵读不出 ${tex("\\det")}`, false, "上三角矩阵的 det 就是对角线乘积。"],
       ],
-      right: `✓ 两次倍加都乘 1，所以原 det 就是对角线乘积 ${tex("2\\cdot\\tfrac52\\cdot\\tfrac15=1")}。交换或倍乘时，再按账本里的倍率还原。`,
+      right: `✓ 两次倍加都乘 1，所以原 ${tex("\\det")} 就是对角线乘积 ${tex("2\\cdot\\tfrac52\\cdot\\tfrac15=1")}。交换或倍乘时，再按账本里的倍率还原。`,
       onPick: () => { syncLocks(); render(); },
       onReveal: () => render(),
     });
@@ -90,7 +90,7 @@
     function syncZeros() {
       const next = root.querySelector("[data-op-next]");
       const target = nextTarget();
-      next.textContent = target === "first" ? "下一步：消去 a₂₁" : target === "second" ? "下一步：消去 a₃₂" : "已是上三角";
+      next.innerHTML = target === "first" ? `下一步：消去 ${tex("a_{21}")}` : target === "second" ? `下一步：消去 ${tex("a_{32}")}` : "已是上三角";
       if (busy || !free()) return;
       next.disabled = !target;
     }
@@ -150,7 +150,7 @@
       if (triangular && Math.abs(factor - 1) < 1e-9 && ledger.length) gate?.acted();
       status.className = triangular ? "ch2-note is-positive" : "ch2-note";
       root.querySelector("[data-ledger]").innerHTML = ledger.length ? ledger.map((line) => `<li>${line}</li>`).join("") : "<li>起点：累计倍率 1</li>";
-      root.querySelector("[data-current-operation]").textContent = triangular
+      root.querySelector("[data-current-operation]").innerHTML = triangular
         ? "三角化完成：现在只需读取主对角线乘积，并按账本还原原值。"
         : focus.text;
       root.querySelector("[data-op-undo]").disabled = busy || history.length === 0;
@@ -170,25 +170,25 @@
     }
 
     const operations = {
-      swap: (allowBusy = false) => apply([matrix[1].slice(), matrix[0].slice(), matrix[2].slice()], -1, "R₁ ↔ R₂　累计倍率 ×(−1)", { row: 1, col: 0, text: "交换改变了定向；继续选择主元并制造第一个零。" }, allowBusy),
+      swap: (allowBusy = false) => apply([matrix[1].slice(), matrix[0].slice(), matrix[2].slice()], -1, `${tex("R_1\\leftrightarrow R_2")}　累计倍率 ${tex("\\times(-1)")}`, { row: 1, col: 0, text: "交换改变了定向；继续选择主元并制造第一个零。" }, allowBusy),
       scale: (allowBusy = false) => {
         const next = M().cloneMat(matrix);
         next[1] = next[1].map((value) => value * 2);
-        return apply(next, 2, "R₂ ← 2R₂　累计倍率 ×2", { row: 1, col: 0, text: "整行倍乘会缩放行列式；账本已经记下倍率 2。" }, allowBusy);
+        return apply(next, 2, `${tex("R_2\\leftarrow 2R_2")}　累计倍率 ${tex("\\times2")}`, { row: 1, col: 0, text: "整行倍乘会缩放行列式；账本已经记下倍率 2。" }, allowBusy);
       },
       eliminateFirst: (allowBusy = false) => {
         const next = M().cloneMat(matrix);
         if (Math.abs(next[0][0]) < M().EPS || Math.abs(next[1][0]) < M().EPS) return Promise.resolve();
         const coefficient = next[1][0] / next[0][0];
         next[1] = next[1].map((value, col) => value - coefficient * next[0][col]);
-        return apply(next, 1, `${tex(`R_2\\leftarrow R_2-${frac(coefficient).tex}R_1`)}　×1`, { row: 2, col: 1, text: "第一个零已出现；接着利用新的第 2 行消去 a₃₂。" }, allowBusy);
+        return apply(next, 1, `${tex(`R_2\\leftarrow R_2-${frac(coefficient).tex}R_1`)}　${tex("\\times1")}`, { row: 2, col: 1, text: `第一个零已出现；接着利用新的第 2 行消去 ${tex("a_{32}")}。` }, allowBusy);
       },
       eliminateSecond: (allowBusy = false) => {
         const next = M().cloneMat(matrix);
         if (Math.abs(next[1][1]) < M().EPS || Math.abs(next[2][1]) < M().EPS) return Promise.resolve();
         const coefficient = next[2][1] / next[1][1];
         next[2] = next[2].map((value, col) => value - coefficient * next[1][col]);
-        return apply(next, 1, `${tex(`R_3\\leftarrow R_3-${frac(coefficient).tex}R_2`)}　×1`, { row: 2, col: 1, text: "第二个零已出现，矩阵已经成为上三角。" }, allowBusy);
+        return apply(next, 1, `${tex(`R_3\\leftarrow R_3-${frac(coefficient).tex}R_2`)}　${tex("\\times1")}`, { row: 2, col: 1, text: "第二个零已出现，矩阵已经成为上三角。" }, allowBusy);
       },
     };
 
@@ -214,7 +214,7 @@
       factor = 1;
       ledger.length = 0;
       history.length = 0;
-      focus = { row: 1, col: 0, text: "先利用第 1 行，把 a₂₁ 消成 0。" };
+      focus = { row: 1, col: 0, text: `先利用第 1 行，把 ${tex("a_{21}")} 消成 0。` };
       render({ pulse: true });
     }, { signal });
     root.querySelector("[data-op-demo]").addEventListener("click", async () => {
@@ -249,12 +249,12 @@
         module("01", "策略优先级", "先减少非零结构，再选择终点。", `
           <div class="ch2-card-grid">
             <article class="ch2-card"><span class="kicker">读结构</span><h4>零、因子、相似行列</h4><p>先观察矩阵已经提供了哪些捷径。</p></article>
-            <article class="ch2-card"><span class="kicker">制造零</span><h4>倍加保持 det</h4><p>用消元把主对角线下方或某一展开方向清空。</p></article>
+            <article class="ch2-card"><span class="kicker">制造零</span><h4>倍加保持 ${tex("\\det")}</h4><p>用消元把主对角线下方或某一展开方向清空。</p></article>
             <article class="ch2-card"><span class="kicker">抵达终点</span><h4>三角或零多展开</h4><p>三角形读对角线，零多行列只算少量余子式。</p></article>
           </div>
         `) + module("02", "倍率账本", "当前值与原值之间始终保留可验证关系。", proofSteps([
           "交换：当前行列式乘 −1。",
-          "一行整体倍乘 λ：当前行列式乘 λ。",
+          `一行整体倍乘 ${tex("\\lambda")}：当前行列式乘 ${tex("\\lambda")}。`,
           "倍加：当前行列式保持不变。",
           "终点求出当前值后，用累计倍率恢复原行列式。",
         ]) + misconception([
@@ -276,21 +276,21 @@
               <div class="ch2-pivot-wrap"><table class="ch2-matrix-table is-static" data-mat-table aria-label="三阶计算策略矩阵"></table><svg class="ch2-pivot-arrow" data-pivot-arrow aria-hidden="true"></svg></div>
               <div class="ch2-operation-line"><span>当前目标</span><strong data-current-operation></strong></div>
               <div class="ch2-toolbar">
-                <button type="button" class="is-primary" data-op-next>下一步：消去 a₂₁</button>
+                <button type="button" class="is-primary" data-op-next>下一步：消去 ${tex("a_{21}")}</button>
                 <button type="button" data-op-undo>上一步</button>
                 <button type="button" data-op-demo>自动播放</button>
                 <button type="button" data-op-reset>重置</button>
               </div>
-              <div class="ch2-toolbar ch2-elim-compare"><span>对照：别的行变换怎样改 det</span>
-                <button type="button" data-op-swap>交换 R₁、R₂</button>
-                <button type="button" data-op-scale>R₂ ×2</button>
+              <div class="ch2-toolbar ch2-elim-compare"><span>对照：别的行变换怎样改 ${tex("\\det")}</span>
+                <button type="button" data-op-swap>交换 ${tex("R_1")}、${tex("R_2")}</button>
+                <button type="button" data-op-scale>${tex("R_2\\times2")}</button>
               </div>
             </div>
             <div class="ch2-side">
               <div class="ch2-meter is-2">
-                <div class="ch2-meter-card"><strong>当前 det</strong><span data-cur></span></div>
+                <div class="ch2-meter-card"><strong>当前 ${tex("\\det")}</strong><span data-cur></span></div>
                 <div class="ch2-meter-card"><strong>累计倍率</strong><span data-factor></span></div>
-                <div class="ch2-meter-card"><strong>原 det</strong><span data-orig></span></div>
+                <div class="ch2-meter-card"><strong>原 ${tex("\\det")}</strong><span data-orig></span></div>
                 <div class="ch2-meter-card"><strong>步骤数</strong><span data-step-count></span></div>
               </div>
               <div data-triangle-status class="ch2-note"></div>

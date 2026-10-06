@@ -6,6 +6,8 @@
  *  - after the reveal, every option can be clicked to read why it is right or wrong;
  *    the student's own pick keeps a “你的猜测” mark.
  * Before the reveal the kits already let the student change the pick freely.
+ * Every lab's wrong-guess hint starts “再看看图：”; a hint that itself starts with “看…”
+ * would say it twice, so that lead is dropped.
  */
 (() => {
   const BOX = ".ch3l-predict, .ch6l-predict, .ch7l-predict, .ch9l-predict";
@@ -144,7 +146,22 @@
     onReveal();
   }
 
-  const scan = () => document.querySelectorAll(BOX).forEach(enhance);
+  const LOOK = /再看看图：\s*(?:请)?(?:注意)?(?:看一看|看看|看一下|观察一下|观察|看(?![清出到成作起见]))[，,：:\s]*/;
+  function dropDoubledLook() {
+    const main = document.querySelector("main") || document.body;
+    const walker = document.createTreeWalker(main, NodeFilter.SHOW_TEXT, { acceptNode: (n) => (n.textContent.includes("再看看图") ? NodeFilter.FILTER_ACCEPT : NodeFilter.FILTER_REJECT) });
+    const hits = [];
+    while (walker.nextNode()) hits.push(walker.currentNode);
+    hits.forEach((node) => {
+      const fixed = node.textContent.replace(LOOK, "再看看图：");
+      if (fixed !== node.textContent) node.textContent = fixed;
+    });
+  }
+
+  const scan = () => {
+    document.querySelectorAll(BOX).forEach(enhance);
+    dropDoubledLook();
+  };
   let queued = false;
   const schedule = () => {
     if (queued) return;

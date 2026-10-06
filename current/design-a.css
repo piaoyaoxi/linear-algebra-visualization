@@ -272,9 +272,13 @@ body .lesson-page-section > h2::before {
   flex: 0 0 62px;
   content: counter(la-section, decimal-leading-zero);
   color: var(--faint);
-  font-size: 13px;
+  font-size: 0.56em;
   font-weight: 400;
-  letter-spacing: 0;
+  font-variant-numeric: tabular-nums lining-nums;
+  letter-spacing: 0.02em;
+  /* Chinese glyphs reach a little below the baseline: the number's foot meets theirs */
+  position: relative;
+  top: 0.1em;
 }
 
 /* prose sits on the heading's text column; labs and cards use the full width */
@@ -421,6 +425,18 @@ body.dark :is(.ch3l-predict-q, .ch6l-predict-q, .ch7l-predict-q, .ch9l-predict-q
 
 body :is(.ch3l-predict-q, .ch6l-predict-q, .ch7l-predict-q, .ch9l-predict-q) > span::before {
   content: "● ";
+}
+
+/* the small label sits on the question's first baseline; on phones it goes above it */
+body :is(.ch3l-predict-q, .ch6l-predict-q, .ch7l-predict-q, .ch9l-predict-q) {
+  align-items: baseline;
+}
+
+@media (max-width: 480px) {
+  body :is(.ch3l-predict-q, .ch6l-predict-q, .ch7l-predict-q, .ch9l-predict-q) {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 4px;
+  }
 }
 
 body :is(.ch3l-predict-options, .ch6l-predict-options, .ch7l-predict-options, .ch9l-predict-options) > button {
@@ -591,14 +607,24 @@ body.dark .tex {
 body .tex-inline,
 body.dark .tex-inline {
   margin: 0 1px;
-  padding: 0 1px;
-  border-color: transparent;
+  padding: 0;
+  border-width: 0;
   background: none;
   color: var(--text);
 }
 
 body .tex .katex {
   font-size: 1.02em;
+}
+
+/* a formula sits on the text baseline: Chinese glyphs already reach a little below it */
+body .tex {
+  vertical-align: baseline;
+}
+
+/* typeset.js: a quarter-em space between Chinese text and an inline formula */
+la-sp {
+  word-spacing: var(--la-sp-adjust, 0);
 }
 
 /* ---------- 9 Fixes from the first pass ---------- */
@@ -752,6 +778,15 @@ body .example-explanation {
 /* self-test: hairline list; the opened answer hangs on a pine-green rule */
 body .self-test-item > summary {
   padding-block: 16px;
+}
+
+/* the chevron sits on the middle of the question's first line */
+body .self-test-item > summary::after {
+  top: calc(16px + 0.775em - 7px);
+}
+
+body .self-test-item[open] > summary::after {
+  top: calc(16px + 0.775em - 3px);
 }
 
 body .self-test-item[open] > summary {

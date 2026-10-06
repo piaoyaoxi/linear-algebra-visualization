@@ -4,7 +4,8 @@
  *     the punctuation after them, stay together on one line (<la-t>);
  *  2. an inline formula breaks only after a relation (=, ≤, ∈ …), never after + or −:
  *     the pieces between two relations are grouped (<la-mg>); a group wider than its line
- *     is given back its default break points.
+ *     is given back its default break points;
+ *  3. between Chinese text and an inline formula: a quarter-em space (<la-sp>).
  * Only what changed is processed again; the script ignores its own edits.
  */
 (() => {
@@ -129,6 +130,72 @@
     });
   }
 
+  /* an inline formula next to Chinese text: a quarter-em gap instead of a typed space */
+  const HAN_END = /[㐀-鿿豈-﫿](\s+)$/;
+  const HAN_START = /^(\s+)[㐀-鿿豈-﫿]/;
+  const HAN_TOUCH_END = /[㐀-鿿豈-﫿]$/;
+  const HAN_TOUCH_START = /^[㐀-鿿豈-﫿]/;
+  // the text right before (dir = -1) or after (dir = 1) a node, within its block
+  function neighbourText(node, dir) {
+    let cur = node;
+    for (;;) {
+      let sib = dir < 0 ? cur.previousSibling : cur.nextSibling;
+      while (sib) {
+        if (sib.nodeType === Node.TEXT_NODE) {
+          if (sib.textContent) return sib;
+        } else if (sib.nodeType === Node.ELEMENT_NODE) {
+          if (sib.matches(".tex, .katex, br, la-mg") || getComputedStyle(sib).display !== "inline") return null;
+          if (sib.firstChild) {
+            sib = dir < 0 ? sib.lastChild : sib.firstChild;
+            continue;
+          }
+        }
+        sib = dir < 0 ? sib.previousSibling : sib.nextSibling;
+      }
+      const up = cur.parentElement;
+      if (!up || getComputedStyle(up).display !== "inline") return null;
+      cur = up;
+    }
+  }
+  // the gap is a real space (it disappears at a line break, a margin would not), narrowed
+  // to about a quarter em together with the Chinese glyph's own side bearing
+  const gap = () => {
+    const sp = document.createElement("la-sp");
+    sp.textContent = " ";
+    return sp;
+  };
+  function spaceFormula(katex) {
+    if (katex.closest(".katex-display")) return;
+    const unit = katex.parentElement?.closest(".tex") || katex;
+    if (unit.dataset.laSp) return;
+    unit.dataset.laSp = "1";
+    if (getComputedStyle(unit).display === "block") return;
+    const before = neighbourText(unit, -1);
+    if (before && !before.parentElement.closest("la-sp")) {
+      const m = before.textContent.match(HAN_END);
+      if (m) before.textContent = before.textContent.slice(0, -m[1].length);
+      if (m || HAN_TOUCH_END.test(before.textContent)) before.after(gap());
+    }
+    // a closing mark glued to the formula (lab-layout.js) brings its own space
+    if (unit.querySelector(".la-punct")) return;
+    const after = neighbourText(unit, 1);
+    if (after && !after.parentElement.closest("la-sp")) {
+      const m = after.textContent.match(HAN_START);
+      if (m) after.textContent = after.textContent.slice(m[1].length);
+      if (m || HAN_TOUCH_START.test(after.textContent)) after.before(gap());
+    }
+  }
+
+  // how much narrower than the body font's space the gap is: target 0.2em
+  function measureGap() {
+    const body = document.querySelector("main p") || document.body;
+    const cs = getComputedStyle(body);
+    const ctx = document.createElement("canvas").getContext("2d");
+    ctx.font = `100px ${cs.fontFamily}`;
+    const space = ctx.measureText(" ").width / 100;
+    document.documentElement.style.setProperty("--la-sp-adjust", `${(0.2 - space).toFixed(3)}em`);
+  }
+
   function process(root) {
     if (!root || !root.isConnected) return;
     const scope = root.nodeType === Node.ELEMENT_NODE ? root : root.parentElement;
@@ -141,8 +208,10 @@
     while (up && up !== main && !isBlock(up)) up = up.parentElement;
     if (up && up !== main) blocks.push(up);
     if (isBlock(scope)) blocks.push(scope);
+    const formulas = [...scope.querySelectorAll(".katex")];
+    formulas.forEach(spaceFormula);
     [...new Set(blocks)].forEach(keepTail);
-    scope.querySelectorAll(".katex").forEach(groupFormula);
+    formulas.forEach(groupFormula);
     scope.closest?.(".katex") && groupFormula(scope.closest(".katex"));
   }
 
@@ -175,6 +244,8 @@
   };
 
   const start = () => {
+    measureGap();
+    document.fonts?.ready.then(measureGap);
     const main = document.querySelector("main") || document.body;
     observer = new MutationObserver((records) => {
       records.forEach((record) => {

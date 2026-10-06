@@ -22,7 +22,7 @@
         "01",
         "Sylvester 矩阵与结式",
         "公共根问题被编码为一个行列式",
-        `<div class="ch3-theorem-row"><div>${texD(String.raw`\operatorname{Res}_x(f,g)=\det S_x(f,g)`)}</div><p>把 f、g 按 x 的次数排列系数并错位堆叠，得到Sylvester 矩阵。次数正常时，行列式为零恰好表示两多项式关于 x 有公共根。</p></div>`,
+        `<div class="ch3-theorem-row"><div>${texD(String.raw`\operatorname{Res}_x(f,g)=\det S_x(f,g)`)}</div><p>把 ${tex("f")}、${tex("g")} 按 ${tex("x")} 的次数排列系数并错位堆叠，得到Sylvester 矩阵。次数正常时，行列式为零恰好表示两多项式关于 ${tex("x")} 有公共根。</p></div>`,
       ) +
         module(
           "02",
@@ -41,7 +41,7 @@
     crossing: {
       label: "圆与割线",
       equations: ["x^2+y^2-1=0", "x-y=0"],
-      describe: "单位圆与直线 x=y 有两个横截交点。",
+      describe: `单位圆与直线 ${tex("x=y")} 有两个横截交点。`,
       modes: {
         x: {
           variable: "x",
@@ -76,7 +76,7 @@
     tangent: {
       label: "抛物线与切线",
       equations: ["y-x^2=0", "y-2x+1=0"],
-      describe: "抛物线 y=x² 与直线 y=2x−1 在 (1,1) 相切。",
+      describe: `抛物线 ${tex("y=x^2")} 与直线 ${tex("y=2x-1")} 在 ${tex("(1,1)")} 相切。`,
       modes: {
         x: {
           variable: "x",
@@ -146,8 +146,8 @@
         </div>
         <div class="ch3-control-row">
           <span>消去变量</span>
-          <label class="form-check"><input class="form-check-input" type="radio" name="ch3-eliminate" value="x" checked data-mode /><span class="form-check-label">x</span></label>
-          <label class="form-check"><input class="form-check-input" type="radio" name="ch3-eliminate" value="y" data-mode /><span class="form-check-label">y</span></label>
+          <label class="form-check"><input class="form-check-input" type="radio" name="ch3-eliminate" value="x" checked data-mode /><span class="form-check-label">${tex("x")}</span></label>
+          <label class="form-check"><input class="form-check-input" type="radio" name="ch3-eliminate" value="y" data-mode /><span class="form-check-label">${tex("y")}</span></label>
           <button type="button" data-prev>上一步</button>
           <button type="button" class="button primary is-primary" data-next>下一步</button>
           <button type="button" data-reset>重新开始</button>
@@ -315,16 +315,16 @@
       root.querySelector("[data-candidate-count]").textContent = state.step >= 4 ? String((mode.lines || []).length) : "—";
       root.querySelector("[data-verified-count]").textContent = state.step >= 5 ? String(preset.candidates.length) : "0";
       root.querySelector("[data-equations]").innerHTML = preset.equations.map((eq) => `<div>${tex(eq)}</div>`).join("");
-      root.querySelector("[data-description]").textContent = preset.describe;
+      root.querySelector("[data-description]").innerHTML = preset.describe;
       const explanations = [
-        `先观察两条曲线，并决定消去 ${mode.variable}、保留 ${mode.kept}。`,
-        `把两个方程都看成关于 ${mode.variable} 的多项式，其系数只含 ${mode.kept}。`,
+        `先观察两条曲线，并决定消去 ${tex(mode.variable)}、保留 ${tex(mode.kept)}。`,
+        `把两个方程都看成关于 ${tex(mode.variable)} 的多项式，其系数只含 ${tex(mode.kept)}。`,
         "按次数错位排列系数；矩阵大小由两个多项式的次数决定。",
-        `取Sylvester 矩阵的行列式，得到只含 ${mode.kept} 的结式。`,
-        `解结式，得到 ${mode.kept} 的候选值；重数记录在候选中。`,
+        `取Sylvester 矩阵的行列式，得到只含 ${tex(mode.kept)} 的结式。`,
+        `解结式，得到 ${tex(mode.kept)} 的候选值；重数记录在候选中。`,
         "把候选值代回原方程，求另一坐标并逐点验证。",
       ];
-      root.querySelector("[data-explanation]").textContent = explanations[state.step];
+      root.querySelector("[data-explanation]").innerHTML = explanations[state.step];
       root.querySelector("[data-polys]").innerHTML = mode.polys.map((poly) => `<div>${tex(poly)}</div>`).join("");
       root.querySelector("[data-sylvester]").innerHTML = texD(String.raw`S_${mode.variable}(f,g)=${mode.sylvester}`);
       root.querySelector("[data-resultant]").innerHTML = texD(String.raw`\operatorname{Res}_${mode.variable}(f,g)=${mode.resultant}`);
@@ -344,7 +344,7 @@
       root.querySelector("[data-conclusion]").innerHTML = state.step < 5
         ? "结式结果目前仍是候选信息；完成回代前，不把候选点标记为最终解。"
         : preset.candidates.length
-          ? `${preset.candidates.length} 个实点通过原方程验证${rejected.length ? `，${rejected.length} 个只在一条曲线上的点被舍去` : ""}。${state.key === "tangent" ? "结式的二重根对应两条曲线在 (1,1) 相切。" : ""}`
+          ? `${preset.candidates.length} 个实点通过原方程验证${rejected.length ? `，${rejected.length} 个只在一条曲线上的点被舍去` : ""}。${state.key === "tangent" ? `结式的二重根对应两条曲线在 ${tex("(1,1)")} 相切。` : ""}`
           : "结式没有实根，因此原系统没有实公共点；在复数域中仍存在候选。";
       M().pulse(root.querySelector("[data-stage-card]"));
       draw();
@@ -376,9 +376,9 @@
       root,
       manual: true,
       key: "visuals/ch3/section7-presentation.js#candidates",
-      question: `圆 ${tex("x^2+y^2=1")} 与直线 ${tex("x=y")}：消去 x，结式 ${tex("2y^2-1")} 给出 ${tex("y=\\pm\\tfrac{\\sqrt2}{2}")}。两条水平线 ${tex("y=\\pm\\tfrac{\\sqrt2}{2}")} 与圆共有 4 个交点。方程组有几个实数解？`,
+      question: `圆 ${tex("x^2+y^2=1")} 与直线 ${tex("x=y")}：消去 ${tex("x")}，结式 ${tex("2y^2-1")} 给出 ${tex("y=\\pm\\tfrac{\\sqrt2}{2}")}。两条水平线 ${tex("y=\\pm\\tfrac{\\sqrt2}{2}")} 与圆共有 4 个交点。方程组有几个实数解？`,
       options: [
-        ["2 个：只有同时在直线 x=y 上的交点", true, ""],
+        [`2 个：只有同时在直线 ${tex("x=y")} 上的交点`, true, ""],
         ["4 个：每个交点都是解", false, `${tex("\\left(-\\tfrac{\\sqrt2}{2},\\tfrac{\\sqrt2}{2}\\right)")} 在圆上，但不满足 ${tex("x-y=0")}。`],
         ["1 个", false, "两条水平线上各有一个点同时在两条曲线上。"],
         [`0 个：${tex("\\tfrac{\\sqrt2}{2}")} 不是有理数`, false, "实数解不要求是有理数。"],

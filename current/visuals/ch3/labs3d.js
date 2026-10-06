@@ -291,7 +291,7 @@
   function eliminationLab(root) {
     const lab = labShell(root, {
       title: "消元：平面绕交线转动，解点不动",
-      task: "选一个倍加操作，拖动倍数 c，看第 i 个平面怎样变化。消去某个未知量的那一刻，新平面恰好平行于对应坐标轴。",
+      task: `选一个倍加操作，拖动倍数 ${tex("c")}，看第 ${tex("i")} 个平面怎样变化。消去某个未知量的那一刻，新平面恰好平行于对应坐标轴。`,
     });
     const presetBar = el("div", "ch3l-toolbar");
     lab.append(presetBar);
@@ -306,10 +306,10 @@
 
     const opBox = el("div", "ch3l-card");
     opBox.innerHTML = `<h4>倍加 ${tex("R_i\\leftarrow R_i+cR_j")}</h4>
-      <div class="ch3l-op-row"><label>i <select data-t></select></label><label>j <select data-s></select></label></div>
-      <label class="ch3l-range"><span>c</span><input type="range" min="-4" max="4" step="0.25" value="0" data-c /><b data-cv>0</b></label>
+      <div class="ch3l-op-row"><label>${tex("i")} <select data-t></select></label><label>${tex("j")} <select data-s></select></label></div>
+      <label class="ch3l-range"><span>${tex("c")}</span><input type="range" min="-4" max="4" step="0.25" value="0" data-c /><b data-cv>0</b></label>
       <div class="ch3l-actions"><button type="button" class="ch3l-btn" data-suggest>消去一个未知量</button><button type="button" class="ch3l-btn is-primary" data-apply>执行</button></div>
-      <div class="ch3l-actions"><button type="button" class="ch3l-btn" data-swap>交换 R₂、R₃</button><button type="button" class="ch3l-btn" data-undo>撤销</button><button type="button" class="ch3l-btn" data-look>沿 x₁ 看</button></div>`;
+      <div class="ch3l-actions"><button type="button" class="ch3l-btn" data-swap>交换 ${tex("R_2")}、${tex("R_3")}</button><button type="button" class="ch3l-btn" data-undo>撤销</button><button type="button" class="ch3l-btn" data-look>沿 ${tex("x_1")} 看</button></div>`;
     const sysBox = el("div", "ch3l-card");
     const resultBox = el("div", "ch3l-result");
     resultBox.hidden = true;
@@ -429,7 +429,7 @@
         else state.eliminated = f.k;
       };
       anim = requestAnimationFrame(step);
-      $("[data-look]").textContent = `沿 x${"₁₂₃"[f.k]} 看`;
+      $("[data-look]").innerHTML = `沿 ${tex(`x_${f.k + 1}`)} 看`;
       $("[data-look]").dataset.axis = String(f.k);
     });
     $("[data-apply]").addEventListener("click", () => {
@@ -462,12 +462,12 @@
     predictGate(
       gateHost,
       {
-        question: `对“交于一点”的方程组做 ${tex("R_2\\leftarrow R_2+cR_1")}。c 连续变化时，平面 2 会怎样运动？`,
+        question: `对“交于一点”的方程组做 ${tex("R_2\\leftarrow R_2+cR_1")}。${tex("c")} 连续变化时，平面 2 会怎样运动？`,
         options: [
           { text: "绕平面 1 与平面 2 的交线转动", correct: true },
           { text: "平行移动", why: "倍加同时改变法向和右端，平面不会只平移。" },
           { text: "绕平面 2 与平面 3 的交线转动", why: "平面 3 没有参与这次操作。" },
-          { text: "绕 x₁ 轴转动", why: "转轴由参与操作的两个方程决定。" },
+          { text: `绕 ${tex("x_1")} 轴转动`, why: "转轴由参与操作的两个方程决定。" },
         ],
         right: "新方程是两个旧方程的组合，凡满足旧方程 1、2 的点都满足它，所以新平面始终含着这条交线（图中的虚线“铰链”），解点也就一直在上面。",
       },
@@ -490,10 +490,10 @@
   function vectorSpaceLab(root) {
     const lab = labShell(root, {
       title: "同一个方程组，两幅图同时成立",
-      task: "调节 x₁、x₂、x₃。左图是输入空间：点 x 要落在三个平面的公共点上。右图是输出空间：箭头链 x₁a₁+x₂a₂+x₃a₃ 要命中 b。",
+      task: `调节 ${tex("x_1")}、${tex("x_2")}、${tex("x_3")}。左图是输入空间：点 ${tex("x")} 要落在三个平面的公共点上。右图是输出空间：箭头链 ${tex("x_1a_1+x_2a_2+x_3a_3")} 要命中 ${tex("b")}。`,
     });
     const A = [[1, 2, 3], [2, 5, 2], [6, -3, 1]].map((r) => r.map(F));
-    const targets = { b1: { label: "b=(6,4,2)", b: [6, 4, 2] }, b2: { label: "b=(4,4,7)", b: [4, 4, 7] } };
+    const targets = { b1: { label: tex("b=(6,4,2)"), b: [6, 4, 2] }, b2: { label: tex("b=(4,4,7)"), b: [4, 4, 7] } };
     const cols = [0, 1, 2].map((j) => A.map((r) => r[j]));
     const state = { x: [0, 0, 0], key: "b1" };
 
@@ -573,7 +573,7 @@
         .join("");
       status.innerHTML = `<div class="ch3l-dists">${dists}</div>${
         hit
-          ? `<span class="ch3l-ok">命中</span> ${tex(`x=(${x.map(fmt).join(",")})`)}：点 x 落在三个平面的公共点上，同时箭头链的终点就是 b。`
+          ? `<span class="ch3l-ok">命中</span> ${tex(`x=(${x.map(fmt).join(",")})`)}：点 ${tex("x")} 落在三个平面的公共点上，同时箭头链的终点就是 ${tex("b")}。`
           : `${tex(`Ax=(${Ax.map(fmt).join(",")})`)}，目标 ${tex(`b=(${bb.map(fmt).join(",")})`)}。`
       }`;
     }
@@ -589,14 +589,14 @@
       }),
     );
     predictGate(gateHost, {
-      question: `A 的三列是 ${tex("a_1=(1,2,6),\\ a_2=(2,5,-3),\\ a_3=(3,2,1)")}。不做消元，${tex("b=(6,4,2)")} 该取怎样的 x？`,
+      question: `${tex("A")} 的三列是 ${tex("a_1=(1,2,6),\\ a_2=(2,5,-3),\\ a_3=(3,2,1)")}。不做消元，${tex("b=(6,4,2)")} 该取怎样的 ${tex("x")}？`,
       options: [
         { text: tex("x=(0,0,2)"), correct: true },
         { text: tex("x=(6,4,2)"), why: "x 是列的权重，不是 b 的坐标。" },
         { text: tex("x=(2,0,0)"), why: "2a₁=(2,4,12)，只有第二个分量与 b 相同。" },
         { text: "必须先消元才能知道", why: "b 和 a₃ 有什么关系？" },
       ],
-      right: "b=2a₃。把 x₃ 调到 2 验证：左图的点同时落到三个平面上。",
+      right: `${tex("b=2a_3")}。把 ${tex("x_3")} 调到 2 验证：左图的点同时落到三个平面上。`,
     });
 
     redraw();
@@ -611,7 +611,7 @@
   function dependenceLab(root) {
     const lab = labShell(root, {
       title: "第三个向量有没有带来新方向",
-      task: "v₁、v₂ 张成一个过原点的平面。上下拖动 v₃（每次移动半格），看平行六面体的体积：体积为 0 的那一刻，v₃ 落进了平面，三个向量线性相关。",
+      task: `${tex("v_1")}、${tex("v_2")} 张成一个过原点的平面。上下拖动 ${tex("v_3")}（每次移动半格），看平行六面体的体积：体积为 0 的那一刻，${tex("v_3")} 落进了平面，三个向量线性相关。`,
     });
     // free: after the reveal every vector can be dragged anywhere; before it, v₁ and v₂ stay
     // as in the question and v₃ moves straight up and down, so (1,1,2) can be reached
@@ -626,7 +626,7 @@
     const scene = S().create(stage, { range: 2.5, label: "三个向量与它们张成的空间", yaw: 0.4, pitch: 0.35, spreadLabels: true, labelSafe: true });
     const info = el("div", "ch3l-card");
     const tools = el("div", "ch3l-actions");
-    tools.innerHTML = `<button type="button" class="ch3l-btn" data-snap>把 v₃ 放进平面</button><button type="button" class="ch3l-btn" data-look>沿平面看</button><button type="button" class="ch3l-btn" data-reset>回到默认视角</button>`;
+    tools.innerHTML = `<button type="button" class="ch3l-btn" data-snap>把 ${tex("v_3")} 放进平面</button><button type="button" class="ch3l-btn" data-look>沿平面看</button><button type="button" class="ch3l-btn" data-reset>回到默认视角</button>`;
     const gateHost = el("div");
     const result = el("div", "ch3l-result");
     result.hidden = true;
@@ -682,7 +682,7 @@
 
     buttons(
       toolbar,
-      [["1", "只有 v₁"], ["2", "加入 v₂"], ["3", "加入 v₃"]],
+      [["1", `只有 ${tex("v_1")}`], ["2", `加入 ${tex("v_2")}`], ["3", `加入 ${tex("v_3")}`]],
       (k) => {
         state.stage = Number(k);
         redraw();
@@ -713,10 +713,10 @@
           { text: "−2", why: "(1,1,0) 时体积是 −2；换到 (1,1,2) 以后呢？" },
           { text: "取决于视角", why: "体积由三个向量决定，与观察方向无关。" },
         ],
-        right: "(1,1,2)=v₁+v₂ 落在平面里，六面体被压扁。点“沿平面看”，三个向量排成一条线。",
+        right: `${tex("(1,1,2)=v_1+v_2")} 落在平面里，六面体被压扁。点“沿平面看”，三个向量排成一条线。`,
         // judged only when v₃ reaches (1,1,2) with v₁, v₂ as in the question
         inExample: () => state.stage === 3 && [[1, 0, 1], [0, 1, 1], [1, 1, 2]].every((target, i) => target.every((x, k) => state.v[i][k] === x)),
-        elsewhere: () => (state.stage === 3 ? "接着把 v₃ 拖到 (1,1,2)，再看体积。" : "这道题问三个向量的体积：换回“加入 v₃”，把 v₃ 拖到 (1,1,2) 再看结果。"),
+        elsewhere: () => (state.stage === 3 ? `接着把 ${tex("v_3")} 拖到 ${tex("(1,1,2)")}，再看体积。` : `这道题问三个向量的体积：换回“加入 ${tex("v_3")}”，把 ${tex("v_3")} 拖到 ${tex("(1,1,2)")} 再看结果。`),
       },
       () => {
         result.hidden = false;
@@ -725,7 +725,7 @@
         redraw();
       },
     );
-    result.innerHTML = `<strong>结论</strong><p>v₃ 带来新方向，当且仅当它不在 ${tex("\\operatorname{span}\\{v_1,v_2\\}")} 里。不在平面里，体积非零，三个向量无关；落进平面，体积为 0，并且可以写出一个非平凡关系。体积很小但不为 0，仍然是无关。</p>`;
+    result.innerHTML = `<strong>结论</strong><p>${tex("v_3")} 带来新方向，当且仅当它不在 ${tex("\\operatorname{span}\\{v_1,v_2\\}")} 里。不在平面里，体积非零，三个向量无关；落进平面，体积为 0，并且可以写出一个非平凡关系。体积很小但不为 0，仍然是无关。</p>`;
 
     redraw();
     return () => scene.destroy();
@@ -762,7 +762,6 @@
    * every column by the same invertible P, so each relation survives every step.
    */
   function columnRelations(A) {
-    const SUB = "₁₂₃";
     return M()
       .nullspaceBasis(A)
       .basis.map((v) => {
@@ -770,14 +769,15 @@
         const terms = v
           .map((x, i) => ({ i, c: M().neg(x) }))
           .filter(({ i, c }) => i !== free && !M().isZero(c));
-        const text = terms
+        const rhs = terms
           .map(({ i, c }, k) => {
             const abs = M().absF(c);
-            const coef = M().eq(abs, F(1)) ? "" : M().formatF(abs);
-            return `${c.n < 0 ? "−" : k ? "+" : ""}${coef}c${SUB[i]}`;
+            const coef = M().eq(abs, F(1)) ? "" : fmt(abs);
+            return `${c.n < 0 ? "-" : k ? "+" : ""}${coef}c_${i + 1}`;
           })
           .join("");
-        return { free, terms, text: `c${SUB[free]}=${text || "0"}` };
+        // LaTeX, e.g. c_3=c_1+c_2
+        return { free, terms, tex: `c_${free + 1}=${rhs || "0"}` };
       });
   }
 
@@ -878,7 +878,7 @@
       const next = list[state.step];
       const label = next === "swap12" ? "R_2\\leftrightarrow R_3" : next ? `R_${next[0] + 1}\\leftarrow R_${next[0] + 1}${num(F(next[2])) < 0 ? "-" : "+"}${Math.abs(next[2]) === 1 ? "" : Math.abs(next[2])}R_${next[1] + 1}` : "";
       const relText = state.relations.length
-        ? state.relations.map((rel) => `${rel.text}${state.step ? (relationHolds(A, rel) ? " ✓" : " ×") : ""}`).join("，")
+        ? state.relations.map((rel) => `${tex(rel.tex)}${state.step ? (relationHolds(A, rel) ? " ✓" : " ×") : ""}`).join("，")
         : "三列线性无关";
       strip.innerHTML = `<div class="ch3l-matrix">${texD(`A=${M().latexMatrix(A)}`)}</div>
         <div class="ch3l-strip-info"><p>行空间：${spanName(r)}　列空间：${spanName(r)}</p><p>${tex(`\\dim\\text{行空间}=\\dim\\text{列空间}=${r}`)}</p>
@@ -905,14 +905,14 @@
 
     buttons(toolbar, Object.entries(RANK_PRESETS).map(([k, v]) => [k, v.label]), load, "r2");
     predictGate(gateHost, {
-      question: `对秩 2 的 A 做第一步 ${tex("R_2\\leftarrow R_2-2R_1")}。右图的列空间平面和关系 ${tex("c_3=c_1+c_2")} 会怎样？`,
+      question: `对秩 2 的 ${tex("A")} 做第一步 ${tex("R_2\\leftarrow R_2-2R_1")}。右图的列空间平面和关系 ${tex("c_3=c_1+c_2")} 会怎样？`,
       options: [
-        { text: "平面换了位置，c₃=c₁+c₂ 仍成立", correct: true },
-        { text: "平面不动，c₃=c₁+c₂ 仍成立", why: "右图里，新平面离开了虚线留下的旧平面。" },
-        { text: "平面换了位置，c₃=c₁+c₂ 不再成立", why: "虚线平行四边形里，c₁+c₂ 的顶点仍落在 c₃ 的箭头尖上。" },
+        { text: `平面换了位置，${tex("c_3=c_1+c_2")} 仍成立`, correct: true },
+        { text: `平面不动，${tex("c_3=c_1+c_2")} 仍成立`, why: "右图里，新平面离开了虚线留下的旧平面。" },
+        { text: `平面换了位置，${tex("c_3=c_1+c_2")} 不再成立`, why: "虚线平行四边形里，c₁+c₂ 的顶点仍落在 c₃ 的箭头尖上。" },
         { text: "平面不动，关系也不再成立", why: "两处都和图不符：平面动了，平行四边形仍闭合。" },
       ],
-      right: "行变换把每一列都左乘同一个可逆矩阵 P，Pc₃=Pc₁+Pc₂，所以列之间的线性关系每一步都成立。列空间换了位置，维数却不变；左图的行空间始终是同一个平面（虚线与实线重合）。",
+      right: `行变换把每一列都左乘同一个可逆矩阵 ${tex("P")}，${tex("Pc_3=Pc_1+Pc_2")}，所以列之间的线性关系每一步都成立。列空间换了位置，维数却不变；左图的行空间始终是同一个平面（虚线与实线重合）。`,
     });
     load("r2");
     return () => {
@@ -925,8 +925,8 @@
 
   function solvabilityLab(root) {
     const lab = labShell(root, {
-      title: "把 b 拖离列空间，三个平面失去公共线",
-      task: "A 的第三列等于前两列之和，列空间是平面 b₃=b₁+b₂。拖动 b：它在平面上时方程组有解，一离开就无解。虚线竖段是偏离量 b₃−b₁−b₂。右图同步显示三个方程对应的平面。",
+      title: `把 ${tex("b")} 拖离列空间，三个平面失去公共线`,
+      task: `${tex("A")} 的第三列等于前两列之和，列空间是平面 ${tex("b_3=b_1+b_2")}。拖动 ${tex("b")}：它在平面上时方程组有解，一离开就无解。虚线竖段是偏离量 ${tex("b_3-b_1-b_2")}。右图同步显示三个方程对应的平面。`,
     });
     // rows (1,0,1), (0,1,1), (1,1,2): the end-on triangle has sides √6/3, √6/3, √2 (no sliver)
     const A = [[1, 0, 1], [0, 1, 1], [1, 1, 2]].map((r) => r.map(F));
@@ -937,7 +937,7 @@
     const pair = el("div", "ch3l-pair");
     const left = el("div", "ch3l-view");
     const right = el("div", "ch3l-view");
-    left.innerHTML = `<div class="ch3l-view-title">列空间与目标 b（输出空间）</div>`;
+    left.innerHTML = `<div class="ch3l-view-title">列空间与目标 ${tex("b")}（输出空间）</div>`;
     right.innerHTML = `<div class="ch3l-view-title">三个方程的平面（输入空间）</div>`;
     pair.append(left, right);
     lab.append(pair);
@@ -954,7 +954,7 @@
     });
     const status = el("div", "ch3l-status");
     const tools = el("div", "ch3l-actions");
-    tools.innerHTML = `<button type="button" class="ch3l-btn" data-on>b=(1,2,3)</button><button type="button" class="ch3l-btn" data-off>b=(1,2,4)</button><button type="button" class="ch3l-btn" data-look>沿列空间平面看</button><button type="button" class="ch3l-btn" data-along disabled>沿交线方向看</button>`;
+    tools.innerHTML = `<button type="button" class="ch3l-btn" data-on>${tex("b=(1,2,3)")}</button><button type="button" class="ch3l-btn" data-off>${tex("b=(1,2,4)")}</button><button type="button" class="ch3l-btn" data-look>沿列空间平面看</button><button type="button" class="ch3l-btn" data-along disabled>沿交线方向看</button>`;
     lab.append(tools, status);
     const lookBtn = tools.querySelector("[data-along]");
     const gateHost = el("div");
@@ -1044,7 +1044,7 @@
         { text: "出现两个平行平面", why: "三个法向两两不平行，任意两个平面都相交。" },
         { text: "交于一个点", why: "rank A=2，任何 b 都不会给出唯一解。" },
       ],
-      right: "没有两个平面平行，却没有公共点：沿交线方向看，三个平面围成一个三角形（三棱柱）。此时化简后最后一行是 [0 0 0 | b₃−b₁−b₂]，偏离量不为 0，增广矩阵的秩比 A 的秩多 1。",
+      right: `没有两个平面平行，却没有公共点：沿交线方向看，三个平面围成一个三角形（三棱柱）。此时化简后最后一行是 ${tex("[0\\ 0\\ 0\\mid b_3-b_1-b_2]")}，偏离量不为 0，增广矩阵的秩比 ${tex("A")} 的秩多 1。`,
       onPick: () => {
         state.picked = true;
         lookBtn.disabled = false;
@@ -1068,7 +1068,7 @@
         label: "两个方程",
         A: [[1, 1, 1], [1, 2, -1]],
         b: [3, 4],
-        task: "实线平面是两个方程，它们的交线是全部解；虚线平面是对应的齐次方程，交线是零空间。改变 b，或者沿解线移动 t，比较两条直线。蓝色箭头是一个特解 x₀，金色点 x 是解线上的任意一个解。",
+        task: `实线平面是两个方程，它们的交线是全部解；虚线平面是对应的齐次方程，交线是零空间。改变 ${tex("b")}，或者沿解线移动 ${tex("t")}，比较两条直线。蓝色箭头是一个特解 ${tex("x_0")}，金色点 ${tex("x")} 是解线上的任意一个解。`,
         predict: {
           question: `改变 ${tex("b_1")} 或 ${tex("b_2")}，金色的解线会怎样？`,
           options: [
@@ -1084,7 +1084,7 @@
         label: "一个方程",
         A: [[1, 1, 1]],
         b: [2],
-        task: "只有一个方程 x₁+x₂+x₃=b₁：全部解是一个平面，零空间是过原点的平行平面，由两个基础解向量张成。用 s、t 在解平面上移动点 x；蓝色箭头是一个特解 x₀。",
+        task: `只有一个方程 ${tex("x_1+x_2+x_3=b_1")}：全部解是一个平面，零空间是过原点的平行平面，由两个基础解向量张成。用 ${tex("s")}、${tex("t")} 在解平面上移动点 ${tex("x")}；蓝色箭头是一个特解 ${tex("x_0")}。`,
         predict: {
           question: `这个方程有 3 个未知量、秩为 1。基础解系含几个向量？`,
           options: [
@@ -1093,7 +1093,7 @@
             { text: "3 个", why: "秩为 1，主元未知量占掉一个。" },
             { text: "0 个", why: "方程个数少于未知量个数，一定有自由未知量。" },
           ],
-          right: "n−r=2：零空间是一个平面，解集是把这个平面平移到特解处。",
+          right: `${tex("n-r=2")}：零空间是一个平面，解集是把这个平面平移到特解处。`,
         },
       },
     };
@@ -1173,7 +1173,7 @@
       info.innerHTML = `<h4>读数</h4>
         <p>${tex(`x_0=(${part.x.map(fmt).join(",")})`)}</p>
         <p>基础解系 ${M().nullspaceBasis(A).basis.map((v) => tex(`(${v.map(fmt).join(",")})`)).join("、")}</p>
-        <p>${tex(`Ax=(${Ax.map(fmt).join(",")})=b`)}：在解集上移动，Ax 始终等于 b。</p>`;
+        <p>${tex(`Ax=(${Ax.map(fmt).join(",")})=b`)}：在解集上移动，${tex("Ax")} 始终等于 ${tex("b")}。</p>`;
     }
 
     function renderControls() {
@@ -1210,7 +1210,7 @@
       state.s = 0;
       state.ghostB = null;
       state.lastInput = 0;
-      lab.querySelector(".ch3l-head p").textContent = presets[key].task;
+      lab.querySelector(".ch3l-head p").innerHTML = presets[key].task;
       gateHost.innerHTML = "";
       predictGate(gateHost, presets[key].predict);
       renderControls();

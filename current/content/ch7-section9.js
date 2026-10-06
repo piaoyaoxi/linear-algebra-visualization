@@ -65,7 +65,7 @@ defineChapter7Section("minimal-polynomial", {
     },
     {
       question: "σ 在某组基下的矩阵是准对角矩阵 diag(A₁,A₂)，σ 的最小多项式与 A₁、A₂ 的最小多项式 m₁、m₂ 是什么关系？",
-      answer: "是 m₁ 与 m₂ 的最小公倍式：g(diag(A₁,A₂))=diag(g(A₁),g(A₂))，它为 O 当且仅当 m₁ 与 m₂ 都整除 g。",
+      answer: `是 m₁ 与 m₂ 的最小公倍式：${texInline(String.raw`g(\operatorname{diag}(A_1,A_2))=\operatorname{diag}(g(A_1),g(A_2))`)}，它为 O 当且仅当 m₁ 与 m₂ 都整除 g。`,
     },
   ],
   summary: [

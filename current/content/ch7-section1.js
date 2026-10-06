@@ -69,7 +69,7 @@ defineChapter7Section("linear-map-definition", {
     },
     {
       question: `ℝ² 上的线性变换 σ 满足 ${texInline(String.raw`\sigma(1,0)=(2,1)`)}，${texInline(String.raw`\sigma(0,1)=(-1,3)`)}。${texInline(String.raw`\sigma(3,-2)`)} 是多少？为什么两个像就够了？`,
-      answer: "σ(3,−2)=3σ(1,0)−2σ(0,1)=(8,−3)。每个向量都是 (1,0)、(0,1) 的线性组合，而 σ 保持线性组合。",
+      answer: `${texInline(String.raw`\sigma(3,-2)=3\sigma(1,0)-2\sigma(0,1)=(8,-3)`)}。每个向量都是 (1,0)、(0,1) 的线性组合，而 σ 保持线性组合。`,
     },
   ],
   summary: [

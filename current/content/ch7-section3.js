@@ -60,7 +60,7 @@ defineChapter7Section("matrix-of-linear-map", {
     },
     {
       question: "为什么相似矩阵的迹相同？",
-      answer: "|λE−X⁻¹AX|=|X⁻¹(λE−A)X|=|λE−A|，特征多项式相同；迹是 λⁿ⁻¹ 项系数的相反数。从几何上看，它们记录的是同一个线性变换。",
+      answer: `${texInline(String.raw`|\lambda E-X^{-1}AX|=|X^{-1}(\lambda E-A)X|=|\lambda E-A|`)}，特征多项式相同；迹是 ${texInline(String.raw`\lambda^{n-1}`)} 项系数的相反数。从几何上看，它们记录的是同一个线性变换。`,
     },
     {
       question: "ℝ² 上旋转 90° 的变换，在某组实基下的矩阵能是对角矩阵吗？",
@@ -68,7 +68,7 @@ defineChapter7Section("matrix-of-linear-map", {
     },
     {
       question: "在实验中把 η₁ 换成 2η₁、η₂ 不动，B 的四个元素怎样变化？",
-      answer: "对角元不变，b₂₁ 乘 2，b₁₂ 除以 2：σ(2η₁)=b₁₁(2η₁)+2b₂₁η₂，而 ση₂ 用 2η₁ 表示时系数减半。",
+      answer: `对角元不变，b₂₁ 乘 2，b₁₂ 除以 2：${texInline(String.raw`\sigma(2\eta_1)=b_{11}(2\eta_1)+2b_{21}\eta_2`)}，而 ση₂ 用 2η₁ 表示时系数减半。`,
     },
   ],
   summary: [

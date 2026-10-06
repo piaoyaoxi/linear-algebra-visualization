@@ -65,7 +65,7 @@ defineChapter7Section("invariant-subspaces", {
     },
     {
       question: "W₁、W₂ 都是 σ 的不变子空间，W₁∩W₂ 和 W₁+W₂ 还是吗？",
-      answer: "都是。α∈W₁∩W₂ 时 σα 同时在 W₁、W₂ 中；σ(α₁+α₂)=σα₁+σα₂∈W₁+W₂。",
+      answer: `都是。α∈W₁∩W₂ 时 σα 同时在 W₁、W₂ 中；${texInline(String.raw`\sigma(\alpha_1+\alpha_2)=\sigma\alpha_1+\sigma\alpha_2\in W_1+W_2`)}。`,
     },
     {
       question: `剪切 ${texInline(String.raw`\begin{pmatrix}1&1\\0&1\end{pmatrix}`)} 的矩阵能化成准对角（两个 1 阶块）吗？`,

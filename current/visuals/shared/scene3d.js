@@ -171,6 +171,8 @@
   }
 
   function create(host, options = {}) {
+    // every scene keeps its labels apart and inside the canvas unless it asks otherwise
+    options = { spreadLabels: true, labelSafe: true, ...options };
     let L = options.range || 4;
     const defaults = { yaw: options.yaw ?? -0.95, pitch: options.pitch ?? 0.42 };
     const camera = { yaw: defaults.yaw, pitch: defaults.pitch };
@@ -319,7 +321,7 @@
           const from = o.from || [0, 0, 0];
           if (V.len(V.sub(o.to, from)) < 1e-9) continue;
           prims.push({ kind: "arrow", a: from, b: o.to, color, width: o.width || 2.8, ...lineStyle(o) });
-          if (o.label) labels.push({ p: o.labelAt || V.add(o.to, V.mul(V.norm(V.sub(o.to, from)), 0.28)), text: o.label, color, font: "700 14px 'LA Serif Latin', 'LA Serif SC', 'Songti SC', serif" });
+          if (o.label) labels.push({ p: o.labelAt || V.add(o.to, V.mul(V.norm(V.sub(o.to, from)), 0.28)), seg: o.labelAt ? null : [V.add(from, V.mul(V.sub(o.to, from), 0.5)), o.to], text: o.label, color, font: "700 14px 'LA Serif Latin', 'LA Serif SC', 'Songti SC', serif" });
         } else if (o.type === "point") {
           prims.push({ kind: "dot", p: o.p, color, r: o.r || 5, hollow: o.hollow });
           if (o.label) labels.push({ p: o.p, text: o.label, color, dx: 10, dy: -10 });
@@ -455,7 +457,9 @@
         return hit;
       };
       const clearScreen = clear.map((pts) => pts.map((p) => project(p, b)));
-      labels.forEach((lab) => {
+      // object labels first, axis names last: a crowded axis name is left out
+      const order = options.spreadLabels ? [...labels.filter((l) => !l.axis), ...labels.filter((l) => l.axis)] : labels;
+      order.forEach((lab) => {
         const q = project(lab.p, b);
         if (lab.axis && clearScreen.some((poly) => inside(q, poly))) return;
         let x = q.x + (lab.dx || 6);
@@ -466,6 +470,9 @@
           const w = ctx.measureText(lab.text).width + 4;
           ctx.restore();
           const h = 16;
+          // an axis name keeps a wider gap, so it never reads as part of a label (a₂b₁)
+          const gap = lab.axis ? 12 : 6;
+          const seg = lab.seg ? [project(lab.seg[0], b), project(lab.seg[1], b)] : null;
           const nearShaft = (cx, cy) =>
             shafts.some(([p, q]) => {
               const mx = cx + w / 2;
@@ -474,18 +481,44 @@
               const t = Math.max(0, Math.min(1, ((mx - p.x) * vx + (cy - p.y) * vy) / (vx * vx + vy * vy || 1)));
               return Math.hypot(p.x + vx * t - mx, p.y + vy * t - cy) < Math.min(w / 2, 14);
             });
-          // a small gap, so two labels never touch
-          const gap = 6;
-          const hits = (cx, cy) => placed.some((r) => cx < r.x + r.w + gap && cx + w + gap > r.x && Math.abs(cy - r.y) < h) || nearShaft(cx, cy);
-          const tries = [[0, 0], [0, -h], [0, h], [w * 0.6, 0], [-w * 0.6, 0], [w + gap, 0], [w + gap, h], [0, -2 * h], [0, 2 * h], [w * 0.6, -h], [-w * 0.6, h]];
-          if (options.labelSafe) tries.push([-w - gap, 0], [-w - gap, -h], [w + gap, -h], [-w - gap, h], [0, -3 * h], [0, 3 * h]);
-          // with labelSafe, a candidate must also fit inside the canvas
-          const inside = (cx, cy) => !options.labelSafe || (cx >= 4 && cx + w <= size.w - 4 && cy >= 10 && cy <= size.h - 10);
-          const ok = tries.find(([ox, oy]) => inside(x + ox, y + oy) && !hits(x + ox, y + oy));
-          if (ok) {
-            x += ok[0];
-            y += ok[1];
-          }
+          // how far from what it names: the anchor, or the end half of its arrow
+          const far = (cx, cy) => {
+            const mx = cx + w / 2;
+            let d = Math.hypot(mx - (x + w / 2), cy - y);
+            if (seg) {
+              const [p, q] = seg;
+              const vx = q.x - p.x;
+              const vy = q.y - p.y;
+              const t = Math.max(0, Math.min(1, ((mx - p.x) * vx + (cy - p.y) * vy) / (vx * vx + vy * vy || 1)));
+              d = Math.min(d, Math.hypot(p.x + vx * t - mx, p.y + vy * t - cy) + 6);
+            }
+            return d;
+          };
+          const fits = (cx, cy) => !options.labelSafe || (cx >= 4 && cx + w <= size.w - 4 && cy >= 10 && cy <= size.h - 10);
+          const cost = (cx, cy) => {
+            let c = far(cx, cy);
+            placed.forEach((r) => {
+              if (cx < r.x + r.w + gap && cx + w + gap > r.x && Math.abs(cy - r.y) < h) c += 120;
+            });
+            if (nearShaft(cx, cy)) c += 60;
+            if (!fits(cx, cy)) c += 400;
+            return c;
+          };
+          const tries = [[0, 0]];
+          for (const r of [16, 26, 38]) for (let k = 0; k < 12; k += 1) tries.push([Math.cos((k * Math.PI) / 6) * r * 1.3 - (Math.cos((k * Math.PI) / 6) < 0 ? w * 0.6 : 0), Math.sin((k * Math.PI) / 6) * r]);
+          let best = Infinity;
+          let pick = [0, 0];
+          tries.forEach(([ox, oy]) => {
+            const c = cost(x + ox, y + oy);
+            if (c < best - 0.01) {
+              best = c;
+              pick = [ox, oy];
+            }
+          });
+          // an axis name that cannot find a free spot is left out
+          if (lab.axis && best >= 100) return;
+          x += pick[0];
+          y += pick[1];
           x = Math.max(4, Math.min(size.w - w, x));
           y = Math.max(10, Math.min(size.h - 10, y));
           placed.push({ x, y, w });

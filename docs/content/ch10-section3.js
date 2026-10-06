@@ -19,10 +19,10 @@ defineChapter10Section("bilinear-form", {
       {
         title: "度量矩阵",
         tex: String.raw`f(\alpha,\beta)=X^TAY,\qquad A=\big(f(\varepsilon_i,\varepsilon_j)\big)_{n\times n}`,
-        text: "f 对每个变量都线性：f(k₁α₁+k₂α₂,β)=k₁f(α₁,β)+k₂f(α₂,β)，对 β 同样成立。X、Y 是 α、β 的坐标。固定 β，f(α,β) 是 α 的线性函数，系数是 AY；固定 α，系数是 AᵀX。",
+        text: `${texInline("f")} 对每个变量都线性：${texInline(String.raw`f(k_1\alpha_1+k_2\alpha_2,\beta)=k_1f(\alpha_1,\beta)+k_2f(\alpha_2,\beta)`)}，对 ${texInline(String.raw`\beta`)} 同样成立。${texInline(String.raw`X`)}、${texInline(String.raw`Y`)} 是 ${texInline(String.raw`\alpha`)}、${texInline(String.raw`\beta`)} 的坐标。固定 ${texInline(String.raw`\beta`)}，${texInline(String.raw`f(\alpha,\beta)`)} 是 ${texInline(String.raw`\alpha`)} 的线性函数，系数是 ${texInline(String.raw`AY`)}；固定 ${texInline(String.raw`\alpha`)}，系数是 ${texInline(String.raw`A^TX`)}。`,
         ponder: {
-          q: "a₁₂ 与 a₂₁ 分别读的是什么？",
-          a: "a₁₂=f(ε₁,ε₂)，a₂₁=f(ε₂,ε₁)。f 不对称时两者可以不同，下标的次序不能交换。",
+          q: `${texInline("a_{12}")} 与 ${texInline("a_{21}")} 分别读的是什么？`,
+          a: `${texInline(String.raw`a_{12}=f(\varepsilon_1,\varepsilon_2)`)}，${texInline(String.raw`a_{21}=f(\varepsilon_2,\varepsilon_1)`)}。${texInline("f")} 不对称时两者可以不同，下标的次序不能交换。`,
         },
       },
       {

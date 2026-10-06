@@ -78,7 +78,7 @@ defineChapter10Section("linear-functional", {
     },
     {
       question: `在 ${texInline("P[x]_n")} 中，f(p)=p(1) 是线性函数吗？它在基 ${texInline("1,x,\\dots,x^{n-1}")} 上的值是多少？`,
-      answer: "是线性函数：(kp+lq)(1)=kp(1)+lq(1)。它在每个基向量上的值都是 1，所以 f(a₀+a₁x+…)=a₀+a₁+…+aₙ₋₁。",
+      answer: `是线性函数：${texInline(String.raw`(kp+lq)(1)=kp(1)+lq(1)`)}。它在每个基向量上的值都是 1，所以 ${texInline(String.raw`f(a_0+a_1x+\cdots)=a_0+a_1+\cdots+a_{n-1}`)}。`,
     },
   ],
   summary: [

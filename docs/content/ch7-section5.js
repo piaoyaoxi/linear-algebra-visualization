@@ -60,7 +60,7 @@ defineChapter7Section("diagonal-matrices", {
     },
     {
       question: "在上面的例题中，从 x₀=(1,−2)ᵀ 出发反复乘 A，点怎样运动？从 (1,0)ᵀ 出发呢？",
-      answer: "(1,−2)ᵀ 是属于 2 的特征向量，xₖ=2ᵏ(1,−2)ᵀ 一直在这条直线上。(1,0)ᵀ=⅔(1,1)ᵀ+⅓(1,−2)ᵀ，xₖ=⅔·5ᵏ(1,1)ᵀ+⅓·2ᵏ(1,−2)ᵀ，5ᵏ 的分量占主导，方向趋近 (1,1)ᵀ。",
+      answer: `(1,−2)ᵀ 是属于 2 的特征向量，${texInline(String.raw`x_k=2^k(1,-2)^T`)} 一直在这条直线上。${texInline(String.raw`(1,0)^T=\tfrac23(1,1)^T+\tfrac13(1,-2)^T`)}，${texInline(String.raw`x_k=\tfrac23\cdot5^k(1,1)^T+\tfrac13\cdot2^k(1,-2)^T`)}，5ᵏ 的分量占主导，方向趋近 (1,1)ᵀ。`,
     },
     {
       question: "若 A²=A，A 的特征值只能是什么？",

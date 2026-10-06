@@ -210,15 +210,15 @@
       if (!formal) return;
       formal.innerHTML = formalShell(
         "从子式配对到复合倍率",
-        "本节包含两条收束主线：广义 Laplace 定理把单行展开推广到多个行；乘法规则把行列式解释为线性变换复合时可乘的有向体积倍率。",
+        "广义 Laplace 定理把按一行展开推广到按 k 行展开；乘法规则说明线性变换复合时，有向体积倍率相乘。",
         module("01", "广义 Laplace 定理", "固定 k 行，遍历全部 k 列组合。", `
           <div class="ch2-def-stack">
             <article class="ch2-def"><span class="kicker">子式</span><strong>所选 k 行与 k 列交叉得到 k 阶行列式</strong><p>未被选择的行列形成互补子式。</p></article>
             <article class="ch2-def"><span class="kicker">位置符号</span><strong>${tex("(-1)^{\\sum I+\\sum J}")}</strong><p>I、J 分别是所选行指标集与列指标集。</p></article>
           </div>
-          <article class="ch2-def ch2-formula-block"><span class="kicker">固定行指标集 I 的展开</span><strong>${display("\\det(A)=\\sum_{\\substack{J\\subset\\{1,\\ldots,n\\}\\\\|J|=k}}(-1)^{\\sum I+\\sum J}\\det A[I,J]\\,\\det A[I^c,J^c]")}</strong><p>当 k=1 时，子式就是一个元素，互补子式就是余子式，公式退化为 §6。</p></article>
+          <article class="ch2-def ch2-formula-block ch2-laplace-formula"><span class="kicker">固定行指标集 I 的展开</span><strong>${display("\\det(A)=\\sum_{|J|=k}(-1)^{\\sum I+\\sum J}\\det A[I,J]\\,\\det A[I^c,J^c]")}</strong><p>J 取遍 {1,…,n} 的全部 k 元子集。当 k=1 时，子式就是一个元素，互补子式就是余子式，公式退化为 §6。</p></article>
           ${laplaceExample()}
-        `) + module("02", "乘法规则", "第二阶段必须从 B 后的图形继续，而非重新从单位形开始。", `
+        `) + module("02", "乘法规则", "先作用 B，再作用 A，倍率依次相乘。", `
           <article class="ch2-def ch2-formula-block"><span class="kicker">定理</span><strong>${display("\\det(AB)=\\det(A)\\det(B)")}</strong><p>向量先经过 B，再经过 A；有向体积先乘 det(B)，随后乘 det(A)。</p></article>
           ${proofSteps([
             "几何入口：单位体积经过 B 后乘 det(B)，再经过 A 后乘 det(A)。",
@@ -235,8 +235,7 @@
           </div>
         `) + misconception([
           "AB 与 BA 通常不同，但二者行列式都等于 det(A)det(B)。",
-          "几何动画解释公式为何自然；一般 n 阶的严格证明仍要回到多重线性与排列。",
-          "广义 Laplace 定理与乘法规则是本节两条独立而相互呼应的结论。",
+          "二维面积只说明 n=2 的情形；一般 n 阶的证明要用多重线性与排列。",
         ]),
       );
     },
@@ -245,8 +244,9 @@
       root.innerHTML = `
         <h2>交互实验</h2>
         <div class="ch2-lab" data-prod-lab>
-          <div class="ch2-lab-head"><h3>两次变换，面积倍率相乘</h3><p>单位正方形先经过 B，再从 B 的结果出发经过 A，合起来就是 AB。</p></div>
+          <div class="ch2-lab-head"><h3>两次变换，面积倍率相乘</h3></div>
           <div data-prod-gate></div>
+          <p class="ch2-lab-hint">单位正方形先经过 B，再从 B 的结果出发经过 A，合起来就是 AB。</p>
           <div class="ch2-presets">
             <button type="button" class="is-primary" data-prod-replay>播放 E → B → AB</button>
             <button type="button" class="is-active" data-prod-preset="scale">两次缩放</button>

@@ -75,11 +75,8 @@ defineChapter2Section("laplace-and-product", {
   quiz: [
     { question: "固定 4×4 的两行做 Laplace 展开，需要遍历多少个两列组合？", answer: `${texInline("\\binom42=6")} 个。` },
     { question: "广义 Laplace 展开的位置符号由什么决定？", answer: "由所选行指标之和与所选列指标之和的奇偶性决定。" },
-    { question: "k=1 的广义 Laplace 展开对应哪一节？", answer: "§6 按一行或一列展开。" },
     { question: "AB 与 BA 通常不同，为什么它们的行列式仍相等？", answer: "两者都等于 det(A)det(B)，标量乘法可交换。" },
     { question: "若 det(B)=0，det(AB) 等于多少？", answer: "0。" },
-    { question: "为什么后续变换不能恢复 B 已经压掉的维度？", answer: "线性映射的复合不能凭空增加 B 输出中已经缺失的独立方向。" },
-    { question: "相似矩阵为什么行列式相同？", answer: `${texInline("\\det(P^{-1}AP)=\\det(P)^{-1}\\det(A)\\det(P)=\\det(A)")}。` },
   ],
   summary: [
     "广义 Laplace 展开把单元素展开推广为子式与互补子式的配对。",

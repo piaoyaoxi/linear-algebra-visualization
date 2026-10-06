@@ -83,7 +83,8 @@
       container.querySelectorAll("button").forEach((button) => {
         button.addEventListener("click", () => {
           route = { type: button.dataset.routeType, index: Number(button.dataset.routeIndex) };
-          gate?.acted();
+          // the question is about row 2: only that route judges the guess; other routes keep it
+          if (route.type === "row" && route.index === 1) gate?.acted();
           render();
         }, { signal });
       });
@@ -170,7 +171,13 @@
       root.querySelector("[data-route-title]").textContent = route.type === "row" ? `沿第 ${route.index + 1} 行展开` : `沿第 ${route.index + 1} 列展开`;
       const explorer = root.querySelector("[data-route-reading]");
       explorer.hidden = !open();
-      root.querySelector("[data-route-wait]").hidden = open();
+      const wait = root.querySelector("[data-route-wait]");
+      wait.hidden = open();
+      if (!open()) {
+        wait.textContent = gate?.picked && !(route.type === "row" && route.index === 1)
+          ? "题目问的是第 2 行：点「第 2 行」，看它的各项怎样相加。"
+          : "猜好之后，点「第 2 行」，看它的各项怎样相加。";
+      }
       if (open()) {
         root.querySelector("[data-expand]").innerHTML = renderExpansionTiles(result);
         root.querySelector("[data-cost]").textContent = `${result.items.length} 个非零余子式`;
@@ -224,8 +231,9 @@
       root.innerHTML = `
         <h2>交互实验</h2>
         <div class="ch2-lab">
-          <div class="ch2-lab-head"><h3>余子式 · 删去一行与一列</h3><p>点击元素后，横线与竖线划去对应行列；剩余元素保持相对位置组成余子矩阵。</p></div>
+          <div class="ch2-lab-head"><h3>余子式 · 删去一行与一列</h3></div>
           <div data-cof-gate></div>
+          <p class="ch2-lab-hint">点击元素后，横线与竖线划去对应行列；剩余元素保持相对位置组成余子矩阵。</p>
           <div class="ch2-lab-grid ch2-cofactor-top">
             <div class="ch2-matrix-box ch2-cofactor-visual">
               <div class="ch2-cut-matrix" data-cut-matrix>
@@ -254,7 +262,7 @@
           <div class="ch2-leibniz" data-leibniz aria-live="polite"></div>
           <div class="ch2-route-explorer">
             <div class="ch2-presets ch2-route-list" data-route-list></div>
-            <div class="ch2-note" data-route-wait>猜好之后，点一条展开路线，看它的各项怎样相加。</div>
+            <div class="ch2-note" data-route-wait>猜好之后，点「第 2 行」，看它的各项怎样相加。</div>
             <div class="ch2-note" data-route-reading hidden><strong data-route-title></strong> · <span data-cost></span><div class="ch2-cof-tiles" data-expand></div><span data-omitted></span></div>
           </div>
         </div>`;

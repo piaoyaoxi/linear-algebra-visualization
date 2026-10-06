@@ -116,10 +116,32 @@
     }
 
     /*
-     * Where a label lands: kept inside the canvas and, when `avoid` is given,
-     * moved off the boxes of labels already drawn (axis names included).
+     * Where a label lands: kept inside the canvas and, when `avoid` is given, at the spot
+     * near its anchor that keeps clear of the labels already drawn (axis names included),
+     * the drag handles and the strokes of the figure.
      */
-    function place(str, x, y, font, align, avoid) {
+    let strokes = [];
+    let dots = [];
+    // does segment a–b come within `gap` of the box?
+    function segHitsBox(a, b, box, gap) {
+      const [x0, x1, y0, y1] = [box.x0 - gap, box.x1 + gap, box.y0 - gap, box.y1 + gap];
+      let t0 = 0;
+      let t1 = 1;
+      const dx = b.x - a.x;
+      const dy = b.y - a.y;
+      for (const [pp, qq] of [[-dx, a.x - x0], [dx, x1 - a.x], [-dy, a.y - y0], [dy, y1 - a.y]]) {
+        if (Math.abs(pp) < 1e-9) {
+          if (qq < 0) return false;
+        } else {
+          const r = qq / pp;
+          if (pp < 0) t0 = Math.max(t0, r);
+          else t1 = Math.min(t1, r);
+          if (t0 > t1) return false;
+        }
+      }
+      return true;
+    }
+    function place(str, x, y, font, align, avoid, near) {
       ctx.save();
       ctx.font = font;
       const width = ctx.measureText(str).width;
@@ -131,14 +153,41 @@
       };
       let [px, py] = fit(x, y);
       if (avoid) {
-        const gap = 4;
-        const hits = (cx, cy) => avoid.some((r) => leftOf(cx) < r.x + r.w + gap && leftOf(cx) + width + gap > r.x && Math.abs(cy - r.y) < 15);
-        const tries = [[0, 0], [0, -16], [0, 16], [-width - 8, 0], [0, -32], [0, 32], [-width - 8, -16], [-width - 8, 16]];
+        const boxAt = (cx, cy) => ({ x0: leftOf(cx), x1: leftOf(cx) + width, y0: cy - 8, y1: cy + 8 });
+        const cost = (cx, cy) => {
+          const b = boxAt(cx, cy);
+          // how far the label is from what it names: its anchor, or the end half of its arrow
+          const mid = leftOf(cx) + width / 2;
+          let far = Math.hypot(mid - x, cy - y);
+          if (near) {
+            const vx = near.b.x - near.a.x;
+            const vy = near.b.y - near.a.y;
+            const t = Math.max(0, Math.min(1, ((mid - near.a.x) * vx + (cy - near.a.y) * vy) / (vx * vx + vy * vy || 1)));
+            far = Math.min(far, Math.hypot(mid - (near.a.x + vx * t), cy - (near.a.y + vy * t)) + 4);
+          }
+          let c = far;
+          avoid.forEach((r) => {
+            if (b.x0 < r.x + r.w + 4 && b.x1 + 4 > r.x && Math.abs(cy - r.y) < 15) c += 120;
+          });
+          dots.forEach((d) => {
+            const nx = Math.max(b.x0, Math.min(d.x, b.x1));
+            const ny = Math.max(b.y0, Math.min(d.y, b.y1));
+            if (Math.hypot(nx - d.x, ny - d.y) < d.r) c += 80;
+          });
+          strokes.forEach((sg) => {
+            if (segHitsBox(sg.a, sg.b, b, 2)) c += sg.weight;
+          });
+          return c;
+        };
+        let best = Infinity;
+        const tries = [[0, 0]];
+        for (const r of [14, 24, 36]) for (let k = 0; k < 12; k += 1) tries.push([Math.cos((k * Math.PI) / 6) * r * 1.4, Math.sin((k * Math.PI) / 6) * r]);
         for (const [ox, oy] of tries) {
           const [cx, cy] = fit(x + ox, y + oy);
-          if (!hits(cx, cy)) {
+          const c = cost(cx, cy);
+          if (c < best - 0.01) {
+            best = c;
             [px, py] = [cx, cy];
-            break;
           }
         }
         avoid.push({ x: leftOf(px), y: py, w: width });
@@ -146,10 +195,10 @@
       return [px, py];
     }
 
-    function text(str, x, y, color, font, align = "left", avoid) {
+    function text(str, x, y, color, font, align = "left", avoid, near) {
       font = font || "650 13px 'LA Serif Latin', 'LA Serif SC', 'Songti SC', serif";
       // Keep labels inside the canvas on narrow screens.
-      [x, y] = place(str, x, y, font, align, avoid);
+      [x, y] = place(str, x, y, font, align, avoid, near);
       ctx.save();
       ctx.font = font;
       ctx.textAlign = align;
@@ -224,10 +273,19 @@
       ctx.lineTo(o.x, size.h);
       ctx.stroke();
       ctx.restore();
+      strokes = [
+        { a: { x: 0, y: o.y }, b: { x: size.w, y: o.y }, weight: 10 },
+        { a: { x: o.x, y: 0 }, b: { x: o.x, y: size.h }, weight: 10 },
+      ];
+      dots = [];
       const names = options.axisNames || ["x₁", "x₂"];
       const placed = [];
-      text(names[0], size.w - 10, o.y - 12, pal.muted, "600 12px 'LA Serif Latin', 'LA Serif SC', 'Songti SC', serif", "right", placed);
-      text(names[1], o.x + 8, 12, pal.muted, "600 12px 'LA Serif Latin', 'LA Serif SC', 'Songti SC', serif", "left", placed);
+      // the axis names are placed with the other labels, once the figure is known
+      const axisFont = "600 12px 'LA Serif Latin', 'LA Serif SC', 'Songti SC', serif";
+      const axisLabels = [
+        { q: { x: size.w - 10, y: o.y - 12 }, text: names[0], color: pal.muted, font: axisFont, align: "right" },
+        { q: { x: o.x + 8, y: 12 }, text: names[1], color: pal.muted, font: axisFont, align: "left" },
+      ];
       if (options.ticks) {
         const step = options.ticks;
         for (let x = Math.ceil(f.view.x[0] / step) * step; x <= f.view.x[1]; x += step) {
@@ -243,6 +301,7 @@
       }
 
       const labels = [];
+      const mark = (a, b, weight = 40) => strokes.push({ a, b, weight });
       const objects = objectsFn() || [];
       for (const obj of objects) {
         if (!obj || obj.hidden) continue;
@@ -263,6 +322,7 @@
             ctx.moveTo(a.x, a.y);
             ctx.lineTo(b.x, b.y);
             ctx.stroke();
+            mark(a, b, obj.dash ? 12 : 30);
             if (obj.label) labels.push({ p: obj.labelAt || seg[1], text: obj.label, color, dx: -8, dy: 12, align: "right" });
           }
         } else if (obj.type === "segment") {
@@ -274,6 +334,7 @@
           ctx.moveTo(a.x, a.y);
           ctx.lineTo(b.x, b.y);
           ctx.stroke();
+          mark(a, b, obj.dash ? 12 : 30);
           if (obj.label) labels.push({ p: [(obj.a[0] + obj.b[0]) / 2, (obj.a[1] + obj.b[1]) / 2], text: obj.label, color });
         } else if (obj.type === "curve" || obj.type === "polygon") {
           // A curve may contain null entries to break it into pieces.
@@ -282,11 +343,15 @@
           pieces.forEach((pts) => {
             if (pts.length < 2) return;
             ctx.beginPath();
-            pts.forEach((p, i) => {
-              const q = f.toScreen(p);
+            let prev = null;
+            const qs = pts.map((p) => f.toScreen(p));
+            qs.forEach((q, i) => {
               if (i) ctx.lineTo(q.x, q.y);
               else ctx.moveTo(q.x, q.y);
+              if (prev && (obj.alpha ?? 1) > 0.3) mark(prev, q, obj.dash ? 12 : 25);
+              prev = q;
             });
+            if ((obj.closed || obj.type === "polygon") && qs.length > 2 && (obj.alpha ?? 1) > 0.3) mark(qs[qs.length - 1], qs[0], obj.dash ? 12 : 25);
             if (obj.closed || obj.type === "polygon") ctx.closePath();
             if (obj.fill || obj.type === "polygon") {
               ctx.fillStyle = withAlpha(color, obj.fillAlpha ?? 0.12);
@@ -311,6 +376,7 @@
             ctx.moveTo(a.x, a.y);
             ctx.lineTo(b.x - Math.cos(ang) * head * 0.8, b.y - Math.sin(ang) * head * 0.8);
             ctx.stroke();
+            mark(a, b, 60);
             ctx.setLineDash([]);
             ctx.beginPath();
             ctx.moveTo(b.x, b.y);
@@ -321,6 +387,7 @@
             if (obj.label) {
               labels.push({
                 q: { x: b.x + Math.cos(ang) * 12, y: b.y + Math.sin(ang) * 12 },
+                near: { a: { x: (a.x + b.x) / 2, y: (a.y + b.y) / 2 }, b },
                 text: obj.label,
                 color,
                 font: "700 14px 'LA Serif Latin', 'LA Serif SC', 'Songti SC', serif",
@@ -418,6 +485,7 @@
       handles.forEach((h) => {
         if (h.hidden?.()) return;
         const q = f.toScreen(h.get());
+        dots.push({ x: q.x, y: q.y, r: 12 });
         const active = drag?.handle === h || hover === h;
         ctx.save();
         ctx.beginPath();
@@ -430,9 +498,9 @@
         ctx.restore();
       });
 
-      labels.forEach((lab) => {
+      [...axisLabels, ...labels].forEach((lab) => {
         const q = lab.q || f.toScreen(lab.p);
-        text(lab.text, q.x + (lab.dx ?? (lab.q ? 0 : 6)), q.y + (lab.dy ?? (lab.q ? 0 : -8)), lab.color, lab.font, lab.align, placed);
+        text(lab.text, q.x + (lab.dx ?? (lab.q ? 0 : 6)), q.y + (lab.dy ?? (lab.q ? 0 : -8)), lab.color, lab.font, lab.align, placed, lab.near);
       });
     }
 

@@ -48,15 +48,18 @@
   function captions(lab, prefix, counter) {
     lab.querySelectorAll(FRAME).forEach((frame) => {
       if (frame.dataset.laCaptioned) return;
+      const hint = frame.querySelector(HINT);
+      // a number with nothing after it says nothing: a frame without a hint gets no caption
+      // (yet: a hint written later is captioned then)
+      if (!hint?.textContent.trim()) return;
       frame.dataset.laCaptioned = "1";
       counter.n += 1;
-      const hint = frame.querySelector(HINT);
       const fig = document.createElement("p");
       fig.className = "la-figcaption";
       const label = prefix ? `图 ${prefix}-${counter.n}` : "";
-      fig.innerHTML = `${label ? `<b>${label}</b>` : ""}<span>${hint ? hint.textContent : ""}</span>`;
-      if (hint) hint.hidden = true;
-      if (label || hint) frame.after(fig);
+      fig.innerHTML = `${label ? `<b>${label}</b>` : ""}<span>${hint.textContent}</span>`;
+      hint.hidden = true;
+      frame.after(fig);
     });
   }
 

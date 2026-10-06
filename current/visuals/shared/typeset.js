@@ -2,10 +2,11 @@
  * Chinese line breaking for the lesson page (styles in design-a.css):
  *  1. no line holds a single character alone: the last words of every text block, with
  *     the punctuation after them, stay together on one line (<la-t>);
- *  2. an inline formula breaks only after a relation (=, ≤, ∈ …) or an \\allowbreak, never after + or −:
+ *  2. an inline formula breaks only after a relation (=, ≤, ∈ …) or an \allowbreak, never after + or −:
  *     the pieces between two relations are grouped (<la-mg>); a group wider than its line
  *     is given back its default break points;
- *  3. between Chinese text and an inline formula: a quarter-em space (<la-sp>).
+ *  3. between Chinese text and an inline formula: a quarter-em space (<la-sp>);
+ *  4. in short texts (titles, questions, options) a word stays whole (<la-w>).
  * Only what changed is processed again; the script ignores its own edits.
  */
 (() => {
@@ -14,6 +15,7 @@
   const SKIP = ".katex, svg, canvas, script, style, textarea, input, select, code, pre, la-t, [contenteditable]";
   const segmenter = typeof Intl !== "undefined" && Intl.Segmenter ? new Intl.Segmenter("zh", { granularity: "word" }) : null;
   const cjkCount = (s) => (s.match(CJK) || []).length;
+  const FUNC = "的了是在和与对把被为及或等也就都而且向从到由以之其个";
 
   /* the last non-empty piece of inline content of a block: a text node, or null */
   function tailText(block) {
@@ -56,7 +58,15 @@
       kept = piece + kept;
       start -= piece.length;
       if (PUNCT.test(piece)) continue;
-      if (cjkCount(kept) >= 2 || kept.replace(PUNCT, "").length >= 4) break;
+      if (cjkCount(kept) >= 2 || kept.replace(PUNCT, "").length >= 4) {
+        // a one-character word right before belongs to it (奇|排列) unless it is a particle (的|一侧)
+        const before = pieces[i - 1];
+        if (before && before.length === 1 && cjkCount(before) === 1 && !FUNC.includes(before)) {
+          kept = before + kept;
+          start -= 1;
+        }
+        break;
+      }
     }
     // never more than a short phrase: a long tail would leave a ragged line before it
     if (kept.length > 10) return -1;
@@ -100,6 +110,40 @@
       if (cur === node) break;
       cur = next;
     }
+  }
+
+  /* short texts (titles, questions, options, captions): a word is never split over two lines */
+  const SHORT = "h1, h2, h3, h4, summary, figcaption, legend, .la-figcaption, [class*='predict-q'] p, [class*='predict-options'] > button, button[data-i], .example-choice-copy, .lesson-page-section > ul > li, [class$='-head'] > *, .lead";
+  const WORD = /^[\u3400-\u9fff\uf900-\ufaff]{2,5}$/;
+  function keepWords(block) {
+    if (!segmenter || block.dataset.laWords || block.textContent.length > 140) return;
+    block.dataset.laWords = "1";
+    const walker = document.createTreeWalker(block, NodeFilter.SHOW_TEXT, {
+      acceptNode: (n) => (n.parentElement.closest(".katex, la-w, la-t, la-sp, svg, button button") ? NodeFilter.FILTER_REJECT : NodeFilter.FILTER_ACCEPT),
+    });
+    const nodes = [];
+    while (walker.nextNode()) nodes.push(walker.currentNode);
+    nodes.forEach((node) => {
+      // a loose text run in a flex or grid box is an item of its own: wrappers would split it
+      if (/flex|grid/.test(getComputedStyle(node.parentElement).display)) return;
+      const parts = [...segmenter.segment(node.textContent)].map((x) => x.segment);
+      if (!parts.some((x) => WORD.test(x))) return;
+      const frag = document.createDocumentFragment();
+      let plain = "";
+      parts.forEach((x) => {
+        if (!WORD.test(x)) {
+          plain += x;
+          return;
+        }
+        if (plain) frag.append(plain);
+        plain = "";
+        const w = document.createElement("la-w");
+        w.textContent = x;
+        frag.append(w);
+      });
+      if (plain) frag.append(plain);
+      node.replaceWith(frag);
+    });
   }
 
   const isBlock = (el) => {
@@ -238,6 +282,11 @@
     const formulas = [...scope.querySelectorAll(".katex")];
     formulas.forEach(spaceFormula);
     [...new Set(blocks)].forEach(keepTail);
+    const shorts = [...scope.querySelectorAll(SHORT)];
+    if (scope.matches?.(SHORT)) shorts.push(scope);
+    const near = scope.closest?.(SHORT);
+    if (near) shorts.push(near);
+    [...new Set(shorts)].forEach(keepWords);
     formulas.forEach(groupFormula);
     scope.closest?.(".katex") && groupFormula(scope.closest(".katex"));
   }

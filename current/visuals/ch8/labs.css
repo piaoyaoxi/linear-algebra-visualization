@@ -293,10 +293,32 @@
   background: var(--accent-soft);
 }
 
+/* a minor wraps between its factors only */
+.ch8l-fac,
+.ch8l-fac > .tex {
+  white-space: nowrap;
+}
+
+/* the pieces of one product sit as close as the product itself */
+.ch8l-fac + wbr + .ch8l-fac > .tex,
+.ch8l-fac:has(+ wbr + .ch8l-fac) > .tex {
+  margin-inline: 0;
+  padding-inline: 0;
+}
+
 @media (max-width: 640px) {
   .ch8l-stagebox {
     min-height: 300px;
     padding: 10px;
+  }
+
+  /* two tiles a row, so a factor such as (λ³−2λ²−3λ+2) fits on one line */
+  .ch8l-wall {
+    grid-template-columns: repeat(auto-fill, minmax(132px, 1fr));
+  }
+
+  .ch8l-compare {
+    grid-template-columns: minmax(0, 1fr);
   }
 
   .ch8l-mat {
@@ -314,6 +336,16 @@
 
   .ch8l-minor {
     font-size: 13px;
+  }
+}
+
+/* phone: the wall sits straight in the lab card, without a frame of its own */
+@media (max-width: 430px) {
+  .ch8l-stagebox {
+    min-height: 0;
+    padding: 0;
+    border: 0;
+    background: none;
   }
 }
 
@@ -341,4 +373,15 @@
   color: var(--accent-strong);
   font-variant-numeric: tabular-nums;
   text-align: right;
+}
+
+/* §5 blocks: the canvas is only as tall as the stacks it holds */
+.ch8l-blocks .ch7p-canvas {
+  height: clamp(260px, 24vw, 300px);
+}
+
+@media (max-width: 760px) {
+  .ch8l-blocks .ch7p-canvas {
+    height: 260px;
+  }
 }

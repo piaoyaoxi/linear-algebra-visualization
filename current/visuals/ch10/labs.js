@@ -603,7 +603,8 @@
     side.append(readCard, matCard);
     body.append(stage, side);
     const result = el("div", "ch7l-result");
-    lab.append(toolbar, modeRow, gateHost, body, result);
+    // title → prediction → the mode switches and the picture
+    lab.append(toolbar, gateHost, modeRow, body, result);
     const plane = K.plane2d(stage, { extent: 3.2, hint: "拖动 x、y（每次四分之一格）", label: "双线性函数的等值线", spreadLabels: true });
     let flow = null;
     gateHost.addEventListener("click", () => redraw());
@@ -632,7 +633,8 @@
            */
           const c = coef.map(num);
           const L = Math.hypot(c[0], c[1]);
-          const room = Math.min(d.halfW, d.halfH) * 0.92;
+          // a long vector stops short of the edge band where the level lines are numbered
+          const room = Math.min(d.halfW, d.halfH) * 0.74;
           const k = L > room ? room / L : 1;
           const tip = [c[0] * k, c[1] * k];
           const n = [c[0] / L, c[1] / L];

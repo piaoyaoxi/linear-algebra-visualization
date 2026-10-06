@@ -2,7 +2,7 @@
  * Chinese line breaking for the lesson page (styles in design-a.css):
  *  1. no line holds a single character alone: the last words of every text block, with
  *     the punctuation after them, stay together on one line (<la-t>);
- *  2. an inline formula breaks only after a relation (=, ≤, ∈ …), never after + or −:
+ *  2. an inline formula breaks only after a relation (=, ≤, ∈ …) or an \\allowbreak, never after + or −:
  *     the pieces between two relations are grouped (<la-mg>); a group wider than its line
  *     is given back its default break points;
  *  3. between Chinese text and an inline formula: a quarter-em space (<la-sp>).
@@ -70,11 +70,34 @@
     const node = tailText(block);
     if (!node || node.parentElement?.closest("la-t")) return;
     const start = tailStart(node.textContent);
-    if (start < 0) return;
+    if (start < 0) {
+      keepWithFormula(block, node);
+      return;
+    }
     const tail = start > 0 ? node.splitText(start) : node;
     const keep = document.createElement("la-t");
     tail.before(keep);
     keep.append(tail);
+  }
+
+  /* a block that ends “… formula 中。”: the single character stays with a short formula */
+  function keepWithFormula(block, node) {
+    const text = node.textContent.trim();
+    if (!text || text.length > 3 || cjkCount(text) !== 1) return;
+    let prev = node.previousSibling;
+    while (prev && (prev.nodeName === "LA-SP" || (prev.nodeType === Node.TEXT_NODE && !prev.textContent.trim()))) prev = prev.previousSibling;
+    if (!prev || prev.nodeType !== Node.ELEMENT_NODE || !prev.matches(".tex, .katex, .la-keep")) return;
+    const em = parseFloat(getComputedStyle(block).fontSize);
+    if (prev.getBoundingClientRect().width > em * 6) return;
+    const keep = document.createElement("la-t");
+    prev.before(keep);
+    let cur = prev;
+    while (cur) {
+      const next = cur.nextSibling;
+      keep.append(cur);
+      if (cur === node) break;
+      cur = next;
+    }
   }
 
   const isBlock = (el) => {
@@ -91,7 +114,9 @@
     if (!base) return false;
     const kids = [...base.children].filter((c) => !c.classList.contains("strut") && !c.classList.contains("mspace"));
     const last = kids[kids.length - 1];
-    return Boolean(last && (last.classList.contains("mrel") || last.classList.contains("mpunct")));
+    // KaTeX ends a piece after a binary operator, a relation, or an explicit \allowbreak:
+    // only the operator ends are not allowed as line breaks
+    return Boolean(last && !last.classList.contains("mbin"));
   };
 
   function groupFormula(katex) {
@@ -131,10 +156,10 @@
   }
 
   /* an inline formula next to Chinese text: a quarter-em gap instead of a typed space */
-  const HAN_END = /[㐀-鿿豈-﫿](\s+)$/;
-  const HAN_START = /^(\s+)[㐀-鿿豈-﫿]/;
-  const HAN_TOUCH_END = /[㐀-鿿豈-﫿]$/;
-  const HAN_TOUCH_START = /^[㐀-鿿豈-﫿]/;
+  const HAN_END = /[\u3400-\u9fff\uf900-\ufaff](\s+)$/;
+  const HAN_START = /^(\s+)[\u3400-\u9fff\uf900-\ufaff]/;
+  const HAN_TOUCH_END = /[\u3400-\u9fff\uf900-\ufaff]$/;
+  const HAN_TOUCH_START = /^[\u3400-\u9fff\uf900-\ufaff]/;
   // the text right before (dir = -1) or after (dir = 1) a node, within its block
   function neighbourText(node, dir) {
     let cur = node;

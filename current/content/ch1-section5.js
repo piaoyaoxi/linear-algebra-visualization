@@ -41,7 +41,7 @@ defineChapter1Section("factorization-theorem", {
     choices: [
       {
         correct: true,
-        text: `在 ${texInline("\\mathbb{Q}")}、${texInline("\\mathbb{R}")} 上为 ${texInline("(x^2-2x+2)(x^2+2x+2)")}；在 ${texInline("\\mathbb{C}")} 上为 ${texInline("(x-1-i)(x-1+i)(x+1-i)(x+1+i)")}。`,
+        text: `在 ${texInline("\\mathbb{Q}")}、${texInline("\\mathbb{R}")} 上为 ${texInline("(x^2-2x+2)(x^2+2x+2)")}；在 ${texInline("\\mathbb{C}")} 上为 ${texInline("(x-1-i)(x-1+i)\\allowbreak(x+1-i)(x+1+i)")}。`,
       },
       { text: "三个数域上的分解完全相同。" },
       { text: `${texInline("x^4+4")} 没有实根，所以在 ${texInline("\\mathbb{R}")} 上不可约。` },

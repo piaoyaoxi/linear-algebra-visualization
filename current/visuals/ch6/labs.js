@@ -276,7 +276,7 @@
     const toolbar = el("div", "ch6l-toolbar");
     lab.append(toolbar);
     const { plotBox, right } = pairViews(lab, "函数图像", `旧坐标空间（基 ${tex("1,x,x^2")}）`);
-    const scene = S().create(right, { range: 3, label: "新基向量与固定的坐标点", hint: "拖动空白处旋转", axisNames: ["1", "x", "x²"], yaw: -0.6, pitch: 0.4, spreadLabels: true, labelSafe: true });
+    const scene = S().create(right, { range: 3, label: "新基向量与固定的坐标点", hint: "拖动空白处旋转", axisNames: ["1", "x", "x²"], yaw: -0.6, pitch: 0.4, clampLabels: true });
     const controls = el("div", "ch6l-controls is-one");
     controls.innerHTML = rangeInput(tex("a"), "a", -2, 2, 0.5, 0);
     lab.append(controls);
@@ -336,7 +336,7 @@
           if (S().vec.len(S().vec.sub(head, tail)) > 1e-9) objs.push({ type: "arrow", from: tail, to: head, color: COLORS[j], width: 3.4 });
         });
         objs.push({ type: "point", p: X.map(num), color: "text", r: 7, label: "X" });
-        return objs;
+        return K().placeLabels(scene, objs, { axisNames: ["1", "x", "x²"] });
       });
       // zoom so the basis vectors and the chain fill the view
       scene.fitRange([...cols, ...chain, X.map(num)], { pad: 1.25, min: 1.5, max: 5 });
@@ -352,15 +352,19 @@
     }
 
     let gate = null;
+    // the question is about p = x²−1 at a = 1: only reaching that state grades the guess
+    const actedOnAsked = () => {
+      if (state.key === "sq1" && M().eq(state.a, F(1))) gate?.acted();
+    };
     K().chips(toolbar, Object.entries(PRESETS).map(([k, v]) => [k, v.label]), (k) => {
       state.key = k;
       redraw();
-      gate?.acted();
+      actedOnAsked();
     }, "sq1");
     controls.querySelector("[data-a]").addEventListener("input", (e) => {
       state.a = F(Number(e.target.value));
       redraw();
-      gate?.acted();
+      actedOnAsked();
     });
     gate = K().predictGate(
       gateHost,
@@ -372,7 +376,8 @@
           { text: tex("(0,2,1)^T"), correct: true },
           { text: tex("(0,1,1)^T"), why: "第二个坐标是 p 在 x=1 处的斜率。" },
         ],
-        right: "x²−1=0+2(x−1)+(x−1)²。把 a 拖到 1 验证：左图的点落在 x 轴上，切线斜率为 2。",
+        right: "x²−1=0+2(x−1)+(x−1)²。左图中 a=1 处的点落在 x 轴上，切线斜率为 2。",
+        actHint: "记下了你的猜测。取 p=x²−1，把 a 拖到 1，结论随后出现。",
       },
       () => {
         state.revealed = true;
@@ -489,8 +494,8 @@
         return objs;
       });
       scene.setHandles([
-        ...state.u.map((_, i) => ({ color: "drag", snap: 0.5, get: () => state.u[i], set: (p) => ((state.u[i] = p), redraw(), gate?.acted()) })),
-        ...state.w.map((_, i) => ({ color: "drag", snap: 0.5, get: () => state.w[i], set: (p) => ((state.w[i] = p), redraw(), gate?.acted()) })),
+        ...state.u.map((_, i) => ({ color: "drag", snap: 0.5, get: () => state.u[i], set: (p) => ((state.u[i] = p), redraw(), actedOnAsked()) })),
+        ...state.w.map((_, i) => ({ color: "drag", snap: 0.5, get: () => state.w[i], set: (p) => ((state.w[i] = p), redraw(), actedOnAsked()) })),
       ]);
       const dU = Bu.length;
       const dW = Bw.length;
@@ -523,6 +528,15 @@
     }
 
     let gate = null;
+    /*
+     * The question is about two different planes: only an action that leaves two
+     * different planes on screen grades the guess. The other presets can be explored
+     * freely; the guess stays until the student comes back to two planes.
+     */
+    function actedOnAsked() {
+      const { Bu, Bw, sum } = compute();
+      if (Bu.length === 2 && Bw.length === 2 && sum === 3) gate?.acted();
+    }
     function load(key) {
       scene.setHandles([]);
       state.key = key;
@@ -534,7 +548,7 @@
 
     K().chips(toolbar, Object.entries(PRESETS).map(([k, v]) => [k, v.label]), (key) => {
       load(key);
-      gate?.acted();
+      actedOnAsked();
     }, "planes");
     tools.querySelector("[data-look]").addEventListener("click", () => {
       const { basis } = compute();
@@ -552,6 +566,7 @@
           { text: "取决于观察角度", why: "交是两个集合的公共部分，与怎么看无关。" },
         ],
         right: "2+2−3=1：U+W 最多是 ℝ³，所以交至少 1 维。点“沿交线看”。",
+        actHint: "记下了你的猜测。在两个不同的平面上拖动一个端点，结论随后出现。",
       },
       () => {
         state.revealed = true;
@@ -579,6 +594,7 @@
             { text: "立刻变成正交分解", why: "分解沿 U 的方向进行，与是否垂直无关。" },
           ],
           right: "u′=t·u，其中 t=v₃/u₃。u₃→0 时 t 无限增大；u₃=0 时 U⊂W，U+W=W，直和不再成立。",
+          actHint: "记下了你的猜测。把 u 压低一次（拖动 u 或点“把 u 压低”），结论随后出现。",
         },
         result: (kind) =>
           ({
@@ -598,6 +614,7 @@
             { text: "不是，零向量有非零的分解", correct: true },
           ],
           right: "k₁w₁+k₂w₂+k₃w₃=0 有非零解，三段箭头首尾相接回到原点。维数 1+1+1=3，和空间却只是 2 维的平面。",
+          actHint: "记下了你的猜测。点“从上方看”，或在水平面里拖动 w₃，结论随后出现。",
         },
         result: (kind) =>
           `<p>多个子空间的和是直和，当且仅当每个 ${tex("W_i")} 与其余子空间之和只交于零，也等价于 ${tex("\\dim(W_1+W_2+W_3)=\\dim W_1+\\dim W_2+\\dim W_3")}。${
@@ -612,12 +629,14 @@
     const toolbar = el("div", "ch6l-toolbar");
     lab.append(toolbar);
     const { stage, side } = stageBody(lab);
-    const scene = S().create(stage, { range: 3, label: "直线与平面的直和分解", yaw: -0.9, pitch: 0.32 });
+    const scene = S().create(stage, { range: 3, label: "直线与平面的直和分解", yaw: -0.9, pitch: 0.32, clampLabels: true });
     const info = el("div", "ch6l-card");
     const tools = el("div", "ch6l-actions");
-    const gateHost = el("div");
+    // one prediction per mode; switching modes keeps the other mode's guess
+    const gateHosts = { split: el("div"), three: el("div") };
+    const gates = {};
     const result = K().resultBox("");
-    side.append(info, tools, gateHost, result);
+    side.append(info, tools, gateHosts.split, gateHosts.three, result);
     const W1 = [1, 0, 0];
     const W2 = [0, 1, 0];
 
@@ -667,11 +686,21 @@
           });
         }
         objs.push({ type: "arrow", to: state.v, color: "drag", width: 3.4, label: "v" });
-        return objs;
+        return K().placeLabels(scene, objs, { handles: [state.u, state.v] });
       });
       scene.setHandles([
-        { color: "drag", snap: 0.5, get: () => state.u, set: (p) => ((state.u = nonzero(p, state.u)), redraw(), acted()) },
-        { color: "drag", snap: 0.5, get: () => state.v, set: (p) => ((state.v = p), redraw(), acted()) },
+        {
+          color: "drag",
+          snap: 0.5,
+          get: () => state.u,
+          set: (p) => {
+            const before = Math.abs(state.u[2]);
+            state.u = nonzero(p, state.u);
+            redraw();
+            if (lowered(before)) acted();
+          },
+        },
+        { color: "drag", snap: 0.5, get: () => state.v, set: (p) => ((state.v = p), redraw()) },
       ]);
       const inter = ok ? 0 : 1;
       const sum = ok ? 3 : 2;
@@ -715,9 +744,9 @@
             tail = head;
           });
         }
-        return objs;
+        return K().placeLabels(scene, objs, { handles: [state.w3] });
       });
-      scene.setHandles([{ color: "drag", snap: 0.5, get: () => state.w3, set: (p) => ((state.w3 = nonzero(p, state.w3)), redraw(), acted()) }]);
+      scene.setHandles([{ color: "drag", snap: 0.5, get: () => state.w3, set: (p) => ((state.w3 = nonzero(p, state.w3)), redraw(), threeInPlane() && acted()) }]);
       const pairsText = pairOk.every(Boolean) ? "两两交为 {0}" : "有两条直线重合";
       let html = `<h4>读数</h4><p>${pairsText}</p>`;
       if (state.revealed) {
@@ -733,8 +762,17 @@
       setResult(rank === 3 ? "direct" : "not-direct");
     }
 
-    let gate = null;
-    const acted = () => gate?.acted();
+    const acted = () => gates[state.mode]?.acted();
+    /*
+     * Each question names its own situation, and only an action in that situation grades
+     * the guess: in “直线 ⊕ 平面” lowering u while it stays out of W; in “三条直线” a look
+     * or a drag while all three lines lie in the horizontal plane, pairwise different.
+     */
+    const lowered = (before) => state.u[2] !== 0 && Math.abs(state.u[2]) < before;
+    function threeInPlane() {
+      const vs = [W1, W2, state.w3].map(fv);
+      return state.w3[2] === 0 && [[0, 1], [0, 2], [1, 2]].every(([i, j]) => M().rankOf(K().colsToRows([vs[i], vs[j]])) === 2);
+    }
     function setResult(kind) {
       result.innerHTML = `<strong>结论</strong>${MODES[state.mode].result(kind)}`;
       result.dataset.kind = kind;
@@ -752,44 +790,46 @@
           : `<button type="button" class="ch6l-btn" data-lift>把 w₃ 抬出平面</button><button type="button" class="ch6l-btn" data-top>从上方看</button><button type="button" class="ch6l-btn" data-reset>回到默认视角</button>`;
       tools.querySelector("[data-reset]").addEventListener("click", () => scene.resetView());
       tools.querySelector("[data-low]")?.addEventListener("click", () => {
-        state.u = [state.u[0], state.u[1], 0.5];
+        const before = Math.abs(state.u[2]);
+        state.u = [state.u[0], state.u[1], Math.sign(state.u[2] || 1) * Math.min(0.5, before / 2 || 0.5)];
         redraw();
-        acted();
+        if (lowered(before)) acted();
       });
       tools.querySelector("[data-flat]")?.addEventListener("click", () => {
         state.u = [state.u[0], state.u[1], 0];
         redraw();
-        acted();
       });
       tools.querySelector("[data-vflat]")?.addEventListener("click", () => {
         state.v = [state.v[0], state.v[1], 0];
         redraw();
-        acted();
         // look nearly straight down so both parallelograms in W are open
         scene.lookAlong([0.2, -0.3, 1]);
       });
       tools.querySelector("[data-lift]")?.addEventListener("click", () => {
         state.w3 = [state.w3[0], state.w3[1], 1.5];
         redraw();
-        acted();
       });
-      tools.querySelector("[data-top]")?.addEventListener("click", () => scene.lookAlong([0, 0, 1]));
+      tools.querySelector("[data-top]")?.addEventListener("click", () => {
+        scene.lookAlong([0, 0, 1]);
+        if (threeInPlane()) acted();
+      });
     }
 
     function load(mode) {
       state.mode = mode;
-      state.revealed = false;
       state.u = [1, 0.5, 1];
       state.v = [-1, 2, 2];
       state.w3 = [1, 1, 0];
       lab.querySelector(".ch6l-head p").innerHTML = MODES[mode].task;
-      result.hidden = true;
-      gateHost.innerHTML = "";
-      gate = K().predictGate(gateHost, MODES[mode].predict, () => {
+      gates[mode] ||= K().predictGate(gateHosts[mode], MODES[mode].predict, () => {
+        if (state.mode !== mode) return;
         state.revealed = true;
         result.hidden = false;
         redraw();
       });
+      Object.entries(gateHosts).forEach(([k, host]) => (host.hidden = k !== mode));
+      state.revealed = gates[mode].revealed;
+      result.hidden = !state.revealed;
       setTools();
       scene.resetView(false);
       redraw();

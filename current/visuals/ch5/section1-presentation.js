@@ -1,5 +1,4 @@
 (() => {
-  const M = () => window.Ch5Math;
   const inline = (source) => (window.texInline ? window.texInline(source) : source);
   const display = (source) => (window.texDisplay ? window.texDisplay(source) : source);
 
@@ -21,7 +20,7 @@
     formal.innerHTML = `
       <h2>从二次多项式到对称矩阵</h2>
       <div class="ch5-foundation ch5s1-foundation">
-        <p class="ch5-lead">本节只解决两个问题：多项式的系数怎样进入矩阵，以及变量替换以后为什么出现 ${inline("C^TAC")}。先把这两件事看清，后面的配方法、惯性和正定性才不会变成记号堆积。</p>
+        <p class="ch5-lead">二次型的系数按固定规则填进一个对称矩阵：平方项进对角，交叉项的系数平分到两个对称位置。作变量替换 ${inline("x=Cy")} 以后，矩阵变为 ${inline("C^TAC")}。</p>
 
         ${module(
           "01",
@@ -68,7 +67,7 @@
             <div>${inline("(Cy)^T=y^TC^T")}</div><span>合并</span>
             <div>${inline("x^TAx=y^T(C^TAC)y")}</div>
           </div>
-          <div class="ch5-next-note"><span>注意</span><p>上面的代数恒等式对任意矩阵 C 都成立；只有当 ${inline("\\det C\\ne0")}、新旧变量可以互相恢复时，才称为非退化变量替换，并说 A 与 ${inline("C^TAC")} 合同。</p></div>`,
+          <div class="ch5-next-note"><span>注意</span><p>这个恒等式对任意矩阵 C 都成立；只有当 ${inline("\\det C\\ne0")}、新旧变量可以互相恢复时，才称为非退化变量替换，并说 A 与 ${inline("C^TAC")} 合同。</p></div>`,
         )}
       </div>`;
 
@@ -95,127 +94,5 @@
     return () => controller.abort();
   }
 
-  function mountLab(root) {
-    if (!root) return;
-    root.innerHTML = `
-      <h2>交互实验</h2>
-      <div class="ch5-lab ch5s1-lab">
-        <div class="ch5-lab-head"><h3>合同变换桥</h3><p>同一个二次型换一套变量以后，矩阵和等高线表达都会变化。下面只做一件事：选择一种变量替换，确认函数值没有变，并判断它是否真的是合同。</p></div>
-        <div class="ch5-task"><span>1</span><div><strong>先选择一种替换</strong><p>依次比较“剪切”和“奇异压缩”。前者只是换坐标；后者会丢失一个方向，无法反解。</p></div></div>
-        <div class="ch5-toolbar" role="group" aria-label="选择变量替换">
-          <button type="button" class="is-active" data-s1-preset="identity">不变</button>
-          <button type="button" data-s1-preset="swap">交换变量</button>
-          <button type="button" data-s1-preset="shear">剪切</button>
-          <button type="button" data-s1-preset="scale">缩放</button>
-          <button type="button" data-s1-preset="singular">奇异压缩</button>
-        </div>
-
-        <div class="ch5s1-flow" aria-label="合同变换流程">
-          <div><span>新变量</span><strong>y</strong></div><b>→</b>
-          <div><span>代入</span><strong>x=Cy</strong></div><b>→</b>
-          <div><span>原二次型</span><strong>xᵀAx</strong></div>
-        </div>
-
-        <div class="ch5-lab-grid">
-          <div class="ch5-panel">
-            <div class="ch5s1-canvas-pair">
-              <div><div class="ch5-stage is-compact"><canvas data-s1-a-canvas aria-label="原矩阵 A 的等高线"></canvas></div><strong>原坐标中的 A</strong></div>
-              <div><div class="ch5-stage is-compact"><canvas data-s1-b-canvas aria-label="新矩阵 B 的等高线"></canvas></div><strong>新坐标中的 B</strong></div>
-            </div>
-            <div class="ch5-task"><span>2</span><div><strong>再选一个测试向量 y</strong><p>页面会先算 x=Cy，再比较 xᵀAx 与 yᵀBy。两边相等是代数恒等式；能否称为合同还要继续看 det C。</p></div></div>
-            <div class="ch5-toolbar" role="group" aria-label="选择测试向量">
-              <button type="button" class="is-active" data-s1-y="e1">y=(1,0)</button>
-              <button type="button" data-s1-y="e2">y=(0,1)</button>
-              <button type="button" data-s1-y="sum">y=(1,1)</button>
-            </div>
-          </div>
-
-          <div class="ch5-panel">
-            <div class="ch5-pair">
-              <div class="ch5-reading"><h4>替换矩阵 C</h4><div class="ch5-matrix-wrap" data-s1-c></div></div>
-              <div class="ch5-reading"><h4>新矩阵 B=CᵀAC</h4><div class="ch5-matrix-wrap" data-s1-b></div></div>
-            </div>
-            <div class="ch5-reading" aria-live="polite">
-              <div class="ch5-reading-row"><span>det C</span><strong data-s1-det></strong></div>
-              <div class="ch5-reading-row"><span>x=Cy</span><strong data-s1-x></strong></div>
-              <div class="ch5-reading-row"><span>xᵀAx</span><strong data-s1-left></strong></div>
-              <div class="ch5-reading-row"><span>yᵀBy</span><strong data-s1-right></strong></div>
-            </div>
-            <div class="ch5-result-card" data-s1-result><span class="ch5-status" data-s1-status></span><h4 data-s1-title></h4><p data-s1-copy></p></div>
-          </div>
-        </div>
-      </div>`;
-
-    const controller = new AbortController();
-    const signal = controller.signal;
-    const A = [
-      [2, 0.8],
-      [0.8, 1.4],
-    ];
-    const presets = {
-      identity: { label: "不变", C: [[1, 0], [0, 1]] },
-      swap: { label: "交换变量", C: [[0, 1], [1, 0]] },
-      shear: { label: "剪切", C: [[1, 0.8], [0, 1]] },
-      scale: { label: "缩放", C: [[1.5, 0], [0, 0.65]] },
-      singular: { label: "奇异压缩", C: [[1, 1], [1, 1]] },
-    };
-    const vectors = { e1: [1, 0], e2: [0, 1], sum: [1, 1] };
-    const state = { preset: "identity", vector: "e1" };
-
-    function formatVector(v) {
-      return `(${v.map((item) => M().formatNum(item, 3)).join(", ")})`;
-    }
-
-    function paint() {
-      const C = presets[state.preset].C;
-      const B = M().symmetrize(M().congruence(A, C));
-      const y = vectors[state.vector];
-      const x = M().matVec(C, y);
-      const detC = M().det2(C);
-      const left = M().qForm(A, x);
-      const right = M().qForm(B, y);
-      const invertible = Math.abs(detC) > 1e-8;
-      const equal = Math.abs(left - right) < 1e-7;
-
-      root.querySelector("[data-s1-c]").innerHTML = M().matrixHtml(C);
-      root.querySelector("[data-s1-b]").innerHTML = M().matrixHtml(B);
-      root.querySelector("[data-s1-det]").textContent = M().formatNum(detC, 4);
-      root.querySelector("[data-s1-x]").textContent = formatVector(x);
-      root.querySelector("[data-s1-left]").textContent = M().formatNum(left, 4);
-      root.querySelector("[data-s1-right]").textContent = M().formatNum(right, 4);
-
-      const result = root.querySelector("[data-s1-result]");
-      const status = root.querySelector("[data-s1-status]");
-      result.className = `ch5-result-card ${invertible ? "is-success" : "is-warning"}`;
-      status.className = `ch5-status ${invertible ? "is-ok" : "is-warn"}`;
-      status.textContent = invertible ? "合同成立" : "不是合同";
-      root.querySelector("[data-s1-title]").textContent = invertible ? "只是换了一套坐标" : "一个方向被压掉了";
-      root.querySelector("[data-s1-copy]").textContent = invertible
-        ? `${presets[state.preset].label}的 det C≠0，新旧变量可互相恢复；两边函数值${equal ? "完全一致" : "应当一致"}。矩阵和等高线写法变了，二次型没有变。`
-        : `虽然代数恒等式仍给出相同函数值，但 det C=0，不能由 x 恢复 y。变量信息已经丢失，所以 A 与 B 不能称为合同。`;
-
-      M().drawContours(root.querySelector("[data-s1-a-canvas]"), A, { caption: "A：原坐标表达" });
-      M().drawContours(root.querySelector("[data-s1-b-canvas]"), B, { caption: invertible ? "B：同一二次型的新坐标表达" : "B：奇异代入后的退化表达" });
-    }
-
-    root.querySelectorAll("[data-s1-preset]").forEach((button) => {
-      button.addEventListener("click", () => {
-        state.preset = button.dataset.s1Preset;
-        root.querySelectorAll("[data-s1-preset]").forEach((item) => item.classList.toggle("is-active", item === button));
-        paint();
-      }, { signal });
-    });
-    root.querySelectorAll("[data-s1-y]").forEach((button) => {
-      button.addEventListener("click", () => {
-        state.vector = button.dataset.s1Y;
-        root.querySelectorAll("[data-s1-y]").forEach((item) => item.classList.toggle("is-active", item === button));
-        paint();
-      }, { signal });
-    });
-    window.addEventListener("resize", paint, { signal, passive: true });
-    paint();
-    return () => controller.abort();
-  }
-
-  window.defineChapter5Renderer("quadratic-matrix", { formal: renderFormal, interactive: mountLab });
+  window.defineChapter5Renderer("quadratic-matrix", { formal: renderFormal });
 })();

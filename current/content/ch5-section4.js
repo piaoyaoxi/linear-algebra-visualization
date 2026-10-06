@@ -4,8 +4,8 @@ defineChapter5Section("positive-definite", {
   title: "正定二次型",
   navTitle: "正定二次型",
   question: "怎样不用遍历所有非零向量，就严格判断 xᵀAx 是否始终大于 0？临界状态从正定到半正定再到不定时，究竟发生了什么？",
-  goal: "定义五种符号类型；用标准形/惯性判断正定；掌握顺序主子式判别法；识别错误判据；理解 Gram 与 Cholesky 作为结构连接。",
-  tags: ["正定", "顺序主子式", "半正定边界", "Gram"],
+  goal: "定义五种符号类型；用标准形/惯性判断正定；掌握顺序主子式判别法；识别错误判据；理解正定矩阵可写成 CᵀC。",
+  tags: ["正定", "顺序主子式", "半正定边界", "CᵀC"],
   intro:
     "正定意味着每个非零方向上二次型值都严格为正。有限个向量抽样永远不够；需要结构性判据：标准形全正、正惯性指数等于 n，或实对称矩阵的顺序主子式全为正。半正定不能简单把“全正”改成“全非负顺序主子式”。",
   videoPlan: {
@@ -14,7 +14,7 @@ defineChapter5Section("positive-definite", {
     scenes: [
       "单位圆扫描 q(θ)。",
       "Δ₁、Δ₂ 仪表与临界边界。",
-      "Gram 矩阵：||Bx||²≥0。",
+      "BᵀB：‖Bx‖²≥0。",
     ],
   },
   concepts: [
@@ -32,15 +32,15 @@ defineChapter5Section("positive-definite", {
     },
     {
       label: "顺序主子式",
-      text: `Sylvester 判据：正定 ⇔ 左上角顺序主子式 ${texInline("\\Delta_1,\\ldots,\\Delta_n")} 全大于 0。`,
+      text: `顺序主子式判别：正定 ⇔ 顺序主子式 ${texInline("\\Delta_1,\\ldots,\\Delta_n")} 全大于 0。`,
     },
     {
       label: "二阶情形",
       text: `${texInline("A=\\begin{bmatrix}a&b\\\\b&c\\end{bmatrix}")} 正定 ⇔ ${texInline("a>0")} 且 ${texInline("ac-b^2>0")}。`,
     },
     {
-      label: "Gram / Cholesky",
-      text: `${texInline("B^TB")} 半正定，列满秩时正定；正定矩阵可写 ${texInline("A=R^TR")}（Cholesky），给出 ||Rx||² 结构解释。`,
+      label: "CᵀC",
+      text: `${texInline("B^TB")} 半正定，B 列满秩时正定；${texInline("A")} 正定当且仅当存在可逆矩阵 ${texInline("C")} 使 ${texInline("A=C^TC")}。`,
     },
   ],
   textbook: {
@@ -92,30 +92,22 @@ defineChapter5Section("positive-definite", {
     },
     {
       question: "顺序主子式全非负是否保证半正定？",
-      answer: "不能把正定判据简单改成“全非负顺序主子式”。半正定需要更细的条件（例如一切主子式非负等）。",
+      answer: "不保证。例如 diag(0,−1)：Δ₁=0，Δ₂=0，都非负，但 x=(0,1) 给出 xᵀAx=−1<0。半正定要检查一切主子式非负。",
     },
     {
       question: "对角元都为正是否保证正定？",
-      answer: "不保证。交叉项过大可使矩阵不定。",
-    },
-    {
-      question: "行列式为正是否保证正定？",
-      answer: "不保证。例如 diag(−1,−1) 行列式为正但是负定。",
-    },
-    {
-      question: "正定与 p=n 的关系？",
-      answer: "实对称正定当且仅当正惯性指数等于矩阵阶数 n。",
+      answer: `不保证。例如 ${texInline("A=\\begin{bmatrix}1&2\\\\2&1\\end{bmatrix}")} 的 Δ₂=−3<0，沿 x=(1,−1) 有 xᵀAx=−2。`,
     },
     {
       question: "为什么 BᵀB 半正定？",
-      answer: "因为 xᵀ(BᵀB)x=||Bx||²≥0。",
+      answer: "因为 xᵀ(BᵀB)x=‖Bx‖²≥0。",
     },
   ],
   summary: [
     "正定要求一切非零方向上二次型严格为正。",
     "可用标准形、惯性 p=n 或顺序主子式全正来判定。",
     "常见误区：只看对角元、只看行列式、误用半正定的顺序主子式口诀。",
-    "Gram 与 Cholesky 解释正定结构，但不取代本章的代数主线。",
+    "A 正定当且仅当 A 与 E 合同，即 A=CᵀC（C 可逆）；BᵀB 总是半正定。",
   ],
   exercises: [
     "用顺序主子式判断一个 3 阶实对称矩阵是否正定。",

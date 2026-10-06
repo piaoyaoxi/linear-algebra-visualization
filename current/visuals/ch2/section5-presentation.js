@@ -268,8 +268,9 @@
       root.innerHTML = `
         <h2>交互实验</h2>
         <div class="ch2-lab">
-          <div class="ch2-lab-head"><h3>造零路线 · 两步到上三角</h3><p>按“下一步”逐个消去主对角线下方的元：箭头从主元指向要消去的元，旁边写着所乘的倍数。形成上三角后，读对角线乘积。</p></div>
+          <div class="ch2-lab-head"><h3>造零路线 · 两步到上三角</h3></div>
           <div data-elim-gate></div>
+          <p class="ch2-lab-hint">按“下一步”逐个消去主对角线下方的元：箭头从主元指向要消去的元，旁边写着所乘的倍数。形成上三角后，读对角线乘积。</p>
           <div class="ch2-lab-grid ch2-elimination-layout">
             <div class="ch2-matrix-box">
               <div class="ch2-pivot-wrap"><table class="ch2-matrix-table is-static" data-mat-table aria-label="三阶计算策略矩阵"></table><svg class="ch2-pivot-arrow" data-pivot-arrow aria-hidden="true"></svg></div>

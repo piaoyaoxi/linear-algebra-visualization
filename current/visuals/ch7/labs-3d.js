@@ -400,7 +400,7 @@
     const side = el("aside", "ch7l-side");
     body.append(stage, side);
     lab.append(toolbar, body);
-    const scene = S().create(stage, { range: 2.6, label: "候选子空间与它的像", hint: "拖动空白处旋转 · 拖动圆点改变候选", yaw: -0.8, pitch: 0.4 });
+    const scene = S().create(stage, { range: 2.6, label: "候选子空间与它的像", hint: "拖动空白处旋转 · 拖动圆点改变候选", yaw: -0.8, pitch: 0.4, spreadLabels: true, labelSafe: true });
     const gateHost = el("div");
     const quick = el("div", "ch7l-actions ch7l-quick");
     const info = el("div", "ch7l-card");
@@ -679,9 +679,15 @@
       seq.vs.push(w);
       if (c) seq.stop = { k: seq.vs.length - 1, c };
       redraw();
-      if (c) flash();
-      flow?.acted();
+      // graded once the sequence falls back with mᵥ = m_A (mᵥ always divides m_A, so equal degrees suffice);
+      // an early stop at an eigenvector answers a different question
+      if (c) {
+        flash();
+        if (asked()) flow?.acted();
+      }
     }
+
+    const asked = () => Boolean(state.seq.stop) && state.seq.stop.k === K.minimalPolynomial(K.mat(preset().A)).length - 1;
 
     function redraw() {
       const { vs, stop } = state.seq;
@@ -725,6 +731,7 @@
           .join("") || "0";
         const mv = [...c.map((x) => M().neg(x)), F(1)];
         html += `<p class="ch7l-ok">${NAMES[k]} 落回了${["", "直线 L(v)", "平面 L(v, Av)", "前面的张成"][k]}：</p><p>${tex(`${NAMES_TEX[k]}=${rhs}`)}</p><p>${tex(`m_v(\\lambda)=${K.polyFactorLatex(mv)}`)}</p>`;
+        if (flow?.predicted && !flow.revealed && !asked()) html += `<p class="ch7l-muted">换一个 v 再试。</p>`;
       } else {
         html += `<p class="ch7l-muted">${vs.length === 1 ? "先按“加入下一个”。" : "还没有落回，继续加入。"}</p>`;
       }

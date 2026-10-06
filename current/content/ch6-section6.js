@@ -52,7 +52,7 @@ defineChapter6Section("intersection-sum", {
       `${texInline("\\dim U=\\dim W=3")}，例如 ${texInline("U")} 有基 ${texInline("x-1,(x-1)^2,(x-1)^3")}。`,
       `${texInline("p")} 同时以 1 和 −1 为根，当且仅当 ${texInline("x^2-1")} 整除 ${texInline("p")}。${texInline("p")} 的次数不超过 3，所以 ${texInline("p=(x^2-1)(a+bx)")}，${texInline("\\dim(U\\cap W)=2")}。`,
       `维数公式：${texInline("\\dim(U+W)=3+3-2=4=\\dim P[x]_4")}，所以 ${texInline("U+W=P[x]_4")}。`,
-      `${texInline("3+3>4")} 本身就说明交非零。“定理与方法”的图中，绿色曲线同时过 ${texInline("(1,0)")} 与 ${texInline("(-1,0)")}。`,
+      `${texInline("3+3>4")} 本身就说明交非零：例如 ${texInline("x^2-1")} 同时以 1 和 −1 为根，属于 ${texInline("U\\cap W")}。`,
     ],
   },
   quiz: [
@@ -66,7 +66,7 @@ defineChapter6Section("intersection-sum", {
     },
     {
       question: `${texInline("\\dim(U+W)=\\dim U+\\dim W")} 在什么条件下成立？`,
-      answer: `当且仅当 ${texInline("U\\cap W=\\{0\\}")}。这正是下一节直和的条件。`,
+      answer: `当且仅当 ${texInline("U\\cap W=\\{0\\}")}。这正是直和的条件。`,
     },
     {
       question: `${texInline("U=L(\\alpha_1,\\alpha_2)")}，${texInline("W=L(\\beta_1,\\beta_2)")}，两组各自线性无关，四个向量的秩为 3。${texInline("U\\cap W")} 的维数是多少？`,

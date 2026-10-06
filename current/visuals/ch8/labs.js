@@ -55,6 +55,28 @@
   const ptex = (p) => P.latex(p);
   const numMatrix = (A) => `\\begin{pmatrix}${A.map((row) => row.map(lf).join("&")).join("\\\\")}\\end{pmatrix}`;
   const pfac = (p) => P.factorLatex(p);
+  /*
+   * A factored polynomial as one unbreakable piece per factor, so a narrow tile wraps
+   * between factors and never inside one: −λ(λ+1)(λ²−2) → −λ | (λ+1) | (λ²−2).
+   */
+  function factorPieces(t) {
+    const out = [];
+    let cur = "";
+    let depth = 0;
+    for (const ch of t) {
+      // a new top-level bracket starts a new piece, unless only a sign or number came before
+      if (ch === "(" && depth === 0 && /[^\s+\-0-9,\\]/.test(cur.replace(/\\,/g, ""))) {
+        out.push(cur);
+        cur = "";
+      }
+      if (ch === "(") depth += 1;
+      if (ch === ")") depth -= 1;
+      cur += ch;
+    }
+    if (cur) out.push(cur);
+    return out;
+  }
+  const facHtml = (t) => factorPieces(t).map((x) => `<span class="ch8l-fac">${tex(x)}</span>`).join("<wbr>");
   const waitNote = (what) => `<p class="ch7l-muted">先在上方猜一猜，${what}随后出现。</p>`;
 
   /* ================= §1 λ-矩阵 ================= */
@@ -725,6 +747,10 @@
     const state = { key: "pku", k: 2, A: null, picked: 0, ops: [], seed: 7 };
     let flow = null;
     ui.gateHost.addEventListener("click", () => redraw());
+    // the order switch belongs to the lab: under the prediction, above the wall
+    ui.gateHost.after(ui.bars[1]);
+    // every question is about the order its preset opens on; other orders are only looked at
+    const asked = () => state.k === MINOR_PRESETS[state.key].k;
     const matHost = el("div", "ch8l-mat");
     const wall = el("div", "ch8l-wall");
     const wallHead = el("p", "ch8l-wall-head");
@@ -808,14 +834,16 @@
       const Dk = open && state.ops.length ? P.determinantFactors(state.A)[state.k - 1] : null;
       const showCommon = Dk && !P.isConstant(Dk);
       const tileTex = (value) => {
-        if (!showCommon || P.isZero(value)) return tex(pfac(value));
+        if (!showCommon || P.isZero(value)) return facHtml(pfac(value));
         const q = P.divmod(value, Dk).q;
         const lead = P.lc(q);
         const head = M().eq(lead, F(1)) ? "" : M().eq(lead, F(-1)) ? "-" : lf(lead);
         const q1 = P.monic(q);
         const qt = pfac(q1);
         const rest = P.isConstant(q1) ? "" : /[+-]/.test(qt.slice(1)) && !qt.includes("(") ? `(${qt})` : qt;
-        return K.hlHtml(tex(`${head}${K.hlTex(pfac(Dk))}${rest ? `\\,${rest}` : ""}`), "subspace");
+        // the highlighted Dₖ (with the sign) is one piece, each remaining factor another
+        const lit = K.hlHtml(`<span class="ch8l-fac">${tex(`${head}${K.hlTex(pfac(Dk))}`)}</span>`, "subspace");
+        return rest ? `${lit}<wbr>${facHtml(rest)}` : lit;
       };
       wall.innerHTML = list
         .map(
@@ -823,12 +851,17 @@
             `<button type="button" class="ch8l-minor${open && P.isZero(x.value) ? " is-zero" : ""}${idx === state.picked ? " is-picked" : ""}" data-minor="${idx}"><small>行 ${x.rows.map((r) => r + 1).join(",")}　列 ${x.cols.map((c) => c + 1).join(",")}</small><b>${open ? tileTex(x.value) : "?"}</b></button>`,
         )
         .join("");
+      // a factor wider than a tile of three columns: two columns instead
+      const tooWide = [...wall.querySelectorAll(".ch8l-minor > b")].some((b) => [...b.querySelectorAll(".ch8l-fac")].some((f) => f.getBoundingClientRect().width > b.clientWidth + 0.5));
+      if (tooWide) wall.style.setProperty("--cols", 2);
       wall.dataset.common = showCommon ? P.text(Dk) : "";
       if (showCommon) wallHead.textContent = `全部 ${list.length} 个 ${state.k} 阶子式：变换后每个非零子式仍含公因式 D${"₁₂₃"[state.k - 1]}=${P.text(Dk)}（高亮）`;
       wall.querySelectorAll("[data-minor]").forEach((b) =>
         b.addEventListener("click", () => {
           state.picked = Number(b.dataset.minor);
           redraw();
+          // reading the 2-minors one by one answers “what is D₂”
+          if (MINOR_PRESETS[state.key].asksValue && asked()) flow?.acted();
         }),
       );
 
@@ -841,7 +874,7 @@
         const Dk1 = P.determinantFactors(state.A)[state.k - 1] || P.make([0]);
         const same = P.eq(Dk0, Dk1);
         const dk = (x) => K.hlHtml(tex(K.hlTex(`D_${state.k}=${pfac(x)}`)), "subspace");
-        compare.innerHTML = `<div class="ch8l-compare-cell"><small>变换前</small><b>${dk(Dk0)}</b><p>${state.k} 阶子式</p><ul class="ch8l-minor-list">${before.map((x) => `<li>${tex(pfac(x.value))}</li>`).join("")}</ul></div>
+        compare.innerHTML = `<div class="ch8l-compare-cell"><small>变换前</small><b>${dk(Dk0)}</b><p>${state.k} 阶子式</p><ul class="ch8l-minor-list">${before.map((x) => `<li>${facHtml(pfac(x.value))}</li>`).join("")}</ul></div>
           <div class="ch8l-compare-cell"><small>做了 ${state.ops.length} 次变换后</small><b>${dk(Dk1)}</b><p>${list.length} 个 ${state.k} 阶子式中 ${changed} 个变了${same ? `，D${sub} 没有变` : ""}</p></div>`;
       }
       if (!open) {
@@ -859,11 +892,11 @@
       ).join("")}</ul><ul class="ch8l-list">${d.map((x, i) => `<li>${tex(`d_${i + 1}=${pfac(x)}`)}</li>`).join("")}</ul>`;
       opCard.innerHTML = `<h4>初等变换</h4><div class="ch7l-actions"><button type="button" class="ch7l-btn is-primary" data-op>随机做一次初等变换</button><button type="button" class="ch7l-btn" data-reset${state.ops.length ? "" : " disabled"}>还原</button></div>${
         state.ops.length ? `<p class="ch8l-log">已做：${state.ops.map((s) => tex(s)).join(" ")}</p>` : `<p class="ch7l-muted">还没有做变换。</p>`
-      }`;
+      }${!flow?.revealed && !asked() ? `<p class="ch7l-muted">题目问的是 ${MINOR_PRESETS[state.key].k} 阶子式。</p>` : ""}`;
       opCard.querySelector("[data-op]").addEventListener("click", () => {
         randomOp();
         redraw();
-        flow?.acted();
+        if (asked()) flow?.acted();
       });
       opCard.querySelector("[data-reset]").addEventListener("click", () => {
         const k = state.k;
@@ -874,7 +907,7 @@
     }
 
     function newFlow() {
-      flow = gate(ui.gateHost, ui.result, { ...MINOR_PRESETS[state.key].predict, actHint: "记下了你的猜测。做一次初等变换，或换一个阶数看看，结论随后出现。", onReveal: () => redraw() });
+      flow = gate(ui.gateHost, ui.result, { ...MINOR_PRESETS[state.key].predict, actHint: "记下了你的猜测。做一次初等变换，结论随后出现。", onReveal: () => redraw() });
     }
 
     function orderChips() {
@@ -886,7 +919,6 @@
           state.k = Number(k);
           state.picked = 0;
           redraw();
-          flow?.acted();
         },
         String(state.k),
       );
@@ -1028,6 +1060,10 @@
     const easeInOut = (t) => (t < 0.5 ? 4 * t ** 3 : 1 - (-2 * t + 2) ** 3 / 2);
     const lerpBox = (a, b, t) => ({ x: a.x + (b.x - a.x) * t, y: a.y + (b.y - a.y) * t, w: a.w + (b.w - a.w) * t, h: a.h + (b.h - a.h) * t });
     ui.gateHost.addEventListener("click", () => redraw());
+    // the view and field switches belong to the lab: under the prediction, above the blocks
+    ui.gateHost.after(ui.bars[1]);
+    // a canvas only as tall as the most lines any view needs
+    ui.stage.classList.add("ch8l-blocks");
     const plane = K.plane2d(ui.stage, { extent: 3, hint: "", label: "不变因子与初等因子的积木" });
 
     /* Blocks of the current preset over a field: one per (row, prime). */
@@ -1070,11 +1106,17 @@
         ...rows.map((row, r) => room / Math.max(units(blocks("R").filter((b) => b.r === r)), 3)),
         ...["R", "C"].flatMap((f) => edLines(blocks(f)).map((g) => (room - 10 * (g.length - 1)) / Math.max(units(g), 3))),
       );
-      // taller blocks and wider row gaps, so the blocks fill the canvas
-      const bh = Math.min(84, (h - 130) / Math.max(shown, 3));
+      /*
+       * One block height for both views and both fields (a block keeps its size while it
+       * moves), as tall as the most lines any of them needs allows: the row label above
+       * the stack takes 24px at the top, the λ²+1 note 34px at the bottom.
+       */
+      const most = Math.max(2, shown, ...["R", "C"].map((f) => edLines(blocks(f)).length));
+      const bh = Math.max(34, Math.min(76, (h - 64) / most - ROW_GAP));
+      const stackTop = (n) => 30 + (h - 64 - n * (bh + ROW_GAP) + ROW_GAP) / 2;
       const pos = new Map();
       if (state.view === "inv") {
-        const top = h / 2 - (shown * (bh + ROW_GAP)) / 2 + 20;
+        const top = stackTop(shown);
         rows.forEach((row, r) => {
           let x = left;
           const y = top + (r - firstRow) * (bh + ROW_GAP);
@@ -1090,7 +1132,7 @@
         return { pos, top, firstRow, left, bh };
       }
       const lines = edLines(blocks(field));
-      const top = h / 2 - (lines.length * (bh + ROW_GAP)) / 2 + 20;
+      const top = stackTop(lines.length);
       lines.forEach((g, li) => {
         let x = left;
         g.forEach((b) => {
@@ -1942,7 +1984,9 @@
         ctx.setLineDash([]);
         arrowHead(x2, y + R + 2, -Math.PI / 2, color);
         ctx.restore();
-        write((x1 + x2) / 2, y + depth * 0.78 + 14, `−a${"₀₁"[i]}=${minus(c)}`, c === 0 ? "faint" : "image", { size: 13 });
+        // the outer arc (−a₀) passes just under the inner one: −a₁ is named inside its own arc
+        const ly = i === 0 ? y + depth * 0.78 + 14 : y + depth * 0.75 - 11;
+        write((x1 + x2) / 2, ly, `−a${"₀₁"[i]}=${minus(c)}`, c === 0 ? "faint" : "image", { size: 13 });
       });
       {
         const c = coef[2];
@@ -1986,7 +2030,9 @@
         ctx.stroke();
         ctx.restore();
         write(xs[i], y, name, "text", { size: narrow ? 14 : 16 });
-        if (i <= Math.min(k, 2) && i > 0) write(xs[i], y - R - (i === 2 ? 72 : 30), `=${reachedName[i]}`, "drag", { size: narrow ? 11.5 : 13, weight: 650 });
+        // above e₂; for e₃ (whose loop and −a₂ sit above it) at its upper left
+        if (i === 1 && k >= 1) write(xs[1], y - R - 14, `=${reachedName[1]}`, "drag", { size: narrow ? 11.5 : 13, weight: 650 });
+        if (i === 2 && k >= 2) write(xs[2] - R - 4, y - R - 12, `=${reachedName[2]}`, "drag", { size: narrow ? 11.5 : 13, weight: 650, align: "right" });
       });
       const combo = coef
         .map((c, i) => ({ c, v: `e${"₁₂₃"[i]}` }))

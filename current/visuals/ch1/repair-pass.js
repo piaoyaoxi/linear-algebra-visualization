@@ -486,7 +486,8 @@
       if (step.kind === "divide") {
         const equation = `${M().formatPolyTex(step.a)}=(${M().formatPolyTex(step.q)})(${M().formatPolyTex(step.b)})+(${M().formatPolyTex(step.remainder)})`;
         const note = common
-          ? `<small class="ch1-euclid-common">A=${factored(step.a, common)}，B=${factored(step.b, common)}，r=${factored(step.remainder, common)}</small>`
+          // each “X=(…)(…)” stays on one line; lines break only between them
+          ? `<small class="ch1-euclid-common"><span class="ch1-keep">A=${factored(step.a, common)}，</span><span class="ch1-keep">B=${factored(step.b, common)}，</span><span class="ch1-keep">r=${factored(step.remainder, common)}</span></small>`
           : "<small>取余后，用 B 和 r 进入下一轮。</small>";
         return `<div class="ch1-euclid-step-copy"><p>${tex(equation)}</p>${note}</div>`;
       }
@@ -591,12 +592,12 @@
         </section>
         <div class="ch1-euclid-layout">
           <section class="ch1-euclid-panel">
-            <h4>欧几里得账本</h4>
+            <h4>辗转相除的每一步</h4>
             <div class="ch1-ledger" data-ledger></div>
             <div class="ch1-muted" data-note></div>
           </section>
           <section class="ch1-bezout-panel">
-            <h4>Bézout 证书</h4>
+            <h4>倒着代回：${tex("sf+tg=\\gcd(f,g)")}</h4>
             <div class="ch1-bezout-main"><span>首一最大公因式</span><strong data-gcd></strong></div>
             <div class="ch1-bezout-coefficients">
               <div class="ch1-bezout-coeff"><span>s(x)</span><strong data-s></strong></div>

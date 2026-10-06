@@ -81,7 +81,8 @@
       // only the formula's last piece is glued to the mark, so a long formula can still
       // break in the middle and the mark stays right after its end
       const html = formula.querySelector(".katex-html");
-      const bases = html ? [...html.children].filter((c) => c.classList.contains("base")) : [];
+      // typeset.js may have grouped the pieces (<la-mg>): the last piece is the last .base anywhere
+      const bases = html ? [...html.querySelectorAll(".base")] : [];
       const keep = document.createElement("span");
       keep.className = "la-keep";
       if (bases.length) {

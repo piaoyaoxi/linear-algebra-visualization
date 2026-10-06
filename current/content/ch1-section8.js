@@ -32,7 +32,7 @@ defineChapter1Section("complex-real-factorization", {
       `以为实系数多项式只有实根：${texInline("x^2+1")} 的根是 ${texInline("\\pm i")}。`,
       `构造实系数多项式时只放一个虚根：${texInline("\\alpha")} 是根时 ${texInline("\\bar\\alpha")} 必须同时出现。`,
     ],
-    note: "有理系数多项式：有理根与 Eisenstein 判别法。",
+    note: "有理系数多项式：有理根与艾森斯坦判别法。",
   },
   interactive: {
     type: "slot",

@@ -82,6 +82,8 @@ const routes = [
   {
     id: "elementary-divisors",
     canvas: true,
+    // the block canvas is only as tall as its stacks
+    minH: 260,
     preset: 1,
     async act(page, lab) {
       // the elementary divisors (the answer) stay closed until the student acts
@@ -166,7 +168,7 @@ async function check(viewport, dark) {
     if (route.preset != null) await lab.locator(".ch7l-toolbar").first().locator(".ch7l-chip").nth(route.preset).click();
     const stage = route.canvas ? lab.locator(".ch7p-canvas") : lab.locator(".ch8l-board, .ch8l-stagebox");
     const stageBox = await stage.first().boundingBox();
-    const minH = viewport.width >= 1000 ? 380 : 260;
+    const minH = route.minH ?? (viewport.width >= 1000 ? 380 : 260);
     assert.ok(stageBox && stageBox.width >= 200 && stageBox.height >= minH, `${label}: stage ${JSON.stringify(stageBox)}`);
 
     assert.ok(await lab.locator(".ch7l-result").isHidden(), `${label}: conclusion visible before predicting`);

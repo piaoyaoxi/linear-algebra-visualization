@@ -67,8 +67,8 @@ async function open(page, id, dark) {
  * and the conclusion appear after the first action on the lab.
  */
 const predict = async (page, label, act) => {
-  await page.locator(".ch6l-predict-options button", { hasText: label }).first().click();
-  const feedback = await page.locator(".ch6l-predict-feedback").first().innerText();
+  await page.locator(".ch6l-predict-options button:visible", { hasText: label }).first().click();
+  const feedback = await page.locator(".ch6l-predict-feedback:visible").first().innerText();
   if (/✓|再对照/.test(feedback) || (await page.locator(".ch6l-result").first().isVisible())) throw new Error(`prediction "${label}" graded before any action`);
   if (!act) return;
   await act();
@@ -99,14 +99,23 @@ async function exercise(page) {
 
   /* §4: drag a to 1; A_a·Y must reproduce the fixed X exactly. */
   await open(page, "change-of-basis");
-  await predict(page, "(0,2,1)", () => page.locator("[data-a]").fill("1"));
+  await predict(page, "(0,2,1)");
+  await page.locator("[data-a]").fill("0.5");
+  if (await page.locator(".ch6l-result").first().isVisible()) throw new Error("§4 a=1/2 graded the a=1 question");
+  await page.locator("[data-a]").fill("1");
+  await page.locator(".ch6l-result").first().waitFor({ state: "visible" });
   await expectAttr(page, "check", "true", "§4 X=AY at a=1");
   await page.locator("[data-a]").fill("-1.5");
   await expectAttr(page, "check", "true", "§4 X=AY at a=-3/2");
 
   /* §6: two planes always share a line; a line lying in the plane drops the sum. */
   await open(page, "intersection-sum");
-  await predict(page, "不可以", () => page.locator(".ch6l-toolbar button", { hasText: "两个平面" }).click());
+  // other presets do not grade the two-planes question, and the guess stays
+  await predict(page, "不可以");
+  await page.locator(".ch6l-toolbar button", { hasText: "平面与直线" }).click();
+  if (await page.locator(".ch6l-result").first().isVisible()) throw new Error("§6 plane-and-line preset graded the two-planes question");
+  await page.locator(".ch6l-toolbar button", { hasText: "两个平面" }).click();
+  await page.locator(".ch6l-result").first().waitFor({ state: "visible" });
   await expectAttr(page, "ledger", "2,2,1,3", "§6 two planes");
   await page.locator(".ch6l-toolbar button", { hasText: "两平面重合" }).click();
   await expectAttr(page, "ledger", "2,2,2,2", "§6 equal planes");
@@ -127,9 +136,14 @@ async function exercise(page) {
   await resultHas(page, /无穷多种/, "§7 u and v inside the plane");
   await page.locator(".ch6l-toolbar button", { hasText: "三条直线" }).click();
   await predict(page, "不是，零向量");
+  // lifting w₃ leaves the situation the question asks about: no verdict yet
+  await page.locator("[data-lift]").click();
+  if (await page.locator(".ch6l-result").first().isVisible()) throw new Error("§7 lifting w₃ graded the coplanar question");
+  await page.locator(".ch6l-toolbar button", { hasText: "三条直线" }).click();
+  await page.locator("[data-top]").click();
+  await page.locator(".ch6l-result").first().waitFor({ state: "visible" });
   await expectAttr(page, "state", "not-direct", "§7 three coplanar lines");
   await page.locator("[data-lift]").click();
-  await page.locator(".ch6l-result").first().waitFor({ state: "visible" });
   await expectAttr(page, "state", "direct", "§7 lifted third line");
   await resultHas(page, /直和成立/, "§7 lifted third line");
 

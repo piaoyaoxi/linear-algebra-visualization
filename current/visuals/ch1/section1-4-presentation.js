@@ -305,11 +305,11 @@
   }
 
   function interactive4(el, section) {
-    lab(el, "欧几里得瀑布与 Bézout 回代", section.interactive.description,
+    lab(el, "辗转相除与倒着代回", section.interactive.description,
       `<button type="button" data-prev>上一步</button><button type="button" data-next>下一步</button><button type="button" data-reset>重置</button><span class="ch1-control-separator"></span><button type="button" data-preset="default" class="is-active">x⁴−1 与 x³−1</button><button type="button" data-preset="coprime">互素示例</button><button type="button" data-preset="shared">公共因式示例</button>`,
       `<div class="ch1-metrics"><div class="ch1-metric"><span>当前示例</span><strong data-name></strong></div><div class="ch1-metric"><span>步骤</span><strong data-step></strong></div><div class="ch1-metric"><span>结论</span><strong data-coprime class="ch1-status"></strong></div></div>
        <div class="ch1-equation-grid"><div><span>A</span><strong data-a></strong></div><div><span>B</span><strong data-b></strong></div><div><span>商 q</span><strong data-q></strong></div><div><span>余式 r</span><strong data-r></strong></div></div>
-       <div class="ch1-two-col"><div><h4>欧几里得账本</h4><div class="ch1-ledger" data-ledger></div><p class="ch1-muted" data-note></p></div><div><h4>Bézout 证书</h4><div class="ch1-result-band"><div><span>首一 gcd</span><strong data-gcd></strong></div></div><div class="ch1-equation-grid"><div><span>s</span><strong data-s></strong></div><div><span>t</span><strong data-t></strong></div></div><div class="ch1-callout"><strong>代回验证</strong><p data-verify></p></div></div></div>`);
+       <div class="ch1-two-col"><div><h4>辗转相除的每一步</h4><div class="ch1-ledger" data-ledger></div><p class="ch1-muted" data-note></p></div><div><h4>倒着代回</h4><div class="ch1-result-band"><div><span>首一 gcd</span><strong data-gcd></strong></div></div><div class="ch1-equation-grid"><div><span>s</span><strong data-s></strong></div><div><span>t</span><strong data-t></strong></div></div><div class="ch1-callout"><strong>代回验证</strong><p data-verify></p></div></div></div>`);
     mountEuclid(el);
   }
 

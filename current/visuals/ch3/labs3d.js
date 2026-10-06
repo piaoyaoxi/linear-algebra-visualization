@@ -129,9 +129,26 @@
       before = state();
       requestAnimationFrame(() => { if (!touched && !revealed) before = state(); });
     }));
+    /*
+     * Optional spec.inExample(): the question is about one case of the lab. An action in
+     * another case keeps the guess and shows spec.elsewhere (a hint) instead of the verdict.
+     */
+    let changed = false;
+    const judge = () => {
+      if (spec.inExample && !spec.inExample()) {
+        const hint = typeof spec.elsewhere === "function" ? spec.elsewhere() : spec.elsewhere;
+        if (hint) {
+          feedback.hidden = false;
+          feedback.innerHTML = hint;
+        }
+        return;
+      }
+      reveal();
+    };
     const check = () => {
       if (choice == null || revealed || before == null) return;
-      if (state() !== before) reveal();
+      if (state() !== before) changed = true;
+      if (changed) judge();
     };
     const acted = (event) => {
       if (choice == null || revealed || box.contains(event.target)) return;
@@ -143,8 +160,64 @@
     };
     ["pointerup", "input", "change", "keyup", "click"].forEach((type) => lab?.addEventListener(type, acted));
     // dragging a handle on the canvas is acting even when the readouts are still hidden
-    lab?.addEventListener("la-handle-move", () => { if (choice != null && before != null) reveal(); });
+    lab?.addEventListener("la-handle-move", () => {
+      if (choice == null || before == null || revealed) return;
+      changed = true;
+      // with inExample the verdict waits for the release, so the box does not grow mid-drag
+      if (!spec.inExample) judge();
+    });
     return box;
+  }
+
+  /*
+   * An arrow seen end-on (looking along v₁, say) shrinks to a dot at its tail; its label
+   * would sit on the other arrows there, so it is left out. Called inside a scene's
+   * objects function, so it follows the camera.
+   */
+  function hideEndOnLabels(scene, objs) {
+    objs.forEach((o) => {
+      if (o.type !== "arrow" || !o.label) return;
+      const a = scene.project(o.from || [0, 0, 0]);
+      const b = scene.project(o.to);
+      if (Math.hypot(b.x - a.x, b.y - a.y) < 12) o.label = undefined;
+    });
+    return objs;
+  }
+
+  /*
+   * Of the candidate anchors, the one whose label lies farthest on screen from the other
+   * points. A label is drawn to the right of its anchor: [dx, dy] is its centre.
+   */
+  function farthestAnchor(scene, candidates, others, [dx, dy] = [0, 0]) {
+    const at = (p) => scene.project(p);
+    const rest = others.map(at);
+    let best = candidates[0];
+    let bestDist = -1;
+    candidates.forEach((c) => {
+      const q = at(c);
+      const d = Math.min(...rest.map((r) => Math.hypot(q.x + dx - r.x, q.y + dy - r.y)));
+      if (d > bestDist) {
+        best = c;
+        bestDist = d;
+      }
+    });
+    return best;
+  }
+
+  /*
+   * An invisible keepClear square around a point, facing the camera: an axis name that
+   * would sit on the point (e.g. x₀ on the x₁ axis) is left out.
+   */
+  function clearAround(scene, p, px = 14) {
+    const { yaw, pitch } = scene.camera;
+    const right = [-Math.sin(yaw), Math.cos(yaw), 0];
+    const d = [Math.cos(pitch) * Math.cos(yaw), Math.cos(pitch) * Math.sin(yaw), Math.sin(pitch)];
+    const up = S().vec.cross(d, right);
+    const o = scene.project([0, 0, 0]);
+    const e = scene.project(right);
+    const k = px / (Math.hypot(e.x - o.x, e.y - o.y) || 1);
+    const corner = (a, b) => S().vec.add(p, S().vec.add(S().vec.mul(right, a * k), S().vec.mul(up, b * k)));
+    return { type: "polygon", pts: [corner(-1, -1), corner(1, -1), corner(1, 1), corner(-1, 1)], color: "axis", alpha: 0, strokeAlpha: 0, keepClear: true };
   }
 
   function labShell(root, { title, task }) {
@@ -521,7 +594,7 @@
         { text: tex("x=(0,0,2)"), correct: true },
         { text: tex("x=(6,4,2)"), why: "x 是列的权重，不是 b 的坐标。" },
         { text: tex("x=(2,0,0)"), why: "2a₁=(2,4,12)，只有第二个分量与 b 相同。" },
-        { text: "必须先消元才能知道", why: "观察一下 b 和 a₃ 的关系。" },
+        { text: "必须先消元才能知道", why: "b 和 a₃ 有什么关系？" },
       ],
       right: "b=2a₃。把 x₃ 调到 2 验证：左图的点同时落到三个平面上。",
     });
@@ -538,9 +611,11 @@
   function dependenceLab(root) {
     const lab = labShell(root, {
       title: "第三个向量有没有带来新方向",
-      task: "v₁、v₂ 张成一个过原点的平面。拖动 v₃（每次移动半格），看平行六面体的体积：体积为 0 的那一刻，v₃ 落进了平面，三个向量线性相关。",
+      task: "v₁、v₂ 张成一个过原点的平面。上下拖动 v₃（每次移动半格），看平行六面体的体积：体积为 0 的那一刻，v₃ 落进了平面，三个向量线性相关。",
     });
-    const state = { v: [[1, 0, 1], [0, 1, 1], [1, 1, 0]], stage: 3, showDrop: false };
+    // free: after the reveal every vector can be dragged anywhere; before it, v₁ and v₂ stay
+    // as in the question and v₃ moves straight up and down, so (1,1,2) can be reached
+    const state = { v: [[1, 0, 1], [0, 1, 1], [1, 1, 0]], stage: 3, showDrop: false, free: false };
     const toolbar = el("div", "ch3l-toolbar");
     lab.append(toolbar);
     const body = el("div", "ch3l-body");
@@ -577,18 +652,19 @@
           }
         }
         vs.forEach((v, i) => objs.push({ type: "arrow", to: v, color: colors[i], label: `v${"₁₂₃"[i]}` }));
-        return objs;
+        return hideEndOnLabels(scene, objs);
       });
       scene.setHandles(
         state.v.slice(0, state.stage).map((_, i) => ({
           color: "drag",
           snap: 0.5,
+          ...(state.free ? {} : { mode: "line", dir: [0, 0, 1] }),
           get: () => state.v[i],
           set: (p) => {
             state.v[i] = p;
             redraw();
           },
-        })),
+        })).filter((_, i) => state.free || i === 2),
       );
       const matrix = [0, 1, 2].map((r) => state.v.slice(0, state.stage).map((v) => F(v[r])));
       const rank = M().rankOf(matrix);
@@ -633,15 +709,19 @@
         question: `把 ${tex("v_3")} 从 ${tex("(1,1,0)")} 拖到 ${tex("(1,1,2)")}，体积会变成多少？`,
         options: [
           { text: "0", correct: true },
-          { text: "2", why: "看看 (1,1,2) 与 v₁+v₂ 的关系。" },
+          { text: "2", why: "(1,1,2) 与 v₁+v₂ 有什么关系？" },
           { text: "−2", why: "(1,1,0) 时体积是 −2；换到 (1,1,2) 以后呢？" },
           { text: "取决于视角", why: "体积由三个向量决定，与观察方向无关。" },
         ],
         right: "(1,1,2)=v₁+v₂ 落在平面里，六面体被压扁。点“沿平面看”，三个向量排成一条线。",
+        // judged only when v₃ reaches (1,1,2) with v₁, v₂ as in the question
+        inExample: () => state.stage === 3 && [[1, 0, 1], [0, 1, 1], [1, 1, 2]].every((target, i) => target.every((x, k) => state.v[i][k] === x)),
+        elsewhere: () => (state.stage === 3 ? "接着把 v₃ 拖到 (1,1,2)，再看体积。" : "这道题问三个向量的体积：换回“加入 v₃”，把 v₃ 拖到 (1,1,2) 再看结果。"),
       },
       () => {
         result.hidden = false;
         state.showDrop = true;
+        state.free = true;
         redraw();
       },
     );
@@ -828,8 +908,8 @@
       question: `对秩 2 的 A 做第一步 ${tex("R_2\\leftarrow R_2-2R_1")}。右图的列空间平面和关系 ${tex("c_3=c_1+c_2")} 会怎样？`,
       options: [
         { text: "平面换了位置，c₃=c₁+c₂ 仍成立", correct: true },
-        { text: "平面不动，c₃=c₁+c₂ 仍成立", why: "看右图：新平面离开了虚线留下的旧平面。" },
-        { text: "平面换了位置，c₃=c₁+c₂ 不再成立", why: "看虚线平行四边形：c₁+c₂ 的顶点仍落在 c₃ 的箭头尖上。" },
+        { text: "平面不动，c₃=c₁+c₂ 仍成立", why: "右图里，新平面离开了虚线留下的旧平面。" },
+        { text: "平面换了位置，c₃=c₁+c₂ 不再成立", why: "虚线平行四边形里，c₁+c₂ 的顶点仍落在 c₃ 的箭头尖上。" },
         { text: "平面不动，关系也不再成立", why: "两处都和图不符：平面动了，平行四边形仍闭合。" },
       ],
       right: "行变换把每一列都左乘同一个可逆矩阵 P，Pc₃=Pc₁+Pc₂，所以列之间的线性关系每一步都成立。列空间换了位置，维数却不变；左图的行空间始终是同一个平面（虚线与实线重合）。",
@@ -960,7 +1040,7 @@
       question: `把 ${tex("b")} 从 ${tex("(1,2,3)")} 拉到 ${tex("(1,2,4)")}，右边三个平面会变成什么样？`,
       options: [
         { text: "两两相交，三条交线互相平行", correct: true },
-        { text: "仍然交于一条直线", why: "看右图，公共线断开了。" },
+        { text: "仍然交于一条直线", why: "右图里，公共线断开了。" },
         { text: "出现两个平行平面", why: "三个法向两两不平行，任意两个平面都相交。" },
         { text: "交于一个点", why: "rank A=2，任何 b 都不会给出唯一解。" },
       ],
@@ -1053,10 +1133,28 @@
         const gp = gb ? M().particularSolution(A.map((r, i) => [...r, F(gb[i])])) : null;
         if (gp?.ok) {
           const g = vecNum(gp.x);
-          if (ns.length === 1) objs.push({ type: "line", p: g, dir: ns[0], color: "drag", width: 3, ghost: true, alpha: 0.5, label: "原来的解集" });
+          const L = scene.range;
+          // “原来的解集” goes where it stays clear of the point x, the current solution set
+          // and the null space (and their labels), so each name stays next to its own object
+          const ghostCentre = [38, -11];
+          const axisNames = [[1, 0, 0], [0, 1, 0], [0, 0, 1]].map((e) => e.map((c) => c * L * 1.08));
+          if (ns.length === 1) {
+            const V = S().vec;
+            const seg = S().clipLine(g, ns[0], L);
+            const samples = (sg) => (sg ? [0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1].map((t) => V.add(sg[0], V.mul(V.sub(sg[1], sg[0]), t))) : []);
+            const others = [...samples(S().clipLine(xp, ns[0], L)), ...samples(S().clipLine([0, 0, 0], ns[0], L)), x, xp, ...axisNames];
+            // the two ends of the old line, and a little beyond each end
+            const u = V.mul(V.norm(ns[0]), 0.12 * L);
+            const along = seg ? [seg[0], seg[1], V.sub(seg[0], u), V.add(seg[1], u)] : [];
+            const labelAt = along.length ? farthestAnchor(scene, along, others, ghostCentre) : undefined;
+            objs.push({ type: "line", p: g, dir: ns[0], color: "drag", width: 3, ghost: true, alpha: 0.5, label: "原来的解集", labelAt });
+          }
           if (ns.length === 2) {
             const n = S().vec.cross(ns[0], ns[1]);
-            objs.push({ type: "plane", n, d: S().vec.dot(n, g), color: "drag", ghost: true, alpha: 0.05, label: "原来的解集" });
+            const poly = S().clipPlane(n, S().vec.dot(n, g), L);
+            const others = [...aug, ...hom].map((r) => S().clipPlane(vecNum(r.slice(0, 3)), num(r[3]), L)[0]).filter(Boolean).concat([x], axisNames);
+            const labelAt = poly.length && others.length ? farthestAnchor(scene, poly, others, ghostCentre) : undefined;
+            objs.push({ type: "plane", n, d: S().vec.dot(n, g), color: "drag", ghost: true, alpha: 0.05, label: "原来的解集", labelAt });
           }
         }
         if (ns.length === 1) {
@@ -1068,6 +1166,7 @@
         objs.push({ type: "arrow", to: xp, color: "v1", width: 2.4 });
         if (S().vec.len(S().vec.sub(x, xp)) > 1e-9) objs.push({ type: "arrow", from: xp, to: x, color: "subspace", width: 2.4 });
         objs.push({ type: "point", p: x, color: "drag", r: 6, label: "x" });
+        objs.push(clearAround(scene, x));
         return objs;
       });
       const Ax = M().matVec(A, x.map(F));

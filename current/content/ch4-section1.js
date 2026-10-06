@@ -69,10 +69,6 @@ defineChapter4Section("matrix-language", {
   },
   quiz: [
     {
-      question: `在 ${texInline("m\\times n")} 矩阵中，m 与 n 分别表示什么？`,
-      answer: "m 表示行数，n 表示列数。",
-    },
-    {
       question: `${texInline("a_{23}")} 位于矩阵的哪个位置？`,
       answer: "第 2 行第 3 列。",
     },
@@ -85,10 +81,6 @@ defineChapter4Section("matrix-language", {
       answer: "接收 2 维输入，产生 3 维输出。",
     },
     {
-      question: `矩阵 A 的第 j 列在变换视角下表示什么？`,
-      answer: `它表示标准基向量 ${texInline("e_j")} 经 A 作用后的坐标，即 ${texInline("Ae_j")}。`,
-    },
-    {
       question: "一个 2 阶矩阵的两列都非零，是否一定不会把平面压扁？",
       answer: "不一定。若两列共线，它们仍然只提供一个独立方向，网格会压到一条直线上。",
     },
@@ -98,7 +90,6 @@ defineChapter4Section("matrix-language", {
     "矩阵可以来自数据、方程组和方向变化，但这些来源都依赖稳定的行列结构。",
     `${texInline("m\\times n")} 矩阵把 n 个输入坐标组织成 m 个输出坐标。`,
     "二维变换中，先读两列，就能抓住两个基本方向以及整张网格的去向。",
-    "下一节将研究矩阵之间怎样相加、转置和相乘。",
   ],
   exercises: [
     `写出一个一般的 ${texInline("2\\times3")} 矩阵，并指出 ${texInline("a_{23}")} 的位置。`,

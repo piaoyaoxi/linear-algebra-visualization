@@ -99,6 +99,8 @@ const predict = (page, i) => page.locator(`[data-ch9-predict] [data-i="${i}"]`).
 // the gate reveals once the readouts have changed, a moment after the action
 const settle = (page) => page.waitForTimeout(1200);
 const chip = async (page, key) => { await page.locator(`.ch9l-toolbar [data-key="${key}"]`).click(); await settle(page); };
+// the TeX source of the first formula in an element (its KaTeX annotation)
+const firstTex = async (page, selector) => (await page.locator(`${selector} annotation`).first().textContent()).trim();
 const resultShown = (page) => page.locator("[data-ch9-result]").isVisible();
 
 async function exerciseLabs(page) {
@@ -135,11 +137,11 @@ async function exerciseLabs(page) {
   expect(await page.locator("[data-gs-next]").isDisabled(), "§2: normalisation disabled for zero residual");
 
   await openLesson(page, sections[2]);
-  expect((await text(page, "[data-iso-status]")).includes("B ≠ E"), "§3: standard basis is not isometric");
+  expect((await firstTex(page, "[data-iso-status]")) === "B\\ne E", "§3: standard basis is not isometric");
   await chip(page, "other");
-  expect((await text(page, "[data-iso-status]")).includes("B = E"), "§3: G-orthonormal basis is isometric");
+  expect((await firstTex(page, "[data-iso-status]")) === "B=E", "§3: G-orthonormal basis is isometric");
   await drag(page, "lp", [-0.8, 1.4], [-1, 2]);
-  expect((await text(page, "[data-iso-status]")).includes("B ≠ E"), "§3: dragging f₂ breaks the isometry");
+  expect((await firstTex(page, "[data-iso-status]")) === "B\\ne E", "§3: dragging f₂ breaks the isometry");
   await predict(page, 0);
   expect(!(await resultShown(page)), "§3: conclusion waits for an action after the prediction");
   expect((await page.locator("[data-iso-tangent]").count()) === 0, "§3: tangent mark hidden before acting");

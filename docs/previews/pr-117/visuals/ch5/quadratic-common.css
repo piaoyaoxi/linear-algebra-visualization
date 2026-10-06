@@ -445,17 +445,21 @@
   list-style: none;
 }
 
+/* the item is ordinary text (a grid would put every text run and formula in a cell of its own);
+   the tick hangs in the left margin */
 .ch5-check-list li {
-  display: grid;
-  grid-template-columns: 22px minmax(0, 1fr);
-  gap: 8px;
-  align-items: start;
+  position: relative;
+  min-width: 0;
+  padding-left: 30px;
   color: var(--muted);
   line-height: 1.55;
 }
 
 .ch5-check-list li::before {
   content: "✓";
+  position: absolute;
+  top: 0.15em;
+  left: 0;
   display: grid;
   place-items: center;
   width: 20px;

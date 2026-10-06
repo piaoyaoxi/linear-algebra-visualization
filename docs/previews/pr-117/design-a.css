@@ -619,6 +619,20 @@ body .tex {
   vertical-align: baseline;
 }
 
+/* an inline formula flows with the text: it starts right after the words before it and,
+   if the line is full, continues on the next one after a relation (typeset.js groups the
+   pieces between relations); a box would jump to the next line whole and leave a gap */
+body .tex-inline:not(.la-wide) {
+  display: inline;
+}
+
+/* typeset.js: a sentence inside a flex or grid box, kept together as one item */
+la-run {
+  display: block;
+  flex: 1 1 0%;
+  min-width: 0;
+}
+
 /* typeset.js: a quarter-em space between Chinese text and an inline formula */
 la-sp {
   word-spacing: var(--la-sp-adjust, 0);
@@ -835,6 +849,14 @@ body :is(.ch3l-ponder, .lx-ponder):not([open]) > summary::after {
   content: "想好了，看答案 ↓";
   color: var(--accent);
   font-size: 13px;
+}
+
+/* on a phone the question takes the row; the prompt to open goes under it, on the right */
+@media (max-width: 600px) {
+  body :is(.ch3l-ponder, .lx-ponder):not([open]) > summary::after {
+    flex-basis: 100%;
+    text-align: right;
+  }
 }
 
 body :is(.ch3l-ponder, .lx-ponder)[open] > p {
@@ -1260,6 +1282,11 @@ body main {
 la-w,
 la-t,
 la-mg {
+  white-space: nowrap;
+}
+
+/* a short formula kept with the last words: no break inside it either (.tex allows one) */
+la-t .tex {
   white-space: nowrap;
 }
 

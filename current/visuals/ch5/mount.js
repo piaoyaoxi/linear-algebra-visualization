@@ -18,9 +18,11 @@
     if (!lab) return;
     lab.classList.add("ch5-lab");
     const copy = taskCopy[section?.id];
-    const head = lab.querySelector(".qv-head");
-    if (copy && head && !lab.querySelector(".ch5-task")) {
-      head.insertAdjacentHTML(
+    // title → prediction → lab: the task card goes under the prediction box, never between
+    const gate = lab.querySelector(".ch3l-predict")?.parentElement;
+    const anchor = gate && gate.parentElement === lab ? gate : lab.querySelector(".qv-head");
+    if (copy && anchor && !lab.querySelector(".ch5-task")) {
+      anchor.insertAdjacentHTML(
         "afterend",
         `<div class="ch5-task qv-task"><span>1</span><div><strong>${copy[0]}</strong><p>${copy[1]}</p></div></div>`,
       );

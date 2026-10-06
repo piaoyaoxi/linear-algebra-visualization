@@ -17,3 +17,26 @@
 .qv-three figcaption{display:block}
 .qv-values>span>.katex,
 .qv-values>span>.tex-inline{justify-self:start;max-width:100%}
+
+/* §2: the step card heads the right column; C and the current matrix share one row */
+.qv-two>aside{align-content:start}
+.qv-two aside>.qv-s2-mats{grid-template-columns:repeat(2,minmax(0,1fr));gap:10px 14px}
+.qv-s2-mats>div{display:grid;align-content:start;gap:8px;min-width:0}
+.qv-s2-mats h4{margin:0;color:var(--muted);font-size:13px;font-weight:600}
+.qv-s2-mats>p{grid-column:1/-1}
+.qv-s2-mats .ch5-matrix{gap:6px;padding:8px 10px}.qv-s2-mats .ch5-matrix-row{grid-auto-columns:minmax(2.6rem,auto);gap:6px}
+.qv-two aside>.qv-step{min-height:0}
+/* one column: the step card comes first, right under the step buttons */
+@media(max-width:1050px){.qv-two>section,.qv-two>aside{display:contents}.qv-two .qv-step{order:-1}}
+
+/* Phones: the lab is one box and a panel inside it a second; the panel's own box goes, its
+   contents sit under a hairline, so the matrices and chips inside are never a third layer. */
+@media(max-width:720px){
+  :is(main,#la) .qv-lab :is(.qv-data>div:not(.qv-values),.qv-s2-mats,.qv-step,.qv-s4-read){padding:12px 0 0;border:0;border-top:1px solid var(--line);border-radius:0;background:none}
+  :is(main,#la) .qv-lab .qv-step>div{padding:10px 0;background:none}
+  /* §1: C and B side by side, as §3 does with C, A and B */
+  :is(main,#la) .qv-lab .qv-data:has([data-s1-c]){grid-template-columns:repeat(2,minmax(0,1fr))}
+  :is(main,#la) .qv-lab .qv-data:has([data-s1-c])>.qv-values{grid-column:1/-1}
+  /* short readouts (det C, ranks, x=Cy) keep two to a row */
+  .qv-lab :is(.qv-two,.qv-data:has([data-s1-c])) .qv-values{grid-template-columns:repeat(2,minmax(0,1fr))!important}
+}

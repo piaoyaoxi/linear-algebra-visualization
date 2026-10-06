@@ -1,0 +1,1533 @@
+diff --git a/current/content/ch7-section1.js b/current/content/ch7-section1.js
+index ef79004..d9218e4 100644
+--- a/current/content/ch7-section1.js
++++ b/current/content/ch7-section1.js
+@@ -3,14 +3,14 @@ defineChapter7Section("linear-map-definition", {
+   textbookSection: "线性变换的定义",
+   title: "线性变换的定义",
+   navTitle: "线性变换的定义",
+-  question: "什么样的变换 σ: V→V 保持线性组合？",
++  question: `什么样的变换 ${texInline(String.raw`\sigma: V\to V`)} 保持线性组合？`,
+   goal: "会按定义判断一个变换是否线性，包括多项式空间、矩阵空间上的变换；知道线性变换的基本性质。",
+   tags: ["线性变换", "保持加法", "保持数乘"],
+   intro:
+-    "线性空间 V 到自身的变换 σ，如果把线性组合送到同样系数的线性组合，就称为线性变换。判断时只看两件事：加法和数乘是否被保持。平移、取绝对值、取行列式都会在某一步失败。",
++    `线性空间 ${texInline("V")} 到自身的变换 ${texInline(String.raw`\sigma`)}，如果把线性组合送到同样系数的线性组合，就称为线性变换。判断时只看两件事：加法和数乘是否被保持。平移、取绝对值、取行列式都会在某一步失败。`,
+   concepts: [
+     { label: "线性变换", text: `${texInline(String.raw`\sigma(\alpha+\beta)=\sigma\alpha+\sigma\beta`)}，${texInline(String.raw`\sigma(k\alpha)=k\,\sigma\alpha`)}，对一切 ${texInline(String.raw`\alpha,\beta\in V`)}、${texInline(String.raw`k\in P`)} 成立。` },
+-    { label: "线性映射", text: "V 到另一个空间 W 的映射满足同样两条时，称为线性映射。" },
++    { label: "线性映射", text: `${texInline("V")} 到另一个空间 ${texInline("W")} 的映射满足同样两条时，称为线性映射。` },
+   ],
+   textbook: { reference: "北大版《高等代数》第七章 §1", items: ["线性变换的定义", "线性变换的简单性质"] },
+   interactive: false,
+@@ -19,7 +19,7 @@ defineChapter7Section("linear-map-definition", {
+       {
+         title: "定义：保持加法与数乘",
+         tex: String.raw`\sigma(k\alpha+l\beta)=k\,\sigma(\alpha)+l\,\sigma(\beta),\qquad \alpha,\beta\in V,\ k,l\in P`,
+-        text: "V 是数域 P 上的线性空间，σ 是 V 到自身的变换。上式对一切向量和数成立时，σ 称为线性变换。本章的线性变换都指 V 到自身；V 到另一个空间 W 的这类映射称为线性映射（例如 ℝ³ 到 ℝ² 的投影）。",
++        text: `${texInline("V")} 是数域 ${texInline("P")} 上的线性空间，${texInline(String.raw`\sigma`)} 是 ${texInline("V")} 到自身的变换。上式对一切向量和数成立时，${texInline(String.raw`\sigma`)} 称为线性变换。本章的线性变换都指 ${texInline("V")} 到自身；${texInline("V")} 到另一个空间 ${texInline("W")} 的这类映射称为线性映射（例如 ${texInline(String.raw`\mathbb R^3`)} 到 ${texInline(String.raw`\mathbb R^2`)} 的投影）。`,
+       },
+       {
+         title: "由定义直接得到的性质",
+@@ -35,12 +35,12 @@ defineChapter7Section("linear-map-definition", {
+     pitfalls: [
+       `只验证 ${texInline(String.raw`\sigma(0)=0`)} 就下结论。它只是必要条件，下面例题里的 ${texInline(String.raw`T_4`)} 就是反例。`,
+       "用一两对具体向量验证后就断定线性。定义要求对一切向量和数成立；否定线性时，一组反例就够。",
+-      "把 V 到 W 的映射也叫线性变换。本章的线性变换专指 V 到自身。",
++      `把 ${texInline("V")} 到 ${texInline("W")} 的映射也叫线性变换。本章的线性变换专指 ${texInline("V")} 到自身。`,
+     ],
+   },
+   example: {
+     title: "例题：矩阵空间上的四个变换",
+-    question: `在 ${texInline(String.raw`M_2(\mathbb R)`)} 上，取定矩阵 A，令 ${texInline(String.raw`T_1(X)=AX-XA`)}，${texInline(String.raw`T_2(X)=X^{T}`)}，${texInline(String.raw`T_3(X)=X+E`)}，${texInline(String.raw`T_4(X)=|X|\,E`)}。哪些是线性变换？`,
++    question: `在 ${texInline(String.raw`M_2(\mathbb R)`)} 上，取定矩阵 ${texInline("A")}，令 ${texInline(String.raw`T_1(X)=AX-XA`)}，${texInline(String.raw`T_2(X)=X^{T}`)}，${texInline(String.raw`T_3(X)=X+E`)}，${texInline(String.raw`T_4(X)=|X|\,E`)}。哪些是线性变换？`,
+     choices: [
+       { correct: true, text: `${texInline("T_1")}、${texInline("T_2")} 是线性变换；${texInline("T_3")}、${texInline("T_4")} 不是。` },
+       { text: `只有 ${texInline("T_2")} 是，因为 ${texInline("T_1")} 含矩阵乘法，而矩阵乘法不可交换。` },
+@@ -57,24 +57,24 @@ defineChapter7Section("linear-map-definition", {
+   quiz: [
+     {
+       question: `在 ${texInline(String.raw`P[x]`)} 上，${texInline(String.raw`\sigma(f(x))=f(x+1)`)} 是线性变换吗？它和“平移 ${texInline(String.raw`\alpha\mapsto\alpha+\beta_0`)}”有什么不同？`,
+-      answer: "是线性变换：(kf+lg)(x+1)=kf(x+1)+lg(x+1)。它平移的是自变量 x，被变换的向量是整个多项式 f，零多项式仍变成零多项式；把向量本身加上 β₀ 才破坏线性。",
++      answer: `是线性变换：${texInline("(kf+lg)(x+1)=kf(x+1)+lg(x+1)")}。它平移的是自变量 ${texInline("x")}，被变换的向量是整个多项式 ${texInline("f")}，零多项式仍变成零多项式；把向量本身加上 ${texInline(String.raw`\beta_0`)} 才破坏线性。`,
+     },
+     {
+       question: `若 ${texInline(String.raw`\sigma\alpha_1,\dots,\sigma\alpha_s`)} 线性无关，${texInline(String.raw`\alpha_1,\dots,\alpha_s`)} 一定线性无关吗？`,
+-      answer: "一定。若 α₁,…,αₛ 线性相关，由线性关系被保持，σα₁,…,σαₛ 也线性相关，矛盾。",
++      answer: `一定。若 ${texInline(String.raw`\alpha_1,\dots,\alpha_s`)} 线性相关，由线性关系被保持，${texInline(String.raw`\sigma\alpha_1,\dots,\sigma\alpha_s`)} 也线性相关，矛盾。`,
+     },
+     {
+       question: "一个变换把每条直线都映成直线，能推出它是线性变换吗？",
+       answer: "不能。平移把直线映成直线，却不保持加法，也不把 0 送到 0。",
+     },
+     {
+-      question: `ℝ² 上的线性变换 σ 满足 ${texInline(String.raw`\sigma(1,0)=(2,1)`)}，${texInline(String.raw`\sigma(0,1)=(-1,3)`)}。${texInline(String.raw`\sigma(3,-2)`)} 是多少？为什么两个像就够了？`,
+-      answer: `${texInline(String.raw`\sigma(3,-2)=3\sigma(1,0)-2\sigma(0,1)=(8,-3)`)}。每个向量都是 (1,0)、(0,1) 的线性组合，而 σ 保持线性组合。`,
++      question: `${texInline(String.raw`\mathbb R^2`)} 上的线性变换 ${texInline(String.raw`\sigma`)} 满足 ${texInline(String.raw`\sigma(1,0)=(2,1)`)}，${texInline(String.raw`\sigma(0,1)=(-1,3)`)}。${texInline(String.raw`\sigma(3,-2)`)} 是多少？为什么两个像就够了？`,
++      answer: `${texInline(String.raw`\sigma(3,-2)=3\sigma(1,0)-2\sigma(0,1)=(8,-3)`)}。每个向量都是 ${texInline("(1,0)")}、${texInline("(0,1)")} 的线性组合，而 ${texInline(String.raw`\sigma`)} 保持线性组合。`,
+     },
+   ],
+   summary: [
+-    "线性变换是 V 到自身、保持加法和数乘的变换，它把线性组合送到同系数的线性组合。",
+-    "σ(0)=0 只是必要条件；否定线性只需一个反例，肯定线性要对一切向量与数验证。",
++    `线性变换是 ${texInline("V")} 到自身、保持加法和数乘的变换，它把线性组合送到同系数的线性组合。`,
++    `${texInline(String.raw`\sigma(0)=0`)} 只是必要条件；否定线性只需一个反例，肯定线性要对一切向量与数验证。`,
+     "下一节把线性变换本身相加、相乘，得到新的线性变换。",
+   ],
+ });
+diff --git a/current/content/ch7-section2.js b/current/content/ch7-section2.js
+index bf42eec..7ea0e03 100644
+--- a/current/content/ch7-section2.js
++++ b/current/content/ch7-section2.js
+@@ -5,11 +5,11 @@ defineChapter7Section("linear-map-operations", {
+   navTitle: "线性变换的运算",
+   question: "线性变换怎样相加、相乘，怎样代入多项式？",
+   goal: "掌握线性变换的和、数量乘法、乘积与逆变换，会把线性变换代入多项式；知道乘法一般不可交换。",
+-  tags: ["和", "乘积", "逆变换", "多项式 f(σ)"],
++  tags: ["和", "乘积", "逆变换", `多项式 ${texInline(String.raw`f(\sigma)`)}`],
+   intro:
+-    "两个线性变换可以对同一个向量分别作用后相加，也可以先后作用。乘积 στ 表示先 τ 后 σ，交换顺序一般得到不同的变换。同一个 σ 可以反复相乘，于是能代入多项式，这是后面研究特征值和最小多项式的工具。",
++    `两个线性变换可以对同一个向量分别作用后相加，也可以先后作用。乘积 ${texInline(String.raw`\sigma\tau`)} 表示先 ${texInline(String.raw`\tau`)} 后 ${texInline(String.raw`\sigma`)}，交换顺序一般得到不同的变换。同一个 ${texInline(String.raw`\sigma`)} 可以反复相乘，于是能代入多项式，这是后面研究特征值和最小多项式的工具。`,
+   concepts: [
+-    { label: "乘积", text: `${texInline(String.raw`(\sigma\tau)(\alpha)=\sigma(\tau(\alpha))`)}，先 τ 后 σ。` },
++    { label: "乘积", text: `${texInline(String.raw`(\sigma\tau)(\alpha)=\sigma(\tau(\alpha))`)}，先 ${texInline(String.raw`\tau`)} 后 ${texInline(String.raw`\sigma`)}。` },
+     { label: "多项式", text: `${texInline(String.raw`f(\sigma)=a_m\sigma^m+\cdots+a_1\sigma+a_0E`)}。` },
+   ],
+   textbook: { reference: "北大版《高等代数》第七章 §2", items: ["线性变换的乘法、加法与数量乘法", "逆变换", "线性变换的多项式"] },
+@@ -19,58 +19,58 @@ defineChapter7Section("linear-map-operations", {
+       {
+         title: "加法、数量乘法与乘法",
+         tex: String.raw`(\sigma+\tau)(\alpha)=\sigma\alpha+\tau\alpha,\qquad (k\sigma)(\alpha)=k\,\sigma\alpha,\qquad (\sigma\tau)(\alpha)=\sigma(\tau\alpha)`,
+-        text: "三者仍是线性变换。乘法满足结合律和对加法的分配律，单位变换 E 满足 Eσ=σE=σ；乘法一般不满足交换律。全体线性变换在加法与数量乘法下构成数域 P 上的线性空间。",
++        text: `三者仍是线性变换。乘法满足结合律和对加法的分配律，单位变换 ${texInline("E")} 满足 ${texInline(String.raw`E\sigma=\sigma E=\sigma`)}；乘法一般不满足交换律。全体线性变换在加法与数量乘法下构成数域 ${texInline("P")} 上的线性空间。`,
+       },
+       {
+         title: "逆变换",
+         tex: String.raw`\sigma\tau=\tau\sigma=E\ \Longrightarrow\ \tau=\sigma^{-1},\qquad (\sigma\tau)^{-1}=\tau^{-1}\sigma^{-1}`,
+-        text: "可逆线性变换的逆仍是线性变换。撤销“先 τ 后 σ”时要先撤销 σ，所以逆的顺序相反。有限维空间中，只要 στ=E 一式成立，就有 τσ=E。",
++        text: `可逆线性变换的逆仍是线性变换。撤销“先 ${texInline(String.raw`\tau`)} 后 ${texInline(String.raw`\sigma`)}”时要先撤销 ${texInline(String.raw`\sigma`)}，所以逆的顺序相反。有限维空间中，只要 ${texInline(String.raw`\sigma\tau=E`)} 一式成立，就有 ${texInline(String.raw`\tau\sigma=E`)}。`,
+       },
+       {
+         title: "线性变换的多项式",
+         tex: String.raw`h=f+g\Rightarrow h(\sigma)=f(\sigma)+g(\sigma),\qquad h=fg\Rightarrow h(\sigma)=f(\sigma)g(\sigma)`,
+-        text: "σᵐ 是 m 个 σ 的乘积，σ⁰=E。因为 σⁱσʲ=σⁱ⁺ʲ=σʲσⁱ，同一个 σ 的两个多项式总可交换：f(σ)g(σ)=g(σ)f(σ)。",
++        text: `${texInline(String.raw`\sigma^m`)} 是 ${texInline("m")} 个 ${texInline(String.raw`\sigma`)} 的乘积，${texInline(String.raw`\sigma^0=E`)}。因为 ${texInline(String.raw`\sigma^i\sigma^j=\sigma^{i+j}=\sigma^j\sigma^i`)}，同一个 ${texInline(String.raw`\sigma`)} 的两个多项式总可交换：${texInline(String.raw`f(\sigma)g(\sigma)=g(\sigma)f(\sigma)`)}。`,
+       },
+     ],
+     pitfalls: [
+-      "把 στ 读成先 σ 后 τ。στ 作用在 α 上是 σ(τα)，靠近 α 的 τ 先作用。",
+-      "把 σ+τ 当成两步。σ+τ 是对同一个 α 分别作用，再把两个像相加。",
+-      "求 (στ)⁻¹ 时保持原来的顺序。正确的是 τ⁻¹σ⁻¹。",
++      `把 ${texInline(String.raw`\sigma\tau`)} 读成先 ${texInline(String.raw`\sigma`)} 后 ${texInline(String.raw`\tau`)}。${texInline(String.raw`\sigma\tau`)} 作用在 ${texInline(String.raw`\alpha`)} 上是 ${texInline(String.raw`\sigma(\tau\alpha)`)}，靠近 ${texInline(String.raw`\alpha`)} 的 ${texInline(String.raw`\tau`)} 先作用。`,
++      `把 ${texInline(String.raw`\sigma+\tau`)} 当成两步。${texInline(String.raw`\sigma+\tau`)} 是对同一个 ${texInline(String.raw`\alpha`)} 分别作用，再把两个像相加。`,
++      `求 ${texInline(String.raw`(\sigma\tau)^{-1}`)} 时保持原来的顺序。正确的是 ${texInline(String.raw`\tau^{-1}\sigma^{-1}`)}。`,
+     ],
+   },
+   example: {
+     title: "例题：求导与乘 x 不可交换",
+-    question: `在 ${texInline(String.raw`P[x]`)} 中，D 是求导，${texInline(String.raw`\sigma(f(x))=xf(x)`)}。${texInline(String.raw`D\sigma-\sigma D`)} 是什么变换？`,
++    question: `在 ${texInline(String.raw`P[x]`)} 中，${texInline("D")} 是求导，${texInline(String.raw`\sigma(f(x))=xf(x)`)}。${texInline(String.raw`D\sigma-\sigma D`)} 是什么变换？`,
+     choices: [
+       { correct: true, text: `单位变换 ${texInline("E")}。` },
+-      { text: "零变换，因为求导和乘 x 都是线性变换。" },
+-      { text: `${texInline(String.raw`\sigma`)}，即乘 x。` },
++      { text: `零变换，因为求导和乘 ${texInline("x")} 都是线性变换。` },
++      { text: `${texInline(String.raw`\sigma`)}，即乘 ${texInline("x")}。` },
+       { text: `${texInline("D")}，即求导。` },
+     ],
+     steps: [
+       `${texInline(String.raw`(D\sigma)(f)=D(xf)=f+xf'`)}。`,
+       `${texInline(String.raw`(\sigma D)(f)=\sigma(f')=xf'`)}。`,
+-      `相减：${texInline(String.raw`(D\sigma-\sigma D)(f)=f`)} 对一切 f 成立，所以 ${texInline(String.raw`D\sigma-\sigma D=E`)}。`,
++      `相减：${texInline(String.raw`(D\sigma-\sigma D)(f)=f`)} 对一切 ${texInline("f")} 成立，所以 ${texInline(String.raw`D\sigma-\sigma D=E`)}。`,
+       `特别地 ${texInline(String.raw`D\sigma\ne\sigma D`)}：两个线性变换的乘积与顺序有关。`,
+     ],
+   },
+   quiz: [
+     {
+       question: `若 ${texInline(String.raw`\sigma^2=\sigma`)}，${texInline(String.raw`(E-\sigma)^2`)} 等于什么？${texInline(String.raw`\sigma(E-\sigma)`)} 呢？`,
+-      answer: "(E−σ)²=E−2σ+σ²=E−σ；σ(E−σ)=σ−σ²=0。",
++      answer: `${texInline(String.raw`(E-\sigma)^2=E-2\sigma+\sigma^2=E-\sigma`)}；${texInline(String.raw`\sigma(E-\sigma)=\sigma-\sigma^2=0`)}。`,
+     },
+     {
+-      question: `在 ${texInline(String.raw`P[x]`)} 中，J 是从 0 到 x 求积分。DJ 与 JD 各是什么？这在有限维空间中可能发生吗？`,
+-      answer: "DJ=E，而 JD(f)=f−f(0)，不等于 E。有限维空间中不会发生：στ=E 时 τσ=E 也成立。",
++      question: `在 ${texInline(String.raw`P[x]`)} 中，${texInline("J")} 是从 ${texInline("0")} 到 ${texInline("x")} 求积分。${texInline("DJ")} 与 ${texInline("JD")} 各是什么？这在有限维空间中可能发生吗？`,
++      answer: `${texInline("DJ=E")}，而 ${texInline("JD(f)=f-f(0)")}，不等于 ${texInline("E")}。有限维空间中不会发生：${texInline(String.raw`\sigma\tau=E`)} 时 ${texInline(String.raw`\tau\sigma=E`)} 也成立。`,
+     },
+     {
+-      question: "为什么 f(σ)g(σ)=g(σ)f(σ) 总成立，而两个线性变换 σ、τ 一般不可交换？",
+-      answer: "f(σ)、g(σ) 都是同一个 σ 的幂的组合，σⁱσʲ=σⁱ⁺ʲ=σʲσⁱ；两个不同的变换之间没有这样的关系。",
++      question: `为什么 ${texInline(String.raw`f(\sigma)g(\sigma)=g(\sigma)f(\sigma)`)} 总成立，而两个线性变换 ${texInline(String.raw`\sigma`)}、${texInline(String.raw`\tau`)} 一般不可交换？`,
++      answer: `${texInline(String.raw`f(\sigma)`)}、${texInline(String.raw`g(\sigma)`)} 都是同一个 ${texInline(String.raw`\sigma`)} 的幂的组合，${texInline(String.raw`\sigma^i\sigma^j=\sigma^{i+j}=\sigma^j\sigma^i`)}；两个不同的变换之间没有这样的关系。`,
+     },
+   ],
+   summary: [
+-    "和是对同一向量分别作用再相加；乘积 στ 是先 τ 后 σ，满足结合律，一般不可交换。",
+-    "可逆变换的逆仍是线性变换，(στ)⁻¹=τ⁻¹σ⁻¹。",
+-    "f(σ) 把多项式代入线性变换，同一个 σ 的多项式彼此可交换。",
++    `和是对同一向量分别作用再相加；乘积 ${texInline(String.raw`\sigma\tau`)} 是先 ${texInline(String.raw`\tau`)} 后 ${texInline(String.raw`\sigma`)}，满足结合律，一般不可交换。`,
++    `可逆变换的逆仍是线性变换，${texInline(String.raw`(\sigma\tau)^{-1}=\tau^{-1}\sigma^{-1}`)}。`,
++    `${texInline(String.raw`f(\sigma)`)} 把多项式代入线性变换，同一个 ${texInline(String.raw`\sigma`)} 的多项式彼此可交换。`,
+   ],
+ });
+diff --git a/current/content/ch7-section3.js b/current/content/ch7-section3.js
+index 104f79b..003ce19 100644
+--- a/current/content/ch7-section3.js
++++ b/current/content/ch7-section3.js
+@@ -4,10 +4,10 @@ defineChapter7Section("matrix-of-linear-map", {
+   title: "线性变换的矩阵",
+   navTitle: "线性变换的矩阵",
+   question: "同一个线性变换换一组基，矩阵为什么变成相似的矩阵？",
+-  goal: "会写线性变换在一组基下的矩阵，掌握坐标公式与换基公式 B=X⁻¹AX，知道相似矩阵有相同的迹与行列式。",
++  goal: `会写线性变换在一组基下的矩阵，掌握坐标公式与换基公式 ${texInline("B=X^{-1}AX")}，知道相似矩阵有相同的迹与行列式。`,
+   tags: ["线性变换的矩阵", "过渡矩阵", "相似"],
+   intro:
+-    "取定基 ε₁,…,εₙ，把 σεⱼ 的坐标排成第 j 列，就得到 σ 在这组基下的矩阵。换一组基，σ 本身没有变，记录它的矩阵却变了。下面拖动新基，看矩阵怎样变，又有什么始终不变。",
++    `取定基 ${texInline(String.raw`\varepsilon_1,\dots,\varepsilon_n`)}，把 ${texInline(String.raw`\sigma\varepsilon_j`)} 的坐标排成第 ${texInline("j")} 列，就得到 ${texInline(String.raw`\sigma`)} 在这组基下的矩阵。换一组基，${texInline(String.raw`\sigma`)} 本身没有变，记录它的矩阵却变了。下面拖动新基，看矩阵怎样变，又有什么始终不变。`,
+   concepts: [
+     { label: "矩阵", text: `${texInline(String.raw`\sigma(\varepsilon_1,\dots,\varepsilon_n)=(\varepsilon_1,\dots,\varepsilon_n)A`)}` },
+     { label: "换基", text: `${texInline(String.raw`(\eta)=(\varepsilon)X\Rightarrow B=X^{-1}AX`)}` },
+@@ -19,61 +19,61 @@ defineChapter7Section("matrix-of-linear-map", {
+       {
+         title: "矩阵的列是基向量的像的坐标",
+         tex: String.raw`\sigma(\varepsilon_1,\dots,\varepsilon_n)=(\varepsilon_1,\dots,\varepsilon_n)A`,
+-        text: "A 的第 j 列是 σεⱼ 在 ε₁,…,εₙ 下的坐标。若 ξ 的坐标是列向量 x，则 σξ 的坐标是 Ax。任给 n 个向量 α₁,…,αₙ，有唯一的线性变换使 σεⱼ=αⱼ，所以取定基以后，线性变换与 n 阶矩阵一一对应，和、乘积、逆分别对应矩阵的和、乘积、逆。",
++        text: `${texInline("A")} 的第 ${texInline("j")} 列是 ${texInline(String.raw`\sigma\varepsilon_j`)} 在 ${texInline(String.raw`\varepsilon_1,\dots,\varepsilon_n`)} 下的坐标。若 ${texInline(String.raw`\xi`)} 的坐标是列向量 ${texInline("x")}，则 ${texInline(String.raw`\sigma\xi`)} 的坐标是 ${texInline("Ax")}。任给 ${texInline("n")} 个向量 ${texInline(String.raw`\alpha_1,\dots,\alpha_n`)}，有唯一的线性变换使 ${texInline(String.raw`\sigma\varepsilon_j=\alpha_j`)}，所以取定基以后，线性变换与 ${texInline("n")} 阶矩阵一一对应，和、乘积、逆分别对应矩阵的和、乘积、逆。`,
+       },
+       {
+-        title: "换基：B = X⁻¹AX",
++        title: `换基：${texInline("B=X^{-1}AX")}`,
+         tex: String.raw`(\eta_1,\dots,\eta_n)=(\varepsilon_1,\dots,\varepsilon_n)X\ \Longrightarrow\ B=X^{-1}AX`,
+-        text: "X 是由 ε 到 η 的过渡矩阵，第 j 列是 ηⱼ 在 ε 下的坐标；B 是 σ 在 η 下的矩阵。读法：X 把 η 坐标翻译成 ε 坐标，A 在 ε 坐标里作用，X⁻¹ 再翻译回 η 坐标。同一个线性变换在不同基下的矩阵彼此相似，迹、行列式和特征多项式都相同。",
++        text: `${texInline("X")} 是由 ${texInline(String.raw`\varepsilon`)} 到 ${texInline(String.raw`\eta`)} 的过渡矩阵，第 ${texInline("j")} 列是 ${texInline(String.raw`\eta_j`)} 在 ${texInline(String.raw`\varepsilon`)} 下的坐标；${texInline("B")} 是 ${texInline(String.raw`\sigma`)} 在 ${texInline(String.raw`\eta`)} 下的矩阵。读法：${texInline("X")} 把 ${texInline(String.raw`\eta`)} 坐标翻译成 ${texInline(String.raw`\varepsilon`)} 坐标，${texInline("A")} 在 ${texInline(String.raw`\varepsilon`)} 坐标里作用，${texInline("X^{-1}")} 再翻译回 ${texInline(String.raw`\eta`)} 坐标。同一个线性变换在不同基下的矩阵彼此相似，迹、行列式和特征多项式都相同。`,
+       },
+       {
+         title: "好的基让矩阵变简单",
+-        text: "若 σηⱼ=λⱼηⱼ，B 的第 j 列只在对角位置上有数 λⱼ。每个 ηⱼ 都这样时，B 是对角矩阵。§4 寻找这样的向量，§5 讨论它们什么时候够组成一组基。",
++        text: `若 ${texInline(String.raw`\sigma\eta_j=\lambda_j\eta_j`)}，${texInline("B")} 的第 ${texInline("j")} 列只在对角位置上有数 ${texInline(String.raw`\lambda_j`)}。每个 ${texInline(String.raw`\eta_j`)} 都这样时，${texInline("B")} 是对角矩阵。§4 寻找这样的向量，§5 讨论它们什么时候够组成一组基。`,
+       },
+     ],
+     pitfalls: [
+-      "把 σεⱼ 的坐标写成行。按北大版约定，坐标写成列，依次排成 A 的各列。",
+-      "把 B=X⁻¹AX 写成 XAX⁻¹。X 的列是新基在旧基下的坐标，B 在右边先乘 X。",
++      `把 ${texInline(String.raw`\sigma\varepsilon_j`)} 的坐标写成行。按北大版约定，坐标写成列，依次排成 ${texInline("A")} 的各列。`,
++      `把 ${texInline("B=X^{-1}AX")} 写成 ${texInline("XAX^{-1}")}。${texInline("X")} 的列是新基在旧基下的坐标，${texInline("B")} 在右边先乘 ${texInline("X")}。`,
+       "以为换基改变了变换本身。改变的只是记录它的矩阵。",
+     ],
+   },
+   example: {
+     title: "例题：求导在两组基下的矩阵",
+-    question: `${texInline(String.raw`P[x]_4`)} 是次数小于 4 的实系数多项式（连同 0）组成的空间。求导 D 在基 ${texInline(String.raw`1,x,x^2,x^3`)} 下的矩阵 M，在基 ${texInline(String.raw`1,x,\tfrac{x^2}{2},\tfrac{x^3}{6}`)} 下的矩阵 N。`,
++    question: `${texInline(String.raw`P[x]_4`)} 是次数小于 4 的实系数多项式（连同 0）组成的空间。求导 ${texInline("D")} 在基 ${texInline(String.raw`1,x,x^2,x^3`)} 下的矩阵 ${texInline("M")}，在基 ${texInline(String.raw`1,x,\tfrac{x^2}{2},\tfrac{x^3}{6}`)} 下的矩阵 ${texInline("N")}。`,
+     choices: [
+-      { correct: true, text: `M 在主对角线上方的一条斜线上依次是 1, 2, 3，其余为 0；N 在这条斜线上全是 1。` },
+-      { text: "M 在主对角线下方的一条斜线上依次是 1, 2, 3（把像的坐标排成了行）。" },
+-      { text: "M 与 N 相同，因为它们记录的是同一个 D。" },
+-      { text: "M 在主对角线上方依次是 1, 2, 3；N 在这条斜线上依次是 1, 1/2, 1/6。" },
++      { correct: true, text: `${texInline("M")} 在主对角线上方的一条斜线上依次是 ${texInline("1,2,3")}，其余为 ${texInline("0")}；${texInline("N")} 在这条斜线上全是 ${texInline("1")}。` },
++      { text: `${texInline("M")} 在主对角线下方的一条斜线上依次是 ${texInline("1,2,3")}（把像的坐标排成了行）。` },
++      { text: `${texInline("M")} 与 ${texInline("N")} 相同，因为它们记录的是同一个 ${texInline("D")}。` },
++      { text: `${texInline("M")} 在主对角线上方依次是 ${texInline("1,2,3")}；${texInline("N")} 在这条斜线上依次是 ${texInline(String.raw`1,\tfrac12,\tfrac16`)}。` },
+     ],
+     steps: [
+       `${texInline(String.raw`D1=0,\ Dx=1,\ Dx^2=2x,\ Dx^3=3x^2`)}，坐标列依次是 ${texInline(String.raw`(0,0,0,0)^T,(1,0,0,0)^T,(0,2,0,0)^T,(0,0,3,0)^T`)}，所以 ${texInline(String.raw`M=\begin{pmatrix}0&1&0&0\\0&0&2&0\\0&0&0&3\\0&0&0&0\end{pmatrix}`)}。`,
+-      `新基 ${texInline(String.raw`\eta_1,\dots,\eta_4`)}：${texInline(String.raw`D\eta_1=0,\ D\eta_2=\eta_1,\ D\tfrac{x^2}{2}=x=\eta_2,\ D\tfrac{x^3}{6}=\tfrac{x^2}{2}=\eta_3`)}，所以 N 在主对角线上方全是 1。`,
++      `新基 ${texInline(String.raw`\eta_1,\dots,\eta_4`)}：${texInline(String.raw`D\eta_1=0,\ D\eta_2=\eta_1,\ D\tfrac{x^2}{2}=x=\eta_2,\ D\tfrac{x^3}{6}=\tfrac{x^2}{2}=\eta_3`)}，所以 ${texInline("N")} 在主对角线上方全是 ${texInline("1")}。`,
+       `过渡矩阵 ${texInline(String.raw`X=\operatorname{diag}(1,1,\tfrac12,\tfrac16)`)}，验证 ${texInline(String.raw`N=X^{-1}MX`)}：例如第 3 行第 4 列是 ${texInline(String.raw`2\cdot3\cdot\tfrac16=1`)}。`,
+-      "N 中 D 把每个基向量送到前一个。把这组基倒过来排成 x³/6, x²/2, x, 1，1 就移到主对角线下方，这正是 §8 的若尔当块 J(0,4)。",
++      `${texInline("N")} 中 ${texInline("D")} 把每个基向量送到前一个。把这组基倒过来排成 ${texInline(String.raw`\tfrac{x^3}{6},\tfrac{x^2}{2},x,1`)}，${texInline("1")} 就移到主对角线下方，这正是 §8 的若尔当块 ${texInline("J(0,4)")}。`,
+     ],
+   },
+   quiz: [
+     {
+-      question: "σ 在某组基下的矩阵是单位矩阵 E。σ 在其他基下的矩阵是什么？σ 是什么变换？",
+-      answer: "X⁻¹EX=E，在任何基下都是 E；σ 是单位变换。",
++      question: `${texInline(String.raw`\sigma`)} 在某组基下的矩阵是单位矩阵 ${texInline("E")}。${texInline(String.raw`\sigma`)} 在其他基下的矩阵是什么？${texInline(String.raw`\sigma`)} 是什么变换？`,
++      answer: `${texInline("X^{-1}EX=E")}，在任何基下都是 ${texInline("E")}；${texInline(String.raw`\sigma`)} 是单位变换。`,
+     },
+     {
+       question: "为什么相似矩阵的迹相同？",
+       answer: `${texInline(String.raw`|\lambda E-X^{-1}AX|=|X^{-1}(\lambda E-A)X|=|\lambda E-A|`)}，特征多项式相同；迹是 ${texInline(String.raw`\lambda^{n-1}`)} 项系数的相反数。从几何上看，它们记录的是同一个线性变换。`,
+     },
+     {
+-      question: "ℝ² 上旋转 90° 的变换，在某组实基下的矩阵能是对角矩阵吗？",
+-      answer: "不能。对角就意味着 ση₁=λ₁η₁，有一条直线被保持；旋转 90° 把每条过原点的直线都转走了。",
++      question: `${texInline(String.raw`\mathbb R^2`)} 上旋转 90° 的变换，在某组实基下的矩阵能是对角矩阵吗？`,
++      answer: `不能。对角就意味着 ${texInline(String.raw`\sigma\eta_1=\lambda_1\eta_1`)}，有一条直线被保持；旋转 90° 把每条过原点的直线都转走了。`,
+     },
+     {
+-      question: "在实验中把 η₁ 换成 2η₁、η₂ 不动，B 的四个元素怎样变化？",
+-      answer: `对角元不变，b₂₁ 乘 2，b₁₂ 除以 2：${texInline(String.raw`\sigma(2\eta_1)=b_{11}(2\eta_1)+2b_{21}\eta_2`)}，而 ση₂ 用 2η₁ 表示时系数减半。`,
++      question: `在实验中把 ${texInline(String.raw`\eta_1`)} 换成 ${texInline(String.raw`2\eta_1`)}、${texInline(String.raw`\eta_2`)} 不动，${texInline("B")} 的四个元素怎样变化？`,
++      answer: `对角元不变，${texInline("b_{21}")} 乘 2，${texInline("b_{12}")} 除以 2：${texInline(String.raw`\sigma(2\eta_1)=b_{11}(2\eta_1)+2b_{21}\eta_2`)}，而 ${texInline(String.raw`\sigma\eta_2`)} 用 ${texInline(String.raw`2\eta_1`)} 表示时系数减半。`,
+     },
+   ],
+   summary: [
+-    "σ 在基 ε 下的矩阵 A：第 j 列是 σεⱼ 的坐标；σξ 的坐标等于 A 乘 ξ 的坐标。",
+-    "(η)=(ε)X 时 B=X⁻¹AX：同一线性变换在不同基下的矩阵相似，迹与行列式不变。",
+-    "基向量都落在被 σ 保持的直线上时，矩阵成为对角矩阵，这是 §4、§5 的出发点。",
++    `${texInline(String.raw`\sigma`)} 在基 ${texInline(String.raw`\varepsilon`)} 下的矩阵 ${texInline("A")}：第 ${texInline("j")} 列是 ${texInline(String.raw`\sigma\varepsilon_j`)} 的坐标；${texInline(String.raw`\sigma\xi`)} 的坐标等于 ${texInline("A")} 乘 ${texInline(String.raw`\xi`)} 的坐标。`,
++    `${texInline(String.raw`(\eta)=(\varepsilon)X`)} 时 ${texInline("B=X^{-1}AX")}：同一线性变换在不同基下的矩阵相似，迹与行列式不变。`,
++    `基向量都落在被 ${texInline(String.raw`\sigma`)} 保持的直线上时，矩阵成为对角矩阵，这是 §4、§5 的出发点。`,
+   ],
+ });
+diff --git a/current/content/ch7-section4.js b/current/content/ch7-section4.js
+index 7994246..1df233c 100644
+--- a/current/content/ch7-section4.js
++++ b/current/content/ch7-section4.js
+@@ -4,10 +4,10 @@ defineChapter7Section("eigenvalues-eigenvectors", {
+   title: "特征值与特征向量",
+   navTitle: "特征值与特征向量",
+   question: "哪些方向在线性变换下只被伸缩？",
+-  goal: "理解特征值、特征向量与特征子空间；会用特征多项式 |λE−A| 求特征值，用 (λ₀E−A)x=0 求特征向量；知道哈密顿–凯莱定理。",
++  goal: `理解特征值、特征向量与特征子空间；会用特征多项式 ${texInline(String.raw`|\lambda E-A|`)} 求特征值，用 ${texInline(String.raw`(\lambda_0E-A)x=0`)} 求特征向量；知道哈密顿–凯莱定理。`,
+   tags: ["特征值", "特征向量", "特征多项式", "特征子空间"],
+   intro:
+-    "多数向量经过 σ 都会偏离原来的直线。若非零向量 ξ 满足 σξ=λ₀ξ，它所在的直线就被 σ 保持，只被伸缩或反向。转动下面的候选方向，找出这样的直线；在三维的例子里，它们能铺满一整个平面。",
++    `多数向量经过 ${texInline(String.raw`\sigma`)} 都会偏离原来的直线。若非零向量 ${texInline(String.raw`\xi`)} 满足 ${texInline(String.raw`\sigma\xi=\lambda_0\xi`)}，它所在的直线就被 ${texInline(String.raw`\sigma`)} 保持，只被伸缩或反向。转动下面的候选方向，找出这样的直线；在三维的例子里，它们能铺满一整个平面。`,
+   concepts: [
+     { label: "特征向量", text: `${texInline(String.raw`\sigma\xi=\lambda_0\xi`)}，${texInline(String.raw`\xi\ne0`)}。` },
+     { label: "特征多项式", text: `${texInline(String.raw`f(\lambda)=|\lambda E-A|`)}，它的根是特征值。` },
+@@ -19,23 +19,23 @@ defineChapter7Section("eigenvalues-eigenvectors", {
+       {
+         title: "定义与求法",
+         tex: String.raw`\sigma\xi=\lambda_0\xi\ (\xi\ne0)\iff (\lambda_0E-A)x=0\ \text{有非零解}\iff |\lambda_0E-A|=0`,
+-        text: "x 是 ξ 在一组基下的坐标，A 是 σ 在这组基下的矩阵。f(λ)=|λE−A| 称为 A 的特征多项式，它在数域 P 中的根就是 σ 的全部特征值；对每个特征值 λ₀ 解 (λ₀E−A)x=0，基础解系给出属于 λ₀ 的全部线性无关的特征向量。",
++        text: `${texInline("x")} 是 ${texInline(String.raw`\xi`)} 在一组基下的坐标，${texInline("A")} 是 ${texInline(String.raw`\sigma`)} 在这组基下的矩阵。${texInline(String.raw`f(\lambda)=|\lambda E-A|`)} 称为 ${texInline("A")} 的特征多项式，它在数域 ${texInline("P")} 中的根就是 ${texInline(String.raw`\sigma`)} 的全部特征值；对每个特征值 ${texInline(String.raw`\lambda_0`)} 解 ${texInline(String.raw`(\lambda_0E-A)x=0`)}，基础解系给出属于 ${texInline(String.raw`\lambda_0`)} 的全部线性无关的特征向量。`,
+       },
+       {
+         title: "特征子空间可以是多维的",
+         tex: String.raw`V_{\lambda_0}=\{\xi\in V:\ \sigma\xi=\lambda_0\xi\},\qquad \dim V_{\lambda_0}=n-\operatorname{rank}(\lambda_0E-A)`,
+-        text: "V_λ₀ 由属于 λ₀ 的全部特征向量连同零向量组成，是一个子空间。它的维数可以大于 1：实验里的三阶矩阵，V₋₁ 是整个平面 x₁+x₂+x₃=0，平面里每个方向都被反向。",
++        text: `${texInline(String.raw`V_{\lambda_0}`)} 由属于 ${texInline(String.raw`\lambda_0`)} 的全部特征向量连同零向量组成，是一个子空间。它的维数可以大于 1：实验里的三阶矩阵，${texInline("V_{-1}")} 是整个平面 ${texInline("x_1+x_2+x_3=0")}，平面里每个方向都被反向。`,
+       },
+       {
+         title: "哈密顿–凯莱定理",
+         tex: String.raw`f(\lambda)=|\lambda E-A|\ \Longrightarrow\ f(A)=a_nA^n+\cdots+a_1A+a_0E=O`,
+-        text: "相似矩阵的特征多项式相同，所以特征多项式属于线性变换本身，f(σ)=0。用它可以把 A 的高次幂降到 n−1 次以下；§9 的最小多项式是 f 的因式。",
++        text: `相似矩阵的特征多项式相同，所以特征多项式属于线性变换本身，${texInline(String.raw`f(\sigma)=0`)}。用它可以把 ${texInline("A")} 的高次幂降到 ${texInline("n-1")} 次以下；§9 的最小多项式是 ${texInline("f")} 的因式。`,
+       },
+     ],
+     pitfalls: [
+-      "把零向量算作特征向量。σ0=λ0 对任何 λ 都成立，所以要求 ξ≠0；特征值 λ₀=0 却是允许的。",
+-      "不说数域。旋转 90° 在实数域上没有特征值，在复数域上有 ±i。",
+-      "以为特征向量是唯一的。属于 λ₀ 的特征向量的非零线性组合仍是属于 λ₀ 的特征向量。",
++      `把零向量算作特征向量。${texInline(String.raw`\sigma0=\lambda0`)} 对任何 ${texInline(String.raw`\lambda`)} 都成立，所以要求 ${texInline(String.raw`\xi\ne0`)}；特征值 ${texInline(String.raw`\lambda_0=0`)} 却是允许的。`,
++      `不说数域。旋转 90° 在实数域上没有特征值，在复数域上有 ${texInline(String.raw`\pm i`)}。`,
++      `以为特征向量是唯一的。属于 ${texInline(String.raw`\lambda_0`)} 的特征向量的非零线性组合仍是属于 ${texInline(String.raw`\lambda_0`)} 的特征向量。`,
+     ],
+   },
+   example: {
+@@ -43,12 +43,12 @@ defineChapter7Section("eigenvalues-eigenvectors", {
+     question: `求 ${texInline(String.raw`A=\begin{pmatrix}1&2&2\\2&1&2\\2&2&1\end{pmatrix}`)} 的特征值与特征子空间。`,
+     choices: [
+       { correct: true, text: `${texInline(String.raw`\lambda=5`)}，${texInline(String.raw`V_5=L((1,1,1)^T)`)}；${texInline(String.raw`\lambda=-1`)}（二重），${texInline(String.raw`V_{-1}`)} 是平面 ${texInline("x_1+x_2+x_3=0")}，维数 2。` },
+-      { text: "λ=5, −1, −1，每个特征值各对应一条特征直线。" },
+-      { text: "λ=1（三重），因为对角元都是 1。" },
+-      { text: "λ=3, 1, −1，因为它们的和等于迹 3。" },
++      { text: `${texInline(String.raw`\lambda=5,-1,-1`)}，每个特征值各对应一条特征直线。` },
++      { text: `${texInline(String.raw`\lambda=1`)}（三重），因为对角元都是 ${texInline("1")}。` },
++      { text: `${texInline(String.raw`\lambda=3,1,-1`)}，因为它们的和等于迹 ${texInline("3")}。` },
+     ],
+     steps: [
+-      `${texInline(String.raw`|\lambda E-A|=(\lambda-5)(\lambda+1)^2`)}。（A=2J−E，J 是全 1 矩阵，也可以由 J 的特征值 3, 0, 0 直接得到。）`,
++      `${texInline(String.raw`|\lambda E-A|=(\lambda-5)(\lambda+1)^2`)}。（${texInline("A=2J-E")}，${texInline("J")} 是全 1 矩阵，也可以由 ${texInline("J")} 的特征值 ${texInline("3,0,0")} 直接得到。）`,
+       `${texInline(String.raw`\lambda=5`)}：${texInline(String.raw`(5E-A)x=0`)} 化简得 ${texInline("x_1=x_2=x_3")}，${texInline(String.raw`V_5=L((1,1,1)^T)`)}。`,
+       `${texInline(String.raw`\lambda=-1`)}：${texInline(String.raw`(-E-A)x=0`)} 的三个方程都是 ${texInline("x_1+x_2+x_3=0")}，秩为 1，基础解系 ${texInline(String.raw`(-1,1,0)^T,(-1,0,1)^T`)}，${texInline(String.raw`\dim V_{-1}=2`)}。`,
+       `检验：${texInline(String.raw`5+(-1)+(-1)=3=\operatorname{tr}A`)}，${texInline(String.raw`5\cdot(-1)\cdot(-1)=5=|A|`)}。`,
+@@ -56,21 +56,21 @@ defineChapter7Section("eigenvalues-eigenvectors", {
+   },
+   quiz: [
+     {
+-      question: `求导 D 在 ${texInline(String.raw`P[x]_n`)}（n≥2）上有哪些特征值和特征向量？`,
+-      answer: "在基 1, x, …, xⁿ⁻¹ 下 D 的矩阵主对角线全为 0 且是上三角的，特征多项式是 λⁿ，只有特征值 0；Df=0 的非零 f 是非零常数，V₀ 是一维的。",
++      question: `求导 ${texInline("D")} 在 ${texInline(String.raw`P[x]_n`)}（${texInline(String.raw`n\ge2`)}）上有哪些特征值和特征向量？`,
++      answer: `在基 ${texInline(String.raw`1,x,\dots,x^{n-1}`)} 下 ${texInline("D")} 的矩阵主对角线全为 ${texInline("0")} 且是上三角的，特征多项式是 ${texInline(String.raw`\lambda^n`)}，只有特征值 ${texInline("0")}；${texInline("Df=0")} 的非零 ${texInline("f")} 是非零常数，${texInline("V_0")} 是一维的。`,
+     },
+     {
+       question: `${texInline(String.raw`M_2(\mathbb R)`)} 上的转置变换 ${texInline(String.raw`T(X)=X^T`)} 有哪些特征值？特征子空间各是几维？`,
+-      answer: "T²=E，所以特征值只能是 ±1。λ=1 对应对称矩阵，维数 3；λ=−1 对应反对称矩阵，维数 1。3+1=4，两者铺满 M₂。",
++      answer: `${texInline("T^2=E")}，所以特征值只能是 ${texInline(String.raw`\pm1`)}。${texInline(String.raw`\lambda=1`)} 对应对称矩阵，维数 3；${texInline(String.raw`\lambda=-1`)} 对应反对称矩阵，维数 1。${texInline("3+1=4")}，两者铺满 ${texInline("M_2")}。`,
+     },
+     {
+-      question: "A 与 Aᵀ 的特征值相同吗？特征向量呢？",
+-      answer: "|λE−Aᵀ|=|λE−A|，特征值相同。特征向量一般不同：A=(1 1; 0 2) 属于 1 的是 (1,0)ᵀ，Aᵀ 属于 1 的是 (1,−1)ᵀ。",
++      question: `${texInline("A")} 与 ${texInline("A^T")} 的特征值相同吗？特征向量呢？`,
++      answer: `${texInline(String.raw`|\lambda E-A^T|=|\lambda E-A|`)}，特征值相同。特征向量一般不同：${texInline(String.raw`A=\begin{pmatrix}1&1\\0&2\end{pmatrix}`)} 属于 ${texInline("1")} 的是 ${texInline("(1,0)^T")}，${texInline("A^T")} 属于 ${texInline("1")} 的是 ${texInline("(1,-1)^T")}。`,
+     },
+   ],
+   summary: [
+-    "特征向量是所在直线被 σ 保持的非零向量：σξ=λ₀ξ。",
+-    "特征值是 |λE−A| 在 P 中的根；V_λ₀ 是 (λ₀E−A)x=0 的解空间，维数可以大于 1。",
+-    "哈密顿–凯莱定理：A 是自己特征多项式的根，f(A)=O。",
++    `特征向量是所在直线被 ${texInline(String.raw`\sigma`)} 保持的非零向量：${texInline(String.raw`\sigma\xi=\lambda_0\xi`)}。`,
++    `特征值是 ${texInline(String.raw`|\lambda E-A|`)} 在 ${texInline("P")} 中的根；${texInline(String.raw`V_{\lambda_0}`)} 是 ${texInline(String.raw`(\lambda_0E-A)x=0`)} 的解空间，维数可以大于 1。`,
++    `哈密顿–凯莱定理：${texInline("A")} 是自己特征多项式的根，${texInline("f(A)=O")}。`,
+   ],
+ });
+diff --git a/current/content/ch7-section5.js b/current/content/ch7-section5.js
+index 1f21cda..ef536f4 100644
+--- a/current/content/ch7-section5.js
++++ b/current/content/ch7-section5.js
+@@ -3,13 +3,13 @@ defineChapter7Section("diagonal-matrices", {
+   textbookSection: "对角矩阵",
+   title: "对角矩阵",
+   navTitle: "对角矩阵",
+-  question: "有了特征向量组成的基，Aᵏ 为什么变得好算？",
+-  goal: "掌握 σ 可对角化的条件，会写 X⁻¹AX=diag(λ₁,…,λₙ) 并用它计算 Aᵏ；看懂迭代 xₖ₊₁=Axₖ 的长期走向。",
++  question: `有了特征向量组成的基，${texInline("A^k")} 为什么变得好算？`,
++  goal: `掌握 ${texInline(String.raw`\sigma`)} 可对角化的条件，会写 ${texInline(String.raw`X^{-1}AX=\operatorname{diag}(\lambda_1,\dots,\lambda_n)`)} 并用它计算 ${texInline("A^k")}；看懂迭代 ${texInline("x_{k+1}=Ax_k")} 的长期走向。`,
+   tags: ["可对角化", "特征向量基", "矩阵的幂"],
+   intro:
+-    "在特征向量组成的基下，σ 只把每个坐标各乘一个数，作用 k 次就是各乘 λᵢᵏ。把初始向量拆成特征向量的组合，每一份按自己的 λ 独立增长或衰减。下面反复作用 A，看点最终跑向哪里。",
++    `在特征向量组成的基下，${texInline(String.raw`\sigma`)} 只把每个坐标各乘一个数，作用 ${texInline("k")} 次就是各乘 ${texInline(String.raw`\lambda_i^k`)}。把初始向量拆成特征向量的组合，每一份按自己的 ${texInline(String.raw`\lambda`)} 独立增长或衰减。下面反复作用 ${texInline("A")}，看点最终跑向哪里。`,
+   concepts: [
+-    { label: "可对角化", text: "σ 在某组基下的矩阵是对角矩阵，当且仅当 σ 有 n 个线性无关的特征向量。" },
++    { label: "可对角化", text: `${texInline(String.raw`\sigma`)} 在某组基下的矩阵是对角矩阵，当且仅当 ${texInline(String.raw`\sigma`)} 有 ${texInline("n")} 个线性无关的特征向量。` },
+     { label: "幂", text: `${texInline(String.raw`A^k=X\operatorname{diag}(\lambda_1^k,\dots,\lambda_n^k)X^{-1}`)}` },
+   ],
+   textbook: { reference: "北大版《高等代数》第七章 §5", items: ["线性变换可对角化的条件", "属于不同特征值的特征向量线性无关", "矩阵的对角化"] },
+@@ -19,21 +19,21 @@ defineChapter7Section("diagonal-matrices", {
+       {
+         title: "可对角化的判别",
+         tex: String.raw`X^{-1}AX=\operatorname{diag}(\lambda_1,\dots,\lambda_n)\iff AX_i=\lambda_iX_i\ (i=1,\dots,n),\ X_1,\dots,X_n\ \text{线性无关}`,
+-        text: "Xᵢ 是 X 的第 i 列，它是属于 λᵢ 的特征向量，列的顺序与对角元一一对应。属于不同特征值的特征向量线性无关，所以 n 个互不相同的特征值保证可对角化；有重根时，要看各特征子空间的维数之和是否等于 n。",
++        text: `${texInline("X_i")} 是 ${texInline("X")} 的第 ${texInline("i")} 列，它是属于 ${texInline(String.raw`\lambda_i`)} 的特征向量，列的顺序与对角元一一对应。属于不同特征值的特征向量线性无关，所以 ${texInline("n")} 个互不相同的特征值保证可对角化；有重根时，要看各特征子空间的维数之和是否等于 ${texInline("n")}。`,
+       },
+       {
+         title: "幂与迭代",
+         tex: String.raw`x_0=c_1X_1+\cdots+c_nX_n\ \Longrightarrow\ A^kx_0=c_1\lambda_1^kX_1+\cdots+c_n\lambda_n^kX_n`,
+-        text: "|λ|<1 的分量衰减，|λ|>1 的分量增长，λ=1 的分量保持不变。k 很大时，|λ| 最大且系数不为 0 的那一份占主导，点贴着它的特征直线运动。",
++        text: `${texInline(String.raw`|\lambda|<1`)} 的分量衰减，${texInline(String.raw`|\lambda|>1`)} 的分量增长，${texInline(String.raw`\lambda=1`)} 的分量保持不变。${texInline("k")} 很大时，${texInline(String.raw`|\lambda|`)} 最大且系数不为 0 的那一份占主导，点贴着它的特征直线运动。`,
+       },
+       {
+         title: "特征向量不够时",
+-        text: "A=(1 1; 0 1) 的特征值 1 是二重根，V₁ 只有一维，不能对角化。它的迭代 (x₁,x₂)↦(x₁+x₂,x₂) 每步平移 x₂，是等差的漂移，拆不成按几何级数伸缩的分量。§8 用若尔当形描述这种情形。",
++        text: `${texInline(String.raw`A=\begin{pmatrix}1&1\\0&1\end{pmatrix}`)} 的特征值 ${texInline("1")} 是二重根，${texInline("V_1")} 只有一维，不能对角化。它的迭代 ${texInline(String.raw`(x_1,x_2)\mapsto(x_1+x_2,x_2)`)} 每步平移 ${texInline("x_2")}，是等差的漂移，拆不成按几何级数伸缩的分量。§8 用若尔当形描述这种情形。`,
+       },
+     ],
+     pitfalls: [
+-      "X 的列顺序与对角元顺序对不上。交换 X 的两列，对角矩阵里的两个特征值也要交换。",
+-      "以为有重特征值就不能对角化。单位矩阵 E 的特征值全相同，它本身就是对角矩阵。",
++      `${texInline("X")} 的列顺序与对角元顺序对不上。交换 ${texInline("X")} 的两列，对角矩阵里的两个特征值也要交换。`,
++      `以为有重特征值就不能对角化。单位矩阵 ${texInline("E")} 的特征值全相同，它本身就是对角矩阵。`,
+       "以为特征向量必须互相垂直。一般矩阵的特征向量只需线性无关。",
+     ],
+   },
+@@ -50,26 +50,26 @@ defineChapter7Section("diagonal-matrices", {
+       `${texInline(String.raw`|\lambda E-A|=(\lambda-4)(\lambda-3)-2=(\lambda-5)(\lambda-2)`)}。`,
+       `${texInline(String.raw`\lambda=5`)}：${texInline("x_1=x_2")}，取 ${texInline(String.raw`X_1=(1,1)^T`)}；${texInline(String.raw`\lambda=2`)}：${texInline("2x_1+x_2=0")}，取 ${texInline(String.raw`X_2=(1,-2)^T`)}。`,
+       `${texInline(String.raw`X=\begin{pmatrix}1&1\\1&-2\end{pmatrix}`)}，${texInline(String.raw`X^{-1}=\tfrac13\begin{pmatrix}2&1\\1&-1\end{pmatrix}`)}，${texInline(String.raw`A^n=X\operatorname{diag}(5^n,2^n)X^{-1}`)}，乘出来就是左上角为 ${texInline(String.raw`\tfrac13(2\cdot5^n+2^n)`)} 的那一项。`,
+-      `检验 n=1：${texInline(String.raw`\tfrac13\begin{pmatrix}12&3\\6&9\end{pmatrix}=A`)}。左上角为 ${texInline(String.raw`\tfrac13(2\cdot2^n+5^n)`)} 的那一项把 ${texInline(String.raw`5^n,2^n`)} 与 X 的列配错了，n=1 时得不到 A。`,
++      `检验 ${texInline("n=1")}：${texInline(String.raw`\tfrac13\begin{pmatrix}12&3\\6&9\end{pmatrix}=A`)}。左上角为 ${texInline(String.raw`\tfrac13(2\cdot2^n+5^n)`)} 的那一项把 ${texInline(String.raw`5^n,2^n`)} 与 ${texInline("X")} 的列配错了，${texInline("n=1")} 时得不到 ${texInline("A")}。`,
+     ],
+   },
+   quiz: [
+     {
+-      question: "n 个互不相同的特征值能推出可对角化。反过来，可对角化的矩阵一定有 n 个互不相同的特征值吗？",
+-      answer: "不一定，单位矩阵 E 就是反例。",
++      question: `${texInline("n")} 个互不相同的特征值能推出可对角化。反过来，可对角化的矩阵一定有 ${texInline("n")} 个互不相同的特征值吗？`,
++      answer: `不一定，单位矩阵 ${texInline("E")} 就是反例。`,
+     },
+     {
+-      question: "在上面的例题中，从 x₀=(1,−2)ᵀ 出发反复乘 A，点怎样运动？从 (1,0)ᵀ 出发呢？",
+-      answer: `(1,−2)ᵀ 是属于 2 的特征向量，${texInline(String.raw`x_k=2^k(1,-2)^T`)} 一直在这条直线上。${texInline(String.raw`(1,0)^T=\tfrac23(1,1)^T+\tfrac13(1,-2)^T`)}，${texInline(String.raw`x_k=\tfrac23\cdot5^k(1,1)^T+\tfrac13\cdot2^k(1,-2)^T`)}，5ᵏ 的分量占主导，方向趋近 (1,1)ᵀ。`,
++      question: `在上面的例题中，从 ${texInline("x_0=(1,-2)^T")} 出发反复乘 ${texInline("A")}，点怎样运动？从 ${texInline("(1,0)^T")} 出发呢？`,
++      answer: `${texInline("(1,-2)^T")} 是属于 ${texInline("2")} 的特征向量，${texInline(String.raw`x_k=2^k(1,-2)^T`)} 一直在这条直线上。${texInline(String.raw`(1,0)^T=\tfrac23(1,1)^T+\tfrac13(1,-2)^T`)}，${texInline(String.raw`x_k=\tfrac23\cdot5^k(1,1)^T+\tfrac13\cdot2^k(1,-2)^T`)}，${texInline("5^k")} 的分量占主导，方向趋近 ${texInline("(1,1)^T")}。`,
+     },
+     {
+-      question: "若 A²=A，A 的特征值只能是什么？",
+-      answer: "Aξ=λξ 推出 A²ξ=λ²ξ=λξ，所以 λ²=λ，λ=0 或 1。§9 会说明这样的 A 一定可对角化。",
++      question: `若 ${texInline("A^2=A")}，${texInline("A")} 的特征值只能是什么？`,
++      answer: `${texInline(String.raw`A\xi=\lambda\xi`)} 推出 ${texInline(String.raw`A^2\xi=\lambda^2\xi=\lambda\xi`)}，所以 ${texInline(String.raw`\lambda^2=\lambda`)}，${texInline(String.raw`\lambda=0`)} 或 ${texInline("1")}。§9 会说明这样的 ${texInline("A")} 一定可对角化。`,
+     },
+   ],
+   summary: [
+-    "σ 可对角化当且仅当有 n 个线性无关的特征向量；X 的列与对角元一一对应。",
+-    "Aᵏ=X diag(λᵢᵏ) X⁻¹：把向量拆成特征分量，每一份按自己的 λ 独立伸缩。",
++    `${texInline(String.raw`\sigma`)} 可对角化当且仅当有 ${texInline("n")} 个线性无关的特征向量；${texInline("X")} 的列与对角元一一对应。`,
++    `${texInline(String.raw`A^k=X\operatorname{diag}(\lambda_i^k)X^{-1}`)}：把向量拆成特征分量，每一份按自己的 ${texInline(String.raw`\lambda`)} 独立伸缩。`,
+     "特征向量不够时不能对角化，迭代出现等差漂移，留给若尔当形处理。",
+   ],
+ });
+diff --git a/current/content/ch7-section6.js b/current/content/ch7-section6.js
+index 1f076ff..40db6c9 100644
+--- a/current/content/ch7-section6.js
++++ b/current/content/ch7-section6.js
+@@ -4,13 +4,13 @@ defineChapter7Section("image-and-kernel", {
+   title: "线性变换的值域与核",
+   navTitle: "值域与核",
+   question: "线性变换丢掉了哪些方向，又保留了哪些方向？",
+-  goal: "会求线性变换的值域 σV 与核 σ⁻¹(0)，理解维数公式 dim σV + dim σ⁻¹(0) = n，知道值域与核不一定互补。",
++  goal: `会求线性变换的值域 ${texInline(String.raw`\sigma V`)} 与核 ${texInline(String.raw`\sigma^{-1}(0)`)}，理解维数公式 ${texInline(String.raw`\dim\sigma V+\dim\sigma^{-1}(0)=n`)}，知道值域与核不一定互补。`,
+   tags: ["值域", "核", "秩", "维数公式"],
+   intro:
+-    "σ 把一部分向量压成零，它们组成核 σ⁻¹(0)；全体像组成值域 σV。核越大，值域越小，两者的维数之和恰好是 n。下面沿核拖动一个点，看它的像为什么一动不动。",
++    `${texInline(String.raw`\sigma`)} 把一部分向量压成零，它们组成核 ${texInline(String.raw`\sigma^{-1}(0)`)}；全体像组成值域 ${texInline(String.raw`\sigma V`)}。核越大，值域越小，两者的维数之和恰好是 ${texInline("n")}。下面沿核拖动一个点，看它的像为什么一动不动。`,
+   concepts: [
+-    { label: "值域", text: `${texInline(String.raw`\sigma V=\{\sigma\alpha:\ \alpha\in V\}`)}，维数称为 σ 的秩。` },
+-    { label: "核", text: `${texInline(String.raw`\sigma^{-1}(0)=\{\alpha\in V:\ \sigma\alpha=0\}`)}，维数称为 σ 的零度。` },
++    { label: "值域", text: `${texInline(String.raw`\sigma V=\{\sigma\alpha:\ \alpha\in V\}`)}，维数称为 ${texInline(String.raw`\sigma`)} 的秩。` },
++    { label: "核", text: `${texInline(String.raw`\sigma^{-1}(0)=\{\alpha\in V:\ \sigma\alpha=0\}`)}，维数称为 ${texInline(String.raw`\sigma`)} 的零度。` },
+   ],
+   textbook: { reference: "北大版《高等代数》第七章 §6", items: ["值域与核", "秩与零度", "维数公式"] },
+   interactive: { type: "slot", title: "沿核滑动，像不动" },
+@@ -19,62 +19,62 @@ defineChapter7Section("image-and-kernel", {
+       {
+         title: "值域由基的像张成，维数等于矩阵的秩",
+         tex: String.raw`\sigma V=L(\sigma\varepsilon_1,\dots,\sigma\varepsilon_n),\qquad \dim\sigma V=\operatorname{rank}A`,
+-        text: `A 是 σ 在基 ε₁,…,εₙ 下的矩阵。σεⱼ 的坐标是 A 的第 j 列，所以值域对应 A 的列空间；核对应齐次方程组 ${texInline("Ax=0")} 的解空间，它的一个基础解系给出核的一组基。`,
++        text: `${texInline("A")} 是 ${texInline(String.raw`\sigma`)} 在基 ${texInline(String.raw`\varepsilon_1,\dots,\varepsilon_n`)} 下的矩阵。${texInline(String.raw`\sigma\varepsilon_j`)} 的坐标是 ${texInline("A")} 的第 ${texInline("j")} 列，所以值域对应 ${texInline("A")} 的列空间；核对应齐次方程组 ${texInline("Ax=0")} 的解空间，它的一个基础解系给出核的一组基。`,
+       },
+       {
+         title: "维数公式",
+         tex: String.raw`\dim\sigma V+\dim\sigma^{-1}(0)=n`,
+-        text: "取核的一组基 ε₁,…,εₖ，扩充成 V 的基 ε₁,…,εₙ，则 σεₖ₊₁,…,σεₙ 是值域的一组基。推论：有限维空间上，σ 是单射 ⟺ σ 是满射 ⟺ σ 可逆。实验中沿核移动 x′，σx′ 不变，因为 x′−x 在核里；σx 的全部原像恰好组成 x+σ⁻¹(0)。",
++        text: `取核的一组基 ${texInline(String.raw`\varepsilon_1,\dots,\varepsilon_k`)}，扩充成 ${texInline("V")} 的基 ${texInline(String.raw`\varepsilon_1,\dots,\varepsilon_n`)}，则 ${texInline(String.raw`\sigma\varepsilon_{k+1},\dots,\sigma\varepsilon_n`)} 是值域的一组基。推论：有限维空间上，${texInline(String.raw`\sigma`)} 是单射 ${texInline(String.raw`\iff`)} ${texInline(String.raw`\sigma`)} 是满射 ${texInline(String.raw`\iff`)} ${texInline(String.raw`\sigma`)} 可逆。实验中沿核移动 ${texInline("x'")}，${texInline(String.raw`\sigma x'`)} 不变，因为 ${texInline("x'-x")} 在核里；${texInline(String.raw`\sigma x`)} 的全部原像恰好组成 ${texInline(String.raw`x+\sigma^{-1}(0)`)}。`,
+       },
+       {
+         title: "维数互补，子空间未必互补",
+         tex: String.raw`\sigma^2=\sigma\ \Longrightarrow\ V=\sigma V\oplus\sigma^{-1}(0)`,
+-        text: "维数公式只保证维数加起来是 n，σV 与 σ⁻¹(0) 却可以相交。求导 D 作用在 P[x]₃ 上，常数既在核里，又是 x 的导数，于是核含在值域里。σ²=σ 时 α=σα+(α−σα) 给出直和分解，实验的第一种模式就是这种情形。",
++        text: `维数公式只保证维数加起来是 ${texInline("n")}，${texInline(String.raw`\sigma V`)} 与 ${texInline(String.raw`\sigma^{-1}(0)`)} 却可以相交。求导 ${texInline("D")} 作用在 ${texInline("P[x]_3")} 上，常数既在核里，又是 ${texInline("x")} 的导数，于是核含在值域里。${texInline(String.raw`\sigma^2=\sigma`)} 时 ${texInline(String.raw`\alpha=\sigma\alpha+(\alpha-\sigma\alpha)`)} 给出直和分解，实验的第一种模式就是这种情形。`,
+       },
+     ],
+     pitfalls: [
+-      "以为 V=σV⊕σ⁻¹(0) 总成立。它要求两者只交于零向量，D 在 P[x]₃ 上就不满足。",
+-      "把核 σ⁻¹(0) 读成逆变换作用在 0 上。σ⁻¹(0) 是被送到 0 的向量的集合，σ 不必可逆。",
+-      "用阶梯形里的列作为值域的基。应该取 A 中主元所在的原来的列，它们是 σεⱼ 的坐标。",
++      `以为 ${texInline(String.raw`V=\sigma V\oplus\sigma^{-1}(0)`)} 总成立。它要求两者只交于零向量，${texInline("D")} 在 ${texInline("P[x]_3")} 上就不满足。`,
++      `把核 ${texInline(String.raw`\sigma^{-1}(0)`)} 读成逆变换作用在 ${texInline("0")} 上。${texInline(String.raw`\sigma^{-1}(0)`)} 是被送到 ${texInline("0")} 的向量的集合，${texInline(String.raw`\sigma`)} 不必可逆。`,
++      `用阶梯形里的列作为值域的基。应该取 ${texInline("A")} 中主元所在的原来的列，它们是 ${texInline(String.raw`\sigma\varepsilon_j`)} 的坐标。`,
+     ],
+   },
+   example: {
+     title: "例题：矩阵空间上的值域与核",
+-    question: `在 ${texInline(String.raw`M_2(\mathbb R)`)} 上令 ${texInline(String.raw`\sigma(X)=X-X^{T}`)}。求 σ 的核与值域，它们的维数各是多少？`,
++    question: `在 ${texInline(String.raw`M_2(\mathbb R)`)} 上令 ${texInline(String.raw`\sigma(X)=X-X^{T}`)}。求 ${texInline(String.raw`\sigma`)} 的核与值域，它们的维数各是多少？`,
+     choices: [
+       { correct: true, text: "核是全体对称矩阵（3 维），值域是全体反对称矩阵（1 维）。" },
+       { text: "核是全体反对称矩阵（1 维），值域是全体对称矩阵（3 维）。" },
+-      { text: "核只有零矩阵，σ 可逆。" },
+-      { text: "核是全体对称矩阵（3 维），值域是整个 M₂（4 维）。" },
++      { text: `核只有零矩阵，${texInline(String.raw`\sigma`)} 可逆。` },
++      { text: `核是全体对称矩阵（3 维），值域是整个 ${texInline("M_2")}（4 维）。` },
+     ],
+     steps: [
+       `${texInline(String.raw`\sigma(X)=0\iff X=X^{T}`)}，所以核是对称矩阵 ${texInline(String.raw`\begin{pmatrix}a&b\\b&c\end{pmatrix}`)} 组成的子空间，维数 3。`,
+       `${texInline(String.raw`(X-X^{T})^{T}=-(X-X^{T})`)}，所以值域含在反对称矩阵里；反对称矩阵都是 ${texInline(String.raw`\begin{pmatrix}0&t\\-t&0\end{pmatrix}`)}，而它等于 ${texInline(String.raw`\sigma\begin{pmatrix}0&t\\0&0\end{pmatrix}`)}，所以值域恰是反对称矩阵，维数 1。`,
+-      "核对：3+1=4=dim M₂(ℝ)。",
+-      "对称矩阵与反对称矩阵只有零矩阵是公共的，所以这里 M₂(ℝ)=σV⊕σ⁻¹(0)。和 D 在 P[x]₃ 上的情形对照：维数公式两边都成立，直和只在这里成立。",
++      `核对：${texInline(String.raw`3+1=4=\dim M_2(\mathbb R)`)}。`,
++      `对称矩阵与反对称矩阵只有零矩阵是公共的，所以这里 ${texInline(String.raw`M_2(\mathbb R)=\sigma V\oplus\sigma^{-1}(0)`)}。和 ${texInline("D")} 在 ${texInline("P[x]_3")} 上的情形对照：维数公式两边都成立，直和只在这里成立。`,
+     ],
+   },
+   quiz: [
+     {
+-      question: `σ²=0（σ 作用两次得零变换）等价于值域与核之间的什么关系？用 ${texInline(String.raw`\begin{pmatrix}0&1\\0&0\end{pmatrix}`)} 检验。`,
+-      answer: "σ²=0 ⟺ σ(σα)=0 对一切 α ⟺ σV⊆σ⁻¹(0)。这个矩阵把 (a,b)ᵀ 送到 (b,0)ᵀ：核是 x₁ 轴，值域也是 x₁ 轴，两者重合，维数 1+1=2。",
++      question: `${texInline(String.raw`\sigma^2=0`)}（${texInline(String.raw`\sigma`)} 作用两次得零变换）等价于值域与核之间的什么关系？用 ${texInline(String.raw`\begin{pmatrix}0&1\\0&0\end{pmatrix}`)} 检验。`,
++      answer: `${texInline(String.raw`\sigma^2=0\iff\sigma(\sigma\alpha)=0`)} 对一切 ${texInline(String.raw`\alpha`)} ${texInline(String.raw`\iff\sigma V\subseteq\sigma^{-1}(0)`)}。这个矩阵把 ${texInline("(a,b)^T")} 送到 ${texInline("(b,0)^T")}：核是 ${texInline("x_1")} 轴，值域也是 ${texInline("x_1")} 轴，两者重合，维数 ${texInline("1+1=2")}。`,
+     },
+     {
+-      question: "有限维空间 V 上，σ 是单射和 σ 是满射有什么关系？在 P[x] 上求导 D 是什么情形？",
+-      answer: "有限维时二者等价：单射 ⟺ 核为 0 ⟺ 值域维数为 n ⟺ 满射。P[x] 是无限维的，D 是满射（每个多项式都有原函数），却不是单射（常数被送到 0）。",
++      question: `有限维空间 ${texInline("V")} 上，${texInline(String.raw`\sigma`)} 是单射和 ${texInline(String.raw`\sigma`)} 是满射有什么关系？在 ${texInline("P[x]")} 上求导 ${texInline("D")} 是什么情形？`,
++      answer: `有限维时二者等价：单射 ${texInline(String.raw`\iff`)} 核为 ${texInline("0")} ${texInline(String.raw`\iff`)} 值域维数为 ${texInline("n")} ${texInline(String.raw`\iff`)} 满射。${texInline("P[x]")} 是无限维的，${texInline("D")} 是满射（每个多项式都有原函数），却不是单射（常数被送到 ${texInline("0")}）。`,
+     },
+     {
+-      question: "实验第一种模式中 σ²=σ。为什么这时 ℝ³=σV⊕σ⁻¹(0)？",
+-      answer: "任一 α=σα+(α−σα)，且 σ(α−σα)=σα−σ²α=0，所以和是全空间；若 β=σγ 又在核里，则 β=σγ=σ²γ=σβ=0，交为零。",
++      question: `实验第一种模式中 ${texInline(String.raw`\sigma^2=\sigma`)}。为什么这时 ${texInline(String.raw`\mathbb R^3=\sigma V\oplus\sigma^{-1}(0)`)}？`,
++      answer: `任一 ${texInline(String.raw`\alpha=\sigma\alpha+(\alpha-\sigma\alpha)`)}，且 ${texInline(String.raw`\sigma(\alpha-\sigma\alpha)=\sigma\alpha-\sigma^2\alpha=0`)}，所以和是全空间；若 ${texInline(String.raw`\beta=\sigma\gamma`)} 又在核里，则 ${texInline(String.raw`\beta=\sigma\gamma=\sigma^2\gamma=\sigma\beta=0`)}，交为零。`,
+     },
+     {
+-      question: "σ 在某组基下的矩阵是 3 阶矩阵 A，rank A=2。σ 的核是几维的？σ 可能是满射吗？",
+-      answer: "核是 3−2=1 维的；值域只有 2 维，不是满射。",
++      question: `${texInline(String.raw`\sigma`)} 在某组基下的矩阵是 3 阶矩阵 ${texInline("A")}，${texInline(String.raw`\operatorname{rank}A=2`)}。${texInline(String.raw`\sigma`)} 的核是几维的？${texInline(String.raw`\sigma`)} 可能是满射吗？`,
++      answer: `核是 ${texInline("3-2=1")} 维的；值域只有 2 维，不是满射。`,
+     },
+   ],
+   summary: [
+-    "值域 σV=L(σε₁,…,σεₙ)，维数等于 rank A；核对应 Ax=0 的解空间。",
+-    "dim σV+dim σ⁻¹(0)=n；有限维时单射、满射、可逆三者等价。",
+-    "维数互补不等于子空间互补：σV 与 σ⁻¹(0) 可以相交；只有两者只交于零向量时才是直和（例如 σ²=σ 时）。",
++    `值域 ${texInline(String.raw`\sigma V=L(\sigma\varepsilon_1,\dots,\sigma\varepsilon_n)`)}，维数等于 ${texInline(String.raw`\operatorname{rank}A`)}；核对应 ${texInline("Ax=0")} 的解空间。`,
++    `${texInline(String.raw`\dim\sigma V+\dim\sigma^{-1}(0)=n`)}；有限维时单射、满射、可逆三者等价。`,
++    `维数互补不等于子空间互补：${texInline(String.raw`\sigma V`)} 与 ${texInline(String.raw`\sigma^{-1}(0)`)} 可以相交；只有两者只交于零向量时才是直和（例如 ${texInline(String.raw`\sigma^2=\sigma`)} 时）。`,
+   ],
+ });
+diff --git a/current/content/ch7-section7.js b/current/content/ch7-section7.js
+index d91e904..8cdf794 100644
+--- a/current/content/ch7-section7.js
++++ b/current/content/ch7-section7.js
+@@ -3,14 +3,14 @@ defineChapter7Section("invariant-subspaces", {
+   textbookSection: "不变子空间",
+   title: "不变子空间",
+   navTitle: "不变子空间",
+-  question: "哪些子空间在 σ 作用下不会离开自己？",
++  question: `哪些子空间在 ${texInline(String.raw`\sigma`)} 作用下不会离开自己？`,
+   goal: "理解不变子空间的定义与常见例子，知道不变子空间的直和分解对应准对角矩阵，了解按特征值的根子空间分解。",
+   tags: ["不变子空间", "准对角矩阵", "根子空间"],
+   intro:
+-    "σ 把子空间 W 映进 W 自身时，W 称为 σ 的不变子空间，这时可以只在 W 里研究 σ，矩阵也随之分块。一维的不变子空间就是特征向量所在的直线；二维的不变平面却可以不含任何实特征向量。",
++    `${texInline(String.raw`\sigma`)} 把子空间 ${texInline("W")} 映进 ${texInline("W")} 自身时，${texInline("W")} 称为 ${texInline(String.raw`\sigma`)} 的不变子空间，这时可以只在 ${texInline("W")} 里研究 ${texInline(String.raw`\sigma`)}，矩阵也随之分块。一维的不变子空间就是特征向量所在的直线；二维的不变平面却可以不含任何实特征向量。`,
+   concepts: [
+-    { label: "不变子空间", text: `${texInline(String.raw`\sigma W\subseteq W`)}，即 W 中每个向量的像仍在 W 中。` },
+-    { label: "准对角", text: "V 分解成不变子空间的直和时，适配基下 σ 的矩阵是准对角矩阵。" },
++    { label: "不变子空间", text: `${texInline(String.raw`\sigma W\subseteq W`)}，即 ${texInline("W")} 中每个向量的像仍在 ${texInline("W")} 中。` },
++    { label: "准对角", text: `${texInline("V")} 分解成不变子空间的直和时，适配基下 ${texInline(String.raw`\sigma`)} 的矩阵是准对角矩阵。` },
+   ],
+   textbook: { reference: "北大版《高等代数》第七章 §7", items: ["不变子空间的定义与例", "不变子空间与矩阵化简", "按特征值分解为不变子空间的直和"] },
+   interactive: { type: "slot", title: "σW 有没有离开 W" },
+@@ -19,62 +19,62 @@ defineChapter7Section("invariant-subspaces", {
+       {
+         title: "定义与常见的不变子空间",
+         tex: String.raw`\sigma W\subseteq W\iff \sigma\alpha_1,\dots,\sigma\alpha_s\in W\quad(W=L(\alpha_1,\dots,\alpha_s))`,
+-        text: "检验时只需看生成元的像。{0}、V、值域 σV、核 σ⁻¹(0)、每个特征子空间 V_λ 都是 σ 的不变子空间。一维子空间 L(ξ) 不变，当且仅当 ξ 是特征向量。若 στ=τσ，则 τ 的值域与核都是 σ 的不变子空间。",
++        text: `检验时只需看生成元的像。${texInline(String.raw`\{0\}`)}、${texInline("V")}、值域 ${texInline(String.raw`\sigma V`)}、核 ${texInline(String.raw`\sigma^{-1}(0)`)}、每个特征子空间 ${texInline(String.raw`V_\lambda`)} 都是 ${texInline(String.raw`\sigma`)} 的不变子空间。一维子空间 ${texInline(String.raw`L(\xi)`)} 不变，当且仅当 ${texInline(String.raw`\xi`)} 是特征向量。若 ${texInline(String.raw`\sigma\tau=\tau\sigma`)}，则 ${texInline(String.raw`\tau`)} 的值域与核都是 ${texInline(String.raw`\sigma`)} 的不变子空间。`,
+       },
+       {
+         title: "不变子空间让矩阵分块",
+         tex: String.raw`V=W_1\oplus W_2,\ \ \sigma W_i\subseteq W_i\ \Longrightarrow\ \sigma(\varepsilon_1,\dots,\varepsilon_n)=(\varepsilon_1,\dots,\varepsilon_n)\begin{pmatrix}A_1&0\\0&A_2\end{pmatrix}`,
+-        text: "ε₁,…,εₖ 是 W₁ 的基，εₖ₊₁,…,εₙ 是 W₂ 的基，A₁、A₂ 是 σ 限制在 W₁、W₂ 上的矩阵。只有 W₁ 不变时，把 W₁ 的基扩充成 V 的基，矩阵是右上角带一块的分块上三角形。实验中 A 的不变平面配上不变直线，得到 2 阶块和 1 阶块。",
++        text: `${texInline(String.raw`\varepsilon_1,\dots,\varepsilon_k`)} 是 ${texInline("W_1")} 的基，${texInline(String.raw`\varepsilon_{k+1},\dots,\varepsilon_n`)} 是 ${texInline("W_2")} 的基，${texInline("A_1")}、${texInline("A_2")} 是 ${texInline(String.raw`\sigma`)} 限制在 ${texInline("W_1")}、${texInline("W_2")} 上的矩阵。只有 ${texInline("W_1")} 不变时，把 ${texInline("W_1")} 的基扩充成 ${texInline("V")} 的基，矩阵是右上角带一块的分块上三角形。实验中 ${texInline("A")} 的不变平面配上不变直线，得到 2 阶块和 1 阶块。`,
+       },
+       {
+         title: "按特征值分解",
+         tex: String.raw`f(\lambda)=(\lambda-\lambda_1)^{r_1}\cdots(\lambda-\lambda_s)^{r_s}\ \Longrightarrow\ V=V_1\oplus\cdots\oplus V_s,\quad V_i=\{\xi:\ (\sigma-\lambda_iE)^{r_i}\xi=0\}`,
+-        text: "f 是 σ 的特征多项式。每个 Vᵢ 都是不变子空间，于是 σ 的矩阵化成 s 块，每块只有一个特征值 λᵢ。Vᵢ 一般比特征子空间 V_λᵢ 大，§8 在每个 Vᵢ 里继续化简。",
++        text: `${texInline("f")} 是 ${texInline(String.raw`\sigma`)} 的特征多项式。每个 ${texInline("V_i")} 都是不变子空间，于是 ${texInline(String.raw`\sigma`)} 的矩阵化成 ${texInline("s")} 块，每块只有一个特征值 ${texInline(String.raw`\lambda_i`)}。${texInline("V_i")} 一般比特征子空间 ${texInline(String.raw`V_{\lambda_i}`)} 大，§8 在每个 ${texInline("V_i")} 里继续化简。`,
+       },
+     ],
+     pitfalls: [
+-      "把不变理解成逐点不动。不变只要求 σW 落在 W 里，W 中的向量可以在 W 内部移动。",
++      `把不变理解成逐点不动。不变只要求 ${texInline(String.raw`\sigma W`)} 落在 ${texInline("W")} 里，${texInline("W")} 中的向量可以在 ${texInline("W")} 内部移动。`,
+       "以为不变子空间一定有不变的补空间。剪切只有一条不变直线，它没有不变的补空间。",
+-      "以为不变子空间里一定有实特征向量。实验中的 x₁x₂ 平面不变，平面里每条直线却都被转走。",
++      `以为不变子空间里一定有实特征向量。实验中的 ${texInline("x_1x_2")} 平面不变，平面里每条直线却都被转走。`,
+     ],
+   },
+   example: {
+     title: "例题：求导的全部不变子空间",
+-    question: `${texInline(String.raw`P[x]_4`)} 是次数小于 4 的实系数多项式（连同 0）组成的空间，D 是求导。D 有哪些不变子空间？`,
++    question: `${texInline(String.raw`P[x]_4`)} 是次数小于 4 的实系数多项式（连同 0）组成的空间，${texInline("D")} 是求导。${texInline("D")} 有哪些不变子空间？`,
+     choices: [
+       { correct: true, text: `恰有 5 个：${texInline(String.raw`\{0\},\ P[x]_1,\ P[x]_2,\ P[x]_3,\ P[x]_4`)}。` },
+       { text: `只有 ${texInline(String.raw`\{0\}`)} 和 ${texInline(String.raw`P[x]_4`)}。` },
+       { text: `每条直线 ${texInline(String.raw`L(x^k)`)} 都是不变子空间，所以至少有 4 个一维的。` },
+-      { text: "有无穷多个，因为 P[x]₄ 有无穷多个子空间。" },
++      { text: `有无穷多个，因为 ${texInline("P[x]_4")} 有无穷多个子空间。` },
+     ],
+     steps: [
+-      `${texInline(String.raw`P[x]_k`)}（次数小于 k）显然不变：求导降低次数。`,
+-      `反过来，设 W≠{0} 不变，取 W 中次数最高的 f，次数为 k−1。则 ${texInline(String.raw`f,Df,\dots,D^{k-1}f`)} 都在 W 里，次数依次是 k−1,…,1,0，线性无关，所以 ${texInline(String.raw`P[x]_k\subseteq W`)}。`,
+-      `W 中多项式次数都不超过 k−1，又有 ${texInline(String.raw`W\subseteq P[x]_k`)}，故 ${texInline(String.raw`W=P[x]_k`)}。`,
+-      `${texInline(String.raw`L(x^k)`)}（k≥1）不变不成立：${texInline(String.raw`Dx^k=kx^{k-1}\notin L(x^k)`)}。一维不变子空间只有 L(1)，对应 D 唯一的特征值 0。`,
++      `${texInline(String.raw`P[x]_k`)}（次数小于 ${texInline("k")}）显然不变：求导降低次数。`,
++      `反过来，设 ${texInline(String.raw`W\ne\{0\}`)} 不变，取 ${texInline("W")} 中次数最高的 ${texInline("f")}，次数为 ${texInline("k-1")}。则 ${texInline(String.raw`f,Df,\dots,D^{k-1}f`)} 都在 ${texInline("W")} 里，次数依次是 ${texInline(String.raw`k-1,\dots,1,0`)}，线性无关，所以 ${texInline(String.raw`P[x]_k\subseteq W`)}。`,
++      `${texInline("W")} 中多项式次数都不超过 ${texInline("k-1")}，又有 ${texInline(String.raw`W\subseteq P[x]_k`)}，故 ${texInline(String.raw`W=P[x]_k`)}。`,
++      `${texInline(String.raw`L(x^k)`)}（${texInline(String.raw`k\ge1`)}）不变不成立：${texInline(String.raw`Dx^k=kx^{k-1}\notin L(x^k)`)}。一维不变子空间只有 ${texInline("L(1)")}，对应 ${texInline("D")} 唯一的特征值 ${texInline("0")}。`,
+     ],
+   },
+   quiz: [
+     {
+-      question: "实验中的 A（绕 x₃ 轴转 90°，再沿 x₃ 轴拉伸 2 倍）在实数域上恰有哪几个不变子空间？",
+-      answer: "4 个：{0}、x₃ 轴、x₁x₂ 平面、ℝ³。一维不变子空间是实特征向量的直线，只有 λ=2 的 x₃ 轴；二维不变子空间上的限制，其特征多项式是 (λ²+1)(λ−2) 的二次实因式，只能是 λ²+1，对应 ker(A²+E)，即 x₁x₂ 平面。",
++      question: `实验中的 ${texInline("A")}（绕 ${texInline("x_3")} 轴转 90°，再沿 ${texInline("x_3")} 轴拉伸 2 倍）在实数域上恰有哪几个不变子空间？`,
++      answer: `4 个：${texInline(String.raw`\{0\}`)}、${texInline("x_3")} 轴、${texInline("x_1x_2")} 平面、${texInline(String.raw`\mathbb R^3`)}。一维不变子空间是实特征向量的直线，只有 ${texInline(String.raw`\lambda=2`)} 的 ${texInline("x_3")} 轴；二维不变子空间上的限制，其特征多项式是 ${texInline(String.raw`(\lambda^2+1)(\lambda-2)`)} 的二次实因式，只能是 ${texInline(String.raw`\lambda^2+1`)}，对应 ${texInline(String.raw`\ker(A^2+E)`)}，即 ${texInline("x_1x_2")} 平面。`,
+     },
+     {
+-      question: "若 στ=τσ，为什么 τ 的核 τ⁻¹(0) 是 σ 的不变子空间？",
+-      answer: "ξ∈τ⁻¹(0) 时 τ(σξ)=σ(τξ)=σ0=0，所以 σξ 仍在 τ⁻¹(0) 里。",
++      question: `若 ${texInline(String.raw`\sigma\tau=\tau\sigma`)}，为什么 ${texInline(String.raw`\tau`)} 的核 ${texInline(String.raw`\tau^{-1}(0)`)} 是 ${texInline(String.raw`\sigma`)} 的不变子空间？`,
++      answer: `${texInline(String.raw`\xi\in\tau^{-1}(0)`)} 时 ${texInline(String.raw`\tau(\sigma\xi)=\sigma(\tau\xi)=\sigma0=0`)}，所以 ${texInline(String.raw`\sigma\xi`)} 仍在 ${texInline(String.raw`\tau^{-1}(0)`)} 里。`,
+     },
+     {
+-      question: "W₁、W₂ 都是 σ 的不变子空间，W₁∩W₂ 和 W₁+W₂ 还是吗？",
+-      answer: `都是。α∈W₁∩W₂ 时 σα 同时在 W₁、W₂ 中；${texInline(String.raw`\sigma(\alpha_1+\alpha_2)=\sigma\alpha_1+\sigma\alpha_2\in W_1+W_2`)}。`,
++      question: `${texInline("W_1")}、${texInline("W_2")} 都是 ${texInline(String.raw`\sigma`)} 的不变子空间，${texInline(String.raw`W_1\cap W_2`)} 和 ${texInline("W_1+W_2")} 还是吗？`,
++      answer: `都是。${texInline(String.raw`\alpha\in W_1\cap W_2`)} 时 ${texInline(String.raw`\sigma\alpha`)} 同时在 ${texInline("W_1")}、${texInline("W_2")} 中；${texInline(String.raw`\sigma(\alpha_1+\alpha_2)=\sigma\alpha_1+\sigma\alpha_2\in W_1+W_2`)}。`,
+     },
+     {
+       question: `剪切 ${texInline(String.raw`\begin{pmatrix}1&1\\0&1\end{pmatrix}`)} 的矩阵能化成准对角（两个 1 阶块）吗？`,
+-      answer: "不能。两个 1 阶块意味着两条不变直线组成直和，而剪切只有 x₁ 轴一条不变直线；适配基下最多化成上三角形。",
++      answer: `不能。两个 1 阶块意味着两条不变直线组成直和，而剪切只有 ${texInline("x_1")} 轴一条不变直线；适配基下最多化成上三角形。`,
+     },
+   ],
+   summary: [
+-    "σW⊆W 时 W 是不变子空间；只需检查生成元的像。",
+-    "V 分解成不变子空间的直和，就把 σ 的矩阵化成准对角形；一维不变子空间就是特征直线。",
+-    "按特征值把 V 分成根子空间的直和，每块只剩一个特征值，§8 再在每块里化简。",
++    `${texInline(String.raw`\sigma W\subseteq W`)} 时 ${texInline("W")} 是不变子空间；只需检查生成元的像。`,
++    `${texInline("V")} 分解成不变子空间的直和，就把 ${texInline(String.raw`\sigma`)} 的矩阵化成准对角形；一维不变子空间就是特征直线。`,
++    `按特征值把 ${texInline("V")} 分成根子空间的直和，每块只剩一个特征值，§8 再在每块里化简。`,
+   ],
+ });
+diff --git a/current/content/ch7-section8.js b/current/content/ch7-section8.js
+index 90acb71..d1e7be3 100644
+--- a/current/content/ch7-section8.js
++++ b/current/content/ch7-section8.js
+@@ -4,12 +4,12 @@ defineChapter7Section("jordan-form-introduction", {
+   title: "若尔当标准形简介",
+   navTitle: "若尔当标准形",
+   question: "特征向量不够组成一组基时，矩阵最简能化成什么样？",
+-  goal: "认识若尔当块与若尔当形，知道复数域上每个矩阵都相似于若尔当形；会由 A−λE 的各次幂的秩读出若尔当块的个数与大小。",
++  goal: `认识若尔当块与若尔当形，知道复数域上每个矩阵都相似于若尔当形；会由 ${texInline(String.raw`A-\lambda E`)} 的各次幂的秩读出若尔当块的个数与大小。`,
+   tags: ["若尔当块", "若尔当形", "链"],
+   intro:
+-    "特征向量不够时，矩阵化不成对角形。退一步，在复数域上总能找到一组基，使矩阵只在主对角线下方多出一些 1：每串基向量被 σ−λE 依次推到下一个，最后一个是特征向量，再推一次就是 0。",
++    `特征向量不够时，矩阵化不成对角形。退一步，在复数域上总能找到一组基，使矩阵只在主对角线下方多出一些 ${texInline("1")}：每串基向量被 ${texInline(String.raw`\sigma-\lambda E`)} 依次推到下一个，最后一个是特征向量，再推一次就是 ${texInline("0")}。`,
+   concepts: [
+-    { label: "若尔当块", text: `${texInline(String.raw`J(\lambda,k)`)}：k 阶，主对角线上全是 λ，紧挨在下方的一条斜线上全是 1。` },
++    { label: "若尔当块", text: `${texInline(String.raw`J(\lambda,k)`)}：${texInline("k")} 阶，主对角线上全是 ${texInline(String.raw`\lambda`)}，紧挨在下方的一条斜线上全是 ${texInline("1")}。` },
+     { label: "若尔当形", text: "由若干若尔当块组成的准对角矩阵。" },
+   ],
+   textbook: { reference: "北大版《高等代数》第七章 §8", items: ["若尔当块与若尔当形矩阵", "复矩阵相似于若尔当形"] },
+@@ -20,22 +20,22 @@ defineChapter7Section("jordan-form-introduction", {
+         title: "若尔当块就是一条链",
+         tex: String.raw`J(\lambda,k)=\begin{pmatrix}\lambda&&&\\1&\lambda&&\\&\ddots&\ddots&\\&&1&\lambda\end{pmatrix},\qquad (\sigma-\lambda E)\varepsilon_1=\varepsilon_2,\ \dots,\ (\sigma-\lambda E)\varepsilon_k=0`,
+         figure: "jordan-chain",
+-        text: "第 j 列表示 σεⱼ=λεⱼ+εⱼ₊₁。链尾 εₖ 满足 σεₖ=λεₖ，是真正的特征向量；前面的向量要多作用几次 σ−λE 才变成 0。图中两条链给出 J(λ,3)⊕J(λ,1)：两个块，恰有两个线性无关的特征向量 ε₃、ε₄。k=1 时 J(λ,1)=(λ)，全由 1 阶块组成的若尔当形就是对角矩阵。",
++        text: `第 ${texInline("j")} 列表示 ${texInline(String.raw`\sigma\varepsilon_j=\lambda\varepsilon_j+\varepsilon_{j+1}`)}。链尾 ${texInline(String.raw`\varepsilon_k`)} 满足 ${texInline(String.raw`\sigma\varepsilon_k=\lambda\varepsilon_k`)}，是真正的特征向量；前面的向量要多作用几次 ${texInline(String.raw`\sigma-\lambda E`)} 才变成 ${texInline("0")}。图中两条链给出 ${texInline(String.raw`J(\lambda,3)\oplus J(\lambda,1)`)}：两个块，恰有两个线性无关的特征向量 ${texInline(String.raw`\varepsilon_3`)}、${texInline(String.raw`\varepsilon_4`)}。${texInline("k=1")} 时 ${texInline(String.raw`J(\lambda,1)=(\lambda)`)}，全由 1 阶块组成的若尔当形就是对角矩阵。`,
+       },
+       {
+         title: "存在与唯一",
+         tex: String.raw`A\sim J=\begin{pmatrix}J(\lambda_1,k_1)&&\\&\ddots&\\&&J(\lambda_s,k_s)\end{pmatrix}`,
+-        text: "复数域上每个 n 阶矩阵都相似于一个若尔当形矩阵；除去若尔当块的排列次序，这个若尔当形由 A 唯一决定。说成线性变换：复线性空间上的 σ 在某组基下的矩阵是若尔当形。",
++        text: `复数域上每个 ${texInline("n")} 阶矩阵都相似于一个若尔当形矩阵；除去若尔当块的排列次序，这个若尔当形由 ${texInline("A")} 唯一决定。说成线性变换：复线性空间上的 ${texInline(String.raw`\sigma`)} 在某组基下的矩阵是若尔当形。`,
+       },
+       {
+         title: "用秩读出块的结构",
+         tex: String.raw`\#\{\lambda\ \text{的块}\}=n-\operatorname{rank}(A-\lambda E),\qquad \#\{\lambda\ \text{的块中阶数}\ge k\ \text{的}\}=\operatorname{rank}(A-\lambda E)^{k-1}-\operatorname{rank}(A-\lambda E)^{k}`,
+-        text: "每个块恰好贡献一个特征向量（链尾），所以块数等于特征子空间的维数；所有属于 λ 的块的阶数之和等于 λ 的重数。λ 的重数 ≤3 时这两条信息已够定出属于 λ 的若尔当块，更高阶时要用第二个公式。",
++        text: `每个块恰好贡献一个特征向量（链尾），所以块数等于特征子空间的维数；所有属于 ${texInline(String.raw`\lambda`)} 的块的阶数之和等于 ${texInline(String.raw`\lambda`)} 的重数。${texInline(String.raw`\lambda`)} 的重数 ${texInline(String.raw`\le3`)} 时这两条信息已够定出属于 ${texInline(String.raw`\lambda`)} 的若尔当块，更高阶时要用第二个公式。`,
+       },
+     ],
+     pitfalls: [
+-      "以为特征多项式加上特征子空间的维数总能确定若尔当形。4 阶时 2+2 与 3+1 两种块结构的这两项数据完全相同。",
+-      "把链上的箭头当成 σ 的作用。推动链的是 σ−λE，σ 本身把 εⱼ 送到 λεⱼ+εⱼ₊₁。",
++      `以为特征多项式加上特征子空间的维数总能确定若尔当形。4 阶时 ${texInline("2+2")} 与 ${texInline("3+1")} 两种块结构的这两项数据完全相同。`,
++      `把链上的箭头当成 ${texInline(String.raw`\sigma`)} 的作用。推动链的是 ${texInline(String.raw`\sigma-\lambda E`)}，${texInline(String.raw`\sigma`)} 本身把 ${texInline(String.raw`\varepsilon_j`)} 送到 ${texInline(String.raw`\lambda\varepsilon_j+\varepsilon_{j+1}`)}。`,
+       "在实数域上套用若尔当形。存在性要求特征多项式分解成一次因式，旋转 90° 在实数域上就没有若尔当形。",
+     ],
+   },
+@@ -50,32 +50,32 @@ defineChapter7Section("jordan-form-introduction", {
+     ],
+     steps: [
+       `${texInline(String.raw`|\lambda E-A|=(\lambda-2)\big[(\lambda-1)(\lambda-3)+1\big]=(\lambda-2)^3`)}，特征值只有 2，重数 3。`,
+-      `${texInline(String.raw`A-2E=\begin{pmatrix}-1&1&0\\-1&1&0\\0&0&0\end{pmatrix}`)}，秩为 1，所以 ${texInline(String.raw`\dim V_2=3-1=2`)}：有 2 个块，阶数之和为 3，只能是 2+1。`,
++      `${texInline(String.raw`A-2E=\begin{pmatrix}-1&1&0\\-1&1&0\\0&0&0\end{pmatrix}`)}，秩为 ${texInline("1")}，所以 ${texInline(String.raw`\dim V_2=3-1=2`)}：有 2 个块，阶数之和为 ${texInline("3")}，只能是 ${texInline("2+1")}。`,
+       `链：取 ${texInline(String.raw`\eta_1=(1,0,0)^T`)}，${texInline(String.raw`\eta_2=(A-2E)\eta_1=(-1,-1,0)^T`)}，${texInline(String.raw`(A-2E)\eta_2=0`)}；另取特征向量 ${texInline(String.raw`\eta_3=(0,0,1)^T`)}，它单独组成一条长为 1 的链。`,
+       `验证：${texInline(String.raw`A\eta_1=(1,-1,0)^T=2\eta_1+\eta_2`)}，${texInline(String.raw`A\eta_2=2\eta_2`)}，${texInline(String.raw`A\eta_3=2\eta_3`)}。以 ${texInline(String.raw`X=(\eta_1,\eta_2,\eta_3)`)} 为过渡矩阵，${texInline(String.raw`X^{-1}AX=J`)}。`,
+     ],
+   },
+   quiz: [
+     {
+-      question: "两个 4 阶矩阵的特征多项式都是 (λ−2)⁴，特征子空间 V₂ 都是 2 维的。它们一定相似吗？",
+-      answer: "不一定。两个块的阶数可以是 2+2，也可以是 3+1。用 rank(A−2E)² 区分：2+2 时为 0，3+1 时为 1。",
++      question: `两个 4 阶矩阵的特征多项式都是 ${texInline(String.raw`(\lambda-2)^4`)}，特征子空间 ${texInline("V_2")} 都是 2 维的。它们一定相似吗？`,
++      answer: `不一定。两个块的阶数可以是 ${texInline("2+2")}，也可以是 ${texInline("3+1")}。用 ${texInline(String.raw`\operatorname{rank}(A-2E)^2`)} 区分：${texInline("2+2")} 时为 ${texInline("0")}，${texInline("3+1")} 时为 ${texInline("1")}。`,
+     },
+     {
+-      question: "若 A²=O，A 的若尔当块最大是几阶？",
+-      answer: "特征值只能是 0，J(0,k)ᵏ⁻¹≠O 而 J(0,k)ᵏ=O，所以 k≤2，每个块是 1 阶或 2 阶。",
++      question: `若 ${texInline("A^2=O")}，${texInline("A")} 的若尔当块最大是几阶？`,
++      answer: `特征值只能是 ${texInline("0")}，${texInline(String.raw`J(0,k)^{k-1}\ne O`)} 而 ${texInline("J(0,k)^k=O")}，所以 ${texInline(String.raw`k\le2`)}，每个块是 1 阶或 2 阶。`,
+     },
+     {
+       question: "若尔当形什么时候是对角矩阵？这和 §5 的可对角化条件是什么关系？",
+-      answer: "每个块都是 1 阶，即每个 λ 的块数（特征子空间的维数）等于 λ 的重数。这正是 n 个线性无关的特征向量存在的条件。",
++      answer: `每个块都是 1 阶，即每个 ${texInline(String.raw`\lambda`)} 的块数（特征子空间的维数）等于 ${texInline(String.raw`\lambda`)} 的重数。这正是 ${texInline("n")} 个线性无关的特征向量存在的条件。`,
+     },
+     {
+-      question: `§3 的求导 D 作用在 ${texInline(String.raw`P[x]_4`)} 上，它的若尔当形是什么？用哪组基？`,
+-      answer: "D 的特征值只有 0，核是一维的，所以只有一个块 J(0,4)。基取 x³/6, x²/2, x, 1：D 把每个依次送到下一个，最后 D1=0。",
++      question: `§3 的求导 ${texInline("D")} 作用在 ${texInline(String.raw`P[x]_4`)} 上，它的若尔当形是什么？用哪组基？`,
++      answer: `${texInline("D")} 的特征值只有 ${texInline("0")}，核是一维的，所以只有一个块 ${texInline("J(0,4)")}。基取 ${texInline(String.raw`\tfrac{x^3}{6},\tfrac{x^2}{2},x,1`)}：${texInline("D")} 把每个依次送到下一个，最后 ${texInline("D1=0")}。`,
+     },
+   ],
+   summary: [
+-    "若尔当块 J(λ,k) 是一条链：σ−λE 把基向量依次推到下一个，链尾是特征向量。",
++    `若尔当块 ${texInline(String.raw`J(\lambda,k)`)} 是一条链：${texInline(String.raw`\sigma-\lambda E`)} 把基向量依次推到下一个，链尾是特征向量。`,
+     "复数域上每个矩阵都相似于若尔当形，除块的次序外唯一。",
+-    "λ 的块数 = dim V_λ，各块阶数之和 = λ 的重数；更细的结构由 (A−λE)ᵏ 的秩决定。",
++    `${texInline(String.raw`\lambda`)} 的块数 ${texInline(String.raw`=\dim V_\lambda`)}，各块阶数之和 ${texInline(String.raw`=\lambda`)} 的重数；更细的结构由 ${texInline(String.raw`(A-\lambda E)^k`)} 的秩决定。`,
+   ],
+ });
+diff --git a/current/content/ch7-section9.js b/current/content/ch7-section9.js
+index 0e958bb..ef71286 100644
+--- a/current/content/ch7-section9.js
++++ b/current/content/ch7-section9.js
+@@ -3,11 +3,11 @@ defineChapter7Section("minimal-polynomial", {
+   textbookSection: "最小多项式",
+   title: "最小多项式",
+   navTitle: "最小多项式",
+-  question: "使 A 变成零矩阵、次数最低的多项式是什么？它怎样判断 A 能否对角化？",
+-  goal: "理解最小多项式的定义与整除性质，会用 E, A, A², … 第一次线性相关的位置求最小多项式，掌握“最小多项式是互素一次因式之积”的对角化判据。",
++  question: `使 ${texInline("A")} 变成零矩阵、次数最低的多项式是什么？它怎样判断 ${texInline("A")} 能否对角化？`,
++  goal: `理解最小多项式的定义与整除性质，会用 ${texInline(String.raw`E,A,A^2,\dots`)} 第一次线性相关的位置求最小多项式，掌握“最小多项式是互素一次因式之积”的对角化判据。`,
+   tags: ["最小多项式", "零化多项式", "对角化判据"],
+   intro:
+-    "由哈密顿–凯莱定理，特征多项式 f 满足 f(A)=O，但它的次数未必最低。次数最低的首一零化多项式称为最小多项式 m(λ)。它恰好是互素的一次因式之积时，A 能对角化。",
++    `由哈密顿–凯莱定理，特征多项式 ${texInline("f")} 满足 ${texInline("f(A)=O")}，但它的次数未必最低。次数最低的首一零化多项式称为最小多项式 ${texInline(String.raw`m(\lambda)`)}。它恰好是互素的一次因式之积时，${texInline("A")} 能对角化。`,
+   concepts: [
+     { label: "最小多项式", text: `首项系数为 1、使 ${texInline("m(A)=O")} 且次数最低的多项式 ${texInline(String.raw`m(\lambda)`)}。` },
+     { label: "整除", text: `${texInline(String.raw`g(A)=O\iff m(\lambda)\mid g(\lambda)`)}，特别地 ${texInline(String.raw`m\mid f`)}。` },
+@@ -19,58 +19,58 @@ defineChapter7Section("minimal-polynomial", {
+       {
+         title: "定义与整除性",
+         tex: String.raw`g(A)=O\iff m(\lambda)\mid g(\lambda),\qquad m(\lambda)\mid f(\lambda)=|\lambda E-A|`,
+-        text: "用 m 去除 g，余式 r 的次数低于 m 且 r(A)=O，只能 r=0；由此最小多项式唯一。m 与 f 的根相同，都是 A 的全部特征值，只是重数可能变小。相似矩阵的最小多项式相同。",
++        text: `用 ${texInline("m")} 去除 ${texInline("g")}，余式 ${texInline("r")} 的次数低于 ${texInline("m")} 且 ${texInline("r(A)=O")}，只能 ${texInline("r=0")}；由此最小多项式唯一。${texInline("m")} 与 ${texInline("f")} 的根相同，都是 ${texInline("A")} 的全部特征值，只是重数可能变小。相似矩阵的最小多项式相同。`,
+       },
+       {
+         title: "怎样求：看第一次线性相关",
+         tex: String.raw`A^k=c_0E+c_1A+\cdots+c_{k-1}A^{k-1}\ \Longrightarrow\ m(\lambda)=\lambda^k-c_{k-1}\lambda^{k-1}-\cdots-c_0`,
+-        text: "依次检查 E, A, A², …，第一个能由前面线性表出的 Aᵏ 给出 m。对单个向量 v 做同样的事，v, Av, A²v, … 第一次线性相关得到 mᵥ，它整除 m；m 是各基向量 εᵢ 的最小多项式的最小公倍式。准对角矩阵 diag(A₁,A₂) 的最小多项式是 m₁ 与 m₂ 的最小公倍式，若尔当块 J(a,k) 的最小多项式是 (λ−a)ᵏ。",
++        text: `依次检查 ${texInline(String.raw`E,A,A^2,\dots`)}，第一个能由前面线性表出的 ${texInline("A^k")} 给出 ${texInline("m")}。对单个向量 ${texInline("v")} 做同样的事，${texInline(String.raw`v,Av,A^2v,\dots`)} 第一次线性相关得到 ${texInline("m_v")}，它整除 ${texInline("m")}；${texInline("m")} 是各基向量 ${texInline(String.raw`\varepsilon_i`)} 的最小多项式的最小公倍式。准对角矩阵 ${texInline(String.raw`\operatorname{diag}(A_1,A_2)`)} 的最小多项式是 ${texInline("m_1")} 与 ${texInline("m_2")} 的最小公倍式，若尔当块 ${texInline("J(a,k)")} 的最小多项式是 ${texInline(String.raw`(\lambda-a)^k`)}。`,
+       },
+       {
+         title: "对角化判据",
+         tex: String.raw`A\ \text{在}\ P\ \text{上可对角化}\iff m(\lambda)=(\lambda-\lambda_1)\cdots(\lambda-\lambda_s),\ \ \lambda_1,\dots,\lambda_s\in P\ \text{互不相同}`,
+-        text: "复数域上就是 m 没有重根。可对角化时 diag(λ₁,…,λₙ) 的最小多项式显然是互异一次因式之积；反过来，若 m 是这样的乘积，V 分解成各 ker(σ−λᵢE) 的直和，每一块都由特征向量组成。",
++        text: `复数域上就是 ${texInline("m")} 没有重根。可对角化时 ${texInline(String.raw`\operatorname{diag}(\lambda_1,\dots,\lambda_n)`)} 的最小多项式显然是互异一次因式之积；反过来，若 ${texInline("m")} 是这样的乘积，${texInline("V")} 分解成各 ${texInline(String.raw`\ker(\sigma-\lambda_iE)`)} 的直和，每一块都由特征向量组成。`,
+       },
+     ],
+     pitfalls: [
+-      "以为最小多项式总等于特征多项式。单位矩阵 E 的特征多项式是 (λ−1)ⁿ，最小多项式是 λ−1。",
+-      "某一个向量 v 满足 p(A)v=0，就断定 p(A)=O。p(A) 要把每个基向量都送到 0，所以 m 是各 mᵥ 的最小公倍式。",
+-      "以为最小多项式相同的矩阵一定相似。diag(J(2,2),J(2,2)) 与 diag(J(2,2),2,2) 的最小多项式都是 (λ−2)²，若尔当形却不同。",
++      `以为最小多项式总等于特征多项式。单位矩阵 ${texInline("E")} 的特征多项式是 ${texInline(String.raw`(\lambda-1)^n`)}，最小多项式是 ${texInline(String.raw`\lambda-1`)}。`,
++      `某一个向量 ${texInline("v")} 满足 ${texInline("p(A)v=0")}，就断定 ${texInline("p(A)=O")}。${texInline("p(A)")} 要把每个基向量都送到 ${texInline("0")}，所以 ${texInline("m")} 是各 ${texInline("m_v")} 的最小公倍式。`,
++      `以为最小多项式相同的矩阵一定相似。${texInline(String.raw`\operatorname{diag}(J(2,2),J(2,2))`)} 与 ${texInline(String.raw`\operatorname{diag}(J(2,2),2,2)`)} 的最小多项式都是 ${texInline(String.raw`(\lambda-2)^2`)}，若尔当形却不同。`,
+     ],
+   },
+   example: {
+     title: "例题：最小多项式与对角化",
+-    question: `求 ${texInline(String.raw`A=\begin{pmatrix}1&1&0\\-1&3&0\\0&0&2\end{pmatrix}`)} 的最小多项式，并判断 A 能否对角化。`,
++    question: `求 ${texInline(String.raw`A=\begin{pmatrix}1&1&0\\-1&3&0\\0&0&2\end{pmatrix}`)} 的最小多项式，并判断 ${texInline("A")} 能否对角化。`,
+     choices: [
+-      { correct: true, text: `${texInline(String.raw`m(\lambda)=(\lambda-2)^2`)}，A 不能对角化。` },
+-      { text: `${texInline(String.raw`m(\lambda)=(\lambda-2)^3`)}，与特征多项式相同，A 不能对角化。` },
+-      { text: `${texInline(String.raw`m(\lambda)=\lambda-2`)}，A 能对角化。` },
+-      { text: `${texInline(String.raw`m(\lambda)=(\lambda-2)^2`)}，A 能对角化，因为特征值只有一个。` },
++      { correct: true, text: `${texInline(String.raw`m(\lambda)=(\lambda-2)^2`)}，${texInline("A")} 不能对角化。` },
++      { text: `${texInline(String.raw`m(\lambda)=(\lambda-2)^3`)}，与特征多项式相同，${texInline("A")} 不能对角化。` },
++      { text: `${texInline(String.raw`m(\lambda)=\lambda-2`)}，${texInline("A")} 能对角化。` },
++      { text: `${texInline(String.raw`m(\lambda)=(\lambda-2)^2`)}，${texInline("A")} 能对角化，因为特征值只有一个。` },
+     ],
+     steps: [
+-      `§8 已求得 ${texInline(String.raw`f(\lambda)=(\lambda-2)^3`)}，所以 m 是 ${texInline(String.raw`\lambda-2,\ (\lambda-2)^2,\ (\lambda-2)^3`)} 之一。`,
+-      `${texInline(String.raw`A-2E=\begin{pmatrix}-1&1&0\\-1&1&0\\0&0&0\end{pmatrix}\ne O`)}，而 ${texInline(String.raw`(A-2E)^2=O`)}，所以 ${texInline(String.raw`m(\lambda)=(\lambda-2)^2`)}，次数比 f 低。`,
+-      "m 有重因式 (λ−2)²，按判据 A 不能对角化。",
+-      "与 §8 对照：m 中 λ−2 的次数 2 正是最大若尔当块的阶数，若尔当形是 J(2,2)⊕J(2,1)。",
++      `§8 已求得 ${texInline(String.raw`f(\lambda)=(\lambda-2)^3`)}，所以 ${texInline("m")} 是 ${texInline(String.raw`\lambda-2,\ (\lambda-2)^2,\ (\lambda-2)^3`)} 之一。`,
++      `${texInline(String.raw`A-2E=\begin{pmatrix}-1&1&0\\-1&1&0\\0&0&0\end{pmatrix}\ne O`)}，而 ${texInline(String.raw`(A-2E)^2=O`)}，所以 ${texInline(String.raw`m(\lambda)=(\lambda-2)^2`)}，次数比 ${texInline("f")} 低。`,
++      `${texInline("m")} 有重因式 ${texInline(String.raw`(\lambda-2)^2`)}，按判据 ${texInline("A")} 不能对角化。`,
++      `与 §8 对照：${texInline("m")} 中 ${texInline(String.raw`\lambda-2`)} 的次数 ${texInline("2")} 正是最大若尔当块的阶数，若尔当形是 ${texInline(String.raw`J(2,2)\oplus J(2,1)`)}。`,
+     ],
+   },
+   quiz: [
+     {
+-      question: "若 A²=A，A 一定可以对角化吗？",
+-      answer: "一定。λ²−λ=λ(λ−1) 零化 A，所以 m 整除 λ(λ−1)，只能是 λ、λ−1 或 λ(λ−1)，都是互素一次因式之积。",
++      question: `若 ${texInline("A^2=A")}，${texInline("A")} 一定可以对角化吗？`,
++      answer: `一定。${texInline(String.raw`\lambda^2-\lambda=\lambda(\lambda-1)`)} 零化 ${texInline("A")}，所以 ${texInline("m")} 整除 ${texInline(String.raw`\lambda(\lambda-1)`)}，只能是 ${texInline(String.raw`\lambda`)}、${texInline(String.raw`\lambda-1`)} 或 ${texInline(String.raw`\lambda(\lambda-1)`)}，都是互素一次因式之积。`,
+     },
+     {
+-      question: "在实数域上，满足 A²=−E 的矩阵能对角化吗？",
+-      answer: "不能。m 整除 λ²+1，而 m 不能是一次的（A=aE 时 a²=−1 无实根），所以 m=λ²+1，它在实数域上不能分解成一次因式。",
++      question: `在实数域上，满足 ${texInline("A^2=-E")} 的矩阵能对角化吗？`,
++      answer: `不能。${texInline("m")} 整除 ${texInline(String.raw`\lambda^2+1`)}，而 ${texInline("m")} 不能是一次的（${texInline("A=aE")} 时 ${texInline("a^2=-1")} 无实根），所以 ${texInline(String.raw`m=\lambda^2+1`)}，它在实数域上不能分解成一次因式。`,
+     },
+     {
+-      question: "σ 在某组基下的矩阵是准对角矩阵 diag(A₁,A₂)，σ 的最小多项式与 A₁、A₂ 的最小多项式 m₁、m₂ 是什么关系？",
+-      answer: `是 m₁ 与 m₂ 的最小公倍式：${texInline(String.raw`g(\operatorname{diag}(A_1,A_2))=\operatorname{diag}(g(A_1),g(A_2))`)}，它为 O 当且仅当 m₁ 与 m₂ 都整除 g。`,
++      question: `${texInline(String.raw`\sigma`)} 在某组基下的矩阵是准对角矩阵 ${texInline(String.raw`\operatorname{diag}(A_1,A_2)`)}，${texInline(String.raw`\sigma`)} 的最小多项式与 ${texInline("A_1")}、${texInline("A_2")} 的最小多项式 ${texInline("m_1")}、${texInline("m_2")} 是什么关系？`,
++      answer: `是 ${texInline("m_1")} 与 ${texInline("m_2")} 的最小公倍式：${texInline(String.raw`g(\operatorname{diag}(A_1,A_2))=\operatorname{diag}(g(A_1),g(A_2))`)}，它为 ${texInline("O")} 当且仅当 ${texInline("m_1")} 与 ${texInline("m_2")} 都整除 ${texInline("g")}。`,
+     },
+   ],
+   summary: [
+-    "最小多项式 m 是次数最低的首一零化多项式，整除每个零化多项式，也整除特征多项式。",
+-    "E, A, A², … 第一次线性相关给出 m；单个向量的 mᵥ 整除 m。",
+-    "A 可对角化 ⟺ m 是数域上互素一次因式之积。",
++    `最小多项式 ${texInline("m")} 是次数最低的首一零化多项式，整除每个零化多项式，也整除特征多项式。`,
++    `${texInline(String.raw`E,A,A^2,\dots`)} 第一次线性相关给出 ${texInline("m")}；单个向量的 ${texInline("m_v")} 整除 ${texInline("m")}。`,
++    `${texInline("A")} 可对角化 ${texInline(String.raw`\iff`)} ${texInline("m")} 是数域上互素一次因式之积。`,
+   ],
+ });
+diff --git a/current/learn.html b/current/learn.html
+index f797ccd..3b22b48 100644
+--- a/current/learn.html
++++ b/current/learn.html
+@@ -186,21 +186,21 @@
+     <script defer src="./visuals/ch6/labs.js?v=r5f1"></script>
+     <script defer src="./visuals/ch6/mount.js?v=ch6r1"></script>
+     <script defer src="./content/ch7-registry.js?v=ch7r1"></script>
+-    <script defer src="./content/ch7-section1.js?v=r5h1"></script>
+-    <script defer src="./content/ch7-section2.js?v=ch7r1"></script>
+-    <script defer src="./content/ch7-section3.js?v=r5h1"></script>
+-    <script defer src="./content/ch7-section4.js?v=ch7r1"></script>
+-    <script defer src="./content/ch7-section5.js?v=r5h1"></script>
+-    <script defer src="./content/ch7-section6.js?v=f1"></script>
+-    <script defer src="./content/ch7-section7.js?v=r5h1"></script>
+-    <script defer src="./content/ch7-section8.js?v=f1"></script>
+-    <script defer src="./content/ch7-section9.js?v=r5h1"></script>
++    <script defer src="./content/ch7-section1.js?v=r6b-ch7"></script>
++    <script defer src="./content/ch7-section2.js?v=r6b-ch7"></script>
++    <script defer src="./content/ch7-section3.js?v=r6b-ch7"></script>
++    <script defer src="./content/ch7-section4.js?v=r6b-ch7"></script>
++    <script defer src="./content/ch7-section5.js?v=r6b-ch7"></script>
++    <script defer src="./content/ch7-section6.js?v=r6b-ch7"></script>
++    <script defer src="./content/ch7-section7.js?v=r6b-ch7"></script>
++    <script defer src="./content/ch7-section8.js?v=r6b-ch7"></script>
++    <script defer src="./content/ch7-section9.js?v=r6b-ch7"></script>
+     <script defer src="./content/ch7.js?v=ch7r1"></script>
+     <script defer src="./content/ch7-assemble.js?v=ch7r1"></script>
+     <script defer src="./visuals/ch7/kit.js?v=r5f1"></script>
+     <script defer src="./visuals/ch7/figures.js?v=ch7r1"></script>
+-    <script defer src="./visuals/ch7/labs-2d.js?v=r5f1"></script>
+-    <script defer src="./visuals/ch7/labs-3d.js?v=r5f1"></script>
++    <script defer src="./visuals/ch7/labs-2d.js?v=r6b-ch7"></script>
++    <script defer src="./visuals/ch7/labs-3d.js?v=r6b-ch7"></script>
+     <script defer src="./visuals/ch7/mount.js?v=ch7r1"></script>
+     <script defer src="./content/ch8-registry.js?v=ch8r1"></script>
+     <script defer src="./content/ch8-section1.js?v=f5a"></script>
+diff --git a/current/visuals/ch7/labs-2d.js b/current/visuals/ch7/labs-2d.js
+index af34e07..b27234f 100644
+--- a/current/visuals/ch7/labs-2d.js
++++ b/current/visuals/ch7/labs-2d.js
+@@ -39,26 +39,26 @@
+       label: "两个伸缩方向",
+       A: [[2, 1], [0, 3]],
+       eigen: [[1, 0], [1, 1]],
+-      note: "σ 把直线 L((1,0)) 上的向量乘 2，把直线 L((1,1)) 上的向量乘 3。",
++      note: `${tex("\\sigma")} 把直线 ${tex("L((1,0))")} 上的向量乘 2，把直线 ${tex("L((1,1))")} 上的向量乘 3。`,
+     },
+     project: {
+-      label: "投影到直线 x₁+x₂=0",
++      label: `投影到直线 ${tex("x_1+x_2=0")}`,
+       A: [["1/2", "-1/2"], ["-1/2", "1/2"]],
+       eigen: [[1, -1], [1, 1]],
+-      note: "σ 保持直线 L((1,−1)) 上的向量，把直线 L((1,1)) 压成 0。",
++      note: `${tex("\\sigma")} 保持直线 ${tex("L((1,-1))")} 上的向量，把直线 ${tex("L((1,1))")} 压成 ${tex("0")}。`,
+     },
+     shear: {
+       label: "剪切",
+       A: [[1, 1], [0, 1]],
+       eigen: [[1, 0]],
+-      note: "σ 只保持 x₁ 轴这一条直线。",
++      note: `${tex("\\sigma")} 只保持 ${tex("x_1")} 轴这一条直线。`,
+     },
+   };
+ 
+   function basisLab(root) {
+     const lab = K.labShell(root, {
+-      title: "同一个 σ，换一组基记录",
+-      task: "左图用标准基 ε₁, ε₂ 记录 σ，右图用你拖动的 η₁, η₂ 记录同一个 σ。紫色箭头是基向量的像，它在网格里的坐标就是矩阵的一列。",
++      title: `同一个 ${tex("\\sigma")}，换一组基记录`,
++      task: `左图用标准基 ${tex("\\varepsilon_1,\\varepsilon_2")} 记录 ${tex("\\sigma")}，右图用你拖动的 ${tex("\\eta_1,\\eta_2")} 记录同一个 ${tex("\\sigma")}。紫色箭头是基向量的像，它在网格里的坐标就是矩阵的一列。`,
+     });
+     const state = { key: "stretch", eta: [[1, 0.5], [-0.5, 1]] };
+     const toolbar = el("div", "ch7l-toolbar");
+@@ -184,16 +184,16 @@
+         <div>${B ? K.hlHtml(texD(`B=X^{-1}AX=${roomy(bTex)}`)) : texD("B=\\ ?")}</div></div>`;
+       if (B) html += `<p>${tex(coord(0))}，${tex(coord(1))}</p>`;
+       if (!B) {
+-        html += `<p class="ch7l-bad">η₁, η₂ 共线，不构成基，B 无从谈起。</p>`;
++        html += `<p class="ch7l-bad">${tex("\\eta_1,\\eta_2")} 共线，不构成基，${tex("B")} 无从谈起。</p>`;
+       } else {
+         const trB = M().add(B[0][0], B[1][1]);
+         html += `<p>${tex(`\\operatorname{tr}A=${lf(tr)}`)}，${tex(`\\operatorname{tr}B=${lf(trB)}`)}；${tex(`|A|=${lf(K.det(A))}`)}，<span class="la-keep">${tex(`|B|=${lf(K.det(B))}`)}。</span></p>`;
+-        const named = ["η₁", "η₂"].filter((_, j) => lit[j]);
++        const named = [tex("\\eta_1"), tex("\\eta_2")].filter((_, j) => lit[j]);
+         html += flow?.revealed && K.isDiagonal(B)
+-          ? `<p class="ch7l-ok">B 是对角矩阵：每个 σηⱼ 都是 ηⱼ 的倍数。</p>`
++          ? `<p class="ch7l-ok">${tex("B")} 是对角矩阵：每个 ${tex("\\sigma\\eta_j")} 都是 ${tex("\\eta_j")} 的倍数。</p>`
+           : flow?.revealed && named.length
+-            ? `<p class="ch7l-muted">${named.join("、")} 在 σ 的不动直线上，B 中对应的非对角元为 0。</p>`
+-            : `<p class="ch7l-muted">B 的第 j 列 = σηⱼ 在 η₁, η₂ 下的坐标（右图虚线）。</p>`;
++            ? `<p class="ch7l-muted">${named.join("、")} 在 ${tex("\\sigma")} 的不动直线上，${tex("B")} 中对应的非对角元为 ${tex("0")}。</p>`
++            : `<p class="ch7l-muted">${tex("B")} 的第 ${tex("j")} 列 ${tex("=\\sigma\\eta_j")} 在 ${tex("\\eta_1,\\eta_2")} 下的坐标（右图虚线）。</p>`;
+       }
+       strip.innerHTML = html;
+     }
+@@ -219,12 +219,12 @@
+       flow = K.predictFlow(gateHost, result, {
+         question: `拖动 ${tex("\\eta_1,\\eta_2")}。什么时候 ${tex("B=X^{-1}AX")} 会成为对角矩阵？`,
+         options: [
+-          { text: "η₁、η₂ 分别落在 σ 保持的两条直线上", correct: true },
+-          { text: "η₁、η₂ 互相垂直且等长", why: "试试“两个伸缩方向”：垂直的 η 一般得不到对角的 B。" },
+-          { text: "只有 η 等于 ε 时", why: "η=ε 时 B=A，A 本身不一定是对角的。" },
++          { text: `${tex("\\eta_1")}、${tex("\\eta_2")} 分别落在 ${tex("\\sigma")} 保持的两条直线上`, correct: true },
++          { text: `${tex("\\eta_1")}、${tex("\\eta_2")} 互相垂直且等长`, why: "试试“两个伸缩方向”：垂直的 η 一般得不到对角的 B。" },
++          { text: `只有 ${tex("\\eta")} 等于 ${tex("\\varepsilon")} 时`, why: "η=ε 时 B=A，A 本身不一定是对角的。" },
+           { text: "永远不会，换基不改变矩阵", why: "换基不改变 σ，矩阵却会变。" },
+         ],
+-        conclusion: `B 的第 j 列是 ${tex("\\sigma\\eta_j")} 在新基下的坐标。B 是对角矩阵，当且仅当 ${tex("\\sigma\\eta_j=\\lambda_j\\eta_j")}，即每个 ${tex("\\eta_j")} 都在 σ 保持的直线上（图中绿色虚线，把 η 拖近它会吸附上去）。无论怎样换基，迹与行列式都不变，因为 B 与 A 相似。${preset().note}${state.key === "shear" ? "剪切只有一条这样的直线，B 最多化成三角形。" : ""}`,
++        conclusion: `${tex("B")} 的第 ${tex("j")} 列是 ${tex("\\sigma\\eta_j")} 在新基下的坐标。${tex("B")} 是对角矩阵，当且仅当 ${tex("\\sigma\\eta_j=\\lambda_j\\eta_j")}，即每个 ${tex("\\eta_j")} 都在 ${tex("\\sigma")} 保持的直线上（图中绿色虚线，把 ${tex("\\eta")} 拖近它会吸附上去）。无论怎样换基，迹与行列式都不变，因为 ${tex("B")} 与 ${tex("A")} 相似。${preset().note}${state.key === "shear" ? `剪切只有一条这样的直线，${tex("B")} 最多化成三角形。` : ""}`,
+         onReveal: redraw,
+       });
+     }
+@@ -253,14 +253,14 @@
+       A: [[2, 1], [1, 2]],
+       eigen: [{ angle: 45, v: [1, 1] }, { angle: 135, v: [-1, 1] }],
+       predict: {
+-        question: "把 v 从 0° 转到 180°，v 与 Av 共线会出现几次？",
++        question: `把 ${tex("v")} 从 0° 转到 180°，${tex("v")} 与 ${tex("Av")} 共线会出现几次？`,
+         options: [
+           { text: "2 次", correct: true },
+           { text: "1 次", why: "转到 135° 附近再看一看。" },
+           { text: "4 次", why: "θ 与 θ+180° 是同一条直线，0°–180° 已经走遍所有直线。" },
+           { text: "0 次", why: "转到 45° 看 v 和 Av。" },
+         ],
+-        conclusion: "45° 与 135° 两条直线被保持，λ 分别是 3 和 1。对称矩阵的两条特征直线互相垂直。",
++        conclusion: `45° 与 135° 两条直线被保持，${tex("\\lambda")} 分别是 ${tex("3")} 和 ${tex("1")}。对称矩阵的两条特征直线互相垂直。`,
+       },
+     },
+     upper: {
+@@ -275,7 +275,7 @@
+           { text: "只有一条特征直线", why: "这里有两个不同的特征值 1 和 2。" },
+           { text: "没有特征直线", why: "转到 0°：Av=v。" },
+         ],
+-        conclusion: "0° 方向 λ=1，45° 方向 λ=2。特征直线只需线性无关，不必垂直。",
++        conclusion: `0° 方向 ${tex("\\lambda=1")}，45° 方向 ${tex("\\lambda=2")}。特征直线只需线性无关，不必垂直。`,
+       },
+     },
+     shear: {
+@@ -290,7 +290,7 @@
+           { text: "0 条", why: "转到 0° 看看。" },
+           { text: "无穷多条", why: "除了 0°，其余方向都被推歪了。" },
+         ],
+-        conclusion: "只有 x₁ 轴被保持（λ=1）。二重特征值只给出一条特征直线，所以凑不出两个线性无关的特征向量。",
++        conclusion: `只有 ${tex("x_1")} 轴被保持（${tex("\\lambda=1")}）。二重特征值只给出一条特征直线，所以凑不出两个线性无关的特征向量。`,
+       },
+     },
+     project: {
+@@ -298,14 +298,14 @@
+       A: [[1, 0], [0, 0]],
+       eigen: [{ angle: 0, v: [1, 0] }, { angle: 90, v: [0, 1] }],
+       predict: {
+-        question: "投影到 x₁ 轴时，x₂ 轴上的 v 满足 Av=0。x₂ 轴算特征直线吗？",
++        question: `投影到 ${tex("x_1")} 轴时，${tex("x_2")} 轴上的 ${tex("v")} 满足 ${tex("Av=0")}。${tex("x_2")} 轴算特征直线吗？`,
+         options: [
+-          { text: "算，对应 λ=0", correct: true },
+-          { text: "不算，Av=0 不能叫伸缩", why: "Av=0·v 正是 λ=0 的情形，v 本身非零即可。" },
++          { text: `算，对应 ${tex("\\lambda=0")}`, correct: true },
++          { text: `不算，${tex("Av=0")} 不能叫伸缩`, why: "Av=0·v 正是 λ=0 的情形，v 本身非零即可。" },
+           { text: "不算，零向量不是特征向量", why: "v 不是零向量；被送到零的是 Av。" },
+-          { text: "只有 x₁ 轴才算", why: "转到 90° 看 Av。" },
++          { text: `只有 ${tex("x_1")} 轴才算`, why: "转到 90° 看 Av。" },
+         ],
+-        conclusion: "x₁ 轴上 λ=1，x₂ 轴上 λ=0。特征值可以是 0，此时特征子空间就是核。",
++        conclusion: `${tex("x_1")} 轴上 ${tex("\\lambda=1")}，${tex("x_2")} 轴上 ${tex("\\lambda=0")}。特征值可以是 ${tex("0")}，此时特征子空间就是核。`,
+       },
+     },
+     rotate: {
+@@ -318,9 +318,9 @@
+           { text: "没有", correct: true },
+           { text: "有一条", why: "转一整圈，Av 始终与 v 垂直。" },
+           { text: "每条直线都是", why: "旋转把每条直线都转走了。" },
+-          { text: "取决于 v 的长度", why: "是否共线与长度无关。" },
++          { text: `取决于 ${tex("v")} 的长度`, why: "是否共线与长度无关。" },
+         ],
+-        conclusion: "|λE−A|=λ²+1 在实数域上没有根。复数域上特征值是 ±i，但复特征向量不能画在实平面上。",
++        conclusion: `${tex("|\\lambda E-A|=\\lambda^2+1")} 在实数域上没有根。复数域上特征值是 ${tex("\\pm i")}，但复特征向量不能画在实平面上。`,
+       },
+     },
+   };
+@@ -342,7 +342,7 @@
+   function eigenLab(root) {
+     const lab = K.labShell(root, {
+       title: "哪些方向只被伸缩",
+-      task: "紫色曲线是单位圆上所有方向经过 A 以后的终点。转动金色的 v，看 Av 何时与 v 落在同一条直线上。",
++      task: `紫色曲线是单位圆上所有方向经过 ${tex("A")} 以后的终点。转动金色的 ${tex("v")}，看 ${tex("Av")} 何时与 ${tex("v")} 落在同一条直线上。`,
+     });
+     const modeBar = el("div", "ch7l-toolbar ch7l-modes");
+     lab.append(modeBar);
+@@ -361,7 +361,7 @@
+   }
+ 
+   function planeMode(host, lab) {
+-    lab.querySelector(".ch7l-head p").textContent = "紫色曲线是单位圆上所有方向经过 A 以后的终点。转动金色的 v，看 Av 何时与 v 落在同一条直线上。";
++    lab.querySelector(".ch7l-head p").innerHTML = `紫色曲线是单位圆上所有方向经过 ${tex("A")} 以后的终点。转动金色的 ${tex("v")}，看 ${tex("Av")} 何时与 ${tex("v")} 落在同一条直线上。`;
+     const state = { key: "sym", theta: 20 };
+     const toolbar = el("div", "ch7l-toolbar");
+     const body = el("div", "ch7l-body");
+@@ -446,7 +446,7 @@
+       const now = state.theta % 180;
+       const pNow = psiAt(A, now);
+       if (pNow != null) parts.push(`<circle cx="${sx(now)}" cy="${sy(pNow)}" r="4.5" class="ch7s-now"/>`);
+-      strip.innerHTML = `<svg viewBox="0 0 ${SW} ${SH}" role="img" aria-label="v 与 Av 的有向夹角随 θ 的变化">${parts.join("")}</svg><figcaption>v 到 Av 的有向夹角（θ 从 0° 到 180°）${flow?.predicted ? "" : " · 猜过之后记录轨迹"}</figcaption>`;
++      strip.innerHTML = `<svg viewBox="0 0 ${SW} ${SH}" role="img" aria-label="v 与 Av 的有向夹角随 θ 的变化">${parts.join("")}</svg><figcaption>${tex("v")} 到 ${tex("Av")} 的有向夹角（${tex("\\theta")} 从 0° 到 180°）${flow?.predicted ? "" : " · 猜过之后记录轨迹"}</figcaption>`;
+     }
+ 
+     function hit() {
+@@ -517,7 +517,7 @@
+         const avLen = Math.hypot(Av[0], Av[1]);
+         const ang = avLen < 1e-9 ? 0 : (Math.acos(Math.max(-1, Math.min(1, (v[0] * Av[0] + v[1] * Av[1]) / (r * avLen)))) * 180) / Math.PI;
+         const line = Math.min(ang, 180 - ang);
+-        info.innerHTML = `<h4>v 与 Av</h4><p>Av 偏离 v 所在直线 ${fmt(line, 1) === "0" ? "0" : `≈${fmt(line, 1)}`}°</p><p class="ch7l-muted">偏离为 0 时，Av=λv。</p>`;
++        info.innerHTML = `<h4>${tex("v")} 与 ${tex("Av")}</h4><p>${tex("Av")} 偏离 ${tex("v")} 所在直线 ${fmt(line, 1) === "0" ? "0" : `≈${fmt(line, 1)}`}°</p><p class="ch7l-muted">偏离为 0 时，${tex("Av=\\lambda v")}。</p>`;
+       }
+     }
+ 
+@@ -597,7 +597,7 @@
+   }
+ 
+   function spaceMode(host, lab) {
+-    lab.querySelector(".ch7l-head p").innerHTML = `${tex("A=\\begin{pmatrix}1&2&2\\\\2&1&2\\\\2&2&1\\end{pmatrix}")}。拖动 v 改变方向（图中 v 画成固定长度），看 Av 何时与 v 共线。`;
++    lab.querySelector(".ch7l-head p").innerHTML = `${tex("A=\\begin{pmatrix}1&2&2\\\\2&1&2\\\\2&2&1\\end{pmatrix}")}。拖动 ${tex("v")} 改变方向（图中 ${tex("v")} 画成固定长度），看 ${tex("Av")} 何时与 ${tex("v")} 共线。`;
+     const A = K.mat(SPACE_A);
+     const An = matNum(A);
+     const state = { u: [1, 0, 0.5] };
+@@ -608,7 +608,7 @@
+     host.append(body);
+     const scene = window.LAScene3D.create(stage, { range: 2.6, label: "三维中的 v 与 Av", hint: "拖动空白处旋转 · 拖动圆点改变 v", yaw: -0.75, pitch: 0.38 });
+     const tools = el("div", "ch7l-actions");
+-    tools.innerHTML = `<button type="button" class="ch7l-btn" data-plane>放进平面 x₁+x₂+x₃=0</button><button type="button" class="ch7l-btn" data-line>放到 (1,1,1) 方向</button><button type="button" class="ch7l-btn" data-look>沿 (1,1,1) 看</button><button type="button" class="ch7l-btn" data-edge>侧看平面</button>`;
++    tools.innerHTML = `<button type="button" class="ch7l-btn" data-plane>放进平面 ${tex("x_1+x_2+x_3=0")}</button><button type="button" class="ch7l-btn" data-line>放到 ${tex("(1,1,1)")} 方向</button><button type="button" class="ch7l-btn" data-look>沿 ${tex("(1,1,1)")} 看</button><button type="button" class="ch7l-btn" data-edge>侧看平面</button>`;
+     const info = el("div", "ch7l-card");
+     const gateHost = el("div");
+     const result = el("div", "ch7l-result");
+@@ -650,10 +650,10 @@
+         objs.push({ type: "arrow", to: Av, color: "image", width: 2.6, label: "Av" });
+         return objs;
+       });
+-      info.innerHTML = `<h4>读数</h4><p>v 的方向 ${tex(K.latexRow(s.u))}，${tex(`Av\\ \\text{的方向}\\ ${K.latexRow(s.Au)}`)}</p>${
++      info.innerHTML = `<h4>读数</h4><p>${tex("v")} 的方向 ${tex(K.latexRow(s.u))}，${tex(`Av\\ \\text{的方向}\\ ${K.latexRow(s.Au)}`)}</p>${
+         s.parallel
+           ? `<p class="ch7l-ok">共线：${tex(`Av=${lf(s.lambda)}\\,v`)}</p>`
+-          : `<p class="ch7l-muted">不共线：Av 离开了 v 所在的直线。</p>`
++          : `<p class="ch7l-muted">不共线：${tex("Av")} 离开了 ${tex("v")} 所在的直线。</p>`
+       }`;
+     }
+ 
+@@ -689,14 +689,14 @@
+     tools.querySelector("[data-edge]").addEventListener("click", () => scene.lookAlong([1, -1, 0]));
+ 
+     flow = K.predictFlow(gateHost, result, {
+-      question: "A 保持多少条过原点的直线（直线上的 v 满足 Av 与 v 共线）？",
++      question: `${tex("A")} 保持多少条过原点的直线（直线上的 ${tex("v")} 满足 ${tex("Av")} 与 ${tex("v")} 共线）？`,
+       options: [
+         { text: "无穷多条", correct: true },
+         { text: "恰好 3 条", why: "三阶矩阵最多三个特征值，可一个特征值可以对应一整个平面。" },
+         { text: "1 条", why: "先点“放进平面”，看 Av 与 v 的关系。" },
+         { text: "没有", why: "点“放到 (1,1,1) 方向”。" },
+       ],
+-      conclusion: `λ=5 只给出直线 ${tex("V_5=L((1,1,1)^T)")}；λ=−1 是二重根，${tex("(-E-A)x=0")} 只有一个独立方程 ${tex("x_1+x_2+x_3=0")}，${tex("V_{-1}")} 是一整个平面，平面里每条直线都被保持（v 被反向）。点“沿 (1,1,1) 看”：平面正对着你，V₅ 缩成一点。`,
++      conclusion: `${tex("\\lambda=5")} 只给出直线 ${tex("V_5=L((1,1,1)^T)")}；${tex("\\lambda=-1")} 是二重根，${tex("(-E-A)x=0")} 只有一个独立方程 ${tex("x_1+x_2+x_3=0")}，${tex("V_{-1}")} 是一整个平面，平面里每条直线都被保持（${tex("v")} 被反向）。点“沿 ${tex("(1,1,1)")} 看”：平面正对着你，${tex("V_5")} 缩成一点。`,
+       onReveal: redraw,
+     });
+     redraw();
+@@ -717,12 +717,12 @@
+       predict: {
+         question: "点会趋向原点。最后几步，它贴着哪条特征直线进来？",
+         options: [
+-          { text: "η₂ 方向（λ=4/5）", correct: true },
+-          { text: "η₁ 方向（λ=1/2）", why: "1/2ᵏ 衰减得更快，这一份先消失。" },
+-          { text: "沿 x₀ 与原点的连线", why: "两个分量缩小的速度不同，方向会改变。" },
++          { text: `${tex("\\eta_2")} 方向（${tex("\\lambda=4/5")}）`, correct: true },
++          { text: `${tex("\\eta_1")} 方向（${tex("\\lambda=1/2")}）`, why: "1/2ᵏ 衰减得更快，这一份先消失。" },
++          { text: `沿 ${tex("x_0")} 与原点的连线`, why: "两个分量缩小的速度不同，方向会改变。" },
+           { text: "绕原点转圈", why: "两个特征值都是正实数，没有转动。" },
+         ],
+-        conclusion: "xₖ=c₁(1/2)ᵏη₁+c₂(4/5)ᵏη₂。两份都在缩小，(1/2)ᵏ 缩得快，剩下的主要是 η₂ 分量，所以点贴着 η₂ 所在的直线进入原点。",
++        conclusion: `${tex("x_k=c_1(1/2)^k\\eta_1+c_2(4/5)^k\\eta_2")}。两份都在缩小，${tex("(1/2)^k")} 缩得快，剩下的主要是 ${tex("\\eta_2")} 分量，所以点贴着 ${tex("\\eta_2")} 所在的直线进入原点。`,
+       },
+     },
+     saddle: {
+@@ -733,14 +733,14 @@
+       x0: [1.5, 0.5],
+       extent: 4.2,
+       predict: {
+-        question: "λ₁=1/2，λ₂=6/5。多数初始点最后沿哪条直线跑远？",
++        question: `${tex("\\lambda_1=1/2")}，${tex("\\lambda_2=6/5")}。多数初始点最后沿哪条直线跑远？`,
+         options: [
+-          { text: "η₂ 所在直线", correct: true },
+-          { text: "η₁ 所在直线", why: "η₁ 分量每步乘 1/2，越来越小。" },
++          { text: `${tex("\\eta_2")} 所在直线`, correct: true },
++          { text: `${tex("\\eta_1")} 所在直线`, why: "η₁ 分量每步乘 1/2，越来越小。" },
+           { text: "所有点都跑向原点", why: "6/5>1，η₂ 分量在增长。" },
+           { text: "点停在原地不动", why: "按一次“作用一次”看看。" },
+         ],
+-        conclusion: "η₂ 分量每步乘 6/5，越来越大，η₁ 分量趋于 0，点沿 η₂ 的方向跑远。只有恰好落在 η₁ 直线上（c₂=0）的点会跑向原点：把 x₀ 拖到 x₁ 轴上试试。",
++        conclusion: `${tex("\\eta_2")} 分量每步乘 ${tex("6/5")}，越来越大，${tex("\\eta_1")} 分量趋于 ${tex("0")}，点沿 ${tex("\\eta_2")} 的方向跑远。只有恰好落在 ${tex("\\eta_1")} 直线上（${tex("c_2=0")}）的点会跑向原点：把 ${tex("x_0")} 拖到 ${tex("x_1")} 轴上试试。`,
+       },
+     },
+     markov: {
+@@ -751,14 +751,14 @@
+       x0: [2, 0],
+       extent: 2.6,
+       predict: {
+-        question: "每列元素之和为 1。从 x₀=(2,0) 出发，最后停在哪里？",
++        question: `每列元素之和为 1。从 ${tex("x_0=(2,0)")} 出发，最后停在哪里？`,
+         options: [
+-          { text: "(6/5, 4/5)", correct: true },
+-          { text: "(1, 1)", why: "极限在 λ=1 的特征直线 L((3,2)) 上。" },
++          { text: `${tex("(6/5,4/5)")}`, correct: true },
++          { text: `${tex("(1,1)")}`, why: "极限在 λ=1 的特征直线 L((3,2)) 上。" },
+           { text: "原点", why: "λ=1 的分量不衰减。" },
+           { text: "不会停下", why: "λ=1/2 的分量越来越小，点会停下。" },
+         ],
+-        conclusion: "λ=1 的分量保持不变，λ=1/2 的分量衰减为 0，xₖ 趋于 c₁η₁。分量之和保持为 2，所以极限是 2·(3/5, 2/5)=(6/5, 4/5)。",
++        conclusion: `${tex("\\lambda=1")} 的分量保持不变，${tex("\\lambda=1/2")} 的分量衰减为 ${tex("0")}，${tex("x_k")} 趋于 ${tex("c_1\\eta_1")}。分量之和保持为 ${tex("2")}，所以极限是 ${tex("2\\cdot(3/5,2/5)=(6/5,4/5)")}。`,
+       },
+     },
+     jordan: {
+@@ -776,15 +776,15 @@
+           { text: "趋向原点", why: "特征值是 1，没有衰减。" },
+           { text: "绕原点转动", why: "x₂ 坐标始终不变。" },
+         ],
+-        conclusion: "Aᵏ=(1 k; 0 1)，xₖ=(x₁+k·x₂, x₂)：每步平移 x₂，是等差的漂移。特征向量只有一个，x₀ 拆不成两个按几何级数伸缩的分量，A 不能对角化。",
++        conclusion: `${tex("A^k=\\begin{pmatrix}1&k\\\\0&1\\end{pmatrix}")}，${tex("x_k=(x_1+k\\cdot x_2,x_2)")}：每步平移 ${tex("x_2")}，是等差的漂移。特征向量只有一个，${tex("x_0")} 拆不成两个按几何级数伸缩的分量，${tex("A")} 不能对角化。`,
+       },
+     },
+   };
+ 
+   function iterationLab(root) {
+     const lab = K.labShell(root, {
+-      title: "反复作用 A，点跑向哪里",
+-      task: "拖动金色的 x₀，然后按“作用一次”。蓝、朱两支箭头是 xₖ 的两个特征分量，每按一次各乘自己的 λ；紫色折线是轨迹。",
++      title: `反复作用 ${tex("A")}，点跑向哪里`,
++      task: `拖动金色的 ${tex("x_0")}，然后按“作用一次”。蓝、朱两支箭头是 ${tex("x_k")} 的两个特征分量，每按一次各乘自己的 ${tex("\\lambda")}；紫色折线是轨迹。`,
+     });
+     const state = { key: "attract", x0: [3, 1], k: 0 };
+     const toolbar = el("div", "ch7l-toolbar");
+@@ -795,7 +795,7 @@
+     lab.append(toolbar, body);
+     const plane = K.plane2d(stage, { extent: 3.2, hint: "拖动 x₀（每次半格）", label: "迭代轨迹" });
+     const tools = el("div", "ch7l-actions");
+-    tools.innerHTML = `<button type="button" class="ch7l-btn is-primary" data-step>作用一次 A</button><button type="button" class="ch7l-btn" data-ten>连续 10 次</button><button type="button" class="ch7l-btn" data-reset>回到 x₀</button>`;
++    tools.innerHTML = `<button type="button" class="ch7l-btn is-primary" data-step>作用一次 ${tex("A")}</button><button type="button" class="ch7l-btn" data-ten>连续 10 次</button><button type="button" class="ch7l-btn" data-reset>回到 ${tex("x_0")}</button>`;
+     const info = el("div", "ch7l-card");
+     const gateHost = el("div");
+     const result = el("div", "ch7l-result");
+@@ -850,7 +850,7 @@
+         pts.forEach((p, i) => d.point(p, i ? "image" : "drag", { r: i === pts.length - 1 ? 5.5 : 3, alpha: i === pts.length - 1 ? 1 : 0.7 }));
+         d.text(xk, state.k ? `x${toSub(state.k)}` : "x₀", state.k ? "image" : "drag", { dx: 10, dy: 12 });
+       });
+-      let html = `<h4>k = ${state.k}</h4><p>${tex(`x_{${state.k}}=`)} ${vecNice(xk)}</p>`;
++      let html = `<h4>${tex(`k=${state.k}`)}</h4><p>${tex(`x_{${state.k}}=`)} ${vecNice(xk)}</p>`;
+       if (c) {
+         const co = (x) => { const t = lf(x); return t === "1" ? "" : t === "-1" ? "-" : t; };
+         html += `<p>${tex(`x_0=${co(c[0])}\\eta_1${c[1].n < 0 ? "" : "+"}${co(c[1])}\\eta_2`)}</p>`;
+@@ -868,10 +868,10 @@
+         const comp = (i, k) => num(c[i]) * lam[i] ** k;
+         const rows = [];
+         for (let k = Math.max(0, state.k - 4); k <= state.k; k += 1) rows.push(k);
+-        const ratioHead = `η${"₁₂"[weak]} / η${"₁₂"[strong]}`;
+-        html += `<table class="ch7l-table ch7l-iter"><thead><tr><th>k</th>
+-          <th style="color:var(--cv-v1)">η₁ 分量 ×${P.lambdas[0]}</th>
+-          <th style="color:var(--cv-v2)">η₂ 分量 ×${P.lambdas[1]}</th>
++        const ratioHead = tex(`\\eta_${weak + 1}/\\eta_${strong + 1}`);
++        html += `<table class="ch7l-table ch7l-iter"><thead><tr><th>${tex("k")}</th>
++          <th style="color:var(--cv-v1)">${tex("\\eta_1")} 分量 ${tex(`\\times${P.lambdas[0]}`)}</th>
++          <th style="color:var(--cv-v2)">${tex("\\eta_2")} 分量 ${tex(`\\times${P.lambdas[1]}`)}</th>
+           <th>${ratioHead}</th></tr></thead><tbody>
+           ${rows.map((k) => {
+             const a = comp(0, k), b = comp(1, k);
+@@ -881,9 +881,9 @@
+           }).join("")}
+           </tbody></table>`;
+         const onLine = c.findIndex((x) => M().isZero(x));
+-        if (onLine >= 0) html += `<p class="ch7l-ok">x₀ 在 η${"₁₂"[1 - onLine]} 所在直线上：c${"₁₂"[onLine]}=0，点永远不离开这条直线。</p>`;
++        if (onLine >= 0) html += `<p class="ch7l-ok">${tex("x_0")} 在 ${tex(`\\eta_${2 - onLine}`)} 所在直线上：${tex(`c_${onLine + 1}=0`)}，点永远不离开这条直线。</p>`;
+       } else {
+-        html += `<p class="ch7l-muted">只有一条特征直线，xₖ 拆不成两个特征分量。${tex(`A^{k}=\\begin{pmatrix}1&${state.k}\\\\0&1\\end{pmatrix}`)}</p>`;
++        html += `<p class="ch7l-muted">只有一条特征直线，${tex("x_k")} 拆不成两个特征分量。${tex(`A^{k}=\\begin{pmatrix}1&${state.k}\\\\0&1\\end{pmatrix}`)}</p>`;
+       }
+       info.innerHTML = html;
+     }
+diff --git a/current/visuals/ch7/labs-3d.js b/current/visuals/ch7/labs-3d.js
+index be83664..37b03dc 100644
+--- a/current/visuals/ch7/labs-3d.js
++++ b/current/visuals/ch7/labs-3d.js
+@@ -48,14 +48,14 @@
+       x: [1.5, -0.5, 2],
+       axes: ["x₁", "x₂", "x₃"],
+       predict: {
+-        question: "σ 沿一条直线把 ℝ³ 压到一个平面上。dim σ⁻¹(0) + dim σV 等于多少？",
++        question: `${tex("\\sigma")} 沿一条直线把 ${tex("\\mathbb R^3")} 压到一个平面上。${tex("\\dim\\sigma^{-1}(0)+\\dim\\sigma V")} 等于多少？`,
+         options: [
+           { text: "3", correct: true },
+           { text: "2", why: "核是压缩方向那条直线，它也占一维。" },
+           { text: "4", why: "数一数：核一条直线，值域一个平面。" },
+           { text: "取决于压缩的方向", why: "换个方向压，核与值域的维数都不变。" },
+         ],
+-        conclusion: "核是压缩方向所在的直线（1 维），值域是平面 x₃=0（2 维），1+2=3。沿核拖动 x′，σx′ 始终等于 σx：σx 的全部原像恰是 x+σ⁻¹(0)。这个 σ 满足 σ²=σ，此时 ℝ³=σV⊕σ⁻¹(0)。",
++        conclusion: `核是压缩方向所在的直线（1 维），值域是平面 ${tex("x_3=0")}（2 维），${tex("1+2=3")}。沿核拖动 ${tex("x'")}，${tex("\\sigma x'")} 始终等于 ${tex("\\sigma x")}：${tex("\\sigma x")} 的全部原像恰是 ${tex("x+\\sigma^{-1}(0)")}。这个 ${tex("\\sigma")} 满足 ${tex("\\sigma^2=\\sigma")}，此时 ${tex("\\mathbb R^3=\\sigma V\\oplus\\sigma^{-1}(0)")}。`,
+       },
+     },
+     toLine: {
+@@ -64,30 +64,30 @@
+       x: [1.5, -1, 2],
+       axes: ["x₁", "x₂", "x₃"],
+       predict: {
+-        question: "换成沿平面 x₃=0 压到直线 L((1,1,2)ᵀ) 上。核与值域各是几维？",
++        question: `换成沿平面 ${tex("x_3=0")} 压到直线 ${tex("L((1,1,2)^T)")} 上。核与值域各是几维？`,
+         options: [
+           { text: "核 2 维，值域 1 维", correct: true },
+           { text: "核 1 维，值域 2 维", why: "被压成 0 的是平面 x₃=0 里的全部向量。" },
+           { text: "核 2 维，值域 2 维", why: "所有像都落在一条直线上。" },
+           { text: "核 0 维，值域 3 维", why: "x₃=0 的向量都被送到 0。" },
+         ],
+-        conclusion: "这个变换是 E−σ（σ 是第一种模式）：核与值域对调，2+1=3。在核平面里拖动 x′，像始终是同一个点。",
++        conclusion: `这个变换是 ${tex("E-\\sigma")}（${tex("\\sigma")} 是第一种模式）：核与值域对调，${tex("2+1=3")}。在核平面里拖动 ${tex("x'")}，像始终是同一个点。`,
+       },
+     },
+     deriv: {
+-      label: "求导 D（P[x]₃）",
++      label: `求导 ${tex("D")}（${tex("P[x]_3")}）`,
+       A: [[0, 1, 0], [0, 0, 2], [0, 0, 0]],
+       x: [1, 1.5, 1],
+       axes: ["a₀", "a₁", "a₂"],
+       predict: {
+-        question: "点 (a₀,a₁,a₂) 代表 a₀+a₁x+a₂x²。D 的核（常数）与值域（次数 ≤1 的多项式）是什么关系？",
++        question: `点 ${tex("(a_0,a_1,a_2)")} 代表 ${tex("a_0+a_1x+a_2x^2")}。${tex("D")} 的核（常数）与值域（次数 ${tex("\\le1")} 的多项式）是什么关系？`,
+         options: [
+           { text: "核含在值域里，两者的和不是整个空间", correct: true },
+-          { text: "两者互补，P[x]₃=DV⊕D⁻¹(0)", why: "常数 1 在核里，同时 1=D(x) 也在值域里。" },
++          { text: `两者互补，${tex("P[x]_3=DV\\oplus D^{-1}(0)")}`, why: "常数 1 在核里，同时 1=D(x) 也在值域里。" },
+           { text: "两者只交于零向量", why: "常数 1 既在核里，也等于 D(x)。" },
+-          { text: "值域是整个 P[x]₃", why: "x² 不是任何次数 <3 的多项式的导数。" },
++          { text: `值域是整个 ${tex("P[x]_3")}`, why: "x² 不是任何次数 <3 的多项式的导数。" },
+         ],
+-        conclusion: "D⁻¹(0)=L(1) 是 a₀ 轴，DV=L(1,x) 是 a₀a₁ 平面。1+2=3 照样成立，但 a₀ 轴在 a₀a₁ 平面里：DV+D⁻¹(0)=DV≠P[x]₃。维数公式不保证直和。",
++        conclusion: `${tex("D^{-1}(0)=L(1)")} 是 ${tex("a_0")} 轴，${tex("DV=L(1,x)")} 是 ${tex("a_0a_1")} 平面。${tex("1+2=3")} 照样成立，但 ${tex("a_0")} 轴在 ${tex("a_0a_1")} 平面里：${tex("DV+D^{-1}(0)=DV\\ne P[x]_3")}。维数公式不保证直和。`,
+       },
+     },
+   };
+@@ -111,7 +111,7 @@
+   function kernelLab(root) {
+     const lab = K.labShell(root, {
+       title: "沿核滑动，像不动",
+-      task: "金色圆点 x 可以随意拖动，紫色点是它的像 σx。金色圆点 x′ 只能沿绿色虚线 x+σ⁻¹(0) 移动：拖动它，看 σx′ 会不会离开 σx。",
++      task: `金色圆点 ${tex("x")} 可以随意拖动，紫色点是它的像 ${tex("\\sigma x")}。金色圆点 ${tex("x'")} 只能沿绿色虚线 ${tex("x+\\sigma^{-1}(0)")} 移动：拖动它，看 ${tex("\\sigma x'")} 会不会离开 ${tex("\\sigma x")}。`,
+     });
+     const toolbar = el("div", "ch7l-toolbar");
+     const body = el("div", "ch7l-body");
+@@ -121,7 +121,7 @@
+     lab.append(toolbar, body);
+     const gateHost = el("div");
+     const tools = el("div", "ch7l-actions");
+-    tools.innerHTML = `<button type="button" class="ch7l-btn is-primary" data-slide>让 x′ 走遍 x+σ⁻¹(0)</button><button type="button" class="ch7l-btn" data-look-ker>沿核看</button><button type="button" class="ch7l-btn" data-reset>回到默认视角</button>`;
++    tools.innerHTML = `<button type="button" class="ch7l-btn is-primary" data-slide>让 ${tex("x'")} 走遍 ${tex("x+\\sigma^{-1}(0)")}</button><button type="button" class="ch7l-btn" data-look-ker>沿核看</button><button type="button" class="ch7l-btn" data-reset>回到默认视角</button>`;
+     const info = el("div", "ch7l-card");
+     const result = el("div", "ch7l-result");
+     side.append(gateHost, tools, info, result);
+@@ -301,7 +301,7 @@
+       clearInterval(slideTimer);
+       trail.clear();
+       state.key = key;
+-      tools.querySelector("[data-slide]").textContent = key === "deriv" ? "让 x′ 走遍 x+D⁻¹(0)" : "让 x′ 走遍 x+σ⁻¹(0)";
++      tools.querySelector("[data-slide]").innerHTML = key === "deriv" ? `让 ${tex("x'")} 走遍 ${tex("x+D^{-1}(0)")}` : `让 ${tex("x'")} 走遍 ${tex("x+\\sigma^{-1}(0)")}`;
+       state.x = mode().x.slice();
+       const { ker } = structure();
+       // x′ starts well away from x and from σx (so handles and labels do not overlap), on the half grid
+@@ -351,14 +351,14 @@
+       basis: [[1, 0, 0], [0, 1, 0], [0, 0, 1]],
+       basisName: "\\varepsilon_1,\\varepsilon_2\\mid\\varepsilon_3",
+       predict: {
+-        question: "A 先绕 x₃ 轴转 90°，再沿 x₃ 轴拉伸 2 倍。有没有不变的平面？那个平面里有没有特征向量？",
++        question: `${tex("A")} 先绕 ${tex("x_3")} 轴转 90°，再沿 ${tex("x_3")} 轴拉伸 2 倍。有没有不变的平面？那个平面里有没有特征向量？`,
+         options: [
+-          { text: "x₁x₂ 平面不变，但平面里没有实特征向量", correct: true },
+-          { text: "x₁x₂ 平面不变，所以平面里一定有特征向量", why: "平面里每个方向都被转了 90°。" },
++          { text: `${tex("x_1x_2")} 平面不变，但平面里没有实特征向量`, correct: true },
++          { text: `${tex("x_1x_2")} 平面不变，所以平面里一定有特征向量`, why: "平面里每个方向都被转了 90°。" },
+           { text: "没有不变平面", why: "试试候选平面 x₁x₂。" },
+-          { text: "每个含 x₃ 轴的平面都不变", why: "试试 x₁x₃ 平面：Aε₁=ε₂ 跑了出去。" },
++          { text: `每个含 ${tex("x_3")} 轴的平面都不变`, why: "试试 x₁x₃ 平面：Aε₁=ε₂ 跑了出去。" },
+         ],
+-        conclusion: "A 把 x₁x₂ 平面转 90°，平面整体留在原处，平面里的每条直线却都被转走，所以没有实特征向量。不变直线只有 x₃ 轴（λ=2）。按 x₁x₂ 平面的基接上 x₃ 轴的基，矩阵是一个 2 阶块和一个 1 阶块组成的准对角矩阵。",
++        conclusion: `${tex("A")} 把 ${tex("x_1x_2")} 平面转 90°，平面整体留在原处，平面里的每条直线却都被转走，所以没有实特征向量。不变直线只有 ${tex("x_3")} 轴（${tex("\\lambda=2")}）。按 ${tex("x_1x_2")} 平面的基接上 ${tex("x_3")} 轴的基，矩阵是一个 2 阶块和一个 1 阶块组成的准对角矩阵。`,
+       },
+     },
+     tilted: {
+@@ -369,28 +369,28 @@
+       predict: {
+         question: `${tex("A'=\\begin{pmatrix}-1&-1&0\\\\2&1&0\\\\1&2&2\\end{pmatrix}")} 的特征多项式也是 ${tex("(\\lambda^2+1)(\\lambda-2)")}。它的不变平面在哪里？`,
+         options: [
+-          { text: "平面 x₁+x₂+x₃=0", correct: true },
+-          { text: "仍是 x₁x₂ 平面", why: "A′ε₁=(−1,2,1)ᵀ 离开了 x₁x₂ 平面。" },
+-          { text: "每个含 x₃ 轴的平面", why: "拖动法向试几个，A′W 会转开。" },
++          { text: `平面 ${tex("x_1+x_2+x_3=0")}`, correct: true },
++          { text: `仍是 ${tex("x_1x_2")} 平面`, why: "A′ε₁=(−1,2,1)ᵀ 离开了 x₁x₂ 平面。" },
++          { text: `每个含 ${tex("x_3")} 轴的平面`, why: "拖动法向试几个，A′W 会转开。" },
+           { text: "没有不变平面", why: "把法向 n 拖到 (1,1,1) 方向。" },
+         ],
+-        conclusion: "A′(1,−1,0)ᵀ=(0,1,−1)ᵀ，A′(0,1,−1)ᵀ=(−1,1,0)ᵀ，都留在 x₁+x₂+x₃=0 里；A′ε₃=2ε₃。取这三个向量作基，矩阵就化成准对角形。",
++        conclusion: `${tex("A'(1,-1,0)^T=(0,1,-1)^T")}，${tex("A'(0,1,-1)^T=(-1,1,0)^T")}，都留在 ${tex("x_1+x_2+x_3=0")} 里；${tex("A'\\varepsilon_3=2\\varepsilon_3")}。取这三个向量作基，矩阵就化成准对角形。`,
+       },
+     },
+   };
+ 
+   const CANDIDATES = [
+-    ["z", "x₃ 轴", { kind: "line", u: [0, 0, 1.5] }],
+-    ["x", "x₁ 轴", { kind: "line", u: [1.5, 0, 0] }],
+-    ["xy", "x₁x₂ 平面", { kind: "plane", n: [0, 0, 1.5] }],
+-    ["xz", "x₁x₃ 平面", { kind: "plane", n: [0, 1.5, 0] }],
+-    ["sum", "x₁+x₂+x₃=0", { kind: "plane", n: [1, 1, 1] }],
++    ["z", `${tex("x_3")} 轴`, { kind: "line", u: [0, 0, 1.5] }],
++    ["x", `${tex("x_1")} 轴`, { kind: "line", u: [1.5, 0, 0] }],
++    ["xy", `${tex("x_1x_2")} 平面`, { kind: "plane", n: [0, 0, 1.5] }],
++    ["xz", `${tex("x_1x_3")} 平面`, { kind: "plane", n: [0, 1.5, 0] }],
++    ["sum", tex("x_1+x_2+x_3=0"), { kind: "plane", n: [1, 1, 1] }],
+   ];
+ 
+   function invariantLab(root) {
+     const lab = K.labShell(root, {
+-      title: "σW 有没有离开 W",
+-      task: "绿色是候选子空间 W，紫色是它的像 AW。拖动金色圆点改变候选直线的方向或候选平面的法向；AW 与 W 重合、W 加深时，W 就是不变子空间。",
++      title: `${tex("\\sigma W")} 有没有离开 ${tex("W")}`,
++      task: `绿色是候选子空间 ${tex("W")}，紫色是它的像 ${tex("AW")}。拖动金色圆点改变候选直线的方向或候选平面的法向；${tex("AW")} 与 ${tex("W")} 重合、${tex("W")} 加深时，${tex("W")} 就是不变子空间。`,
+     });
+     const state = { key: "standard", kind: "plane", u: [1, 0.5, 1], n: [0.5, 1, 1.5] };
+     const toolbar = el("div", "ch7l-toolbar");
+@@ -482,19 +482,19 @@
+       let html = `<h4>${state.kind === "line" ? "候选直线" : "候选平面"}</h4>`;
+       if (state.kind === "line") {
+         html += `<p>${tex(`W=L(${K.latexRow(r.u)}^{T})`)}，${tex(`Au=${K.latexRow(r.Au)}^{T}`)}</p>`;
+-        html += r.inv ? `<p class="ch7l-ok">AW=W：u 是特征向量</p>` : `<p class="ch7l-muted">AW 与 W 夹角 ≈${angleBetween(numVec(r.u), numVec(r.Au)).toFixed(1)}°</p>`;
++        html += r.inv ? `<p class="ch7l-ok">${tex("AW=W")}：${tex("u")} 是特征向量</p>` : `<p class="ch7l-muted">${tex("AW")} 与 ${tex("W")} 夹角 ≈${angleBetween(numVec(r.u), numVec(r.Au)).toFixed(1)}°</p>`;
+       } else {
+         html += `<p>${tex(`W:\\ ${planeLatex(r.n)}=0`)}</p>`;
+         if (r.inv) {
+-          html += `<p class="ch7l-ok">AW=W：W 是不变子空间</p>`;
+-          html += r.hasEig ? `<p class="ch7l-muted">W 中含有特征向量（x₃ 轴方向）。</p>` : `<p class="ch7l-muted">W 中没有实特征向量：每条直线都被转走，平面整体不动。</p>`;
++          html += `<p class="ch7l-ok">${tex("AW=W")}：${tex("W")} 是不变子空间</p>`;
++          html += r.hasEig ? `<p class="ch7l-muted">${tex("W")} 中含有特征向量（${tex("x_3")} 轴方向）。</p>` : `<p class="ch7l-muted">${tex("W")} 中没有实特征向量：每条直线都被转走，平面整体不动。</p>`;
+         } else {
+           const imgs = r.images.map(numVec);
+-          html += `<p class="ch7l-muted">AW 与 W 的夹角 ≈${angleBetween(numVec(r.n), V().cross(imgs[0], imgs[1])).toFixed(1)}°</p>`;
++          html += `<p class="ch7l-muted">${tex("AW")} 与 ${tex("W")} 的夹角 ≈${angleBetween(numVec(r.n), V().cross(imgs[0], imgs[1])).toFixed(1)}°</p>`;
+         }
+       }
+       // legend at the bottom of the readout: what the colours and the deeper W mean
+-      html += `<div class="ch7l-legend"><span><i class="is-w"></i>W：候选${state.kind === "line" ? "直线" : "平面"}</span><span><i class="is-aw"></i>AW：W 的像（虚线）</span><span><i class="is-same"></i>AW=W 时两者重合，W 加深</span></div>`;
++      html += `<div class="ch7l-legend"><span><i class="is-w"></i><span>${tex("W")}：候选${state.kind === "line" ? "直线" : "平面"}</span></span><span><i class="is-aw"></i><span>${tex("AW")}：${tex("W")} 的像（虚线）</span></span><span><i class="is-same"></i><span>${tex("AW=W")} 时两者重合，${tex("W")} 加深</span></span></div>`;
+       info.innerHTML = html;
+       if (flow?.revealed) {
+         const A = K.mat(preset().A);
+@@ -558,52 +558,52 @@
+ 
+   const KRYLOV_PRESETS = {
+     j21: {
+-      label: "J(2,2)⊕J(2,1)",
++      label: tex("J(2,2)\\oplus J(2,1)"),
+       A: [[2, 0, 0], [1, 2, 0], [0, 0, 2]],
+       v: [1, 0, 1],
+       // look at L(v, Av) (normal (−1,0,1)) from slightly off its normal
+       camera: { yaw: 2.75, pitch: 0.62 },
+       predict: {
+-        question: "这个 A 的特征多项式是 (λ−2)³。从 v 出发依次作用 A：v、Av、A²v 在哪一步落回前面向量张成的空间，那一步的关系式就给出最小多项式。A 的最小多项式是什么？",
++        question: `这个 ${tex("A")} 的特征多项式是 ${tex("(\\lambda-2)^3")}。从 ${tex("v")} 出发依次作用 ${tex("A")}：${tex("v")}、${tex("Av")}、${tex("A^2v")} 在哪一步落回前面向量张成的空间，那一步的关系式就给出最小多项式。${tex("A")} 的最小多项式是什么？`,
+         options: [
+-          { text: "(λ−2)²", correct: true },
+-          { text: "λ−2", why: "A≠2E：从 v=(1,0,1)ᵀ 出发，Av 与 v 不共线。" },
+-          { text: "(λ−2)³", why: "多拖几个 v：A²v 总落回平面 L(v,Av)，2 次多项式已经零化 A。" },
+-          { text: "(λ−2)²(λ−1)", why: "1 不是 A 的特征值，最小多项式的根都是特征值。" },
++          { text: `${tex("(\\lambda-2)^2")}`, correct: true },
++          { text: `${tex("\\lambda-2")}`, why: "A≠2E：从 v=(1,0,1)ᵀ 出发，Av 与 v 不共线。" },
++          { text: `${tex("(\\lambda-2)^3")}`, why: "多拖几个 v：A²v 总落回平面 L(v,Av)，2 次多项式已经零化 A。" },
++          { text: `${tex("(\\lambda-2)^2(\\lambda-1)")}`, why: "1 不是 A 的特征值，最小多项式的根都是特征值。" },
+         ],
+-        conclusion: "(A−2E)²=O，所以对每个 v 都有 A²v=4Av−4v，张成最多是平面：m=(λ−2)²。它有重因式，A 不能对角化。对照 diag(2,2,1)：A²v 同样在第 2 步落回平面，关系式却是 A²v=3Av−2v，最小多项式 (λ−1)(λ−2) 没有重因式。",
++        conclusion: `${tex("(A-2E)^2=O")}，所以对每个 ${tex("v")} 都有 ${tex("A^2v=4Av-4v")}，张成最多是平面：${tex("m=(\\lambda-2)^2")}。它有重因式，${tex("A")} 不能对角化。对照 ${tex("\\operatorname{diag}(2,2,1)")}：${tex("A^2v")} 同样在第 2 步落回平面，关系式却是 ${tex("A^2v=3Av-2v")}，最小多项式 ${tex("(\\lambda-1)(\\lambda-2)")} 没有重因式。`,
+       },
+     },
+     d221: {
+-      label: "diag(2,2,1)",
++      label: tex("\\operatorname{diag}(2,2,1)"),
+       A: [[2, 0, 0], [0, 2, 0], [0, 0, 1]],
+       v: [1, 1, 1],
+       // L(v, Av) has normal (−1,1,0)
+       camera: { yaw: 2.05, pitch: 0.3 },
+       predict: {
+-        question: "A=diag(2,2,1)，从 v=(1,1,1)ᵀ 出发。A²v 落回 L(v,Av) 时，得到的 mᵥ 是什么？",
++        question: `${tex("A=\\operatorname{diag}(2,2,1)")}，从 ${tex("v=(1,1,1)^T")} 出发。${tex("A^2v")} 落回 ${tex("L(v,Av)")} 时，得到的 ${tex("m_v")} 是什么？`,
+         options: [
+-          { text: "(λ−1)(λ−2)", correct: true },
+-          { text: "(λ−2)²", why: "落回的关系是 A²v=3Av−2v，对应 λ²−3λ+2。" },
+-          { text: "(λ−2)²(λ−1)", why: "这是特征多项式；A²v 已经落回平面，mᵥ 只有 2 次。" },
+-          { text: "λ−2", why: "v 不是特征向量，Av 与 v 不共线。" },
++          { text: `${tex("(\\lambda-1)(\\lambda-2)")}`, correct: true },
++          { text: `${tex("(\\lambda-2)^2")}`, why: "落回的关系是 A²v=3Av−2v，对应 λ²−3λ+2。" },
++          { text: `${tex("(\\lambda-2)^2(\\lambda-1)")}`, why: "这是特征多项式；A²v 已经落回平面，mᵥ 只有 2 次。" },
++          { text: `${tex("\\lambda-2")}`, why: "v 不是特征向量，Av 与 v 不共线。" },
+         ],
+-        conclusion: "A²v=3Av−2v，mᵥ=(λ−1)(λ−2)，它也是 A 的最小多项式：没有重因式，A 可以对角化。J(2,2)⊕J(2,1) 也在第 2 步落回平面，但那里的关系式给出 (λ−2)²，有重因式，不能对角化。",
++        conclusion: `${tex("A^2v=3Av-2v")}，${tex("m_v=(\\lambda-1)(\\lambda-2)")}，它也是 ${tex("A")} 的最小多项式：没有重因式，${tex("A")} 可以对角化。${tex("J(2,2)\\oplus J(2,1)")} 也在第 2 步落回平面，但那里的关系式给出 ${tex("(\\lambda-2)^2")}，有重因式，不能对角化。`,
+       },
+     },
+     j3: {
+-      label: "J(2,3)",
++      label: tex("J(2,3)"),
+       A: [[2, 0, 0], [1, 2, 0], [0, 1, 2]],
+       v: [1, 0, 0],
+       predict: {
+-        question: "A=J(2,3)，特征多项式是 (λ−2)³。它的最小多项式是几次？",
++        question: `${tex("A=J(2,3)")}，特征多项式是 ${tex("(\\lambda-2)^3")}。它的最小多项式是几次？`,
+         options: [
+           { text: "3 次", correct: true },
+           { text: "1 次", why: "A≠2E。" },
+           { text: "2 次", why: "从 v=ε₁ 出发，看 A²v 是否落回。" },
+           { text: "4 次", why: "最小多项式整除特征多项式。" },
+         ],
+-        conclusion: "v=ε₁ 时 v, Av, A²v 线性无关，所以没有 2 次多项式零化 A，m=(λ−2)³ 与特征多项式相同，有重因式，不能对角化。v=ε₃ 是特征向量，一步就停：mᵥ=λ−2。",
++        conclusion: `${tex("v=\\varepsilon_1")} 时 ${tex("v,Av,A^2v")} 线性无关，所以没有 2 次多项式零化 ${tex("A")}，${tex("m=(\\lambda-2)^3")} 与特征多项式相同，有重因式，不能对角化。${tex("v=\\varepsilon_3")} 是特征向量，一步就停：${tex("m_v=\\lambda-2")}。`,
+       },
+     },
+   };
+@@ -618,8 +618,8 @@
+ 
+   function krylovLab(root) {
+     const lab = K.labShell(root, {
+-      title: "v, Av, A²v, … 第几步落回",
+-      task: "拖动 v 选一个起点，然后逐个加入 Av, A²v, …。张成从直线长成平面，再长满空间；新向量第一次落回已有张成时，得到 v 的最小多项式 mᵥ。",
++      title: `${tex("v,Av,A^2v,\\dots")} 第几步落回`,
++      task: `拖动 ${tex("v")} 选一个起点，然后逐个加入 ${tex("Av,A^2v,\\dots")}。张成从直线长成平面，再长满空间；新向量第一次落回已有张成时，得到 ${tex("v")} 的最小多项式 ${tex("m_v")}。`,
+     });
+     const state = { key: "j21", v: [1, 0, 1], seq: null, flash: 0 };
+     const toolbar = el("div", "ch7l-toolbar");
+@@ -631,7 +631,7 @@
+     const scene = S().create(stage, { range: 2, label: "Krylov 序列与它的张成", hint: "拖动空白处旋转 · 拖动圆点改变 v（箭头只画方向）", yaw: -0.85, pitch: 0.4, spreadLabels: true, labelSafe: true });
+     const gateHost = el("div");
+     const tools = el("div", "ch7l-actions");
+-    tools.innerHTML = `<button type="button" class="ch7l-btn is-primary" data-next>加入下一个</button><button type="button" class="ch7l-btn" data-restart>只留 v</button><button type="button" class="ch7l-btn" data-e1>v=ε₁</button><button type="button" class="ch7l-btn" data-e3>v=ε₃</button>`;
++    tools.innerHTML = `<button type="button" class="ch7l-btn is-primary" data-next>加入下一个</button><button type="button" class="ch7l-btn" data-restart>只留 ${tex("v")}</button><button type="button" class="ch7l-btn" data-e1>${tex("v=\\varepsilon_1")}</button><button type="button" class="ch7l-btn" data-e3>${tex("v=\\varepsilon_3")}</button>`;
+     const info = el("div", "ch7l-card");
+     const result = el("div", "ch7l-result");
+     const polyBox = el("div", "ch7l-card");
+@@ -715,7 +715,7 @@
+         return objs;
+       });
+       const rows = vs
+-        .map((v, i) => `<li><span style="color:var(${TEXT_VARS[i]})">${NAMES[i]}</span> ${tex(K.latexRow(v))}</li>`)
++        .map((v, i) => `<li><span style="color:var(${TEXT_VARS[i]})">${tex(NAMES_TEX[i])}</span> ${tex(K.latexRow(v))}</li>`)
+         .join("");
+       let html = `<h4>序列（张成维数 ${indep.length}）</h4><ul class="ch7l-seq">${rows}</ul>`;
+       if (stop) {
+@@ -730,8 +730,8 @@
+           })
+           .join("") || "0";
+         const mv = [...c.map((x) => M().neg(x)), F(1)];
+-        html += `<p class="ch7l-ok">${NAMES[k]} 落回了${["", "直线 L(v)", "平面 L(v, Av)", "前面的张成"][k]}：</p><p>${tex(`${NAMES_TEX[k]}=${rhs}`)}</p><p>${tex(`m_v(\\lambda)=${K.polyFactorLatex(mv)}`)}</p>`;
+-        if (flow?.predicted && !flow.revealed && !asked()) html += `<p class="ch7l-muted">换一个 v 再试。</p>`;
++        html += `<p class="ch7l-ok">${tex(NAMES_TEX[k])} 落回了${["", `直线 ${tex("L(v)")}`, `平面 ${tex("L(v,Av)")}`, "前面的张成"][k]}：</p><p>${tex(`${NAMES_TEX[k]}=${rhs}`)}</p><p>${tex(`m_v(\\lambda)=${K.polyFactorLatex(mv)}`)}</p>`;
++        if (flow?.predicted && !flow.revealed && !asked()) html += `<p class="ch7l-muted">换一个 ${tex("v")} 再试。</p>`;
+       } else {
+         html += `<p class="ch7l-muted">${vs.length === 1 ? "先按“加入下一个”。" : "还没有落回，继续加入。"}</p>`;
+       }
+@@ -740,7 +740,7 @@
+       if (flow?.revealed) {
+         const A = K.mat(preset().A);
+         polyBox.hidden = false;
+-        polyBox.innerHTML = `<h4>整个矩阵</h4><p>${tex(`m_A(\\lambda)=${K.polyFactorLatex(K.minimalPolynomial(A))}`)}</p><p>${tex(`f(\\lambda)=|\\lambda E-A|=${K.polyFactorLatex(K.charPolynomial(A))}`)}</p><p class="${hasRepeatedFactor(K.minimalPolynomial(A)) ? "ch7l-bad" : "ch7l-ok"}">${tex("m_A")} ${hasRepeatedFactor(K.minimalPolynomial(A)) ? "有重因式，A 不能对角化" : "没有重因式，A 可以对角化"}。</p><p class="ch7l-muted">每个 ${tex("m_v")} 都整除 ${tex("m_A")}，${tex("m_A")} 又整除 f。</p>`;
++        polyBox.innerHTML = `<h4>整个矩阵</h4><p>${tex(`m_A(\\lambda)=${K.polyFactorLatex(K.minimalPolynomial(A))}`)}</p><p>${tex(`f(\\lambda)=|\\lambda E-A|=${K.polyFactorLatex(K.charPolynomial(A))}`)}</p><p class="${hasRepeatedFactor(K.minimalPolynomial(A)) ? "ch7l-bad" : "ch7l-ok"}">${tex("m_A")} ${hasRepeatedFactor(K.minimalPolynomial(A)) ? `有重因式，${tex("A")} 不能对角化` : `没有重因式，${tex("A")} 可以对角化`}。</p><p class="ch7l-muted">每个 ${tex("m_v")} 都整除 ${tex("m_A")}，${tex("m_A")} 又整除 ${tex("f")}。</p>`;
+       } else polyBox.hidden = true;
+     }
+ 

@@ -348,3 +348,17 @@ _dev/research/3b1b_eola_chapter10.py
 
 - 十章已全部按以可视化为核心的标准重做。之后的工作以打磨为主：补充定理块小图和“停一下”问题，修手机端标签重叠等细节。
 - 新改动仍需通过 `site-audit` 与各章浏览器检查。
+
+## 第六轮 B：正文数学符号改 KaTeX（2026-10-08，分支 `content/round6-symbols`，Claude 接力，未完成）
+
+规则（用户定）：正文里会显示的单个符号、变量、带上下标的量和短式子改成 `texInline(...)`（第九章用 `t(...)`）；不改画布标签、aria-label、title、data-why（预测选项的 why）、按钮上的纯文字或数字、“第 2 行”“2 阶”这类计数、选项字母。每章一个提交，测试只改期望文字、不放宽。
+
+已完成并推送（每章自查过：node --check、site-audit、typo-scan、该章测试；合并后 52 节冒烟无报错、无 katex-error、无溢出）：第一、二、三、四、五、六、八章。
+- 测试改动：ch1 audit 一条（§3 标题期望 TeX 源 `x^2+x+1`）；ch2 两个 spec 加 `texText()`，按 TeX 源比文字；ch8 check 把“侧栏不含 νⱼ”改成“不含 ν，且揭晓前没有表格”。
+- 各章都故意保留的：小节标题（导航、目录用纯文字），例题标题（`example-challenge.js` 用 escapeText 插入，`lesson-presentation.js` 用 textContent），所以这几处仍是 Unicode；要改得先改这两个共用渲染器。why 字段在揭晓后的判定行里也还是 Unicode。
+
+未完成：
+1. 第七章：改到一半（12 个文件），未提交的改动在 `docs/handoff/b-ch7-wip.diff`（基于 main f30b95c，`git apply --3way`），接着改完、自查、提交。
+2. 第九、十章：未开始。
+3. 全部合入后：整分支再跑 site-audit、typo-scan（390,375,1280）、各章脚本；更新 PR 正文。
+4. 可选：共用渲染器里的例题标题、小节标题支持公式后，再统一这些地方。

@@ -214,7 +214,9 @@
     if (bases.length < 2) return;
     // a short formula (A=CᵀC) stays whole: broken after its relation it reads as two pieces
     const em = parseFloat(getComputedStyle(katex.closest(".tex") || katex).fontSize);
-    const short = katex.getBoundingClientRect().width <= 7 * em;
+    // the pieces' own widths: a formula already broken over two lines has a box as wide as both
+    const width = bases.reduce((sum, b) => sum + (pieceBase(b)?.getBoundingClientRect().width || 0), 0);
+    const short = width <= 7 * em;
     const groups = [];
     let current = [];
     bases.forEach((base) => {

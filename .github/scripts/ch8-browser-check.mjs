@@ -98,7 +98,9 @@ const routes = [
     canvas: true,
     // the tower starts at layer 0 (no ν₁ yet); the conclusion opens only at the top layer
     async act(page, lab) {
-      assert.ok(!(await lab.locator(".ch7l-side").innerText()).includes("νⱼ"), "jordan-derivation: kernel dimensions shown before climbing");
+      // the ν column is set in KaTeX: look for the letter ν itself (no table, no ν before the first layer)
+      assert.ok(!(await lab.locator(".ch7l-side").innerText()).includes("ν"), "jordan-derivation: kernel dimensions shown before climbing");
+      assert.equal(await lab.locator(".ch7l-side .ch7l-table").count(), 0, "jordan-derivation: kernel table shown before climbing");
       for (let i = 0; i < 6; i += 1) {
         const up = lab.locator("[data-up]");
         if (!(await up.count()) || !(await up.isEnabled())) break;

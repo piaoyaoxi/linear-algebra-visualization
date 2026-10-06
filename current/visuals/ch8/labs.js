@@ -83,59 +83,59 @@
 
   const SCAN_PRESETS = {
     jordan: {
-      label: "λE−A，A 有一个 2 阶若尔当块",
+      label: `${tex(String.raw`\lambda E-A`)}，${tex("A")} 有一个 2 阶若尔当块`,
       M: () => P.charMatrix([[2, 1], [0, 2]]),
       predict: {
-        question: `${tex("A=\\begin{pmatrix}2&1\\\\0&2\\end{pmatrix}")}，${tex("|\\lambda E-A|=(\\lambda-2)^2")}。λ 扫到 2 时，数字矩阵 ${tex("2E-A")} 的秩是多少？`,
+        question: `${tex("A=\\begin{pmatrix}2&1\\\\0&2\\end{pmatrix}")}，${tex("|\\lambda E-A|=(\\lambda-2)^2")}。${tex(String.raw`\lambda`)} 扫到 2 时，数字矩阵 ${tex("2E-A")} 的秩是多少？`,
         options: [
           { text: "1", correct: true },
           { text: "0", why: "2E−A 的右上角是 −1，不是零矩阵。" },
           { text: "2", why: "|2E−A|=0，秩必须小于 2。" },
           { text: "由二重根决定，必为 0", why: "二重根只说明行列式在 λ=2 处有二重零点，秩要看 2E−A 本身。" },
         ],
-        conclusion: "2E−A 的秩是 1，所以属于 2 的特征向量只有一个方向。换成 A=2E，特征多项式同样是 (λ−2)²，λ=2 处秩却降到 0。行列式只记录在哪里降秩，λE−A 本身还记录降多少。",
+        conclusion: `${tex("2E-A")} 的秩是 1，所以属于 2 的特征向量只有一个方向。换成 ${tex("A=2E")}，特征多项式同样是 ${tex(String.raw`(\lambda-2)^2`)}，${tex(String.raw`\lambda=2`)} 处秩却降到 0。行列式只记录在哪里降秩，${tex(String.raw`\lambda E-A`)} 本身还记录降多少。`,
       },
     },
     scalar: {
-      label: "λE−A，A=2E",
+      label: `${tex(String.raw`\lambda E-A`)}，${tex("A=2E")}`,
       M: () => P.charMatrix([[2, 0], [0, 2]]),
       predict: {
-        question: `${tex("A=2E")}，${tex("|\\lambda E-A|=(\\lambda-2)^2")}。λ 扫到 2 时，${tex("2E-A")} 的秩是多少？`,
+        question: `${tex("A=2E")}，${tex("|\\lambda E-A|=(\\lambda-2)^2")}。${tex(String.raw`\lambda`)} 扫到 2 时，${tex("2E-A")} 的秩是多少？`,
         options: [
           { text: "0", correct: true },
           { text: "1", why: "这是 A 有若尔当块时的情形，这里 2E−A 是零矩阵。" },
           { text: "2", why: "|2E−A|=0，秩必须小于 2。" },
           { text: "无法确定", why: "λ₀=2 代入后是一个具体的数字矩阵，它的秩是确定的。" },
         ],
-        conclusion: "2E−A 是零矩阵，秩为 0，平面上每个非零向量都是特征向量。和上一组比较：两个特征多项式完全相同，λ=2 处降秩的幅度不同。",
+        conclusion: `${tex("2E-A")} 是零矩阵，秩为 0，平面上每个非零向量都是特征向量。和上一组比较：两个特征多项式完全相同，${tex(String.raw`\lambda=2`)} 处降秩的幅度不同。`,
       },
     },
     unimodular: {
-      label: "U(λ)，行列式为 1",
+      label: `${tex(String.raw`U(\lambda)`)}，行列式为 1`,
       M: () => P.matrix([[1, [0, 1]], [0, 1]]),
       predict: {
-        question: `${tex("U(\\lambda)=\\begin{pmatrix}1&\\lambda\\\\0&1\\end{pmatrix}")} 是可逆的 λ-矩阵吗？即是否有 λ-矩阵 V(λ) 使 ${tex("UV=VU=E")}？`,
+        question: `${tex("U(\\lambda)=\\begin{pmatrix}1&\\lambda\\\\0&1\\end{pmatrix}")} 是可逆的 ${tex(String.raw`\lambda`)}-矩阵吗？即是否有 ${tex(String.raw`\lambda`)}-矩阵 ${tex(String.raw`V(\lambda)`)} 使 ${tex("UV=VU=E")}？`,
         options: [
           { text: "可逆", correct: true },
-          { text: "不可逆，因为元素里有 λ", why: "V(λ)=(1 −λ; 0 1) 就满足 UV=VU=E。" },
-          { text: "只在 λ≠0 时可逆", why: "λ-矩阵的可逆是一个整体性质；这里 |U(λ)|=1，对每个 λ 都不降秩。" },
-          { text: "需要先代入 λ 的值才能判断", why: "可逆 λ-矩阵要求逆矩阵的元素也是 λ 的多项式，这可以直接判断。" },
+          { text: `不可逆，因为元素里有 ${tex(String.raw`\lambda`)}`, why: "V(λ)=(1 −λ; 0 1) 就满足 UV=VU=E。" },
+          { text: `只在 ${tex(String.raw`\lambda\ne0`)} 时可逆`, why: "λ-矩阵的可逆是一个整体性质；这里 |U(λ)|=1，对每个 λ 都不降秩。" },
+          { text: `需要先代入 ${tex(String.raw`\lambda`)} 的值才能判断`, why: "可逆 λ-矩阵要求逆矩阵的元素也是 λ 的多项式，这可以直接判断。" },
         ],
-        conclusion: "|U(λ)|=1 是非零常数，伴随矩阵除以 1 仍是多项式矩阵，所以 U(λ)⁻¹=(1 −λ; 0 1)。扫遍整条数轴，U(λ₀) 的秩始终是 2，行列式曲线是一条水平线。",
+        conclusion: `${tex(String.raw`|U(\lambda)|=1`)} 是非零常数，伴随矩阵除以 1 仍是多项式矩阵，所以 ${tex(String.raw`U(\lambda)^{-1}=\begin{pmatrix}1&-\lambda\\0&1\end{pmatrix}`)}。扫遍整条数轴，${tex(String.raw`U(\lambda_0)`)} 的秩始终是 2，行列式曲线是一条水平线。`,
       },
     },
     rotation: {
-      label: "λE−A，|λE−A|=λ²+1",
+      label: `${tex(String.raw`\lambda E-A`)}，${tex(String.raw`|\lambda E-A|=\lambda^2+1`)}`,
       M: () => P.charMatrix([[0, -1], [1, 0]]),
       predict: {
-        question: `${tex("|\\lambda E-A|=\\lambda^2+1")}，对每个实数 λ₀，${tex("\\lambda_0E-A")} 都满秩。${tex("\\lambda E-A")} 是可逆的 λ-矩阵吗？`,
+        question: `${tex("|\\lambda E-A|=\\lambda^2+1")}，对每个实数 ${tex(String.raw`\lambda_0`)}，${tex("\\lambda_0E-A")} 都满秩。${tex("\\lambda E-A")} 是可逆的 ${tex(String.raw`\lambda`)}-矩阵吗？`,
         options: [
           { text: "不可逆", correct: true },
-          { text: "可逆，因为实数 λ 处都不降秩", why: "逆矩阵的元素会带分母 λ²+1，不是多项式。" },
+          { text: `可逆，因为实数 ${tex(String.raw`\lambda`)} 处都不降秩`, why: "逆矩阵的元素会带分母 λ²+1，不是多项式。" },
           { text: "可逆，因为行列式不是零多项式", why: "不是零多项式只说明秩为 2；可逆要求行列式是非零常数。" },
           { text: "取决于数域", why: "无论在哪个数域上，λ²+1 都不是非零常数。" },
         ],
-        conclusion: "(λE−A)⁻¹ 的元素是 λ/(λ²+1) 一类分式，不在 P[λ] 中，所以 λE−A 不可逆。在复数 λ=±i 处它会降秩。一般地，λE−A 的行列式是 n 次多项式，λE−A 从来不是可逆的 λ-矩阵。",
+        conclusion: `${tex(String.raw`(\lambda E-A)^{-1}`)} 的元素是 ${tex(String.raw`\lambda/(\lambda^2+1)`)} 一类分式，不在 ${tex(String.raw`P[\lambda]`)} 中，所以 ${tex(String.raw`\lambda E-A`)} 不可逆。在复数 ${tex(String.raw`\lambda=\pm\mathrm{i}`)} 处它会降秩。一般地，${tex(String.raw`\lambda E-A`)} 的行列式是 ${tex("n")} 次多项式，${tex(String.raw`\lambda E-A`)} 从来不是可逆的 ${tex(String.raw`\lambda`)}-矩阵。`,
       },
     },
   };
@@ -146,8 +146,8 @@
 
   function scanLab(root) {
     const ui = skeleton(root, {
-      title: "沿数轴扫描 λ",
-      task: "把 λ 换成一个数 λ₀，λ-矩阵就变成数字矩阵。拖动数轴上的 λ₀，看行列式曲线与秩怎样随 λ₀ 变化；切换上方的矩阵比较。",
+      title: `沿数轴扫描 ${tex(String.raw`\lambda`)}`,
+      task: `把 ${tex(String.raw`\lambda`)} 换成一个数 ${tex(String.raw`\lambda_0`)}，${tex(String.raw`\lambda`)}-矩阵就变成数字矩阵。拖动数轴上的 ${tex(String.raw`\lambda_0`)}，看行列式曲线与秩怎样随 ${tex(String.raw`\lambda_0`)} 变化；切换上方的矩阵比较。`,
     });
     const [matCard, readCard] = ui.cards;
     // swept: the λ₀ interval already visited; rank strips are drawn only there
@@ -241,23 +241,23 @@
         const near = Math.abs(yv - AXIS) * d.scale < 30;
         d.text([xv, yv], `|M(λ₀)|=${minus(M().formatF(P.evalAt(det, x0)))}`, "drag", { dx: (right ? -1 : 1) * (near ? 18 : 12), dy: near ? -28 : -12, align: right ? "right" : "left" });
       });
-      matCard.innerHTML = `<h4>λ-矩阵</h4><div>${texD(`M(\\lambda)=${P.latexMatrix(Mx)}`)}</div>${
+      matCard.innerHTML = `<h4>${tex(String.raw`\lambda`)}-矩阵</h4><div>${texD(`M(\\lambda)=${P.latexMatrix(Mx)}`)}</div>${
         open ? `<p>${tex(`|M(\\lambda)|=${pfac(det)}`)}</p>` : ""
       }`;
       if (!open) {
-        readCard.innerHTML = `<h4>代入 λ₀</h4>${waitNote("行列式曲线与秩")}`;
+        readCard.innerHTML = `<h4>代入 ${tex(String.raw`\lambda_0`)}</h4>${waitNote("行列式曲线与秩")}`;
         return;
       }
       const drop = r < n;
-      let html = `<h4>代入 λ₀=${minus(M().formatF(x0))}</h4><div>${texD(`M(${lf(x0)})=${numMatrix(val)}`)}</div>
+      let html = `<h4>代入 ${tex(`\\lambda_0=${lf(x0)}`)}</h4><div>${texD(`M(${lf(x0)})=${numMatrix(val)}`)}</div>
         <p>秩 ${tex(`${r}`)}${drop ? `，<span class="ch7l-bad">比 ${n} 少 ${n - r}</span>` : "，满秩"}</p>`;
       if (PAIRED.includes(state.key)) {
         const other = PAIRED.find((k) => k !== state.key);
         const ro = M().rankOf(P.evalMatrix(SCAN_PRESETS[other].M(), x0));
-        html += `<p class="ch7l-muted">对照 ${PAIR_NAMES[other]}：行列式同为 ${tex("(\\lambda-2)^2")}，这里秩 ${tex(`${ro}`)}。</p>`;
+        html += `<p class="ch7l-muted">对照 ${tex(PAIR_NAMES[other])}：行列式同为 ${tex("(\\lambda-2)^2")}，这里秩 ${tex(`${ro}`)}。</p>`;
       }
-      if (state.key === "unimodular") html += `<p class="ch7l-muted">${tex("U(\\lambda)^{-1}=\\begin{pmatrix}1&-\\lambda\\\\0&1\\end{pmatrix}")} 也是 λ-矩阵。</p>`;
-      if (state.key === "rotation") html += `<p class="ch7l-muted">实轴上没有降秩点；在复数 λ=±i 处秩降为 1。</p>`;
+      if (state.key === "unimodular") html += `<p class="ch7l-muted">${tex("U(\\lambda)^{-1}=\\begin{pmatrix}1&-\\lambda\\\\0&1\\end{pmatrix}")} 也是 ${tex(String.raw`\lambda`)}-矩阵。</p>`;
+      if (state.key === "rotation") html += `<p class="ch7l-muted">实轴上没有降秩点；在复数 ${tex(String.raw`\lambda=\pm\mathrm{i}`)} 处秩降为 1。</p>`;
       readCard.innerHTML = html;
     }
 
@@ -318,7 +318,7 @@
 
   const SMITH_PRESETS = {
     diag: {
-      label: "diag(λ, λ+1)",
+      label: tex(String.raw`\operatorname{diag}(\lambda,\lambda+1)`),
       A: () => P.matrix([[[0, 1], 0], [0, [1, 1]]]),
       predict: {
         question: `把 ${tex("\\begin{pmatrix}\\lambda&0\\\\0&\\lambda+1\\end{pmatrix}")} 化成标准形，左上角的 ${tex("d_1(\\lambda)")} 是什么？`,
@@ -328,11 +328,11 @@
           { text: tex("\\lambda+1"), why: "λ+1 也不整除 λ。" },
           { text: tex("\\lambda(\\lambda+1)"), why: "这是 d₂。两个对角元之积要等于行列式 λ(λ+1)。" },
         ],
-        conclusion: "λ 与 λ+1 互素，带余除法在角上留下余式 1，标准形是 diag(1, λ(λ+1))。一个对角 λ-矩阵不一定是标准形：标准形还要求对角元首一，并且每一个整除下一个。",
+        conclusion: `${tex(String.raw`\lambda`)} 与 ${tex(String.raw`\lambda+1`)} 互素，带余除法在角上留下余式 1，标准形是 ${tex(String.raw`\operatorname{diag}(1,\lambda(\lambda+1))`)}。一个对角 ${tex(String.raw`\lambda`)}-矩阵不一定是标准形：标准形还要求对角元首一，并且每一个整除下一个。`,
       },
     },
     jordan: {
-      label: "λE−A，A=(2 1; 0 2)",
+      label: `${tex(String.raw`\lambda E-A`)}，${tex(String.raw`A=\left(\begin{smallmatrix}2&1\\0&2\end{smallmatrix}\right)`)}`,
       A: () => P.charMatrix([[2, 1], [0, 2]]),
       predict: {
         question: `${tex("A=\\begin{pmatrix}2&1\\\\0&2\\end{pmatrix}")}。${tex("\\lambda E-A")} 的标准形是什么？`,
@@ -342,11 +342,11 @@
           { text: tex("\\operatorname{diag}(1,\\lambda-2)"), why: "对角元之积要等于行列式 (λ−2)²（相差一个非零常数）。" },
           { text: tex("\\operatorname{diag}(-1,(\\lambda-2)^2)"), why: "标准形的对角元取首项系数为 1 的多项式。" },
         ],
-        conclusion: "−1 是非零常数，换到角上就能清掉整行整列，标准形是 diag(1,(λ−2)²)。A=2E 时 λE−A 的标准形是 diag(λ−2, λ−2)：两个特征多项式相同的矩阵，标准形不同。",
+        conclusion: `${tex("-1")} 是非零常数，换到角上就能清掉整行整列，标准形是 ${tex(String.raw`\operatorname{diag}(1,(\lambda-2)^2)`)}。${tex("A=2E")} 时 ${tex(String.raw`\lambda E-A`)} 的标准形是 ${tex(String.raw`\operatorname{diag}(\lambda-2,\lambda-2)`)}：两个特征多项式相同的矩阵，标准形不同。`,
       },
     },
     pku: {
-      label: "三阶 λ-矩阵",
+      label: `三阶 ${tex("\\lambda")}-矩阵`,
       A: () =>
         P.matrix([
           [[1, -1], [-1, 2], [0, 1]],
@@ -354,14 +354,14 @@
           [[1, 0, 1], [-1, 1, 0, 1], [0, 0, -1]],
         ]),
       predict: {
-        question: "这个三阶 λ-矩阵的行列式是 −λ³−λ²。化成标准形 diag(d₁, d₂, d₃) 后，d₃(λ) 是什么？",
+        question: `这个三阶 ${tex(String.raw`\lambda`)}-矩阵的行列式是 ${tex(String.raw`-\lambda^3-\lambda^2`)}。化成标准形 ${tex(String.raw`\operatorname{diag}(d_1,d_2,d_3)`)} 后，${tex(String.raw`d_3(\lambda)`)} 是什么？`,
         options: [
           { text: tex("\\lambda(\\lambda+1)"), correct: true },
           { text: tex("\\lambda^2(\\lambda+1)"), why: "这是 d₁d₂d₃。d₂=λ 已经分走了一个因子 λ。" },
           { text: tex("\\lambda+1"), why: "d₂=λ 必须整除 d₃。" },
           { text: tex("\\lambda^3+\\lambda^2"), why: "这是行列式（乘以 −1），三个对角元之积才等于它。" },
         ],
-        conclusion: "标准形是 diag(1, λ, λ(λ+1))。三个对角元之积是 λ²(λ+1)，与行列式只差常数 −1；整除链 1 | λ | λ(λ+1) 成立。",
+        conclusion: `标准形是 ${tex(String.raw`\operatorname{diag}(1,\lambda,\lambda(\lambda+1))`)}。三个对角元之积是 ${tex(String.raw`\lambda^2(\lambda+1)`)}，与行列式只差常数 ${tex("-1")}；整除链 ${tex(String.raw`1\mid\lambda\mid\lambda(\lambda+1)`)} 成立。`,
       },
     },
   };
@@ -687,22 +687,22 @@
 
   const MINOR_PRESETS = {
     pku: {
-      label: "三阶 λ-矩阵",
+      label: `三阶 ${tex("\\lambda")}-矩阵`,
       k: 2,
       A: SMITH_PRESETS.pku.A,
       predict: {
-        question: `对这个 λ-矩阵做一次初等变换，矩阵的元素和 2 阶子式都会变。2 阶行列式因子 ${tex("D_2(\\lambda)")} 会怎样？`,
+        question: `对这个 ${tex(String.raw`\lambda`)}-矩阵做一次初等变换，矩阵的元素和 2 阶子式都会变。2 阶行列式因子 ${tex("D_2(\\lambda)")} 会怎样？`,
         options: [
           { text: "不变", correct: true },
           { text: "可能变成它的一个因式", why: "变换可以撤回：新子式都是旧子式的组合，旧子式也是新子式的组合，两组子式的公因式互相整除。" },
-          { text: "加上 φ(λ) 倍时会多出因子 φ(λ)", why: "新子式等于旧子式加上 φ(λ) 乘另一个旧子式，公因式不会多出 φ(λ)。" },
+          { text: `加上 ${tex(String.raw`\varphi(\lambda)`)} 倍时会多出因子 ${tex(String.raw`\varphi(\lambda)`)}`, why: "新子式等于旧子式加上 φ(λ) 乘另一个旧子式，公因式不会多出 φ(λ)。" },
           { text: "取决于做了哪一种变换", why: "三种初等变换都不改变 D₂；换行换列只改变一些子式的符号。" },
         ],
-        conclusion: "每做一次初等变换，子式的值在变，它们的最大公因式不变，所以 D₁、D₂、D₃ 都不变，dₖ=Dₖ/Dₖ₋₁ 也不变。标准形的对角元就是 dₖ，因此标准形是唯一的。",
+        conclusion: `每做一次初等变换，子式的值在变，它们的最大公因式不变，所以 ${tex("D_1")}、${tex("D_2")}、${tex("D_3")} 都不变，${tex("d_k=D_k/D_{k-1}")} 也不变。标准形的对角元就是 ${tex("d_k")}，因此标准形是唯一的。`,
       },
     },
     diag: {
-      label: "diag(λ, λ+1, λ(λ+1))",
+      label: tex(String.raw`\operatorname{diag}(\lambda,\lambda+1,\lambda(\lambda+1))`),
       k: 2,
       asksValue: true,
       A: () => P.matrix([[[0, 1], 0, 0], [0, [1, 1], 0], [0, 0, [0, 1, 1]]]),
@@ -714,11 +714,11 @@
           { text: tex("\\lambda"), why: "λ+1 也整除每一个非零的 2 阶子式。" },
           { text: tex("1"), why: "三个非零 2 阶子式都含有因式 λ(λ+1)。" },
         ],
-        conclusion: "非零的 2 阶子式是 λ(λ+1)、λ²(λ+1)、λ(λ+1)²，最大公因式 D₂=λ(λ+1)。又 D₁=1，D₃=λ²(λ+1)²，所以不变因子是 1, λ(λ+1), λ(λ+1)，标准形是 diag(1, λ(λ+1), λ(λ+1))。原来的对角矩阵不是标准形。",
+        conclusion: `非零的 2 阶子式是 ${tex(String.raw`\lambda(\lambda+1)`)}、${tex(String.raw`\lambda^2(\lambda+1)`)}、${tex(String.raw`\lambda(\lambda+1)^2`)}，最大公因式 ${tex(String.raw`D_2=\lambda(\lambda+1)`)}。又 ${tex("D_1=1")}，${tex(String.raw`D_3=\lambda^2(\lambda+1)^2`)}，所以不变因子是 ${tex(String.raw`1,\ \lambda(\lambda+1),\ \lambda(\lambda+1)`)}，标准形是 ${tex(String.raw`\operatorname{diag}(1,\lambda(\lambda+1),\lambda(\lambda+1))`)}。原来的对角矩阵不是标准形。`,
       },
     },
     jordan: {
-      label: "λE−A，A 是 3 阶若尔当块",
+      label: `${tex(String.raw`\lambda E-A`)}，${tex("A")} 是 3 阶若尔当块`,
       k: 2,
       asksValue: true,
       A: () => P.charMatrix([[2, 0, 0], [1, 2, 0], [0, 1, 2]]),
@@ -730,7 +730,7 @@
           { text: tex("\\lambda-2"), why: "有一个 2 阶子式等于 1，λ−2 不能整除它。" },
           { text: tex("(\\lambda-2)^3"), why: "这是 D₃，即 |λE−A|。" },
         ],
-        conclusion: "第 2、3 行与第 1、2 列的子式是 1，所以 D₁=D₂=1，D₃=(λ−2)³，不变因子是 1, 1, (λ−2)³。若尔当块的特征矩阵只有最后一个不变因子不是 1。",
+        conclusion: `第 2、3 行与第 1、2 列的子式是 1，所以 ${tex("D_1=D_2=1")}，${tex(String.raw`D_3=(\lambda-2)^3`)}，不变因子是 ${tex(String.raw`1,\ 1,\ (\lambda-2)^3`)}。若尔当块的特征矩阵只有最后一个不变因子不是 1。`,
       },
     },
   };
@@ -740,7 +740,7 @@
   function minorLab(root) {
     const ui = skeleton(root, {
       title: "子式墙",
-      task: "墙上是全部 k 阶子式。点一块，上方矩阵会标出它取的行与列。Dₖ(λ) 是这些子式的最大公因式。做几次初等变换，看哪些在变、哪些不变。",
+      task: `墙上是全部 ${tex("k")} 阶子式。点一块，上方矩阵会标出它取的行与列。${tex(String.raw`D_k(\lambda)`)} 是这些子式的最大公因式。做几次初等变换，看哪些在变、哪些不变。`,
       toolbars: 2,
     });
     const [factorCard, opCard] = ui.cards;
@@ -855,7 +855,7 @@
       const tooWide = [...wall.querySelectorAll(".ch8l-minor > b")].some((b) => [...b.querySelectorAll(".ch8l-fac")].some((f) => f.getBoundingClientRect().width > b.clientWidth + 0.5));
       if (tooWide) wall.style.setProperty("--cols", 2);
       wall.dataset.common = showCommon ? P.text(Dk) : "";
-      if (showCommon) wallHead.textContent = `全部 ${list.length} 个 ${state.k} 阶子式：变换后每个非零子式仍含公因式 D${"₁₂₃"[state.k - 1]}=${P.text(Dk)}（高亮）`;
+      if (showCommon) wallHead.innerHTML = `全部 ${list.length} 个 ${state.k} 阶子式：变换后每个非零子式仍含公因式 ${tex(`D_${state.k}=${pfac(Dk)}`)}（高亮）`;
       wall.querySelectorAll("[data-minor]").forEach((b) =>
         b.addEventListener("click", () => {
           state.picked = Number(b.dataset.minor);
@@ -875,10 +875,10 @@
         const same = P.eq(Dk0, Dk1);
         const dk = (x) => K.hlHtml(tex(K.hlTex(`D_${state.k}=${pfac(x)}`)), "subspace");
         compare.innerHTML = `<div class="ch8l-compare-cell"><small>变换前</small><b>${dk(Dk0)}</b><p>${state.k} 阶子式</p><ul class="ch8l-minor-list">${before.map((x) => `<li>${facHtml(pfac(x.value))}</li>`).join("")}</ul></div>
-          <div class="ch8l-compare-cell"><small>做了 ${state.ops.length} 次变换后</small><b>${dk(Dk1)}</b><p>${list.length} 个 ${state.k} 阶子式中 ${changed} 个变了${same ? `，D${sub} 没有变` : ""}</p></div>`;
+          <div class="ch8l-compare-cell"><small>做了 ${state.ops.length} 次变换后</small><b>${dk(Dk1)}</b><p>${list.length} 个 ${state.k} 阶子式中 ${changed} 个变了${same ? `，${tex(`D_${state.k}`)} 没有变` : ""}</p></div>`;
       }
       if (!open) {
-        factorCard.innerHTML = `<h4>行列式因子</h4>${waitNote("Dₖ 与 dₖ")}`;
+        factorCard.innerHTML = `<h4>行列式因子</h4>${waitNote(`${tex("D_k")} 与 ${tex("d_k")}`)}`;
         opCard.innerHTML = `<h4>初等变换</h4>${waitNote("操作按钮")}`;
         return;
       }
@@ -886,7 +886,7 @@
       const d = P.invariantFactors(state.A);
       // when the question asks for the value of D₂, the list waits until the student has acted
       factorCard.innerHTML = MINOR_PRESETS[state.key].asksValue && !flow?.revealed
-        ? `<h4>行列式因子与不变因子</h4><p class="ch7l-muted">从墙上的子式找出公因式，或做一次初等变换，Dₖ 与 dₖ 随后出现。</p>`
+        ? `<h4>行列式因子与不变因子</h4><p class="ch7l-muted">从墙上的子式找出公因式，或做一次初等变换，${tex("D_k")} 与 ${tex("d_k")} 随后出现。</p>`
         : `<h4>行列式因子与不变因子</h4><ul class="ch8l-list">${D.map(
         (x, i) => `<li class="${i + 1 === state.k ? "is-on" : ""}">${tex(`D_${i + 1}=${pfac(x)}`)}</li>`,
       ).join("")}</ul><ul class="ch8l-list">${d.map((x, i) => `<li>${tex(`d_${i + 1}=${pfac(x)}`)}</li>`).join("")}</ul>`;
@@ -962,14 +962,14 @@
       rows: [{}, {}, { a: 1 }, { a: 2, b: 1 }],
       start: "inv",
       predict: {
-        question: `四阶矩阵 A 的不变因子是 ${tex("1,\\ 1,\\ \\lambda-1,\\ (\\lambda-1)^2(\\lambda+2)")}。A 的初等因子是哪些？`,
+        question: `四阶矩阵 ${tex("A")} 的不变因子是 ${tex("1,\\ 1,\\ \\lambda-1,\\ (\\lambda-1)^2(\\lambda+2)")}。${tex("A")} 的初等因子是哪些？`,
         options: [
           { text: tex("\\lambda-1,\\ (\\lambda-1)^2,\\ \\lambda+2"), correct: true },
           { text: tex("(\\lambda-1)^3,\\ \\lambda+2"), why: "每个不变因子各自分解，出现在不同不变因子中的同一个素因式方幂分别计数，不相乘合并。" },
           { text: tex("\\lambda-1,\\ (\\lambda-1)^2(\\lambda+2)"), why: "(λ−1)²(λ+2) 还要拆成 (λ−1)² 与 λ+2 两个方幂。" },
           { text: tex("\\lambda-1,\\ \\lambda+2"), why: "初等因子是带重数、带幂次的，(λ−1)² 与 λ−1 都要列出。" },
         ],
-        conclusion: "把每个次数大于零的不变因子分解成素因式的方幂：d₃=λ−1，d₄=(λ−1)²·(λ+2)。全部方幂合在一起就是初等因子 λ−1, (λ−1)², λ+2，次数之和 1+2+1=4 等于 A 的阶数。同一个素因式在不同的 dₖ 里出现，就各算一个初等因子。",
+        conclusion: `把每个次数大于零的不变因子分解成素因式的方幂：${tex(String.raw`d_3=\lambda-1`)}，${tex(String.raw`d_4=(\lambda-1)^2\cdot(\lambda+2)`)}。全部方幂合在一起就是初等因子 ${tex(String.raw`\lambda-1,\ (\lambda-1)^2,\ \lambda+2`)}，次数之和 ${tex("1+2+1=4")} 等于 ${tex("A")} 的阶数。同一个素因式在不同的 ${tex("d_k")} 里出现，就各算一个初等因子。`,
       },
     },
     field: {
@@ -984,7 +984,7 @@
           { text: "4 个", why: "两个 λ²+1 各拆成两个一次因式，共多出 2 个。" },
           { text: "2 个", why: "初等因子是逐个方幂计数的，不是逐个不变因子计数。" },
         ],
-        conclusion: "实数域上 λ²+1 不可约，初等因子是 λ²+1, λ−1, λ²+1，共 3 个；复数域上 λ²+1=(λ−i)(λ+i)，初等因子是 λ−i, λ+i, λ−1, λ−i, λ+i，共 5 个。初等因子依赖于所在的数域，讨论若尔当标准形时取复数域。",
+        conclusion: `实数域上 ${tex(String.raw`\lambda^2+1`)} 不可约，初等因子是 ${tex(String.raw`\lambda^2+1,\ \lambda-1,\ \lambda^2+1`)}，共 3 个；复数域上 ${tex(String.raw`\lambda^2+1=(\lambda-\mathrm{i})(\lambda+\mathrm{i})`)}，初等因子是 ${tex(String.raw`\lambda-\mathrm{i},\ \lambda+\mathrm{i},\ \lambda-1,\ \lambda-\mathrm{i},\ \lambda+\mathrm{i}`)}，共 5 个。初等因子依赖于所在的数域，讨论若尔当标准形时取复数域。`,
       },
     },
     rebuild: {
@@ -999,7 +999,7 @@
           { text: tex("(\\lambda-1)^2"), why: "(λ+1)² 也要放进 d₅，否则它无处可放：d₄ 必须整除 d₅。" },
           { text: tex("(\\lambda-1)(\\lambda+1)"), why: "初等因子的方幂要原样放进不变因子，不能拆小。" },
         ],
-        conclusion: "把每个素因式的方幂按次数从高到低排：(λ−1)², λ−1 与 (λ+1)²。各取最高次的相乘得 d₅=(λ−1)²(λ+1)²，各取次高的相乘得 d₄=λ−1，其余补 1：d₁=d₂=d₃=1。这样 d₄ | d₅ 自动成立。",
+        conclusion: `把每个素因式的方幂按次数从高到低排：${tex(String.raw`(\lambda-1)^2,\ \lambda-1`)} 与 ${tex(String.raw`(\lambda+1)^2`)}。各取最高次的相乘得 ${tex(String.raw`d_5=(\lambda-1)^2(\lambda+1)^2`)}，各取次高的相乘得 ${tex(String.raw`d_4=\lambda-1`)}，其余补 1：${tex("d_1=d_2=d_3=1")}。这样 ${tex(String.raw`d_4\mid d_5`)} 自动成立。`,
       },
     },
   };
@@ -1037,7 +1037,7 @@
   function divisorLab(root) {
     const ui = skeleton(root, {
       title: "初等因子积木",
-      task: "每一块积木是一个素因式的方幂，宽度是它的次数。按行排，每一行乘起来是一个不变因子；把行拆开，剩下的积木就是初等因子。切换数域，看 λ²+1 会不会碎开。",
+      task: `每一块积木是一个素因式的方幂，宽度是它的次数。按行排，每一行乘起来是一个不变因子；把行拆开，剩下的积木就是初等因子。切换数域，看 ${tex(String.raw`\lambda^2+1`)} 会不会碎开。`,
       toolbars: 2,
     });
     const [invCard, edCard] = ui.cards;
@@ -1524,45 +1524,45 @@
   /* Integer matrices with the single eigenvalue 2 (built as XJX⁻¹ with |X|=1). */
   const TOWER_PRESETS = {
     a: {
-      label: "A₁",
+      label: tex("A_1"),
       A: [[3, -1, 1, -2], [1, 2, 0, -1], [0, 1, 1, 1], [0, 0, 0, 2]],
       predict: {
-        question: `${tex("|\\lambda E-A_1|=(\\lambda-2)^4")}，${tex("N=A_1-2E")} 的秩是 2，所以 N 的核是 4−2=2 维。每个若尔当块恰好给这个核贡献一个方向。A₁ 的若尔当形中有几个若尔当块？`,
+        question: `${tex("|\\lambda E-A_1|=(\\lambda-2)^4")}，${tex("N=A_1-2E")} 的秩是 2，所以 ${tex("N")} 的核是 ${tex("4-2=2")} 维。每个若尔当块恰好给这个核贡献一个方向。${tex("A_1")} 的若尔当形中有几个若尔当块？`,
         options: [
           { text: "2 个", correct: true },
           { text: "1 个", why: "块数等于 dim ker N=4−rank N=2。" },
           { text: "3 个", why: "三个块时 ker N 是 3 维的，rank N=1。" },
           { text: "4 个", why: "四个一阶块意味着 N=0，A₁=2E。" },
         ],
-        conclusion: "每个若尔当块恰好贡献 ker N 的一个方向（链的最后一个向量），所以块数是 ν₁=dim ker N=2。继续往上：ν₂=3、ν₃=4，每层新增 bₖ=νₖ−νₖ₋₁ 个点：b₁=2，b₂=1，b₃=1。阶数不小于 k 的块有 bₖ 个，于是块的阶数是 3 和 1，初等因子是 (λ−2)³, λ−2。",
+        conclusion: `每个若尔当块恰好贡献 ${tex(String.raw`\ker N`)} 的一个方向（链的最后一个向量），所以块数是 ${tex(String.raw`\nu_1=\dim\ker N=2`)}。继续往上：${tex(String.raw`\nu_2=3`)}、${tex(String.raw`\nu_3=4`)}，每层新增 ${tex(String.raw`b_k=\nu_k-\nu_{k-1}`)} 个点：${tex("b_1=2")}，${tex("b_2=1")}，${tex("b_3=1")}。阶数不小于 ${tex("k")} 的块有 ${tex("b_k")} 个，于是块的阶数是 3 和 1，初等因子是 ${tex(String.raw`(\lambda-2)^3,\ \lambda-2`)}。`,
       },
     },
     b: {
-      label: "A₂",
+      label: tex("A_2"),
       A: [[4, -3, 4, -6], [2, 0, 2, -4], [2, -3, 6, -6], [1, -2, 3, -2]],
       predict: {
-        question: `${tex("|\\lambda E-A_2|=(\\lambda-2)^4")}，${tex("N=A_2-2E")} 的秩是 2，且 ${tex("N^2=0")}：任何向量被 N 作用两次就变成 0。若尔当块的阶数是多少？`,
+        question: `${tex("|\\lambda E-A_2|=(\\lambda-2)^4")}，${tex("N=A_2-2E")} 的秩是 2，且 ${tex("N^2=0")}：任何向量被 ${tex("N")} 作用两次就变成 0。若尔当块的阶数是多少？`,
         options: [
           { text: "2, 2", correct: true },
           { text: "3, 1", why: "有 3 阶块时 N²≠0：链 ε₁→ε₂→ε₃ 上 N²ε₁=ε₃。" },
           { text: "2, 1, 1", why: "三个块意味着 dim ker N=3，即 rank N=1。" },
           { text: "4", why: "一个 4 阶块时 rank N=3。" },
         ],
-        conclusion: "ν₁=2，ν₂=4：两条链，到第二层就用完了全部 4 个维度，b₁=b₂=2，没有第三层。两个块都是 2 阶，初等因子是 (λ−2)², (λ−2)²。与 A₁ 比较：rank N 都是 2，块数相同，块的大小由更高层的 νₖ 决定。",
+        conclusion: `${tex(String.raw`\nu_1=2`)}，${tex(String.raw`\nu_2=4`)}：两条链，到第二层就用完了全部 4 个维度，${tex("b_1=b_2=2")}，没有第三层。两个块都是 2 阶，初等因子是 ${tex(String.raw`(\lambda-2)^2,\ (\lambda-2)^2`)}。与 ${tex("A_1")} 比较：${tex(String.raw`\operatorname{rank}N`)} 都是 2，块数相同，块的大小由更高层的 ${tex(String.raw`\nu_k`)} 决定。`,
       },
     },
     c: {
-      label: "A₃",
+      label: tex("A_3"),
       A: [[3, -1, 1, -2], [2, 0, 2, -4], [1, -1, 3, -2], [0, 0, 0, 2]],
       predict: {
         question: `${tex("|\\lambda E-A_3|=(\\lambda-2)^4")}，${tex("N=A_3-2E")} 的秩是 1。下列哪一个结论一定成立？`,
         options: [
           { text: "有 3 个若尔当块，其中一个是 2 阶", correct: true },
-          { text: "A₃ 可以对角化", why: "可对角化要求 N=0，这里 rank N=1。" },
+          { text: `${tex("A_3")} 可以对角化`, why: "可对角化要求 N=0，这里 rank N=1。" },
           { text: "有 2 个 2 阶块", why: "两个块时 dim ker N=2，rank N 应为 2。" },
           { text: "有 1 个 4 阶块", why: "一个 4 阶块时 rank N=3。" },
         ],
-        conclusion: "ν₁=3：三条链。四个维度分给三条链，只能是 2+1+1，ν₂=4。若尔当形是 diag(J(2,2), J(2,1), J(2,1))，初等因子是 (λ−2)², λ−2, λ−2。",
+        conclusion: `${tex(String.raw`\nu_1=3`)}：三条链。四个维度分给三条链，只能是 ${tex("2+1+1")}，${tex(String.raw`\nu_2=4`)}。若尔当形是 ${tex(String.raw`\operatorname{diag}(J(2,2),J(2,1),J(2,1))`)}，初等因子是 ${tex(String.raw`(\lambda-2)^2,\ \lambda-2,\ \lambda-2`)}。`,
       },
     },
   };
@@ -1570,7 +1570,7 @@
   function towerLab(root) {
     const ui = skeleton(root, {
       title: "核空间一层一层长高",
-      task: "N=A−2E。ker N ⊆ ker N² ⊆ ⋯ 一层层长大，第 k 层新增的维数 bₖ 等于阶数不小于 k 的若尔当块的个数。逐层往上，看链怎样搭成塔。",
+      task: `${tex("N=A-2E")}。${tex(String.raw`\ker N\subseteq\ker N^2\subseteq\cdots`)} 一层层长大，第 ${tex("k")} 层新增的维数 ${tex("b_k")} 等于阶数不小于 ${tex("k")} 的若尔当块的个数。逐层往上，看链怎样搭成塔。`,
     });
     const [matCard, tableCard] = ui.cards;
     // k = the kernel layer reached so far; 0 = nothing climbed yet (only the zero vector)
@@ -1737,7 +1737,7 @@
         tableCard.innerHTML = `<h4>逐层计数</h4>${waitNote("核空间的维数")}`;
         return;
       }
-      controls.innerHTML = `<button type="button" class="ch7l-btn" data-down${k <= 0 ? " disabled" : ""}>往下一层</button><button type="button" class="ch7l-btn is-primary" data-up${k >= top ? " disabled" : ""}>往上一层</button><span class="ch7l-muted">${k ? `当前：ker N${k > 1 ? "²³⁴"[k - 2] : ""}，维数 ${nu[k]}` : "当前：只有零向量"}</span>`;
+      controls.innerHTML = `<button type="button" class="ch7l-btn" data-down${k <= 0 ? " disabled" : ""}>往下一层</button><button type="button" class="ch7l-btn is-primary" data-up${k >= top ? " disabled" : ""}>往上一层</button><span class="ch7l-muted">${k ? `当前：${tex(`\\ker N${k > 1 ? `^${k}` : ""}`)}，维数 ${nu[k]}` : "当前：只有零向量"}</span>`;
       // the conclusion (all block sizes) opens only once the tower reaches the top layer
       controls.querySelector("[data-up]").addEventListener("click", () => {
         state.k = Math.min(top, k + 1);
@@ -1752,13 +1752,13 @@
       for (let j = 1; j <= k; j += 1)
         rows.push(`<tr><td>${j}</td><td>${n - nu[j]}</td><td>${nu[j]}</td><td>${b[j]}</td></tr>`);
       let html = `<h4>逐层计数</h4>${
-        k ? `<table class="ch7l-table"><thead><tr><th>j</th><th>rank Nʲ</th><th>νⱼ</th><th>bⱼ=νⱼ−νⱼ₋₁</th></tr></thead><tbody>${rows.join("")}</tbody></table>` : ""
+        k ? `<table class="ch7l-table"><thead><tr><th>${tex("j")}</th><th>${tex(String.raw`\operatorname{rank}N^j`)}</th><th>${tex(String.raw`\nu_j`)}</th><th>${tex(String.raw`b_j=\nu_j-\nu_{j-1}`)}</th></tr></thead><tbody>${rows.join("")}</tbody></table>` : ""
       }`;
       if (k >= top) {
         const sizes = chains.slice();
         const blocks = sizes.map((s) => `J(2,${s})`).join(",\\ ");
         const ed = sizes.map((s) => (s > 1 ? `(\\lambda-2)^{${s}}` : "\\lambda-2")).join(",\\ ");
-        html += `<p class="ch7l-ok">ν 已经等于 ${n}，塔搭完了。</p><p>${tex(`J=\\operatorname{diag}(${blocks})`)}</p><p>初等因子 ${tex(ed)}</p>`;
+        html += `<p class="ch7l-ok">${tex(String.raw`\nu`)} 已经等于 ${n}，塔搭完了。</p><p>${tex(`J=\\operatorname{diag}(${blocks})`)}</p><p>初等因子 ${tex(ed)}</p>`;
       } else {
         html += `<p class="ch7l-muted">${k ? "继续往上一层。" : "从零向量出发，按“往上一层”。"}</p>`;
       }
@@ -1784,9 +1784,9 @@
   /* ================= §7 矩阵的有理标准形 ================= */
 
   const COMPANION_PRESETS = {
-    p1: { label: "λ³−2λ+1", a: [1, -2, 0] },
-    p2: { label: "(λ−1)²(λ+1)", a: [1, -1, -1] },
-    p3: { label: "λ³", a: [0, 0, 0] },
+    p1: { label: String.raw`\lambda^3-2\lambda+1`, a: [1, -2, 0] },
+    p2: { label: String.raw`(\lambda-1)^2(\lambda+1)`, a: [1, -1, -1] },
+    p3: { label: String.raw`\lambda^3`, a: [0, 0, 0] },
   };
 
   /* Invariant factors 1, λ−1, (λ−1)(λ+2) and their companion blocks (assemble mode). */
@@ -1807,33 +1807,33 @@
   }
 
   const COMPANION_PREDICT = {
-    question: `${tex("d(\\lambda)=\\lambda^3+a_2\\lambda^2+a_1\\lambda+a_0")}，C 是它的伴随矩阵：C 把 ${tex("e_1")} 送到 ${tex("e_2")}，${tex("e_2")} 送到 ${tex("e_3")}，${tex("e_3")} 送到 ${tex("-a_0e_1-a_1e_2-a_2e_3")}。C 的最小多项式是什么？`,
+    question: `${tex("d(\\lambda)=\\lambda^3+a_2\\lambda^2+a_1\\lambda+a_0")}，${tex("C")} 是它的伴随矩阵：${tex("C")} 把 ${tex("e_1")} 送到 ${tex("e_2")}，${tex("e_2")} 送到 ${tex("e_3")}，${tex("e_3")} 送到 ${tex("-a_0e_1-a_1e_2-a_2e_3")}。${tex("C")} 的最小多项式是什么？`,
     options: [
-      { text: "就是 d(λ)", correct: true },
-      { text: "d(λ) 有重根时是它的真因式", why: "e₁, Ce₁, C²e₁ 线性无关，次数小于 3 的多项式 g 都使 g(C)e₁≠0。" },
-      { text: "总是 λ³", why: "C³=0 只在 a₀=a₁=a₂=0 时成立。" },
-      { text: "取决于 a₀, a₁, a₂ 的取值，没有统一答案", why: "对任何系数，C 的最小多项式都是 d(λ)。" },
+      { text: `就是 ${tex(String.raw`d(\lambda)`)}`, correct: true },
+      { text: `${tex(String.raw`d(\lambda)`)} 有重根时是它的真因式`, why: "e₁, Ce₁, C²e₁ 线性无关，次数小于 3 的多项式 g 都使 g(C)e₁≠0。" },
+      { text: `总是 ${tex(String.raw`\lambda^3`)}`, why: "C³=0 只在 a₀=a₁=a₂=0 时成立。" },
+      { text: `取决于 ${tex(String.raw`a_0,\ a_1,\ a_2`)} 的取值，没有统一答案`, why: "对任何系数，C 的最小多项式都是 d(λ)。" },
     ],
     actHint: "记下了你的猜测。让 C 一步步作用在 e₁ 上，或拖动滑块，结论随后出现。",
-    conclusion: "C 把 e₁ 依次送到 e₂、e₃，C³e₁=Ce₃=−a₀e₁−a₁e₂−a₂e₃，所以 d(C)e₁=0，进而 d(C)=0。e₁, Ce₁, C²e₁ 线性无关，次数更低的多项式消不掉 e₁，最小多项式就是 d(λ)，λE−C 的不变因子是 1, 1, d(λ)。即使 d(λ)=(λ−1)²(λ+1) 有重根也是如此。",
+    conclusion: `${tex("C")} 把 ${tex("e_1")} 依次送到 ${tex("e_2")}、${tex("e_3")}，${tex("C^3e_1=Ce_3=-a_0e_1-a_1e_2-a_2e_3")}，所以 ${tex("d(C)e_1=0")}，进而 ${tex("d(C)=0")}。${tex(String.raw`e_1,\ Ce_1,\ C^2e_1`)} 线性无关，次数更低的多项式消不掉 ${tex("e_1")}，最小多项式就是 ${tex(String.raw`d(\lambda)`)}，${tex(String.raw`\lambda E-C`)} 的不变因子是 ${tex(String.raw`1,\ 1,\ d(\lambda)`)}。即使 ${tex(String.raw`d(\lambda)=(\lambda-1)^2(\lambda+1)`)} 有重根也是如此。`,
   };
 
   const ASSEMBLE_PREDICT = {
-    question: `三阶矩阵 A 的不变因子是 ${tex("1,\\ \\lambda-1,\\ (\\lambda-1)(\\lambda+2)")}。它的有理标准形由哪些伴随块组成？`,
+    question: `三阶矩阵 ${tex("A")} 的不变因子是 ${tex("1,\\ \\lambda-1,\\ (\\lambda-1)(\\lambda+2)")}。它的有理标准形由哪些伴随块组成？`,
     options: [
-      { text: "C(λ−1) 和 C((λ−1)(λ+2))：一个 1 阶块、一个 2 阶块", correct: true },
-      { text: "C(1)、C(λ−1)、C((λ−1)(λ+2)) 三块", why: "d₁=1 是 0 次多项式，它的伴随块是 0 阶，不占位置。" },
-      { text: "一个 3 阶块 C((λ−1)²(λ+2))", why: "那是不变因子为 1, 1, (λ−1)²(λ+2) 的情形；这里 d₂=λ−1 不是 1。" },
-      { text: "三个 1 阶块 C(λ−1)、C(λ−1)、C(λ+2)", why: "diag(1,1,−2) 与 A 相似，但它是按初等因子排的若尔当形；有理标准形是每个非常数的不变因子一块。" },
+      { text: `${tex(String.raw`C(\lambda-1)`)} 和 ${tex(String.raw`C((\lambda-1)(\lambda+2))`)}：一个 1 阶块、一个 2 阶块`, correct: true },
+      { text: `${tex("C(1)")}、${tex(String.raw`C(\lambda-1)`)}、${tex(String.raw`C((\lambda-1)(\lambda+2))`)} 三块`, why: "d₁=1 是 0 次多项式，它的伴随块是 0 阶，不占位置。" },
+      { text: `一个 3 阶块 ${tex(String.raw`C((\lambda-1)^2(\lambda+2))`)}`, why: "那是不变因子为 1, 1, (λ−1)²(λ+2) 的情形；这里 d₂=λ−1 不是 1。" },
+      { text: `三个 1 阶块 ${tex(String.raw`C(\lambda-1)`)}、${tex(String.raw`C(\lambda-1)`)}、${tex(String.raw`C(\lambda+2)`)}`, why: "diag(1,1,−2) 与 A 相似，但它是按初等因子排的若尔当形；有理标准形是每个非常数的不变因子一块。" },
     ],
     actHint: "记下了你的猜测。按“放入下一块”逐个放入伴随块，结论随后出现。",
-    conclusion: "每个次数至少为 1 的不变因子 dₖ 给出一个伴随块 C(dₖ)，按整除顺序沿对角线排列：diag(C(λ−1), C(λ²+λ−2))。d₁=1 不占位置；块的阶数之和 1+2=3 等于各 dₖ 的次数之和，也等于 A 的阶数。",
+    conclusion: `每个次数至少为 1 的不变因子 ${tex("d_k")} 给出一个伴随块 ${tex("C(d_k)")}，按整除顺序沿对角线排列：${tex(String.raw`\operatorname{diag}(C(\lambda-1),C(\lambda^2+\lambda-2))`)}。${tex("d_1=1")} 不占位置；块的阶数之和 ${tex("1+2=3")} 等于各 ${tex("d_k")} 的次数之和，也等于 ${tex("A")} 的阶数。`,
   };
 
   function companionLab(root) {
     const ui = skeleton(root, {
       title: "伴随矩阵：平移加反馈",
-      task: "d(λ)=λ³+a₂λ²+a₁λ+a₀ 的伴随矩阵 C 把 e₁ 送到 e₂，e₂ 送到 e₃，再把 e₃ 按系数 −a₀, −a₁, −a₂ 送回来。让 C 一步步作用在 e₁ 上，或用滑块改变系数；第二个模式把几个伴随块拼成有理标准形。",
+      task: `${tex(String.raw`d(\lambda)=\lambda^3+a_2\lambda^2+a_1\lambda+a_0`)} 的伴随矩阵 ${tex("C")} 把 ${tex("e_1")} 送到 ${tex("e_2")}，${tex("e_2")} 送到 ${tex("e_3")}，再把 ${tex("e_3")} 按系数 ${tex(String.raw`-a_0,\ -a_1,\ -a_2`)} 送回来。让 ${tex("C")} 一步步作用在 ${tex("e_1")} 上，或用滑块改变系数；第二个模式把几个伴随块拼成有理标准形。`,
       toolbars: 2,
     });
     const [ctrlCard, readCard] = ui.cards;
@@ -1871,12 +1871,12 @@
 
     function buildControls() {
       if (state.mode === "companion") {
-        ctrlCard.innerHTML = `<h4>d(λ) 的系数</h4>${["a₀", "a₁", "a₂"]
+        ctrlCard.innerHTML = `<h4>${tex(String.raw`d(\lambda)`)} 的系数</h4>${["a₀", "a₁", "a₂"]
           .map(
             (name, i) =>
-              `<label class="ch8l-range"><span>${name}</span><input type="range" min="-3" max="3" step="1" value="${state.a[i]}" data-a="${i}" aria-label="${name}" /><b data-av="${i}">${minus(state.a[i])}</b></label>`,
+              `<label class="ch8l-range"><span>${tex(`a_${i}`)}</span><input type="range" min="-3" max="3" step="1" value="${state.a[i]}" data-a="${i}" aria-label="${name}" /><b data-av="${i}">${minus(state.a[i])}</b></label>`,
           )
-          .join("")}<p data-dpoly></p><div class="ch7l-actions"><button type="button" class="ch7l-btn is-primary" data-step>C 作用一次</button><button type="button" class="ch7l-btn" data-back>回到 e₁</button></div>`;
+          .join("")}<p data-dpoly></p><div class="ch7l-actions"><button type="button" class="ch7l-btn is-primary" data-step>${tex("C")} 作用一次</button><button type="button" class="ch7l-btn" data-back>回到 ${tex("e_1")}</button></div>`;
         sliders().forEach((sl) =>
           sl.addEventListener("input", () => {
             state.a[Number(sl.dataset.a)] = Number(sl.value);
@@ -2160,7 +2160,7 @@
       ctrlCard.querySelector("[data-dpoly]").innerHTML = tex(`d(\\lambda)=${ptex(dpoly())}`);
       ctrlCard.querySelector("[data-step]").disabled = state.k >= 3;
       if (!open) {
-        readCard.innerHTML = `<h4>伴随矩阵</h4>${waitNote("C、最小多项式与不变因子")}`;
+        readCard.innerHTML = `<h4>伴随矩阵</h4>${waitNote(`${tex("C")}、最小多项式与不变因子`)}`;
         return;
       }
       const C = K.mat(companion());
@@ -2174,7 +2174,7 @@
         <ul class="ch8l-list"><li>${tex(`|\\lambda E-C|=${pfac(P.det(P.charMatrix(companion())))}`)}</li>
         ${shown ? `<li>最小多项式 ${tex(pfac(mp))}</li>
         <li>不变因子 ${tex(inv.map(pfac).join(",\\ "))}</li>` : ""}</ul>
-        ${shown ? `<p class="ch7l-muted">${P.eq(mp, dpoly()) ? "最小多项式就是 d(λ)。" : ""}e₁, Ce₁, C²e₁ 恰好是 e₁, e₂, e₃。</p>` : `<p class="ch7l-muted">让 C 作用到 C³e₁，或拖动滑块，最小多项式与不变因子随后出现。</p>`}`;
+        ${shown ? `<p class="ch7l-muted">${P.eq(mp, dpoly()) ? `最小多项式就是 ${tex(String.raw`d(\lambda)`)}。` : ""}${tex(String.raw`e_1,\ Ce_1,\ C^2e_1`)} 恰好是 ${tex(String.raw`e_1,\ e_2,\ e_3`)}。</p>` : `<p class="ch7l-muted">让 ${tex("C")} 作用到 ${tex("C^3e_1")}，或拖动滑块，最小多项式与不变因子随后出现。</p>`}`;
     }
 
     function readAssemble(open) {
@@ -2229,7 +2229,7 @@
     );
     K.chips(
       ui.bars[1],
-      Object.entries(COMPANION_PRESETS).map(([key, v]) => [key, `d(λ)=${v.label}`]),
+      Object.entries(COMPANION_PRESETS).map(([key, v]) => [key, tex(`d(\\lambda)=${v.label}`)]),
       (key) => {
         state.a = COMPANION_PRESETS[key].a.slice();
         flow?.acted();

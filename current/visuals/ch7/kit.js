@@ -246,7 +246,12 @@
    * Predict -> act -> reveal.
    * The gate records the prediction; the conclusion opens only after the student
    * has predicted and then acted on the picture at least once.
+   * Labs rebuild the gate when the student switches preset. The guess is kept per
+   * question (by option text) for the life of the gate host, so switching away and
+   * back never drops it; a question that was already revealed stays revealed.
    */
+  const guessMemory = new WeakMap();
+
   function predictFlow(gateHost, resultBox, spec) {
     spec = { ...spec, options: window.LAStableShuffle ? window.LAStableShuffle(spec.options, spec.question) : spec.options };
     gateHost.innerHTML = "";
@@ -259,10 +264,14 @@
     gateHost.append(box);
     const feedback = box.querySelector(".ch7l-predict-feedback");
     const state = { choice: null, acted: false, revealed: false };
+    if (!guessMemory.has(gateHost)) guessMemory.set(gateHost, new Map());
+    const memory = guessMemory.get(gateHost);
 
-    function reveal() {
+    function reveal(deferHook = false) {
       if (state.revealed || state.choice == null || !state.acted) return;
       state.revealed = true;
+      const saved = memory.get(spec.question);
+      if (saved) saved.revealed = true;
       const o = spec.options[state.choice];
       const verdict = o.correct
         ? `<span class="ch7l-ok">猜对了。</span>`
@@ -272,19 +281,43 @@
       // the “act now” hint has done its job: the box now shows the verdict instead
       feedback.innerHTML = o.correct ? `<span class="ch7l-ok">✓ 猜对了，结论见下方。</span>` : `<span class="ch7l-bad">× 再看看图，结论见下方。</span>`;
       box.classList.add("is-done");
-      spec.onReveal?.();
+      // a restored reveal runs while the lab is still assigning the new flow: call back afterwards
+      if (deferHook) queueMicrotask(() => spec.onReveal?.());
+      else spec.onReveal?.();
+    }
+
+    function pick(i, unsure = false) {
+      state.choice = i;
+      box.querySelectorAll("[data-i]").forEach((x) => x.classList.toggle("is-picked", !unsure && Number(x.dataset.i) === i));
+      feedback.hidden = false;
+      feedback.textContent = unsure ? "好，先不猜。动手操作一次，答案随后出现。" : spec.actHint || "记下了你的猜测。现在动手操作，结论随后出现。";
     }
 
     box.querySelectorAll("[data-i]").forEach((b) =>
-      b.addEventListener("click", () => {
+      b.addEventListener("click", (event) => {
         if (state.revealed) return;
-        state.choice = Number(b.dataset.i);
-        box.querySelectorAll("[data-i]").forEach((x) => x.classList.toggle("is-picked", x === b));
-        feedback.hidden = false;
-        feedback.textContent = spec.actHint || "记下了你的猜测。现在动手操作，结论随后出现。";
+        pick(Number(b.dataset.i));
+        // “不确定，直接看” (predict-ux.js) registers the right option with a synthetic click
+        const unsure = !event.isTrusted && box.dataset.unsure === "1";
+        memory.set(spec.question, { text: spec.options[state.choice].text, unsure, revealed: false });
         reveal();
       }),
     );
+
+    const saved = memory.get(spec.question);
+    const savedIndex = saved ? spec.options.findIndex((o) => o.text === saved.text) : -1;
+    if (savedIndex >= 0) {
+      pick(savedIndex, saved.unsure);
+      if (saved.unsure) {
+        box.dataset.unsure = "1";
+        // predict-ux.js adds its “不确定” button on the next frame; mark it as the pick
+        requestAnimationFrame(() => requestAnimationFrame(() => box.querySelector(".la-unsure")?.classList.add("is-picked")));
+      }
+      if (saved.revealed) {
+        state.acted = true;
+        reveal(true);
+      }
+    }
 
     return {
       acted() {
@@ -687,9 +720,13 @@
     /* Opt-in label placement: try a few offsets, keep off labels, handles and shafts. */
     function placeLabels(pal) {
       const gap = 5;
-      const placed = axisNameBoxes.map((r) => ({ ...r }));
+      // axis names keep a wider berth: a label right beside x₁ would read as one name
+      const placed = axisNameBoxes.map((r) => ({ ...r, gap: 12 }));
       const knobs = handles.filter((h) => !h.hidden?.()).map((h) => P(h.get()));
-      const meets = (a, b) => a.x < b.x + b.w + gap && a.x + a.w + gap > b.x && Math.abs(a.y - b.y) < 15;
+      const meets = (a, b) => {
+        const g = b.gap ?? gap;
+        return a.x < b.x + b.w + g && a.x + a.w + g > b.x && Math.abs(a.y - b.y) < 15;
+      };
       const onKnob = (r) =>
         knobs.some(([hx, hy]) => {
           const nx = Math.max(r.x, Math.min(r.x + r.w, hx));

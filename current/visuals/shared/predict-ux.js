@@ -158,9 +158,34 @@
     });
   }
 
+  /*
+   * On a phone, when one option of a box needs two lines, every option of that box takes a
+   * full row, one under another; otherwise short options stay side by side. An option's
+   * single-line width is measured with wrapping switched off for a moment (data-la-opt-measure).
+   */
+  const PHONE = window.matchMedia?.("(max-width: 720px)");
+  function stackOptions() {
+    document.querySelectorAll(`:is(${BOX}) > [class$='-predict-options']`).forEach((options) => {
+      const buttons = [...options.querySelectorAll(":scope > button")];
+      if (!buttons.length || !options.getBoundingClientRect().width) return;
+      let stack = false;
+      if (PHONE?.matches) {
+        const cs = getComputedStyle(options);
+        const room = options.clientWidth - parseFloat(cs.paddingLeft) - parseFloat(cs.paddingRight);
+        options.dataset.laOptMeasure = "1";
+        stack = buttons.some((b) => b.getBoundingClientRect().width > room + 0.5);
+        delete options.dataset.laOptMeasure;
+      }
+      // a data attribute: the kits find the box by its class name ending in “-predict-options”
+      if (stack) options.dataset.laStack = "1";
+      else delete options.dataset.laStack;
+    });
+  }
+
   const scan = () => {
     document.querySelectorAll(BOX).forEach(enhance);
     dropDoubledLook();
+    stackOptions();
   };
   let queued = false;
   const schedule = () => {
@@ -173,6 +198,12 @@
   };
   const start = () => {
     new MutationObserver(schedule).observe(document.querySelector("main") || document.body, { childList: true, subtree: true });
+    let resizeTimer = 0;
+    window.addEventListener("resize", () => {
+      clearTimeout(resizeTimer);
+      resizeTimer = setTimeout(stackOptions, 150);
+    }, { passive: true });
+    document.fonts?.ready.then(stackOptions);
     scan();
   };
   if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", start);

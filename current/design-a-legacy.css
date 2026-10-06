@@ -2751,6 +2751,20 @@ body.dark :is(main, #la) :is(.lesson-page-section, #lb) .basis-label rect {
   box-shadow: none;
 }
 
+/* a card that is a centred formula with a short note under it (ch5 §3 “合同分类只比较惯性”,
+   §3 term counts, §4 BᵀB): the note is centred under the formula, its lines balanced, and
+   the formula block loses the top margin that left the card empty above it */
+:is(main, #la) .ch5-card:not(.ch5s1-example):has(> .tex-display, > div > .tex-display) > :is(p, div:not(:has(.tex-display))) {
+  text-align: center;
+  text-wrap: balance;
+  justify-content: center;
+}
+
+:is(main, #la) .ch5-card:not(.ch5s1-example):has(> .tex-display, > div > .tex-display) .tex-display {
+  margin-top: 0;
+  padding-top: 0;
+}
+
 :is(main, #la) .ch5-card.ch5s3-theorem,
 :is(main, #la) .ch5-equation {
   border: 0;

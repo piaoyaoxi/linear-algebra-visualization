@@ -7,7 +7,7 @@ defineChapter5Section("quadratic-standard-form", {
   goal: "理解标准形是无交叉项的对角形式；会用配方法与成对初等变换化标准形；记录可逆变量替换；区分“存在”与“唯一”。",
   tags: ["标准形", "配方法", "合同消元", "秩"],
   intro:
-    "标准形把二次型写成只含平方项的对角形式。教材的主方法是配方法，以及与之等价的合同初等变换：对对称矩阵做一次行操作时，必须同步做对应的列操作，才能保持对称并对应合法变量替换。",
+    "标准形把二次型写成只含平方项的对角形式。主要方法是配方法，以及与之等价的合同初等变换：对对称矩阵做一次行操作时，必须同步做对应的列操作，才能保持对称并对应合法变量替换。",
   videoPlan: {
     title: "交叉项如何消失",
     duration: "约 2—3 分钟",
@@ -36,7 +36,7 @@ defineChapter5Section("quadratic-standard-form", {
     },
     {
       label: "不唯一",
-      text: "标准形的具体系数一般不唯一；本节只建立存在性与化法，唯一性见 §3。",
+      text: `标准形的具体系数一般不唯一：令 ${texInline("y_i=kz_i")}（${texInline("k\\neq0")}），系数 ${texInline("d_i")} 变为 ${texInline("k^2d_i")}。`,
     },
   ],
   textbook: {
@@ -56,7 +56,7 @@ defineChapter5Section("quadratic-standard-form", {
     ],
   },
   example: {
-    title: "例题：Lagrange 配方法",
+    title: "例题：配方法",
     question: `用配方法化 ${texInline("f=x_1^2+4x_1x_2+5x_2^2")} 为标准形，并写出可逆变量替换。`,
     choices: [
       {
@@ -78,7 +78,7 @@ defineChapter5Section("quadratic-standard-form", {
       "令 y₁=x₁+2x₂，y₂=x₂，则 f=y₁²+y₂²。",
       "反解 x₁=y₁−2y₂，x₂=y₂，替换矩阵可逆。",
       "对应合同后矩阵为 diag(1,1)，交叉项消失。",
-      "标准形存在；具体系数还可经缩放改变，唯一性问题见下一节。",
+      "系数还可经缩放改变：令 y₂=2z₂，得 f=y₁²+4z₂²，仍是标准形。",
     ],
   },
   quiz: [
@@ -91,16 +91,8 @@ defineChapter5Section("quadratic-standard-form", {
       answer: "才能保持对称，并对应两侧同时出现的变量替换因子。",
     },
     {
-      question: "化标准形时是否必须使用正交替换？",
-      answer: "不必。本章主方法是一般的非退化线性替换与配方法。",
-    },
-    {
-      question: "只写标准形不写变量替换，会丢掉什么信息？",
-      answer: "丢掉如何从原变量回到新变量，也无法核对替换可逆。",
-    },
-    {
       question: "标准形的系数是否唯一？",
-      answer: "一般不唯一；唯一性讨论的是惯性等不变量，见 §3。",
+      answer: "一般不唯一。例如 y₁²+y₂² 中令 y₂=2z₂，得 y₁²+4z₂²；不变的是正、负平方项的个数。",
     },
     {
       question: "没有平方项只有交叉项时，常见第一步是什么？",
@@ -111,7 +103,7 @@ defineChapter5Section("quadratic-standard-form", {
     "标准形是无交叉项的对角二次型；非零项个数等于秩。",
     "配方法与成对合同初等变换是同一过程的两种语言。",
     "变量替换必须可逆；要记录累积矩阵 C。",
-    "标准形存在但系数一般不唯一，下一节讨论真正的不变量。",
+    "标准形存在，但系数一般不唯一。",
   ],
   exercises: [
     "对 f=2x₁x₂ 先做和差替换再化标准形。",

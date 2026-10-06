@@ -98,23 +98,15 @@ defineChapter5Section("quadratic-matrix", {
       answer: `${texInline("C^TAC")}，而不是 ${texInline("C^{-1}AC")}。`,
     },
     {
-      question: "合同与相似的差别是什么？",
-      answer: "合同是 CᵀAC，对应二次型的变量替换；相似是 P⁻¹AP，对应线性变换的基变换。",
-    },
-    {
       question: "当 det C=0 时，能否说 A 与 CᵀAC 合同？",
       answer: "不能。合同要求 C 可逆，即替换非退化。",
-    },
-    {
-      question: "二次型的秩如何定义？",
-      answer: "等于对应对称矩阵的秩。",
     },
   ],
   summary: [
     "二次型是二次齐次多项式，可用唯一的实对称矩阵写成 xᵀAx。",
     "交叉项系数平分到两个对称位置；斜对称部分对二次型无贡献。",
     "非退化替换 x=Cy 把矩阵变为 CᵀAC，这称为合同。",
-    "合同保持对称性与秩；惯性与标准形留待后续小节。",
+    "合同保持对称性与秩。",
   ],
   exercises: [
     "任取一个非对称矩阵 B，计算其对称部分 S，并随机取几个 x 验证 xᵀBx=xᵀSx。",

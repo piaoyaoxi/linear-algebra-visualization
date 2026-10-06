@@ -643,8 +643,8 @@
       status.innerHTML = `<p>${tex(`B=C^TGC=${M().latexMatrix(B)}`)}　${tex(`|\\alpha|^2=${lf(aa)}`)}，${tex(`|\\sigma\\alpha|^2=${lf(xx)}`)}</p>${marks}
         <p data-iso-status class="${iso ? "ch9l-ok" : "ch9l-muted"}">${
           iso
-            ? "B = I：σ 把 V 的单位椭圆送成单位圆，保持全部内积，是欧氏空间的同构。"
-            : `B ≠ I：σ 是线性同构，但 ${tex("(\\sigma\\alpha,\\sigma\\beta)=X^TY\\ne X^TBY=(\\alpha,\\beta)")}，单位椭圆的像不是单位圆。`
+            ? "B = E：σ 把 V 的单位椭圆送成单位圆，保持全部内积，是欧氏空间的同构。"
+            : `B ≠ E：σ 是线性同构，但 ${tex("(\\sigma\\alpha,\\sigma\\beta)=X^TY\\ne X^TBY=(\\alpha,\\beta)")}，单位椭圆的像不是单位圆。`
         }</p>`;
     }
 
@@ -713,7 +713,8 @@
       `<p>保持内积 ⇔ 保持长度 ⇔ 把标准正交基变成标准正交基 ⇔ 矩阵满足 ${tex("Q^TQ=E")}。${tex("\\det Q=\\pm1")} 只是必要条件：${tex("\\operatorname{diag}(2,\\tfrac12)")} 保持面积，却把 ${tex("\\varepsilon_1")} 拉长一倍。${tex("\\det Q=1")} 的是旋转（第一类），${tex("\\det Q=-1")} 的是反射（第二类）。</p>`,
     );
     side.append(info, gateHost, result);
-    const state = { key: "rot", x: [1.5, 0.5], y: [0, 1], revealed: false };
+    // the lab opens on the matrix the question asks about
+    const state = { key: "squeeze", x: [1.5, 0.5], y: [0, 1], revealed: false };
 
     /*
      * Equal-length ticks and matching angle arcs: x and Qx carry one tick, y and
@@ -792,7 +793,14 @@
       else {
         const c1 = [Q[0][0], Q[1][0]];
         const c2 = [Q[0][1], Q[1][1]];
-        verdict = `<p class="ch9l-bad" data-ortho-status>${tex("Q^TQ\\ne I")}：列向量 ${tex(`|q_1|^2=${lf(dotF(c1, c1))},\\ |q_2|^2=${lf(dotF(c2, c2))},\\ (q_1,q_2)=${lf(dotF(c1, c2))}`)}，不是正交变换。</p>`;
+        verdict = `<p class="ch9l-bad" data-ortho-status>${tex("Q^TQ\\ne E")}：列向量 ${tex(`|q_1|^2=${lf(dotF(c1, c1))},\\ |q_2|^2=${lf(dotF(c2, c2))},\\ (q_1,q_2)=${lf(dotF(c1, c2))}`)}，不是正交变换。</p>`;
+      }
+      // before the reveal the asked matrix shows only Q and det Q: the comparisons would answer the question
+      if (state.key === "squeeze" && !state.revealed) {
+        info.innerHTML = `<h4>当前读数</h4>
+        <p>${tex(`Q=${M().latexMatrix(Q)},\\ \\det Q=${lf(det)}`)}</p>
+        <p class="ch9l-muted" data-ortho-wait>先猜一猜，再看长度与内积的比较。</p>`;
+        return;
       }
       info.innerHTML = `<h4>当前读数</h4>
         <p>${tex(`Q=${M().latexMatrix(Q)},\\ \\det Q=${lf(det)}`)}</p>
@@ -808,27 +816,36 @@
       return `<p class="ch9l-muted" data-ortho-marks>${len}；${ang}。</p>`;
     }
 
+    /*
+     * The question is about diag(2,½): only an action on that matrix grades the guess
+     * (dragging x or y, or coming back to it). The other matrices can be explored first;
+     * the guess stays.
+     */
+    const actedOnAsked = () => {
+      if (state.key === "squeeze") gate.act();
+    };
     chips(toolbar, Object.entries(ORTHO_PRESETS).map(([k, p]) => [k, p.label]), (k) => {
       state.key = k;
       redraw();
+      actedOnAsked();
     }, state.key);
     plane.setHandles([
-      { color: "drag", snap: 0.5, clampX: [-2, 2], clampY: [-2, 2], get: () => state.x, set: (p) => ((state.x = p), redraw()) },
-      { color: "drag", snap: 0.5, clampX: [-2, 2], clampY: [-2, 2], get: () => state.y, set: (p) => ((state.y = p), redraw()) },
+      { color: "drag", snap: 0.5, clampX: [-2, 2], clampY: [-2, 2], get: () => state.x, set: (p) => ((state.x = p), redraw(), actedOnAsked()) },
+      { color: "drag", snap: 0.5, clampX: [-2, 2], clampY: [-2, 2], get: () => state.y, set: (p) => ((state.y = p), redraw(), actedOnAsked()) },
     ]);
-    predictGate(
+    const gate = predictGate(
       gateHost,
       {
         question: `${tex("A=\\operatorname{diag}(2,\\tfrac12)")} 的行列式为 1，它保持面积。A 是正交变换吗？`,
         options: [
           { text: `不是：它把 ${tex("\\varepsilon_1")} 拉长到长度 2`, correct: true },
-          { text: "是：行列式为 1 的变换都是旋转", why: `行列式为 1 只说明面积不变。选 ${tex("\\operatorname{diag}(2,\\tfrac12)")}：单位圆变成了椭圆，长度被改变。` },
+          { text: "是：行列式为 1 的变换都是旋转", why: `行列式为 1 只说明面积不变。在 ${tex("\\operatorname{diag}(2,\\tfrac12)")} 下，单位圆变成了椭圆，长度被改变。` },
           { text: "是：单位圆的像面积不变", why: "面积不变，形状却变了：长度和夹角都可能改变。" },
           { text: "要看 x 取在哪里", why: "正交变换要求对所有 x 保持长度；只要有一个 x 被拉长就不是。" },
         ],
-        right: `单位圆变成半轴为 2 和 ${tex("\\tfrac12")} 的椭圆；${tex("Q^TQ=\\operatorname{diag}(4,\\tfrac14)\\ne I")}。对默认的 x、y，像上没有刻痕，∠(Qx,Qy) 的弧是虚线。`,
-        defer: lab,
-        actHint: "记下了你的猜测。选一个矩阵或拖动 x、y，结论随后出现。",
+        right: `单位圆变成半轴为 2 和 ${tex("\\tfrac12")} 的椭圆；${tex("Q^TQ=\\operatorname{diag}(4,\\tfrac14)\\ne E")}，长度被改变：缺了刻痕的像，长度与原来不同。`,
+        manual: true,
+        actHint: "记下了你的猜测。在这个矩阵下拖动 x 或 y，结论随后出现。",
       },
       () => {
         state.revealed = true;
@@ -856,7 +873,7 @@
     const toolbar = el("div", "ch9l-toolbar");
     lab.append(toolbar);
     const { stage, side } = stageLayout(lab);
-    const scene = S().create(stage, { range: 2.5, label: "子空间 W 与正交补", yaw: 0.8, pitch: 0.3, hint: "拖动空白处旋转 · 拖动圆点改变 w、α", spreadLabels: true, labelSafe: true });
+    const scene = S().create(stage, { range: 2.5, label: "子空间 W 与正交补", yaw: 0.8, pitch: 0.3, hint: "拖动空白处旋转 · 拖动圆点改变 w、α", clampLabels: true });
     lab.ch9Views = { scene };
     const tools = el("div", "ch9l-actions");
     tools.innerHTML = `${btn("沿 W⊥ 看", "data-sub-look")}${btn("侧面看 W", "data-sub-side")}${btn("默认视角", "data-sub-reset")}`;
@@ -932,27 +949,30 @@
         if (state.revealed) {
           if (V.len(a1) > 1e-9) objs.push({ type: "arrow", to: a1, color: "image", width: 3, label: "α₁" });
           if (V.len(a2) > 1e-9) {
-            objs.push({ type: "arrow", from: a1, to: state.alpha, color: "v2", width: 3, label: "α₂", labelAt: V.add(V.mul(V.add(a1, state.alpha), 0.5), V.mul(V.norm(a1.some((x) => Math.abs(x) > 1e-9) ? a1 : [1, 0, 0]), 0.3)) });
+            objs.push({ type: "arrow", from: a1, to: state.alpha, color: "v2", width: 3, label: "α₂" });
             objs.push({ type: "segment", a: [0, 0, 0], b: a2, color: "v2", dash: [4, 4], width: 1.4 });
             objs.push({ type: "segment", a: a2, b: state.alpha, color: "image", dash: [4, 4], width: 1.4 });
             objs.push(...footMark(c, a1, a2));
           }
         }
-        return objs;
+        // every name goes where it stays clear of the other strokes, points and handles
+        const handles = [state.alpha, ...state.w.filter((w, i) => w && !(state.key === "line" && i > 0))];
+        return window.Ch6Kit?.placeLabels ? window.Ch6Kit.placeLabels(scene, objs, { handles }) : objs;
       });
       scene.setHandles([
-        { color: "drag", snap: 0.5, get: () => state.alpha, set: (p) => ((state.alpha = p), redraw()) },
+        { color: "drag", snap: 0.5, get: () => state.alpha, set: (p) => ((state.alpha = p), redraw(), actedOnAsked()) },
         ...state.w.map((_, i) => ({ color: "drag", snap: 0.5, hidden: () => !state.w[i], get: () => state.w[i] || [0, 0, 0], set: (p) => ((state.w[i] = p), redraw()) })),
       ]);
 
+      // one relation per line; a mark after a formula stays outside it and on its line
+      const rows = (list, attr = "") => `<p class="ch9l-lines"${attr}>${list.map((r) => `<span>${r}</span>`).join("")}</p>`;
       const lines = [`<h4>当前读数</h4>`];
-      lines.push(`<p>${keep(`${tex(`W=\\operatorname{span}\\{${c.ws.map(vtex).join(",") || "0"}\\}`)}，`)}${tex(`\\dim W=${c.r}`)}</p>`);
+      lines.push(rows([keep(`${tex(`W=\\operatorname{span}\\{${c.ws.map(vtex).join(",") || "0"}\\}`)}，`), tex(`\\dim W=${c.r}`)]));
       if (state.revealed) {
-        lines.push(`<p data-sub-perp>${keep(`${tex(`W^\\perp=\\operatorname{span}\\{${c.perp.map(vtex).join(",") || "0"}\\}`)}，`)}${tex(`\\dim W^\\perp=${c.perp.length}`)}</p>`);
-        lines.push(`<p>${tex(`\\alpha=\\alpha_1+\\alpha_2=${vtex(c.a1)}+${vtex(c.a2)}`)}</p>`);
+        lines.push(rows([keep(`${tex(`W^\\perp=\\operatorname{span}\\{${c.perp.map(vtex).join(",") || "0"}\\}`)}，`), tex(`\\dim W^\\perp=${c.perp.length}`)], " data-sub-perp"));
+        lines.push(rows([tex("\\alpha=\\alpha_1+\\alpha_2"), tex(`\\phantom{\\alpha}=${vtex(c.a1)}+${vtex(c.a2)}`)], " data-sub-split"));
         const checks = c.basis.map((b) => lf(dotF(c.a2, b)));
-        // each formula keeps the mark after it, so no line starts with ，or ：
-        if (checks.length) lines.push(`<p class="ch9l-ok">${checks.map((v, i) => keep(`${tex(`(\\alpha_2,${vtex(c.basis[i])})=${v}`)}${i < checks.length - 1 ? "，" : "："}`)).join("")}${keep(`${tex("\\alpha_2\\in W^\\perp")}。`)}</p>`);
+        if (checks.length) lines.push(`<p class="ch9l-ok ch9l-lines">${checks.map((v, i) => `<span>${keep(`${tex(`(\\alpha_2,${vtex(c.basis[i])})=${v}`)}${i < checks.length - 1 ? "，" : "，"}`)}</span>`).join("")}<span>${keep(`所以 ${tex("\\alpha_2\\in W^\\perp")}。`)}</span></p>`);
         lines.push(`<p class="ch9l-muted">${tex(`\\dim W+\\dim W^\\perp=${c.r}+${c.perp.length}=${c.r + c.perp.length}`)}</p>`);
       } else {
         lines.push(`<p class="ch9l-muted">猜过并动手操作后，显示 W⊥ 和 α 的分解。</p>`);
@@ -965,6 +985,7 @@
       state.key = k;
       state.w = SUB_PRESETS[k].w.map((v) => v.slice());
       redraw();
+      actedOnAsked();
     }, state.key);
     tools.querySelector("[data-sub-look]").addEventListener("click", () => scene.lookAlong(normalOf(compute())));
     tools.querySelector("[data-sub-side]").addEventListener("click", () => {
@@ -972,7 +993,17 @@
       scene.lookAlong(c.basis.length ? toN(c.basis[0]) : [1, 0, 0]);
     });
     tools.querySelector("[data-sub-reset]").addEventListener("click", () => scene.resetView());
-    predictGate(
+    /*
+     * The question is about W = span{(1,1,0),(0,1,1)}: an action grades the guess only
+     * while that W is on screen (dragging α, or coming back to the plane preset). Moving
+     * w₁, w₂ or picking the line explores freely; the guess stays.
+     */
+    const askedW = SUB_PRESETS.plane.w;
+    function actedOnAsked() {
+      const same = state.key === "plane" && state.w.length === askedW.length && state.w.every((w, i) => w && w.every((x, k) => x === askedW[i][k]));
+      if (same) gate.act();
+    }
+    const gate = predictGate(
       gateHost,
       {
         question: `${tex("W=\\operatorname{span}\\{(1,1,0),(0,1,1)\\}")} 是一个平面。它的正交补 ${tex("W^\\perp")} 是什么？`,
@@ -983,8 +1014,8 @@
           { text: "另一个平面", why: "W⊥ 的维数是 3−2=1。" },
         ],
         right: `${tex("(1,-1,1)")} 与 ${tex("(1,1,0)")}、${tex("(0,1,1)")} 的内积都是 0。α 拆成 W 里的 α₁ 与 W⊥ 里的 α₂；在垂足 α₁ 处，α₂ 与 W 中两个互相垂直的方向都成直角。`,
-        defer: lab,
-        actHint: "记下了你的猜测。拖动 α 或旋转画面，W⊥ 随后出现。",
+        manual: true,
+        actHint: "记下了你的猜测。在这个 W 下拖动 α，W⊥ 随后出现。",
       },
       () => {
         state.revealed = true;
@@ -1001,7 +1032,7 @@
   const SP_PRESETS = {
     pos: { label: tex("\\left[\\begin{smallmatrix}2&1\\\\1&2\\end{smallmatrix}\\right]"), A: [[2, 1], [1, 2]], eig: [[3, [1, 1]], [1, [-1, 1]]] },
     indef: { label: tex("\\left[\\begin{smallmatrix}1&2\\\\2&-2\\end{smallmatrix}\\right]"), A: [[1, 2], [2, -2]], eig: [[2, [2, 1]], [-3, [-1, 2]]] },
-    rep: { label: "重特征值 2I", A: [[2, 0], [0, 2]], eig: [[2, [1, 0]], [2, [0, 1]]] },
+    rep: { label: "重特征值 2E", A: [[2, 0], [0, 2]], eig: [[2, [1, 0]], [2, [0, 1]]] },
     nonsym: { label: "非对称 " + tex("\\left[\\begin{smallmatrix}2&1\\\\0&1\\end{smallmatrix}\\right]"), A: [[2, 1], [0, 1]], eig: [[2, [1, 0]], [1, [1, -1]]] },
   };
 

@@ -111,7 +111,7 @@
       && getComputedStyle(prev).display === "inline" && prev.textContent.trim().length <= 8;
     if (!latin && !word && (prev.nodeType !== Node.ELEMENT_NODE || !prev.matches(".tex, .katex, .la-keep"))) return;
     const em = parseFloat(getComputedStyle(block).fontSize);
-    if (!latin && !word && prev.getBoundingClientRect().width > em * 6) return;
+    if (!latin && !word && prev.getBoundingClientRect().width > em * 8) return;
     const keep = document.createElement("la-t");
     prev.before(keep);
     let cur = prev;
@@ -209,6 +209,9 @@
   function groupFormula(katex) {
     const html = katex.querySelector(":scope > .katex-html");
     if (!html || katex.closest(".katex-display") || html.dataset.laGrouped) return;
+    // a formula not laid out yet (a closed answer) has no widths to judge by: it is grouped
+    // when it is shown (typeset.js sees the open / hidden change)
+    if (!html.getBoundingClientRect().width) return;
     html.dataset.laGrouped = "1";
     const bases = [...html.children].filter((c) => c.classList.contains("base") || (c.classList.contains("la-keep") && c.querySelector(".base")));
     if (bases.length < 2) return;

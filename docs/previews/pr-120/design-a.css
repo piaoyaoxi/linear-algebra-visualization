@@ -445,6 +445,25 @@ body :is(.ch3l-predict-options, .ch6l-predict-options, .ch7l-predict-options, .c
   text-align: left;
 }
 
+/* predict-ux.js: an option's single-line width is measured with wrapping off for a moment;
+   on a phone, a box where one option needs two lines lists every option on its own row */
+body :is(.ch3l-predict-options, .ch6l-predict-options, .ch7l-predict-options, .ch9l-predict-options)[data-la-opt-measure] > button {
+  flex: 0 0 auto !important;
+  width: max-content !important;
+  max-width: none !important;
+  white-space: nowrap !important;
+}
+
+body :is(.ch3l-predict-options, .ch6l-predict-options, .ch7l-predict-options, .ch9l-predict-options)[data-la-stack] {
+  flex-direction: column;
+  align-items: stretch;
+}
+
+body :is(.ch3l-predict-options, .ch6l-predict-options, .ch7l-predict-options, .ch9l-predict-options)[data-la-stack] > button {
+  width: 100%;
+  max-width: none;
+}
+
 /* picked = border + inner stroke (spec §4); the weight stays, so the text does not reflow */
 body :is(.ch3l-predict-options, .ch6l-predict-options, .ch7l-predict-options, .ch9l-predict-options) > button.is-picked {
   border-color: var(--cv-drag);
@@ -614,6 +633,19 @@ body .tex .katex {
   font-size: 1.02em;
 }
 
+/* inline formulas against the text font (ink measured at 200px): KaTeX_Math lowercase is
+   0.44em tall and its stems 0.08em, the text Latin's 0.54em and 0.09em. At 1.16 × the text
+   size lowercase reaches 0.51em with the same stem weight, and capitals (0.715em) stay just
+   above the Chinese glyph top (0.80em); full lowercase match (1.23) makes capitals and inline
+   matrices too large. .tex itself is 1.04em (styles.css). */
+body {
+  --la-math: 1.16;
+}
+
+body main .tex.tex-inline > .katex {
+  font-size: calc(var(--la-math) / 1.04 * 1em);
+}
+
 /* a formula sits on the text baseline: Chinese glyphs already reach a little below it */
 body .tex {
   vertical-align: baseline;
@@ -634,8 +666,10 @@ la-run {
 }
 
 /* typeset.js: a quarter-em space between Chinese text and an inline formula */
+/* the gap is one U+2005 (typeset.js); letter-spacing brings it to the measured width */
 la-sp {
-  word-spacing: var(--la-sp-adjust, 0);
+  letter-spacing: var(--la-sp-adjust, 0);
+  word-spacing: 0;
 }
 
 /* ---------- 9 Fixes from the first pass ---------- */
@@ -1252,22 +1286,43 @@ body .la-keep {
 /* the glued mark sits inside the formula's box: give it the text font and size back */
 body .la-punct {
   font-family: var(--font-serif);
-  font-size: calc(1em / 1.06);
+  font-size: calc(1em / var(--la-math, 1.06));
   font-style: normal;
   font-weight: inherit;
 }
 
 /* ---------- round 3: line breaking (with visuals/shared/typeset.js) ---------- */
 
-/* no line holds one character alone: paragraphs avoid a short last line … */
+/* text runs full lines, both edges flush (Chinese justification); only the last line of a
+   block may be short. No text-wrap: pretty here: WebKit shortens every line of a pretty
+   paragraph (iPhone Safari left a wide gap on the right). A character alone on a last line
+   is prevented by typeset.js (<la-t>). The alignment is inherited, so a card that centres
+   its text keeps centring it. */
 body main {
-  text-wrap: pretty;
+  text-align: justify;
 }
 
-/* … and short texts (titles, options, chips, captions) share their lines evenly; a sentence
-   (a question, a lead) keeps full lines, or it would stop at half width */
+/* typeset.js: a block whose justified lines would come out letter-spaced keeps start
+   alignment; data-la-measure is set for a moment while it measures the natural lines */
+body main [data-la-ragged],
+body main [data-la-measure] {
+  text-align: start !important;
+}
+
+/* typeset.js: the full-width mark at the end of a centred line hangs half an em */
+la-hang {
+  margin-inline-end: -0.5em;
+}
+
+/* short texts keep their own start alignment: headings, captions, chips, toolbars */
+body main :where(h1, h2, h3, h4, h5, h6, figcaption, legend, .la-figcaption, [class*="toolbar"], [class*="chip"]) {
+  text-align: start;
+}
+
+/* short texts (titles, chips, captions) share their lines evenly; a sentence (a question,
+   a lead, an option) keeps full lines */
 @supports (text-wrap-style: balance) {
-  body main :is(h1, h2, h3, h4, h5, h6, figcaption, legend, .la-figcaption, [class*="predict-options"], [class*="toolbar"], [class*="chip"]) {
+  body main :is(h1, h2, h3, h4, h5, h6, figcaption, legend, .la-figcaption, [class*="toolbar"], [class*="chip"]) {
     text-wrap-style: balance;
   }
 }

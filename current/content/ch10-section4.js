@@ -19,7 +19,7 @@ defineChapter10Section("symplectic-space", {
       {
         title: "辛空间",
         tex: String.raw`\omega(\alpha,\beta)=-\omega(\beta,\alpha),\qquad \omega(\alpha,\alpha)=0`,
-        text: "数域 P 上的线性空间 V 带有一个非退化的反对称双线性函数 ω，称为辛空间，ω 称为辛内积。反对称矩阵满足 |A|=|Aᵀ|=|−A|=(−1)ⁿ|A|，n 为奇数时 |A|=0，所以辛空间的维数是偶数。",
+        text: `数域 P 上的线性空间 V 带有一个非退化的反对称双线性函数 ω，称为辛空间，ω 称为辛内积。反对称矩阵满足 ${texInline(String.raw`|A|=|A^T|=|-A|=(-1)^n|A|`)}，n 为奇数时 ${texInline(String.raw`|A|=0`)}，所以辛空间的维数是偶数。`,
         ponder: {
           q: "平面上 ω(x,y)=0 说明 x、y 是什么关系？",
           a: "x、y 共线：平行四边形压成一条线段，有向面积为 0。",
@@ -40,7 +40,7 @@ defineChapter10Section("symplectic-space", {
         text: "保持辛内积的线性变换称为辛变换，K 是它在辛基下的矩阵。平面上 ω(Kx,Ky)=|K|ω(x,y)，所以辛变换就是 |K|=1 的变换，例如剪切与旋转。高维时辛变换的行列式仍是 1，但 |K|=1 不能保证 K 是辛变换。",
         ponder: {
           q: "P⁴ 中取辛基 ε₁, ε₂, ε₋₁, ε₋₂，K=diag(2,1,1,½)。|K|=1，K 是辛变换吗？",
-          a: "不是。ω(Kε₁,Kε₋₁)=ω(2ε₁,ε₋₁)=2≠1。",
+          a: `不是。${texInline(String.raw`\omega(K\varepsilon_1,K\varepsilon_{-1})=\omega(2\varepsilon_1,\varepsilon_{-1})=2\ne1`)}。`,
         },
       },
     ],

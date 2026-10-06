@@ -215,7 +215,7 @@
         },
         {
           question: "σ 是线性双射并且保持每个向量的长度，它一定保持内积吗？",
-          answer: "一定。(α,β)=½(|α+β|²−|α|²−|β|²)，右边只用到长度。",
+          answer: `一定。${t(String.raw`(\alpha,\beta)=\tfrac12(|\alpha+\beta|^2-|\alpha|^2-|\beta|^2)`)}，右边只用到长度。`,
         },
         {
           question: "ℝ³（普通点积）与次数小于 3 的实多项式空间（内积 (f,g)=∫₀¹f(x)g(x)dx）同构吗？",
@@ -586,7 +586,7 @@
         },
         {
           question: "为什么埃尔米特矩阵的特征值是实数？",
-          answer: "设 Aα=λα，α≠0。λ(α,α)=(Aα,α)=(α,Aα)=λ̄(α,α)，而 (α,α)>0，所以 λ=λ̄。",
+          answer: `设 ${t(String.raw`A\alpha=\lambda\alpha`)}，${t(String.raw`\alpha\ne0`)}。${t(String.raw`\lambda(\alpha,\alpha)=(A\alpha,\alpha)=(\alpha,A\alpha)=\bar\lambda(\alpha,\alpha)`)}，而 ${t(String.raw`(\alpha,\alpha)>0`)}，所以 ${t(String.raw`\lambda=\bar\lambda`)}。`,
         },
         {
           question: "实数矩阵看作复矩阵时，酉矩阵、埃尔米特矩阵分别是什么？",

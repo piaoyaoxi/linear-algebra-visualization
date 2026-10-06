@@ -135,11 +135,11 @@ async function exerciseLabs(page) {
   expect(await page.locator("[data-gs-next]").isDisabled(), "§2: normalisation disabled for zero residual");
 
   await openLesson(page, sections[2]);
-  expect((await text(page, "[data-iso-status]")).includes("B ≠ I"), "§3: standard basis is not isometric");
+  expect((await text(page, "[data-iso-status]")).includes("B ≠ E"), "§3: standard basis is not isometric");
   await chip(page, "other");
-  expect((await text(page, "[data-iso-status]")).includes("B = I"), "§3: G-orthonormal basis is isometric");
+  expect((await text(page, "[data-iso-status]")).includes("B = E"), "§3: G-orthonormal basis is isometric");
   await drag(page, "lp", [-0.8, 1.4], [-1, 2]);
-  expect((await text(page, "[data-iso-status]")).includes("B ≠ I"), "§3: dragging f₂ breaks the isometry");
+  expect((await text(page, "[data-iso-status]")).includes("B ≠ E"), "§3: dragging f₂ breaks the isometry");
   await predict(page, 0);
   expect(!(await resultShown(page)), "§3: conclusion waits for an action after the prediction");
   expect((await page.locator("[data-iso-tangent]").count()) === 0, "§3: tangent mark hidden before acting");
@@ -150,18 +150,23 @@ async function exerciseLabs(page) {
   expect((await text(page, "[data-iso-tangent]")).includes("偏离切线"), "§3: (1,1),(1,−1) is not G-orthogonal");
 
   await openLesson(page, sections[3]);
+  // the lab opens on diag(2,1/2), the matrix the question asks about, with its verdict hidden
+  expect((await page.locator("[data-ortho-wait]").count()) === 1, "§4: opens on diag(2,1/2) with the comparisons hidden");
+  expect((await page.locator("[data-ortho-status]").count()) === 0, "§4: verdict hidden before the prediction");
+  await chip(page, "rot");
   expect((await text(page, "[data-ortho-status]")).includes("第一类"), "§4: rotation is first kind");
   await chip(page, "refl");
   expect((await text(page, "[data-ortho-status]")).includes("第二类"), "§4: reflection is second kind");
+  await predict(page, 0);
+  // another matrix does not grade the diag(2,1/2) question, and the guess stays
+  await chip(page, "shear");
+  expect(!(await resultShown(page)), "§4: another matrix does not grade the guess");
+  expect((await page.locator("[data-ch9-predict] .is-picked").count()) === 1, "§4: the guess stays after switching");
   await chip(page, "squeeze");
+  expect(await resultShown(page), "§4: conclusion once back on diag(2,1/2)");
   expect((await text(page, "[data-ortho-status]")).includes("不是正交变换"), "§4: diag(2,1/2) rejected");
   await drag(page, "plane", [1.5, 0.5], [1, 0]);
   expect((await text(page, "[data-ch9-readout=ortho]")).includes("≠"), "§4: squeeze changes a length");
-  await predict(page, 0);
-  expect(!(await resultShown(page)), "§4: conclusion waits for an action after the prediction");
-  await chip(page, "refl");
-  expect(await resultShown(page), "§4: conclusion after prediction and action");
-  await chip(page, "squeeze");
   expect((await text(page, "[data-ortho-marks]")).includes("有长度被改变"), "§4: squeeze drops the length ticks");
   await chip(page, "rot");
   expect((await text(page, "[data-ortho-marks]")).includes("长度不变"), "§4: rotation keeps the length ticks");
@@ -174,10 +179,15 @@ async function exerciseLabs(page) {
   await page.locator("[data-sub-reset]").click();
   await settle(page);
   expect((await page.locator("[data-sub-perp]").count()) === 0, "§5: a reset that changes nothing does not reveal");
+  // the line preset does not grade the question about the plane W, and the guess stays
+  await chip(page, "line");
+  expect((await page.locator("[data-sub-perp]").count()) === 0, "§5: the line preset does not grade the plane question");
+  await chip(page, "plane");
+  expect((await page.locator("[data-sub-perp]").count()) === 1, "§5: coming back to the plane W grades");
   const sub = await text(page, "[data-ch9-readout=sub]");
   await drag(page, "scene", [0.5, -1.5, 2], [1, 1, 1]);
   expect((await text(page, "[data-ch9-readout=sub]")) !== sub, "§5: dragging α updates the decomposition");
-  expect((await page.locator("[data-sub-perp]").count()) === 1, "§5: W⊥ revealed after dragging α");
+  expect((await page.locator("[data-sub-perp]").count()) === 1, "§5: W⊥ stays after dragging α");
   await chip(page, "line");
   expect((await text(page, "[data-sub-perp]")).includes("= 2"), "§5: a line has a 2-dimensional complement");
 

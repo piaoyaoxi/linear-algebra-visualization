@@ -49,7 +49,7 @@
   function operationMatrix(values, label) {
     return `
       <div class="s2-operation-matrix">
-        <span class="s2-operation-label">${label}</span>
+        <span class="s2-operation-label">${mathInline(label)}</span>
         ${matrixGrid(values)}
       </div>
     `;
@@ -73,8 +73,8 @@
           </div>
           <div class="s2-basic-lab" data-s2-basic-lab>
             <div class="s2-chip-bar" role="group" aria-label="选择矩阵运算">
-              <button type="button" class="is-active" data-basic-mode="add" aria-pressed="true">A + B</button>
-              <button type="button" data-basic-mode="scale" aria-pressed="false">2A</button>
+              <button type="button" class="is-active" data-basic-mode="add" aria-pressed="true">${mathInline("A+B")}</button>
+              <button type="button" data-basic-mode="scale" aria-pressed="false">${mathInline("2A")}</button>
             </div>
             <div class="s2-operation-flow" data-basic-flow></div>
             <div class="s2-rule-note" data-basic-note aria-live="polite"></div>
@@ -86,7 +86,7 @@
             <span>02</span>
             <div>
               <h3 id="s2-transpose-title">转置翻折：每个元素沿主对角线换位置</h3>
-              <p>行变列，形状从 m × n 变为 n × m；元素本身不改变。</p>
+              <p>行变列，形状从 ${mathInline("m\\times n")} 变为 ${mathInline("n\\times m")}；元素本身不改变。</p>
             </div>
           </div>
           <div class="s2-transpose-lab" data-s2-transpose-lab>
@@ -103,8 +103,8 @@
             </div>
             <div class="s2-transpose-stage">
               <div class="s2-transpose-copy">
-                <span data-transpose-name>A</span>
-                <strong data-transpose-shape>2 × 3</strong>
+                <span data-transpose-name>${mathInline("A")}</span>
+                <strong data-transpose-shape>${mathInline("2\\times3")}</strong>
               </div>
               <div class="s2-transpose-matrix" data-transpose-matrix aria-label="转置矩阵动画"></div>
               <div class="s2-diagonal-cue" aria-hidden="true"></div>
@@ -129,17 +129,17 @@
           </div>
           <div class="s2-size-gate" data-s2-size-gate>
             <div class="s2-size-controls">
-              <label>A 的行数 m<select data-size="m">${[1, 2, 3, 4].map((n) => `<option${n === 2 ? " selected" : ""}>${n}</option>`).join("")}</select></label>
-              <label>A 的列数 n<select data-size="n">${[1, 2, 3, 4].map((n) => `<option${n === 3 ? " selected" : ""}>${n}</option>`).join("")}</select></label>
-              <label>B 的行数 r<select data-size="r">${[1, 2, 3, 4].map((n) => `<option${n === 3 ? " selected" : ""}>${n}</option>`).join("")}</select></label>
-              <label>B 的列数 p<select data-size="p">${[1, 2, 3, 4].map((n) => `<option${n === 2 ? " selected" : ""}>${n}</option>`).join("")}</select></label>
+              <label><span>${mathInline("A")} 的行数 ${mathInline("m")}</span><select data-size="m">${[1, 2, 3, 4].map((n) => `<option${n === 2 ? " selected" : ""}>${n}</option>`).join("")}</select></label>
+              <label><span>${mathInline("A")} 的列数 ${mathInline("n")}</span><select data-size="n">${[1, 2, 3, 4].map((n) => `<option${n === 3 ? " selected" : ""}>${n}</option>`).join("")}</select></label>
+              <label><span>${mathInline("B")} 的行数 ${mathInline("r")}</span><select data-size="r">${[1, 2, 3, 4].map((n) => `<option${n === 3 ? " selected" : ""}>${n}</option>`).join("")}</select></label>
+              <label><span>${mathInline("B")} 的列数 ${mathInline("p")}</span><select data-size="p">${[1, 2, 3, 4].map((n) => `<option${n === 2 ? " selected" : ""}>${n}</option>`).join("")}</select></label>
             </div>
             <div class="s2-gate-stage">
-              <div class="s2-dimension-card"><span>A</span><strong data-size-a>2 × 3</strong></div>
+              <div class="s2-dimension-card"><span>${mathInline("A")}</span><strong data-size-a>${mathInline("2\\times3")}</strong></div>
               <div class="s2-gate-symbol" data-gate-symbol aria-hidden="true">×</div>
-              <div class="s2-dimension-card"><span>B</span><strong data-size-b>3 × 2</strong></div>
+              <div class="s2-dimension-card"><span>${mathInline("B")}</span><strong data-size-b>${mathInline("3\\times2")}</strong></div>
               <div class="s2-gate-equals is-open" data-gate-eq aria-hidden="true" title="等于">=</div>
-              <div class="s2-dimension-card is-result" data-size-result-card><span>AB</span><strong data-size-result>2 × 2</strong></div>
+              <div class="s2-dimension-card is-result" data-size-result-card><span>${mathInline("AB")}</span><strong data-size-result>${mathInline("2\\times2")}</strong></div>
             </div>
             <p class="s2-gate-message" data-size-message aria-live="polite"></p>
           </div>
@@ -156,13 +156,13 @@
           <div class="s2-law-grid">
             <article class="s2-law-card">
               <span class="s2-card-kicker">单位矩阵</span>
-              <div class="s2-machine-line"><strong>A</strong><i>→ E →</i><strong>A</strong></div>
+              <div class="s2-machine-line"><strong>${mathInline("A")}</strong><i>→ ${mathInline("E")} →</i><strong>${mathInline("A")}</strong></div>
               <p>${mathInline("EA=A")} 与 ${mathInline("AE=A")} 都表示穿过一个不改变对象的过程。</p>
             </article>
             <article class="s2-law-card">
               <span class="s2-card-kicker">结合律</span>
-              <div class="s2-packaging-line"><span>(AB)C</span><i>=</i><span>A(BC)</span></div>
-              <p>括号只改变先把哪两步打包；从输入出发，实际经过 C、B、A 的顺序不变。</p>
+              <div class="s2-packaging-line"><span>${mathInline("(AB)C")}</span><i>=</i><span>${mathInline("A(BC)")}</span></div>
+              <p>括号只改变先把哪两步打包；从输入出发，实际经过 ${mathInline("C")}、${mathInline("B")}、${mathInline("A")} 的顺序不变。</p>
             </article>
             <article class="s2-law-card">
               <span class="s2-card-kicker">通常不交换</span>
@@ -171,9 +171,9 @@
             </article>
           </div>
           <div class="s2-side-preview">
-            <div><span>左乘 PA</span><strong>PA 的每一行是 A 的各行的组合</strong></div>
-            <div><span>右乘 AP</span><strong>AP 的每一列是 A 的各列的组合</strong></div>
-            <p>P 取初等矩阵时，左乘就是对 A 做一次初等行变换，右乘就是做一次初等列变换。</p>
+            <div><span>左乘 ${mathInline("PA")}</span><strong>${mathInline("PA")} 的每一行是 ${mathInline("A")} 的各行的组合</strong></div>
+            <div><span>右乘 ${mathInline("AP")}</span><strong>${mathInline("AP")} 的每一列是 ${mathInline("A")} 的各列的组合</strong></div>
+            <p>${mathInline("P")} 取初等矩阵时，左乘就是对 ${mathInline("A")} 做一次初等行变换，右乘就是做一次初等列变换。</p>
           </div>
         </section>
 
@@ -185,9 +185,9 @@
             </div>
           </div>
           <div class="s2-extension-grid">
-            <details><summary>矩阵幂：重复同一个过程</summary><p>${mathInline("A^kx")} 表示连续施加 k 次 A；结合律保证可以按不同方式分组计算。</p></details>
-            <details><summary>非零矩阵也可能乘出零矩阵</summary><p>B 可以先把所有输入送入某个方向，而 A 恰好把这个方向全部消掉，于是 A、B 都非零但 ${mathInline("AB=0")}。</p></details>
-            <details><summary>邻接矩阵的幂可以计数路径</summary><p>在网络中，${mathInline("(M^k)_{ij}")} 可以记录从节点 i 到节点 j 的 k 步路径数量；它体现“连续 k 步”的复合含义。</p></details>
+            <details><summary>矩阵幂：重复同一个过程</summary><p>${mathInline("A^kx")} 表示连续施加 ${mathInline("k")} 次 ${mathInline("A")}；结合律保证可以按不同方式分组计算。</p></details>
+            <details><summary>非零矩阵也可能乘出零矩阵</summary><p>${mathInline("B")} 可以先把所有输入送入某个方向，而 ${mathInline("A")} 恰好把这个方向全部消掉，于是 ${mathInline("A")}、${mathInline("B")} 都非零但 ${mathInline("AB=0")}。</p></details>
+            <details><summary>邻接矩阵的幂可以计数路径</summary><p>在网络中，${mathInline("(M^k)_{ij}")} 可以记录从节点 ${mathInline("i")} 到节点 ${mathInline("j")} 的 ${mathInline("k")} 步路径数量；它体现“连续 ${mathInline("k")} 步”的复合含义。</p></details>
           </div>
         </section>
       </div>
@@ -284,12 +284,12 @@
         cell.style.setProperty("--cell-row", flipped ? sourceCol : sourceRow);
         cell.style.setProperty("--cell-col", flipped ? sourceRow : sourceCol);
       });
-      name.textContent = flipped ? "Aᵀ" : "A";
-      shape.textContent = `${rows} × ${cols}`;
-      toggle.textContent = flipped ? "翻折回 A" : "沿主对角线翻折";
+      name.innerHTML = mathInline(flipped ? "A^T" : "A");
+      shape.innerHTML = mathInline(`${rows}\\times${cols}`);
+      toggle.innerHTML = flipped ? `翻折回 ${mathInline("A")}` : "沿主对角线翻折";
       readout.innerHTML = flipped
         ? `${mathInline("a_{ij}")} 已移动到 ${mathInline("a_{ji}")}；当前显示 ${mathInline(`A^T=${matrixTex(shown)}`)}。`
-        : `当前显示 ${mathInline(`A=${matrixTex(original)}`)}；翻折后第 i 行会成为第 i 列。`;
+        : `当前显示 ${mathInline(`A=${matrixTex(original)}`)}；翻折后第 ${mathInline("i")} 行会成为第 ${mathInline("i")} 列。`;
       lab.classList.toggle("is-flipped", flipped);
     };
 
@@ -325,9 +325,9 @@
       const r = Number(controls.r.value);
       const p = Number(controls.p.value);
       const open = n === r;
-      gate.querySelector("[data-size-a]").textContent = `${m} × ${n}`;
-      gate.querySelector("[data-size-b]").textContent = `${r} × ${p}`;
-      gate.querySelector("[data-size-result]").textContent = open ? `${m} × ${p}` : "—";
+      gate.querySelector("[data-size-a]").innerHTML = mathInline(`${m}\\times${n}`);
+      gate.querySelector("[data-size-b]").innerHTML = mathInline(`${r}\\times${p}`);
+      gate.querySelector("[data-size-result]").innerHTML = open ? mathInline(`${m}\\times${p}`) : "—";
       gate.querySelector("[data-size-result-card]").classList.toggle("is-blocked", !open);
       const eq = gate.querySelector("[data-gate-eq]");
       if (eq) {
@@ -336,8 +336,8 @@
       }
       gate.classList.toggle("is-open", open);
       gate.querySelector("[data-size-message]").innerHTML = open
-        ? `<strong>闸门打开：</strong>A 的列数 ${n} 与 B 的行数 ${r} 匹配，结果保留外侧尺寸 ${mathInline(`${m}\\times${p}`)}。`
-        : `<strong>闸门关闭：</strong>A 的列数是 ${n}，B 的行数是 ${r}，中间尺寸无法配对。`;
+        ? `<strong>闸门打开：</strong>${mathInline("A")} 的列数 ${n} 与 ${mathInline("B")} 的行数 ${r} 匹配，结果保留外侧尺寸 ${mathInline(`${m}\\times${p}`)}。`
+        : `<strong>闸门关闭：</strong>${mathInline("A")} 的列数是 ${n}，${mathInline("B")} 的行数是 ${r}，中间尺寸无法配对。`;
     };
     Object.values(controls).forEach((select) => select.addEventListener("change", render));
     render();

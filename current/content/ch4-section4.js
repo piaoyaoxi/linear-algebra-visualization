@@ -24,7 +24,7 @@ defineChapter4Section("matrix-inverse", {
   concepts: [
     {
       label: "逆矩阵的定义",
-      text: `${texInline("A^{-1}A=AA^{-1}=E")}。先做 A，再做 ${texInline("A^{-1}")}，会回到原来的输入。`,
+      text: `${texInline("A^{-1}A=AA^{-1}=E")}。先做 ${texInline("A")}，再做 ${texInline("A^{-1}")}，会回到原来的输入。`,
     },
     {
       label: "方阵限制",
@@ -36,7 +36,7 @@ defineChapter4Section("matrix-inverse", {
     },
     {
       label: "核心等价",
-      text: "对 n 阶矩阵：可逆、行列式非零、秩为 n、列向量线性无关、方程 Ax=b 对每个 b 有唯一解，是同一件结构事实的不同说法。",
+      text: `对 ${texInline("n")} 阶矩阵：可逆、行列式非零、秩为 ${texInline("n")}、列向量线性无关、方程 ${texInline("Ax=b")} 对每个 ${texInline("b")} 有唯一解，是同一件结构事实的不同说法。`,
     },
   ],
   textbook: {
@@ -55,8 +55,8 @@ defineChapter4Section("matrix-inverse", {
     task: "点击任意矩阵，观察单位正方形在输出端是否仍占据二维面积。满秩时应用逆矩阵恢复；降秩时比较两个不同输入为什么会落到同一个输出。",
     prompts: [
       "比较满秩矩阵与四个降秩矩阵：输出是平行四边形，还是已经塌成线段？",
-      "同时读取 rank(A)、det(A) 与面积倍率，建立满秩、行列式非零和可逆之间的联系。",
-      "在降秩例子中观察 x_1 不等于 x_2 但 Ax_1=Ax_2，说明信息丢失后为什么不能唯一恢复。",
+      `同时读取 ${texInline("\\operatorname{rank}(A)")}、${texInline("\\det(A)")} 与面积倍率，建立满秩、行列式非零和可逆之间的联系。`,
+      `在降秩例子中观察 ${texInline("x_1")} 不等于 ${texInline("x_2")} 但 ${texInline("Ax_1=Ax_2")}，说明信息丢失后为什么不能唯一恢复。`,
     ],
   },
   visual: false,
@@ -89,14 +89,14 @@ defineChapter4Section("matrix-inverse", {
   quiz: [
     {
       question: "为什么同一个方阵不可能有两个不同的逆矩阵？",
-      answer: `若 B、C 都是 A 的逆，则 ${texInline("B=B(AC)=(BA)C=C")}，所以逆矩阵唯一。`,
+      answer: `若 ${texInline("B")}、${texInline("C")} 都是 ${texInline("A")} 的逆，则 ${texInline("B=B(AC)=(BA)C=C")}，所以逆矩阵唯一。`,
     },
     {
       question: `若 ${texInline("A,B")} 都可逆，${texInline("(AB)^{-1}")} 是什么？`,
       answer: `${texInline("(AB)^{-1}=B^{-1}A^{-1}")}。撤销复合过程要从最后发生的作用开始。`,
     },
     {
-      question: `方程 ${texInline("XA=C")} 应怎样消去右侧的 A？`,
+      question: `方程 ${texInline("XA=C")} 应怎样消去右侧的 ${texInline("A")}？`,
       answer: `在等式两边右乘 ${texInline("A^{-1}")}，得到 ${texInline("X=CA^{-1}")}。`,
     },
     {

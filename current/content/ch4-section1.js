@@ -11,11 +11,11 @@ defineChapter4Section("matrix-language", {
   concepts: [
     {
       label: "行、列与阶",
-      text: `${texInline("m\\times n")} 表示 m 行 n 列；行数和列数共同决定矩阵的形状。`,
+      text: `${texInline("m\\times n")} 表示 ${texInline("m")} 行 ${texInline("n")} 列；行数和列数共同决定矩阵的形状。`,
     },
     {
       label: "元素位置",
-      text: `${texInline("a_{ij}")} 表示第 i 行第 j 列的元素，下标先读行、再读列。`,
+      text: `${texInline("a_{ij}")} 表示第 ${texInline("i")} 行第 ${texInline("j")} 列的元素，下标先读行、再读列。`,
     },
     {
       label: "矩阵相等",
@@ -23,11 +23,11 @@ defineChapter4Section("matrix-language", {
     },
     {
       label: "输入与输出",
-      text: `${texInline("m\\times n")} 矩阵接收 n 个输入坐标，产生 m 个输出坐标。`,
+      text: `${texInline("m\\times n")} 矩阵接收 ${texInline("n")} 个输入坐标，产生 ${texInline("m")} 个输出坐标。`,
     },
     {
       label: "列的含义",
-      text: `把矩阵看成变换记录时，第 j 列就是 ${texInline("Ae_j")}，记录第 j 个标准基向量的去向。`,
+      text: `把矩阵看成变换记录时，第 ${texInline("j")} 列就是 ${texInline("Ae_j")}，记录第 ${texInline("j")} 个标准基向量的去向。`,
     },
   ],
   textbook: {
@@ -48,7 +48,7 @@ defineChapter4Section("matrix-language", {
   },
   example: {
     title: "例题：从矩阵的两列读出平面变化",
-    question: `设 ${texInline("A=\\begin{bmatrix}2&1\\\\0&1\\end{bmatrix}")}。不逐点代入，说明 A 对平面网格的大致作用，并判断它是否会把平面压扁。`,
+    question: `设 ${texInline("A=\\begin{bmatrix}2&1\\\\0&1\\end{bmatrix}")}。不逐点代入，说明 ${texInline("A")} 对平面网格的大致作用，并判断它是否会把平面压扁。`,
     choices: [
       {
         correct: true,
@@ -61,9 +61,9 @@ defineChapter4Section("matrix-language", {
       { text: "必须把平面上每个点逐一代入，单看两列无法判断网格变化。" },
     ],
     steps: [
-      `第一列是 ${texInline("Ae_1=(2,0)^T")}：水平方向仍沿 x 轴，但长度变为原来的 2 倍。`,
+      `第一列是 ${texInline("Ae_1=(2,0)^T")}：水平方向仍沿 ${texInline("x")} 轴，但长度变为原来的 2 倍。`,
       `第二列是 ${texInline("Ae_2=(1,1)^T")}：竖直方向保留向上分量，同时向右偏移。`,
-      "任意向量都由 e₁、e₂ 线性组合而成，所以两列的去向会带动整张网格。",
+      `任意向量都由 ${texInline("e_1")}、${texInline("e_2")} 线性组合而成，所以两列的去向会带动整张网格。`,
       "两列不共线，仍能张成整个平面；因此这是横向拉伸与剪切的组合，不会把平面压扁。",
     ],
   },
@@ -88,7 +88,7 @@ defineChapter4Section("matrix-language", {
   summary: [
     `矩阵同时保存数字和位置；${texInline("a_{ij}")} 的下标先读行、再读列。`,
     "矩阵可以来自数据、方程组和方向变化，但这些来源都依赖稳定的行列结构。",
-    `${texInline("m\\times n")} 矩阵把 n 个输入坐标组织成 m 个输出坐标。`,
+    `${texInline("m\\times n")} 矩阵把 ${texInline("n")} 个输入坐标组织成 ${texInline("m")} 个输出坐标。`,
     "二维变换中，先读两列，就能抓住两个基本方向以及整张网格的去向。",
   ],
   exercises: [

@@ -279,14 +279,14 @@
   align-content: center;
 }
 
-#matrix-operations-formal .s2-transpose-copy span {
+#matrix-operations-formal .s2-transpose-copy > span {
   color: var(--accent-strong);
   font-family: Georgia, "Times New Roman", serif;
   font-size: 34px;
   font-style: italic;
 }
 
-#matrix-operations-formal .s2-transpose-copy strong {
+#matrix-operations-formal .s2-transpose-copy > strong {
   color: var(--muted);
   font-size: 14px;
   font-weight: 760;
@@ -457,7 +457,7 @@
   background: var(--surface-solid);
 }
 
-#matrix-operations-formal .s2-dimension-card span {
+#matrix-operations-formal .s2-dimension-card > span {
   color: var(--faint);
   font-size: 12px;
   font-weight: 800;
@@ -566,8 +566,8 @@
   color: var(--text);
 }
 
-#matrix-operations-formal .s2-machine-line strong,
-#matrix-operations-formal .s2-packaging-line span {
+#matrix-operations-formal .s2-machine-line > strong,
+#matrix-operations-formal .s2-packaging-line > span {
   padding: 9px 13px;
   border-radius: 11px;
   background: var(--surface-solid);
@@ -598,18 +598,18 @@
   background: var(--surface-soft);
 }
 
-#matrix-operations-formal .s2-side-preview div {
+#matrix-operations-formal .s2-side-preview > div {
   display: grid;
   gap: 5px;
 }
 
-#matrix-operations-formal .s2-side-preview span {
+#matrix-operations-formal .s2-side-preview > div > span {
   color: var(--faint);
   font-size: 12px;
   font-weight: 780;
 }
 
-#matrix-operations-formal .s2-side-preview strong {
+#matrix-operations-formal .s2-side-preview > div > strong {
   color: var(--text);
   font-size: 14px;
 }

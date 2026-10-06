@@ -262,7 +262,7 @@
   margin-top: 18px;
 }
 
-#matrix-operations-interactive .s2c-process-track span {
+#matrix-operations-interactive .s2c-process-track > span {
   display: grid;
   place-items: center;
   min-height: 48px;
@@ -275,7 +275,7 @@
   transition: background 180ms ease, color 180ms ease, border-color 180ms ease, transform 180ms ease;
 }
 
-#matrix-operations-interactive .s2c-process-track span.is-active {
+#matrix-operations-interactive .s2c-process-track > span.is-active {
   border-color: color-mix(in srgb, var(--accent) 34%, var(--line));
   background: var(--accent-soft);
   color: var(--accent-strong);
@@ -567,7 +567,7 @@
   font-size: 18px;
 }
 
-#matrix-operations-interactive .s2c-order-grid article > header span {
+#matrix-operations-interactive .s2c-order-grid article > header > span {
   color: var(--muted);
   font-size: 12px;
   font-weight: 760;
@@ -680,7 +680,7 @@
   #matrix-operations-interactive .s2c-panel.is-active,
   #matrix-operations-interactive .s2c-tabs button,
   #matrix-operations-interactive .s2c-controls button,
-  #matrix-operations-interactive .s2c-process-track span,
+  #matrix-operations-interactive .s2c-process-track > span,
   #matrix-operations-interactive .s2c-matrix span,
   #matrix-operations-interactive .s2c-matrix button {
     animation: none;

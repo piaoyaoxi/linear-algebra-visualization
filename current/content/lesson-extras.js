@@ -170,7 +170,7 @@
     "matrix-language": {
       ponders: [
         {
-          q: "3×1 矩阵和 1×3 矩阵有什么区别？",
+          q: `${t("3\\times1")} 矩阵和 ${t("1\\times3")} 矩阵有什么区别？`,
           a: "前者是列向量（3 行 1 列），后者是行向量（1 行 3 列）。形状不同，即使数字相同也不相等。",
         },
       ],
@@ -178,7 +178,7 @@
     "matrix-operations": {
       ponders: [
         {
-          q: "AB=0 能推出 A=0 或 B=0 吗？",
+          q: `${t("AB=0")} 能推出 ${t("A=0")} 或 ${t("B=0")} 吗？`,
           a: `不能：${t("\\begin{pmatrix}1&0\\\\0&0\\end{pmatrix}\\begin{pmatrix}0&0\\\\0&1\\end{pmatrix}=0")}，两个因子都不是零矩阵。`,
         },
       ],
@@ -186,8 +186,8 @@
     "matrix-product-determinant-rank": {
       ponders: [
         {
-          q: "rank(AB) 可能比 rank(A) 和 rank(B) 都小吗？",
-          a: `可能：${t("A=\\begin{pmatrix}1&0\\\\0&0\\end{pmatrix},\\ B=\\begin{pmatrix}0&0\\\\0&1\\end{pmatrix}")} 的秩都是 1，而 AB=0，秩为 0。`,
+          q: `${t("\\operatorname{rank}(AB)")} 可能比 ${t("\\operatorname{rank}(A)")} 和 ${t("\\operatorname{rank}(B)")} 都小吗？`,
+          a: `可能：${t("A=\\begin{pmatrix}1&0\\\\0&0\\end{pmatrix},\\ B=\\begin{pmatrix}0&0\\\\0&1\\end{pmatrix}")} 的秩都是 1，而 ${t("AB=0")}，秩为 0。`,
         },
       ],
     },
@@ -218,8 +218,8 @@
     "block-elementary-applications": {
       ponders: [
         {
-          q: `A、D 可逆时，${t("\\begin{vmatrix}A&0\\\\C&D\\end{vmatrix}")} 等于多少？`,
-          a: `${t("\\det A\\cdot\\det D")}：用块倍加把 C 消成 0 不改变行列式，再按块对角计算。`,
+          q: `${t("A,D")} 可逆时，${t("\\begin{vmatrix}A&0\\\\C&D\\end{vmatrix}")} 等于多少？`,
+          a: `${t("\\det A\\cdot\\det D")}：用块倍加把 ${t("C")} 消成 0 不改变行列式，再按块对角计算。`,
         },
       ],
     },

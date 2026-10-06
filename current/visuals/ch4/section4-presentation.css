@@ -336,7 +336,7 @@ body.dark .inverse-transform-lab {
   gap: 1px;
 }
 
-.inverse-plane-toolbar > div:first-child span {
+.inverse-plane-toolbar > div:first-child > span {
   color: var(--inverse-green);
   font-size: 9px;
   font-weight: 850;
@@ -551,8 +551,8 @@ body.dark .inverse-transform-lab {
   gap: 1px;
 }
 
-.inverse-control-heading span,
-.inverse-composition span {
+.inverse-control-heading > div > span,
+.inverse-composition > span {
   color: var(--faint);
   font-size: 9px;
   font-weight: 800;
@@ -819,7 +819,7 @@ body.dark .inverse-transform-lab {
   gap: 1px;
 }
 
-.inverse-decision-heading > div:first-child span {
+.inverse-decision-heading > div:first-child > span {
   color: var(--inverse-green);
   font-size: 9px;
   font-weight: 820;
@@ -830,7 +830,7 @@ body.dark .inverse-transform-lab {
   font-size: 15px;
 }
 
-.inverse-state-summary.is-singular .inverse-decision-heading > div:first-child span,
+.inverse-state-summary.is-singular .inverse-decision-heading > div:first-child > span,
 .inverse-state-summary.is-singular .inverse-decision-heading > div:first-child strong {
   color: var(--inverse-coral);
 }

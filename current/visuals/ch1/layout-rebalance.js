@@ -73,17 +73,17 @@
       if (selected) {
         const rank = lexOrder().indexOf(selected) + 1;
         readout.innerHTML = `
-          <span>当前格点 (${selected.i}, ${selected.j})</span>
+          <span>当前格点 ${tex(`(${selected.i},${selected.j})`)}</span>
           <strong>${tex(selected.math)}</strong>
-          <p>x 的指数是 ${selected.i}，y 的指数是 ${selected.j}，所以总次数是 ${selected.i + selected.j}。按字典序排第 ${rank}${rank === 1 ? "，是首项" : ""}。</p>`;
+          <p>${tex("x")} 的指数是 ${selected.i}，${tex("y")} 的指数是 ${selected.j}，所以总次数是 ${selected.i + selected.j}。按字典序排第 ${rank}${rank === 1 ? "，是首项" : ""}。</p>`;
       } else {
         readout.innerHTML = `
-          <span>当前格点 (${state.selected.i}, ${state.selected.j})</span>
+          <span>当前格点 ${tex(`(${state.selected.i},${state.selected.j})`)}</span>
           <strong>系数为 0</strong>
           <p>这个位置属于指数空间，但不在当前多项式的支撑中。</p>`;
       }
-      root.querySelector("[data-degree-summary]").textContent =
-        "当前多项式的总次数、x 次数和 y 次数都等于 3；数值相同只是巧合，定义并不相同。";
+      root.querySelector("[data-degree-summary]").innerHTML =
+        `当前多项式的总次数、${tex("x")} 次数和 ${tex("y")} 次数都等于 3；数值相同只是巧合，定义并不相同。`;
     }
 
     // lexicographic order (x before y): compare the x exponent, then the y exponent
@@ -186,7 +186,7 @@
       root.querySelector("[data-lattice-readout]").innerHTML = `
         <span>指数向量相加</span>
         <strong>${tex(`(${state.first.i},${state.first.j})+(${state.second.i},${state.second.j})=(${sum.i},${sum.j})`)}</strong>
-        <p>乘积格点的两个坐标，分别由 x 指数和 y 指数相加得到。</p>`;
+        <p>乘积格点的两个坐标，分别由 ${tex("x")} 指数和 ${tex("y")} 指数相加得到。</p>`;
       root.querySelector("[data-degree-summary]").textContent =
         "在指数空间中，单项式乘法就是向量加法；系数相乘，指数逐坐标相加。";
       root.querySelector("[data-product-result]").innerHTML = `
@@ -250,14 +250,14 @@
       root,
       manual: true,
       key: "visuals/ch1/layout-rebalance.js#exponent-add",
-      question: `${tex("x^2y")} 在格点 (2,1)，${tex("x")} 在格点 (1,0)。乘积 ${tex("x^2y\\cdot x")} 落在哪个格点，总次数是多少？`,
+      question: `${tex("x^2y")} 在格点 ${tex("(2,1)")}，${tex("x")} 在格点 ${tex("(1,0)")}。乘积 ${tex("x^2y\\cdot x")} 落在哪个格点，总次数是多少？`,
       options: [
-        ["(3,1)，总次数 4", true, ""],
-        ["(2,0)，总次数 2", false, `指数要相加：${tex("x^2\\cdot x=x^3")}，不是 ${tex("x^{2\\cdot1}")}。`],
-        ["(3,1)，总次数仍是 3", false, "总次数是两个指数之和 3+1=4，乘上一次项后升高 1。"],
-        ["(2,1)，乘 x 不改变位置", false, `${tex("x^2y\\cdot x=x^3y")}，x 的指数从 2 变成 3。`],
+        [`${tex("(3,1)")}，总次数 4`, true, ""],
+        [`${tex("(2,0)")}，总次数 2`, false, `指数要相加：${tex("x^2\\cdot x=x^3")}，不是 ${tex("x^{2\\cdot1}")}。`],
+        [`${tex("(3,1)")}，总次数仍是 3`, false, "总次数是两个指数之和 3+1=4，乘上一次项后升高 1。"],
+        [`${tex("(2,1)")}，乘 ${tex("x")} 不改变位置`, false, `${tex("x^2y\\cdot x=x^3y")}，x 的指数从 2 变成 3。`],
       ],
-      right: `✓ 单项式相乘，指数向量相加：(2,1)+(1,0)=(3,1)，首尾相接正好到达乘积格点；总次数也相加，3+1=4，乘积落在斜线 i+j=4 上。`,
+      right: `✓ 单项式相乘，指数向量相加：${tex("(2,1)+(1,0)=(3,1)")}，首尾相接正好到达乘积格点；总次数也相加，${tex("3+1=4")}，乘积落在斜线 ${tex("i+j=4")} 上。`,
       onPick: () => lockables.forEach((node) => { node.disabled = false; }),
     });
     if (gate) lockables.forEach((node) => { node.disabled = true; });
@@ -285,9 +285,9 @@
               <div class="ch1-multivariate-axis-key">
                 <span>怎样读这张图</span>
                 <div class="ch1-axis-key-grid">
-                  <div><strong>横坐标 i</strong><small>x 的指数</small></div>
-                  <div><strong>纵坐标 j</strong><small>y 的指数</small></div>
-                  <div><strong>斜线 i+j=d</strong><small>同一齐次层</small></div>
+                  <div><strong>横坐标 ${tex("i")}</strong><small>${tex("x")} 的指数</small></div>
+                  <div><strong>纵坐标 ${tex("j")}</strong><small>${tex("y")} 的指数</small></div>
+                  <div><strong>斜线 ${tex("i+j=d")}</strong><small>同一齐次层</small></div>
                 </div>
               </div>
               <p class="ch1-multivariate-summary" data-degree-summary></p>
@@ -297,14 +297,11 @@
           <section class="ch1-multivariate-module" data-support-module>
             <header class="ch1-multivariate-module-head">
               <h4>按总次数查看齐次分层</h4>
-              <p>选择一个 d，只保留位于斜线 i+j=d 上的项；下方同步列出完整齐次分解。</p>
+              <p>选择一个 ${tex("d")}，只保留位于斜线 ${tex("i+j=d")} 上的项；下方同步列出完整齐次分解。</p>
             </header>
             <div class="ch1-controls" role="group" aria-label="选择总次数层">
               <button type="button" class="is-active" data-layer="all">全部层</button>
-              <button type="button" data-layer="0">d=0</button>
-              <button type="button" data-layer="1">d=1</button>
-              <button type="button" data-layer="2">d=2</button>
-              <button type="button" data-layer="3">d=3</button>
+              ${[0, 1, 2, 3].map((d) => `<button type="button" data-layer="${d}">${tex(`d=${d}`)}</button>`).join("\n              ")}
             </div>
             <div class="ch1-multivariate-layer-grid" data-layers></div>
           </section>
@@ -312,7 +309,7 @@
           <section class="ch1-multivariate-module" data-multiply-module hidden>
             <header class="ch1-multivariate-module-head">
               <h4>用两个指数向量合成乘积格点</h4>
-              <p>主图中 α 从原点出发，β 接在 α 的末端，终点就是乘积的指数。</p>
+              <p>主图中 ${tex("\\alpha")} 从原点出发，${tex("\\beta")} 接在 ${tex("\\alpha")} 的末端，终点就是乘积的指数。</p>
             </header>
             <div class="ch1-multivariate-product-grid">
               <div class="ch1-multivariate-product-controls">

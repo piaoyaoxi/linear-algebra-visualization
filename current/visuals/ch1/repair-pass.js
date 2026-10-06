@@ -5,7 +5,6 @@
   const M = () => window.Ch1Math;
   const U = () => window.Ch1UI;
   const tex = (value) => U().tex(String(value));
-  const esc = (value) => U().esc(String(value));
   const clamp = (value, min = 0, max = 1) => Math.max(min, Math.min(max, value));
   const ease = (value) => {
     const t = clamp(value);
@@ -438,8 +437,8 @@
 
   function mountEuclidRepair(root) {
     const presets = {
-      default: { f: M().poly([-1, 0, 0, 0, 1]), g: M().poly([-1, 0, 0, 1]), name: "gcd(x⁴−1,x³−1)" },
-      coprime: { f: M().poly([1, 0, 1]), g: M().poly([1, 1]), name: "gcd(x²+1,x+1)" },
+      default: { f: M().poly([-1, 0, 0, 0, 1]), g: M().poly([-1, 0, 0, 1]), name: tex("\\gcd(x^4-1,x^3-1)") },
+      coprime: { f: M().poly([1, 0, 1]), g: M().poly([1, 1]), name: tex("\\gcd(x^2+1,x+1)") },
       shared: { f: M().poly([-2, 1, 2, -1]), g: M().poly([-1, 0, 1]), name: "含公共二次因式" },
     };
     let current = presets.default;
@@ -487,15 +486,15 @@
         const equation = `${M().formatPolyTex(step.a)}=(${M().formatPolyTex(step.q)})(${M().formatPolyTex(step.b)})+(${M().formatPolyTex(step.remainder)})`;
         const note = common
           // each “X=(…)(…)” stays on one line; lines break only between them
-          ? `<small class="ch1-euclid-common"><span class="ch1-keep">A=${factored(step.a, common)}，</span><span class="ch1-keep">B=${factored(step.b, common)}，</span><span class="ch1-keep">r=${factored(step.remainder, common)}</span></small>`
-          : "<small>取余后，用 B 和 r 进入下一轮。</small>";
+          ? `<small class="ch1-euclid-common"><span class="ch1-keep">${tex("A={}")}${factored(step.a, common)}，</span><span class="ch1-keep">${tex("B={}")}${factored(step.b, common)}，</span><span class="ch1-keep">${tex("r={}")}${factored(step.remainder, common)}</span></small>`
+          : `<small>取余后，用 ${tex("B")} 和 ${tex("r")} 进入下一轮。</small>`;
         return `<div class="ch1-euclid-step-copy"><p>${tex(equation)}</p>${note}</div>`;
       }
       if (step.kind === "done") {
         const d = M().formatPolyTex(step.d || step.a);
-        return `<div class="ch1-euclid-step-copy"><p>首一化后得到 ${common ? `<b class="ch1-common-factor">${tex(d)}</b>` : tex(d)}</p><small>${common ? "每一行的 A、B、r 都含这个因式，取余时它一直保留。" : "最后一个非零余式给出最大公因式。"}</small></div>`;
+        return `<div class="ch1-euclid-step-copy"><p>首一化后得到 ${common ? `<b class="ch1-common-factor">${tex(d)}</b>` : tex(d)}</p><small>${common ? `每一行的 ${tex("A")}、${tex("B")}、${tex("r")} 都含这个因式，取余时它一直保留。` : "最后一个非零余式给出最大公因式。"}</small></div>`;
       }
-      return `<div class="ch1-euclid-step-copy"><p>${esc(step.note)}</p><small>从 A=f、B=g 开始。</small></div>`;
+      return `<div class="ch1-euclid-step-copy"><p>初始化：${tex("A=f")}，${tex("B=g")}</p><small>从 ${tex("A=f")}、${tex("B=g")} 开始。</small></div>`;
     }
 
     function paint() {
@@ -503,7 +502,7 @@
       index = Math.min(index, steps.length - 1);
       const step = steps[index];
       const final = steps.at(-1);
-      root.querySelector("[data-name]").textContent = current.name;
+      root.querySelector("[data-name]").innerHTML = current.name;
       root.querySelector("[data-step]").textContent = `${index + 1}/${steps.length}`;
       root.querySelector("[data-a]").innerHTML = tex(M().formatPolyTex(step.a || M().zeroPoly()));
       root.querySelector("[data-b]").innerHTML = tex(M().formatPolyTex(step.b || M().zeroPoly()));
@@ -553,7 +552,7 @@
         ["最后一个非零余式（化成首一）", true, ""],
         ["余式变成 0 的那一步：0 就是最大公因式", false, "余式为 0 只说明除法停了；公因式是它前面那个非零余式。"],
         ["余式变成非零常数时的那个常数", false, `这里余式从 ${tex("x-1")} 直接变成 0，没有经过常数；余式是非零常数时，最大公因式是 1。`],
-        ["必须先把 f、g 分解因式才能读出", false, "整个过程只做带余除法，没有分解因式。"],
+        [`必须先把 ${tex("f")}、${tex("g")} 分解因式才能读出`, false, "整个过程只做带余除法，没有分解因式。"],
       ],
       right: `✓ 每一步 ${tex("\\gcd(f,g)=\\gcd(g,r)")}，公因式在取余中保持不变；余式次数严格下降，到 0 多项式为止，前一个非零余式化成首一就是 ${tex("\\gcd(f,g)")}。对 ${tex("x^4-1")} 与 ${tex("x^3-1")}，它是 ${tex("x-1")}。`,
     });
@@ -570,7 +569,7 @@
           <button type="button" class="is-primary" data-next>下一步</button>
           <button type="button" data-reset>重置</button>
           <span class="ch1-control-separator"></span>
-          <button type="button" data-preset="default" class="is-active" aria-pressed="true">x⁴−1 与 x³−1</button>
+          <button type="button" data-preset="default" class="is-active" aria-pressed="true">${tex("x^4-1")} 与 ${tex("x^3-1")}</button>
           <button type="button" data-preset="coprime" aria-pressed="false">互素示例</button>
           <button type="button" data-preset="shared" aria-pressed="false">公共因式示例</button>
         </div>
@@ -580,10 +579,10 @@
           <div class="ch1-metric"><span>结论</span><strong data-coprime class="ch1-status"></strong></div>
         </div>
         <div class="ch1-equation-grid">
-          <div><span>A</span><strong data-a></strong></div>
-          <div><span>B</span><strong data-b></strong></div>
-          <div><span>商 q</span><strong data-q></strong></div>
-          <div><span>余式 r</span><strong data-r></strong></div>
+          <div><span>${tex("A")}</span><strong data-a></strong></div>
+          <div><span>${tex("B")}</span><strong data-b></strong></div>
+          <div><span>商 ${tex("q")}</span><strong data-q></strong></div>
+          <div><span>余式 ${tex("r")}</span><strong data-r></strong></div>
         </div>
         <section class="ch1-stairs-card">
           <h4>余式次数</h4>
@@ -600,8 +599,8 @@
             <h4>倒着代回：${tex("sf+tg=\\gcd(f,g)")}</h4>
             <div class="ch1-bezout-main"><span>首一最大公因式</span><strong data-gcd></strong></div>
             <div class="ch1-bezout-coefficients">
-              <div class="ch1-bezout-coeff"><span>s(x)</span><strong data-s></strong></div>
-              <div class="ch1-bezout-coeff"><span>t(x)</span><strong data-t></strong></div>
+              <div class="ch1-bezout-coeff"><span>${tex("s(x)")}</span><strong data-s></strong></div>
+              <div class="ch1-bezout-coeff"><span>${tex("t(x)")}</span><strong data-t></strong></div>
             </div>
             <div class="ch1-bezout-verify"><h4>代回验证</h4><div data-verify></div></div>
           </section>

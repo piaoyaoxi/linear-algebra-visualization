@@ -339,7 +339,9 @@
     const n = Math.max(P.length, length || 0);
     return `<div class="ch1-strip" role="list">${Array.from({ length: n }, (_, i) => {
       const value = P[i] || R(0);
-      return `<label class="ch1-strip-cell" role="listitem"><span class="ch1-strip-deg">${i === 0 ? "1" : i === 1 ? "x" : `x<sup>${i}</sup>`}</span>${editable ? `<input class="ch1-strip-input" type="text" inputmode="decimal" data-${key}="${i}" value="${formatR(value)}" aria-label="x 的 ${i} 次项系数">` : `<strong class="ch1-strip-val">${formatRText(value)}</strong>`}</label>`;
+      const monomial = i === 0 ? "1" : i === 1 ? "x" : `x^{${i}}`;
+      const label = window.texInline ? window.texInline(monomial) : i === 0 ? "1" : i === 1 ? "x" : `x<sup>${i}</sup>`;
+      return `<label class="ch1-strip-cell" role="listitem"><span class="ch1-strip-deg">${label}</span>${editable ? `<input class="ch1-strip-input" type="text" inputmode="decimal" data-${key}="${i}" value="${formatR(value)}" aria-label="x 的 ${i} 次项系数">` : `<strong class="ch1-strip-val">${formatRText(value)}</strong>`}</label>`;
     }).join("")}</div>`;
   }
 

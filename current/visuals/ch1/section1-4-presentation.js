@@ -74,12 +74,14 @@
       root.querySelector("[data-f-tex]").innerHTML = tex(M().formatPolyTex(state.f));
       root.querySelector("[data-g-tex]").innerHTML = tex(M().formatPolyTex(state.g));
       root.querySelector("[data-out-tex]").innerHTML = tex(M().formatPolyTex(out));
-      root.querySelector("[data-deg-f]").textContent = M().isZeroPoly(state.f) ? "未定义（零多项式）" : M().deg(state.f);
-      root.querySelector("[data-deg-g]").textContent = M().isZeroPoly(state.g) ? "未定义（零多项式）" : M().deg(state.g);
+      const degreeLine = (p, name) => (M().isZeroPoly(p) ? `${tex(`\\deg ${name}`)} 未定义（零多项式）` : tex(`\\deg ${name}=${M().deg(p)}`));
+      root.querySelector("[data-deg-f]").innerHTML = degreeLine(state.f, "f");
+      root.querySelector("[data-deg-g]").innerHTML = degreeLine(state.g, "g");
       root.querySelector("[data-deg-out]").textContent = M().isZeroPoly(out) ? "未定义（零多项式）" : M().deg(out);
       root.querySelector("[data-k-value]").textContent = state.k;
+      root.querySelector("[data-k-eq]").innerHTML = tex(`k=${state.k}`);
       const rows = contributions();
-      root.querySelector("[data-contributions]").innerHTML = state.mode === "mul" ? (rows.length ? rows.map((row) => `<tr><td>${tex(`a_${row.i}`)}</td><td>${tex(`b_${row.j}`)}</td><td>${tex(M().formatRTex(row.value))}</td></tr>`).join("") : `<tr><td colspan="3">该次数没有配对</td></tr>`) : `<tr><td colspan="3">切换到乘法后查看 i+j=k 的完整配对。</td></tr>`;
+      root.querySelector("[data-contributions]").innerHTML = state.mode === "mul" ? (rows.length ? rows.map((row) => `<tr><td>${tex(`a_${row.i}`)}</td><td>${tex(`b_${row.j}`)}</td><td>${tex(M().formatRTex(row.value))}</td></tr>`).join("") : `<tr><td colspan="3">该次数没有配对</td></tr>`) : `<tr><td colspan="3">切换到乘法后查看 ${tex("i+j=k")} 的完整配对。</td></tr>`;
       const coefficient = out[state.k] || M().R(0);
       root.querySelector("[data-k-coeff]").innerHTML = tex(M().formatRTex(coefficient));
       root.querySelector("[data-scale-box]").hidden = state.mode !== "scale";
@@ -177,7 +179,7 @@
         ["是：只是写法更短", false, `${tex("(2,-1,3)")} 读作 ${tex("2-x+3x^2")}，在 x=2 处的值是 12，而 f(2)=24。`],
         ["只有次数变了，图像不变", false, "两条曲线只在 x=0 和 x=1 处相交，其他地方都分开了。"],
       ],
-      right: `✓ 系数序列的第 k 位就是 ${tex("x^k")} 的系数，位置本身就是次数。中间的 0 必须保留；两个多项式相等，指每个同次项的系数都相等。`,
+      right: `✓ 系数序列的第 ${tex("k")} 位就是 ${tex("x^k")} 的系数，位置本身就是次数。中间的 0 必须保留；两个多项式相等，指每个同次项的系数都相等。`,
     });
 
     toggle.addEventListener("click", () => {
@@ -191,7 +193,7 @@
 
   function interactive2(el, section) {
     lab(el, "系数带工作台", section.interactive.description,
-      `<button type="button" data-mode="mul" class="is-active">fg</button><button type="button" data-mode="add">f+g</button><button type="button" data-mode="sub">f−g</button><button type="button" data-mode="scale">λf</button><span class="ch1-control-separator"></span><button type="button" data-preset="default">默认</button><button type="button" data-preset="cancel">首项抵消</button><button type="button" data-preset="fraction">分数系数</button><button type="button" data-preset="zero">零多项式</button>`,
+      `<button type="button" data-mode="mul" class="is-active">${tex("fg")}</button><button type="button" data-mode="add">${tex("f+g")}</button><button type="button" data-mode="sub">${tex("f-g")}</button><button type="button" data-mode="scale">${tex("\\lambda f")}</button><span class="ch1-control-separator"></span><button type="button" data-preset="default">默认</button><button type="button" data-preset="cancel">首项抵消</button><button type="button" data-preset="fraction">分数系数</button><button type="button" data-preset="zero">零多项式</button>`,
       `<section class="ch1-learning-module ch1-zero-module" data-zero-module>
          <div class="ch1-module-heading"><span>01</span><div><h4>中间的 0 能不能省掉</h4></div></div>
          <div data-zero-gate></div>
@@ -200,14 +202,14 @@
              <div class="ch1-zero-strip is-f"><b>${tex("f")} 的系数</b>${M().coefficientStrip(M().poly([2, -1, 0, 3]))}</div>
              <div class="ch1-zero-strip is-h" data-zero-after hidden><b>删去 0 后</b>${M().coefficientStrip(M().poly([2, -1, 3]))}</div>
              <div class="ch1-zero-actions"><button type="button" class="ch3l-btn is-primary" data-zero-toggle>删去中间的 0</button></div>
-             <p class="ch1-zero-readout" data-zero-readout hidden>x=2 时，${tex("f(2)=24")}，而 ${tex("3\\cdot2^2-2+2=12")}。两者之差 ${tex("3x^2(x-1)")}，只在 x=0、x=1 处为 0。</p>
+             <p class="ch1-zero-readout" data-zero-readout hidden>${tex("x=2")} 时，${tex("f(2)=24")}，而 ${tex("3\\cdot2^2-2+2=12")}。两者之差 ${tex("3x^2(x-1)")}，只在 ${tex("x=0")}、${tex("x=1")} 处为 0。</p>
            </div>
            <div class="ch1-stage ch1-zero-stage"><canvas aria-label="3x³−x+2 与 3x²−x+2 的图像"></canvas></div>
          </div>
        </section>
-       <div class="ch1-two-col"><div class="ch1-panel"><div><h4>f 的系数带</h4><div data-f-strip></div><div class="ch1-inline-equation">${tex("f=")}<span data-f-tex></span> · deg f=<strong data-deg-f></strong></div></div><div><h4>g 的系数带</h4><div data-g-strip></div><div class="ch1-inline-equation">${tex("g=")}<span data-g-tex></span> · deg g=<strong data-deg-g></strong></div></div><div data-scale-box hidden><label class="ch1-field">λ（支持分数）<input type="text" value="2" data-scale></label></div><div data-k-box hidden><label class="ch1-slider-row"><span>结果次数 k</span><input type="range" min="0" max="8" value="3" data-k><output data-k-value>3</output></label></div></div><div class="ch1-stage"><canvas aria-label="结果多项式固定坐标图像"></canvas></div></div>
+       <div class="ch1-two-col"><div class="ch1-panel"><div><h4>${tex("f")} 的系数带</h4><div data-f-strip></div><div class="ch1-inline-equation">${tex("f=")}<span data-f-tex></span> · <span data-deg-f></span></div></div><div><h4>${tex("g")} 的系数带</h4><div data-g-strip></div><div class="ch1-inline-equation">${tex("g=")}<span data-g-tex></span> · <span data-deg-g></span></div></div><div data-scale-box hidden><label class="ch1-field">${tex("\\lambda")}（支持分数）<input type="text" value="2" data-scale></label></div><div data-k-box hidden><label class="ch1-slider-row"><span>结果次数 ${tex("k")}</span><input type="range" min="0" max="8" value="3" data-k><output data-k-value>3</output></label></div></div><div class="ch1-stage"><canvas aria-label="结果多项式固定坐标图像"></canvas></div></div>
        <div class="ch1-result-band"><div><span>结果</span><strong data-out-tex></strong><small>次数：<span data-deg-out></span></small></div><div data-out-strip></div></div>
-       <div class="ch1-two-col"><div><h4>指定次数贡献</h4><div class="ch1-table-wrap"><table class="ch1-table"><thead><tr><th>f 项</th><th>g 项</th><th>乘积</th></tr></thead><tbody data-contributions></tbody></table></div></div><div class="ch1-callout"><strong>${tex("[x^k](fg)")} 的当前值</strong><p>当 k=<span data-k-value></span> 时，系数为 <span data-k-coeff></span>。</p><p class="ch1-muted">输入允许整数、小数与分数，例如 −3/2；计算在有理数上精确完成。</p></div></div>`);
+       <div class="ch1-two-col"><div><h4>指定次数贡献</h4><div class="ch1-table-wrap"><table class="ch1-table"><thead><tr><th>${tex("f")} 项</th><th>${tex("g")} 项</th><th>乘积</th></tr></thead><tbody data-contributions></tbody></table></div></div><div class="ch1-callout"><strong>${tex("[x^k](fg)")} 的当前值</strong><p>当 <span data-k-eq></span> 时，系数为 <span data-k-coeff></span>。</p><p class="ch1-muted">输入允许整数、小数与分数，例如 −3/2；计算在有理数上精确完成。</p></div></div>`);
     mountCoefficients(el);
     mountZeroModule(el);
   }

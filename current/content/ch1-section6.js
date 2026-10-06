@@ -4,7 +4,7 @@ defineChapter1Section("multiple-factors", {
   title: "重因式",
   navTitle: "重因式",
   question: "怎样判断一个多项式有没有重因式？两个根靠在一起时会发生什么？",
-  goal: `理解 m 重因式与重根；会用 ${texInline("\\gcd(f,f')")} 判断有无重因式。`,
+  goal: `理解 ${texInline("m")} 重因式与重根；会用 ${texInline("\\gcd(f,f')")} 判断有无重因式。`,
   tags: ["重因式", "重根", "导数"],
   intro: `若不可约多项式 ${texInline("p")} 满足 ${texInline("p^m\\mid f")}、${texInline("p^{m+1}\\nmid f")}，就称 ${texInline("p")} 是 ${texInline("f")} 的 ${texInline("m")} 重因式，${texInline("m\\ge2")} 时叫重因式；${texInline("p=x-a")} 时说 ${texInline("a")} 是 ${texInline("m")} 重根。${texInline("m")} 重因式是 ${texInline("f'")} 的 ${texInline("m-1")} 重因式，所以 ${texInline("f")} 没有重因式当且仅当 ${texInline("\\gcd(f,f')=1")}。`,
   textbook: {
@@ -38,7 +38,7 @@ defineChapter1Section("multiple-factors", {
     type: "slot",
     title: "两根合并与重数",
     description: "让两个单根合并，再比较不同重数的图像。",
-    task: "先猜一猜，再拖动 u、v 让两根靠近，或点“令 v=u，两根合并”。下方画的是同一横轴上的 f′，看它的零点和 f 的根什么时候重合；再切到“单根重数”比较 m=1,2,3,4。",
+    task: `先猜一猜，再拖动 ${texInline("u")}、${texInline("v")} 让两根靠近，或点“令 ${texInline("v=u")}，两根合并”。下方画的是同一横轴上的 ${texInline("f'")}，看它的零点和 ${texInline("f")} 的根什么时候重合；再切到“单根重数”比较 ${texInline("m=1,2,3,4")}。`,
   },
   example: {
     title: "例题：求重根并用导数验证",
@@ -56,7 +56,7 @@ defineChapter1Section("multiple-factors", {
       `${texInline("f=x^3(x^2-2x+1)=x^3(x-1)^2")}，所以 0 是 3 重根，1 是 2 重根。`,
       `${texInline("f'=5x^4-8x^3+3x^2=x^2(x-1)(5x-3)")}。`,
       `公共部分为 ${texInline("x^2(x-1)")}，与“每个重数减 1”一致。`,
-      "0 的重数为奇数，曲线相切并穿过 x 轴；1 的重数为偶数，曲线相切后折回。",
+      `0 的重数为奇数，曲线相切并穿过 ${texInline("x")} 轴；1 的重数为偶数，曲线相切后折回。`,
     ],
   },
   quiz: [
@@ -80,6 +80,6 @@ defineChapter1Section("multiple-factors", {
   summary: [
     `${texInline("m")} 重因式是 ${texInline("f'")} 的 ${texInline("m-1")} 重因式。`,
     `${texInline("f")} 没有重因式当且仅当 ${texInline("\\gcd(f,f')=1")}。`,
-    "两个根只有精确重合才成为重根；实根处重数不小于 2 时曲线与 x 轴相切。",
+    `两个根只有精确重合才成为重根；实根处重数不小于 2 时曲线与 ${texInline("x")} 轴相切。`,
   ],
 });

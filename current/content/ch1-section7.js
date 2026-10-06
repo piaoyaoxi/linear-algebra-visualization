@@ -3,7 +3,7 @@ defineChapter1Section("polynomial-functions", {
   textbookSection: "多项式函数",
   title: "多项式函数",
   navTitle: "多项式函数",
-  question: "把一个数代入多项式会得到什么？为什么 n 次多项式最多有 n 个根？",
+  question: `把一个数代入多项式会得到什么？为什么 ${texInline("n")} 次多项式最多有 ${texInline("n")} 个根？`,
   goal: "掌握余数定理与因式定理；理解根的个数上界与多项式函数的相等；会用拉格朗日插值公式构造多项式。",
   tags: ["余数定理", "根的个数", "插值"],
   intro: `用 ${texInline("x-a")} 除 ${texInline("f(x)")}，余式是常数；在等式中令 ${texInline("x=a")}，便知这个常数就是 ${texInline("f(a)")}。所以 ${texInline("a")} 是根当且仅当 ${texInline("(x-a)\\mid f")}。每个根贡献一个一次因式，因此 ${texInline("n")} 次多项式在数域中至多有 ${texInline("n")} 个根（重根按重数计）。`,
@@ -38,7 +38,7 @@ defineChapter1Section("polynomial-functions", {
     type: "slot",
     title: "代入、根数与插值",
     description: "综合除法、根数上界与拉格朗日插值。",
-    task: "先猜一猜，再把不同根的个数 m 拖到超过次数 n，看曲线还能不能穿过所有根。“求值 / 综合除法”里移动 a 看 f(a) 何时为 0；“拉格朗日插值”里修改三个节点。",
+    task: `先猜一猜，再把不同根的个数 ${texInline("m")} 拖到超过次数 ${texInline("n")}，看曲线还能不能穿过所有根。“求值 / 综合除法”里移动 ${texInline("a")} 看 ${texInline("f(a)")} 何时为 0；“拉格朗日插值”里修改三个节点。`,
   },
   example: {
     title: "例题：三点确定一个二次多项式",
@@ -69,8 +69,8 @@ defineChapter1Section("polynomial-functions", {
       answer: `次数不超过 2 的只有这一个；次数更高的有无穷多个，例如 ${texInline("x^2+1+c\\,x(x-1)(x-2)")}。`,
     },
     {
-      question: "用综合除法计算 f(a) 时，中间得到的数有什么意义？",
-      answer: "依次是商 q(x) 的系数，最后一个数是余数 f(a)。",
+      question: `用综合除法计算 ${texInline("f(a)")} 时，中间得到的数有什么意义？`,
+      answer: `依次是商 ${texInline("q(x)")} 的系数，最后一个数是余数 ${texInline("f(a)")}。`,
     },
   ],
   summary: [

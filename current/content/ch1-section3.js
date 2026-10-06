@@ -3,7 +3,7 @@ defineChapter1Section("polynomial-divisibility", {
   textbookSection: "整除的概念",
   title: "整除的概念",
   navTitle: "整除的概念",
-  question: "多项式的带余除法怎样一步步算出商和余式？什么时候说 g 整除 f？",
+  question: `多项式的带余除法怎样一步步算出商和余式？什么时候说 ${texInline("g")} 整除 ${texInline("f")}？`,
   goal: "掌握带余除法以及商、余式的唯一性；理解整除的定义与基本性质。",
   tags: ["带余除法", "整除", "商与余式"],
   intro: `对 ${texInline("f(x)")} 和非零的 ${texInline("g(x)")} 做长除法：每一步用当前余式的首项除以 ${texInline("g")} 的首项，得到商的下一项；乘回 ${texInline("g")} 再相减，余式次数就下降。做到 ${texInline("r=0")} 或 ${texInline("\\deg r<\\deg g")} 为止。`,
@@ -38,7 +38,7 @@ defineChapter1Section("polynomial-divisibility", {
     type: "slot",
     title: "长除法",
     description: "逐步做首项相除、乘回、相减。",
-    task: "先猜一猜，再点“下一步”做完 x⁴−1 除以 x²+x+1：看余式次数阶梯每步下降多少、在哪里落到 deg g 以下；再换到“整除”示例比较结束时的余式。",
+    task: `先猜一猜，再点“下一步”做完 ${texInline("x^4-1")} 除以 ${texInline("x^2+x+1")}：看余式次数阶梯每步下降多少、在哪里落到 ${texInline("\\deg g")} 以下；再换到“整除”示例比较结束时的余式。`,
   },
   example: {
     title: "例题：完成一次带余除法",

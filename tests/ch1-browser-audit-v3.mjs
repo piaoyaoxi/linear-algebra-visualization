@@ -120,7 +120,7 @@ async function checkDivisionSummary(page, viewport) {
       overflowX: title ? getComputedStyle(title).overflowX : "missing",
     };
   });
-  ensure(result.text.includes("x²+x+1"), `§3: example formula is incomplete: ${result.text}`);
+  ensure(result.text.includes("x^2+x+1"), `§3: example formula is incomplete: ${result.text}`);
   if (viewport.width >= 760) {
     ensure(result.titleOverflow <= 2 && result.parentOverflow <= 2, `§3: example formula is visually clipped (${result.titleOverflow}/${result.parentOverflow})`);
   } else {

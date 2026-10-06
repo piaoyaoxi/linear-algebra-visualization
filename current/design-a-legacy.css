@@ -867,6 +867,17 @@
   background: var(--surface-soft);
 }
 
+/* phones: the lab card is the only box around the area blocks; the band becomes a hairline */
+@media (max-width: 720px) {
+  :is(main, #la) .ch2-lab .ch2-tile-row {
+    min-height: 0;
+    padding: 14px 0 0;
+    border-top: 1px solid var(--line);
+    border-radius: 0;
+    background: none;
+  }
+}
+
 :is(main, #la) .ch2-tile-group {
   display: grid;
   justify-items: center;

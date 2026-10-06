@@ -82,11 +82,8 @@ defineChapter2Section("cramer-rule", {
   quiz: [
     { question: "克拉默法则的必要前提是什么？", answer: "系数矩阵为方阵且行列式非零。" },
     { question: "A₂ 怎样构造？", answer: "把 A 的第 2 列替换成 b，其余列保持不变。" },
-    { question: "为什么替换列而不是替换行？", answer: "因为 Ax 是 A 的列向量按未知量系数形成的线性组合。" },
-    { question: "列线性展开后，为什么只有 xᵢ 对应项留下？", answer: "其余项会让 Aᵢ 出现两列相同，行列式为零。" },
     { question: "D=0 是否必然无解？", answer: "不必然，也可能有无穷多解。" },
     { question: "齐次方程 Ax=0 在 det(A)≠0 时有几个解？", answer: "只有零解。" },
-    { question: "克拉默法则为什么适合理论说明却不常用于大规模数值计算？", answer: "它需要计算多个高阶行列式，成本和数值稳定性都不如消元或分解方法。" },
   ],
   summary: [
     "det(A) 非零时，A 的列构成基，方程组有唯一坐标。",

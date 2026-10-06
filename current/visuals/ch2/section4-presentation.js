@@ -167,8 +167,9 @@
       root.innerHTML = `
         <h2>交互实验</h2>
         <div class="ch2-lab">
-          <div class="ch2-lab-head"><h3>三种列操作 · 对比几何变化</h3><p>平行四边形由两列生成，所以画面直接操作列。右图的虚线是初始图形；读数同步验证当前 det=初始 det×累计倍率。</p></div>
+          <div class="ch2-lab-head"><h3>三种列操作 · 对比几何变化</h3></div>
           <div data-op-gate></div>
+          <p class="ch2-lab-hint">平行四边形由两列生成，所以画面直接操作列。右图的虚线是初始图形；读数同步验证当前 det=初始 det×累计倍率。</p>
           <div class="ch2-operation-layout">
             <div class="ch2-compare-stage">
               <div><span>变换前 · 固定参照</span><div class="ch2-stage"><canvas data-row-before aria-label="列操作前的有向面积"></canvas></div></div>

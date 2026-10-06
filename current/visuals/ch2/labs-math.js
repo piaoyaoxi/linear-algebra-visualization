@@ -202,6 +202,55 @@
     };
   }
 
+  /*
+   * Name the column vector tip − base just past its tip, on the side away from the other column
+   * (the outside of the parallelogram), on a paper halo so crossing lines stay readable.
+   * `fallback` (±1) picks opposite sides for the two columns when they are collinear.
+   */
+  function sideAway(base, tip, other, fallback = 1) {
+    const vx = tip.x - base.x;
+    const vy = tip.y - base.y;
+    const len = Math.hypot(vx, vy);
+    if (len < 1e-6) return { u: { x: 0.7071, y: -0.7071 }, n: { x: 0.7071, y: 0.7071 } };
+    const u = { x: vx / len, y: vy / len };
+    let n = { x: -u.y, y: u.x };
+    const side = other ? (other.x - base.x) * n.x + (other.y - base.y) * n.y : 0;
+    const otherLen = other ? Math.hypot(other.x - base.x, other.y - base.y) : 0;
+    if (Math.abs(side) > 0.04 * otherLen) {
+      if (side > 0) n = { x: -n.x, y: -n.y };
+    } else if (fallback < 0) n = { x: -n.x, y: -n.y };
+    return { u, n };
+  }
+
+  function haloText(ctx, text, x, y, palette, color = palette.text) {
+    ctx.save();
+    ctx.lineWidth = 4;
+    ctx.lineJoin = "round";
+    ctx.strokeStyle = palette.paper;
+    ctx.strokeText(text, x, y);
+    ctx.fillStyle = color;
+    ctx.fillText(text, x, y);
+    ctx.restore();
+  }
+
+  function tipLabel(ctx, text, base, tip, other, palette, width, height, fallback = 1) {
+    const { u, n } = sideAway(base, tip, other, fallback);
+    const w = ctx.measureText(text).width;
+    // a point 13px off the line, a little before the tip; the text grows away from the line
+    let x = tip.x - u.x * 4 + n.x * 13;
+    let y = tip.y - u.y * 4 + n.y * 13;
+    ctx.save();
+    ctx.textBaseline = "middle";
+    ctx.textAlign = "left";
+    if (n.x < -0.35) x -= w;
+    else if (Math.abs(n.x) <= 0.35) x -= w / 2;
+    y += n.y * 3;
+    x = clamp(x, 4, width - w - 4);
+    y = clamp(y, 9, height - 9);
+    haloText(ctx, text, x, y, palette);
+    ctx.restore();
+  }
+
   function drawTransformScene(canvas, matrix, options = {}) {
     const { ctx, width, height } = setupCanvas(canvas);
     const palette = getPalette();
@@ -382,10 +431,10 @@
     drawArrow(ctx, p0, p3, palette.v2, 3);
 
     ctx.save();
-    ctx.fillStyle = palette.text;
     ctx.font = "600 12px 'LA Serif Latin', 'LA Serif SC', 'Songti SC', serif";
-    ctx.fillText(options.firstLabel || "Ae₁", p1.x + 8, p1.y - 7);
-    ctx.fillText(options.secondLabel || "Ae₂", p3.x + 8, p3.y - 7);
+    tipLabel(ctx, options.firstLabel || "Ae₁", p0, p1, p3, palette, width, height, 1);
+    tipLabel(ctx, options.secondLabel || "Ae₂", p0, p3, p1, palette, width, height, -1);
+    ctx.fillStyle = palette.text;
     if (options.caption) {
       ctx.fillStyle = palette.muted;
       ctx.font = "12px 'LA Serif Latin', 'LA Serif SC', 'Songti SC', serif";
@@ -523,6 +572,8 @@
     drawArrow,
     fitView,
     drawTransformScene,
+    sideAway,
+    haloText,
     animateMatrix,
     matrixState,
     inversionPairs,

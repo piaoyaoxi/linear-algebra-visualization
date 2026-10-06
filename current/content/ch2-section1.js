@@ -75,11 +75,9 @@ defineChapter2Section("determinant-intro", {
     ],
   },
   quiz: [
-    { question: "行列式的结果属于矩阵还是标量？", answer: "标量。" },
     { question: `${texInline("\\det(A)=2")} 与 ${texInline("\\det(A)=-2")} 的共同点和差别是什么？`, answer: "面积倍率都为 2；前者保持定向，后者翻转定向。" },
     { question: `${texInline("\\det(A)=1")} 是否推出 ${texInline("A=E")}？`, answer: "不能。剪切、旋转等许多非单位矩阵也有行列式 1。" },
     { question: "两列共线时为什么得到零行列式？", answer: "它们张成的平行四边形高度为零，二维面积消失。" },
-    { question: "为什么 det<0 不能解释成‘面积为负’？", answer: "负号记录有序方向翻转；普通几何面积仍为 |det|。" },
     { question: "二维中 det 非零与可逆有什么关系？", answer: "det 非零表示没有丢失维度，线性变换可逆。" },
   ],
   summary: [

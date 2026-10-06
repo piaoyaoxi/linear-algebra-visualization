@@ -203,7 +203,7 @@
       ["方阵", "\\begin{bmatrix}1&2\\\\3&4\\end{bmatrix}"],
       ["长方形矩阵", "\\begin{bmatrix}1&2&3\\\\4&5&6\\end{bmatrix}"],
       ["零矩阵", "\\begin{bmatrix}0&0\\\\0&0\\end{bmatrix}"],
-      ["单位矩阵", "I=\\begin{bmatrix}1&0\\\\0&1\\end{bmatrix}"],
+      ["单位矩阵", "E=\\begin{bmatrix}1&0\\\\0&1\\end{bmatrix}"],
     ];
 
     return types
@@ -280,7 +280,6 @@
             <span>04</span>
             <div>
               <h3 id="matrix-types-title">本章会反复出现的基础矩阵</h3>
-              <p>这里只认识形状与身份，具体性质在后面逐步展开。</p>
             </div>
           </div>
           <div class="matrix-type-grid">${renderMatrixTypes()}</div>

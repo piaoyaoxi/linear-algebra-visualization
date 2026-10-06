@@ -4,7 +4,7 @@ defineChapter3Section("binary-higher-degree", {
   title: "二元高次方程组",
   navTitle: "二元高次",
   question: "当方程不再线性时，消元思想还能怎样工作？怎样把两个变量的曲线交点问题压缩成一个变量的候选根问题？",
-  goal: "理解二元多项式方程组的公共解是代数曲线交点；会选择消元变量；认识 Sylvester 矩阵与结式；能够从结式得到候选根、回代求另一坐标并逐点验解，同时识别重根与次数退化。",
+  goal: "理解二元多项式方程组的公共解是代数曲线交点；会选择消元变量；认识Sylvester 矩阵与结式；能够从结式得到候选根、回代求另一坐标并逐点验解，同时识别重根与次数退化。",
   tags: ["选学", "多项式消元", "Sylvester 矩阵", "结式", "回代验解"],
   intro:
     "把两个方程都看成关于 x 的多项式，系数是 y 的多项式。结式 R(y) 为 0 的 y 是交点纵坐标的候选；每个候选都要回代求 x，并代回两个原方程检验。",
@@ -13,7 +13,7 @@ defineChapter3Section("binary-higher-degree", {
     duration: "约 2.5 分钟",
     scenes: [
       "两条直线的消元逐渐过渡为圆与直线的消元。",
-      "把 f、g 按 x 的次数排列系数，错位堆叠成 Sylvester 矩阵。",
+      "把 f、g 按 x 的次数排列系数，错位堆叠成Sylvester 矩阵。",
       "行列式化为只含 y 的结式多项式。",
       "候选 y 回代求 x，未验证点与已验证交点使用不同标记。",
     ],
@@ -43,7 +43,7 @@ defineChapter3Section("binary-higher-degree", {
   textbook: {
     reference: "北大版《高等代数》第三章 ＊§7",
     page: "",
-    items: ["二元高次方程组", "消元法", "结式与 Sylvester 行列式", "回代与验解", "重根和退化情形"],
+    items: ["二元高次方程组", "消元法", "结式", "回代与验解", "重根和退化情形"],
   },
   interactive: {
     type: "slot",
@@ -59,7 +59,7 @@ defineChapter3Section("binary-higher-degree", {
   },
   example: {
     title: "例题：单位圆与直线的结式",
-    question: `求 ${texInline(String.raw`x^2+y^2=1`)} 与 ${texInline(String.raw`x-y=0`)} 的公共实解。要求把两式看成关于 x 的多项式，写出 Sylvester 矩阵、结式，并回代验解。`,
+    question: `求 ${texInline(String.raw`x^2+y^2=1`)} 与 ${texInline(String.raw`x-y=0`)} 的公共实解。要求把两式看成关于 x 的多项式，写出Sylvester 矩阵与结式，并回代验解。`,
     choices: [
       {
         correct: true,
@@ -98,7 +98,7 @@ defineChapter3Section("binary-higher-degree", {
     "每个候选都要回代求另一坐标，并代回两个原方程检验。",
   ],
   exercises: [
-    "对单位圆与 x=y 改为消去 y，比较两个 Sylvester 矩阵与最终交点。",
+    "对单位圆与 x=y 改为消去 y，比较两个Sylvester 矩阵与最终交点。",
     "研究 y=x² 与 y=2x−1，说明结式二重根为什么对应相切点。",
   ],
 });

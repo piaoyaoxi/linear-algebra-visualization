@@ -1,7 +1,10 @@
 /*
  * Chapter 4 §6 初等矩阵: what each elementary matrix does to the plane.
- * Mode 1: pick one elementary row operation, see I -> E and the grid under E
- *         (swap = reflection, scale = stretch, row-add = shear; det E = -1, k, 1).
+ * Mode 1: pick one elementary row operation, see E -> P and the grid under P
+ *         (swap = reflection, scale = stretch, row-add = shear; det P = -1, k, 1).
+ *         It opens on the operation the prediction asks about, R₂ ← R₂ + 2R₁, with the
+ *         grid still at E: “作用 P” (or any change in the lab) applies it. Only an action
+ *         that leaves the lab on that operation grades the guess; elsewhere the guess stays.
  * Mode 2: build an invertible A as a product of elementary matrices, one step
  *         at a time, and watch the grid arrive at A. Each finished step leaves
  *         its unit-square image as a dashed ghost named by its product, so the
@@ -178,8 +181,8 @@
         ctx.fillText(label, x1 + 6, y1 - 6);
       }
     };
-    arrow(P(1, 0), v1, opts.e1 ?? "Ee₁");
-    arrow(P(0, 1), v2, opts.e2 ?? "Ee₂");
+    arrow(P(1, 0), v1, opts.e1 ?? "Pe₁");
+    arrow(P(0, 1), v2, opts.e2 ?? "Pe₂");
     // names of the images, beside a corner: spot.v is that corner of the unit square
     const name = (G, text, spot, { size, alpha }) => {
       const [x, y] = at(G, ...spot.v);
@@ -254,10 +257,10 @@
     { v: [1, 1], side: "above" },
   ];
   const SUB = "₀₁₂₃₄₅₆₇₈₉";
-  // E_k ⋯ E_1 as a matrix, and its name: I, E₁, E₂E₁, …
+  // P_k ⋯ P_1 as a matrix, and its name: I, E₁, E₂E₁, …
   const chainAt = (k) => BUILD.slice(0, k).reduce((M, step) => mul(elementary(step.op).E, M), I);
-  const chainName = (k) => (k ? Array.from({ length: k }, (_, i) => `E${SUB[k - i]}`).join("") : "I");
-  const chainTex = (k) => (k ? Array.from({ length: k }, (_, i) => `E_${k - i}`).join("") : "I");
+  const chainName = (k) => (k ? Array.from({ length: k }, (_, i) => `P${SUB[k - i]}`).join("") : "E");
+  const chainTex = (k) => (k ? Array.from({ length: k }, (_, i) => `P_${k - i}`).join("") : "E");
   // the same four factors in the opposite order: E₁E₂E₃E₄ = (4 4; 1/4 1/2), not A
   const WRONG_ORDER = BUILD.reduce((W, step) => mul(W, elementary(step.op).E), I);
 
@@ -281,7 +284,13 @@
     const side = root.querySelector("[data-el-side]");
     const task = root.querySelector("[data-el-task]");
     // ghosts: unit-square images of the finished build steps; moving: an animation is running
-    const state = { mode: "single", op: { type: "swap" }, shown: I, build: 0, ghosts: [], moving: false };
+    // the operation the prediction asks about: R₂ ← R₂ + 2R₁, i.e. P(2,1(2))
+    const ASKED = { type: "add", row: 1, c: 2 };
+    // applied: the student has acted on the single-operation view (until then it waits at E)
+    const state = { mode: "single", op: { ...ASKED }, applied: false, shown: I, build: 0, ghosts: [], moving: false };
+    const onAsked = () => state.mode === "single" && state.op.type === ASKED.type && state.op.row === ASKED.row && state.op.c === ASKED.c;
+    // before the first action the lab shows the asked operation on E, not yet applied
+    const waiting = () => !state.applied && onAsked();
     let stop = () => {};
     let ro = null;
     let buildGate = null;
@@ -294,7 +303,7 @@
       }
       state.shown = M;
       if (state.mode !== "build") {
-        drawPlane(canvas, M, {});
+        drawPlane(canvas, M, waiting() ? { e1: "e₁", e2: "e₂" } : {});
         return;
       }
       // names and arrow labels belong to a finished step, so they wait for the motion to end
@@ -311,25 +320,53 @@
     };
 
     function singleSide() {
-      const e = elementary(state.op);
       const typeBtn = (t, l) => `<button type="button" class="ch3l-chip${state.op.type === t ? " is-active" : ""}" data-type="${t}">${l}</button>`;
       let param = "";
       if (state.op.type === "scale") param = `<label class="ch3l-range"><span>${tex("k")}</span><input type="range" min="-2" max="3" step="0.5" value="${state.op.k}" data-k /><b>${txt(state.op.k)}</b></label><div class="ch3l-actions">${[0, 1].map((r) => `<button type="button" class="ch3l-chip${state.op.row === r ? " is-active" : ""}" data-row="${r}">第 ${r + 1} 行</button>`).join("")}</div>`;
       if (state.op.type === "add") param = `<label class="ch3l-range"><span>${tex("c")}</span><input type="range" min="-2" max="2" step="0.5" value="${state.op.c}" data-c /><b>${txt(state.op.c)}</b></label><div class="ch3l-actions">${[1, 0].map((r) => `<button type="button" class="ch3l-chip${state.op.row === r ? " is-active" : ""}" data-row="${r}">${tex(r === 1 ? "R_2\\leftarrow R_2+cR_1" : "R_1\\leftarrow R_1+cR_2")}</button>`).join("")}</div>`;
       side.innerHTML = `<div class="ch3l-card"><h4>选择一次行变换</h4><div class="ch3l-actions">${typeBtn("swap", "换行")}${typeBtn("scale", "倍乘")}${typeBtn("add", "倍加")}</div>${param}</div>
-        <div class="ch3l-card"><h4>对 I 做 ${tex(e.label)}</h4>${texD(`I=${texM(I)}\\ \\longrightarrow\\ E=${texM(e.E)}`)}<p>${e.geo}</p><p>${tex(`\\det E=${fmt(e.det)}`)}：${Math.abs(e.det) === 1 ? "单位正方形的面积不变" : `单位正方形的面积变为原来的 ${tex(fmt(Math.abs(e.det)))} 倍`}${e.det < 0 ? "，定向翻转" : ""}。</p><p class="ch3l-muted">逆变换 ${tex(e.inv)}，所以 E 可逆。</p></div>`;
-      side.querySelectorAll("[data-type]").forEach((b) => b.addEventListener("click", () => {
+        <div class="ch3l-card" data-el-info></div>`;
+      singleInfo();
+      // every control of this view is an action: it applies the chosen P
+      const apply = (change) => { change(); state.applied = true; update(); };
+      side.querySelectorAll("[data-type]").forEach((b) => b.addEventListener("click", () => apply(() => {
         const t = b.dataset.type;
         state.op = t === "swap" ? { type: "swap" } : t === "scale" ? { type: "scale", row: 1, k: 2 } : { type: "add", row: 1, c: 2 };
-        update();
-      }));
-      side.querySelectorAll("[data-row]").forEach((b) => b.addEventListener("click", () => { state.op.row = Number(b.dataset.row); update(); }));
-      side.querySelector("[data-k]")?.addEventListener("input", (ev) => {
-        const k = Number(ev.target.value);
-        state.op.k = k === 0 ? 0.5 : k; // multiplying a row by 0 is not an elementary operation
-        update();
+      })));
+      side.querySelectorAll("[data-row]").forEach((b) => b.addEventListener("click", () => apply(() => { state.op.row = Number(b.dataset.row); })));
+      // a slider keeps its own element while it is dragged: only the readout and the card change
+      const slide = (input, set) => input?.addEventListener("input", () => {
+        set(Number(input.value));
+        state.applied = true;
+        input.nextElementSibling.textContent = txt(state.op.type === "scale" ? state.op.k : state.op.c);
+        singleInfo();
+        retarget();
       });
-      side.querySelector("[data-c]")?.addEventListener("input", (ev) => { state.op.c = Number(ev.target.value); update(); });
+      slide(side.querySelector("[data-k]"), (k) => { state.op.k = k === 0 ? 0.5 : k; }); // multiplying a row by 0 is not an elementary operation
+      slide(side.querySelector("[data-c]"), (c) => { state.op.c = c; });
+    }
+
+    // the card under the controls: E → P, then (once applied) what P does
+    function singleInfo() {
+      const card = side.querySelector("[data-el-info]");
+      if (!card) return;
+      const e = elementary(state.op);
+      // waiting at E: the effect of P stays hidden until it is applied
+      const effect = waiting()
+        ? `<div class="ch3l-actions"><button type="button" class="ch3l-btn is-primary" data-apply data-la-free${picked ? "" : ' disabled title="先在上方猜一猜"'}>作用 P</button></div>`
+        : `<p>${e.geo}</p><p>${tex(`\\det P=${fmt(e.det)}`)}：${Math.abs(e.det) === 1 ? "单位正方形的面积不变" : `单位正方形的面积变为原来的 ${tex(fmt(Math.abs(e.det)))} 倍`}${e.det < 0 ? "，定向翻转" : ""}。</p><p class="ch3l-muted">逆变换 ${tex(e.inv)}，所以 P 可逆。</p>`;
+      card.innerHTML = `<h4>对 E 做 ${tex(e.label)}</h4>${texD(`E=${texM(I)}\\ \\longrightarrow\\ P=${texM(e.E)}`)}${effect}`;
+      card.querySelector("[data-apply]")?.addEventListener("click", () => {
+        state.applied = true;
+        singleInfo();
+        retarget();
+      });
+    }
+
+    function retarget() {
+      const to = waiting() ? I : elementary(state.op).E;
+      stop();
+      stop = animate(state.shown, to, paint);
     }
 
     function buildSide() {
@@ -338,12 +375,12 @@
       const list = BUILD.map((s, i) => {
         const e = elementary(s.op);
         const cls = i < k ? "is-done" : i === k ? "is-next" : "";
-        return `<li class="${cls}">${tex(`E_${i + 1}=${texM(e.E)}`)}<small class="el6-why">${s.why}</small></li>`;
+        return `<li class="${cls}">${tex(`P_${i + 1}=${texM(e.E)}`)}<small class="el6-why">${s.why}</small></li>`;
       }).join("");
       const note = k === BUILD.length
-        ? `网格到达 A：${tex("A=E_4E_3E_2E_1")}，A 是初等矩阵的乘积。`
+        ? `网格到达 A：${tex("A=P_4P_3P_2P_1")}，A 是初等矩阵的乘积。`
         : k === 0
-          ? `网格依次经过 ${tex("E_1")}、${tex("E_2")}、${tex("E_3")}、${tex("E_4")} 四步。`
+          ? `网格依次经过 ${tex("P_1")}、${tex("P_2")}、${tex("P_3")}、${tex("P_4")} 四步。`
           : `再作用 ${BUILD.length - k} 步到达 A。`;
       // data-la-free: this button waits for the build prediction, which this lab tracks itself
       side.innerHTML = `<div class="ch3l-actions"><button type="button" class="ch3l-btn is-primary" data-next data-la-free${!picked || k >= BUILD.length ? " disabled" : ""}${picked ? "" : ' title="先在上方猜一猜"'}>作用下一步</button><button type="button" class="ch3l-btn" data-restart>重来</button></div>
@@ -382,16 +419,14 @@
     function update() {
       if (state.mode === "single") {
         singleSide();
-        const to = elementary(state.op).E;
-        stop();
-        stop = animate(state.shown, to, paint);
+        retarget();
       } else {
         buildSide();
       }
     }
 
     const TASKS = {
-      single: "选一种行变换，先看它把单位矩阵变成哪个 E，再看 E 把整张网格变成什么样。淡色网格是原来的坐标网格。",
+      single: "选一种行变换，先看它把单位矩阵变成哪个 P，再看 P 把整张网格变成什么样。淡色网格是原来的坐标网格。",
       build: "可逆矩阵可以写成初等矩阵的乘积。逐步作用四个初等矩阵，看网格怎样一步步到达 A。虚线是前几步的像。",
     };
     const modes = root.querySelector("[data-el-modes]");
@@ -417,11 +452,11 @@
 
     // Prediction before the first exploration result is explained.
     const gate = root.querySelector('[data-el-gate="single"]');
-    gate.innerHTML = `<div class="ch3l-predict"><div class="ch3l-predict-q"><span>先猜一猜</span><p>${tex("R_2\\leftarrow R_2+2R_1")} 对应的 ${tex("E=\\begin{pmatrix}1&0\\\\2&1\\end{pmatrix}")} 会把单位正方形变成什么？</p></div>
+    gate.innerHTML = `<div class="ch3l-predict"><div class="ch3l-predict-q"><span>先猜一猜</span><p>${tex("R_2\\leftarrow R_2+2R_1")} 对应的 ${tex("P(2,1(2))=\\begin{pmatrix}1&0\\\\2&1\\end{pmatrix}")} 会把单位正方形变成什么？</p></div>
       <div class="ch3l-predict-options">${(window.LAStableShuffle || ((a) => a))([
         ["沿竖直方向剪切，面积不变", true, ""],
-        ["沿水平方向剪切，面积不变", false, "E 改变的是第 2 个坐标：(x,y) 变成 (x, 2x+y)。"],
-        ["竖直方向拉长 2 倍，面积变为 2 倍", false, "det E=1，面积不变。"],
+        ["沿水平方向剪切，面积不变", false, "P 改变的是第 2 个坐标：(x,y) 变成 (x, 2x+y)。"],
+        ["竖直方向拉长 2 倍，面积变为 2 倍", false, "det P=1，面积不变。"],
         ["绕原点旋转", false, "e₁ 被送到 (1,2)，e₂ 保持不动，长度变了，所以不是旋转。"],
       ], "visuals/ch4/section6-elementary.js").map(([t, ok, why], i) => `<button type="button" data-i="${i}" data-ok="${ok}" data-why="${why}">${t}</button>`).join("")}</div><p class="ch3l-predict-feedback" hidden></p></div>`;
     // predict → act → reveal: the verdict opens only after the student also acts on the lab
@@ -445,27 +480,41 @@
       gate.querySelectorAll("[data-i]").forEach((x) => x.classList.toggle("is-picked", x === b));
       fb.hidden = false;
       fb.textContent = "记下了你的猜测。现在动手操作一次，结论随后出现。";
+      // “作用 P” opens once a guess exists
+      if (state.mode === "single") singleInfo();
     }));
-    // a click in either prediction box is not an action on the lab
-    const acted = (e) => { if (!e.target.closest("[data-el-gate]")) reveal(); };
-    ["input", "change", "pointerup"].forEach((t) => root.addEventListener(t, acted));
-    root.addEventListener("click", (e) => { if (e.target.closest("button") && !e.target.closest("[data-el-gate]")) reveal(); });
+    /*
+     * Only the controls of the single-operation view are actions here (a slider counts on
+     * release). The verdict needs the lab on R₂ ← R₂ + 2R₁ with P applied; an action on
+     * another operation keeps the guess and says where the asked one is.
+     */
+    const judge = () => {
+      if (revealed || !picked || state.mode !== "single") return;
+      if (onAsked() && state.applied) {
+        reveal();
+        return;
+      }
+      fb.hidden = false;
+      fb.innerHTML = `题目问的是 ${tex("P(2,1(2))")}：选“倍加”中的 ${tex("R_2\\leftarrow R_2+cR_1")}，取 ${tex("c=2")}，结论随后出现。`;
+    };
+    side.addEventListener("change", judge);
+    side.addEventListener("click", (e) => { if (e.target.closest("button")) judge(); });
 
     /*
      * The build has its own prediction: in which order do the four factors end up?
      * The steps open once it is picked; the verdict waits until the grid reaches A.
      */
     const buildBox = root.querySelector('[data-el-gate="build"]');
-    const wrong = `${tex("E_1E_2E_3E_4")} 算出来是 ${tex(texM(WRONG_ORDER))}`;
+    const wrong = `${tex("P_1P_2P_3P_4")} 算出来是 ${tex(texM(WRONG_ORDER))}`;
     buildGate = window.LAPredictGate?.mount(buildBox, {
-      question: `按 ${tex("E_1")}、${tex("E_2")}、${tex("E_3")}、${tex("E_4")} 的次序一步步作用（${tex("E_1")} 最先），网格最后停在哪个乘积上？`,
+      question: `按 ${tex("P_1")}、${tex("P_2")}、${tex("P_3")}、${tex("P_4")} 的次序一步步作用（${tex("P_1")} 最先），网格最后停在哪个乘积上？`,
       options: [
-        [tex("E_4E_3E_2E_1"), true, ""],
-        [tex("E_1E_2E_3E_4"), false, `每作用一步，新的初等矩阵乘在左边，最先作用的 ${tex("E_1")} 留在最右边。${wrong}，网格停不到 A。`],
+        [tex("P_4P_3P_2P_1"), true, ""],
+        [tex("P_1P_2P_3P_4"), false, `每作用一步，新的初等矩阵乘在左边，最先作用的 ${tex("P_1")} 留在最右边。${wrong}，网格停不到 A。`],
         ["两种次序结果一样", false, `矩阵乘法一般不能交换次序，${wrong}，不等于 A。`],
       ],
       key: "visuals/ch4/section6-elementary.js#build",
-      right: `✓ 每作用一步，新的初等矩阵就乘在左边。图中的虚线依次是 ${tex("I")}、${tex("E_1")}、${tex("E_2E_1")}、${tex("E_3E_2E_1")} 的像，最后到达 ${tex("A=E_4E_3E_2E_1")}。`,
+      right: `✓ 每作用一步，新的初等矩阵就乘在左边。图中的虚线依次是 ${tex("E")}、${tex("P_1")}、${tex("P_2P_1")}、${tex("P_3P_2P_1")} 的像，最后到达 ${tex("A=P_4P_3P_2P_1")}。`,
       root: buildBox,
       manual: true,
       onPick: () => {
@@ -488,11 +537,11 @@
     if (!root) return;
     const block = (title, math, text) => `<article class="ch3l-theorem"><h3>${title}</h3>${math ? `<div class="ch3l-theorem-math">${texD(math)}</div>` : ""}<p>${text}</p></article>`;
     root.innerHTML = `<h2>定理概念</h2><div class="ch3l-formal">
-      ${block("对 I 做一次行变换，得到初等矩阵", "P(i,j),\\qquad P(i(k))\\ (k\\ne0),\\qquad P(i,j(k))", "三类初等矩阵分别来自交换 I 的两行、用非零数 k 乘 I 的一行、把 I 的第 j 行的 k 倍加到第 i 行。")}
+      ${block("对 E 做一次行变换，得到初等矩阵", "P(i,j),\\qquad P(i(k))\\ (k\\ne0),\\qquad P(i,j(k))", "三类初等矩阵分别来自交换 E 的两行、用非零数 k 乘 E 的一行、把 E 的第 j 行的 k 倍加到第 i 行。")}
       ${block("左乘做行变换，右乘做列变换", "P\\,A=\\text{对 }A\\text{ 做同一行变换},\\qquad A\\,P=\\text{对 }A\\text{ 做对应的列变换}", `左乘时，P 的每一行组合 A 的各行，所以 P 记录的行规则原样作用到 A 上。三类初等矩阵都可逆，逆矩阵就是逆变换对应的初等矩阵；它们的行列式分别是 ${tex("-1")}、${tex("k")}、${tex("1")}。`)}
-      ${block("可逆矩阵 = 初等矩阵的乘积", "A\\ \\text{可逆}\\iff A=P_1P_2\\cdots P_s", "可逆矩阵可以经过初等行变换化成 I，把这些变换倒过来，就把 A 写成了初等矩阵的乘积。几何上，任何可逆线性变换都由若干次剪切、伸缩和反射复合而成。")}
+      ${block("可逆矩阵 = 初等矩阵的乘积", "A\\ \\text{可逆}\\iff A=P_1P_2\\cdots P_s", "可逆矩阵可以经过初等行变换化成 E，把这些变换倒过来，就把 A 写成了初等矩阵的乘积。几何上，任何可逆线性变换都由若干次剪切、伸缩和反射复合而成。")}
       <div class="ch3l-pitfalls"><h3>容易错在哪里</h3><ul>
-        <li>把 ${tex("R_2\\leftarrow R_2+2R_1")} 的 2 写到第 1 行第 2 列。对 I 做这次变换，改变的是第 2 行，2 应落在 (2,1) 位置。</li>
+        <li>把 ${tex("R_2\\leftarrow R_2+2R_1")} 的 2 写到第 1 行第 2 列。对 E 做这次变换，改变的是第 2 行，2 应落在 (2,1) 位置。</li>
         <li>把左乘和右乘弄反：行变换左乘，列变换右乘。</li>
         <li>以为“一行乘 0”也是初等变换。它不可逆，不对应初等矩阵。</li>
       </ul></div></div>`;

@@ -112,7 +112,7 @@
     const lab = root.querySelector(".ch2-lab");
     const canvas = root.querySelector("[data-cramer-canvas]");
     const nudge = root.querySelector("[data-cramer-nudge]");
-    const state = { ...PRESETS.ex };
+    const state = { ...PRESETS.near }; // the prediction is about this example
     let shown = { ...state }; // what the canvas draws; it lerps while animating
     let ghost = null; // the state just before the last change of b (same a₁, a₂)
     let frame = null; // while only b slides: the fixed pair of states that sets camera and lens
@@ -123,7 +123,7 @@
       root: lab,
       manual: true,
       key: "visuals/ch2/section7-presentation.js#near",
-      question: "按「接近奇异」：a₁、a₂ 几乎平行，D 很小但不为 0。再让 b₂ 只减小 1/10，解 x₁、x₂ 会怎样？",
+      question: "图中 a₁、a₂ 几乎平行，D 很小但不为 0。让 b₂ 只减小 1/10，解 x₁、x₂ 会怎样？",
       options: [
         ["仍是唯一解，但变化很大", true, ""],
         ["仍是唯一解，只变化一点点", false, "放大框里，b 只挪了一点，沿 a₂ 滑回 a₁ 所在直线的落点 x₁a₁ 却移出一大段。"],
@@ -423,7 +423,12 @@
           dot(ctx, map(old.land), palette.image, palette, 3);
         }
         ctx.restore();
-        if (old.land) label(ctx, "改动前", map(old.land).x + 8, map(old.land).y + 14, palette, "left");
+        if (old.land) {
+          // on the a₂ side of the a₁ line: the label of a₁ sits on the other side
+          const { n } = M().sideAway(view.origin, map(old.a1), map(old.a2));
+          const at = map(old.land);
+          label(ctx, "改动前", at.x - n.x * 16, at.y - n.y * 16, palette, -n.x > 0.35 ? "left" : -n.x < -0.35 ? "right" : "center");
+        }
       }
 
       const target = map(g.b);
@@ -461,11 +466,24 @@
         ctx.restore();
         if (!hideJump) dot(ctx, slid, palette.image, palette, 3);
         if (!lensOn) {
+          // beside the middle of the slide, on the side away from the origin (the two areas lie toward it)
+          const mid = { x: (target.x + slid.x) / 2, y: (target.y + slid.y) / 2 };
+          const { n } = M().sideAway(slid, target, view.origin);
           ctx.save();
-          ctx.fillStyle = palette.text;
           ctx.font = `600 12px ${FONT}`;
-          ctx.fillText("沿 a₂ 方向滑到 x₁a₁", (target.x + slid.x) / 2 + 7, (target.y + slid.y) / 2 - 7);
+          const place = (text) => {
+            const w = ctx.measureText(text).width;
+            const x = mid.x + n.x * 12 - (n.x < -0.35 ? w : Math.abs(n.x) <= 0.35 ? w / 2 : 0);
+            return { x, w, fits: x >= 6 && x + w <= view.width - 6 };
+          };
+          // one line when it fits beside the slide, otherwise two shorter lines
+          const one = place("沿 a₂ 方向滑到 x₁a₁");
+          const lines = one.fits ? ["沿 a₂ 方向滑到 x₁a₁"] : ["沿 a₂ 方向", "滑到 x₁a₁"];
+          const spot = one.fits ? one : place("滑到 x₁a₁");
+          const x = M().clamp(spot.x, 6, view.width - spot.w - 6);
+          const y = M().clamp(mid.y + n.y * 14 - (lines.length - 1) * 7, 10, view.height - 30 - (lines.length - 1) * 14);
           ctx.restore();
+          lines.forEach((text, i) => label(ctx, text, x, y + i * 14, palette, "left"));
         }
         [currentArea, slidArea].forEach((area) => area.forEach((p, i) => seg(p, area[(i + 1) % 4])));
         seg(target, slid);
@@ -484,19 +502,28 @@
         ctx.lineTo(pB.x, pB.y);
         ctx.stroke();
         ctx.restore();
-        // name the line on its left, away from the caption and the tip labels
-        const reach = 0.6 * Math.max(Math.hypot(...g.a1), Math.hypot(...g.a2), Math.abs(g.b[0] * unit[0] + g.b[1] * unit[1]), 1);
-        const at = map([unit[0] * reach, unit[1] * reach]);
-        // screen normal of the line, turned to point left (or up for a horizontal line)
-        let side = { x: unit[1], y: unit[0] };
-        if (side.x > 1e-9 || (Math.abs(side.x) <= 1e-9 && side.y > 0)) side = { x: -side.x, y: -side.y };
-        label(ctx, "列空间", at.x + side.x * 12, at.y + side.y * 12, palette, side.x < -0.3 ? "right" : "center");
+        // name the line where it is farthest from the tips (and so from their labels)
+        const reach = Math.max(Math.hypot(...g.a1), Math.hypot(...g.a2), Math.abs(g.b[0] * unit[0] + g.b[1] * unit[1]), 1);
+        const tips = [[0, 0], g.a1, g.a2, g.b].map(map);
+        const normal = { x: -unit[1], y: -unit[0] }; // screen normal of the line (y points down)
+        let best = null;
+        for (let k = 3; k <= 13; k += 1) {
+          for (const sgn of [1, -1]) {
+            const on = map([unit[0] * reach * k / 10, unit[1] * reach * k / 10]);
+            const at = { x: on.x + sgn * normal.x * 16, y: on.y + sgn * normal.y * 16 };
+            if (at.x < 50 || at.x > view.width - 50 || at.y < 14 || at.y > view.height - 34) continue;
+            const score = Math.min(...tips.map((p) => Math.hypot(p.x - at.x, p.y - at.y)));
+            if (!best || score > best.score) best = { at, score, nx: sgn * normal.x };
+          }
+        }
+        if (best) label(ctx, "列空间", best.at.x, best.at.y, palette, best.nx < -0.3 ? "right" : best.nx > 0.3 ? "left" : "center");
       }
-      ctx.save();
-      ctx.fillStyle = palette.text;
-      ctx.font = `600 12px ${FONT}`;
-      ctx.fillText("b", target.x + 8, target.y - 7);
-      ctx.restore();
+      {
+        // b just past its tip, along its own direction
+        const length = Math.hypot(target.x - view.origin.x, target.y - view.origin.y) || 1;
+        const u = { x: (target.x - view.origin.x) / length, y: (target.y - view.origin.y) / length };
+        label(ctx, "b", M().clamp(target.x + u.x * 12, 8, view.width - 8), M().clamp(target.y + u.y * 12, 9, view.height - 9), palette, "center");
+      }
 
       if (lensOn) {
         const o = view.origin;
@@ -642,10 +669,14 @@
       }, { signal });
     });
     nudge.addEventListener("click", nudgeB, { signal });
-    root.querySelector("[data-cramer-ex]").addEventListener("click", () => goTo(PRESETS.ex), { signal });
-    root.querySelector("[data-cramer-near]").addEventListener("click", () => goTo(PRESETS.near), { signal });
-    root.querySelector("[data-cramer-sing]").addEventListener("click", () => goTo(PRESETS.sing), { signal });
-    root.querySelector("[data-cramer-none]").addEventListener("click", () => goTo(PRESETS.none), { signal });
+    // switching examples never judges and never clears the guess; only b₂ − 1/10 on 接近奇异 does
+    [["ex", PRESETS.ex], ["near", PRESETS.near], ["sing", PRESETS.sing], ["none", PRESETS.none]].forEach(([name, preset]) => {
+      const button = root.querySelector(`[data-cramer-${name}]`);
+      button.addEventListener("click", () => {
+        root.querySelectorAll(".ch2-cramer-presets button").forEach((item) => item.classList.toggle("is-active", item === button));
+        goTo(preset);
+      }, { signal });
+    });
     window.addEventListener("resize", () => document.body.contains(canvas) && drawScene(), { signal, passive: true });
 
     render();
@@ -686,9 +717,15 @@
       root.innerHTML = `
         <h2>交互实验</h2>
         <div class="ch2-lab">
-          <div class="ch2-lab-head"><h3>Cramer 法则 · 列空间与面积比</h3><p>系数列、b、D、D₁、D₂ 与坐标重构同步变化。猜过之后，两列接近平行时，角上的放大框把细长的 D 放平、加厚；D=0 时改用列空间判断相容性。</p></div>
+          <div class="ch2-lab-head"><h3>Cramer 法则 · 列空间与面积比</h3></div>
           <div data-cramer-gate></div>
           <div class="ch2-cramer-layout">
+            <div class="ch2-presets ch2-cramer-presets">
+              <button type="button" class="is-active" data-cramer-near>接近奇异</button>
+              <button type="button" data-cramer-ex>唯一解示例</button>
+              <button type="button" data-cramer-sing>D=0 · 无穷多解</button>
+              <button type="button" data-cramer-none>D=0 · 无解</button>
+            </div>
             <div class="ch2-cramer-main">
               <div class="ch2-stage"><canvas data-cramer-canvas aria-label="克拉默法则列向量与常数向量画布"></canvas></div>
               <div class="ch2-side">
@@ -710,12 +747,6 @@
               <details class="ch2-tuning"><summary>调整 a₁、a₂ 与 b</summary><div class="ch2-sliders">
                 ${["a11", "a12", "a21", "a22", "b1", "b2"].map((key) => `<label><span>${key}</span><input data-k="${key}" type="range" min="-6" max="6" step="0.1" aria-label="${key}" /><span data-v="${key}"></span></label>`).join("")}
               </div></details>
-              <div class="ch2-presets">
-                <button type="button" data-cramer-ex>唯一解示例</button>
-                <button type="button" data-cramer-near>接近奇异</button>
-                <button type="button" data-cramer-sing>D=0 · 无穷多解</button>
-                <button type="button" data-cramer-none>D=0 · 无解</button>
-              </div>
             </div>
           </div>
         </div>`;

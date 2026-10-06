@@ -830,8 +830,10 @@
         d.axes();
         P.vecs.forEach((v, i) => {
           d.line([0, 0], v, colors[i], { width: 1.3, dash: [6, 5], alpha: 0.75 });
+          // named at the far (negative) end: the positive ends meet the axis names and the trajectory
           const l = Math.hypot(...v);
-          d.text([(v[0] / l) * d.halfW * 0.82, (v[1] / l) * d.halfW * 0.82], `η${"₁₂"[i]}`, colors[i], { dx: 6, dy: -10 });
+          const r = Math.min(d.halfW, d.halfH) * 0.82;
+          d.text([(-v[0] / l) * r, (-v[1] / l) * r], `η${"₁₂"[i]}`, colors[i], { dx: 6, dy: -10 });
         });
         if (c) {
           const parts = [0, 1].map((i) => {

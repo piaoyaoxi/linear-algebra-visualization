@@ -204,7 +204,7 @@
         `) + module("02", "从一般定义回到二阶与三阶", "熟悉公式只是列出较小 n 的全部排列。", `
           <div class="ch2-card-grid">
             <article class="ch2-card"><span class="kicker">n=2</span><h4>${tex("a_{11}a_{22}-a_{12}a_{21}")}</h4><p>排列 12 为偶，21 为奇。</p></article>
-            <article class="ch2-card"><span class="kicker">n=3</span><h4>三正三负，共六项</h4><p>Sarrus 图可辅助记忆三阶，定义仍来自六个排列。</p></article>
+            <article class="ch2-card"><span class="kicker">n=3</span><h4>三正三负，共六项</h4><p>对角线法则可辅助记忆三阶，定义仍来自六个排列。</p></article>
             <article class="ch2-card"><span class="kicker">合法与非零</span><h4>两个概念必须分开</h4><p>路径合法只说明下标结构正确；若选中零元素，该项仍贡献 0。</p></article>
           </div>
           <article class="ch2-def ch2-formula-block"><span class="kicker">三阶完整展开</span><strong>${display("\\begin{aligned}\\det(A)={}&a_{11}a_{22}a_{33}+a_{12}a_{23}a_{31}+a_{13}a_{21}a_{32}\\\\&-a_{13}a_{22}a_{31}-a_{12}a_{21}a_{33}-a_{11}a_{23}a_{32}\\end{aligned}")}</strong></article>
@@ -215,7 +215,7 @@
           "所以只有恒等排列项可能非零，行列式等于主对角线乘积。",
         ]) + misconception([
           "合法项必须同时满足每行与每列各一次；只满足列条件仍可能遗漏某一行。",
-          "Sarrus 法只用于三阶；四阶及以上回到定义、性质与展开。",
+          "对角线法则只适用于二阶与三阶；四阶及以上回到定义、性质与展开。",
           "上三角的非恒等路径同样合法，只是因零结构贡献 0。",
         ])),
       );
@@ -225,8 +225,9 @@
       root.innerHTML = `
         <h2>交互实验</h2>
         <div class="ch2-lab">
-          <div class="ch2-lab-head"><h3>Leibniz 取项 · 从矩阵到一项</h3><p>每行选择一个元素。已经使用的列会被锁定；完成后依次读出排列、符号与乘积项。</p></div>
+          <div class="ch2-lab-head"><h3>Leibniz 取项 · 从矩阵到一项</h3></div>
           <div data-term-gate></div>
+          <p class="ch2-lab-hint">每行选择一个元素。已经使用的列会被锁定；完成后依次读出排列、符号与乘积项。</p>
           <div class="ch2-term-workbench">
             <div class="ch2-term-scene" data-term-scene>
               <svg class="ch2-term-path" data-term-path aria-hidden="true"></svg>

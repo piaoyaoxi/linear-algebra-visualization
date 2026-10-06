@@ -284,14 +284,14 @@
                 </div>
                 <div class="inverse-composition">
                   <span>当前复合</span>
-                  <strong data-inverse-composition>${inline("I")}</strong>
+                  <strong data-inverse-composition>${inline("E")}</strong>
                 </div>
               </div>
 
               <ol class="inverse-journey" aria-label="逆变换的三个阶段">
                 <li class="is-current" data-inverse-step="0">
                   <button type="button" data-inverse-jump="0">
-                    <span>01</span><small>起点</small><strong>${inline("I")}</strong>
+                    <span>01</span><small>起点</small><strong>${inline("E")}</strong>
                   </button>
                 </li>
                 <li data-inverse-step="1">
@@ -301,7 +301,7 @@
                 </li>
                 <li data-inverse-step="2">
                   <button type="button" data-inverse-jump="2">
-                    <span>03</span><small>应用 A<sup>−1</sup></small><strong>${inline("A^{-1}A=I")}</strong>
+                    <span>03</span><small>应用 A<sup>−1</sup></small><strong>${inline("A^{-1}A=E")}</strong>
                   </button>
                 </li>
               </ol>
@@ -320,7 +320,7 @@
                 <div class="inverse-range-marks" aria-hidden="true"><i></i><i></i><i></i></div>
               </div>
 
-              <p class="inverse-equation" data-inverse-equation>${inline("Ix=x")}</p>
+              <p class="inverse-equation" data-inverse-equation>${inline("Ex=x")}</p>
               <div class="inverse-control-row">
                 <button class="button primary is-primary" type="button" data-inverse-next>应用 A</button>
                 <button class="button ghost" type="button" data-inverse-reset>回到起点</button>
@@ -335,7 +335,7 @@
                 </div>
                 <div class="inverse-conclusion" data-inverse-conclusion>
                   <small data-inverse-conclusion-label>两侧逆</small>
-                  <strong data-inverse-conclusion-formula>${inline("A^{-1}A=I")} · ${inline("AA^{-1}=I")}</strong>
+                  <strong data-inverse-conclusion-formula>${inline("A^{-1}A=E")} · ${inline("AA^{-1}=E")}</strong>
                 </div>
               </div>
 
@@ -576,7 +576,7 @@
       elements.conclusionLabel.textContent = isSingular ? "逆矩阵" : "两侧逆";
       elements.conclusionFormula.innerHTML = isSingular
         ? inline("A^{-1}\\text{ 不存在}")
-        : `${inline("A^{-1}A=I")}<i aria-hidden="true">·</i>${inline("AA^{-1}=I")}`;
+        : `${inline("A^{-1}A=E")}<i aria-hidden="true">·</i>${inline("AA^{-1}=E")}`;
 
       elements.steps.forEach((stepElement, index) => {
         stepElement.classList.toggle("is-current", index === stage);
@@ -598,7 +598,7 @@
           elements.stageLabel.textContent = "逆变换完成";
           elements.stageTitle.textContent = "网格回到原位";
           elements.caption.textContent = `先用 ${R}⁻¹ 转回来，再用 ${S}⁻¹ 剪回去：后做的一步先撤销。`;
-          elements.composition.innerHTML = inline(`${S}^{-1}${R}^{-1}${R}${S}=I`);
+          elements.composition.innerHTML = inline(`${S}^{-1}${R}^{-1}${R}${S}=E`);
           elements.equation.innerHTML = inline(`(${R}${S})^{-1}=${S}^{-1}${R}^{-1}`);
         } else if (journey > 1.02) {
           const second = journey > 1.5 + 0.02;
@@ -619,14 +619,14 @@
         elements.stageLabel.textContent = "单位变换";
         elements.stageTitle.textContent = "平面保持原样";
         elements.caption.textContent = "起点：e₁、e₂ 的端点与单位正方形的两个相邻顶点完全重合。";
-        elements.composition.innerHTML = inline("I");
-        elements.equation.innerHTML = inline("Ix=x");
+        elements.composition.innerHTML = inline("E");
+        elements.equation.innerHTML = inline("Ex=x");
       } else if (restored) {
         elements.stageLabel.textContent = "逆变换完成";
         elements.stageTitle.textContent = "网格回到原位";
         elements.caption.textContent = "恢复：A⁻¹Ae₁=e₁、A⁻¹Ae₂=e₂，单位正方形与向量 x 一起回到原位。";
-        elements.composition.innerHTML = inline("A^{-1}A=I");
-        elements.equation.innerHTML = inline("A^{-1}(Ax)=(A^{-1}A)x=Ix=x");
+        elements.composition.innerHTML = inline("A^{-1}A=E");
+        elements.equation.innerHTML = inline("A^{-1}(Ax)=(A^{-1}A)x=Ex=x");
       } else if (isSingular && atA) {
         elements.stageLabel.textContent = "应用 A 完成";
         elements.stageTitle.textContent = "二维被压成一维";

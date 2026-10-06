@@ -225,7 +225,7 @@
         module("01", "逆序数与排列符号", "先逐对比较，再压缩为一个符号。", `
           <div class="ch2-def-stack">
             <article class="ch2-def"><span class="kicker">逆序</span><strong>${tex("i<j,\\;\\sigma(i)>\\sigma(j)")}</strong><p>位置靠前的数反而更大时，这一对形成逆序。</p></article>
-            <article class="ch2-def"><span class="kicker">逆序数</span><strong>${tex("\\tau(\\sigma)")}</strong><p>全部逆序对的数量；连线图中的每个交叉对应一个逆序。</p></article>
+            <article class="ch2-def"><span class="kicker">逆序数</span><strong>${tex("\\tau(\\sigma)")}</strong><p>全部逆序对的数量。</p></article>
             <article class="ch2-def"><span class="kicker">符号</span><strong>${tex("\\operatorname{sgn}(\\sigma)=(-1)^{\\tau(\\sigma)}")}</strong><p>偶排列取 +1，奇排列取 −1。</p></article>
           </div>
         `) + module("02", "相邻交换为什么翻转奇偶性", "只改变一对相邻元素的相对顺序。", proofSteps([
@@ -236,7 +236,7 @@
         ]) + misconception([
           "逆序数统计所有位置对，不等于最大元素或元素之和。",
           "一次对换一定翻转符号，但逆序数不一定只改变 1。",
-          "拖动一张卡片跨越 d 个位置等价于 d 次相邻交换；它与‘交换两张卡片’不是同一种操作。",
+          "把一个数移过 d 个位置，等价于 d 次相邻交换，与一次对换不同。",
         ])),
       );
     },
@@ -245,8 +245,9 @@
       root.innerHTML = `
         <h2>交互实验</h2>
         <div class="ch2-lab">
-          <div class="ch2-lab-head"><h3>排列与逆序 · 逐对扫描</h3><p>点击两个数字完成一次对换，或拖动一个数字改变位置。扫描器逐对检查，连线图把逆序显示为交叉。</p></div>
+          <div class="ch2-lab-head"><h3>排列与逆序 · 逐对扫描</h3></div>
           <div data-perm-gate></div>
+          <p class="ch2-lab-hint">点击两个数字完成一次对换，或拖动一个数字改变位置。扫描器逐对检查，连线图把逆序显示为交叉。</p>
           <div class="ch2-lab-grid ch2-permutation-layout">
             <div class="ch2-side ch2-permutation-scene">
               <div class="ch2-note">当前排列：<strong data-perm-text></strong></div>

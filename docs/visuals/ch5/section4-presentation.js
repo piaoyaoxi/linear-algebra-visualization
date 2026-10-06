@@ -11,7 +11,7 @@
     formal.innerHTML = `
       <h2>怎样证明所有方向都为正</h2>
       <div class="ch5-foundation ch5s4-foundation">
-        <p class="ch5-lead">正定不是“看起来像碗”，也不是“试了几个向量都为正”。它要求每一个非零方向都严格为正。本节把这个无穷多方向的问题压缩成可计算的标准形与顺序主子式判据。</p>
+        <p class="ch5-lead">正定要求对每一个非零向量 ${inline("x")} 都有 ${inline("x^TAx>0")}。非零向量有无穷多个，无法逐个检验；标准形与顺序主子式把它化成有限次计算。</p>
 
         ${module(
           "01",
@@ -47,18 +47,18 @@
 
         ${module(
           "04",
-          "Sylvester 顺序主子式判据",
+          "顺序主子式判别",
           "正定只需检查左上角逐级扩大的子矩阵",
           `<div class="ch5s4-minor-chain"><div>${inline("A_1")}</div><span>⊂</span><div>${inline("A_2")}</div><span>⊂</span><div>⋯</div><span>⊂</span><div>${inline("A_n=A")}</div></div>
           <div class="ch5-equation">${display("A>0\\quad\\Longleftrightarrow\\quad \\Delta_1>0,\\ldots,\\Delta_n>0")}</div>
-          <div class="ch5-next-note"><span>边界</span><p>半正定不能把上面的“全正”机械改成“顺序主子式全非负”。一般需要检查所有主子式非负。二阶矩阵要同时检查 ${inline("a\\ge0")}、${inline("c\\ge0")} 和 ${inline("ac-b^2\\ge0")}。</p></div>`,
+          <div class="ch5-next-note"><span>边界</span><p>半正定不能把“全正”改成“顺序主子式全非负”：${inline("\\operatorname{diag}(0,-1)")} 的 ${inline("\\Delta_1=\\Delta_2=0")}，但 ${inline("q(0,1)=-1")}。一般需要检查所有主子式非负。二阶矩阵要同时检查 ${inline("a\\ge0")}、${inline("c\\ge0")} 和 ${inline("ac-b^2\\ge0")}。</p></div>`,
         )}
 
         ${module(
           "05",
           "长度平方是正定结构的另一种写法",
-          "Gram 与 Cholesky 只作连接，不替代教材判据",
-          `<div class="ch5-pair"><div class="ch5-card">${display("x^T(B^TB)x=\\|Bx\\|^2\\ge0")}<p>所以 ${inline("B^TB")} 总是半正定；B 列满秩时正定。</p></div><div class="ch5-card">${display("A=R^TR")}<p>正定矩阵可以写成长度平方结构；具体分解算法留作后续连接。</p></div></div>`,
+          "正定矩阵与 E 合同",
+          `<div class="ch5-pair"><div class="ch5-card">${display("x^T(B^TB)x=\\|Bx\\|^2\\ge0")}<p>所以 ${inline("B^TB")} 总是半正定；B 列满秩时正定。</p></div><div class="ch5-card">${display("A=C^TC")}<p>A 正定时与 E 合同，故有可逆矩阵 C 使 ${inline("A=C^TC")}；此时 ${inline("x^TAx=\\|Cx\\|^2>0")}（${inline("x\\ne0")}）。</p></div></div>`,
         )}
       </div>`;
   }

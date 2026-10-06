@@ -187,7 +187,7 @@
           "列向量无法构成平面的基，变换会丢失一个方向。",
           "丢失方向后无法唯一撤回，方程 Ax=b 也不再对所有 b 保证唯一解。",
         ]) + misconception([
-          `${tex("\\det(A)=1")} 只说明有向面积倍率为 1，并不要求 ${tex("A=I")}。`,
+          `${tex("\\det(A)=1")} 只说明有向面积倍率为 1，并不要求 ${tex("A=E")}。`,
           "det<0 表示定向翻转；普通面积仍为 |det|。",
         ]) + taskBox("阅读线索", "在交互中让 det 连续穿过 0。零点前后面积绝对值连续，方向状态在零点两侧发生改变。")),
       );
@@ -197,8 +197,9 @@
       root.innerHTML = `
         <h2>交互实验</h2>
         <div class="ch2-lab">
-          <div class="ch2-lab-head"><h3>有向面积 · 拖动两列</h3><p>拖动两根列向量的端点（每次四分之一格），也可以使用滑杆与预设。图形、ad−bc、|det| 与状态同步更新；猜过并动手后，紫色弧标出从第 1 列到第 2 列的转向。</p></div>
+          <div class="ch2-lab-head"><h3>有向面积 · 拖动两列</h3></div>
           <div data-orient-gate></div>
+          <p class="ch2-lab-hint">拖动两根列向量的端点（每次四分之一格），也可以使用滑杆与预设。图形、ad−bc、|det| 与状态同步更新；猜过并动手后，紫色弧标出从第 1 列到第 2 列的转向。</p>
           <div class="ch2-lab-grid ch2-area-layout">
             <div class="ch2-stage"><canvas data-ch2-canvas aria-label="可拖动两列向量的有向面积画布"></canvas></div>
             <div class="ch2-side">

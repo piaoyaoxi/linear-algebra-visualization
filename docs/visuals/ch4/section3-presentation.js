@@ -332,7 +332,7 @@
   function renderFormal(formal) {
     if (!formal) return;
     formal.innerHTML = `
-      <h2>先分清两个问题：面积倍率与独立方向</h2>
+      <h2>面积倍率与独立方向</h2>
       <div class="s3-formal">
         <p class="s3-lead">两列张成的平行四边形同时回答两个问题：行列式给出面积倍率和方向是否翻转，秩给出输出还剩几个独立方向。</p>
 
@@ -352,7 +352,7 @@
         <section class="s3-formal-module" aria-labelledby="s3-det-one-title">
           <div class="s3-module-heading"><span>02</span><div><h3 id="s3-det-one-title">det(A)=1 只说明面积不变</h3><p>单位矩阵、剪切和互补缩放可以拥有同一个行列式。</p></div></div>
           <div class="s3-det-one-gallery">
-            <article>${miniShape([[1, 0], [0, 1]], "单位矩阵保持单位正方形")}<strong>单位矩阵</strong>${mathInline("\\det(I)=1")}<p>形状与面积都不变。</p></article>
+            <article>${miniShape([[1, 0], [0, 1]], "单位矩阵保持单位正方形")}<strong>单位矩阵</strong>${mathInline("\\det(E)=1")}<p>形状与面积都不变。</p></article>
             <article>${miniShape([[1, 0.8], [0, 1]], "剪切保持面积但改变形状")}<strong>剪切</strong>${mathInline("\\det(S)=1")}<p>形状改变，面积仍为 1。</p></article>
             <article>${miniShape([[2, 0], [0, 0.5]], "一方向放大另一方向缩小")}<strong>互补缩放</strong>${mathInline("\\det(D)=1")}<p>宽度乘 2，高度乘 1/2。</p></article>
           </div>

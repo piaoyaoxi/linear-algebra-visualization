@@ -32,7 +32,7 @@ defineChapter3Section("elimination", {
       {
         title: "从阶梯形读出结果",
         figure: "three-planes",
-        tex: String.raw`\begin{array}{l}\text{出现 }[0\ \cdots\ 0\mid d],\ d\ne0\ \Rightarrow\ \text{无解}\\ \text{无矛盾行，每列都有主元}\ \Rightarrow\ \text{唯一解}\\ \text{无矛盾行，有非主元列}\ \Rightarrow\ \text{无穷多解}\end{array}`,
+        tex: String.raw`\begin{array}{l}\text{出现 }[0\ \cdots\ 0\mid d],\ d\ne0\ \Rightarrow\ \text{无解}\\ \text{无矛盾行且每列都有主元}\ \Rightarrow\ \text{唯一解}\\ \text{无矛盾行且有非主元列}\ \Rightarrow\ \text{无穷多解}\end{array}`,
       },
     ],
     pitfalls: [

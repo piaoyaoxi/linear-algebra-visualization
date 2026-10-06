@@ -47,3 +47,35 @@ body.dark #matrix-product-determinant-rank-formal .s3-formal-module,body.dark #m
 @media(max-width:920px){#matrix-product-determinant-rank-formal .s3-two-meters,#matrix-product-determinant-rank-formal .s3-law-pair,#matrix-product-determinant-rank-formal .s3-det-one-gallery,#matrix-product-determinant-rank-formal .s3-sign-strip,#matrix-product-determinant-rank-interactive .s3-product-grid,#matrix-product-determinant-rank-interactive .s3-product-conclusion{grid-template-columns:1fr}#matrix-product-determinant-rank-formal .s3-transpose-rank,#matrix-product-determinant-rank-interactive .s3-lab-heading,#matrix-product-determinant-rank-interactive .s3-bottleneck-flow{grid-template-columns:1fr}#matrix-product-determinant-rank-interactive .s3-main-formulas{min-width:0}#matrix-product-determinant-rank-interactive .s3-area-meter{grid-template-columns:repeat(4,minmax(0,1fr))}#matrix-product-determinant-rank-interactive .s3-area-meter>i{display:none}#matrix-product-determinant-rank-interactive .s3-flow-arrow{width:auto}#matrix-product-determinant-rank-interactive .s3-flow-arrow:after{transform:rotate(90deg)}}
 @media(max-width:720px){#matrix-product-determinant-rank-formal .s3-module-heading,#matrix-product-determinant-rank-interactive .s3-lab-heading{padding:19px 18px 16px}#matrix-product-determinant-rank-formal .s3-two-meters,#matrix-product-determinant-rank-formal .s3-det-one-gallery,#matrix-product-determinant-rank-formal .s3-law-pair,#matrix-product-determinant-rank-formal .s3-transpose-rank{padding-left:18px;padding-right:18px}#matrix-product-determinant-rank-formal .s3-invertible-note{grid-template-columns:1fr;margin-left:18px;margin-right:18px}#matrix-product-determinant-rank-interactive .s3-tabs{width:calc(100% - 36px);margin-left:18px;margin-right:18px}#matrix-product-determinant-rank-interactive .s3-tabs button{flex:1 1 120px}#matrix-product-determinant-rank-interactive .s3-panels{padding:16px 18px 20px}#matrix-product-determinant-rank-interactive .s3-area-controls,#matrix-product-determinant-rank-interactive .s3-slider-grid{grid-template-columns:1fr}#matrix-product-determinant-rank-interactive .s3-preset-row,#matrix-product-determinant-rank-interactive .s3-observation{grid-column:auto}#matrix-product-determinant-rank-interactive .s3-area-meter{grid-template-columns:repeat(2,minmax(0,1fr))}#matrix-product-determinant-rank-interactive .s3-bottleneck-readout,#matrix-product-determinant-rank-interactive .s3-product-conclusion{grid-template-columns:1fr}#matrix-product-determinant-rank-interactive canvas,#matrix-product-determinant-rank-interactive .s3-bottleneck-flow canvas{min-height:300px}}
 @media(prefers-reduced-motion:reduce){#matrix-product-determinant-rank-interactive .s3-panel.is-active{animation:none}#matrix-product-determinant-rank-interactive button,#matrix-product-determinant-rank-formal button{transition:none}}
+
+/*
+ * Phones (≤720px, as in chapters 1–2): the module card and the lab card are the only frames.
+ * Inside a module the cards become rows on hairlines; in the lab the area meter and the
+ * product conclusion lose their own frame, so their tiles sit directly in the lab.
+ * The extra ids outrank the shared card rules in design-a-legacy.css.
+ */
+@media (max-width: 720px) {
+  :is(main, #la) #matrix-product-determinant-rank-formal.lesson-page-section :is(.s3-two-meters, .s3-law-pair, .s3-det-one-gallery) {
+    gap: 0;
+    padding-top: 6px;
+    padding-bottom: 6px;
+  }
+
+  :is(main, #la) #matrix-product-determinant-rank-formal.lesson-page-section :is(.s3-two-meters, .s3-law-pair, .s3-det-one-gallery) > article {
+    padding: 16px 0;
+    border: 0;
+    border-radius: 0;
+    background: none;
+  }
+
+  :is(main, #la) #matrix-product-determinant-rank-formal.lesson-page-section :is(.s3-two-meters, .s3-law-pair, .s3-det-one-gallery) > article + article {
+    border-top: 1px solid var(--line);
+  }
+
+  :is(main, #la) #matrix-product-determinant-rank-interactive.lesson-page-section :is(.s3-area-meter, .s3-product-conclusion) {
+    padding: 0;
+    border: 0;
+    border-radius: 0;
+    background: none;
+  }
+}

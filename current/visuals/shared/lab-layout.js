@@ -48,15 +48,18 @@
   function captions(lab, prefix, counter) {
     lab.querySelectorAll(FRAME).forEach((frame) => {
       if (frame.dataset.laCaptioned) return;
+      const hint = frame.querySelector(HINT);
+      // a number with nothing after it says nothing: a frame without a hint gets no caption
+      // (yet: a hint written later is captioned then)
+      if (!hint?.textContent.trim()) return;
       frame.dataset.laCaptioned = "1";
       counter.n += 1;
-      const hint = frame.querySelector(HINT);
       const fig = document.createElement("p");
       fig.className = "la-figcaption";
       const label = prefix ? `图 ${prefix}-${counter.n}` : "";
-      fig.innerHTML = `${label ? `<b>${label}</b>` : ""}<span>${hint ? hint.textContent : ""}</span>`;
-      if (hint) hint.hidden = true;
-      if (label || hint) frame.after(fig);
+      fig.innerHTML = `${label ? `<b>${label}</b>` : ""}<span>${hint.textContent}</span>`;
+      hint.hidden = true;
+      frame.after(fig);
     });
   }
 
@@ -74,10 +77,13 @@
     lab.querySelectorAll(".tex-inline").forEach((formula) => {
       const next = formula.nextSibling;
       if (!next || next.nodeType !== Node.TEXT_NODE || !CLOSERS.includes(next.textContent.charAt(0))) return;
+      // every closing mark in a row (“），”) goes with the formula
+      let count = 0;
+      while (count < next.textContent.length && CLOSERS.includes(next.textContent.charAt(count))) count += 1;
       if (formula.parentElement?.classList.contains("la-keep") || formula.querySelector(".la-keep")) return;
       const mark = document.createElement("span");
       mark.className = "la-punct";
-      mark.textContent = next.textContent.charAt(0);
+      mark.textContent = next.textContent.slice(0, count);
       // only the formula's last piece is glued to the mark, so a long formula can still
       // break in the middle and the mark stays right after its end
       const html = formula.querySelector(".katex-html");
@@ -93,7 +99,7 @@
         formula.before(keep);
         keep.append(formula, mark);
       }
-      next.textContent = next.textContent.slice(1);
+      next.textContent = next.textContent.slice(count);
       if (!next.textContent) next.remove();
     });
   }

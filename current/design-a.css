@@ -271,14 +271,11 @@ body .lesson-page-section > h2 {
 body .lesson-page-section > h2::before {
   flex: 0 0 62px;
   content: counter(la-section, decimal-leading-zero);
+  /* the number is set like the title, only light: same size, same baseline */
   color: var(--faint);
-  font-size: 0.56em;
   font-weight: 400;
   font-variant-numeric: tabular-nums lining-nums;
-  letter-spacing: 0.02em;
-  /* Chinese glyphs reach a little below the baseline: the number's foot meets theirs */
-  position: relative;
-  top: 0.1em;
+  letter-spacing: 0;
 }
 
 /* prose sits on the heading's text column; labs and cards use the full width */
@@ -310,7 +307,7 @@ body .lesson-page-section > p:not(.lead) {
   }
 
   body .lesson-page-section > h2::before {
-    flex-basis: 36px;
+    flex-basis: 1.9em;
   }
 
   body .lesson-page-section > p,
@@ -622,6 +619,20 @@ body .tex {
   vertical-align: baseline;
 }
 
+/* an inline formula flows with the text: it starts right after the words before it and,
+   if the line is full, continues on the next one after a relation (typeset.js groups the
+   pieces between relations); a box would jump to the next line whole and leave a gap */
+body .tex-inline:not(.la-wide) {
+  display: inline;
+}
+
+/* typeset.js: a sentence inside a flex or grid box, kept together as one item */
+la-run {
+  display: block;
+  flex: 1 1 0%;
+  min-width: 0;
+}
+
 /* typeset.js: a quarter-em space between Chinese text and an inline formula */
 la-sp {
   word-spacing: var(--la-sp-adjust, 0);
@@ -838,6 +849,14 @@ body :is(.ch3l-ponder, .lx-ponder):not([open]) > summary::after {
   content: "想好了，看答案 ↓";
   color: var(--accent);
   font-size: 13px;
+}
+
+/* on a phone the question takes the row; the prompt to open goes under it, on the right */
+@media (max-width: 600px) {
+  body :is(.ch3l-ponder, .lx-ponder):not([open]) > summary::after {
+    flex-basis: 100%;
+    text-align: right;
+  }
 }
 
 body :is(.ch3l-ponder, .lx-ponder)[open] > p {
@@ -1245,15 +1264,16 @@ body main {
   text-wrap: pretty;
 }
 
-/* … and short texts (titles, questions, options, chips, captions) share their lines evenly */
+/* … and short texts (titles, options, chips, captions) share their lines evenly; a sentence
+   (a question, a lead) keeps full lines, or it would stop at half width */
 @supports (text-wrap-style: balance) {
-  body main :is(h1, h2, h3, h4, h5, h6, summary, figcaption, legend, .lead, .la-figcaption, .lx-q, [class*="predict-q"], [class*="predict-options"], [class*="toolbar"], [class*="chip"]) {
+  body main :is(h1, h2, h3, h4, h5, h6, figcaption, legend, .la-figcaption, [class*="predict-options"], [class*="toolbar"], [class*="chip"]) {
     text-wrap-style: balance;
   }
 }
 
 @supports not (text-wrap-style: balance) {
-  body main :is(h1, h2, h3, h4, summary, figcaption, .lead, .la-figcaption) {
+  body main :is(h1, h2, h3, h4, figcaption, .la-figcaption) {
     text-wrap: balance;
   }
 }
@@ -1262,6 +1282,11 @@ body main {
 la-w,
 la-t,
 la-mg {
+  white-space: nowrap;
+}
+
+/* a short formula kept with the last words: no break inside it either (.tex allows one) */
+la-t .tex {
   white-space: nowrap;
 }
 

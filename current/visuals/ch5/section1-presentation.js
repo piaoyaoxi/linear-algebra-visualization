@@ -60,14 +60,14 @@
         ${module(
           "04",
           "变量替换为什么产生合同",
-          "左右两个 C 分别来自哪里",
+          `左右两个 ${inline("C")} 分别来自哪里`,
           `<div class="ch5s1-derivation">
             <div>${inline("x=Cy")}</div><span>代入</span>
             <div>${inline("x^TAx=(Cy)^TA(Cy)")}</div><span>转置</span>
             <div>${inline("(Cy)^T=y^TC^T")}</div><span>合并</span>
             <div>${inline("x^TAx=y^T(C^TAC)y")}</div>
           </div>
-          <div class="ch5-next-note"><span>注意</span><p>这个恒等式对任意矩阵 C 都成立；只有当 ${inline("\\det C\\ne0")}、新旧变量可以互相恢复时，才称为非退化变量替换，并说 A 与 ${inline("C^TAC")} 合同。</p></div>`,
+          <div class="ch5-next-note"><span>注意</span><p>这个恒等式对任意矩阵 ${inline("C")} 都成立；只有当 ${inline("\\det C\\ne0")}、新旧变量可以互相恢复时，才称为非退化变量替换，并说 ${inline("A")} 与 ${inline("C^TAC")} 合同。</p></div>`,
         )}
       </div>`;
 
@@ -76,15 +76,15 @@
     const map = formal.querySelector("[data-s1-map]");
     const copy = formal.querySelector("[data-map-copy]");
     const messages = {
-      a: "平方项只进入主对角位置 a₁₁。",
-      b: "6x₁x₂ 在展开中由 a₁₂x₁x₂ 与 a₂₁x₂x₁ 共同产生，所以两个位置各填 3。",
-      c: "平方项只进入主对角位置 a₂₂。",
+      a: `平方项只进入主对角位置 ${inline("a_{11}")}。`,
+      b: `${inline("6x_1x_2")} 在展开中由 ${inline("a_{12}x_1x_2")} 与 ${inline("a_{21}x_2x_1")} 共同产生，所以两个位置各填 3。`,
+      c: `平方项只进入主对角位置 ${inline("a_{22}")}。`,
     };
 
     function select(kind) {
       map.querySelectorAll("[data-map-term]").forEach((button) => button.classList.toggle("is-active", button.dataset.mapTerm === kind));
       map.querySelectorAll("[data-map-cell]").forEach((cell) => cell.classList.toggle("is-active", cell.dataset.mapCell === kind));
-      copy.textContent = messages[kind];
+      copy.innerHTML = messages[kind];
     }
 
     map.querySelectorAll("[data-map-term], [data-map-cell]").forEach((button) => {

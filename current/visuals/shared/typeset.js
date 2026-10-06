@@ -69,6 +69,8 @@
     if (block.clientWidth < parseFloat(getComputedStyle(block).fontSize) * 2.5) return;
     const node = tailText(block);
     if (!node || node.parentElement?.closest("la-t")) return;
+    // in a flex or grid box a loose text run is an item of its own: a wrapper would split it
+    if (node.parentElement === block && /flex|grid/.test(getComputedStyle(block).display)) return;
     const start = tailStart(node.textContent);
     if (start < 0) {
       keepWithFormula(block, node);

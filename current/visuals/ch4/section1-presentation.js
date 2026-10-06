@@ -280,7 +280,6 @@
             <span>04</span>
             <div>
               <h3 id="matrix-types-title">本章会反复出现的基础矩阵</h3>
-              <p>这里只认识形状与身份，具体性质在后面逐步展开。</p>
             </div>
           </div>
           <div class="matrix-type-grid">${renderMatrixTypes()}</div>

@@ -171,9 +171,9 @@
             </article>
           </div>
           <div class="s2-side-preview">
-            <div><span>左乘 EA</span><strong>更自然地组合 A 的行</strong></div>
-            <div><span>右乘 AE</span><strong>更自然地组合 A 的列</strong></div>
-            <p>这里先建立方向感，§6 再用初等矩阵把规则完整展开。</p>
+            <div><span>左乘 PA</span><strong>PA 的每一行是 A 的各行的组合</strong></div>
+            <div><span>右乘 AP</span><strong>AP 的每一列是 A 的各列的组合</strong></div>
+            <p>P 取初等矩阵时，左乘就是对 A 做一次初等行变换，右乘就是做一次初等列变换。</p>
           </div>
         </section>
 
@@ -182,7 +182,6 @@
             <span>05</span>
             <div>
               <h3 id="s2-extension-title">延伸观察</h3>
-              <p>三条支线折叠收纳，不打断本节主线。</p>
             </div>
           </div>
           <div class="s2-extension-grid">

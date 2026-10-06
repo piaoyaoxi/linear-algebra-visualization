@@ -893,9 +893,11 @@ body.dark .inverse-transform-lab {
   border-left: 1px solid var(--line);
 }
 
+/* 11px, not 9: rank(A) and det(A) here were the smallest formulas on the page, and at
+   9.5px rounded glyph advances made the site audit see a style leak into them */
 .inverse-facts dt {
   color: var(--faint);
-  font-size: 9px;
+  font-size: 11px;
   font-weight: 760;
 }
 
@@ -1095,6 +1097,22 @@ body.dark .inverse-transform-lab {
 
   .inverse-facts > div {
     min-height: 43px;
+  }
+}
+
+/*
+ * Phones (≤720px, as in chapters 1–2): the lab card is the only frame. The stage control
+ * and the state summary become sections on a hairline, so the journey steps, the Ex=x bar
+ * and the facts inside them are no longer a box in a box in a box. The extra ids outrank
+ * the readout-card rule in design-a-legacy.css.
+ */
+@media (max-width: 720px) {
+  :is(main, #la) #matrix-inverse-interactive.lesson-page-section :is(.inverse-stage-control, .inverse-state-summary) {
+    padding: 14px 0 0;
+    border: 0;
+    border-top: 1px solid var(--line);
+    border-radius: 0;
+    background: none;
   }
 }
 

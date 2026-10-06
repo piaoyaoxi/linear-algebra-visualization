@@ -320,7 +320,7 @@
                 <div class="inverse-range-marks" aria-hidden="true"><i></i><i></i><i></i></div>
               </div>
 
-              <p class="inverse-equation" data-inverse-equation>${inline("Ix=x")}</p>
+              <p class="inverse-equation" data-inverse-equation>${inline("Ex=x")}</p>
               <div class="inverse-control-row">
                 <button class="button primary is-primary" type="button" data-inverse-next>应用 A</button>
                 <button class="button ghost" type="button" data-inverse-reset>回到起点</button>
@@ -620,13 +620,13 @@
         elements.stageTitle.textContent = "平面保持原样";
         elements.caption.textContent = "起点：e₁、e₂ 的端点与单位正方形的两个相邻顶点完全重合。";
         elements.composition.innerHTML = inline("E");
-        elements.equation.innerHTML = inline("Ix=x");
+        elements.equation.innerHTML = inline("Ex=x");
       } else if (restored) {
         elements.stageLabel.textContent = "逆变换完成";
         elements.stageTitle.textContent = "网格回到原位";
         elements.caption.textContent = "恢复：A⁻¹Ae₁=e₁、A⁻¹Ae₂=e₂，单位正方形与向量 x 一起回到原位。";
         elements.composition.innerHTML = inline("A^{-1}A=E");
-        elements.equation.innerHTML = inline("A^{-1}(Ax)=(A^{-1}A)x=Ix=x");
+        elements.equation.innerHTML = inline("A^{-1}(Ax)=(A^{-1}A)x=Ex=x");
       } else if (isSingular && atA) {
         elements.stageLabel.textContent = "应用 A 完成";
         elements.stageTitle.textContent = "二维被压成一维";

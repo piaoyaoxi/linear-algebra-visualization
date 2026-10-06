@@ -7,9 +7,7 @@ defineChapter4Section("matrix-inverse", {
   goal: "把逆矩阵理解为可逆方阵唯一的撤销运算；掌握逆矩阵的定义与唯一性、复合过程的逆序法则、矩阵方程的消元方式，以及二阶公式和伴随矩阵求逆路线。",
   tags: ["逆矩阵", "撤销运算", "逆序法则", "伴随矩阵"],
   intro:
-    "第三节已经给出可逆性的判定入口。本节从判定之后继续：若逆确实存在，它怎样撤销缩放、旋转、剪切和镜像，为什么复合过程必须倒序撤销，又怎样落回具体的求逆计算与方程求解。",
-  formalIntro:
-    "本节只处理逆矩阵怎样撤销、怎样计算和怎样用于方程；可逆性的面积与秩判定留在第三节。",
+    "可逆矩阵的作用可以被完整撤销：缩放取倒数，旋转反向，剪切系数变号，镜像再做一次。复合过程要倒序撤销；逆矩阵可以用二阶公式或伴随矩阵求出，再用来解方程。",
   videoPlan: {
     title: "把一次矩阵作用倒着走回来",
     duration: "约 1.5—2 分钟",
@@ -81,7 +79,7 @@ defineChapter4Section("matrix-inverse", {
       },
     ],
     steps: [
-      `先检查二阶公式的分母：${texInline("\\det(A)=3\\cdot1-1\\cdot1=2\\ne0")}，因此逆矩阵存在。这里直接使用第三节已经建立的判定，不重复面积与秩的解释。`,
+      `先检查二阶公式的分母：${texInline("\\det(A)=3\\cdot1-1\\cdot1=2\\ne0")}，因此逆矩阵存在。`,
       `交换主对角元素并改变副对角元素符号，得到 ${texInline("\\begin{bmatrix}1&-1\\\\-1&3\\end{bmatrix}")}。`,
       `除以行列式 2：${texInline("A^{-1}=\\frac12\\begin{bmatrix}1&-1\\\\-1&3\\end{bmatrix}")}。`,
       `在 ${texInline("Ax=b")} 左侧乘 ${texInline("A^{-1}")}，得到 ${texInline("x=A^{-1}b=\\frac12\\begin{bmatrix}1&-1\\\\-1&3\\end{bmatrix}\\begin{bmatrix}7\\\\3\\end{bmatrix}=\\begin{bmatrix}2\\\\1\\end{bmatrix}")}。`,
@@ -102,28 +100,15 @@ defineChapter4Section("matrix-inverse", {
       answer: `在等式两边右乘 ${texInline("A^{-1}")}，得到 ${texInline("X=CA^{-1}")}。`,
     },
     {
-      question: `若 ${texInline("\\det(A)=-4")}，${texInline("\\det(A^{-1})")} 是多少？`,
-      answer: `${texInline("\\det(A^{-1})=-1/4")}。逆变换的面积或体积倍率是原倍率的倒数。`,
-    },
-    {
-      question: `对角矩阵 ${texInline("D=\\operatorname{diag}(2,-3,5)")} 的逆是什么？`,
-      answer: `${texInline("D^{-1}=\\operatorname{diag}(1/2,-1/3,1/5)")}。每个非零缩放因子分别取倒数。`,
-    },
-    {
       question: "用伴随矩阵求逆时，代数余子式矩阵为什么还要转置？",
       answer: `伴随矩阵 ${texInline("A^{*}")} 按定义是代数余子式矩阵的转置；只有完成转置后才满足 ${texInline("AA^{*}=A^{*}A=\\det(A)E")}。`,
-    },
-    {
-      question: "本节为什么不展开增广矩阵求逆算法？",
-      answer: `本节只记录 ${texInline("[A\\mid E]\\to[E\\mid A^{-1}]")} 的结果形式；行变换机制与算法将在 §6 初等矩阵中系统说明。`,
     },
   ],
   summary: [
     "逆矩阵是可逆方阵唯一的双侧撤销运算；左右相乘都回到单位矩阵。",
     "矩阵方程中，逆矩阵必须乘在与原矩阵相同的一侧。",
     "复合过程按相反顺序撤销，所以乘积的逆会倒序。",
-    "二阶公式提供直接计算；一般情形可用伴随矩阵公式，初等行变换算法留到第六节。",
-    "下一节将把大矩阵按行列切成块，用结构化的方式组织运算。",
+    `二阶公式提供直接计算；一般情形可用伴随矩阵：${texInline("A^{-1}=\\frac{1}{\\det(A)}A^{*}")}。`,
   ],
   exercises: [
     `证明：若 ${texInline("AB=BA=E")} 且 ${texInline("AC=CA=E")}，则 ${texInline("B=C")}。`,

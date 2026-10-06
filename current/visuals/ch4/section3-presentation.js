@@ -332,7 +332,7 @@
   function renderFormal(formal) {
     if (!formal) return;
     formal.innerHTML = `
-      <h2>先分清两个问题：面积倍率与独立方向</h2>
+      <h2>面积倍率与独立方向</h2>
       <div class="s3-formal">
         <p class="s3-lead">两列张成的平行四边形同时回答两个问题：行列式给出面积倍率和方向是否翻转，秩给出输出还剩几个独立方向。</p>
 

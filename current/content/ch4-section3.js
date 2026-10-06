@@ -7,7 +7,7 @@ defineChapter4Section("matrix-product-determinant-rank", {
   goal: "把行列式读成有向面积倍率，把秩读成输出中保留下来的独立方向数；再用连续变换理解乘积行列式与乘积秩的约束。",
   tags: ["有向面积", "乘积行列式", "秩", "秩瓶颈"],
   intro:
-    "第二节把矩阵乘法理解为过程复合。本节继续追踪同一个过程：行列式记录面积或体积被放大多少以及方向是否翻转；秩记录输出还能沿多少个独立方向变化。倍率可以继续相乘，丢掉的方向却不会凭空回来。",
+    "矩阵乘积表示过程的复合。沿着复合过程追踪两个量：行列式记录面积或体积被放大多少以及方向是否翻转；秩记录输出还能沿多少个独立方向变化。倍率可以继续相乘，丢掉的方向却不会凭空回来。",
   concepts: [
     {
       label: "有向面积",
@@ -90,20 +90,8 @@ defineChapter4Section("matrix-product-determinant-rank", {
       answer: "只要行列式仍非零，秩仍是 2；到达行列式恰为 0 的临界状态时，秩才降为 1 或 0。",
     },
     {
-      question: `若 ${texInline("\\det(A)=2")} 且 ${texInline("\\det(B)=-3")}，${texInline("\\det(AB)")} 是多少？`,
-      answer: `${texInline("\\det(AB)=-6")}；面积倍率相乘，负号表示总方向翻转。`,
-    },
-    {
       question: `若 ${texInline("\\operatorname{rank}(B)=1")}，是否可能有 ${texInline("\\operatorname{rank}(AB)=2")}？`,
       answer: "不可能。B 的输出已经限制在一条线，A 只能把这条线变成另一条线或一个点。",
-    },
-    {
-      question: `转置会改变矩阵的秩吗？`,
-      answer: `${texInline("\\operatorname{rank}(A^T)=\\operatorname{rank}(A)")}；转置交换行空间与列空间，但独立方向数相同。`,
-    },
-    {
-      question: `若 A 可逆，${texInline("\\operatorname{rank}(AB)")} 与 ${texInline("\\operatorname{rank}(B)")} 有什么关系？`,
-      answer: "二者相等。A 不会丢失方向，因此只重新安排 B 的输出。",
     },
   ],
   summary: [
@@ -111,7 +99,6 @@ defineChapter4Section("matrix-product-determinant-rank", {
     "连续变换的面积倍率相乘，所以 det(AB)=det(A)det(B)。A、B 是同阶方阵时，AB 与 BA 一般不相等，行列式却都等于 det A·det B。",
     "秩是输出中保留下来的独立方向数；行秩与列秩相等。",
     "乘积受最窄的一步限制：rank(AB) 不超过两个因子的秩；可逆因子则保持另一因子的秩。",
-    "下一节将沿着同一条主线追问：什么时候这些变化可以被完整撤销？",
   ],
   exercises: [
     `构造三个不同的 2 阶矩阵，使它们的行列式都为 1，但分别表现为单位变换、剪切和非等比例缩放。`,

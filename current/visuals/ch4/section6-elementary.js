@@ -1,7 +1,10 @@
 /*
  * Chapter 4 §6 初等矩阵: what each elementary matrix does to the plane.
- * Mode 1: pick one elementary row operation, see I -> E and the grid under E
- *         (swap = reflection, scale = stretch, row-add = shear; det E = -1, k, 1).
+ * Mode 1: pick one elementary row operation, see E -> P and the grid under P
+ *         (swap = reflection, scale = stretch, row-add = shear; det P = -1, k, 1).
+ *         It opens on the operation the prediction asks about, R₂ ← R₂ + 2R₁, with the
+ *         grid still at E: “作用 P” (or any change in the lab) applies it. Only an action
+ *         that leaves the lab on that operation grades the guess; elsewhere the guess stays.
  * Mode 2: build an invertible A as a product of elementary matrices, one step
  *         at a time, and watch the grid arrive at A. Each finished step leaves
  *         its unit-square image as a dashed ghost named by its product, so the
@@ -281,7 +284,13 @@
     const side = root.querySelector("[data-el-side]");
     const task = root.querySelector("[data-el-task]");
     // ghosts: unit-square images of the finished build steps; moving: an animation is running
-    const state = { mode: "single", op: { type: "swap" }, shown: I, build: 0, ghosts: [], moving: false };
+    // the operation the prediction asks about: R₂ ← R₂ + 2R₁, i.e. P(2,1(2))
+    const ASKED = { type: "add", row: 1, c: 2 };
+    // applied: the student has acted on the single-operation view (until then it waits at E)
+    const state = { mode: "single", op: { ...ASKED }, applied: false, shown: I, build: 0, ghosts: [], moving: false };
+    const onAsked = () => state.mode === "single" && state.op.type === ASKED.type && state.op.row === ASKED.row && state.op.c === ASKED.c;
+    // before the first action the lab shows the asked operation on E, not yet applied
+    const waiting = () => !state.applied && onAsked();
     let stop = () => {};
     let ro = null;
     let buildGate = null;
@@ -294,7 +303,7 @@
       }
       state.shown = M;
       if (state.mode !== "build") {
-        drawPlane(canvas, M, {});
+        drawPlane(canvas, M, waiting() ? { e1: "e₁", e2: "e₂" } : {});
         return;
       }
       // names and arrow labels belong to a finished step, so they wait for the motion to end
@@ -311,25 +320,53 @@
     };
 
     function singleSide() {
-      const e = elementary(state.op);
       const typeBtn = (t, l) => `<button type="button" class="ch3l-chip${state.op.type === t ? " is-active" : ""}" data-type="${t}">${l}</button>`;
       let param = "";
       if (state.op.type === "scale") param = `<label class="ch3l-range"><span>${tex("k")}</span><input type="range" min="-2" max="3" step="0.5" value="${state.op.k}" data-k /><b>${txt(state.op.k)}</b></label><div class="ch3l-actions">${[0, 1].map((r) => `<button type="button" class="ch3l-chip${state.op.row === r ? " is-active" : ""}" data-row="${r}">第 ${r + 1} 行</button>`).join("")}</div>`;
       if (state.op.type === "add") param = `<label class="ch3l-range"><span>${tex("c")}</span><input type="range" min="-2" max="2" step="0.5" value="${state.op.c}" data-c /><b>${txt(state.op.c)}</b></label><div class="ch3l-actions">${[1, 0].map((r) => `<button type="button" class="ch3l-chip${state.op.row === r ? " is-active" : ""}" data-row="${r}">${tex(r === 1 ? "R_2\\leftarrow R_2+cR_1" : "R_1\\leftarrow R_1+cR_2")}</button>`).join("")}</div>`;
       side.innerHTML = `<div class="ch3l-card"><h4>选择一次行变换</h4><div class="ch3l-actions">${typeBtn("swap", "换行")}${typeBtn("scale", "倍乘")}${typeBtn("add", "倍加")}</div>${param}</div>
-        <div class="ch3l-card"><h4>对 E 做 ${tex(e.label)}</h4>${texD(`E=${texM(I)}\\ \\longrightarrow\\ P=${texM(e.E)}`)}<p>${e.geo}</p><p>${tex(`\\det P=${fmt(e.det)}`)}：${Math.abs(e.det) === 1 ? "单位正方形的面积不变" : `单位正方形的面积变为原来的 ${tex(fmt(Math.abs(e.det)))} 倍`}${e.det < 0 ? "，定向翻转" : ""}。</p><p class="ch3l-muted">逆变换 ${tex(e.inv)}，所以 E 可逆。</p></div>`;
-      side.querySelectorAll("[data-type]").forEach((b) => b.addEventListener("click", () => {
+        <div class="ch3l-card" data-el-info></div>`;
+      singleInfo();
+      // every control of this view is an action: it applies the chosen P
+      const apply = (change) => { change(); state.applied = true; update(); };
+      side.querySelectorAll("[data-type]").forEach((b) => b.addEventListener("click", () => apply(() => {
         const t = b.dataset.type;
         state.op = t === "swap" ? { type: "swap" } : t === "scale" ? { type: "scale", row: 1, k: 2 } : { type: "add", row: 1, c: 2 };
-        update();
-      }));
-      side.querySelectorAll("[data-row]").forEach((b) => b.addEventListener("click", () => { state.op.row = Number(b.dataset.row); update(); }));
-      side.querySelector("[data-k]")?.addEventListener("input", (ev) => {
-        const k = Number(ev.target.value);
-        state.op.k = k === 0 ? 0.5 : k; // multiplying a row by 0 is not an elementary operation
-        update();
+      })));
+      side.querySelectorAll("[data-row]").forEach((b) => b.addEventListener("click", () => apply(() => { state.op.row = Number(b.dataset.row); })));
+      // a slider keeps its own element while it is dragged: only the readout and the card change
+      const slide = (input, set) => input?.addEventListener("input", () => {
+        set(Number(input.value));
+        state.applied = true;
+        input.nextElementSibling.textContent = txt(state.op.type === "scale" ? state.op.k : state.op.c);
+        singleInfo();
+        retarget();
       });
-      side.querySelector("[data-c]")?.addEventListener("input", (ev) => { state.op.c = Number(ev.target.value); update(); });
+      slide(side.querySelector("[data-k]"), (k) => { state.op.k = k === 0 ? 0.5 : k; }); // multiplying a row by 0 is not an elementary operation
+      slide(side.querySelector("[data-c]"), (c) => { state.op.c = c; });
+    }
+
+    // the card under the controls: E → P, then (once applied) what P does
+    function singleInfo() {
+      const card = side.querySelector("[data-el-info]");
+      if (!card) return;
+      const e = elementary(state.op);
+      // waiting at E: the effect of P stays hidden until it is applied
+      const effect = waiting()
+        ? `<div class="ch3l-actions"><button type="button" class="ch3l-btn is-primary" data-apply data-la-free${picked ? "" : ' disabled title="先在上方猜一猜"'}>作用 P</button></div>`
+        : `<p>${e.geo}</p><p>${tex(`\\det P=${fmt(e.det)}`)}：${Math.abs(e.det) === 1 ? "单位正方形的面积不变" : `单位正方形的面积变为原来的 ${tex(fmt(Math.abs(e.det)))} 倍`}${e.det < 0 ? "，定向翻转" : ""}。</p><p class="ch3l-muted">逆变换 ${tex(e.inv)}，所以 P 可逆。</p>`;
+      card.innerHTML = `<h4>对 E 做 ${tex(e.label)}</h4>${texD(`E=${texM(I)}\\ \\longrightarrow\\ P=${texM(e.E)}`)}${effect}`;
+      card.querySelector("[data-apply]")?.addEventListener("click", () => {
+        state.applied = true;
+        singleInfo();
+        retarget();
+      });
+    }
+
+    function retarget() {
+      const to = waiting() ? I : elementary(state.op).E;
+      stop();
+      stop = animate(state.shown, to, paint);
     }
 
     function buildSide() {
@@ -382,9 +419,7 @@
     function update() {
       if (state.mode === "single") {
         singleSide();
-        const to = elementary(state.op).E;
-        stop();
-        stop = animate(state.shown, to, paint);
+        retarget();
       } else {
         buildSide();
       }
@@ -445,11 +480,25 @@
       gate.querySelectorAll("[data-i]").forEach((x) => x.classList.toggle("is-picked", x === b));
       fb.hidden = false;
       fb.textContent = "记下了你的猜测。现在动手操作一次，结论随后出现。";
+      // “作用 P” opens once a guess exists
+      if (state.mode === "single") singleInfo();
     }));
-    // a click in either prediction box is not an action on the lab
-    const acted = (e) => { if (!e.target.closest("[data-el-gate]")) reveal(); };
-    ["input", "change", "pointerup"].forEach((t) => root.addEventListener(t, acted));
-    root.addEventListener("click", (e) => { if (e.target.closest("button") && !e.target.closest("[data-el-gate]")) reveal(); });
+    /*
+     * Only the controls of the single-operation view are actions here (a slider counts on
+     * release). The verdict needs the lab on R₂ ← R₂ + 2R₁ with P applied; an action on
+     * another operation keeps the guess and says where the asked one is.
+     */
+    const judge = () => {
+      if (revealed || !picked || state.mode !== "single") return;
+      if (onAsked() && state.applied) {
+        reveal();
+        return;
+      }
+      fb.hidden = false;
+      fb.innerHTML = `题目问的是 ${tex("P(2,1(2))")}：选“倍加”中的 ${tex("R_2\\leftarrow R_2+cR_1")}，取 ${tex("c=2")}，结论随后出现。`;
+    };
+    side.addEventListener("change", judge);
+    side.addEventListener("click", (e) => { if (e.target.closest("button")) judge(); });
 
     /*
      * The build has its own prediction: in which order do the four factors end up?

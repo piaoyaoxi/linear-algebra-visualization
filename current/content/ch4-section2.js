@@ -6,7 +6,7 @@ defineChapter4Section("matrix-operations", {
   question: "矩阵为什么能相加、数乘和相乘？矩阵乘法怎样把两个连续过程合成一个过程？",
   goal: "掌握加法、数乘与转置；再从尺寸、行乘列、看列和过程复合四个入口理解矩阵乘法。",
   tags: ["加法与数乘", "转置", "矩阵乘法", "过程复合"],
-  intro: "加法与数乘是在相同位置上组合数字；转置改变行列的读取方向；矩阵乘法先检查尺寸，再把右边矩阵的输出交给左边矩阵。后面的交互始终使用同一组矩阵，让复合、看列与行乘列彼此对应。",
+  intro: "加法与数乘是在相同位置上组合数字；转置改变行列的读取方向；矩阵乘法先检查尺寸，再把右边矩阵的输出交给左边矩阵。",
   videoPlan: {
     title: "矩阵乘法为什么表示复合",
     duration: "约 2—3 分钟",
@@ -70,20 +70,15 @@ defineChapter4Section("matrix-operations", {
   },
   quiz: [
     { question: `若 ${texInline("A")} 是 ${texInline("2\\times3")} 矩阵，${texInline("B")} 是 ${texInline("3\\times4")} 矩阵，${texInline("AB")} 的阶是什么？`, answer: `${texInline("AB")} 是 ${texInline("2\\times4")} 矩阵：中间的 3 匹配，结果保留外侧的 2 与 4。` },
-    { question: `一个 ${texInline("2\\times3")} 矩阵转置后是什么形状？`, answer: `转置交换行数与列数，所以得到 ${texInline("3\\times2")} 矩阵。` },
     { question: `在 ${texInline("ABx")} 中，哪一个矩阵先作用？`, answer: `${texInline("B")} 先作用，先得到 ${texInline("Bx")}；随后 ${texInline("A")} 作用于这个中间结果。` },
-    { question: `${texInline("(AB)_{ij}")} 使用 ${texInline("A")} 的哪一部分和 ${texInline("B")} 的哪一部分？`, answer: `使用 ${texInline("A")} 的第 i 行与 ${texInline("B")} 的第 j 列，逐项相乘后求和。` },
     { question: `${texInline("AB")} 的第 j 列为什么等于 ${texInline("A")} 乘 ${texInline("B")} 的第 j 列？`, answer: `${texInline("ABe_j=A(Be_j)")}；而 ${texInline("Be_j")} 正是 ${texInline("B")} 的第 j 列。` },
-    { question: `为什么 ${texInline("(AB)^T=B^TA^T")} 中的顺序反过来了？`, answer: "转置把输入与输出的读取方向交换；要保持同一个配对关系，复合中的先后次序必须倒过来。" },
     { question: `矩阵乘法满足结合律，是否意味着它也满足交换律？`, answer: `不意味着。${texInline("(AB)C=A(BC)")} 只改变括号；${texInline("AB=BA")} 则交换了过程顺序，通常不成立。` },
-    { question: `左乘 ${texInline("EA")} 与右乘 ${texInline("AE")} 的直观差别是什么？`, answer: `左乘更自然地组合 A 的行，右乘更自然地组合 A 的列；正式规则在 §6 展开。` },
   ],
   summary: [
     "同型矩阵才能逐项相加；数乘作用于每一个位置；转置交换行与列。",
     "矩阵乘法先检查内部尺寸，结果形状由外侧尺寸决定。",
     "复合、看列和行乘列是同一个乘积的三种主视角。",
     "单位矩阵保持对象不变；结合律改变打包方式；交换顺序通常会改变结果。",
-    "下一节从乘积继续追问：连续作用后，面积倍率和独立方向怎样变化。",
   ],
   exercises: [
     `设 ${texInline("A")} 为 ${texInline("3\\times2")} 矩阵，${texInline("B")} 为 ${texInline("2\\times5")} 矩阵。写出 ${texInline("AB")} 的阶，并判断 ${texInline("BA")} 是否有定义。`,

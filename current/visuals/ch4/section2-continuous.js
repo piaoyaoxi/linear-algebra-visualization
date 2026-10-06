@@ -536,7 +536,7 @@
         <header class="s2c-header">
           <div>
             <h3>矩阵乘法：在连续画面里完成</h3>
-            <p>所有画面都使用同一个 ${texInline(`A=${matrixTex(MODEL.A)}`)}、${texInline(`B=${matrixTex(MODEL.B)}`)} 和输入 ${texInline(`x=${vectorTex(MODEL.x)}`)}。</p>
+            <p>取 ${texInline(`A=${matrixTex(MODEL.A)}`)}，${texInline(`B=${matrixTex(MODEL.B)}`)}，输入 ${texInline(`x=${vectorTex(MODEL.x)}`)}。</p>
           </div>
           <div class="s2c-data-strip">
             <span>${texInline(`AB=${matrixTex(MODEL.AB)}`)}</span>

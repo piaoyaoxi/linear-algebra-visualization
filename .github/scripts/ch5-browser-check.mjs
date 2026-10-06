@@ -1,5 +1,7 @@
 import { chromium } from "playwright";
 import { mkdir } from "node:fs/promises";
+// the page sets a quarter-em gap (U+2005) beside formulas and Latin words: read it as a space
+const plainText = (s) => s.replace(/[\u2005\u00a0]/g, " ");
 
 const base = "http://127.0.0.1:4173/learn.html";
 const shotDir = "/tmp/ch5-shots";
@@ -93,7 +95,7 @@ async function openLesson(page, id) {
   if ((await page.locator(`#${id}-interactive .ch5-task`).count()) === 0) {
     throw new Error(`${id}: interaction has no visible task instruction`);
   }
-  const rawLatex = await page.locator("#mainContent").innerText();
+  const rawLatex = await page.locator("#mainContent").innerText().then(plainText);
   if (/\\(?:begin|operatorname|Delta|cdots|neq|Longleftrightarrow)/.test(rawLatex)) {
     throw new Error(`${id}: raw LaTeX remains visible`);
   }
@@ -115,28 +117,28 @@ async function exerciseChapter(page) {
   if ((await page.locator('[data-map-cell="b"].is-active').count()) !== 2) {
     throw new Error("§1 cross term does not highlight both symmetric matrix positions");
   }
-  if (!(await page.locator("[data-map-copy]").innerText()).includes("各填 3")) {
+  if (!(await page.locator("[data-map-copy]").innerText().then(plainText)).includes("各填 3")) {
     throw new Error("§1 does not explain why the cross coefficient is halved");
   }
   // predict → act → reveal: the two heights stay hidden until a prediction and a substitution
-  if ((await page.locator("[data-s1-left]").innerText()) !== "?") {
+  if ((await page.locator("[data-s1-left]").innerText().then(plainText)) !== "?") {
     throw new Error("§1 heights are visible before the prediction");
   }
   await page.locator('#quadratic-matrix-interactive .ch3l-predict-options > button[data-ok="true"]').click();
   await page.locator('[data-s1-preset="shear"]').click();
-  if (!(await page.locator("[data-s1-status]").innerText()).includes("合同成立")) {
+  if (!(await page.locator("[data-s1-status]").innerText().then(plainText)).includes("合同成立")) {
     throw new Error("§1 invertible shear was not recognized as congruence");
   }
-  const left = Number(await page.locator("[data-s1-left]").innerText());
-  const right = Number(await page.locator("[data-s1-right]").innerText());
+  const left = Number(await page.locator("[data-s1-left]").innerText().then(plainText));
+  const right = Number(await page.locator("[data-s1-right]").innerText().then(plainText));
   if (!Number.isFinite(left) || Math.abs(left - right) > 1e-7) {
     throw new Error("§1 value check failed after coordinate substitution");
   }
   await page.locator('[data-s1-preset="singular"]').click();
-  if (!(await page.locator("[data-s1-status]").innerText()).includes("不是合同")) {
+  if (!(await page.locator("[data-s1-status]").innerText().then(plainText)).includes("不是合同")) {
     throw new Error("§1 singular substitution did not close the congruence claim");
   }
-  if (!(await page.locator("[data-s1-result]").innerText()).includes("代数恒等式仍")) {
+  if (!(await page.locator("[data-s1-result]").innerText().then(plainText)).includes("代数恒等式仍")) {
     throw new Error("§1 singular explanation confuses identity with congruence");
   }
 
@@ -147,37 +149,37 @@ async function exerciseChapter(page) {
   }
   await page.locator('#quadratic-standard-form-interactive .ch3l-predict-options > button[data-ok="true"]').click();
   for (let i = 0; i < 8; i += 1) await page.locator('[data-s2-nav="next"]').click();
-  if (!(await page.locator("[data-s2-status]").innerText()).includes("标准形完成")) {
+  if (!(await page.locator("[data-s2-status]").innerText().then(plainText)).includes("标准形完成")) {
     throw new Error("§2 regular completion did not reach a verified standard form");
   }
-  if (Math.abs(Number(await page.locator("[data-s2-cross]").innerText())) > 1e-7) {
+  if (Math.abs(Number(await page.locator("[data-s2-cross]").innerText().then(plainText))) > 1e-7) {
     throw new Error("§2 final regular form still has a cross term");
   }
   await page.locator('[data-s2-preset="cross"]').click();
   for (let i = 0; i < 8; i += 1) await page.locator('[data-s2-nav="next"]').click();
-  if (!(await page.locator("[data-s2-status]").innerText()).includes("标准形完成")) {
+  if (!(await page.locator("[data-s2-status]").innerText().then(plainText)).includes("标准形完成")) {
     throw new Error("§2 sum/difference start did not reach a verified standard form");
   }
-  if (!(await page.locator("[data-s2-substitution]").innerText()).includes("和差替换")) {
+  if (!(await page.locator("[data-s2-substitution]").innerText().then(plainText)).includes("和差替换")) {
     throw new Error("§2 pure-cross example does not explain its special first step");
   }
 
   // §3: a one-parameter invertible path locks inertia; a singular button stops the theorem.
   await openLesson(page, "quadratic-uniqueness");
   // predict → act → reveal: the verdict and B's counters appear only after a prediction and a move of h
-  if (!(await page.locator("[data-s3-b-counts]").innerText()).includes("?")) {
+  if (!(await page.locator("[data-s3-b-counts]").innerText().then(plainText)).includes("?")) {
     throw new Error("§3 B's counters are visible before the prediction");
   }
   await page.locator('#quadratic-uniqueness-interactive .ch3l-predict-options > button[data-ok="true"]').click();
   await setRange(page, "[data-s3-h]", 1);
-  if (!(await page.locator("[data-s3-status]").innerText()).includes("惯性锁定")) {
+  if (!(await page.locator("[data-s3-status]").innerText().then(plainText)).includes("惯性锁定")) {
     throw new Error("§3 inertia was not locked along the invertible shear path");
   }
-  const aCounts = await page.locator("[data-s3-a-counts]").innerText();
-  const bCounts = await page.locator("[data-s3-b-counts]").innerText();
+  const aCounts = await page.locator("[data-s3-a-counts]").innerText().then(plainText);
+  const bCounts = await page.locator("[data-s3-b-counts]").innerText().then(plainText);
   if (aCounts !== bCounts) throw new Error("§3 visible inertia counters changed under congruence");
   await page.locator("[data-s3-singular]").click();
-  if (!(await page.locator("[data-s3-status]").innerText()).includes("合同停止")) {
+  if (!(await page.locator("[data-s3-status]").innerText().then(plainText)).includes("合同停止")) {
     throw new Error("§3 singular endpoint did not stop the congruence claim");
   }
 
@@ -187,21 +189,21 @@ async function exerciseChapter(page) {
   // the type is shown once a prediction is picked; t moves in quarters
   await page.locator('#positive-definite-interactive .ch3l-predict-options > button[data-ok="true"]').click();
   await setRange(page, "[data-s4-t]", 0);
-  if (!(await page.locator("[data-s4-status]").innerText()).includes("正定")) {
+  if (!(await page.locator("[data-s4-status]").innerText().then(plainText)).includes("正定")) {
     throw new Error("§4 A(0) should be positive definite");
   }
   await setRange(page, "[data-s4-t]", 1);
-  if (!(await page.locator("[data-s4-status]").innerText()).includes("半正定")) {
+  if (!(await page.locator("[data-s4-status]").innerText().then(plainText)).includes("半正定")) {
     throw new Error("§4 A(1) should be positive semidefinite");
   }
-  if (!(await page.locator("[data-s4-d2]").innerText()).includes("= 0")) {
+  if (!(await page.locator("[data-s4-d2]").innerText().then(plainText)).includes("= 0")) {
     throw new Error("§4 determinant did not hit zero at the boundary");
   }
   await setRange(page, "[data-s4-t]", 1.25);
-  if (!(await page.locator("[data-s4-status]").innerText()).includes("不定")) {
+  if (!(await page.locator("[data-s4-status]").innerText().then(plainText)).includes("不定")) {
     throw new Error("§4 A(5/4) should be indefinite");
   }
-  if (!(await page.locator("[data-s4-scan-copy]").innerText()).includes("0 下方")) {
+  if (!(await page.locator("[data-s4-scan-copy]").innerText().then(plainText)).includes("0 下方")) {
     throw new Error("§4 direction scan explanation does not identify the negative region");
   }
   for (const selector of ["[data-s4-surface]", "[data-s4-scan]"]) {

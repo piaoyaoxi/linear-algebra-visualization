@@ -213,7 +213,7 @@ async function operate(page, section, viewport, theme) {
     ensure(/二重根/.test((await page.locator("[data-status]").textContent()) || ""), "§6: exact merge did not produce a double root");
     await clickIf(page, '[data-preset-m="3"]');
     await page.locator("[data-a]").fill("-1");
-    ensure(/4 重根/.test((await page.locator("[data-status]").textContent()) || ""), "§6: a=−1 must merge with the factor x+1 into a 4-fold root");
+    ensure(/4\s重根/.test((await page.locator("[data-status]").textContent()) || ""), "§6: a=−1 must merge with the factor x+1 into a 4-fold root");
   } else if (section === "polynomial-functions") {
     if (detail) await page.locator("#polynomial-functions-interactive .ch1-lab").screenshot({ path: path.join(outputDir, `${viewport.name}-${theme}-horner.png`) });
     await clickIf(page, '[data-mode="roots"]'); await clickIf(page, '[data-mode="interp"]');

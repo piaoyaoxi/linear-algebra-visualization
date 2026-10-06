@@ -344,6 +344,17 @@ _dev/research/3b1b_eola_chapter10.py
 - 正文里写成 Unicode 文本的长公式（第七、九、十章）改用 KaTeX；仍有不少单个符号（α、β、X）是 Unicode 文本，与 KaTeX 字形略有不同，以后可逐章统一。
 - 检查：`typo-scan.mjs` 只查初始状态，揭晓后的读数需要动手揭晓再查；还未在真 iPhone Safari 上看过。
 
+## 第六轮排版 A（2026-10-08，分支 `ui/round6-type`，Claude 接力）
+
+- A1 行内公式字号：墨迹实测（200px）KaTeX_Math 小写 x 高 0.44em、竖笔 0.08em，正文西文（LA Serif Latin）0.54em、0.09em。行内公式改为正文的 1.16 倍（`design-a.css` 的 `--la-math`；`.tex` 本身 1.04em），小写约矮 5%，笔画同粗，不加 text-stroke。完全同高要 1.23 倍，但大写和行内矩阵会过大。展示公式不变。`.la-punct` 按 `--la-math` 换回正文字号。
+- A2 两端对齐：`body main` 改为 `text-align: justify`（继承，居中的卡片不受影响；标题、图注、切换片 `start`），去掉 `text-wrap: pretty`。
+  - WebKit（至少 Linux 版 Playwright）两端对齐只拉宽 U+0020 空格，不拉宽汉字之间，含公式的行会出现大洞；所以 `<la-sp>` 改成一个 U+2005（字宽按字体实测、用 letter-spacing 调到 0.2em），两端对齐不会拉伸它；两端对齐的块里，汉字与西文/数字之间手打的空格也换成 `<la-sp>`。macOS 的 WebKit / 真机 Safari 会把空白分到汉字之间，需要在真机上再看一次。
+  - 窄卡片里，防孤字把最后两个字挪下去后，上一行会被拉松；typeset.js 排版后量自然行宽，某一行要拉开超过 0.11em/字的块改回左对齐（`data-la-ragged`）。
+  - 防孤字（`<la-t>`）补了三种情况：“… z 轴。”（单字前是短西文）、“<span>有解</span>。”（结尾只剩标点）、flex 盒子里标签旁的长句（先包成 `<la-run>`）。
+- A3 居中说明：全站扫描，“居中展示公式 + 一两行短说明”的卡片只有第五章 §3（diag、正负项数）和 §4（BᵀB、A=CᵀC）；说明居中、balance，去掉公式块上方的空白（`design-a-legacy.css`）。居中行以 。，；等结尾时，最后一个标点包进 `<la-hang>`（右边距 −0.5em），按墨迹居中。宽度不到 7em 的行内公式整体不断行。
+- A4 预测选项：选项不再 balance，第一行排满再折行。手机（≤720px）上，一个框里只要有一个选项单行放不下，全部选项一行一个、整行宽（`predict-ux.js` 量单行宽，`data-la-stack`；不用 class，kit 靠类名结尾 `-predict-options` 找框）。61 个预测框都走同一套 ch3l/ch6l/ch7l/ch9l 结构，第一、二、四、五章也覆盖到了。
+- 对照截图在 `docs/review/round6-type/`（审查完可删）。WebKit 的 iPhone 检查：`npx playwright install webkit` 后 `npx playwright install-deps webkit`；注意 WebKit 不能访问 4190 等受限端口。
+
 ## 下一步
 
 - 十章已全部按以可视化为核心的标准重做。之后的工作以打磨为主：补充定理块小图和“停一下”问题，修手机端标签重叠等细节。

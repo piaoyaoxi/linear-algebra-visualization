@@ -10,7 +10,7 @@ defineChapter6Section("subspaces", {
     `子空间沿用原空间的加法和数乘，只需检查运算结果不离开这个子集。图中满足 ${texInline(String.raw`p(1)=0`)} 的曲线都过同一点，相加后仍过这一点；把条件改成 ${texInline(String.raw`p(1)=1`)}，两条曲线一相加就离开了集合。`,
   concepts: [
     { label: "子空间", text: "对原空间的加法与数乘封闭的非空子集。" },
-    { label: "生成子空间", text: "L(α₁,…,αₛ)：α₁,…,αₛ 的全部线性组合。" },
+    { label: "生成子空间", text: `${texInline("L(\\alpha_1,\\dots,\\alpha_s)")}：${texInline("\\alpha_1,\\dots,\\alpha_s")} 的全部线性组合。` },
   ],
   textbook: { reference: "北大版《高等代数》第六章 §5", items: ["子空间的判别", "齐次方程组的解空间", "生成子空间", "基的扩充定理"] },
   interactive: false,
@@ -68,7 +68,7 @@ defineChapter6Section("subspaces", {
       answer: "3：未知量个数 4 减去系数矩阵的秩 1。",
     },
     {
-      question: "第一象限 {(x,y): x≥0, y≥0} 含零向量、对加法封闭，为什么不是子空间？",
+      question: `第一象限 ${texInline("\\{(x,y):x\\ge0,\\ y\\ge0\\}")} 含零向量、对加法封闭，为什么不是子空间？`,
       answer: `对数乘不封闭：${texInline("(-1)(1,1)=(-1,-1)")} 不在其中。`,
     },
   ],

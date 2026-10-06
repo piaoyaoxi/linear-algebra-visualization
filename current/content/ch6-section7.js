@@ -9,8 +9,8 @@ defineChapter6Section("direct-sum", {
   intro:
     `${texInline(String.raw`V=U\oplus W`)} 表示每个向量都能唯一地写成 ${texInline(String.raw`u+w`)}。唯一性只需检查零向量，存在性要求 ${texInline(String.raw`U+W`)} 铺满 ${texInline(String.raw`V`)}。在 ${texInline(String.raw`\mathbb R^3`)} 中，一条斜线和一个平面就给出这样的分解，分解的方向沿着那条直线。`,
   concepts: [
-    { label: "直和", text: "和中每个向量的分解式唯一，记作 V₁⊕V₂。" },
-    { label: "补子空间", text: "满足 V=U⊕W 的子空间 W。" },
+    { label: "直和", text: `和中每个向量的分解式唯一，记作 ${texInline("V_1\\oplus V_2")}。` },
+    { label: "补子空间", text: `满足 ${texInline("V=U\\oplus W")} 的子空间 ${texInline("W")}。` },
   ],
   textbook: { reference: "北大版《高等代数》第六章 §7", items: ["直和的定义", "直和的等价条件", "补子空间", "多个子空间的直和"] },
   interactive: { type: "slot", title: "分解什么时候唯一" },
@@ -30,7 +30,7 @@ defineChapter6Section("direct-sum", {
       {
         title: "多个子空间的直和",
         tex: String.raw`W_i\cap\sum_{j\ne i}W_j=\{0\}\ (i=1,\dots,s)\iff\dim\sum_i W_i=\sum_i\dim W_i`,
-        text: "两两交为零不够：同一平面内三条过原点的直线两两只交于原点，但 1+1+1 大于平面的维数 2，它们的和不是直和。",
+        text: `两两交为零不够：同一平面内三条过原点的直线两两只交于原点，但 ${texInline("1+1+1")} 大于平面的维数 2，它们的和不是直和。`,
       },
     ],
     pitfalls: [
@@ -74,7 +74,7 @@ defineChapter6Section("direct-sum", {
     },
   ],
   summary: [
-    "直和 ⇔ 零向量分解唯一 ⇔ 交为零 ⇔ 维数相加。",
+    `直和 ${texInline("\\Leftrightarrow")} 零向量分解唯一 ${texInline("\\Leftrightarrow")} 交为零 ${texInline("\\Leftrightarrow")} 维数相加。`,
     "直和分解沿子空间的方向进行，与垂直无关；补子空间不唯一。",
     "多个子空间要检查每一个与其余之和的交。",
   ],

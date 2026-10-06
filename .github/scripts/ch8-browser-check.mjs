@@ -1,6 +1,8 @@
 import assert from "node:assert/strict";
 import { mkdir } from "node:fs/promises";
 import { chromium } from "playwright";
+// the page sets a quarter-em gap (U+2005) beside formulas and Latin words: read it as a space
+const plainText = (s) => s.replace(/[\u2005\u00a0]/g, " ");
 
 // Browser gate for Chapter 8: every lesson renders on the standard lesson
 // route without errors; every lab hides its readout and conclusion until the
@@ -64,7 +66,7 @@ const routes = [
       throw new Error("smith-form: did not reach the standard form");
     },
     async verify(lab) {
-      assert.ok((await lab.locator(".ch7l-side").innerText()).includes("整除链"), "smith-form: divisibility chain missing");
+      assert.ok((await lab.locator(".ch7l-side").innerText().then(plainText)).includes("整除链"), "smith-form: divisibility chain missing");
       // one staircase bar per step (a zero corner is drawn as a flat line)
       assert.ok((await lab.locator(".ch8l-stair .ch8l-stair-bar, .ch8l-stair .ch8l-stair-zero").count()) >= 3, "smith-form: corner-degree staircase missing");
     },
@@ -72,9 +74,9 @@ const routes = [
   {
     id: "invariant-factors",
     async act(page, lab) {
-      const before = await lab.locator(".ch7l-side .ch8l-list").first().innerText();
+      const before = await lab.locator(".ch7l-side .ch8l-list").first().innerText().then(plainText);
       await lab.locator("[data-op]").click();
-      assert.equal(await lab.locator(".ch7l-side .ch8l-list").first().innerText(), before, "invariant-factors: D_k changed under an elementary operation");
+      assert.equal(await lab.locator(".ch7l-side .ch8l-list").first().innerText().then(plainText), before, "invariant-factors: D_k changed under an elementary operation");
       // D_k before and after the transformation, side by side
       assert.equal(await lab.locator(".ch8l-compare-cell").count(), 2, "invariant-factors: before/after comparison missing");
     },
@@ -87,9 +89,9 @@ const routes = [
     preset: 1,
     async act(page, lab) {
       // the elementary divisors (the answer) stay closed until the student acts
-      assert.ok(!(await lab.locator(".ch7l-side").innerText()).includes("共 3 个"), "elementary-divisors: divisors shown before acting");
+      assert.ok(!(await lab.locator(".ch7l-side").innerText().then(plainText)).includes("共 3 个"), "elementary-divisors: divisors shown before acting");
       await lab.locator(".ch7l-toolbar .ch7l-chip", { hasText: "复数域" }).click();
-      assert.ok((await lab.locator(".ch7l-side").innerText()).includes("共 5 个"), "elementary-divisors: complex count");
+      assert.ok((await lab.locator(".ch7l-side").innerText().then(plainText)).includes("共 5 个"), "elementary-divisors: complex count");
     },
   },
   { id: "similarity-criterion", figure: true },
@@ -99,7 +101,7 @@ const routes = [
     // the tower starts at layer 0 (no ν₁ yet); the conclusion opens only at the top layer
     async act(page, lab) {
       // the ν column is set in KaTeX: look for the letter ν itself (no table, no ν before the first layer)
-      assert.ok(!(await lab.locator(".ch7l-side").innerText()).includes("ν"), "jordan-derivation: kernel dimensions shown before climbing");
+      assert.ok(!(await lab.locator(".ch7l-side").innerText().then(plainText)).includes("ν"), "jordan-derivation: kernel dimensions shown before climbing");
       assert.equal(await lab.locator(".ch7l-side .ch7l-table").count(), 0, "jordan-derivation: kernel table shown before climbing");
       for (let i = 0; i < 6; i += 1) {
         const up = lab.locator("[data-up]");
@@ -135,7 +137,7 @@ async function check(viewport, dark) {
   const chapters = await page.locator("#chapterNav .chapter-group, nav .chapter-group").count();
   assert.ok(chapters >= 11, `${tag}: sidebar lists ${chapters} chapter groups`);
   assert.equal(await page.locator('.chapter-group[data-chapter="ch8"] [data-section-link]').count(), 7, `${tag}: ch8 sidebar links`);
-  assert.ok((await page.locator("main").innerText()).includes("§7"), `${tag}: chapter overview lists the sections`);
+  assert.ok((await page.locator("main").innerText().then(plainText)).includes("§7"), `${tag}: chapter overview lists the sections`);
 
   for (const route of routes) {
     const label = `${route.id} @${tag}`;
@@ -147,7 +149,7 @@ async function check(viewport, dark) {
     assert.equal(await page.locator("[data-example-challenge]").count(), 1, `${label}: example`);
     assert.equal(await page.locator(".self-test-list").count(), 1, `${label}: self test`);
     assert.ok((await page.locator(".ch7l-theorem").count()) >= 2, `${label}: theorem blocks`);
-    const body = await page.locator("main").innerText();
+    const body = await page.locator("main").innerText().then(plainText);
     for (const phrase of forbidden) assert.ok(!body.includes(phrase), `${label}: forbidden phrase ${phrase}`);
     assert.ok(!/不是[^。；\n]{0,30}而是/.test(body), `${label}: avoid the 不是……而是 pattern`);
     assert.ok(!/选项\s*[A-D]|[（(][A-D][）)]|[A-D]\s*项/.test(body), `${label}: refers to a choice by letter`);
@@ -174,15 +176,15 @@ async function check(viewport, dark) {
     assert.ok(stageBox && stageBox.width >= 200 && stageBox.height >= minH, `${label}: stage ${JSON.stringify(stageBox)}`);
 
     assert.ok(await lab.locator(".ch7l-result").isHidden(), `${label}: conclusion visible before predicting`);
-    assert.ok((await lab.locator(".ch7l-side").innerText()).includes("先在上方猜一猜"), `${label}: readout visible before predicting`);
+    assert.ok((await lab.locator(".ch7l-side").innerText().then(plainText)).includes("先在上方猜一猜"), `${label}: readout visible before predicting`);
     await lab.locator(".ch7l-predict-options [data-i]").first().click();
     assert.ok(await lab.locator(".ch7l-predict-feedback").isVisible(), `${label}: prediction feedback`);
-    assert.ok(!(await lab.locator(".ch7l-side").innerText()).includes("先在上方猜一猜"), `${label}: readout still hidden after predicting`);
+    assert.ok(!(await lab.locator(".ch7l-side").innerText().then(plainText)).includes("先在上方猜一猜"), `${label}: readout still hidden after predicting`);
     assert.ok(await lab.locator(".ch7l-result").isHidden(), `${label}: conclusion opened before acting`);
-    const before = await lab.locator(".ch7l-side").innerText();
+    const before = await lab.locator(".ch7l-side").innerText().then(plainText);
     await route.act(page, lab);
     await page.waitForTimeout(250);
-    assert.notEqual(await lab.locator(".ch7l-side").innerText(), before, `${label}: acting did not change the readout`);
+    assert.notEqual(await lab.locator(".ch7l-side").innerText().then(plainText), before, `${label}: acting did not change the readout`);
     assert.ok(await lab.locator(".ch7l-result").isVisible(), `${label}: conclusion did not open after predicting and acting`);
     await route.verify?.(lab);
     assert.equal(await page.locator(".katex-error").count(), 0, `${label}: KaTeX error after acting`);

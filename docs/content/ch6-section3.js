@@ -24,7 +24,7 @@ defineChapter6Section("basis-coordinates", {
       {
         title: "坐标",
         tex: String.raw`\alpha=a_1\varepsilon_1+a_2\varepsilon_2+\cdots+a_n\varepsilon_n\ \longleftrightarrow\ (a_1,a_2,\dots,a_n)`,
-        text: "基线性无关，所以这种表法唯一，系数组称为 α 在这组基下的坐标。基是有序的：交换两个基向量，坐标的两个分量也随之交换。",
+        text: `基线性无关，所以这种表法唯一，系数组称为 ${texInline("\\alpha")} 在这组基下的坐标。基是有序的：交换两个基向量，坐标的两个分量也随之交换。`,
       },
       {
         title: "相关性可以在坐标里判断",

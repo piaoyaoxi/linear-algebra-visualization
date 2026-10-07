@@ -29,7 +29,7 @@ defineChapter6Section("sets-maps", {
       },
       {
         title: "有限集与无限集",
-        text: `${texInline("X,Y")} 是元素个数相同的有限集时，${texInline("f:X\\to Y")} 单射 ⇔ 满射。无限集上这一条不成立：在全体多项式 ${texInline("P[x]")} 上，求导 ${texInline("D")} 是满射，但 ${texInline("D(1)=D(2)=0")}，不是单射；乘以 ${texInline("x")} 是单射，但常数 1 没有原像。第七章会看到，有限维空间上的线性变换又满足“单射 ⇔ 满射”。`,
+        text: `${texInline("X,Y")} 是元素个数相同的有限集时，${texInline("f:X\\to Y")} 单射 ${texInline("\\Leftrightarrow")} 满射。无限集上这一条不成立：在全体多项式 ${texInline("P[x]")} 上，求导 ${texInline("D")} 是满射，但 ${texInline("D(1)=D(2)=0")}，不是单射；乘以 ${texInline("x")} 是单射，但常数 1 没有原像。第七章会看到，有限维空间上的线性变换又满足“单射 ${texInline("\\Leftrightarrow")} 满射”。`,
       },
     ],
     pitfalls: [
@@ -49,7 +49,7 @@ defineChapter6Section("sets-maps", {
     ],
     steps: [
       `每个输入独立地选 ${texInline("a")} 或 ${texInline("b")}，共 ${texInline("2^3=8")} 个映射。`,
-      "只有两个常值映射（全部映到 a 或全部映到 b）漏掉了一个输出，所以满射有 8−2=6 个。",
+      `只有两个常值映射（全部映到 ${texInline("a")} 或全部映到 ${texInline("b")}）漏掉了一个输出，所以满射有 ${texInline("8-2=6")} 个。`,
       "3 个输入放进 2 个输出，必有两个撞在一起，所以单射有 0 个。",
       `反过来从 ${texInline("Y")} 到 ${texInline("X")}：共 ${texInline("3^2=9")} 个映射，单射 ${texInline("3\\times2=6")} 个，满射 0 个。`,
     ],
@@ -64,13 +64,13 @@ defineChapter6Section("sets-maps", {
       answer: `${texInline("g")} 一定是：每个 ${texInline("z")} 都等于某个 ${texInline("g(f(x))")}，自然在 ${texInline("g")} 的像里。${texInline("f")} 不一定。`,
     },
     {
-      question: "有限集 X 到自身的单射一定是满射吗？自然数集 ℕ 到自身的单射呢？",
-      answer: `有限集上一定是：n 个互不相同的像占满 n 个元素。ℕ 上不一定，${texInline("n\\mapsto n+1")} 是单射，但 0 没有原像。`,
+      question: `有限集 ${texInline("X")} 到自身的单射一定是满射吗？自然数集 ${texInline("\\mathbb N")} 到自身的单射呢？`,
+      answer: `有限集上一定是：${texInline("n")} 个互不相同的像占满 ${texInline("n")} 个元素。${texInline("\\mathbb N")} 上不一定，${texInline("n\\mapsto n+1")} 是单射，但 0 没有原像。`,
     },
   ],
   summary: [
     "映射给每个输入恰好一个输出；陪域是映射的一部分。",
-    "单射看有没有碰撞，满射看有没有遗漏；双射 ⇔ 存在逆映射。",
-    "元素个数相同的有限集之间，单射 ⇔ 满射；无限集上这一条失效。",
+    `单射看有没有碰撞，满射看有没有遗漏；双射 ${texInline("\\Leftrightarrow")} 存在逆映射。`,
+    `元素个数相同的有限集之间，单射 ${texInline("\\Leftrightarrow")} 满射；无限集上这一条失效。`,
   ],
 });

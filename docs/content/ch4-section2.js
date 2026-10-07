@@ -24,7 +24,7 @@ defineChapter4Section("matrix-operations", {
   concepts: [
     { label: "同型相加", text: `若 ${texInline("A,B")} 都是 ${texInline("m\\times n")} 矩阵，则 ${texInline("(A+B)_{ij}=a_{ij}+b_{ij}")}。` },
     { label: "数乘", text: `${texInline("(\\lambda A)_{ij}=\\lambda a_{ij}")}；同一个数作用于所有位置。` },
-    { label: "转置", text: `${texInline("(A^T)_{ij}=a_{ji}")}；第 i 行变成第 i 列。` },
+    { label: "转置", text: `${texInline("(A^T)_{ij}=a_{ji}")}；第 ${texInline("i")} 行变成第 ${texInline("i")} 列。` },
     { label: "转置倒序", text: `${texInline("(AB)^T=B^TA^T")}；转置复合过程时，作用顺序随之反转。` },
     { label: "乘法条件", text: `若 ${texInline("A")} 为 ${texInline("m\\times n")}，${texInline("B")} 为 ${texInline("n\\times p")}，则 ${texInline("AB")} 为 ${texInline("m\\times p")}。` },
     { label: "行乘列", text: `${texInline("(AB)_{ij}=\\sum_{k=1}^{n}a_{ik}b_{kj}")}。` },
@@ -48,7 +48,7 @@ defineChapter4Section("matrix-operations", {
     type: "multiply",
     title: "同一个乘积，两个视角",
     description: "同一组矩阵贯穿复合与顺序比较。",
-    task: `播放 B → A，再与“直接看 AB”对照终点，确认 ${texInline("ABx=A(Bx)")}；在“交换顺序”中比较 ${texInline("AB")} 与 ${texInline("BA")}。`,
+    task: `播放 ${texInline("B\\to A")}，再与“直接看 ${texInline("AB")}”对照终点，确认 ${texInline("ABx=A(Bx)")}；在“交换顺序”中比较 ${texInline("AB")} 与 ${texInline("BA")}。`,
     prompts: [],
   },
   example: {
@@ -62,7 +62,7 @@ defineChapter4Section("matrix-operations", {
     ],
     steps: [
       `先检查尺寸：${texInline("A")} 与 ${texInline("B")} 都是 ${texInline("2\\times2")} 矩阵，所以两个方向的乘积都有定义。`,
-      `计算 ${texInline("AB")}：${texInline("\\begin{bmatrix}2&0\\\\0&1\\end{bmatrix}\\begin{bmatrix}1&1\\\\0&1\\end{bmatrix}=\\begin{bmatrix}2&2\\\\0&1\\end{bmatrix}")}。它表示先做 B 的剪切，再做 A 的横向拉伸。`,
+      `计算 ${texInline("AB")}：${texInline("\\begin{bmatrix}2&0\\\\0&1\\end{bmatrix}\\begin{bmatrix}1&1\\\\0&1\\end{bmatrix}=\\begin{bmatrix}2&2\\\\0&1\\end{bmatrix}")}。它表示先做 ${texInline("B")} 的剪切，再做 ${texInline("A")} 的横向拉伸。`,
       `计算 ${texInline("BA")}：${texInline("\\begin{bmatrix}1&1\\\\0&1\\end{bmatrix}\\begin{bmatrix}2&0\\\\0&1\\end{bmatrix}=\\begin{bmatrix}2&1\\\\0&1\\end{bmatrix}")}。它表示先横向拉伸，再剪切。`,
       `两种顺序面对的中间图形不同，因此右上角分别得到 ${texInline("2")} 与 ${texInline("1")}。`,
       "结论：矩阵乘法记录过程复合，先后顺序会改变最终结果。",
@@ -71,7 +71,7 @@ defineChapter4Section("matrix-operations", {
   quiz: [
     { question: `若 ${texInline("A")} 是 ${texInline("2\\times3")} 矩阵，${texInline("B")} 是 ${texInline("3\\times4")} 矩阵，${texInline("AB")} 的阶是什么？`, answer: `${texInline("AB")} 是 ${texInline("2\\times4")} 矩阵：中间的 3 匹配，结果保留外侧的 2 与 4。` },
     { question: `在 ${texInline("ABx")} 中，哪一个矩阵先作用？`, answer: `${texInline("B")} 先作用，先得到 ${texInline("Bx")}；随后 ${texInline("A")} 作用于这个中间结果。` },
-    { question: `${texInline("AB")} 的第 j 列为什么等于 ${texInline("A")} 乘 ${texInline("B")} 的第 j 列？`, answer: `${texInline("ABe_j=A(Be_j)")}；而 ${texInline("Be_j")} 正是 ${texInline("B")} 的第 j 列。` },
+    { question: `${texInline("AB")} 的第 ${texInline("j")} 列为什么等于 ${texInline("A")} 乘 ${texInline("B")} 的第 ${texInline("j")} 列？`, answer: `${texInline("ABe_j=A(Be_j)")}；而 ${texInline("Be_j")} 正是 ${texInline("B")} 的第 ${texInline("j")} 列。` },
     { question: `矩阵乘法满足结合律，是否意味着它也满足交换律？`, answer: `不意味着。${texInline("(AB)C=A(BC)")} 只改变括号；${texInline("AB=BA")} 则交换了过程顺序，通常不成立。` },
   ],
   summary: [

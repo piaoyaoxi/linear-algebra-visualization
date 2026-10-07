@@ -22,7 +22,7 @@ defineChapter2Section("cofactor-expansion", {
     { label: "最后选择路线", text: "所有行列都能展开，但零越多，需要计算的低阶行列式越少。" },
   ],
   intro:
-    `选中 ${texInline("a_{ij}")} 后删去第 i 行与第 j 列，剩余矩阵的行列式记为 ${texInline("M_{ij}")}；再乘位置符号 ${texInline("(-1)^{i+j}")} 得到代数余子式 ${texInline("C_{ij}")}。一行或一列中的元素与对应代数余子式配对求和，就得到原行列式。这里最容易混淆的是三个对象的类型与符号。`,
+    `选中 ${texInline("a_{ij}")} 后删去第 ${texInline("i")} 行与第 ${texInline("j")} 列，剩余矩阵的行列式记为 ${texInline("M_{ij}")}；再乘位置符号 ${texInline("(-1)^{i+j}")} 得到代数余子式 ${texInline("C_{ij}")}。一行或一列中的元素与对应代数余子式配对求和，就得到原行列式。这里最容易混淆的是三个对象的类型与符号。`,
   concepts: [
     { label: "余子矩阵", text: "删去第 i 行、第 j 列后得到的 (n−1) 阶矩阵。" },
     { label: "余子式", text: `${texInline("M_{ij}")} 是余子矩阵的行列式，是标量。` },
@@ -60,7 +60,7 @@ defineChapter2Section("cofactor-expansion", {
       { text: "代数余子式始终等于余子式，无需位置符号。" },
     ],
     steps: [
-      "第 2 行只有 a₂₂=3 非零，第 3 列也只有 a₃₃=6 非零，两条路线成本相同。",
+      `第 2 行只有 ${texInline("a_{22}=3")} 非零，第 3 列也只有 ${texInline("a_{33}=6")} 非零，两条路线成本相同。`,
       `沿第 2 行：位置符号 ${texInline("(-1)^{2+2}=1")}。`,
       `余子式 ${texInline("M_{22}=\\det\\begin{bmatrix}1&0\\\\4&6\\end{bmatrix}=6")}。`,
       `所以 ${texInline("\\det(A)=3\\cdot6=18")}。`,

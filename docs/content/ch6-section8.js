@@ -10,7 +10,7 @@ defineChapter6Section("isomorphism", {
     `同构是保持加法与数乘的双射，它把一个空间里的运算原样搬到另一个空间：${texInline(String.raw`p+q`)} 的像正好是 ${texInline(String.raw`p`)} 的像与 ${texInline(String.raw`q`)} 的像之和。取系数和取函数值，是 ${texInline(String.raw`P[x]_3`)} 到 ${texInline(String.raw`\mathbb R^3`)} 的两个不同同构。`,
   concepts: [
     { label: "同构映射", text: "保持加法与数乘的双射。" },
-    { label: "维数定理", text: "数域 P 上有限维空间同构 ⇔ 维数相同。" },
+    { label: "维数定理", text: `数域 ${texInline("P")} 上有限维空间同构 ${texInline("\\Leftrightarrow")} 维数相同。` },
   ],
   textbook: { reference: "北大版《高等代数》第六章 §8", items: ["同构映射的定义", "坐标映射是同构", "同构的基本性质", "同构当且仅当维数相同"] },
   interactive: { type: "slot", title: "两张“坐标”，同一套运算" },

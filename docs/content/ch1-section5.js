@@ -60,8 +60,8 @@ defineChapter1Section("factorization-theorem", {
       answer: `${texInline("\\mathbb{R}")}：${texInline("(x-1)(x+1)(x^2+1)")}；${texInline("\\mathbb{C}")}：${texInline("(x-1)(x+1)(x-i)(x+i)")}。`,
     },
     {
-      question: "2 次或 3 次多项式在 P 上可约，当且仅当什么？",
-      answer: "它在 P 中有根。可约时必有一次因式，一次因式给出根；反之有根就有一次因式。",
+      question: `2 次或 3 次多项式在 ${texInline("P")} 上可约，当且仅当什么？`,
+      answer: `它在 ${texInline("P")} 中有根。可约时必有一次因式，一次因式给出根；反之有根就有一次因式。`,
     },
     {
       question: `${texInline("p")} 不可约，${texInline("f")} 任意。${texInline("\\gcd(p,f)")} 可能是什么？`,

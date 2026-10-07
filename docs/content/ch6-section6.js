@@ -9,10 +9,10 @@ defineChapter6Section("intersection-sum", {
   intro:
     `${texInline(String.raw`U+W`)} 由 ${texInline(String.raw`U`)} 中向量与 ${texInline(String.raw`W`)} 中向量的和组成，是包含二者的最小子空间。公共方向在 ${texInline(String.raw`\dim U`)} 和 ${texInline(String.raw`\dim W`)} 里各数了一次，所以要扣掉一次。在 ${texInline(String.raw`\mathbb R^3`)} 里拖动两个平面，看它们的交能不能只剩原点。`,
   concepts: [
-    { label: "和", text: "V₁+V₂={α₁+α₂ : α₁∈V₁, α₂∈V₂}。" },
+    { label: "和", text: `${texInline("V_1+V_2=\\{\\alpha_1+\\alpha_2:\\alpha_1\\in V_1,\\ \\alpha_2\\in V_2\\}")}。` },
     { label: "维数公式", text: `${texInline(String.raw`\dim V_1+\dim V_2=\dim(V_1+V_2)+\dim(V_1\cap V_2)`)}。` },
   ],
-  textbook: { reference: "北大版《高等代数》第六章 §6", items: ["子空间的交与和", "生成子空间的和", "维数公式", "维数之和大于 n 时交非零"] },
+  textbook: { reference: "北大版《高等代数》第六章 §6", items: ["子空间的交与和", "生成子空间的和", "维数公式", `维数之和大于 ${texInline("n")} 时交非零`] },
   interactive: { type: "slot", title: "两个子空间合起来有多大" },
   lesson: {
     figure: "intersection-curves",
@@ -29,7 +29,7 @@ defineChapter6Section("intersection-sum", {
         text: `证明思路：取 ${texInline("V_1\\cap V_2")} 的一组基，分别扩充成 ${texInline("V_1")}、${texInline("V_2")} 的基，合在一起恰好是 ${texInline("V_1+V_2")} 的基。公共部分在左边数了两次，右边只数一次。`,
       },
       {
-        title: "推论：维数之和超过 n，交必非零",
+        title: `推论：维数之和超过 ${texInline("n")}，交必非零`,
         text: `在 ${texInline("n")} 维空间中，若 ${texInline("\\dim V_1+\\dim V_2>n")}，则 ${texInline("V_1\\cap V_2")} 含非零向量。${texInline("\\mathbb R^3")} 中两个平面 ${texInline("2+2>3")}，一定交出一条直线；下图是 ${texInline("P[x]_4")} 中同样的现象。`,
       },
     ],
@@ -50,9 +50,9 @@ defineChapter6Section("intersection-sum", {
     ],
     steps: [
       `${texInline("\\dim U=\\dim W=3")}，例如 ${texInline("U")} 有基 ${texInline("x-1,(x-1)^2,(x-1)^3")}。`,
-      `${texInline("p")} 同时以 1 和 −1 为根，当且仅当 ${texInline("x^2-1")} 整除 ${texInline("p")}。${texInline("p")} 的次数不超过 3，所以 ${texInline("p=(x^2-1)(a+bx)")}，${texInline("\\dim(U\\cap W)=2")}。`,
+      `${texInline("p")} 同时以 ${texInline("1")} 和 ${texInline("-1")} 为根，当且仅当 ${texInline("x^2-1")} 整除 ${texInline("p")}。${texInline("p")} 的次数不超过 3，所以 ${texInline("p=(x^2-1)(a+bx)")}，${texInline("\\dim(U\\cap W)=2")}。`,
       `维数公式：${texInline("\\dim(U+W)=3+3-2=4=\\dim P[x]_4")}，所以 ${texInline("U+W=P[x]_4")}。`,
-      `${texInline("3+3>4")} 本身就说明交非零：例如 ${texInline("x^2-1")} 同时以 1 和 −1 为根，属于 ${texInline("U\\cap W")}。`,
+      `${texInline("3+3>4")} 本身就说明交非零：例如 ${texInline("x^2-1")} 同时以 ${texInline("1")} 和 ${texInline("-1")} 为根，属于 ${texInline("U\\cap W")}。`,
     ],
   },
   quiz: [

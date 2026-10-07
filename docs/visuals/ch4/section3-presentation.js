@@ -343,14 +343,14 @@
             <article><span>离散量</span><strong>秩</strong>${mathDisplay("\\operatorname{rank}(A)\\in\\{0,1,2\\}")}<p>二维输出是平面、直线还是一个点。秩只在临界状态跳变。</p></article>
           </div>
           <div class="s3-sign-strip">
-            <div><i class="is-positive"></i><strong>det &gt; 0</strong><span>面积保留方向</span></div>
-            <div><i class="is-negative"></i><strong>det &lt; 0</strong><span>面积保留但方向翻转</span></div>
-            <div><i class="is-zero"></i><strong>det = 0</strong><span>平面坍缩，秩下降</span></div>
+            <div><i class="is-positive"></i><strong>${mathInline("\\det>0")}</strong><span>面积保留方向</span></div>
+            <div><i class="is-negative"></i><strong>${mathInline("\\det<0")}</strong><span>面积保留但方向翻转</span></div>
+            <div><i class="is-zero"></i><strong>${mathInline("\\det=0")}</strong><span>平面坍缩，秩下降</span></div>
           </div>
         </section>
 
         <section class="s3-formal-module" aria-labelledby="s3-det-one-title">
-          <div class="s3-module-heading"><span>02</span><div><h3 id="s3-det-one-title">det(A)=1 只说明面积不变</h3><p>单位矩阵、剪切和互补缩放可以拥有同一个行列式。</p></div></div>
+          <div class="s3-module-heading"><span>02</span><div><h3 id="s3-det-one-title">${mathInline("\\det(A)=1")} 只说明面积不变</h3><p>单位矩阵、剪切和互补缩放可以拥有同一个行列式。</p></div></div>
           <div class="s3-det-one-gallery">
             <article>${miniShape([[1, 0], [0, 1]], "单位矩阵保持单位正方形")}<strong>单位矩阵</strong>${mathInline("\\det(E)=1")}<p>形状与面积都不变。</p></article>
             <article>${miniShape([[1, 0.8], [0, 1]], "剪切保持面积但改变形状")}<strong>剪切</strong>${mathInline("\\det(S)=1")}<p>形状改变，面积仍为 1。</p></article>
@@ -361,7 +361,7 @@
         <section class="s3-formal-module" aria-labelledby="s3-laws-title">
           <div class="s3-module-heading"><span>03</span><div><h3 id="s3-laws-title">乘积的两条主线</h3><p>面积倍率可以累积；独立方向受到最窄一步的限制。</p></div></div>
           <div class="s3-law-pair">
-            <article><span>面积计量</span>${mathDisplay("\\det(AB)=\\det(A)\\det(B)")}<p>先经过 B，再经过 A；单位面积依次乘上两个缩放因子。</p></article>
+            <article><span>面积计量</span>${mathDisplay("\\det(AB)=\\det(A)\\det(B)")}<p>先经过 ${mathInline("B")}，再经过 ${mathInline("A")}；单位面积依次乘上两个缩放因子。</p></article>
             <article><span>方向瓶颈</span>${mathDisplay("\\operatorname{rank}(AB)\\leq\\min\\{\\operatorname{rank}(A),\\operatorname{rank}(B)\\}")}<p>一旦输出被压到直线，后面的线性变换只能移动或继续压缩这条直线。</p></article>
           </div>
           <div class="s3-invertible-note">
@@ -375,7 +375,7 @@
           <div class="s3-transpose-rank" data-s3-transpose-rank>
             <div class="s3-transpose-matrix" data-s3-transpose-matrix>${matrixGrid([[1, 0, 1], [0, 1, 1]])}</div>
             <button type="button" data-s3-transpose-toggle>转置</button>
-            <div class="s3-transpose-copy"><strong data-s3-transpose-name>M 是 2 × 3</strong><p data-s3-transpose-text>两行独立；三列中第三列是前两列之和。行秩与列秩都等于 2。</p></div>
+            <div class="s3-transpose-copy"><strong data-s3-transpose-name>${mathInline("M")} 是 ${mathInline("2\\times3")}</strong><p data-s3-transpose-text>两行独立；三列中第三列是前两列之和。行秩与列秩都等于 2。</p></div>
           </div>
           <div class="s3-rank-equality">${mathDisplay("\\operatorname{rank}(M^T)=\\operatorname{rank}(M)")}</div>
         </section>
@@ -393,11 +393,11 @@
     const paint = () => {
       const matrix = flipped ? transposed : original;
       lab.querySelector("[data-s3-transpose-matrix]").innerHTML = matrixGrid(matrix);
-      lab.querySelector("[data-s3-transpose-name]").textContent = flipped ? "Mᵀ 是 3 × 2" : "M 是 2 × 3";
+      lab.querySelector("[data-s3-transpose-name]").innerHTML = flipped ? `${mathInline("M^T")} 是 ${mathInline("3\\times2")}` : `${mathInline("M")} 是 ${mathInline("2\\times3")}`;
       lab.querySelector("[data-s3-transpose-text]").textContent = flipped
         ? "原来的列成为行，原来的行成为列；独立方向数仍是 2。"
         : "两行独立；三列中第三列是前两列之和。行秩与列秩都等于 2。";
-      lab.querySelector("[data-s3-transpose-toggle]").textContent = flipped ? "转置回 M" : "转置";
+      lab.querySelector("[data-s3-transpose-toggle]").innerHTML = flipped ? `转置回 ${mathInline("M")}` : "转置";
       lab.classList.toggle("is-transposed", flipped);
     };
     lab.querySelector("[data-s3-transpose-toggle]")?.addEventListener("click", () => {
@@ -413,7 +413,7 @@
       <h2>交互实验</h2>
       <div class="s3-lab" data-s3-lab>
         <div class="s3-lab-heading">
-          <div><h3>连续作用两个矩阵</h3><p>先作用 B，再作用 A，合起来就是 AB。“面积倍率”看面积怎样累积，“丢掉的方向”看压扁之后还能不能恢复。</p></div>
+          <div><h3>连续作用两个矩阵</h3><p>先作用 ${mathInline("B")}，再作用 ${mathInline("A")}，合起来就是 ${mathInline("AB")}。“面积倍率”看面积怎样累积，“丢掉的方向”看压扁之后还能不能恢复。</p></div>
         </div>
         <div class="s3-tabs" role="tablist" aria-label="第三节实验视角">
           <button type="button" role="tab" class="is-active" aria-selected="true" data-s3-tab="product">面积倍率</button>
@@ -425,19 +425,19 @@
             <div class="s3-product-lab" data-s3-product-lab>
               <div data-s3-product-gate></div>
               <div class="s3-product-actions">
-                <button type="button" class="button primary is-primary" data-s3-product-play>同步播放 AB 与 BA</button>
+                <button type="button" class="button primary is-primary" data-s3-product-play>同步播放 ${mathInline("AB")} 与 ${mathInline("BA")}</button>
                 <button type="button" class="button" data-s3-product-reset>重置</button>
               </div>
               <p class="s3-product-given">${mathInline("A=\\begin{bmatrix}2&0\\\\0&1\\end{bmatrix}")}（横向拉伸 2 倍），${mathInline("B=\\begin{bmatrix}1&1\\\\0&1\\end{bmatrix}")}（剪切）。</p>
               <div class="s3-product-grid">
-                <article class="s3-canvas-card"><div class="s3-stage-top"><strong>AB：先 B 后 A</strong><span data-s3-ab-stage>单位正方形</span></div><canvas data-s3-ab-canvas aria-label="AB 的连续面积变换"></canvas></article>
-                <article class="s3-canvas-card"><div class="s3-stage-top"><strong>BA：先 A 后 B</strong><span data-s3-ba-stage>单位正方形</span></div><canvas data-s3-ba-canvas aria-label="BA 的连续面积变换"></canvas></article>
+                <article class="s3-canvas-card"><div class="s3-stage-top"><strong>${mathInline("AB")}：先 ${mathInline("B")} 后 ${mathInline("A")}</strong><span data-s3-ab-stage>单位正方形</span></div><canvas data-s3-ab-canvas aria-label="AB 的连续面积变换"></canvas></article>
+                <article class="s3-canvas-card"><div class="s3-stage-top"><strong>${mathInline("BA")}：先 ${mathInline("A")} 后 ${mathInline("B")}</strong><span data-s3-ba-stage>单位正方形</span></div><canvas data-s3-ba-canvas aria-label="BA 的连续面积变换"></canvas></article>
               </div>
               <div class="s3-area-meter" data-s3-product-answer hidden>
                 <div><span>起点</span><strong>1</strong><small>单位正方形面积</small></div><i>×</i>
-                <div><span>det(B)</span><strong>1</strong><small>剪切保持面积</small></div><i>×</i>
-                <div><span>det(A)</span><strong>2</strong><small>横向拉伸两倍</small></div><i>=</i>
-                <div class="is-result"><span>最终面积</span><strong>2</strong><small>AB 与 BA 相同</small></div>
+                <div><span>${mathInline("\\det(B)")}</span><strong>1</strong><small>剪切保持面积</small></div><i>×</i>
+                <div><span>${mathInline("\\det(A)")}</span><strong>2</strong><small>横向拉伸两倍</small></div><i>=</i>
+                <div class="is-result"><span>最终面积</span><strong>2</strong><small>${mathInline("AB")} 与 ${mathInline("BA")} 相同</small></div>
               </div>
               <div class="s3-product-conclusion" data-s3-product-answer hidden>
                 <div>${mathDisplay("\\det(AB)=\\det A\\cdot\\det B=2")}</div>
@@ -454,16 +454,16 @@
                 <button type="button" data-s3-bottleneck="shear">剪切</button>
                 <button type="button" data-s3-bottleneck="rotate">旋转 90°</button>
                 <button type="button" data-s3-bottleneck="stretch">纵向拉伸</button>
-                <button type="button" data-s3-bottleneck="kill">把 y=x 压到 0</button>
+                <button type="button" data-s3-bottleneck="kill">把 ${mathInline("y=x")} 压到 0</button>
               </div>
               <div class="s3-bottleneck-flow">
-                <article class="s3-canvas-card"><div class="s3-stage-top"><strong>第一步：B</strong><span>平面 → 直线 y=x</span></div><canvas data-s3-b-canvas aria-label="秩一矩阵 B 的输出"></canvas><footer>${mathInline(`B=${matrixTex(BOTTLENECK_B)},\\ \\operatorname{rank}(B)=1`)}</footer></article>
-                <div class="s3-flow-arrow"><strong data-s3-a-label>A = ?</strong><span data-s3-a-matrix></span></div>
-                <article class="s3-canvas-card"><div class="s3-stage-top"><strong>第二步：AB</strong><span data-s3-ab-rank-label>等待选择 A</span></div><canvas data-s3-bottleneck-canvas aria-label="复合矩阵 AB 的输出"></canvas><footer data-s3-bottleneck-rank></footer></article>
+                <article class="s3-canvas-card"><div class="s3-stage-top"><strong>第一步：${mathInline("B")}</strong><span>平面 → 直线 ${mathInline("y=x")}</span></div><canvas data-s3-b-canvas aria-label="秩一矩阵 B 的输出"></canvas><footer>${mathInline(`B=${matrixTex(BOTTLENECK_B)},\\ \\operatorname{rank}(B)=1`)}</footer></article>
+                <div class="s3-flow-arrow"><strong data-s3-a-label>${mathInline("A=?")}</strong><span data-s3-a-matrix></span></div>
+                <article class="s3-canvas-card"><div class="s3-stage-top"><strong>第二步：${mathInline("AB")}</strong><span data-s3-ab-rank-label>等待选择 ${mathInline("A")}</span></div><canvas data-s3-bottleneck-canvas aria-label="复合矩阵 AB 的输出"></canvas><footer data-s3-bottleneck-rank></footer></article>
               </div>
               <div class="s3-bottleneck-readout">
-                <strong data-s3-bottleneck-title>选一个 A</strong>
-                <p data-s3-bottleneck-copy>B 已经把整个平面压到直线 y=x 上。选一个 A 作用在这条直线上，看 AB 的输出。</p>
+                <strong data-s3-bottleneck-title>选一个 ${mathInline("A")}</strong>
+                <p data-s3-bottleneck-copy>${mathInline("B")} 已经把整个平面压到直线 ${mathInline("y=x")} 上。选一个 ${mathInline("A")} 作用在这条直线上，看 ${mathInline("AB")} 的输出。</p>
               </div>
             </div>
           </section>
@@ -523,7 +523,7 @@
       root: lab,
       manual: true,
       key: "visuals/ch4/section3-presentation.js#product",
-      question: `${mathInline("\\det A=2")}，${mathInline("\\det B=1")}。先 B 后 A 得到 AB，先 A 后 B 得到 BA。两个平行四边形会怎样？`,
+      question: `${mathInline("\\det A=2")}，${mathInline("\\det B=1")}。先 ${mathInline("B")} 后 ${mathInline("A")} 得到 ${mathInline("AB")}，先 ${mathInline("A")} 后 ${mathInline("B")} 得到 ${mathInline("BA")}。两个平行四边形会怎样？`,
       options: [
         ["形状不同，面积都是 2", true, ""],
         ["形状相同，面积都是 2", false, "AB 的第二列是 (2,1)ᵀ，BA 的第二列是 (1,1)ᵀ，两个平行四边形不一样。"],
@@ -547,8 +547,8 @@
       reset();
       const id = run;
       // labels name the step; the current area is shown only once a step is complete
-      abStage.textContent = "第 1 步：作用 B";
-      baStage.textContent = "第 1 步：作用 A";
+      abStage.innerHTML = `第 1 步：作用 ${mathInline("B")}`;
+      baStage.innerHTML = `第 1 步：作用 ${mathInline("A")}`;
       await Promise.all([
         animateCanvasTo(abCanvas, PRODUCT_B, { drawOptions: { firstLabel: "Be₁", secondLabel: "Be₂", ghost: I } }),
         animateCanvasTo(baCanvas, PRODUCT_A, { drawOptions: { firstLabel: "Ae₁", secondLabel: "Ae₂", ghost: I } }),
@@ -558,8 +558,8 @@
       baStage.textContent = "当前面积 2";
       if (!reducedMotion()) await new Promise((resolve) => setTimeout(resolve, 420));
       if (id !== run) return;
-      abStage.textContent = "第 2 步：作用 A";
-      baStage.textContent = "第 2 步：作用 B";
+      abStage.innerHTML = `第 2 步：作用 ${mathInline("A")}`;
+      baStage.innerHTML = `第 2 步：作用 ${mathInline("B")}`;
       await Promise.all([
         animateCanvasTo(abCanvas, PRODUCT_AB, { drawOptions: { firstLabel: "ABe₁", secondLabel: "ABe₂", ghost: PRODUCT_B, ghostLabels: ["Be₁", "Be₂"] } }),
         animateCanvasTo(baCanvas, PRODUCT_BA, { drawOptions: { firstLabel: "BAe₁", secondLabel: "BAe₂", ghost: PRODUCT_A, ghostLabels: ["Ae₁", "Ae₂"] } }),
@@ -580,10 +580,10 @@
     const resultCanvas = lab.querySelector("[data-s3-bottleneck-canvas]");
     // every A acts on the line y = x that B left behind
     const presets = {
-      shear: { label: "剪切", matrix: [[1, 1], [0, 1]], title: "直线被剪切到另一个方向", copy: "剪切可逆，它把 y=x 送到经过 (2,1) 的直线。输出仍是一条直线，rank(AB)=rank(B)=1。" },
-      rotate: { label: "旋转 90°", matrix: [[0, -1], [1, 0]], title: "直线转到了 y=−x", copy: "旋转可逆，直线换了位置，独立方向仍然只有 1 个，rank(AB)=1。" },
-      stretch: { label: "纵向拉伸", matrix: [[1, 0], [0, 2]], title: "直线变陡，仍是直线", copy: "纵向拉伸可逆，y=x 变成 y=2x。长度和方向变了，rank(AB)=1。" },
-      kill: { label: "压掉 y=x", matrix: [[1, -1], [1, -1]], title: "秩继续下降到 0", copy: "这个 A 不可逆，恰好把 y=x 上的每个点送到原点，所以 AB=0，rank(AB)=0。" },
+      shear: { label: "剪切", matrix: [[1, 1], [0, 1]], title: "直线被剪切到另一个方向", copy: `剪切可逆，它把 ${mathInline("y=x")} 送到经过 ${mathInline("(2,1)")} 的直线。输出仍是一条直线，${mathInline("\\operatorname{rank}(AB)=\\operatorname{rank}(B)=1")}。` },
+      rotate: { label: "旋转 90°", matrix: [[0, -1], [1, 0]], title: `直线转到了 ${mathInline("y=-x")}`, copy: `旋转可逆，直线换了位置，独立方向仍然只有 1 个，${mathInline("\\operatorname{rank}(AB)=1")}。` },
+      stretch: { label: "纵向拉伸", matrix: [[1, 0], [0, 2]], title: "直线变陡，仍是直线", copy: `纵向拉伸可逆，${mathInline("y=x")} 变成 ${mathInline("y=2x")}。长度和方向变了，${mathInline("\\operatorname{rank}(AB)=1")}。` },
+      kill: { label: `压掉 ${mathInline("y=x")}`, matrix: [[1, -1], [1, -1]], title: "秩继续下降到 0", copy: `这个 ${mathInline("A")} 不可逆，恰好把 ${mathInline("y=x")} 上的每个点送到原点，所以 ${mathInline("AB=0")}，${mathInline("\\operatorname{rank}(AB)=0")}。` },
     };
     drawTransformScene(bCanvas, BOTTLENECK_B, { firstLabel: "Be₁", secondLabel: "Be₂", ghost: I });
     drawTransformScene(resultCanvas, BOTTLENECK_B, { firstLabel: "Be₁", secondLabel: "Be₂" });
@@ -592,15 +592,15 @@
       root: lab,
       manual: true,
       key: "visuals/ch4/section3-presentation.js#bottleneck",
-      question: "B 已经把整个平面压到直线 y=x 上。能不能找到一个 A，让 AB 的输出重新铺满整个平面？",
+      question: `${mathInline("B")} 已经把整个平面压到直线 ${mathInline("y=x")} 上。能不能找到一个 ${mathInline("A")}，让 ${mathInline("AB")} 的输出重新铺满整个平面？`,
       options: [
-        ["不能：无论 A 是什么，AB 的输出最多是一条直线", true, ""],
-        ["能：选一个可逆的 A 就行", false, "可逆的 A 只把这条直线送到另一条直线，rank(AB)=rank(B)=1。"],
-        ["能：选一个行列式很大的 A", false, "A 只能作用在 B 的输出上，一条直线乘多大的倍数仍是直线。"],
-        ["只有 A=B⁻¹ 时能", false, "B 不可逆（det B=0），没有逆矩阵。"],
+        [`不能：无论 ${mathInline("A")} 是什么，${mathInline("AB")} 的输出最多是一条直线`, true, ""],
+        [`能：选一个可逆的 ${mathInline("A")} 就行`, false, "可逆的 A 只把这条直线送到另一条直线，rank(AB)=rank(B)=1。"],
+        [`能：选一个行列式很大的 ${mathInline("A")}`, false, "A 只能作用在 B 的输出上，一条直线乘多大的倍数仍是直线。"],
+        [`只有 ${mathInline("A=B^{-1}")} 时能`, false, "B 不可逆（det B=0），没有逆矩阵。"],
       ],
       onPick: () => lab.querySelectorAll("[data-s3-bottleneck]").forEach((b) => { b.disabled = false; b.removeAttribute("title"); }),
-      right: `✓ AB 的每个输出都是 A 作用在 B 的某个输出上，而 B 的输出全在 y=x 上，所以 AB 的输出全在 A 把这条直线送到的地方：一条直线或一个点。这就是 ${mathInline("\\operatorname{rank}(AB)\\leq\\min\\{\\operatorname{rank}(A),\\operatorname{rank}(B)\\}")}。`,
+      right: `✓ ${mathInline("AB")} 的每个输出都是 ${mathInline("A")} 作用在 ${mathInline("B")} 的某个输出上，而 ${mathInline("B")} 的输出全在 ${mathInline("y=x")} 上，所以 ${mathInline("AB")} 的输出全在 ${mathInline("A")} 把这条直线送到的地方：一条直线或一个点。这就是 ${mathInline("\\operatorname{rank}(AB)\\leq\\min\\{\\operatorname{rank}(A),\\operatorname{rank}(B)\\}")}。`,
     });
 
     const select = async (id) => {
@@ -608,13 +608,13 @@
       if (!preset) return;
       lab.querySelectorAll("[data-s3-bottleneck]").forEach((button) => button.classList.toggle("is-active", button.dataset.s3Bottleneck === id));
       const product = multiply(preset.matrix, BOTTLENECK_B);
-      lab.querySelector("[data-s3-a-label]").textContent = `A：${preset.label}`;
+      lab.querySelector("[data-s3-a-label]").innerHTML = `${mathInline("A")}：${preset.label}`;
       lab.querySelector("[data-s3-a-matrix]").innerHTML = matrixGrid(preset.matrix);
       const rank = rank2(product);
       lab.querySelector("[data-s3-ab-rank-label]").textContent = rank === 1 ? "直线 → 直线" : "直线 → 一个点";
       lab.querySelector("[data-s3-bottleneck-rank]").innerHTML = mathInline(`AB=${matrixTex(product)},\\ \\operatorname{rank}(AB)=${rank}`);
-      lab.querySelector("[data-s3-bottleneck-title]").textContent = preset.title;
-      lab.querySelector("[data-s3-bottleneck-copy]").textContent = preset.copy;
+      lab.querySelector("[data-s3-bottleneck-title]").innerHTML = preset.title;
+      lab.querySelector("[data-s3-bottleneck-copy]").innerHTML = preset.copy;
       // start each choice from B's output, so the move from the dashed line is visible
       drawTransformScene(resultCanvas, BOTTLENECK_B, { firstLabel: "", secondLabel: "", ghost: BOTTLENECK_B, ghostName: "B 的像" });
       gate?.acted();

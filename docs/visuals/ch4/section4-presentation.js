@@ -25,7 +25,7 @@
       factors: [SHEAR_S, ROTATE_R],
       factorNames: ["S", "R"],
       matrix: [0, -1, 1, 1],
-      description: "先剪切 S，再旋转 90°（R）：A=RS。两步都可逆，A 也可逆。",
+      description: `先剪切 ${inline("S")}，再旋转 90°（${inline("R")}）：${inline("A=RS")}。两步都可逆，${inline("A")} 也可逆。`,
     },
     {
       key: "shear",
@@ -220,8 +220,8 @@
         <header class="inverse-lab-head">
           <div>
             <span class="inverse-lab-kicker">线性变换工作台</span>
-            <h3>A 改变平面，A<sup>−1</sup> 把它还原</h3>
-            <p>${section?.interactive?.task || "选择一个矩阵 A，观察基向量与网格如何变化；若两个方向都被保留，再应用逆矩阵回到单位变换。"}</p>
+            <h3>${inline("A")} 改变平面，${inline("A^{-1}")} 把它还原</h3>
+            <p>${section?.interactive?.task || `选择一个矩阵 ${inline("A")}，观察基向量与网格如何变化；若两个方向都被保留，再应用逆矩阵回到单位变换。`}</p>
           </div>
           <div class="inverse-core-rule" aria-label="二维矩阵可逆判据">
             <span>二维可逆判据</span>
@@ -233,7 +233,7 @@
 
         <section class="inverse-preset-section" aria-label="选择线性变换">
           <div class="inverse-compact-heading">
-            <strong>矩阵 A</strong>
+            <strong>矩阵 ${inline("A")}</strong>
             <small>选择一个变换</small>
           </div>
           <div class="inverse-preset-grid">
@@ -272,7 +272,7 @@
                 <text class="inverse-vector-label" data-inverse-vector-label></text>
               </svg>
             </div>
-            <figcaption data-inverse-caption>起点：单位正方形的两条邻边正是 e₁ 与 e₂。</figcaption>
+            <figcaption data-inverse-caption>起点：单位正方形的两条邻边正是 ${inline("e_1")} 与 ${inline("e_2")}。</figcaption>
           </figure>
 
           <aside class="inverse-control-panel" aria-live="polite">
@@ -296,12 +296,12 @@
                 </li>
                 <li data-inverse-step="1">
                   <button type="button" data-inverse-jump="1">
-                    <span>02</span><small>应用 A</small><strong>${inline("A")}</strong>
+                    <span>02</span><small>应用 ${inline("A")}</small><strong>${inline("A")}</strong>
                   </button>
                 </li>
                 <li data-inverse-step="2">
                   <button type="button" data-inverse-jump="2">
-                    <span>03</span><small>应用 A<sup>−1</sup></small><strong>${inline("A^{-1}A=E")}</strong>
+                    <span>03</span><small>应用 ${inline("A^{-1}")}</small><strong>${inline("A^{-1}A=E")}</strong>
                   </button>
                 </li>
               </ol>
@@ -322,7 +322,7 @@
 
               <p class="inverse-equation" data-inverse-equation>${inline("Ex=x")}</p>
               <div class="inverse-control-row">
-                <button class="button primary is-primary" type="button" data-inverse-next>应用 A</button>
+                <button class="button primary is-primary" type="button" data-inverse-next><span>应用 ${inline("A")}</span></button>
                 <button class="button ghost" type="button" data-inverse-reset>回到起点</button>
               </div>
             </section>
@@ -331,7 +331,7 @@
               <div class="inverse-decision-heading">
                 <div>
                   <span data-inverse-verdict-kicker>二维保留</span>
-                  <strong data-inverse-verdict-title>A 可逆</strong>
+                  <strong data-inverse-verdict-title>${inline("A")} 可逆</strong>
                 </div>
                 <div class="inverse-conclusion" data-inverse-conclusion>
                   <small data-inverse-conclusion-label>两侧逆</small>
@@ -340,7 +340,7 @@
               </div>
 
               <dl class="inverse-facts">
-                <div class="is-matrix"><dt>矩阵 A</dt><dd data-inverse-matrix>${inline(matrixLatex(defaultPreset.matrix))}</dd></div>
+                <div class="is-matrix"><dt>矩阵 ${inline("A")}</dt><dd data-inverse-matrix>${inline(matrixLatex(defaultPreset.matrix))}</dd></div>
                 <div><dt>${inline("\\operatorname{rank}(A)")}</dt><dd data-inverse-rank>2</dd></div>
                 <div><dt>${inline("\\det(A)")}</dt><dd data-inverse-det>1</dd></div>
                 <div><dt>空间</dt><dd data-inverse-dimension>${inline("2\\to2")}</dd></div>
@@ -402,14 +402,14 @@
       root: lab,
       manual: true,
       key: "visuals/ch4/section4-presentation.js#order",
-      question: "A 先剪切（S），再旋转 90°（R），即 A=RS。要把平面还原，应该先撤销哪一步？",
+      question: `${inline("A")} 先剪切（${inline("S")}），再旋转 90°（${inline("R")}），即 ${inline("A=RS")}。要把平面还原，应该先撤销哪一步？`,
       options: [
-        ["先撤销旋转（R⁻¹），再撤销剪切（S⁻¹）", true, ""],
-        ["先撤销剪切（S⁻¹），再撤销旋转（R⁻¹）", false, "旋转是最后做的，网格此时已经转过；必须先把它转回来，剪切才能被撤销。"],
+        [`先撤销旋转（${inline("R^{-1}")}），再撤销剪切（${inline("S^{-1}")}）`, true, ""],
+        [`先撤销剪切（${inline("S^{-1}")}），再撤销旋转（${inline("R^{-1}")}）`, false, "旋转是最后做的，网格此时已经转过；必须先把它转回来，剪切才能被撤销。"],
         ["顺序无所谓，结果一样", false, "R⁻¹S⁻¹ 与 S⁻¹R⁻¹ 是两个不同的矩阵，只有后者把网格送回原位。"],
-        ["A 由两步合成，没有逆矩阵", false, "剪切和旋转都可逆，合起来仍可逆，det A=1。"],
+        [`${inline("A")} 由两步合成，没有逆矩阵`, false, "剪切和旋转都可逆，合起来仍可逆，det A=1。"],
       ],
-      right: `✓ 后做的先撤销：${inline("A^{-1}=(RS)^{-1}=S^{-1}R^{-1}")}，作用到 Ax 上时先遇到 ${inline("R^{-1}")}。`,
+      right: `✓ 后做的先撤销：${inline("A^{-1}=(RS)^{-1}=S^{-1}R^{-1}")}，作用到 ${inline("Ax")} 上时先遇到 ${inline("R^{-1}")}。`,
       onPick: () => render(),
     });
 
@@ -565,13 +565,13 @@
       elements.rank.innerHTML = inline(String(rank));
       elements.determinant.innerHTML = inline(fracLatex(det));
       elements.dimension.innerHTML = isSingular ? inline("2\\to1") : inline("2\\to2");
-      elements.explanation.textContent = preset.description;
+      elements.explanation.innerHTML = preset.description;
 
       lab.classList.toggle("is-singular", isSingular);
       lab.classList.toggle("is-restored", restored);
       elements.verdict.classList.toggle("is-singular", isSingular);
       elements.verdictKicker.textContent = isSingular ? "降为一维" : "二维保留";
-      elements.verdictTitle.textContent = isSingular ? "A 不可逆" : "A 可逆";
+      elements.verdictTitle.innerHTML = isSingular ? `${inline("A")} 不可逆` : `${inline("A")} 可逆`;
       elements.conclusion.classList.toggle("is-unavailable", isSingular);
       elements.conclusionLabel.textContent = isSingular ? "逆矩阵" : "两侧逆";
       elements.conclusionFormula.innerHTML = isSingular
@@ -597,79 +597,79 @@
         if (restored) {
           elements.stageLabel.textContent = "逆变换完成";
           elements.stageTitle.textContent = "网格回到原位";
-          elements.caption.textContent = `先用 ${R}⁻¹ 转回来，再用 ${S}⁻¹ 剪回去：后做的一步先撤销。`;
+          elements.caption.innerHTML = `先用 ${inline(`${R}^{-1}`)} 转回来，再用 ${inline(`${S}^{-1}`)} 剪回去：后做的一步先撤销。`;
           elements.composition.innerHTML = inline(`${S}^{-1}${R}^{-1}${R}${S}=E`);
           elements.equation.innerHTML = inline(`(${R}${S})^{-1}=${S}^{-1}${R}^{-1}`);
         } else if (journey > 1.02) {
           const second = journey > 1.5 + 0.02;
-          elements.stageLabel.textContent = half ? `已撤销 ${R}` : second ? `正在撤销 ${S}` : `正在撤销 ${R}`;
-          elements.stageTitle.textContent = half ? "只剩剪切" : second ? `应用 ${S}⁻¹` : `应用 ${R}⁻¹`;
-          elements.caption.textContent = half || second ? `${R}⁻¹ 已把旋转转回，网格回到只剪切过的样子。` : `最后做的是旋转，先用 ${R}⁻¹ 把它转回来。`;
+          elements.stageLabel.innerHTML = half ? `已撤销 ${inline(R)}` : second ? `正在撤销 ${inline(S)}` : `正在撤销 ${inline(R)}`;
+          elements.stageTitle.innerHTML = half ? "只剩剪切" : second ? `应用 ${inline(`${S}^{-1}`)}` : `应用 ${inline(`${R}^{-1}`)}`;
+          elements.caption.innerHTML = half || second ? `${inline(`${R}^{-1}`)} 已把旋转转回，网格回到只剪切过的样子。` : `最后做的是旋转，先用 ${inline(`${R}^{-1}`)} 把它转回来。`;
           elements.composition.innerHTML = inline(half || second ? `${R}^{-1}${R}${S}=${S}` : `${R}^{-1}A`);
           elements.equation.innerHTML = inline(half || second ? `${S}^{-1}(${S}x)\\longrightarrow x` : `${R}^{-1}(Ax)\\longrightarrow ${S}x`);
         } else {
           const second = journey > 0.5 + 0.02;
-          elements.stageLabel.textContent = atA ? "应用 A 完成" : half ? `已应用 ${S}` : second ? `正在应用 ${R}` : `正在应用 ${S}`;
+          elements.stageLabel.innerHTML = atA ? `应用 ${inline("A")} 完成` : half ? `已应用 ${inline(S)}` : second ? `正在应用 ${inline(R)}` : `正在应用 ${inline(S)}`;
           elements.stageTitle.textContent = atA ? "先剪切，再旋转" : half || !second ? "第一步：剪切" : "第二步：旋转 90°";
-          elements.caption.textContent = atA ? `A=${R}${S}：剪切后的网格又转了 90°。` : half || !second ? "剪切把竖直方向推斜。" : "剪切后的整张网格再旋转 90°。";
+          elements.caption.innerHTML = atA ? `${inline(`A=${R}${S}`)}：剪切后的网格又转了 90°。` : half || !second ? "剪切把竖直方向推斜。" : "剪切后的整张网格再旋转 90°。";
           elements.composition.innerHTML = inline(atA ? `A=${R}${S}` : half || !second ? S : `${R}${S}`);
           elements.equation.innerHTML = inline(atA ? `x\\mapsto ${R}(${S}x)=Ax` : half || !second ? `x\\longrightarrow ${S}x` : `${S}x\\longrightarrow ${R}(${S}x)`);
         }
       } else if (atIdentity) {
         elements.stageLabel.textContent = "单位变换";
         elements.stageTitle.textContent = "平面保持原样";
-        elements.caption.textContent = "起点：e₁、e₂ 的端点与单位正方形的两个相邻顶点完全重合。";
+        elements.caption.innerHTML = `起点：${inline("e_1")}、${inline("e_2")} 的端点与单位正方形的两个相邻顶点完全重合。`;
         elements.composition.innerHTML = inline("E");
         elements.equation.innerHTML = inline("Ex=x");
       } else if (restored) {
         elements.stageLabel.textContent = "逆变换完成";
         elements.stageTitle.textContent = "网格回到原位";
-        elements.caption.textContent = "恢复：A⁻¹Ae₁=e₁、A⁻¹Ae₂=e₂，单位正方形与向量 x 一起回到原位。";
+        elements.caption.innerHTML = `恢复：${inline("A^{-1}Ae_1=e_1")}、${inline("A^{-1}Ae_2=e_2")}，单位正方形与向量 ${inline("x")} 一起回到原位。`;
         elements.composition.innerHTML = inline("A^{-1}A=E");
         elements.equation.innerHTML = inline("A^{-1}(Ax)=(A^{-1}A)x=Ex=x");
       } else if (isSingular && atA) {
-        elements.stageLabel.textContent = "应用 A 完成";
+        elements.stageLabel.innerHTML = `应用 ${inline("A")} 完成`;
         elements.stageTitle.textContent = "二维被压成一维";
-        elements.caption.textContent = "直线 x + ker A 上的点全部落到同一点：知道 Ax 也分不出原来是 x₁ 还是 x₂。";
+        elements.caption.innerHTML = `直线 ${inline("x+\\ker A")} 上的点全部落到同一点：知道 ${inline("Ax")} 也分不出原来是 ${inline("x_1")} 还是 ${inline("x_2")}。`;
         elements.composition.innerHTML = inline("A");
         elements.equation.innerHTML = inline("x_1\\ne x_2,\\ Ax_1=Ax_2");
       } else if (atA) {
-        elements.stageLabel.textContent = "应用 A 完成";
+        elements.stageLabel.innerHTML = `应用 ${inline("A")} 完成`;
         elements.stageTitle.textContent = "平面仍然是二维";
-        elements.caption.textContent = "A 已作用：Ae₁、Ae₂ 正好构成变换后平行四边形的两条相邻边。";
+        elements.caption.innerHTML = `${inline("A")} 已作用：${inline("Ae_1")}、${inline("Ae_2")} 正好构成变换后平行四边形的两条相邻边。`;
         elements.composition.innerHTML = inline("A");
         elements.equation.innerHTML = inline("x\\mapsto Ax");
       } else {
-        elements.stageLabel.textContent = movingBack ? "正在应用 A⁻¹" : "正在应用 A";
+        elements.stageLabel.innerHTML = movingBack ? `正在应用 ${inline("A^{-1}")}` : `正在应用 ${inline("A")}`;
         elements.stageTitle.textContent = movingBack ? "变换正在被撤销" : isSingular ? "平面正在坍缩" : "平面仍保持二维";
-        elements.caption.textContent = movingBack
-          ? "A⁻¹ 正在把 A 的变化逐步撤回；彩色网格与浅色原网格重新重合。"
+        elements.caption.innerHTML = movingBack
+          ? `${inline("A^{-1}")} 正在把 ${inline("A")} 的变化逐步撤回；彩色网格与浅色原网格重新重合。`
           : isSingular
             ? "两个基方向逐渐合并，单位正方形的面积正在降为 0。"
-            : "A 同时移动两个基向量，并带动整张网格连续变形。";
+            : `${inline("A")} 同时移动两个基向量，并带动整张网格连续变形。`;
         elements.composition.innerHTML = movingBack ? inline("A^{-1}A") : inline("A");
         elements.equation.innerHTML = movingBack ? inline("A^{-1}(Ax)\\longrightarrow x") : inline("x\\longrightarrow Ax");
       }
 
       let nextTarget = 1;
-      let nextLabel = journey > 0.02 ? "完成应用 A" : "应用 A";
+      let nextLabel = journey > 0.02 ? `完成应用 ${inline("A")}` : `应用 ${inline("A")}`;
       let nextDisabled = false;
       if (restored) {
         nextTarget = 0;
         nextLabel = "重新演示";
       } else if (isSingular && atA) {
         nextTarget = 1;
-        nextLabel = "A⁻¹ 不存在";
+        nextLabel = `${inline("A^{-1}")} 不存在`;
         nextDisabled = true;
       } else if (journey > 1.02) {
         nextTarget = 2;
         nextLabel = "完成还原";
       } else if (atA) {
         nextTarget = 2;
-        nextLabel = "应用 A⁻¹";
+        nextLabel = `应用 ${inline("A^{-1}")}`;
       }
       elements.next.dataset.inverseTarget = String(nextTarget);
-      elements.next.textContent = nextLabel;
+      elements.next.innerHTML = `<span>${nextLabel}</span>`;
       elements.next.disabled = nextDisabled || Boolean(gate && !gate.picked);
       if (gate && !gate.picked) elements.next.title = "先在上方猜一猜";
       else elements.next.removeAttribute("title");

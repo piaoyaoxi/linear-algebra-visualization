@@ -1,6 +1,8 @@
 /* Chapter 5 shared quadratic-form math and canvas helpers. */
 (() => {
   const clamp = (v, min, max) => Math.min(max, Math.max(min, v));
+  // step notes are HTML: symbols go through KaTeX
+  const tex = (source) => (window.texInline ? window.texInline(source) : source);
   const reducedMotion = () => Boolean(window.matchMedia?.("(prefers-reduced-motion: reduce)")?.matches);
 
   function formatNum(value, digits = 2) {
@@ -218,6 +220,13 @@
    * y1 = x1 + (b/a) x2, y2 = x2
    * ⇔ x = C y with C = [[1, -b/a], [0, 1]]
    */
+  /** "+2x_2", "-x_2", "" for a zero coefficient: one signed term of a KaTeX sum */
+  function signedTerm(coef, mono) {
+    const abs = formatNum(Math.abs(coef));
+    if (abs === "0") return "";
+    return `${coef < 0 ? "-" : "+"}${abs === "1" ? "" : abs}${mono}`;
+  }
+
   function completeSquareSteps2(A) {
     const { a, b, c } = abcFromMat2(A);
     if (nearZero(a)) {
@@ -239,7 +248,7 @@
           {
             title: "已无交叉项",
             poly: polyPlain2(A),
-            note: "a=0 且 b=0，本身已是对角标准形。",
+            note: `${tex("a=0")} 且 ${tex("b=0")}，本身已是对角标准形。`,
             kind: "done",
             matrix: mat2FromAbc(0, 0, c),
             C: identity(2),
@@ -270,21 +279,21 @@
       {
         title: "选取主平方项",
         poly: `${formatNum(a)} x₁² + ${formatNum(2 * b)} x₁x₂ + ${formatNum(c)} x₂²`,
-        note: `以系数非零的 x₁² 为主项，把所有含 x₁ 的项归到一起。`,
+        note: `以系数非零的 ${tex("x_1^2")} 为主项，把所有含 ${tex("x_1")} 的项归到一起。`,
         kind: "pick",
         matrix: cloneMat(A),
       },
       {
         title: "完成平方",
         poly: `${formatNum(a)}(x₁ + ${formatNum(r)} x₂)² + ${formatNum(d2)} x₂²`,
-        note: `配方恒等式：a x₁² + 2b x₁x₂ = a(x₁ + (b/a)x₂)² − (b²/a)x₂²。`,
+        note: `配方恒等式：${tex("ax_1^2+2bx_1x_2=a\\left(x_1+\\frac ba x_2\\right)^2-\\frac{b^2}{a}x_2^2")}。`,
         kind: "square",
         matrix: cloneMat(A),
       },
       {
         title: "变量替换",
         poly: `${formatNum(a)} y₁² + ${formatNum(d2)} y₂²`,
-        note: `令 y₁ = x₁ + ${formatNum(r)} x₂，y₂ = x₂。反解得 x₁ = y₁ − ${formatNum(r)} y₂，x₂ = y₂，即 x = C y。`,
+        note: `令 ${tex(`y_1=x_1${signedTerm(r, "x_2")}`)}，${tex("y_2=x_2")}。反解得 ${tex(`x_1=y_1${signedTerm(-r, "y_2")}`)}，${tex("x_2=y_2")}，即 ${tex("x=Cy")}。`,
         kind: "sub",
         C: cloneMat(C),
         matrix: cloneMat(D),
@@ -292,7 +301,7 @@
       {
         title: "合同验证",
         poly: polyPlain2(D),
-        note: `新矩阵 B = Cᵀ A C 应为对角矩阵 diag(${formatNum(a)}, ${formatNum(d2)})。交叉项已消失。`,
+        note: `新矩阵 ${tex("B=C^TAC")} 应为对角矩阵 ${tex(`\\operatorname{diag}(${formatNum(a)},${formatNum(d2)})`)}。交叉项已消失。`,
         kind: "check",
         C: cloneMat(C),
         matrix: cloneMat(D),
@@ -316,14 +325,14 @@
       {
         title: "无平方项",
         poly: polyPlain2(A),
-        note: "主对角接近 0 时，直接对 x₁ 配方会失败。先做和差替换，让平方项出现。",
+        note: `主对角接近 0 时，直接对 ${tex("x_1")} 配方会失败。先做和差替换，让平方项出现。`,
         kind: "start",
         matrix: cloneMat(A),
       },
       {
         title: "和差替换",
-        poly: "x₁ = (y₁+y₂)/2，x₂ = (y₁−y₂)/2",
-        note: "这是可逆替换（det C = −1/2 ≠ 0）。交叉项会变成平方差。",
+        poly: "x₁ = (y₁+y₂)/2,\\quad x₂ = (y₁−y₂)/2",
+        note: `这是可逆替换（${tex("\\det C=-1/2\\ne0")}）。交叉项会变成平方差。`,
         kind: "sub",
         C: cloneMat(C),
         matrix: cloneMat(A),
@@ -331,7 +340,7 @@
       {
         title: "得到对角形",
         poly: polyPlain2(D),
-        note: "B = Cᵀ A C 已无交叉项（数值上接近对角）。",
+        note: `${tex("B=C^TAC")} 已无交叉项（数值上接近对角）。`,
         kind: "check",
         C: cloneMat(C),
         matrix: cloneMat(D),

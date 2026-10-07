@@ -38,8 +38,8 @@ defineChapter1Section("univariate-polynomials", {
   interactive: {
     type: "slot",
     title: "系数带工作台",
-    description: "编辑 f、g 的系数，比较乘法、加减与数乘。",
-    task: "先猜一猜删去中间的 0 会怎样，再动手比较两条曲线。展开“更多运算”可以做加减与乘法：拖动 k，读出所有满足 i+j=k 的配对；再点“首项抵消”，看和的次数怎样下降。",
+    description: `编辑 ${texInline("f")}、${texInline("g")} 的系数，比较乘法、加减与数乘。`,
+    task: `先猜一猜删去中间的 0 会怎样，再动手比较两条曲线。展开“更多运算”可以做加减与乘法：拖动 ${texInline("k")}，读出所有满足 ${texInline("i+j=k")} 的配对；再点“首项抵消”，看和的次数怎样下降。`,
   },
   example: {
     title: "例题：系数、抵消与指定项",

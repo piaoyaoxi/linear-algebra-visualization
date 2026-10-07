@@ -25,9 +25,9 @@ defineChapter3Section("linear-dependence", {
         title: "多的由少的线性表出，必然相关",
         ponder: {
           q: `${texInline("\\mathbb R^3")} 中任意四个向量一定线性相关吗？`,
-          a: `一定。它们都能由 ${texInline("e_1,e_2,e_3")} 线性表出，而 4>3。`,
+          a: `一定。它们都能由 ${texInline("e_1,e_2,e_3")} 线性表出，而 ${texInline("4>3")}。`,
         },
-        text: `若 ${texInline("\\alpha_1,\\dots,\\alpha_r")} 都能由 ${texInline("\\beta_1,\\dots,\\beta_s")} 线性表出，并且 ${texInline("r>s")}，那么 ${texInline("\\alpha_1,\\dots,\\alpha_r")} 线性相关（教材 §3 定理 2）。直观地说，s 个向量最多提供 s 个方向，多出来的向量不可能都是新方向。特别地，${texInline("F^n")} 中任意 n+1 个向量都相关。`,
+        text: `若 ${texInline("\\alpha_1,\\dots,\\alpha_r")} 都能由 ${texInline("\\beta_1,\\dots,\\beta_s")} 线性表出，并且 ${texInline("r>s")}，那么 ${texInline("\\alpha_1,\\dots,\\alpha_r")} 线性相关（教材 §3 定理 2）。直观地说，${texInline("s")} 个向量最多提供 ${texInline("s")} 个方向，多出来的向量不可能都是新方向。特别地，${texInline("F^n")} 中任意 ${texInline("n+1")} 个向量都相关。`,
       },
       {
         title: "极大无关组与秩",
@@ -44,7 +44,7 @@ defineChapter3Section("linear-dependence", {
     title: "例题：求秩与全部极大无关组",
     question: `${texInline("v_1=(1,0,1)")}，${texInline("v_2=(0,1,1)")}，${texInline("v_3=(1,1,2)")}，${texInline("v_4=(1,-1,0)")}。这组向量的秩是多少？哪些部分组是极大无关组？`,
     choices: [
-      { correct: true, text: "秩为 2；四个向量都在平面 x+y=z 上，任取两个都构成极大无关组，共 6 组。" },
+      { correct: true, text: `秩为 2；四个向量都在平面 ${texInline("x+y=z")} 上，任取两个都构成极大无关组，共 6 组。` },
       { text: `秩为 3；${texInline("\\{v_1,v_2,v_4\\}")} 是唯一的极大无关组。` },
       { text: `秩为 2；只有 ${texInline("\\{v_1,v_2\\}")} 是极大无关组。` },
       { text: "秩为 4，因为任意两个向量都不共线。" },
@@ -52,22 +52,22 @@ defineChapter3Section("linear-dependence", {
     steps: [
       `${texInline("v_3=v_1+v_2")}，${texInline("v_4=v_1-v_2")}，所以全部向量都能由 ${texInline("v_1,v_2")} 表出。`,
       `${texInline("v_1,v_2")} 不共线，线性无关，因此秩为 2。`,
-      "四个向量的坐标都满足 x+y=z，它们在同一个过原点的平面上。",
+      `四个向量的坐标都满足 ${texInline("x+y=z")}，它们在同一个过原点的平面上。`,
       "任意两个向量都不共线，在这个平面里任取两个就能张成整个平面，所以 6 个两元部分组都是极大无关组。",
     ],
   },
   quiz: [
     {
       question: `${texInline("v_1,v_2,v_3")} 线性无关。${texInline("v_1+v_2,\\ v_2+v_3,\\ v_3+v_1")} 呢？${texInline("v_1-v_2,\\ v_2-v_3,\\ v_3-v_1")} 呢？`,
-      answer: "第一组线性无关（系数矩阵的行列式为 2≠0）；第二组相关，三者之和为 0。",
+      answer: `第一组线性无关（系数矩阵的行列式为 ${texInline("2\\ne0")}）；第二组相关，三者之和为 0。`,
     },
     {
-      question: `${texInline("\\alpha_1,\\dots,\\alpha_4")} 都能由 ${texInline("\\beta_1,\\beta_2,\\beta_3")} 线性表出。α 组一定相关吗？`,
+      question: `${texInline("\\alpha_1,\\dots,\\alpha_4")} 都能由 ${texInline("\\beta_1,\\beta_2,\\beta_3")} 线性表出。${texInline("\\alpha")} 组一定相关吗？`,
       answer: "一定相关：4 个向量由 3 个向量线性表出。",
     },
     {
       question: `实验里把 ${texInline("v_3")} 拖到 ${texInline("(1,1,\\tfrac32)")}，体积为 ${texInline("-\\tfrac12")}。这三个向量相关吗？`,
-      answer: "不相关。体积不为 0，v₃ 不在平面里；看起来“几乎共面”不等于共面。",
+      answer: `不相关。体积不为 0，${texInline("v_3")} 不在平面里；看起来“几乎共面”不等于共面。`,
     },
   ],
   summary: [

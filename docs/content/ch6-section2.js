@@ -9,8 +9,8 @@ defineChapter6Section("vector-space-definition", {
   intro:
     "线性空间只关心两件事：向量怎样相加，怎样乘以数域中的数。只要这两种运算满足八条规律，多项式、矩阵、函数都是向量。零向量也由运算决定，未必是数字 0。",
   concepts: [
-    { label: "线性空间", text: "数域 P 上带有加法与数乘、满足八条运算规律的集合。" },
-    { label: "零向量", text: "使 α+0=α 对一切 α 成立的元素，由加法决定。" },
+    { label: "线性空间", text: `数域 ${texInline("P")} 上带有加法与数乘、满足八条运算规律的集合。` },
+    { label: "零向量", text: `使 ${texInline("\\alpha+0=\\alpha")} 对一切 ${texInline("\\alpha")} 成立的元素，由加法决定。` },
   ],
   textbook: { reference: "北大版《高等代数》第六章 §2", items: ["线性空间的定义", "常见例子", "零元素与负元素的唯一性", "简单性质"] },
   interactive: false,

@@ -182,10 +182,12 @@
 
   function mount(root) {
     const presets = {
-      default: { f: M().poly([-1, 0, 0, 0, 1]), g: M().poly([1, 1, 1]), name: "x⁴−1 ÷ (x²+x+1)" },
-      divides: { f: M().poly([-1, 0, 0, 1]), g: M().poly([-1, 1]), name: "x³−1 ÷ (x−1)" },
+      default: { f: M().poly([-1, 0, 0, 0, 1]), g: M().poly([1, 1, 1]), name: "x^4-1\\div(x^2+x+1)", math: true },
+      divides: { f: M().poly([-1, 0, 0, 1]), g: M().poly([-1, 1]), name: "x^3-1\\div(x-1)", math: true },
       fraction: { f: M().poly(["1/2", "-1/2", 0, 1]), g: M().poly(["1/2", 1]), name: "分数系数示例" },
     };
+    // a preset name is a formula (rendered by KaTeX) or plain words
+    const nameHtml = (example) => (example.math ? tex(example.name) : svgEscape(example.name));
     const state = {
       example: presets.default,
       steps: [],
@@ -226,9 +228,9 @@
       const mine = stairs(index);
       const other = divides ? presets.default : presets.divides;
       const otherSteps = M().divisionSteps(other.f, other.g);
-      const caption = (d, name) => `<figcaption><b>${d ? "整除" : "不整除"}</b> ${svgEscape(name)}</figcaption>`;
+      const caption = (d, example) => `<figcaption><b>${d ? "整除" : "不整除"}</b> ${nameHtml(example)}</figcaption>`;
       const otherDivides = M().isZeroPoly(otherSteps.at(-1).r);
-      return `<div class="ch1-stairs-pair"><figure>${caption(divides, state.example.name)}${mine}</figure><figure class="is-compare">${caption(otherDivides, other.name)}${stairs(otherSteps.length - 1, other, otherSteps)}</figure></div>`;
+      return `<div class="ch1-stairs-pair"><figure>${caption(divides, state.example)}${mine}</figure><figure class="is-compare">${caption(otherDivides, other)}${stairs(otherSteps.length - 1, other, otherSteps)}</figure></div>`;
     }
     const eliminations = () => state.steps
       .map((step, index) => ({ step, index }))
@@ -282,7 +284,7 @@
       const step = state.steps[index];
       const done = step.kind === "done";
       const divides = done && M().isZeroPoly(step.r);
-      root.querySelector("[data-title]").textContent = state.example.name;
+      root.querySelector("[data-title]").innerHTML = nameHtml(state.example);
       root.querySelector("[data-step]").textContent = `${index + 1}/${state.steps.length}`;
       root.querySelector("[data-f]").innerHTML = tex(M().formatPolyTex(state.example.f));
       root.querySelector("[data-g]").innerHTML = tex(M().formatPolyTex(state.example.g));
@@ -294,17 +296,18 @@
       status.textContent = done ? (divides ? "余式为 0，整除成立" : "余式非零，不整除") : "长除法进行中";
       if (step.kind === "start") {
         root.querySelector("[data-focus]").textContent = "先比较被除式和除式的最高次项。";
-        root.querySelector("[data-note]").textContent = `用 x${superscripts[M().deg(state.example.f) - M().deg(state.example.g)] || ""} 消去当前最高次项。`;
+        const lead = M().deg(state.example.f) - M().deg(state.example.g);
+        root.querySelector("[data-note]").innerHTML = `用 ${tex(lead > 1 ? `x^{${lead}}` : "x")} 消去当前最高次项。`;
       } else if (step.kind === "eliminate") {
         root.querySelector("[data-focus]").innerHTML = `商中加入 ${tex(M().formatPolyTex(step.term))}，乘回除式并在同次项下方对齐。`;
         root.querySelector("[data-note]").innerHTML = M().isZeroPoly(step.r) ? "相减后余式归零。" : `相减后得到 ${tex(M().formatPolyTex(step.r))}，余式次数降为 ${M().deg(step.r)}。`;
       } else {
         root.querySelector("[data-focus]").textContent = divides ? "余式归零，除法结束。" : "余式次数已经低于除式次数，除法结束。";
-        root.querySelector("[data-note]").textContent = divides ? "因此 f(x)=q(x)g(x)。" : `最终 deg r=${M().deg(step.r)}<deg g=${M().deg(state.example.g)}。`;
+        root.querySelector("[data-note]").innerHTML = divides ? `因此 ${tex("f(x)=q(x)g(x)")}。` : `最终 ${tex(`\\deg r=${M().deg(step.r)}<\\deg g=${M().deg(state.example.g)}`)}。`;
       }
       root.querySelector("[data-stairs]").innerHTML = done ? stairsPair(index, divides) : stairs(index);
-      root.querySelector("[data-stairs-note]").textContent = done
-        ? (divides ? "余式降成 0 多项式，g 整除 f。" : `余式次数降到 ${M().deg(step.r)}，低于 deg g = ${M().deg(state.example.g)}，不能再用 g 的首项去除了。`)
+      root.querySelector("[data-stairs-note]").innerHTML = done
+        ? (divides ? `余式降成 0 多项式，${tex("g")} 整除 ${tex("f")}。` : `余式次数降到 ${M().deg(step.r)}，低于 ${tex(`\\deg g=${M().deg(state.example.g)}`)}，不能再用 ${tex("g")} 的首项去除了。`)
         : "每一步消去当前最高次项，余式次数严格下降。";
       if (done) gate?.acted();
       root.querySelector("[data-progress]").innerHTML = state.steps.map((_, stepIndex) => `<span class="${stepIndex < index ? "is-done" : stepIndex === index ? "is-current" : ""}" aria-label="第 ${stepIndex + 1} 步"></span>`).join("");
@@ -489,10 +492,10 @@
             <div class="ch1-ld-summary">
               <div><span>示例</span><strong data-title></strong></div>
               <div><span>步骤</span><strong data-step></strong></div>
-              <div><span>f(x)</span><strong data-f></strong></div>
-              <div><span>g(x)</span><strong data-g></strong></div>
-              <div><span>q(x)</span><strong data-q></strong></div>
-              <div><span>r(x)</span><strong data-r></strong></div>
+              <div><span>${tex("f(x)")}</span><strong data-f></strong></div>
+              <div><span>${tex("g(x)")}</span><strong data-g></strong></div>
+              <div><span>${tex("q(x)")}</span><strong data-q></strong></div>
+              <div><span>${tex("r(x)")}</span><strong data-r></strong></div>
             </div>
             <section class="ch1-stairs-card">
               <h4>余式次数</h4>

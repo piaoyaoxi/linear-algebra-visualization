@@ -37,8 +37,8 @@
   }
 
   K().defineFigure("maps", () => `<div class="ch6f-grid is-three">
-      ${miniMap({ left: ["1", "2", "3"], right: ["a", "b", "c", "d"], map: [0, 1, 2], caption: "单射，不满射", verdict: "没有两个元素撞到同一个像；d 没有原像。" })}
-      ${miniMap({ left: ["1", "2", "3", "4"], right: ["a", "b", "c"], map: [0, 1, 2, 0], caption: "满射，不单射", verdict: "每个输出都被取到；1 和 4 撞到同一个 a。" })}
+      ${miniMap({ left: ["1", "2", "3"], right: ["a", "b", "c", "d"], map: [0, 1, 2], caption: "单射，不满射", verdict: `没有两个元素撞到同一个像；${tex("d")} 没有原像。` })}
+      ${miniMap({ left: ["1", "2", "3", "4"], right: ["a", "b", "c"], map: [0, 1, 2, 0], caption: "满射，不单射", verdict: `每个输出都被取到；1 和 4 撞到同一个 ${tex("a")}。` })}
       ${miniMap({ left: ["1", "2", "3"], right: ["a", "b", "c"], map: [1, 2, 0], caption: "双射", verdict: "每个输出恰有一个原像，箭头可以整体反过来。" })}
     </div>
     <figcaption>${tex("X")} 在左、${tex("Y")} 在右。有限集元素个数相等时，单射与满射同时成立或同时不成立。</figcaption>`);

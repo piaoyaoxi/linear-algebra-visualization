@@ -38,7 +38,7 @@ defineChapter1Section("complex-real-factorization", {
     type: "slot",
     title: "共轭根",
     description: "在复平面上拖动根，观察二次因式的系数。",
-    task: `先猜一猜，再拖动 β：β 在紫色水平虚线上时根之和是实数，在过原点、方向为 ${texInline("\\bar\\alpha")} 的绿线上时根之积是实数。最后切到“实系数：共轭锁”拖动 α。`,
+    task: `先猜一猜，再拖动 ${texInline("\\beta")}：${texInline("\\beta")} 在紫色水平虚线上时根之和是实数，在过原点、方向为 ${texInline("\\bar\\alpha")} 的绿线上时根之积是实数。最后切到“实系数：共轭锁”拖动 ${texInline("\\alpha")}。`,
   },
   example: {
     title: "例题：由虚根写出实因式",

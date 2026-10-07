@@ -71,9 +71,9 @@
       task: `${tex("P[x]_3")} 中取基 ${tex("1,x,x^2")}，每个多项式 ${tex("a_0+a_1x+a_2x^2")} 对应坐标 ${tex("(a_0,a_1,a_2)")}。左图是曲线，右图是坐标点；拖动右图的圆点，左边的曲线跟着变。`,
     });
     const PRESETS = {
-      lay: { label: "1+2x²，4+x+5x²，3+2x", polys: [[1, 0, 2], [4, 1, 5], [3, 2, 0]], range: 5.5, cam: { yaw: -0.75, pitch: 0.36 } },
+      lay: { label: `${tex("1+2x^2")}，${tex("4+x+5x^2")}，${tex("3+2x")}`, polys: [[1, 0, 2], [4, 1, 5], [3, 2, 0]], range: 5.5, cam: { yaw: -0.75, pitch: 0.36 } },
       // seen from here the chain 2p₂ → +p₃ bends visibly instead of lining up with q
-      basis: { label: "1+x，x+x²，1+x²", polys: [[1, 1, 0], [0, 1, 1], [1, 0, 1]], range: 3.5, cam: { yaw: -1.9, pitch: 0.45 } },
+      basis: { label: `${tex("1+x")}，${tex("x+x^2")}，${tex("1+x^2")}`, polys: [[1, 1, 0], [0, 1, 1], [1, 0, 1]], range: 3.5, cam: { yaw: -1.9, pitch: 0.45 } },
     };
     const Q = [1, 2, 3];
     const state = { key: "lay", polys: PRESETS.lay.polys.map((p) => p.slice()), c: [F(0), F(0), F(0)], revealed: false };
@@ -102,12 +102,12 @@
         return `<p>${lead}现在 ${tex(M().latexRelation(cert.coeffs, ["p_1", "p_2", "p_3"]))}：三个坐标点与原点共面，${tex("p_1,p_2,p_3")} 线性相关，不是基。${pairwise ? "三条曲线两两不成比例，三个一起仍然相关。" : ""}</p>`;
       }
       const part = M().particularSolution([0, 1, 2].map((k) => [ps[0][k], ps[1][k], ps[2][k], fv(Q)[k]]));
-      return `<p>${lead}现在坐标矩阵的行列式为 ${tex(fmt(det))}，不为 0：三个坐标点不与原点共面，${tex("p_1,p_2,p_3")} 是一组基。于是每个 ${tex("q")} 恰有一组坐标，${tex("q=1+2x+3x^2")} 的坐标是 ${tex(vecTex(part.x))}，三段折线只有这一种走法停在 q。</p>`;
+      return `<p>${lead}现在坐标矩阵的行列式为 ${tex(fmt(det))}，不为 0：三个坐标点不与原点共面，${tex("p_1,p_2,p_3")} 是一组基。于是每个 ${tex("q")} 恰有一组坐标，${tex("q=1+2x+3x^2")} 的坐标是 ${tex(vecTex(part.x))}，三段折线只有这一种走法停在 ${tex("q")}。</p>`;
     }
 
     controls.innerHTML = `<h4>组合 ${tex("c_1p_1+c_2p_2+c_3p_3")}，目标 ${tex("q=1+2x+3x^2")}</h4>
       ${[0, 1, 2].map((i) => rangeInput(tex(`c_${i + 1}`), `c${i}`, -3, 3, 0.5, 0)).join("")}
-      <div class="ch6l-actions"><button type="button" class="ch6l-btn is-primary" data-solve>解出 q 的坐标</button><button type="button" class="ch6l-btn" data-look>沿平面看</button><button type="button" class="ch6l-btn" data-reset>回到默认视角</button></div>`;
+      <div class="ch6l-actions"><button type="button" class="ch6l-btn is-primary" data-solve>解出 ${tex("q")} 的坐标</button><button type="button" class="ch6l-btn" data-look>沿平面看</button><button type="button" class="ch6l-btn" data-reset>回到默认视角</button></div>`;
 
     const polysF = () => state.polys.map(fv);
 
@@ -180,8 +180,8 @@
         html += `<p class="ch6l-muted">先在下方猜一猜，再看秩的判定。</p>`;
       }
       html += `<p>${tex(`c_1p_1+c_2p_2+c_3p_3=${K().polyTex(cm)}`)}</p>`;
-      html += hit ? `<p class="ch6l-ok">命中 q：坐标为 ${tex(vecTex(state.c))}</p>` : "";
-      if (hit && state.revealed && rank === 3) html += `<p class="ch6l-muted">三段折线恰好停在 q。换任何一个系数，终点都会离开 q：基下的坐标唯一。</p>`;
+      html += hit ? `<p class="ch6l-ok">命中 ${tex("q")}：坐标为 ${tex(vecTex(state.c))}</p>` : "";
+      if (hit && state.revealed && rank === 3) html += `<p class="ch6l-muted">三段折线恰好停在 ${tex("q")}。换任何一个系数，终点都会离开 ${tex("q")}：基下的坐标唯一。</p>`;
       info.innerHTML = html;
       if (state.revealed) result.innerHTML = `<strong>结论</strong>${conclusion(ps, det)}`;
       info.dataset.rank = String(rank);
@@ -197,7 +197,7 @@
       const box = info;
       if (!part.ok) {
         redraw();
-        box.insertAdjacentHTML("beforeend", `<p class="ch6l-bad">q 不在 ${tex("L(p_1,p_2,p_3)")} 中：没有任何组合等于 q。</p>`);
+        box.insertAdjacentHTML("beforeend", `<p class="ch6l-bad">${tex("q")} 不在 ${tex("L(p_1,p_2,p_3)")} 中：没有任何组合等于 ${tex("q")}。</p>`);
         return;
       }
       state.c = part.x;
@@ -247,7 +247,7 @@
           { text: "不是，三个坐标点与原点共面", correct: true },
           { text: "无法用坐标判断", why: "坐标保持线性组合，相关性可以完全在坐标里判断。" },
         ],
-        right: "点“沿平面看”，三个点排成一条线：p₁、p₂、p₃ 线性相关。",
+        right: `点“沿平面看”，三个点排成一条线：${tex("p_1,p_2,p_3")} 线性相关。`,
       },
       () => {
         state.revealed = true;
@@ -268,9 +268,9 @@
       task: `旧基 ${tex("\\varepsilon=(1,x,x^2)")}，新基 ${tex("\\eta=(1,\\,x-a,\\,(x-a)^2)")}。拖动 ${tex("a")}：曲线 ${tex("p")} 和它的旧坐标 ${tex("X")} 都不动，新基和新坐标 ${tex("Y")} 在变。`,
     });
     const PRESETS = {
-      sq1: { label: "p=x²−1", p: [-1, 0, 1] },
-      sq: { label: "p=x²", p: [0, 0, 1] },
-      lin: { label: "p=1+x", p: [1, 1, 0] },
+      sq1: { label: tex("p=x^2-1"), p: [-1, 0, 1] },
+      sq: { label: tex("p=x^2"), p: [0, 0, 1] },
+      lin: { label: tex("p=1+x"), p: [1, 1, 0] },
     };
     const state = { key: "sq1", a: F(0), revealed: false };
     const toolbar = el("div", "ch6l-toolbar");
@@ -345,7 +345,7 @@
       info.innerHTML = `<div>${colourColumnsHtml(texD(`A_a=${colourColumnsTex(A)}`), COLORS)}</div>
         <div>${texD(`X=${K().colTex(X)}`)}</div>
         <div>${state.revealed ? texD(`Y=${K().colTex(Y)}`) : texD("Y=\\;?")}</div>
-        <p>${state.revealed ? `${tex(`A_aY=${vecTex(M().matVec(A, Y))}^T`)} ${check ? `<span class="ch6l-ok">= X</span>` : ""}` : `先猜一猜 ${tex("a=1")} 时的 ${tex("Y")}，再揭示新坐标。`}</p>`;
+        <p>${state.revealed ? `${tex(`A_aY=${vecTex(M().matVec(A, Y))}^T`)} ${check ? `<span class="ch6l-ok">${tex("=X")}</span>` : ""}` : `先猜一猜 ${tex("a=1")} 时的 ${tex("Y")}，再揭示新坐标。`}</p>`;
       info.dataset.check = String(check);
       const out = controls.querySelector("[data-a-v]");
       out.innerHTML = tex(fmt(a));
@@ -376,7 +376,7 @@
           { text: tex("(0,2,1)^T"), correct: true },
           { text: tex("(0,1,1)^T"), why: "第二个坐标是 p 在 x=1 处的斜率。" },
         ],
-        right: "x²−1=0+2(x−1)+(x−1)²。左图中 a=1 处的点落在 x 轴上，切线斜率为 2。",
+        right: `${tex("x^2-1=0+2(x-1)+(x-1)^2")}。左图中 ${tex("a=1")} 处的点落在 ${tex("x")} 轴上，切线斜率为 2。`,
         actHint: "记下了你的猜测。取 p=x²−1，把 a 拖到 1，结论随后出现。",
       },
       () => {
@@ -419,7 +419,9 @@
     return a;
   }
 
-  const spaceName = (d) => ["{0}", "一条直线", "一个平面", "ℝ³"][d];
+  const spaceName = (d) => [tex("\\{0\\}"), "一条直线", "一个平面", tex("\\mathbb R^3")][d];
+  // after a Chinese word: a formula name takes the usual space, a Chinese name none
+  const isSpace = (d) => `是${d === 0 || d === 3 ? " " : ""}${spaceName(d)}`;
 
   /* ================= §6 子空间的交与和 ================= */
 
@@ -501,8 +503,8 @@
       const dW = Bw.length;
       let html = `<h4>维数账本</h4><p>${tex(`\\dim U=${dU}`)}（${spaceName(dU)}），${tex(`\\dim W=${dW}`)}（${spaceName(dW)}）</p>`;
       if (state.revealed) {
-        html += `<p>${tex(`\\dim(U\\cap W)=${inter}`)}${inter ? `，${inter === 1 ? tex(`U\\cap W=L(${vecTex(primitive(basis[0]))})`) : "U∩W 是整个平面"}` : "，只有零向量"}</p>`;
-        html += `<p>${tex(`\\dim(U+W)=${sum}`)}，${tex("U+W")} 是${spaceName(sum)}</p>`;
+        html += `<p>${tex(`\\dim(U\\cap W)=${inter}`)}${inter ? `，${inter === 1 ? tex(`U\\cap W=L(${vecTex(primitive(basis[0]))})`) : `${tex("U\\cap W")} 是整个平面`}` : "，只有零向量"}</p>`;
+        html += `<p>${tex(`\\dim(U+W)=${sum}`)}，${tex("U+W")} ${isSpace(sum)}</p>`;
         // names carry the arrow colours: β → v1 (sentinel 0), γ → v2 (1), α → subspace (2)
         const tn = (letter, list, j) => list.map((_, i) => `\\textcolor{${COL_SENTINEL[j]}}{\\${letter}${list.length > 1 ? `_${i + 1}` : ""}}`);
         const A = tn("alpha", alphas, 2);
@@ -565,7 +567,7 @@
           { text: "不可以，交至少是一条直线", correct: true },
           { text: "取决于观察角度", why: "交是两个集合的公共部分，与怎么看无关。" },
         ],
-        right: "2+2−3=1：U+W 最多是 ℝ³，所以交至少 1 维。点“沿交线看”。",
+        right: `${tex("2+2-3=1")}：${tex("U+W")} 最多是 ${tex("\\mathbb R^3")}，所以交至少 1 维。点“沿交线看”。`,
         actHint: "记下了你的猜测。在两个不同的平面上拖动一个端点，结论随后出现。",
       },
       () => {
@@ -583,7 +585,7 @@
   function directSumLab(root) {
     const MODES = {
       split: {
-        label: "直线 ⊕ 平面",
+        label: `直线 ${tex("\\oplus")} 平面`,
         task: `${tex("W")} 是水平面，${tex("U=L(u)")} 是一条斜线。拖动 ${tex("v")}：它沿 ${tex("U")} 的方向落到 ${tex("W")} 上，分成 ${tex("v=u'+w'")}。再拖动 ${tex("u")}，让直线向平面倾斜。`,
         predict: {
           question: `把 ${tex("u")} 压低，让直线越来越贴近平面 ${tex("W")}（但不落进去），${tex("v")} 的两个分量会怎样？`,
@@ -593,7 +595,7 @@
             { text: "越来越短", why: "u 的高度越小，要走更多倍的 u 才能升到 v 的高度。" },
             { text: "立刻变成正交分解", why: "分解沿 U 的方向进行，与是否垂直无关。" },
           ],
-          right: "u′=t·u，其中 t=v₃/u₃。u₃→0 时 t 无限增大；u₃=0 时 U⊂W，U+W=W，直和不再成立。",
+          right: `${tex("u'=tu")}，其中 ${tex("t=v_3/u_3")}。${tex("u_3\\to0")} 时 ${tex("t")} 无限增大；${tex("u_3=0")} 时 ${tex("U\\subset W")}，${tex("U+W=W")}，直和不再成立。`,
           actHint: "记下了你的猜测。把 u 压低一次（拖动 u 或点“把 u 压低”），结论随后出现。",
         },
         result: (kind) =>
@@ -613,7 +615,7 @@
             { text: "要看三条直线是否互相垂直", why: "直和与夹角无关，只看维数。" },
             { text: "不是，零向量有非零的分解", correct: true },
           ],
-          right: "k₁w₁+k₂w₂+k₃w₃=0 有非零解，三段箭头首尾相接回到原点。维数 1+1+1=3，和空间却只是 2 维的平面。",
+          right: `${tex("k_1w_1+k_2w_2+k_3w_3=0")} 有非零解，三段箭头首尾相接回到原点。维数 ${tex("1+1+1=3")}，和空间却只是 2 维的平面。`,
           actHint: "记下了你的猜测。点“从上方看”，或在水平面里拖动 w₃，结论随后出现。",
         },
         result: (kind) =>
@@ -710,10 +712,10 @@
         if (ok) {
           html += `<p>${tex(`u'=${fmt(t)}\\,u=${vecTex(uc)}`)}</p><p>${tex(`w'=v-u'=${vecTex(wc)}`)}</p><p class="ch6l-ok">${tex("\\mathbb R^3=U\\oplus W")}，分解唯一</p>`;
         } else if (M().isZero(v[2])) {
-          html += `<p class="ch6l-bad">${tex("U\\subset W")}：v 在 W 内，分解有无穷多种</p>`;
+          html += `<p class="ch6l-bad">${tex("U\\subset W")}：${tex("v")} 在 ${tex("W")} 内，分解有无穷多种</p>`;
           html += splits.map(({ uc: a, wc: b }, k) => `<p>${tex(`v=${vecTex(a)}+${vecTex(b)}`)}${k ? "（虚线）" : ""}</p>`).join("");
         } else {
-          html += `<p class="ch6l-bad">${tex("U\\subset W")}：v 不在 ${tex("U+W=W")} 中，无法分解</p>`;
+          html += `<p class="ch6l-bad">${tex("U\\subset W")}：${tex("v")} 不在 ${tex("U+W=W")} 中，无法分解</p>`;
         }
       } else {
         html += `<p class="ch6l-muted">先猜一猜，再看分量的数值。</p>`;
@@ -747,7 +749,7 @@
         return K().placeLabels(scene, objs, { handles: [state.w3] });
       });
       scene.setHandles([{ color: "drag", snap: 0.5, get: () => state.w3, set: (p) => ((state.w3 = nonzero(p, state.w3)), redraw(), threeInPlane() && acted()) }]);
-      const pairsText = pairOk.every(Boolean) ? "两两交为 {0}" : "有两条直线重合";
+      const pairsText = pairOk.every(Boolean) ? `两两交为 ${tex("\\{0\\}")}` : "有两条直线重合";
       let html = `<h4>读数</h4><p>${pairsText}</p>`;
       if (state.revealed) {
         html += `<p>${tex(`\\dim(W_1+W_2+W_3)=${rank}`)}，维数之和 ${tex("=3")}</p>`;
@@ -786,8 +788,8 @@
     function setTools() {
       tools.innerHTML =
         state.mode === "split"
-          ? `<button type="button" class="ch6l-btn" data-low>把 u 压低</button><button type="button" class="ch6l-btn" data-flat>让 u 落进平面</button><button type="button" class="ch6l-btn" data-vflat hidden>让 v 也落进平面</button><button type="button" class="ch6l-btn" data-reset>回到默认视角</button>`
-          : `<button type="button" class="ch6l-btn" data-lift>把 w₃ 抬出平面</button><button type="button" class="ch6l-btn" data-top>从上方看</button><button type="button" class="ch6l-btn" data-reset>回到默认视角</button>`;
+          ? `<button type="button" class="ch6l-btn" data-low>把 ${tex("u")} 压低</button><button type="button" class="ch6l-btn" data-flat>让 ${tex("u")} 落进平面</button><button type="button" class="ch6l-btn" data-vflat hidden>让 ${tex("v")} 也落进平面</button><button type="button" class="ch6l-btn" data-reset>回到默认视角</button>`
+          : `<button type="button" class="ch6l-btn" data-lift>把 ${tex("w_3")} 抬出平面</button><button type="button" class="ch6l-btn" data-top>从上方看</button><button type="button" class="ch6l-btn" data-reset>回到默认视角</button>`;
       tools.querySelector("[data-reset]").addEventListener("click", () => scene.resetView());
       tools.querySelector("[data-low]")?.addEventListener("click", () => {
         const before = Math.abs(state.u[2]);
@@ -848,9 +850,9 @@
       task: `左图是 ${tex("p")}、${tex("q")} 和 ${tex("p+q")} 三条曲线，右图是它们在 ${tex("\\mathbb R^3")} 中的像。拖动右图中 ${tex("p")}、${tex("q")} 的像（每次半格），看 ${tex("p+q")} 的像是否落在平行四边形的第四个顶点。`,
     });
     const MODES = {
-      coef: { label: "系数：σ(p)=(a₀,a₁,a₂)", name: "σ" },
-      value: { label: "取值：τ(p)=(p(0),p(1),p(2))", name: "τ" },
-      square: { label: "把 a₂ 换成 a₂²", name: "f" },
+      coef: { label: `系数：${tex("\\sigma(p)=(a_0,a_1,a_2)")}`, name: "σ" },
+      value: { label: `取值：${tex("\\tau(p)=(p(0),p(1),p(2))")}`, name: "τ" },
+      square: { label: `把 ${tex("a_2")} 换成 ${tex("a_2^2")}`, name: "f" },
     };
     const state = { mode: "coef", p: [1, -1, 0.5].map(F), q: [0, 1.5, -0.5].map(F), revealed: false };
     const toolbar = el("div", "ch6l-toolbar");
@@ -965,12 +967,12 @@
       {
         question: `${tex("\\tau(p)=(p(0),p(1),p(2))")} 是 ${tex("P[x]_3")} 到 ${tex("\\mathbb R^3")} 的同构吗？`,
         options: [
-          { text: "不是，像不是 p 的系数", why: "同构只要求保持运算并且是双射，没有要求用系数。切到“取值”模式拖一拖。" },
+          { text: `不是，像不是 ${tex("p")} 的系数`, why: "同构只要求保持运算并且是双射，没有要求用系数。切到“取值”模式拖一拖。" },
           { text: "是", correct: true },
           { text: "不是，它不保持加法", why: "切到“取值”模式，看平行四边形是否闭合。" },
           { text: "只对一次多项式成立", why: "τ 对 P[x]₃ 中每个多项式都有定义；拖动 τ(p) 的三个坐标试试。" },
         ],
-        right: "τ 线性，并且右图任意一点都对应唯一一条过三点的曲线。",
+        right: `${tex("\\tau")} 线性，并且右图任意一点都对应唯一一条过三点的曲线。`,
       },
       () => {
         state.revealed = true;

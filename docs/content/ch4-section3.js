@@ -56,10 +56,10 @@ defineChapter4Section("matrix-product-determinant-rank", {
     choices: [
       {
         correct: true,
-        text: `${texInline("\\det(AB)=0")}，且 ${texInline("\\operatorname{rank}(AB)=1")}；B 的两列相同，而 A 可逆。`,
+        text: `${texInline("\\det(AB)=0")}，且 ${texInline("\\operatorname{rank}(AB)=1")}；${texInline("B")} 的两列相同，而 ${texInline("A")} 可逆。`,
       },
       {
-        text: `${texInline("\\det(AB)=4")}，且 ${texInline("\\operatorname{rank}(AB)=2")}；A 的行列式会把 B 的秩也放大两倍。`,
+        text: `${texInline("\\det(AB)=4")}，且 ${texInline("\\operatorname{rank}(AB)=2")}；${texInline("A")} 的行列式会把 ${texInline("B")} 的秩也放大两倍。`,
       },
       {
         text: `${texInline("\\det(AB)=0")}，但 ${texInline("\\operatorname{rank}(AB)=0")}；行列式为 0 就意味着零矩阵。`,
@@ -69,11 +69,11 @@ defineChapter4Section("matrix-product-determinant-rank", {
       },
     ],
     steps: [
-      `先看 B：两列都等于 ${texInline("(1,2)^T")}，所以 ${texInline("\\operatorname{rank}(B)=1")} 且 ${texInline("\\det(B)=0")}。`,
+      `先看 ${texInline("B")}：两列都等于 ${texInline("(1,2)^T")}，所以 ${texInline("\\operatorname{rank}(B)=1")} 且 ${texInline("\\det(B)=0")}。`,
       `由乘积行列式，${texInline("\\det(AB)=\\det(A)\\det(B)=2\\cdot0=0")}。`,
-      `A 的行列式为 ${texInline("2\\ne0")}，所以 A 可逆。可逆的左因子只改变方向和尺度，不改变 B 已有的独立方向数。`,
+      `${texInline("A")} 的行列式为 ${texInline("2\\ne0")}，所以 ${texInline("A")} 可逆。可逆的左因子只改变方向和尺度，不改变 ${texInline("B")} 已有的独立方向数。`,
       `因此 ${texInline("\\operatorname{rank}(AB)=\\operatorname{rank}(B)=1")}。`,
-      "结论来自结构：面积已经在 B 这一步降为 0；A 可以移动那条输出直线，却不能把它重新撑成平面。",
+      `结论来自结构：面积已经在 ${texInline("B")} 这一步降为 0；${texInline("A")} 可以移动那条输出直线，却不能把它重新撑成平面。`,
     ],
   },
   quiz: [
@@ -82,7 +82,7 @@ defineChapter4Section("matrix-product-determinant-rank", {
       answer: "面积放大为原来的 3 倍，同时方向发生翻转。",
     },
     {
-      question: `${texInline("\\det(A)=1")} 是否说明 A 没有改变图形？`,
+      question: `${texInline("\\det(A)=1")} 是否说明 ${texInline("A")} 没有改变图形？`,
       answer: "不说明。剪切或一方向放大、另一方向缩小都可能保持面积 1。",
     },
     {
@@ -91,17 +91,17 @@ defineChapter4Section("matrix-product-determinant-rank", {
     },
     {
       question: `若 ${texInline("\\operatorname{rank}(B)=1")}，是否可能有 ${texInline("\\operatorname{rank}(AB)=2")}？`,
-      answer: "不可能。B 的输出已经限制在一条线，A 只能把这条线变成另一条线或一个点。",
+      answer: `不可能。${texInline("B")} 的输出已经限制在一条线，${texInline("A")} 只能把这条线变成另一条线或一个点。`,
     },
   ],
   summary: [
     "行列式的绝对值记录面积倍率，符号记录方向；行列式为 0 是坍缩的临界信号。",
-    "连续变换的面积倍率相乘，所以 det(AB)=det(A)det(B)。A、B 是同阶方阵时，AB 与 BA 一般不相等，行列式却都等于 det A·det B。",
+    `连续变换的面积倍率相乘，所以 ${texInline("\\det(AB)=\\det(A)\\det(B)")}。${texInline("A")}、${texInline("B")} 是同阶方阵时，${texInline("AB")} 与 ${texInline("BA")} 一般不相等，行列式却都等于 ${texInline("\\det A\\cdot\\det B")}。`,
     "秩是输出中保留下来的独立方向数；行秩与列秩相等。",
-    "乘积受最窄的一步限制：rank(AB) 不超过两个因子的秩；可逆因子则保持另一因子的秩。",
+    `乘积受最窄的一步限制：${texInline("\\operatorname{rank}(AB)")} 不超过两个因子的秩；可逆因子则保持另一因子的秩。`,
   ],
   exercises: [
     `构造三个不同的 2 阶矩阵，使它们的行列式都为 1，但分别表现为单位变换、剪切和非等比例缩放。`,
-    `取秩为 1 的矩阵 B，分别选择可逆 A 和不可逆 A，验证 ${texInline("\\operatorname{rank}(AB)")} 只能保持或下降。`,
+    `取秩为 1 的矩阵 ${texInline("B")}，分别选择可逆 ${texInline("A")} 和不可逆 ${texInline("A")}，验证 ${texInline("\\operatorname{rank}(AB)")} 只能保持或下降。`,
   ],
 });

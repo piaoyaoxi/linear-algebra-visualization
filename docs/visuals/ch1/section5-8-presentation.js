@@ -158,19 +158,19 @@
       const gcdCell = root.querySelector("[data-gcd]");
       gcdCell.innerHTML = open ? tex(M().formatPolyTex(gcd)) : `<small class="ch1-muted">猜过之后显示</small>`;
       gcdCell.closest("div").classList.toggle("is-shared", open && !coprime);
-      root.querySelector("[data-focus-label]").textContent = state.mode === "multiplicity" ? `x=${frac(focus)}` : `x=u=${frac(focus)}`;
-      root.querySelector("[data-derivatives]").innerHTML = derivatives.map((row) => `<tr><td>${row.order === 0 ? "f" : row.order === 1 ? "f′" : `f<sup>(${row.order})</sup>`}</td><td>${frac(row.value)}</td><td><b class="ch1-status ${M().rIsZero(row.value) ? "is-warn" : "is-ok"}">${M().rIsZero(row.value) ? "0" : "非零"}</b></td></tr>`).join("");
+      root.querySelector("[data-focus-label]").innerHTML = tex(state.mode === "multiplicity" ? `x=${M().formatRTex(focus)}` : `x=u=${M().formatRTex(focus)}`);
+      root.querySelector("[data-derivatives]").innerHTML = derivatives.map((row) => `<tr><td>${tex(row.order === 0 ? "f" : row.order === 1 ? "f'" : `f^{(${row.order})}`)}</td><td>${frac(row.value)}</td><td><b class="ch1-status ${M().rIsZero(row.value) ? "is-warn" : "is-ok"}">${M().rIsZero(row.value) ? "0" : "非零"}</b></td></tr>`).join("");
       const status = root.querySelector("[data-status]");
       if (state.mode === "multiplicity") {
         const m = effectiveM();
         const a = int(state.a);
-        status.textContent = m >= 2
-          ? `${a} 是 ${m} 重根${state.a === -1 ? "（与 x+1 合并）" : ""}，也是 f′ 的 ${m - 1} 重根`
-          : `${a} 是单根，f′(${a})≠0`;
+        status.innerHTML = m >= 2
+          ? `${a} 是 ${m} 重根${state.a === -1 ? `（与 ${tex("x+1")} 合并）` : ""}，也是 ${tex("f'")} 的 ${m - 1} 重根`
+          : `${a} 是单根，${tex(`f'(${state.a})\\ne0`)}`;
       } else {
-        status.textContent = merged()
-          ? `u=v：二重根，f 与 f′ 在 x=${frac(R(state.u))} 同为 0`
-          : `u≠v：两个单根（相距 ${frac(M().rAbs(M().rSub(R(state.u), R(state.v))))}），f′ 的零点 ${frac(dRoots()[0])} 在两根之间`;
+        status.innerHTML = merged()
+          ? `${tex("u=v")}：二重根，${tex("f")} 与 ${tex("f'")} 在 ${tex(`x=${M().formatRTex(R(state.u))}`)} 同为 0`
+          : `${tex("u\\ne v")}：两个单根（相距 ${frac(M().rAbs(M().rSub(R(state.u), R(state.v))))}），${tex("f'")} 的零点 ${frac(dRoots()[0])} 在两根之间`;
       }
       root.querySelector("[data-m-controls]").hidden = state.mode !== "multiplicity";
       root.querySelector("[data-merge-controls]").hidden = state.mode !== "merge";
@@ -186,7 +186,7 @@
       root,
       manual: true,
       key: "visuals/ch1/section5-8-presentation.js#merge-derivative",
-      question: `让两个单根 u、v 合并成一个根。合并后，下方 ${tex("f'")} 的图像在这一点会怎样？`,
+      question: `让两个单根 ${tex("u")}、${tex("v")} 合并成一个根。合并后，下方 ${tex("f'")} 的图像在这一点会怎样？`,
       options: [
         [`${tex("f'")} 也在这一点为 0：${tex("f")} 与 ${tex("f'")} 有公共零点，${tex("\\gcd(f,f')\\ne1")}`, true, ""],
         [`${tex("f'")} 在这一点不为 0，${tex("\\gcd(f,f')")} 仍是 1`, false, `合并后 ${tex("f=(x-u)^2")}，${tex("f'=2(x-u)")} 在 ${tex("x=u")} 处为 0。`],
@@ -209,9 +209,9 @@
   }
 
   function interactive6(el, section) {
-    lab(el, "两根合并时的 f′", section.interactive.description,
-      `<button type="button" data-mode="merge" class="is-active">两根合并</button><button type="button" data-mode="multiplicity">单根重数</button><span class="ch1-control-separator"></span><button type="button" data-preset-m="1">m=1</button><button type="button" data-preset-m="2">m=2</button><button type="button" data-preset-m="3">m=3</button><button type="button" data-preset-m="4">m=4</button>`,
-      `<div class="ch1-two-col"><div class="ch1-merge-stages"><div class="ch1-stage"><canvas data-graph aria-label="y = f(x) 的图像"></canvas></div><div class="ch1-stage is-short"><canvas data-deriv-graph aria-label="同一横轴上 y = f′(x) 的图像"></canvas></div><p class="ch1-merge-legend"><b class="is-f">● f 的根</b><b class="is-d">● f′ 的零点</b><b class="is-glow">◎ 公共零点</b></p></div><div class="ch1-panel"><div data-merge-controls><label class="ch1-slider-row"><span>根 u</span><input data-u type="range" min="-2" max="2" step="0.25" value="-0.75"><output data-u-value></output></label><label class="ch1-slider-row"><span>根 v</span><input data-v type="range" min="-2" max="2" step="0.25" value="0.75"><output data-v-value></output></label><button type="button" class="ch3l-btn is-primary ch1-merge-exact" data-merge-exact>令 v=u，两根合并</button></div><div data-m-controls hidden><label class="ch1-slider-row"><span>根 a</span><input data-a type="range" min="-2" max="2" step="1" value="1"><output data-a-value></output></label><label class="ch1-slider-row"><span>重数 m</span><input data-m type="range" min="1" max="4" step="1" value="2"><output data-m-value></output></label></div><div class="ch1-result-band"><div><span>当前结论</span><strong data-status class="ch1-status"></strong></div></div><div class="ch1-equation-grid"><div><span>f</span><strong data-poly></strong></div><div><span>f′</span><strong data-derivative></strong></div><div class="ch1-gcd-cell"><span>gcd(f,f′)</span><strong data-gcd></strong></div></div><h4>在 <b data-focus-label></b> 处各阶导数的值</h4><div class="ch1-table-wrap"><table class="ch1-table"><thead><tr><th>导数</th><th>值</th><th>状态</th></tr></thead><tbody data-derivatives></tbody></table></div></div></div>`);
+    lab(el, `两根合并时的 ${tex("f'")}`, section.interactive.description,
+      `<button type="button" data-mode="merge" class="is-active">两根合并</button><button type="button" data-mode="multiplicity">单根重数</button><span class="ch1-control-separator"></span>${[1, 2, 3, 4].map((m) => `<button type="button" data-preset-m="${m}">${tex(`m=${m}`)}</button>`).join("")}`,
+      `<div class="ch1-two-col"><div class="ch1-merge-stages"><div class="ch1-stage"><canvas data-graph aria-label="y = f(x) 的图像"></canvas></div><div class="ch1-stage is-short"><canvas data-deriv-graph aria-label="同一横轴上 y = f′(x) 的图像"></canvas></div><p class="ch1-merge-legend"><b class="is-f">● ${tex("f")} 的根</b><b class="is-d">● ${tex("f'")} 的零点</b><b class="is-glow">◎ 公共零点</b></p></div><div class="ch1-panel"><div data-merge-controls><label class="ch1-slider-row"><span>根 ${tex("u")}</span><input data-u type="range" min="-2" max="2" step="0.25" value="-0.75"><output data-u-value></output></label><label class="ch1-slider-row"><span>根 ${tex("v")}</span><input data-v type="range" min="-2" max="2" step="0.25" value="0.75"><output data-v-value></output></label><button type="button" class="ch3l-btn is-primary ch1-merge-exact" data-merge-exact>令 ${tex("v=u")}，两根合并</button></div><div data-m-controls hidden><label class="ch1-slider-row"><span>根 ${tex("a")}</span><input data-a type="range" min="-2" max="2" step="1" value="1"><output data-a-value></output></label><label class="ch1-slider-row"><span>重数 ${tex("m")}</span><input data-m type="range" min="1" max="4" step="1" value="2"><output data-m-value></output></label></div><div class="ch1-result-band"><div><span>当前结论</span><strong data-status class="ch1-status"></strong></div></div><div class="ch1-equation-grid"><div><span>${tex("f")}</span><strong data-poly></strong></div><div><span>${tex("f'")}</span><strong data-derivative></strong></div><div class="ch1-gcd-cell"><span>${tex("\\gcd(f,f')")}</span><strong data-gcd></strong></div></div><h4>在 <b data-focus-label></b> 处各阶导数的值</h4><div class="ch1-table-wrap"><table class="ch1-table"><thead><tr><th>导数</th><th>值</th><th>状态</th></tr></thead><tbody data-derivatives></tbody></table></div></div></div>`);
     const gateBox = document.createElement("div");
     gateBox.dataset.mergeGate = "";
     el.querySelector(".ch1-controls")?.before(gateBox);
@@ -226,16 +226,16 @@
       const h = M().hornerSteps(state.p, M().parseR(state.a));
       root.querySelector("[data-eval-panel]").hidden = false; root.querySelector("[data-root-panel]").hidden = true; root.querySelector("[data-interp-panel]").hidden = true;
       root.querySelector("[data-eval-poly]").innerHTML = tex(M().formatPolyTex(state.p));
-      // a can be negative: −2 with a true minus, (−2) after a product dot, x+2 as the factor
-      const a = String(state.a).replace("-", "−");
-      const times = state.a < 0 ? `(${a})` : a;
-      const factor = state.a === 0 ? "x" : state.a < 0 ? `x+${-state.a}` : `x−${state.a}`;
-      root.querySelector("[data-a-value]").textContent = a;
+      // a can be negative: −2 with a true minus on the slider, (−2) after a product dot, x+2 as the factor
+      root.querySelector("[data-a-value]").textContent = String(state.a).replace("-", "−");
       root.querySelector("[data-fa]").innerHTML = tex(M().formatRTex(h.value));
-      const signed = (t) => (t.startsWith("-") ? `−${tex(t.slice(1))}` : `+${tex(t)}`);
-      root.querySelector("[data-horner]").innerHTML = h.steps.map((s, i) => `<div class="${i === h.steps.length - 1 ? "is-current" : ""}"><span>${i + 1}</span><p>(${tex(M().formatRTex(s.before))})·${times}${signed(M().formatRTex(s.coefficient))}=${tex(M().formatRTex(s.after))}</p></div>`).join("");
+      // one formula per row: (before)·a ± coefficient = after
+      const times = state.a < 0 ? `(${state.a})` : `${state.a}`;
+      const signed = (t) => (t.startsWith("-") ? t : `+${t}`);
+      root.querySelector("[data-horner]").innerHTML = h.steps.map((s, i) => `<div class="${i === h.steps.length - 1 ? "is-current" : ""}"><span>${i + 1}</span><p>${tex(`(${M().formatRTex(s.before)})\\cdot${times}${signed(M().formatRTex(s.coefficient))}=${M().formatRTex(s.after)}`)}</p></div>`).join("");
       const isRoot = M().rIsZero(h.value);
-      const st = root.querySelector("[data-factor]"); st.className = `ch1-status ${isRoot ? "is-ok" : "is-warn"}`; st.textContent = isRoot ? `f(${a})=0，${factor} 是因式` : `余式 f(${a})≠0`;
+      const factor = state.a === 0 ? "x" : state.a < 0 ? `x+${-state.a}` : `x-${state.a}`;
+      const st = root.querySelector("[data-factor]"); st.className = `ch1-status ${isRoot ? "is-ok" : "is-warn"}`; st.innerHTML = isRoot ? `${tex(`f(${state.a})=0`)}，${tex(factor)} 是因式` : `余式 ${tex(`f(${state.a})\\ne0`)}`;
       M().drawPolynomial(root.querySelector("[data-canvas]"), state.p, { bounds, points: [{ x: state.a, y: M().rToNum(h.value) }], caption: "求值点 (a,f(a))" });
     }
     // (x − r) as TeX, with an optional power
@@ -392,14 +392,14 @@
       root,
       manual: true,
       key: "visuals/ch1/section5-8-presentation.js#root-bound",
-      question: "次数 n=3。要让多项式有 4 个不同的根，还能找到一个次数不超过 3 的非零多项式吗？",
+      question: `次数 ${tex("n=3")}。要让多项式有 4 个不同的根，还能找到一个次数不超过 3 的非零多项式吗？`,
       options: [
         ["不能：在 4 个点都为 0 的，只有零多项式", true, ""],
         ["能：把系数取得合适就行", false, "每个根 a 都给出一个因式 x−a。4 个不同的一次因式乘起来，次数已经是 4。"],
         ["能：取重根就可以", false, "重根让不同的根更少，不会更多。"],
         ["能，但要用复系数", false, "在复数域中同样至多 3 个根：上界只依赖次数。"],
       ],
-      right: `✓ 每个根贡献一个一次因式，n 次多项式至多容纳 n 个，所以至多有 n 个根。反过来，次数不超过 n 的多项式若有 n+1 个根，它就是零多项式；这正是“函数相等就是多项式相等”的理由。`,
+      right: `✓ 每个根贡献一个一次因式，${tex("n")} 次多项式至多容纳 ${tex("n")} 个，所以至多有 ${tex("n")} 个根。反过来，次数不超过 ${tex("n")} 的多项式若有 ${tex("n+1")} 个根，它就是零多项式；这正是“函数相等就是多项式相等”的理由。`,
       onPick: () => {
         countInput.disabled = false;
         degreeInput.disabled = false;
@@ -416,7 +416,7 @@
   function interactive7(el, section) {
     lab(el, "求值、根数与插值", section.interactive.description,
       `<button type="button" data-mode="roots" class="is-active">根数上界</button><button type="button" data-mode="eval">求值 / 综合除法</button><button type="button" data-mode="interp">拉格朗日插值</button>`,
-      `<div class="ch1-two-col"><div class="ch1-stage"><canvas data-canvas aria-label="多项式函数实验图"></canvas></div><div class="ch1-panel"><section data-eval-panel><div class="ch1-controls"><button type="button" data-eval-preset="default">三次示例</button><button type="button" data-eval-preset="root">有整数根示例</button></div><label class="ch1-slider-row"><span>a</span><input data-a type="range" min="-2" max="3" step="1" value="1"><output data-a-value></output></label><div class="ch1-equation-grid"><div><span>f</span><strong data-eval-poly></strong></div><div><span>f(a)</span><strong data-fa></strong></div></div><div data-factor class="ch1-status"></div><div class="ch1-ledger" data-horner></div></section><section data-root-panel hidden><label class="ch1-slider-row"><span>次数 n</span><input data-degree type="range" min="1" max="6" value="3"><output data-degree-value></output></label><label class="ch1-slider-row"><span>不同根数 m</span><input data-root-count type="range" min="1" max="7" value="2"><output data-roots-value></output></label><div data-root-status class="ch1-status"></div><div class="ch1-callout"><strong data-root-title>构造结果</strong><p data-root-poly></p></div></section><section data-interp-panel hidden><div class="ch1-node-grid">${[0,1,2].map((i) => `<label>节点 ${i}<span>x</span><input type="text" value="${i}" data-node-x="${i}"><span>y</span><input type="text" value="${[1,2,5][i]}" data-node-y="${i}"></label>`).join("")}</div><p class="ch1-error" data-interp-error aria-live="polite"></p><div class="ch1-result-band"><div><span>插值多项式</span><strong data-interp-poly></strong></div></div><div class="ch1-compare" data-bases></div></section></div></div>`);
+      `<div class="ch1-two-col"><div class="ch1-stage"><canvas data-canvas aria-label="多项式函数实验图"></canvas></div><div class="ch1-panel"><section data-eval-panel><div class="ch1-controls"><button type="button" data-eval-preset="default">三次示例</button><button type="button" data-eval-preset="root">有整数根示例</button></div><label class="ch1-slider-row"><span>${tex("a")}</span><input data-a type="range" min="-2" max="3" step="1" value="1"><output data-a-value></output></label><div class="ch1-equation-grid"><div><span>${tex("f")}</span><strong data-eval-poly></strong></div><div><span>${tex("f(a)")}</span><strong data-fa></strong></div></div><div data-factor class="ch1-status"></div><div class="ch1-ledger" data-horner></div></section><section data-root-panel hidden><label class="ch1-slider-row"><span>次数 ${tex("n")}</span><input data-degree type="range" min="1" max="6" value="3"><output data-degree-value></output></label><label class="ch1-slider-row"><span>不同根数 ${tex("m")}</span><input data-root-count type="range" min="1" max="7" value="2"><output data-roots-value></output></label><div data-root-status class="ch1-status"></div><div class="ch1-callout"><strong data-root-title>构造结果</strong><p data-root-poly></p></div></section><section data-interp-panel hidden><div class="ch1-node-grid">${[0,1,2].map((i) => `<label>节点 ${i}<span>${tex("x")}</span><input type="text" value="${i}" data-node-x="${i}"><span>${tex("y")}</span><input type="text" value="${[1,2,5][i]}" data-node-y="${i}"></label>`).join("")}</div><p class="ch1-error" data-interp-error aria-live="polite"></p><div class="ch1-result-band"><div><span>插值多项式</span><strong data-interp-poly></strong></div></div><div class="ch1-compare" data-bases></div></section></div></div>`);
     // the prediction sits above the mode buttons, right under the title
     const gateBox = document.createElement("div");
     gateBox.dataset.rootGate = "";

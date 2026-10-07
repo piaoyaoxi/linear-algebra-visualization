@@ -20,7 +20,7 @@ defineChapter5Section("quadratic-standard-form", {
   concepts: [
     {
       label: "标准形",
-      text: `经非退化替换后化为 ${texInline("f=d_1y_1^2+\\cdots+d_ry_r^2")}（${texInline("d_i\\neq0")}）。非零项个数 r 等于二次型的秩。`,
+      text: `经非退化替换后化为 ${texInline("f=d_1y_1^2+\\cdots+d_ry_r^2")}（${texInline("d_i\\neq0")}）。非零项个数 ${texInline("r")} 等于二次型的秩。`,
     },
     {
       label: "配方法",
@@ -48,9 +48,9 @@ defineChapter5Section("quadratic-standard-form", {
     type: "slot",
     title: "实验：配方步进与对称消元",
     description: "逐步完成配方，同步更新多项式、替换矩阵与当前对称矩阵；也可用成对初等变换消去交叉项。",
-    task: "走完一个含交叉项的二元例子，确认累积 C 可逆且最终交叉项为 0。",
+    task: `走完一个含交叉项的二元例子，确认累积 ${texInline("C")} 可逆且最终交叉项为 0。`,
     prompts: [
-      "先观察 b≠0 时等高线倾斜。",
+      `先观察 ${texInline("b\\neq0")} 时等高线倾斜。`,
       "按步进器完成平方并记录新变量。",
       "切换到对称消元，看行列同步操作。",
     ],
@@ -74,11 +74,11 @@ defineChapter5Section("quadratic-standard-form", {
       },
     ],
     steps: [
-      "以 x₁² 为主项：f=(x₁+2x₂)²+x₂²。",
-      "令 y₁=x₁+2x₂，y₂=x₂，则 f=y₁²+y₂²。",
-      "反解 x₁=y₁−2y₂，x₂=y₂，替换矩阵可逆。",
-      "对应合同后矩阵为 diag(1,1)，交叉项消失。",
-      "系数还可经缩放改变：令 y₂=2z₂，得 f=y₁²+4z₂²，仍是标准形。",
+      `以 ${texInline("x_1^2")} 为主项：${texInline("f=(x_1+2x_2)^2+x_2^2")}。`,
+      `令 ${texInline("y_1=x_1+2x_2")}，${texInline("y_2=x_2")}，则 ${texInline("f=y_1^2+y_2^2")}。`,
+      `反解 ${texInline("x_1=y_1-2y_2")}，${texInline("x_2=y_2")}，替换矩阵可逆。`,
+      `对应合同后矩阵为 ${texInline("\\operatorname{diag}(1,1)")}，交叉项消失。`,
+      `系数还可经缩放改变：令 ${texInline("y_2=2z_2")}，得 ${texInline("f=y_1^2+4z_2^2")}，仍是标准形。`,
     ],
   },
   quiz: [
@@ -92,7 +92,7 @@ defineChapter5Section("quadratic-standard-form", {
     },
     {
       question: "标准形的系数是否唯一？",
-      answer: "一般不唯一。例如 y₁²+y₂² 中令 y₂=2z₂，得 y₁²+4z₂²；不变的是正、负平方项的个数。",
+      answer: `一般不唯一。例如 ${texInline("y_1^2+y_2^2")} 中令 ${texInline("y_2=2z_2")}，得 ${texInline("y_1^2+4z_2^2")}；不变的是正、负平方项的个数。`,
     },
     {
       question: "没有平方项只有交叉项时，常见第一步是什么？",
@@ -102,11 +102,11 @@ defineChapter5Section("quadratic-standard-form", {
   summary: [
     "标准形是无交叉项的对角二次型；非零项个数等于秩。",
     "配方法与成对合同初等变换是同一过程的两种语言。",
-    "变量替换必须可逆；要记录累积矩阵 C。",
+    `变量替换必须可逆；要记录累积矩阵 ${texInline("C")}。`,
     "标准形存在，但系数一般不唯一。",
   ],
   exercises: [
-    "对 f=2x₁x₂ 先做和差替换再化标准形。",
-    "用成对初等变换把一个 2×2 对称矩阵化到对角。",
+    `对 ${texInline("f=2x_1x_2")} 先做和差替换再化标准形。`,
+    `用成对初等变换把一个 ${texInline("2\\times2")} 对称矩阵化到对角。`,
   ],
 });

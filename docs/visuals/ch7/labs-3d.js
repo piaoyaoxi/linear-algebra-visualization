@@ -48,14 +48,14 @@
       x: [1.5, -0.5, 2],
       axes: ["x₁", "x₂", "x₃"],
       predict: {
-        question: "σ 沿一条直线把 ℝ³ 压到一个平面上。dim σ⁻¹(0) + dim σV 等于多少？",
+        question: `${tex("\\sigma")} 沿一条直线把 ${tex("\\mathbb R^3")} 压到一个平面上。${tex("\\dim\\sigma^{-1}(0)+\\dim\\sigma V")} 等于多少？`,
         options: [
           { text: "3", correct: true },
           { text: "2", why: "核是压缩方向那条直线，它也占一维。" },
           { text: "4", why: "数一数：核一条直线，值域一个平面。" },
           { text: "取决于压缩的方向", why: "换个方向压，核与值域的维数都不变。" },
         ],
-        conclusion: "核是压缩方向所在的直线（1 维），值域是平面 x₃=0（2 维），1+2=3。沿核拖动 x′，σx′ 始终等于 σx：σx 的全部原像恰是 x+σ⁻¹(0)。这个 σ 满足 σ²=σ，此时 ℝ³=σV⊕σ⁻¹(0)。",
+        conclusion: `核是压缩方向所在的直线（1 维），值域是平面 ${tex("x_3=0")}（2 维），${tex("1+2=3")}。沿核拖动 ${tex("x'")}，${tex("\\sigma x'")} 始终等于 ${tex("\\sigma x")}：${tex("\\sigma x")} 的全部原像恰是 ${tex("x+\\sigma^{-1}(0)")}。这个 ${tex("\\sigma")} 满足 ${tex("\\sigma^2=\\sigma")}，此时 ${tex("\\mathbb R^3=\\sigma V\\oplus\\sigma^{-1}(0)")}。`,
       },
     },
     toLine: {
@@ -64,30 +64,30 @@
       x: [1.5, -1, 2],
       axes: ["x₁", "x₂", "x₃"],
       predict: {
-        question: "换成沿平面 x₃=0 压到直线 L((1,1,2)ᵀ) 上。核与值域各是几维？",
+        question: `换成沿平面 ${tex("x_3=0")} 压到直线 ${tex("L((1,1,2)^T)")} 上。核与值域各是几维？`,
         options: [
           { text: "核 2 维，值域 1 维", correct: true },
           { text: "核 1 维，值域 2 维", why: "被压成 0 的是平面 x₃=0 里的全部向量。" },
           { text: "核 2 维，值域 2 维", why: "所有像都落在一条直线上。" },
           { text: "核 0 维，值域 3 维", why: "x₃=0 的向量都被送到 0。" },
         ],
-        conclusion: "这个变换是 E−σ（σ 是第一种模式）：核与值域对调，2+1=3。在核平面里拖动 x′，像始终是同一个点。",
+        conclusion: `这个变换是 ${tex("E-\\sigma")}（${tex("\\sigma")} 是第一种模式）：核与值域对调，${tex("2+1=3")}。在核平面里拖动 ${tex("x'")}，像始终是同一个点。`,
       },
     },
     deriv: {
-      label: "求导 D（P[x]₃）",
+      label: `求导 ${tex("D")}（${tex("P[x]_3")}）`,
       A: [[0, 1, 0], [0, 0, 2], [0, 0, 0]],
       x: [1, 1.5, 1],
       axes: ["a₀", "a₁", "a₂"],
       predict: {
-        question: "点 (a₀,a₁,a₂) 代表 a₀+a₁x+a₂x²。D 的核（常数）与值域（次数 ≤1 的多项式）是什么关系？",
+        question: `点 ${tex("(a_0,a_1,a_2)")} 代表 ${tex("a_0+a_1x+a_2x^2")}。${tex("D")} 的核（常数）与值域（次数 ${tex("\\le1")} 的多项式）是什么关系？`,
         options: [
           { text: "核含在值域里，两者的和不是整个空间", correct: true },
-          { text: "两者互补，P[x]₃=DV⊕D⁻¹(0)", why: "常数 1 在核里，同时 1=D(x) 也在值域里。" },
+          { text: `两者互补，${tex("P[x]_3=DV\\oplus D^{-1}(0)")}`, why: "常数 1 在核里，同时 1=D(x) 也在值域里。" },
           { text: "两者只交于零向量", why: "常数 1 既在核里，也等于 D(x)。" },
-          { text: "值域是整个 P[x]₃", why: "x² 不是任何次数 <3 的多项式的导数。" },
+          { text: `值域是整个 ${tex("P[x]_3")}`, why: "x² 不是任何次数 <3 的多项式的导数。" },
         ],
-        conclusion: "D⁻¹(0)=L(1) 是 a₀ 轴，DV=L(1,x) 是 a₀a₁ 平面。1+2=3 照样成立，但 a₀ 轴在 a₀a₁ 平面里：DV+D⁻¹(0)=DV≠P[x]₃。维数公式不保证直和。",
+        conclusion: `${tex("D^{-1}(0)=L(1)")} 是 ${tex("a_0")} 轴，${tex("DV=L(1,x)")} 是 ${tex("a_0a_1")} 平面。${tex("1+2=3")} 照样成立，但 ${tex("a_0")} 轴在 ${tex("a_0a_1")} 平面里：${tex("DV+D^{-1}(0)=DV\\ne P[x]_3")}。维数公式不保证直和。`,
       },
     },
   };
@@ -111,7 +111,7 @@
   function kernelLab(root) {
     const lab = K.labShell(root, {
       title: "沿核滑动，像不动",
-      task: "金色圆点 x 可以随意拖动，紫色点是它的像 σx。金色圆点 x′ 只能沿绿色虚线 x+σ⁻¹(0) 移动：拖动它，看 σx′ 会不会离开 σx。",
+      task: `金色圆点 ${tex("x")} 可以随意拖动，紫色点是它的像 ${tex("\\sigma x")}。金色圆点 ${tex("x'")} 只能沿绿色虚线 ${tex("x+\\sigma^{-1}(0)")} 移动：拖动它，看 ${tex("\\sigma x'")} 会不会离开 ${tex("\\sigma x")}。`,
     });
     const toolbar = el("div", "ch7l-toolbar");
     const body = el("div", "ch7l-body");
@@ -121,7 +121,7 @@
     lab.append(toolbar, body);
     const gateHost = el("div");
     const tools = el("div", "ch7l-actions");
-    tools.innerHTML = `<button type="button" class="ch7l-btn is-primary" data-slide>让 x′ 走遍 x+σ⁻¹(0)</button><button type="button" class="ch7l-btn" data-look-ker>沿核看</button><button type="button" class="ch7l-btn" data-reset>回到默认视角</button>`;
+    tools.innerHTML = `<button type="button" class="ch7l-btn is-primary" data-slide>让 ${tex("x'")} 走遍 ${tex("x+\\sigma^{-1}(0)")}</button><button type="button" class="ch7l-btn" data-look-ker>沿核看</button><button type="button" class="ch7l-btn" data-reset>回到默认视角</button>`;
     const info = el("div", "ch7l-card");
     const result = el("div", "ch7l-result");
     side.append(gateHost, tools, info, result);
@@ -301,7 +301,7 @@
       clearInterval(slideTimer);
       trail.clear();
       state.key = key;
-      tools.querySelector("[data-slide]").textContent = key === "deriv" ? "让 x′ 走遍 x+D⁻¹(0)" : "让 x′ 走遍 x+σ⁻¹(0)";
+      tools.querySelector("[data-slide]").innerHTML = key === "deriv" ? `让 ${tex("x'")} 走遍 ${tex("x+D^{-1}(0)")}` : `让 ${tex("x'")} 走遍 ${tex("x+\\sigma^{-1}(0)")}`;
       state.x = mode().x.slice();
       const { ker } = structure();
       // x′ starts well away from x and from σx (so handles and labels do not overlap), on the half grid
@@ -351,14 +351,14 @@
       basis: [[1, 0, 0], [0, 1, 0], [0, 0, 1]],
       basisName: "\\varepsilon_1,\\varepsilon_2\\mid\\varepsilon_3",
       predict: {
-        question: "A 先绕 x₃ 轴转 90°，再沿 x₃ 轴拉伸 2 倍。有没有不变的平面？那个平面里有没有特征向量？",
+        question: `${tex("A")} 先绕 ${tex("x_3")} 轴转 90°，再沿 ${tex("x_3")} 轴拉伸 2 倍。有没有不变的平面？那个平面里有没有特征向量？`,
         options: [
-          { text: "x₁x₂ 平面不变，但平面里没有实特征向量", correct: true },
-          { text: "x₁x₂ 平面不变，所以平面里一定有特征向量", why: "平面里每个方向都被转了 90°。" },
+          { text: `${tex("x_1x_2")} 平面不变，但平面里没有实特征向量`, correct: true },
+          { text: `${tex("x_1x_2")} 平面不变，所以平面里一定有特征向量`, why: "平面里每个方向都被转了 90°。" },
           { text: "没有不变平面", why: "试试候选平面 x₁x₂。" },
-          { text: "每个含 x₃ 轴的平面都不变", why: "试试 x₁x₃ 平面：Aε₁=ε₂ 跑了出去。" },
+          { text: `每个含 ${tex("x_3")} 轴的平面都不变`, why: "试试 x₁x₃ 平面：Aε₁=ε₂ 跑了出去。" },
         ],
-        conclusion: "A 把 x₁x₂ 平面转 90°，平面整体留在原处，平面里的每条直线却都被转走，所以没有实特征向量。不变直线只有 x₃ 轴（λ=2）。按 x₁x₂ 平面的基接上 x₃ 轴的基，矩阵是一个 2 阶块和一个 1 阶块组成的准对角矩阵。",
+        conclusion: `${tex("A")} 把 ${tex("x_1x_2")} 平面转 90°，平面整体留在原处，平面里的每条直线却都被转走，所以没有实特征向量。不变直线只有 ${tex("x_3")} 轴（${tex("\\lambda=2")}）。按 ${tex("x_1x_2")} 平面的基接上 ${tex("x_3")} 轴的基，矩阵是一个 2 阶块和一个 1 阶块组成的准对角矩阵。`,
       },
     },
     tilted: {
@@ -369,28 +369,28 @@
       predict: {
         question: `${tex("A'=\\begin{pmatrix}-1&-1&0\\\\2&1&0\\\\1&2&2\\end{pmatrix}")} 的特征多项式也是 ${tex("(\\lambda^2+1)(\\lambda-2)")}。它的不变平面在哪里？`,
         options: [
-          { text: "平面 x₁+x₂+x₃=0", correct: true },
-          { text: "仍是 x₁x₂ 平面", why: "A′ε₁=(−1,2,1)ᵀ 离开了 x₁x₂ 平面。" },
-          { text: "每个含 x₃ 轴的平面", why: "拖动法向试几个，A′W 会转开。" },
+          { text: `平面 ${tex("x_1+x_2+x_3=0")}`, correct: true },
+          { text: `仍是 ${tex("x_1x_2")} 平面`, why: "A′ε₁=(−1,2,1)ᵀ 离开了 x₁x₂ 平面。" },
+          { text: `每个含 ${tex("x_3")} 轴的平面`, why: "拖动法向试几个，A′W 会转开。" },
           { text: "没有不变平面", why: "把法向 n 拖到 (1,1,1) 方向。" },
         ],
-        conclusion: "A′(1,−1,0)ᵀ=(0,1,−1)ᵀ，A′(0,1,−1)ᵀ=(−1,1,0)ᵀ，都留在 x₁+x₂+x₃=0 里；A′ε₃=2ε₃。取这三个向量作基，矩阵就化成准对角形。",
+        conclusion: `${tex("A'(1,-1,0)^T=(0,1,-1)^T")}，${tex("A'(0,1,-1)^T=(-1,1,0)^T")}，都留在 ${tex("x_1+x_2+x_3=0")} 里；${tex("A'\\varepsilon_3=2\\varepsilon_3")}。取这三个向量作基，矩阵就化成准对角形。`,
       },
     },
   };
 
   const CANDIDATES = [
-    ["z", "x₃ 轴", { kind: "line", u: [0, 0, 1.5] }],
-    ["x", "x₁ 轴", { kind: "line", u: [1.5, 0, 0] }],
-    ["xy", "x₁x₂ 平面", { kind: "plane", n: [0, 0, 1.5] }],
-    ["xz", "x₁x₃ 平面", { kind: "plane", n: [0, 1.5, 0] }],
-    ["sum", "x₁+x₂+x₃=0", { kind: "plane", n: [1, 1, 1] }],
+    ["z", `${tex("x_3")} 轴`, { kind: "line", u: [0, 0, 1.5] }],
+    ["x", `${tex("x_1")} 轴`, { kind: "line", u: [1.5, 0, 0] }],
+    ["xy", `${tex("x_1x_2")} 平面`, { kind: "plane", n: [0, 0, 1.5] }],
+    ["xz", `${tex("x_1x_3")} 平面`, { kind: "plane", n: [0, 1.5, 0] }],
+    ["sum", tex("x_1+x_2+x_3=0"), { kind: "plane", n: [1, 1, 1] }],
   ];
 
   function invariantLab(root) {
     const lab = K.labShell(root, {
-      title: "σW 有没有离开 W",
-      task: "绿色是候选子空间 W，紫色是它的像 AW。拖动金色圆点改变候选直线的方向或候选平面的法向；AW 与 W 重合、W 加深时，W 就是不变子空间。",
+      title: `${tex("\\sigma W")} 有没有离开 ${tex("W")}`,
+      task: `绿色是候选子空间 ${tex("W")}，紫色是它的像 ${tex("AW")}。拖动金色圆点改变候选直线的方向或候选平面的法向；${tex("AW")} 与 ${tex("W")} 重合、${tex("W")} 加深时，${tex("W")} 就是不变子空间。`,
     });
     const state = { key: "standard", kind: "plane", u: [1, 0.5, 1], n: [0.5, 1, 1.5] };
     const toolbar = el("div", "ch7l-toolbar");
@@ -482,19 +482,19 @@
       let html = `<h4>${state.kind === "line" ? "候选直线" : "候选平面"}</h4>`;
       if (state.kind === "line") {
         html += `<p>${tex(`W=L(${K.latexRow(r.u)}^{T})`)}，${tex(`Au=${K.latexRow(r.Au)}^{T}`)}</p>`;
-        html += r.inv ? `<p class="ch7l-ok">AW=W：u 是特征向量</p>` : `<p class="ch7l-muted">AW 与 W 夹角 ≈${angleBetween(numVec(r.u), numVec(r.Au)).toFixed(1)}°</p>`;
+        html += r.inv ? `<p class="ch7l-ok">${tex("AW=W")}：${tex("u")} 是特征向量</p>` : `<p class="ch7l-muted">${tex("AW")} 与 ${tex("W")} 夹角 ≈${angleBetween(numVec(r.u), numVec(r.Au)).toFixed(1)}°</p>`;
       } else {
         html += `<p>${tex(`W:\\ ${planeLatex(r.n)}=0`)}</p>`;
         if (r.inv) {
-          html += `<p class="ch7l-ok">AW=W：W 是不变子空间</p>`;
-          html += r.hasEig ? `<p class="ch7l-muted">W 中含有特征向量（x₃ 轴方向）。</p>` : `<p class="ch7l-muted">W 中没有实特征向量：每条直线都被转走，平面整体不动。</p>`;
+          html += `<p class="ch7l-ok">${tex("AW=W")}：${tex("W")} 是不变子空间</p>`;
+          html += r.hasEig ? `<p class="ch7l-muted">${tex("W")} 中含有特征向量（${tex("x_3")} 轴方向）。</p>` : `<p class="ch7l-muted">${tex("W")} 中没有实特征向量：每条直线都被转走，平面整体不动。</p>`;
         } else {
           const imgs = r.images.map(numVec);
-          html += `<p class="ch7l-muted">AW 与 W 的夹角 ≈${angleBetween(numVec(r.n), V().cross(imgs[0], imgs[1])).toFixed(1)}°</p>`;
+          html += `<p class="ch7l-muted">${tex("AW")} 与 ${tex("W")} 的夹角 ≈${angleBetween(numVec(r.n), V().cross(imgs[0], imgs[1])).toFixed(1)}°</p>`;
         }
       }
       // legend at the bottom of the readout: what the colours and the deeper W mean
-      html += `<div class="ch7l-legend"><span><i class="is-w"></i>W：候选${state.kind === "line" ? "直线" : "平面"}</span><span><i class="is-aw"></i>AW：W 的像（虚线）</span><span><i class="is-same"></i>AW=W 时两者重合，W 加深</span></div>`;
+      html += `<div class="ch7l-legend"><span><i class="is-w"></i><span>${tex("W")}：候选${state.kind === "line" ? "直线" : "平面"}</span></span><span><i class="is-aw"></i><span>${tex("AW")}：${tex("W")} 的像（虚线）</span></span><span><i class="is-same"></i><span>${tex("AW=W")} 时两者重合，${tex("W")} 加深</span></span></div>`;
       info.innerHTML = html;
       if (flow?.revealed) {
         const A = K.mat(preset().A);
@@ -558,52 +558,52 @@
 
   const KRYLOV_PRESETS = {
     j21: {
-      label: "J(2,2)⊕J(2,1)",
+      label: tex("J(2,2)\\oplus J(2,1)"),
       A: [[2, 0, 0], [1, 2, 0], [0, 0, 2]],
       v: [1, 0, 1],
       // look at L(v, Av) (normal (−1,0,1)) from slightly off its normal
       camera: { yaw: 2.75, pitch: 0.62 },
       predict: {
-        question: "这个 A 的特征多项式是 (λ−2)³。从 v 出发依次作用 A：v、Av、A²v 在哪一步落回前面向量张成的空间，那一步的关系式就给出最小多项式。A 的最小多项式是什么？",
+        question: `这个 ${tex("A")} 的特征多项式是 ${tex("(\\lambda-2)^3")}。从 ${tex("v")} 出发依次作用 ${tex("A")}：${tex("v")}、${tex("Av")}、${tex("A^2v")} 在哪一步落回前面向量张成的空间，那一步的关系式就给出最小多项式。${tex("A")} 的最小多项式是什么？`,
         options: [
-          { text: "(λ−2)²", correct: true },
-          { text: "λ−2", why: "A≠2E：从 v=(1,0,1)ᵀ 出发，Av 与 v 不共线。" },
-          { text: "(λ−2)³", why: "多拖几个 v：A²v 总落回平面 L(v,Av)，2 次多项式已经零化 A。" },
-          { text: "(λ−2)²(λ−1)", why: "1 不是 A 的特征值，最小多项式的根都是特征值。" },
+          { text: `${tex("(\\lambda-2)^2")}`, correct: true },
+          { text: `${tex("\\lambda-2")}`, why: "A≠2E：从 v=(1,0,1)ᵀ 出发，Av 与 v 不共线。" },
+          { text: `${tex("(\\lambda-2)^3")}`, why: "多拖几个 v：A²v 总落回平面 L(v,Av)，2 次多项式已经零化 A。" },
+          { text: `${tex("(\\lambda-2)^2(\\lambda-1)")}`, why: "1 不是 A 的特征值，最小多项式的根都是特征值。" },
         ],
-        conclusion: "(A−2E)²=O，所以对每个 v 都有 A²v=4Av−4v，张成最多是平面：m=(λ−2)²。它有重因式，A 不能对角化。对照 diag(2,2,1)：A²v 同样在第 2 步落回平面，关系式却是 A²v=3Av−2v，最小多项式 (λ−1)(λ−2) 没有重因式。",
+        conclusion: `${tex("(A-2E)^2=O")}，所以对每个 ${tex("v")} 都有 ${tex("A^2v=4Av-4v")}，张成最多是平面：${tex("m=(\\lambda-2)^2")}。它有重因式，${tex("A")} 不能对角化。对照 ${tex("\\operatorname{diag}(2,2,1)")}：${tex("A^2v")} 同样在第 2 步落回平面，关系式却是 ${tex("A^2v=3Av-2v")}，最小多项式 ${tex("(\\lambda-1)(\\lambda-2)")} 没有重因式。`,
       },
     },
     d221: {
-      label: "diag(2,2,1)",
+      label: tex("\\operatorname{diag}(2,2,1)"),
       A: [[2, 0, 0], [0, 2, 0], [0, 0, 1]],
       v: [1, 1, 1],
       // L(v, Av) has normal (−1,1,0)
       camera: { yaw: 2.05, pitch: 0.3 },
       predict: {
-        question: "A=diag(2,2,1)，从 v=(1,1,1)ᵀ 出发。A²v 落回 L(v,Av) 时，得到的 mᵥ 是什么？",
+        question: `${tex("A=\\operatorname{diag}(2,2,1)")}，从 ${tex("v=(1,1,1)^T")} 出发。${tex("A^2v")} 落回 ${tex("L(v,Av)")} 时，得到的 ${tex("m_v")} 是什么？`,
         options: [
-          { text: "(λ−1)(λ−2)", correct: true },
-          { text: "(λ−2)²", why: "落回的关系是 A²v=3Av−2v，对应 λ²−3λ+2。" },
-          { text: "(λ−2)²(λ−1)", why: "这是特征多项式；A²v 已经落回平面，mᵥ 只有 2 次。" },
-          { text: "λ−2", why: "v 不是特征向量，Av 与 v 不共线。" },
+          { text: `${tex("(\\lambda-1)(\\lambda-2)")}`, correct: true },
+          { text: `${tex("(\\lambda-2)^2")}`, why: "落回的关系是 A²v=3Av−2v，对应 λ²−3λ+2。" },
+          { text: `${tex("(\\lambda-2)^2(\\lambda-1)")}`, why: "这是特征多项式；A²v 已经落回平面，mᵥ 只有 2 次。" },
+          { text: `${tex("\\lambda-2")}`, why: "v 不是特征向量，Av 与 v 不共线。" },
         ],
-        conclusion: "A²v=3Av−2v，mᵥ=(λ−1)(λ−2)，它也是 A 的最小多项式：没有重因式，A 可以对角化。J(2,2)⊕J(2,1) 也在第 2 步落回平面，但那里的关系式给出 (λ−2)²，有重因式，不能对角化。",
+        conclusion: `${tex("A^2v=3Av-2v")}，${tex("m_v=(\\lambda-1)(\\lambda-2)")}，它也是 ${tex("A")} 的最小多项式：没有重因式，${tex("A")} 可以对角化。${tex("J(2,2)\\oplus J(2,1)")} 也在第 2 步落回平面，但那里的关系式给出 ${tex("(\\lambda-2)^2")}，有重因式，不能对角化。`,
       },
     },
     j3: {
-      label: "J(2,3)",
+      label: tex("J(2,3)"),
       A: [[2, 0, 0], [1, 2, 0], [0, 1, 2]],
       v: [1, 0, 0],
       predict: {
-        question: "A=J(2,3)，特征多项式是 (λ−2)³。它的最小多项式是几次？",
+        question: `${tex("A=J(2,3)")}，特征多项式是 ${tex("(\\lambda-2)^3")}。它的最小多项式是几次？`,
         options: [
           { text: "3 次", correct: true },
           { text: "1 次", why: "A≠2E。" },
           { text: "2 次", why: "从 v=ε₁ 出发，看 A²v 是否落回。" },
           { text: "4 次", why: "最小多项式整除特征多项式。" },
         ],
-        conclusion: "v=ε₁ 时 v, Av, A²v 线性无关，所以没有 2 次多项式零化 A，m=(λ−2)³ 与特征多项式相同，有重因式，不能对角化。v=ε₃ 是特征向量，一步就停：mᵥ=λ−2。",
+        conclusion: `${tex("v=\\varepsilon_1")} 时 ${tex("v,Av,A^2v")} 线性无关，所以没有 2 次多项式零化 ${tex("A")}，${tex("m=(\\lambda-2)^3")} 与特征多项式相同，有重因式，不能对角化。${tex("v=\\varepsilon_3")} 是特征向量，一步就停：${tex("m_v=\\lambda-2")}。`,
       },
     },
   };
@@ -618,8 +618,8 @@
 
   function krylovLab(root) {
     const lab = K.labShell(root, {
-      title: "v, Av, A²v, … 第几步落回",
-      task: "拖动 v 选一个起点，然后逐个加入 Av, A²v, …。张成从直线长成平面，再长满空间；新向量第一次落回已有张成时，得到 v 的最小多项式 mᵥ。",
+      title: `${tex("v,Av,A^2v,\\dots")} 第几步落回`,
+      task: `拖动 ${tex("v")} 选一个起点，然后逐个加入 ${tex("Av,A^2v,\\dots")}。张成从直线长成平面，再长满空间；新向量第一次落回已有张成时，得到 ${tex("v")} 的最小多项式 ${tex("m_v")}。`,
     });
     const state = { key: "j21", v: [1, 0, 1], seq: null, flash: 0 };
     const toolbar = el("div", "ch7l-toolbar");
@@ -631,7 +631,7 @@
     const scene = S().create(stage, { range: 2, label: "Krylov 序列与它的张成", hint: "拖动空白处旋转 · 拖动圆点改变 v（箭头只画方向）", yaw: -0.85, pitch: 0.4, spreadLabels: true, labelSafe: true });
     const gateHost = el("div");
     const tools = el("div", "ch7l-actions");
-    tools.innerHTML = `<button type="button" class="ch7l-btn is-primary" data-next>加入下一个</button><button type="button" class="ch7l-btn" data-restart>只留 v</button><button type="button" class="ch7l-btn" data-e1>v=ε₁</button><button type="button" class="ch7l-btn" data-e3>v=ε₃</button>`;
+    tools.innerHTML = `<button type="button" class="ch7l-btn is-primary" data-next>加入下一个</button><button type="button" class="ch7l-btn" data-restart>只留 ${tex("v")}</button><button type="button" class="ch7l-btn" data-e1>${tex("v=\\varepsilon_1")}</button><button type="button" class="ch7l-btn" data-e3>${tex("v=\\varepsilon_3")}</button>`;
     const info = el("div", "ch7l-card");
     const result = el("div", "ch7l-result");
     const polyBox = el("div", "ch7l-card");
@@ -715,7 +715,7 @@
         return objs;
       });
       const rows = vs
-        .map((v, i) => `<li><span style="color:var(${TEXT_VARS[i]})">${NAMES[i]}</span> ${tex(K.latexRow(v))}</li>`)
+        .map((v, i) => `<li><span style="color:var(${TEXT_VARS[i]})">${tex(NAMES_TEX[i])}</span> ${tex(K.latexRow(v))}</li>`)
         .join("");
       let html = `<h4>序列（张成维数 ${indep.length}）</h4><ul class="ch7l-seq">${rows}</ul>`;
       if (stop) {
@@ -730,8 +730,8 @@
           })
           .join("") || "0";
         const mv = [...c.map((x) => M().neg(x)), F(1)];
-        html += `<p class="ch7l-ok">${NAMES[k]} 落回了${["", "直线 L(v)", "平面 L(v, Av)", "前面的张成"][k]}：</p><p>${tex(`${NAMES_TEX[k]}=${rhs}`)}</p><p>${tex(`m_v(\\lambda)=${K.polyFactorLatex(mv)}`)}</p>`;
-        if (flow?.predicted && !flow.revealed && !asked()) html += `<p class="ch7l-muted">换一个 v 再试。</p>`;
+        html += `<p class="ch7l-ok">${tex(NAMES_TEX[k])} 落回了${["", `直线 ${tex("L(v)")}`, `平面 ${tex("L(v,Av)")}`, "前面的张成"][k]}：</p><p>${tex(`${NAMES_TEX[k]}=${rhs}`)}</p><p>${tex(`m_v(\\lambda)=${K.polyFactorLatex(mv)}`)}</p>`;
+        if (flow?.predicted && !flow.revealed && !asked()) html += `<p class="ch7l-muted">换一个 ${tex("v")} 再试。</p>`;
       } else {
         html += `<p class="ch7l-muted">${vs.length === 1 ? "先按“加入下一个”。" : "还没有落回，继续加入。"}</p>`;
       }
@@ -740,7 +740,7 @@
       if (flow?.revealed) {
         const A = K.mat(preset().A);
         polyBox.hidden = false;
-        polyBox.innerHTML = `<h4>整个矩阵</h4><p>${tex(`m_A(\\lambda)=${K.polyFactorLatex(K.minimalPolynomial(A))}`)}</p><p>${tex(`f(\\lambda)=|\\lambda E-A|=${K.polyFactorLatex(K.charPolynomial(A))}`)}</p><p class="${hasRepeatedFactor(K.minimalPolynomial(A)) ? "ch7l-bad" : "ch7l-ok"}">${tex("m_A")} ${hasRepeatedFactor(K.minimalPolynomial(A)) ? "有重因式，A 不能对角化" : "没有重因式，A 可以对角化"}。</p><p class="ch7l-muted">每个 ${tex("m_v")} 都整除 ${tex("m_A")}，${tex("m_A")} 又整除 f。</p>`;
+        polyBox.innerHTML = `<h4>整个矩阵</h4><p>${tex(`m_A(\\lambda)=${K.polyFactorLatex(K.minimalPolynomial(A))}`)}</p><p>${tex(`f(\\lambda)=|\\lambda E-A|=${K.polyFactorLatex(K.charPolynomial(A))}`)}</p><p class="${hasRepeatedFactor(K.minimalPolynomial(A)) ? "ch7l-bad" : "ch7l-ok"}">${tex("m_A")} ${hasRepeatedFactor(K.minimalPolynomial(A)) ? `有重因式，${tex("A")} 不能对角化` : `没有重因式，${tex("A")} 可以对角化`}。</p><p class="ch7l-muted">每个 ${tex("m_v")} 都整除 ${tex("m_A")}，${tex("m_A")} 又整除 ${tex("f")}。</p>`;
       } else polyBox.hidden = true;
     }
 

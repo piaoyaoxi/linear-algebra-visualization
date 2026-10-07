@@ -843,6 +843,21 @@
       rendered.delete(node);
       node.textContent = value;
     };
+    // text with formulas: built from a plain key, so a tween does not re-render KaTeX every frame
+    const setHtml = (node, key, build) => {
+      if (rendered.get(node) === key) return;
+      rendered.set(node, key);
+      node.innerHTML = build();
+    };
+    const alphaTex = tex("\\alpha");
+    const betaTex = tex("\\beta");
+    const geometryReal = `${tex("\\bar\\alpha")} 同时在两条线上：在紫色虚线上，根之和 ${tex("2a")} 是实数；在过原点的绿线上，根之积 ${tex("|\\alpha|^2")} 是实数。`;
+    const geometryFree = `紫色虚线上 ${tex("\\alpha+\\beta")} 是实数，过原点的绿线上 ${tex("\\alpha\\beta")} 是实数。把 ${betaTex} 拖到两条线上看看。`;
+    const hints = {
+      closed: `先在上方猜一猜，再拖动 ${betaTex}`,
+      real: `拖动 ${alphaTex}：共轭根关于实轴镜像跟随，两条线始终交在共轭根处`,
+      free: "拖动离指针最近的根，看它何时落到两条线上",
+    };
 
     function updateDom() {
       const c = coefficients();
@@ -856,13 +871,16 @@
       const open = Boolean(!gate || gate.picked);
       status.hidden = !open;
       status.className = `ch1-status ${state.locking ? "is-warn" : exactReal ? "is-ok" : "is-bad"}`;
-      status.textContent = state.locking ? "β 正在移到 α 关于实轴的对称点" : exactReal ? "根之和与根之积都是实数" : `系数出现虚部：Im(α+β)=${text(c.sum.im)}，Im(αβ)=${text(c.product.im)}`;
+      const statusKey = state.locking ? "locking" : exactReal ? "real" : `im:${text(c.sum.im)}:${text(c.product.im)}`;
+      setHtml(status, statusKey, () => (state.locking
+        ? `${betaTex} 正在移到 ${alphaTex} 关于实轴的对称点`
+        : exactReal
+          ? "根之和与根之积都是实数"
+          : `系数出现虚部：${tex(`\\operatorname{Im}(\\alpha+\\beta)=${rtex(c.sum.im)}`)}，${tex(`\\operatorname{Im}(\\alpha\\beta)=${rtex(c.product.im)}`)}`));
       setTex(root.querySelector("[data-factor]"), exactReal
         ? realQuadraticTex(c.sum.re, c.product.re)
         : `x^2-\\left(${complexTex(c.sum)}\\right)x+\\left(${complexTex(c.product)}\\right)`);
-      const geometryCopy = state.mode === "R"
-        ? `${tex("\\bar\\alpha")} 同时在两条线上：在紫色虚线上，根之和 2a 是实数；在过原点的绿线上，根之积 ${tex("|\\alpha|^2")} 是实数。`
-        : "紫色虚线上 α+β 是实数，过原点的绿线上 αβ 是实数。把 β 拖到两条线上看看。";
+      const geometryCopy = state.mode === "R" ? geometryReal : geometryFree;
       const geometryNode = root.querySelector("[data-geometry-copy]");
       if (geometryNode.dataset.copy !== geometryCopy) { geometryNode.dataset.copy = geometryCopy; geometryNode.innerHTML = geometryCopy; }
       if (!open) {
@@ -881,11 +899,8 @@
       root.querySelector("[data-im-value]").textContent = text(c.alpha.im);
       root.querySelector("[data-bre-value]").textContent = text(c.beta.re);
       root.querySelector("[data-bim-value]").textContent = text(c.beta.im);
-      root.querySelector("[data-canvas-hint]").textContent = !open
-        ? "先在上方猜一猜，再拖动 β"
-        : state.mode === "R"
-          ? "拖动 α：共轭根关于实轴镜像跟随，两条线始终交在共轭根处"
-          : "拖动离指针最近的根，看它何时落到两条线上";
+      const hint = !open ? "closed" : state.mode === "R" ? "real" : "free";
+      setHtml(root.querySelector("[data-canvas-hint]"), hint, () => hints[hint]);
       draw();
     }
 
@@ -1015,12 +1030,12 @@
       key: "visuals/ch1/motion-upgrade.js#conjugate",
       question: `实系数二次多项式 ${tex("x^2+px+q")} 有一个根 ${tex("\\alpha=1+\\tfrac32 i")}。另一个根 ${tex("\\beta")} 在哪里？`,
       options: [
-        [`${tex("\\bar\\alpha=1-\\tfrac32 i")}：与 α 关于实轴对称`, true, ""],
-        [`${tex("-\\alpha=-1-\\tfrac32 i")}：与 α 关于原点对称`, false, `若 ${tex("\\beta=-\\alpha")}，则 ${tex("\\alpha\\beta=-\\alpha^2=\\tfrac54-3i")}，常数项不是实数。`],
+        [`${tex("\\bar\\alpha=1-\\tfrac32 i")}：与 ${tex("\\alpha")} 关于实轴对称`, true, ""],
+        [`${tex("-\\alpha=-1-\\tfrac32 i")}：与 ${tex("\\alpha")} 关于原点对称`, false, `若 ${tex("\\beta=-\\alpha")}，则 ${tex("\\alpha\\beta=-\\alpha^2=\\tfrac54-3i")}，常数项不是实数。`],
         ["实轴上的某一点", false, `β 是实数时 ${tex("\\alpha+\\beta")} 的虚部仍是 ${tex("\\tfrac32")}，一次项系数不是实数。`],
-        [`${tex("-\\bar\\alpha=-1+\\tfrac32 i")}：与 α 关于虚轴对称`, false, `若 ${tex("\\beta=-\\bar\\alpha")}，则 ${tex("\\alpha+\\beta=3i")}，一次项系数不是实数。`],
+        [`${tex("-\\bar\\alpha=-1+\\tfrac32 i")}：与 ${tex("\\alpha")} 关于虚轴对称`, false, `若 ${tex("\\beta=-\\bar\\alpha")}，则 ${tex("\\alpha+\\beta=3i")}，一次项系数不是实数。`],
       ],
-      right: `✓ 根之和 ${tex("-p")} 是实数，β 在水平线 ${tex("\\operatorname{Im}\\beta=-\\tfrac32")} 上；根之积 ${tex("q")} 是实数，β 在过原点、方向为 ${tex("\\bar\\alpha")} 的直线上（${tex("\\beta=t\\bar\\alpha")}，t 为实数）。两条线只交于 ${tex("\\bar\\alpha")}，此时 ${tex("q=\\alpha\\bar\\alpha=|\\alpha|^2")}。`,
+      right: `✓ 根之和 ${tex("-p")} 是实数，${tex("\\beta")} 在水平线 ${tex("\\operatorname{Im}\\beta=-\\tfrac32")} 上；根之积 ${tex("q")} 是实数，${tex("\\beta")} 在过原点、方向为 ${tex("\\bar\\alpha")} 的直线上（${tex("\\beta=t\\bar\\alpha")}，${tex("t")} 为实数）。两条线只交于 ${tex("\\bar\\alpha")}，此时 ${tex("q=\\alpha\\bar\\alpha=|\\alpha|^2")}。`,
       onPick: () => { lockables.forEach((node) => { node.disabled = false; }); updateDom(); },
     });
     if (gate) lockables.forEach((node) => { node.disabled = true; });
@@ -1052,7 +1067,7 @@
         </header>
         <div data-conj-gate></div>
         <div class="ch1-controls ch1-motion-toolbar" role="group" aria-label="选择系数模式与根的预设">
-          <button type="button" data-mode="C" class="is-active" aria-pressed="true">自由移动 β</button>
+          <button type="button" data-mode="C" class="is-active" aria-pressed="true">自由移动 ${tex("\\beta")}</button>
           <button type="button" data-mode="R" aria-pressed="false">实系数：共轭锁</button>
           <span class="ch1-control-separator"></span>
           <button type="button" data-preset="pair">一般共轭对</button>
@@ -1069,14 +1084,14 @@
               <span>图上真正要看懂的关系</span>
               <strong data-geometry-copy></strong>
             </div>
-            <label class="ch1-slider-row"><span>Re(α)</span><input data-re type="range" min="-2.5" max="2.5" step="0.25"><output data-re-value></output></label>
-            <label class="ch1-slider-row"><span>Im(α)</span><input data-im type="range" min="-2.5" max="2.5" step="0.25"><output data-im-value></output></label>
+            <label class="ch1-slider-row"><span>${tex("\\operatorname{Re}(\\alpha)")}</span><input data-re type="range" min="-2.5" max="2.5" step="0.25"><output data-re-value></output></label>
+            <label class="ch1-slider-row"><span>${tex("\\operatorname{Im}(\\alpha)")}</span><input data-im type="range" min="-2.5" max="2.5" step="0.25"><output data-im-value></output></label>
             <div data-beta-controls hidden>
-              <label class="ch1-slider-row"><span>Re(β)</span><input data-bre type="range" min="-2.5" max="2.5" step="0.25"><output data-bre-value></output></label>
-              <label class="ch1-slider-row"><span>Im(β)</span><input data-bim type="range" min="-2.5" max="2.5" step="0.25"><output data-bim-value></output></label>
+              <label class="ch1-slider-row"><span>${tex("\\operatorname{Re}(\\beta)")}</span><input data-bre type="range" min="-2.5" max="2.5" step="0.25"><output data-bre-value></output></label>
+              <label class="ch1-slider-row"><span>${tex("\\operatorname{Im}(\\beta)")}</span><input data-bim type="range" min="-2.5" max="2.5" step="0.25"><output data-bim-value></output></label>
             </div>
             <div class="ch1-equation-grid is-compact">
-              <div><span>α</span><strong data-alpha></strong></div>
+              <div><span>${tex("\\alpha")}</span><strong data-alpha></strong></div>
               <div><span>第二个根</span><strong data-beta></strong></div>
               <div><span>根之和</span><strong data-sum></strong></div>
               <div><span>根之积</span><strong data-product></strong></div>

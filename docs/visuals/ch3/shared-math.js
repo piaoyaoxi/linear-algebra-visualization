@@ -398,7 +398,8 @@
     return `<div class="ch3-equations">${augmented
       .map(
         (row, index) =>
-          `<div class="ch3-equation${highlighted.includes(index) ? " is-changed" : ""}"><span class="ch3-row-label">R${index + 1}</span>${tex(latexEquation(row, variableCount))}</div>`,
+          // the row name R_i, a quad, then the equation
+          `<div class="ch3-equation${highlighted.includes(index) ? " is-changed" : ""}">${tex(`R_${index + 1}\\quad ${latexEquation(row, variableCount)}`)}</div>`,
       )
       .join("")}</div>`;
   }

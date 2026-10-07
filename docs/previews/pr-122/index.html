@@ -1,0 +1,362 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta name="description" content="高等代数可视化：按北大版《高等代数》十章 73 节组织的可视化学习网站。" />
+    <meta name="theme-color" content="#7ea3c8" />
+    <title>高等代数可视化</title>
+    <link rel="icon" href="data:," />
+    <link rel="preload" as="image" href="./assets/home/hero-2400.webp" imagesrcset="./assets/home/hero-1600.webp 1600w, ./assets/home/hero-2400.webp 2400w, ./assets/home/hero-3104.webp 3104w" imagesizes="(max-aspect-ratio: 2/1) 200vh, 100vw" fetchpriority="high" />
+    <script>
+      (function () {
+        var root = document.documentElement;
+        try { if (localStorage.getItem("la-visual-theme") === "dark") root.dataset.theme = "dark"; } catch (error) {}
+        var played = false;
+        try { played = sessionStorage.getItem("la-home-intro") === "1"; } catch (error) {}
+        if (!played && !window.matchMedia("(prefers-reduced-motion: reduce)").matches) root.classList.add("home-entering");
+      })();
+    </script>
+    <link rel="stylesheet" href="./fonts.css?v=s2" />
+    <link rel="stylesheet" href="./vendor/katex/katex.min.css" />
+    <link rel="stylesheet" href="./cover.css?v=c1" />
+    <script defer src="./vendor/katex/katex.min.js"></script>
+    <script defer src="./cover.js?v=c1"></script>
+  </head>
+  <body>
+    <nav class="home-bar" id="homeBar" data-bar="hero" aria-label="站点">
+      <h1 class="home-brand"><a href="#top">高等代数可视化</a></h1>
+      <a class="home-bar-link" href="#contents">目录</a>
+    </nav>
+
+    <header class="home-hero" id="top">
+      <div class="home-hero-media" id="heroMedia" aria-hidden="true">
+        <img
+          class="home-hero-img"
+          id="heroImage"
+          src="./assets/home/hero-2400.webp"
+          srcset="./assets/home/hero-1600.webp 1600w, ./assets/home/hero-2400.webp 2400w, ./assets/home/hero-3104.webp 3104w"
+          sizes="(max-aspect-ratio: 2/1) 200vh, 100vw"
+          width="3104"
+          height="1552"
+          alt=""
+          decoding="async"
+          fetchpriority="high"
+        />
+        <canvas class="home-hero-mosaic" id="heroMosaic"></canvas>
+      </div>
+
+      <div class="home-cards" id="homeCards" aria-label="起点问题"></div>
+
+      <div class="home-headline" id="homeHeadline">
+        <p class="home-headline-fixed">线性</p>
+        <a class="home-word" id="homeWord" href="./learn.html#ch4/matrix-operations" aria-label="线性代数：第四章 §2">
+          <span class="home-word-cn">代数</span>
+          <span class="home-word-en" lang="en">Linear Algebra</span>
+        </a>
+      </div>
+
+      <div class="home-start">
+        <a class="home-cta" href="./learn.html#guide" aria-label="开始学习">
+          <span class="home-cta-label" aria-hidden="true">Start</span>
+          <span class="home-cta-arrow" aria-hidden="true">
+            <svg viewBox="0 0 20 20"><path d="M4 10h11M11 5.5 15.5 10 11 14.5" /></svg>
+          </span>
+        </a>
+        <p class="home-resume" id="homeResume" hidden>上次学到<a id="homeResumeLink" href="./learn.html#guide"></a></p>
+      </div>
+
+      <a class="home-scroll" href="#lead" aria-label="向下滚动">
+        <span class="home-scroll-line" aria-hidden="true"></span>
+      </a>
+    </header>
+
+    <section class="home-lead" id="lead">
+      <div class="home-lead-inner">
+        <p class="home-statement">按北大版《高等代数》十章七十三节编排。</p>
+        <p class="home-statement">每一节从一个问题开始。</p>
+        <p class="home-statement">先动手拖一拖，再回到定理和公式。</p>
+      </div>
+    </section>
+
+    <section class="home-ribbon" id="ribbon" aria-label="从多项式到辛空间">
+      <div class="home-ribbon-stage">
+        <div class="home-ribbon-bg" id="ribbonBg" aria-hidden="true"></div>
+        <div class="home-ribbon-shade" aria-hidden="true"></div>
+        <svg class="home-ribbon-svg" viewBox="0 0 1600 900" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
+          <defs>
+            <linearGradient id="homeRibFill" x1="0" y1="0" x2="0" y2="900" gradientUnits="userSpaceOnUse">
+              <stop offset="0" stop-color="#ffffff" stop-opacity="0.66" />
+              <stop offset="0.55" stop-color="#fffdf8" stop-opacity="0.8" />
+              <stop offset="1" stop-color="#ffffff" stop-opacity="0.86" />
+            </linearGradient>
+            <filter id="homeRibGlow" x="-10%" y="-10%" width="120%" height="120%"><feGaussianBlur stdDeviation="14" /></filter>
+            <filter id="homeRibSoft" x="-5%" y="-5%" width="110%" height="110%"><feGaussianBlur stdDeviation="3.2" /></filter>
+            <clipPath id="homeRibClipA"><path id="ribClipA" d="M0 0" /></clipPath>
+            <clipPath id="homeRibClipB"><path id="ribClipB" d="M0 0" /></clipPath>
+            <clipPath id="homeRibClipC"><path id="ribClipC" d="M0 0" /></clipPath>
+            <path id="homeRibPathA" d="M180 330 C560 230 1300 110 1760 -60" />
+            <path id="homeRibPathB" d="M180 330 C-80 385 640 530 1340 620" />
+            <path id="homeRibPathC" d="M-240 1000 C900 820 1640 660 1340 620" />
+          </defs>
+          <path id="ribGlow" d="M0 0" fill="#ffffff" opacity="0.3" filter="url(#homeRibGlow)" />
+          <path id="ribBody" d="M0 0" fill="url(#homeRibFill)" filter="url(#homeRibSoft)" />
+          <g clip-path="url(#homeRibClipA)">
+            <text class="home-ribbon-text" id="ribTextA" font-size="24" letter-spacing="1" fill-opacity="0.66" dominant-baseline="central"><textPath href="#homeRibPathA" startOffset="-1500"></textPath></text>
+          </g>
+          <g clip-path="url(#homeRibClipB)">
+            <text class="home-ribbon-text" id="ribTextB" font-size="38" letter-spacing="2" fill-opacity="0.74" dominant-baseline="central"><textPath href="#homeRibPathB" startOffset="-3000"></textPath></text>
+          </g>
+          <g clip-path="url(#homeRibClipC)">
+            <text class="home-ribbon-text" id="ribTextC" font-size="54" letter-spacing="2" fill-opacity="0.8" dominant-baseline="central"><textPath href="#homeRibPathC" startOffset="-5000"></textPath></text>
+          </g>
+        </svg>
+        <p class="home-ribbon-title">从多项式到辛空间</p>
+        <div class="home-ribbon-paper" id="ribbonPaper" aria-hidden="true"></div>
+        <div class="home-clouds" id="homeClouds" aria-hidden="true"></div>
+      </div>
+    </section>
+
+    <section class="home-how" id="how" aria-labelledby="howTitle">
+      <div class="home-inner">
+        <h2 class="home-section-title" id="howTitle">一节怎么学</h2>
+        <div class="home-how-grid">
+          <article class="home-step">
+            <div class="home-step-stage">
+              <p class="home-step-question">哪些方向在线性变换下只被伸缩？</p>
+              <svg class="home-step-svg" viewBox="0 0 320 240" aria-hidden="true">
+                <path class="home-demo-grid" d="M30 0V240M56 0V240M82 0V240M108 0V240M134 0V240M186 0V240M212 0V240M238 0V240M264 0V240M290 0V240M0 26H320M0 52H320M0 78H320M0 104H320M0 156H320M0 182H320M0 208H320M0 234H320" />
+                <path class="home-demo-axis" d="M160 0V240M0 130H320" />
+                <path class="home-demo-eigen" id="eigenLine1" d="M50 240L290 0" />
+                <path class="home-demo-eigen" id="eigenLine2" d="M50 20L270 240" />
+                <line class="home-demo-image" id="eigenAv" x1="160" y1="130" x2="230" y2="80" />
+                <circle class="home-demo-image-tip" id="eigenAvTip" cx="230" cy="80" r="4.5" />
+                <line class="home-demo-vector" id="eigenV" x1="160" y1="130" x2="190" y2="110" />
+                <circle class="home-demo-vector-tip" id="eigenVTip" cx="190" cy="110" r="4.5" />
+                <text class="home-demo-label is-vector" id="eigenVLabel" x="196" y="104">ξ</text>
+                <text class="home-demo-label is-image" id="eigenAvLabel" x="236" y="74">Aξ</text>
+              </svg>
+            </div>
+            <div class="home-step-body">
+              <span class="home-step-num">01</span>
+              <h3>起点问题</h3>
+              <p>每一节先抛出一个问题。</p>
+            </div>
+          </article>
+
+          <article class="home-step">
+            <div class="home-step-stage">
+              <svg class="home-step-svg is-draggable" id="gridSvg" viewBox="0 0 320 240" aria-hidden="true">
+                <path class="home-demo-warp" id="gridLines" d="M0 0" />
+                <path class="home-demo-cell" id="gridCell" d="M0 0" />
+                <line class="home-demo-image" id="gridI" x1="160" y1="150" x2="236" y2="150" />
+                <line class="home-demo-vector" id="gridJ" x1="160" y1="150" x2="160" y2="74" />
+                <circle class="home-demo-handle is-image" id="gridIHandle" cx="236" cy="150" r="8" />
+                <circle class="home-demo-handle is-vector" id="gridJHandle" cx="160" cy="74" r="8" />
+                <circle class="home-demo-hit" id="gridIHit" cx="236" cy="150" r="16" />
+                <circle class="home-demo-hit" id="gridJHit" cx="160" cy="74" r="16" />
+              </svg>
+              <p class="home-step-readout" id="gridReadout"></p>
+              <p class="home-step-hint">拖动两个端点</p>
+            </div>
+            <div class="home-step-body">
+              <span class="home-step-num">02</span>
+              <h3>动手实验</h3>
+              <p>拖动参数，看空间怎样变化。</p>
+            </div>
+          </article>
+
+          <article class="home-step">
+            <div class="home-step-stage home-step-example">
+              <p class="home-example-question"><span class="home-example-tag">例</span>求 <span class="home-tex" data-tex="A=\begin{pmatrix}2&amp;1\\1&amp;2\end{pmatrix}" data-fallback="A = (2 1; 1 2)"></span> 的特征值。</p>
+              <div class="home-example-answer" id="exampleAnswer">
+                <div>
+                  <p>特征多项式 <span class="home-tex" data-tex="|\lambda E-A|=(\lambda-2)^2-1=(\lambda-3)(\lambda-1)" data-fallback="|λE − A| = (λ − 2)² − 1 = (λ − 3)(λ − 1)"></span>，所以特征值为 <span class="home-tex" data-tex="\lambda_1=3,\ \lambda_2=1" data-fallback="λ₁ = 3，λ₂ = 1"></span>。</p>
+                </div>
+              </div>
+              <div class="home-example-actions">
+                <button class="home-example-toggle" id="exampleToggle" type="button" aria-expanded="false" aria-controls="exampleAnswer">展开答案</button>
+                <span class="home-example-hint" id="exampleHint">先自己想一想。</span>
+              </div>
+            </div>
+            <div class="home-step-body">
+              <span class="home-step-num">03</span>
+              <h3>例题与自测</h3>
+              <p>先自己想，再展开答案。</p>
+            </div>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <main class="home-contents" id="contents">
+      <div class="home-inner">
+        <div class="home-contents-head">
+          <h2>目录</h2>
+          <p>10 章 · 73 节</p>
+        </div>
+        <ol class="home-chapters">
+          <li class="home-chapter" data-chapter="ch1">
+            <span class="home-chapter-num" aria-hidden="true">01</span>
+            <h3 class="home-chapter-title"><a href="./learn.html#ch1"><span class="home-sr">第一章 </span>多项式</a></h3>
+            <span class="home-chapter-count">11 节</span>
+            <ol class="home-sections">
+              <li><a href="./learn.html#ch1/number-fields" data-section="number-fields" data-short="数域"><span class="home-section-num">§1</span>数域</a></li>
+              <li><a href="./learn.html#ch1/univariate-polynomials" data-section="univariate-polynomials" data-short="一元多项式"><span class="home-section-num">§2</span>一元多项式</a></li>
+              <li><a href="./learn.html#ch1/polynomial-divisibility" data-section="polynomial-divisibility" data-short="整除的概念"><span class="home-section-num">§3</span>整除的概念</a></li>
+              <li><a href="./learn.html#ch1/gcd-polynomials" data-section="gcd-polynomials" data-short="最大公因式"><span class="home-section-num">§4</span>最大公因式</a></li>
+              <li><a href="./learn.html#ch1/factorization-theorem" data-section="factorization-theorem" data-short="因式分解定理"><span class="home-section-num">§5</span>因式分解定理</a></li>
+              <li><a href="./learn.html#ch1/multiple-factors" data-section="multiple-factors" data-short="重因式"><span class="home-section-num">§6</span>重因式</a></li>
+              <li><a href="./learn.html#ch1/polynomial-functions" data-section="polynomial-functions" data-short="多项式函数"><span class="home-section-num">§7</span>多项式函数</a></li>
+              <li><a href="./learn.html#ch1/complex-real-factorization" data-section="complex-real-factorization" data-short="实复因式分解"><span class="home-section-num">§8</span>复系数与实系数多项式的因式分解</a></li>
+              <li><a href="./learn.html#ch1/rational-polynomials" data-section="rational-polynomials" data-short="有理系数"><span class="home-section-num">§9</span>有理系数多项式</a></li>
+              <li><a href="./learn.html#ch1/multivariate-polynomials" data-section="multivariate-polynomials" data-short="多元多项式"><span class="home-section-num">§10</span>多元多项式</a></li>
+              <li><a href="./learn.html#ch1/symmetric-polynomials" data-section="symmetric-polynomials" data-short="对称多项式"><span class="home-section-num">§11</span>对称多项式</a></li>
+            </ol>
+          </li>
+          <li class="home-chapter" data-chapter="ch2">
+            <span class="home-chapter-num" aria-hidden="true">02</span>
+            <h3 class="home-chapter-title"><a href="./learn.html#ch2"><span class="home-sr">第二章 </span>行列式</a></h3>
+            <span class="home-chapter-count">8 节</span>
+            <ol class="home-sections">
+              <li><a href="./learn.html#ch2/determinant-intro" data-section="determinant-intro" data-short="引言"><span class="home-section-num">§1</span>引言</a></li>
+              <li><a href="./learn.html#ch2/permutations" data-section="permutations" data-short="排列"><span class="home-section-num">§2</span>排列</a></li>
+              <li><a href="./learn.html#ch2/n-order-determinant" data-section="n-order-determinant" data-short="n 阶行列式"><span class="home-section-num">§3</span>n 阶行列式</a></li>
+              <li><a href="./learn.html#ch2/determinant-properties" data-section="determinant-properties" data-short="行列式性质"><span class="home-section-num">§4</span>n 阶行列式的性质</a></li>
+              <li><a href="./learn.html#ch2/determinant-computation" data-section="determinant-computation" data-short="行列式计算"><span class="home-section-num">§5</span>行列式的计算</a></li>
+              <li><a href="./learn.html#ch2/cofactor-expansion" data-section="cofactor-expansion" data-short="按行列展开"><span class="home-section-num">§6</span>行列式按一行（列）展开</a></li>
+              <li><a href="./learn.html#ch2/cramer-rule" data-section="cramer-rule" data-short="克拉默法则"><span class="home-section-num">§7</span>克拉默（Cramer）法则</a></li>
+              <li><a href="./learn.html#ch2/laplace-and-product" data-section="laplace-and-product" data-short="Laplace 与乘法"><span class="home-section-num">§8</span>拉普拉斯（Laplace）定理·行列式的乘法规则</a></li>
+            </ol>
+          </li>
+          <li class="home-chapter" data-chapter="ch3">
+            <span class="home-chapter-num" aria-hidden="true">03</span>
+            <h3 class="home-chapter-title"><a href="./learn.html#ch3"><span class="home-sr">第三章 </span>线性方程组</a></h3>
+            <span class="home-chapter-count">7 节</span>
+            <ol class="home-sections">
+              <li><a href="./learn.html#ch3/elimination" data-section="elimination" data-short="消元法"><span class="home-section-num">§1</span>消元法</a></li>
+              <li><a href="./learn.html#ch3/n-vector-space" data-section="n-vector-space" data-short="n维向量空间"><span class="home-section-num">§2</span>n维向量空间</a></li>
+              <li><a href="./learn.html#ch3/linear-dependence" data-section="linear-dependence" data-short="线性相关性"><span class="home-section-num">§3</span>线性相关性</a></li>
+              <li><a href="./learn.html#ch3/matrix-rank" data-section="matrix-rank" data-short="矩阵的秩"><span class="home-section-num">§4</span>矩阵的秩</a></li>
+              <li><a href="./learn.html#ch3/solvability" data-section="solvability" data-short="有解判别"><span class="home-section-num">§5</span>线性方程组有解判别定理</a></li>
+              <li><a href="./learn.html#ch3/solution-structure" data-section="solution-structure" data-short="解的结构"><span class="home-section-num">§6</span>线性方程组解的结构</a></li>
+              <li><a href="./learn.html#ch3/binary-higher-degree" data-section="binary-higher-degree" data-short="二元高次"><span class="home-section-num">＊§7</span>二元高次方程组</a></li>
+            </ol>
+          </li>
+          <li class="home-chapter" data-chapter="ch4">
+            <span class="home-chapter-num" aria-hidden="true">04</span>
+            <h3 class="home-chapter-title"><a href="./learn.html#ch4"><span class="home-sr">第四章 </span>矩阵</a></h3>
+            <span class="home-chapter-count">7 节</span>
+            <ol class="home-sections">
+              <li><a href="./learn.html#ch4/matrix-language" data-section="matrix-language" data-short="矩阵概念背景"><span class="home-section-num">§1</span>矩阵概念的一些背景</a></li>
+              <li><a href="./learn.html#ch4/matrix-operations" data-section="matrix-operations" data-short="矩阵的运算"><span class="home-section-num">§2</span>矩阵的运算</a></li>
+              <li><a href="./learn.html#ch4/matrix-product-determinant-rank" data-section="matrix-product-determinant-rank" data-short="乘积的行列式与秩"><span class="home-section-num">§3</span>矩阵乘积的行列式与秩</a></li>
+              <li><a href="./learn.html#ch4/matrix-inverse" data-section="matrix-inverse" data-short="矩阵的逆"><span class="home-section-num">§4</span>矩阵的逆</a></li>
+              <li><a href="./learn.html#ch4/block-matrices" data-section="block-matrices" data-short="矩阵的分块"><span class="home-section-num">§5</span>矩阵的分块</a></li>
+              <li><a href="./learn.html#ch4/elementary-matrices" data-section="elementary-matrices" data-short="初等矩阵"><span class="home-section-num">§6</span>初等矩阵</a></li>
+              <li><a href="./learn.html#ch4/block-elementary-applications" data-section="block-elementary-applications" data-short="分块初等变换与应用"><span class="home-section-num">§7</span>分块乘法的初等变换及应用举例</a></li>
+            </ol>
+          </li>
+          <li class="home-chapter" data-chapter="ch5">
+            <span class="home-chapter-num" aria-hidden="true">05</span>
+            <h3 class="home-chapter-title"><a href="./learn.html#ch5"><span class="home-sr">第五章 </span>二次型</a></h3>
+            <span class="home-chapter-count">4 节</span>
+            <ol class="home-sections">
+              <li><a href="./learn.html#ch5/quadratic-matrix" data-section="quadratic-matrix" data-short="矩阵表示"><span class="home-section-num">§1</span>二次型及其矩阵表示</a></li>
+              <li><a href="./learn.html#ch5/quadratic-standard-form" data-section="quadratic-standard-form" data-short="标准形"><span class="home-section-num">§2</span>标准形</a></li>
+              <li><a href="./learn.html#ch5/quadratic-uniqueness" data-section="quadratic-uniqueness" data-short="唯一性"><span class="home-section-num">§3</span>唯一性</a></li>
+              <li><a href="./learn.html#ch5/positive-definite" data-section="positive-definite" data-short="正定二次型"><span class="home-section-num">§4</span>正定二次型</a></li>
+            </ol>
+          </li>
+          <li class="home-chapter" data-chapter="ch6">
+            <span class="home-chapter-num" aria-hidden="true">06</span>
+            <h3 class="home-chapter-title"><a href="./learn.html#ch6"><span class="home-sr">第六章 </span>线性空间</a></h3>
+            <span class="home-chapter-count">8 节</span>
+            <ol class="home-sections">
+              <li><a href="./learn.html#ch6/sets-maps" data-section="sets-maps" data-short="集合·映射"><span class="home-section-num">§1</span>集合·映射</a></li>
+              <li><a href="./learn.html#ch6/vector-space-definition" data-section="vector-space-definition" data-short="线性空间定义"><span class="home-section-num">§2</span>线性空间的定义与简单性质</a></li>
+              <li><a href="./learn.html#ch6/basis-coordinates" data-section="basis-coordinates" data-short="维数·基与坐标"><span class="home-section-num">§3</span>维数·基与坐标</a></li>
+              <li><a href="./learn.html#ch6/change-of-basis" data-section="change-of-basis" data-short="基变换与坐标变换"><span class="home-section-num">§4</span>基变换与坐标变换</a></li>
+              <li><a href="./learn.html#ch6/subspaces" data-section="subspaces" data-short="线性子空间"><span class="home-section-num">§5</span>线性子空间</a></li>
+              <li><a href="./learn.html#ch6/intersection-sum" data-section="intersection-sum" data-short="交与和"><span class="home-section-num">§6</span>子空间的交与和</a></li>
+              <li><a href="./learn.html#ch6/direct-sum" data-section="direct-sum" data-short="直和"><span class="home-section-num">§7</span>子空间的直和</a></li>
+              <li><a href="./learn.html#ch6/isomorphism" data-section="isomorphism" data-short="同构"><span class="home-section-num">§8</span>线性空间的同构</a></li>
+            </ol>
+          </li>
+          <li class="home-chapter" data-chapter="ch7">
+            <span class="home-chapter-num" aria-hidden="true">07</span>
+            <h3 class="home-chapter-title"><a href="./learn.html#ch7"><span class="home-sr">第七章 </span>线性变换</a></h3>
+            <span class="home-chapter-count">9 节</span>
+            <ol class="home-sections">
+              <li><a href="./learn.html#ch7/linear-map-definition" data-section="linear-map-definition" data-short="线性变换的定义"><span class="home-section-num">§1</span>线性变换的定义</a></li>
+              <li><a href="./learn.html#ch7/linear-map-operations" data-section="linear-map-operations" data-short="线性变换的运算"><span class="home-section-num">§2</span>线性变换的运算</a></li>
+              <li><a href="./learn.html#ch7/matrix-of-linear-map" data-section="matrix-of-linear-map" data-short="线性变换的矩阵"><span class="home-section-num">§3</span>线性变换的矩阵</a></li>
+              <li><a href="./learn.html#ch7/eigenvalues-eigenvectors" data-section="eigenvalues-eigenvectors" data-short="特征值与特征向量"><span class="home-section-num">§4</span>特征值与特征向量</a></li>
+              <li><a href="./learn.html#ch7/diagonal-matrices" data-section="diagonal-matrices" data-short="对角矩阵与对角化"><span class="home-section-num">§5</span>对角矩阵</a></li>
+              <li><a href="./learn.html#ch7/image-and-kernel" data-section="image-and-kernel" data-short="值域与核"><span class="home-section-num">§6</span>线性变换的值域与核</a></li>
+              <li><a href="./learn.html#ch7/invariant-subspaces" data-section="invariant-subspaces" data-short="不变子空间"><span class="home-section-num">§7</span>不变子空间</a></li>
+              <li><a href="./learn.html#ch7/jordan-form-introduction" data-section="jordan-form-introduction" data-short="Jordan 标准形介绍"><span class="home-section-num">§8</span>若尔当（Jordan）标准形介绍</a></li>
+              <li><a href="./learn.html#ch7/minimal-polynomial" data-section="minimal-polynomial" data-short="最小多项式"><span class="home-section-num">§9</span>最小多项式</a></li>
+            </ol>
+          </li>
+          <li class="home-chapter" data-chapter="ch8">
+            <span class="home-chapter-num" aria-hidden="true">08</span>
+            <h3 class="home-chapter-title"><a href="./learn.html#ch8"><span class="home-sr">第八章 </span>λ-矩阵</a></h3>
+            <span class="home-chapter-count">7 节</span>
+            <ol class="home-sections">
+              <li><a href="./learn.html#ch8/lambda-matrix" data-section="lambda-matrix" data-short="λ-矩阵"><span class="home-section-num">§1</span>λ-矩阵</a></li>
+              <li><a href="./learn.html#ch8/smith-form" data-section="smith-form" data-short="λ-矩阵标准形"><span class="home-section-num">§2</span>λ-矩阵在初等变换下的标准形</a></li>
+              <li><a href="./learn.html#ch8/invariant-factors" data-section="invariant-factors" data-short="不变因子"><span class="home-section-num">§3</span>不变因子</a></li>
+              <li><a href="./learn.html#ch8/similarity-criterion" data-section="similarity-criterion" data-short="矩阵相似的条件"><span class="home-section-num">§4</span>矩阵相似的条件</a></li>
+              <li><a href="./learn.html#ch8/elementary-divisors" data-section="elementary-divisors" data-short="初等因子"><span class="home-section-num">§5</span>初等因子</a></li>
+              <li><a href="./learn.html#ch8/jordan-derivation" data-section="jordan-derivation" data-short="若尔当标准形推导"><span class="home-section-num">§6</span>若尔当标准形的理论推导</a></li>
+              <li><a href="./learn.html#ch8/rational-canonical-form" data-section="rational-canonical-form" data-short="有理标准形"><span class="home-section-num">§7</span>矩阵的有理标准形</a></li>
+            </ol>
+          </li>
+          <li class="home-chapter" data-chapter="ch9">
+            <span class="home-chapter-num" aria-hidden="true">09</span>
+            <h3 class="home-chapter-title"><a href="./learn.html#ch9"><span class="home-sr">第九章 </span>欧几里得空间</a></h3>
+            <span class="home-chapter-count">8 节</span>
+            <ol class="home-sections">
+              <li><a href="./learn.html#ch9/inner-product-geometry" data-section="inner-product-geometry" data-short="定义与基本性质"><span class="home-section-num">§1</span>定义与基本性质</a></li>
+              <li><a href="./learn.html#ch9/orthonormal-bases" data-section="orthonormal-bases" data-short="标准正交基"><span class="home-section-num">§2</span>标准正交基</a></li>
+              <li><a href="./learn.html#ch9/euclidean-isomorphism" data-section="euclidean-isomorphism" data-short="同构"><span class="home-section-num">§3</span>同构</a></li>
+              <li><a href="./learn.html#ch9/orthogonal-transformations" data-section="orthogonal-transformations" data-short="正交变换"><span class="home-section-num">§4</span>正交变换</a></li>
+              <li><a href="./learn.html#ch9/orthogonal-subspaces" data-section="orthogonal-subspaces" data-short="子空间"><span class="home-section-num">§5</span>子空间与正交投影</a></li>
+              <li><a href="./learn.html#ch9/symmetric-canonical-form" data-section="symmetric-canonical-form" data-short="实对称矩阵的标准形"><span class="home-section-num">§6</span>实对称矩阵的标准形</a></li>
+              <li><a href="./learn.html#ch9/least-squares-distance" data-section="least-squares-distance" data-short="距离与最小二乘"><span class="home-section-num">§7</span>距离与最小二乘</a></li>
+              <li><a href="./learn.html#ch9/unitary-spaces" data-section="unitary-spaces" data-short="酉空间介绍"><span class="home-section-num">＊§8</span>酉空间介绍</a></li>
+            </ol>
+          </li>
+          <li class="home-chapter" data-chapter="ch10">
+            <span class="home-chapter-num" aria-hidden="true">10</span>
+            <h3 class="home-chapter-title"><a href="./learn.html#ch10"><span class="home-sr">第十章 </span>双线性函数与辛空间</a></h3>
+            <span class="home-chapter-count">4 节</span>
+            <ol class="home-sections">
+              <li><a href="./learn.html#ch10/linear-functional" data-section="linear-functional" data-short="线性函数"><span class="home-section-num">§1</span>线性函数</a></li>
+              <li><a href="./learn.html#ch10/dual-space" data-section="dual-space" data-short="对偶空间"><span class="home-section-num">§2</span>对偶空间</a></li>
+              <li><a href="./learn.html#ch10/bilinear-form" data-section="bilinear-form" data-short="双线性函数"><span class="home-section-num">§3</span>双线性函数</a></li>
+              <li><a href="./learn.html#ch10/symplectic-space" data-section="symplectic-space" data-short="辛空间"><span class="home-section-num">＊§4</span>辛空间</a></li>
+            </ol>
+          </li>
+
+        </ol>
+      </div>
+    </main>
+
+    <section class="home-end">
+      <p class="home-end-line">第一节从数域讲起。</p>
+      <a class="home-end-cta" href="./learn.html#ch1/number-fields">
+        <span>从第一章开始</span>
+        <svg viewBox="0 0 20 20" aria-hidden="true"><path d="M4 10h11M11 5.5 15.5 10 11 14.5" /></svg>
+      </a>
+    </section>
+
+    <footer class="home-foot">
+      <div class="home-inner">
+        <span class="home-foot-name">高等代数可视化</span>
+        <span class="home-foot-links"><a href="./learn.html#guide">导学</a><a href="#top">回到顶部</a></span>
+      </div>
+    </footer>
+  </body>
+</html>

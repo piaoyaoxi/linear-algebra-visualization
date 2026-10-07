@@ -114,7 +114,6 @@ a:focus-visible { outline: 2px solid currentColor; outline-offset: 4px; border-r
 .home-hero-mosaic { position: absolute; inset: 0; display: block; width: 100%; height: 100%; }
 /* 平行六面体在原图横向 26%–55%，比 2:1 窄的屏幕往左取景，让它避开左侧问题卡 */
 .home-hero-img { object-fit: cover; object-position: 12% 50%; }
-.home-intro .home-hero-img { opacity: 0; animation: homeImageFallback 1ms linear 3.5s forwards; }
 .home-hero-mosaic { opacity: 0; transition: opacity 420ms ease; pointer-events: none; }
 .home-hero-mosaic.is-active { opacity: 1; transition: none; }
 .home-hero::before,
@@ -300,28 +299,28 @@ a:focus-visible { outline: 2px solid currentColor; outline-offset: 4px; border-r
 .home-scroll-line { position: relative; display: block; width: 1px; height: 40px; overflow: hidden; background: color-mix(in srgb, var(--ink) 16%, transparent); }
 .home-scroll-line::after { content: ""; position: absolute; top: -40%; left: 0; width: 100%; height: 40%; background: currentColor; animation: homeScrollDrop 2.4s cubic-bezier(0.6, 0, 0.2, 1) infinite; }
 
-@keyframes homeImageFallback { to { opacity: 1; } }
 @keyframes homeDrift { to { scale: 1.04; } }
-@keyframes homeBlurIn { from { opacity: 0; filter: blur(14px); } }
 
-/* 第一次进入：画面洗清楚 → 问题卡逐张出现 → 标题 → 入口 */
-.home-entering .home-bar { animation: homeFade 900ms ease 900ms both; }
-.home-entering .home-cards { animation: none; }
-.home-entering .home-headline { animation: none; }
-.home-entering .home-headline-fixed { animation: homeRise 900ms var(--ease-out) 1000ms both; }
-.home-entering .home-word { animation: homeBlurIn 760ms ease 1300ms both; }
-.home-entering .home-cta { animation-delay: 1650ms; }
-.home-entering .home-resume { animation-delay: 1800ms; }
-.home-entering .home-scroll { animation-delay: 2100ms; }
-/* 开场结束后撤掉这些一次性动画；直接移除 .home-entering 会让默认的入场动画重播一遍 */
-.home-entered .home-bar,
-.home-entered .home-cards,
-.home-entered .home-headline,
-.home-entered .home-headline-fixed,
-.home-entered .home-word,
-.home-entered .home-cta,
-.home-entered .home-resume,
-.home-entered .home-scroll { animation: none; }
+/* 第一次进入（时长取自 Perplexity 实测）：标题 2s 慢慢淡入，问题卡由脚本错开淡入，入口稍后出现 */
+.home-entering .home-bar,
+.home-entering .home-cards,
+.home-entering .home-headline,
+.home-entering .home-headline-fixed,
+.home-entering .home-word,
+.home-entering .home-cta,
+.home-entering .home-resume,
+.home-entering .home-scroll { animation: none; }
+.home-entering .home-headline { opacity: 0; transition: opacity 2000ms cubic-bezier(0.45, 0, 0.55, 1); }
+.home-entering .home-bar,
+.home-entering .home-start,
+.home-entering .home-scroll { opacity: 0; transition: opacity 1200ms ease; }
+.home-entering .home-start { transition-delay: 900ms; }
+.home-entering .home-scroll { transition-delay: 1400ms; }
+.home-go .home-headline,
+.home-go .home-bar,
+.home-go .home-start,
+.home-go .home-scroll { opacity: 1; }
+.home-card.is-intro { transition: opacity 1370ms cubic-bezier(0.16, 1, 0.3, 1); }
 @keyframes homeFade { from { opacity: 0; } }
 @keyframes homeRise {
   from { opacity: 0; translate: 0 14px; }

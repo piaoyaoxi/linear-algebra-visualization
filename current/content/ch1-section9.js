@@ -43,7 +43,7 @@ defineChapter1Section("rational-polynomials", {
         correct: true,
         text: `(1) 取 ${texInline("p=5")} 用艾森斯坦判别法；(2) 候选为 ${texInline("\\pm1,\\pm\\frac12")}，都不是根，它是三次的，所以在 ${texInline("\\mathbb{Q}")} 上不可约。`,
       },
-      { text: "(1) 没有整数根，所以不可约；(2) 候选只有 ±1。" },
+      { text: `(1) 没有整数根，所以不可约；(2) 候选只有 ${texInline("\\pm1")}。` },
       { text: `(1) 应取 ${texInline("p=2")}；(2) 候选为 ${texInline("\\pm2")}。` },
       { text: "(2) 有理根候选只由常数项决定，与首项系数无关。" },
     ],

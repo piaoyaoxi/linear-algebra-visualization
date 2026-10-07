@@ -51,10 +51,10 @@
       "把“倍数”升级成矩阵块",
       "普通消元里可以用一行减去另一行的若干倍；分块消元里，可以用一整块行减去另一块行左乘合适矩阵后的结果。唯一新增的要求是：这个矩阵块的尺寸必须匹配。",
       display("R_2\\leftarrow R_2-CR_1"),
-      [metaRow("操作合法性", "CR₁ 必须和 R₂ 有相同的行列结构，才能相减。"), metaRow("怎样构造 P", "对分块单位矩阵执行同一个块行操作。"), metaRow("为什么还是左乘", "左侧矩阵的块行组合右侧矩阵的块行，所以改变的是块行。")].join(""),
-      [definition("块初等矩阵", `对 ${inline("\\begin{pmatrix}E&0\\\\0&E\\end{pmatrix}")} 做块行操作 ${inline("R_2\\leftarrow R_2-CR_1")}，得到 ${inline("\\begin{pmatrix}E&0\\\\-C&E\\end{pmatrix}")}。`), definition("消去左下块", "当左下块恰好是 C 时，左乘这个 P 会把它变为 0；矩阵因此变成块上三角形式。"), definition("应用逻辑", "块上三角系统可以先解第一块，再代回第二块；这就是“块回代”。")].join(""),
+      [metaRow("操作合法性", `${inline("CR_1")} 必须和 ${inline("R_2")} 有相同的行列结构，才能相减。`), metaRow(`怎样构造 ${inline("P")}`, "对分块单位矩阵执行同一个块行操作。"), metaRow("为什么还是左乘", "左侧矩阵的块行组合右侧矩阵的块行，所以改变的是块行。")].join(""),
+      [definition("块初等矩阵", `对 ${inline("\\begin{pmatrix}E&0\\\\0&E\\end{pmatrix}")} 做块行操作 ${inline("R_2\\leftarrow R_2-CR_1")}，得到 ${inline("\\begin{pmatrix}E&0\\\\-C&E\\end{pmatrix}")}。`), definition("消去左下块", `当左下块恰好是 ${inline("C")} 时，左乘这个 ${inline("P")} 会把它变为 0；矩阵因此变成块上三角形式。`), definition("应用逻辑", "块上三角系统可以先解第一块，再代回第二块；这就是“块回代”。")].join(""),
       "与初等矩阵的关系",
-      "初等矩阵中的数字倍数换成了矩阵 C；同一操作先作用于分块单位矩阵，再通过左乘作用于原方程组。",
+      `初等矩阵中的数字倍数换成了矩阵 ${inline("C")}；同一操作先作用于分块单位矩阵，再通过左乘作用于原方程组。`,
     );
   }
 
@@ -107,11 +107,11 @@
     const state = { pick: null, applied: null };
     section.innerHTML = `<h2>交互实验</h2>
       <section class="ch3l-lab bk7-lab">
-        <header class="ch3l-head"><h3>用一次块行变换消去 C</h3><p>方程组 ${inline("x=f")}，${inline("Cx+y=g")} 中 x、y 各有两个分量。选一个 2×2 块 X，把第一块行左乘 X 后加到第二块行，也就是左乘 ${inline("P=\\begin{pmatrix}E&0\\\\X&E\\end{pmatrix}")}。</p></header>
+        <header class="ch3l-head"><h3>用一次块行变换消去 ${inline("C")}</h3><p>方程组 ${inline("x=f")}，${inline("Cx+y=g")} 中 ${inline("x")}、${inline("y")} 各有两个分量。选一个 ${inline("2\\times2")} 块 ${inline("X")}，把第一块行左乘 ${inline("X")} 后加到第二块行，也就是左乘 ${inline("P=\\begin{pmatrix}E&0\\\\X&E\\end{pmatrix}")}。</p></header>
         <div data-bk7-gate></div>
         <div class="blk-stage bk7-stage" data-bk7-stage></div>
-        <div class="bk7-tools"><b class="bk7-tools-label">选 X</b><div class="ch3l-toolbar">${Object.entries(MULTIPLIERS).map(([k, m]) => `<button type="button" class="ch3l-chip" data-x="${k}">${inline(m.label)}</button>`).join("")}</div></div>
-        <div class="ch3l-actions bk7-actions"><button type="button" class="ch3l-btn is-primary" data-bk7-apply>左乘 P</button><button type="button" class="ch3l-btn" data-bk7-reset>重来</button></div>
+        <div class="bk7-tools"><b class="bk7-tools-label">选 ${inline("X")}</b><div class="ch3l-toolbar">${Object.entries(MULTIPLIERS).map(([k, m]) => `<button type="button" class="ch3l-chip" data-x="${k}">${inline(m.label)}</button>`).join("")}</div></div>
+        <div class="ch3l-actions bk7-actions"><button type="button" class="ch3l-btn is-primary" data-bk7-apply>左乘 ${inline("P")}</button><button type="button" class="ch3l-btn" data-bk7-reset>重来</button></div>
         <figure class="bk7-couple" data-bk7-couple aria-label="x 对 y 的耦合"></figure>
         <div class="ch3l-card bk7-readout" data-bk7-readout></div>
       </section>`;
@@ -156,7 +156,7 @@
       const before = `<div class="blk-mat"><span>${inline("(M\\mid b)")}</span>${augGrid(startAug, roles(undefined))}</div>`;
       if (!state.applied) {
         stage.innerHTML = `<div class="blk-mat"><span>${inline(m ? `P,\\ X=${m.label}` : "P")}</span>${eGrid(m ? m.X : null)}</div><b class="blk-op">×</b>${before}`;
-        readout.innerHTML = `<div class="bk7-head"><b>左下块</b><strong>${inline("C")}</strong></div><p>第二个方程 ${inline("Cx+y=g")} 同时含有 x 和 y，两组未知量耦合在一起。选好 X 后按“左乘 P”。</p>`;
+        readout.innerHTML = `<div class="bk7-head"><b>左下块</b><strong>${inline("C")}</strong></div><p>第二个方程 ${inline("Cx+y=g")} 同时含有 ${inline("x")} 和 ${inline("y")}，两组未知量耦合在一起。选好 ${inline("X")} 后按“左乘 ${inline("P")}”。</p>`;
         paintCouple(C7, "C");
         return;
       }
@@ -168,15 +168,15 @@
       paintCouple(lower, zero ? "C+X = 0" : state.applied === "C" ? "C+X = 2C" : "C+X ≠ 0");
       stage.innerHTML = `<div class="blk-mat"><span>${inline(`P,\\ X=${a.label}`)}</span>${eGrid(a.X)}</div><b class="blk-op">×</b>${before}<b class="blk-op">=</b><div class="blk-mat"><span>${inline("P(M\\mid b)")}</span>${augGrid(after, roles(zero), startAug)}</div>`;
       readout.innerHTML = zero
-        ? `<div class="bk7-head"><b>左下块</b><strong class="ch3l-ok">${inline("C+X=0")}</strong></div><p>第二块方程不再含 x，两组未知量分开了：</p><div class="blk-math">${display(`x=f=${texV2(F7)},\\qquad y=g-Cf=${texV2(rhs)}`)}</div>`
-        : `<div class="bk7-head"><b>左下块</b><strong class="ch3l-bad">${inline(`C+X=${texM2(lower)}`)}</strong></div><p>左下块没有变成 0，第二块方程仍含 x：${inline(`${texM2(lower)}x+y=${texV2(rhs)}`)}。换一个 X 再试。</p>`;
+        ? `<div class="bk7-head"><b>左下块</b><strong class="ch3l-ok">${inline("C+X=0")}</strong></div><p>第二块方程不再含 ${inline("x")}，两组未知量分开了：</p><div class="blk-math">${display(`x=f=${texV2(F7)},\\qquad y=g-Cf=${texV2(rhs)}`)}</div>`
+        : `<div class="bk7-head"><b>左下块</b><strong class="ch3l-bad">${inline(`C+X=${texM2(lower)}`)}</strong></div><p>左下块没有变成 0，第二块方程仍含 ${inline("x")}：${inline(`${texM2(lower)}x+y=${texV2(rhs)}`)}。换一个 ${inline("X")} 再试。</p>`;
     }
 
     const gate = window.LAPredictGate?.mount(section.querySelector("[data-bk7-gate]"), {
       root: lab,
       manual: true,
       key: "visuals/ch4/block-presentation.js#s7",
-      question: `要让左下块 C 变成 0，第二块行应加上第一块行左乘哪个块 X？`,
+      question: `要让左下块 ${inline("C")} 变成 0，第二块行应加上第一块行左乘哪个块 ${inline("X")}？`,
       options: [
         [inline("X=-C"), true, ""],
         [inline("X=C"), false, "左下块变成 C+C=2C，耦合反而加倍。"],

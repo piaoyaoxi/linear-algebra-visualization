@@ -40,7 +40,7 @@
         ${module(
           "03",
           "标准形把定义变成符号检查",
-          "正惯性指数等于 n，才是正定",
+          `正惯性指数等于 ${inline("n")}，才是正定`,
           `<div class="ch5-equation">${display("f=d_1y_1^2+\\cdots+d_ny_n^2")}</div>
           <ul class="ch5-check-list"><li>全部 ${inline("d_i>0")}：正定。</li><li>全部 ${inline("d_i\\ge0")} 且至少一个为 0：半正定。</li><li>既有正系数又有负系数：不定。</li></ul>`,
         )}
@@ -49,7 +49,7 @@
           "04",
           "顺序主子式判别",
           "正定只需检查左上角逐级扩大的子矩阵",
-          `<div class="ch5s4-minor-chain"><div>${inline("A_1")}</div><span>⊂</span><div>${inline("A_2")}</div><span>⊂</span><div>⋯</div><span>⊂</span><div>${inline("A_n=A")}</div></div>
+          `<div class="ch5s4-minor-chain"><div>${inline("A_1")}</div><span>${inline("\\subset")}</span><div>${inline("A_2")}</div><span>${inline("\\subset")}</span><div>${inline("\\cdots")}</div><span>${inline("\\subset")}</span><div>${inline("A_n=A")}</div></div>
           <div class="ch5-equation">${display("A>0\\quad\\Longleftrightarrow\\quad \\Delta_1>0,\\ldots,\\Delta_n>0")}</div>
           <div class="ch5-next-note"><span>边界</span><p>半正定不能把“全正”改成“顺序主子式全非负”：${inline("\\operatorname{diag}(0,-1)")} 的 ${inline("\\Delta_1=\\Delta_2=0")}，但 ${inline("q(0,1)=-1")}。一般需要检查所有主子式非负。二阶矩阵要同时检查 ${inline("a\\ge0")}、${inline("c\\ge0")} 和 ${inline("ac-b^2\\ge0")}。</p></div>`,
         )}
@@ -57,8 +57,8 @@
         ${module(
           "05",
           "长度平方是正定结构的另一种写法",
-          "正定矩阵与 E 合同",
-          `<div class="ch5-pair"><div class="ch5-card">${display("x^T(B^TB)x=\\|Bx\\|^2\\ge0")}<p>所以 ${inline("B^TB")} 总是半正定；B 列满秩时正定。</p></div><div class="ch5-card">${display("A=C^TC")}<p>A 正定时与 E 合同，故有可逆矩阵 C 使 ${inline("A=C^TC")}；此时 ${inline("x^TAx=\\|Cx\\|^2>0")}（${inline("x\\ne0")}）。</p></div></div>`,
+          `正定矩阵与 ${inline("E")} 合同`,
+          `<div class="ch5-pair"><div class="ch5-card">${display("x^T(B^TB)x=\\|Bx\\|^2\\ge0")}<p>所以 ${inline("B^TB")} 总是半正定；${inline("B")} 列满秩时正定。</p></div><div class="ch5-card">${display("A=C^TC")}<p>${inline("A")} 正定时与 ${inline("E")} 合同，故有可逆矩阵 ${inline("C")} 使 ${inline("A=C^TC")}；此时 ${inline("x^TAx=\\|Cx\\|^2>0")}（${inline("x\\ne0")}）。</p></div></div>`,
         )}
       </div>`;
   }

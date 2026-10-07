@@ -51,12 +51,12 @@
 
   /* Elementary operations on 2x2. */
   function elementary(op) {
-    if (op.type === "swap") return { E: [[0, 1], [1, 0]], label: "R_1\\leftrightarrow R_2", inv: "R_1\\leftrightarrow R_2", geo: "关于直线 y=x 的反射", det: -1 };
+    if (op.type === "swap") return { E: [[0, 1], [1, 0]], label: "R_1\\leftrightarrow R_2", inv: "R_1\\leftrightarrow R_2", geo: `关于直线 ${tex("y=x")} 的反射`, det: -1 };
     if (op.type === "scale") {
       const E = op.row === 0 ? [[op.k, 0], [0, 1]] : [[1, 0], [0, op.k]];
       const axis = op.row === 0 ? "x" : "y";
       const times = tex(fmt(Math.abs(op.k)));
-      return { E, label: `R_${op.row + 1}\\leftarrow ${fmt(op.k)}R_${op.row + 1}`, inv: `R_${op.row + 1}\\leftarrow ${fmt(1 / op.k)}R_${op.row + 1}`, geo: Math.abs(op.k) === 1 ? (op.k < 0 ? `沿 ${axis} 方向翻转，长度不变` : "每个点都不动") : op.k < 0 ? `沿 ${axis} 方向伸缩 ${times} 倍并翻转` : `沿 ${axis} 方向伸缩 ${times} 倍`, det: op.k };
+      return { E, label: `R_${op.row + 1}\\leftarrow ${fmt(op.k)}R_${op.row + 1}`, inv: `R_${op.row + 1}\\leftarrow ${fmt(1 / op.k)}R_${op.row + 1}`, geo: Math.abs(op.k) === 1 ? (op.k < 0 ? `沿 ${tex(axis)} 方向翻转，长度不变` : "每个点都不动") : op.k < 0 ? `沿 ${tex(axis)} 方向伸缩 ${times} 倍并翻转` : `沿 ${tex(axis)} 方向伸缩 ${times} 倍`, det: op.k };
     }
     // add: R_i <- R_i + c R_j
     const E = [[1, 0], [0, 1]];
@@ -64,7 +64,7 @@
     const moving = op.row === 0 ? "x" : "y";
     const by = op.row === 0 ? "y" : "x";
     const sign = op.c < 0 ? "-" : "+";
-    return { E, label: `R_${op.row + 1}\\leftarrow R_${op.row + 1}${sign}${Math.abs(op.c) === 1 ? "" : fmt(Math.abs(op.c))}R_${2 - op.row}`, inv: `R_${op.row + 1}\\leftarrow R_${op.row + 1}${op.c < 0 ? "+" : "-"}${Math.abs(op.c) === 1 ? "" : fmt(Math.abs(op.c))}R_${2 - op.row}`, geo: `剪切：每个点的 ${moving} 坐标加上 ${tex(coef(op.c, by))}`, det: 1 };
+    return { E, label: `R_${op.row + 1}\\leftarrow R_${op.row + 1}${sign}${Math.abs(op.c) === 1 ? "" : fmt(Math.abs(op.c))}R_${2 - op.row}`, inv: `R_${op.row + 1}\\leftarrow R_${op.row + 1}${op.c < 0 ? "+" : "-"}${Math.abs(op.c) === 1 ? "" : fmt(Math.abs(op.c))}R_${2 - op.row}`, geo: `剪切：每个点的 ${tex(moving)} 坐标加上 ${tex(coef(op.c, by))}`, det: 1 };
   }
 
   /*
@@ -235,10 +235,10 @@
 
   /* A = [[2,1],[1,1]] = E₄E₃E₂E₁: E₁ acts first, every later step multiplies on the left. */
   const BUILD = [
-    { op: { type: "scale", row: 1, k: 0.5 }, why: "先把 y 方向压成一半" },
-    { op: { type: "scale", row: 0, k: 2 }, why: "再把 x 方向拉长 2 倍" },
-    { op: { type: "add", row: 0, c: 2 }, why: "水平剪切：x 坐标加上 2y" },
-    { op: { type: "add", row: 1, c: 0.5 }, why: "竖直剪切：y 坐标加上 x/2" },
+    { op: { type: "scale", row: 1, k: 0.5 }, why: `先把 ${tex("y")} 方向压成一半` },
+    { op: { type: "scale", row: 0, k: 2 }, why: `再把 ${tex("x")} 方向拉长 2 倍` },
+    { op: { type: "add", row: 0, c: 2 }, why: `水平剪切：${tex("x")} 坐标加上 ${tex("2y")}` },
+    { op: { type: "add", row: 1, c: 0.5 }, why: `竖直剪切：${tex("y")} 坐标加上 ${tex("x/2")}` },
   ];
   const TARGET = [[2, 1], [1, 1]];
   // the region x ∈ [−0.6, 4], y ∈ [−0.5, 2.5] holds every image of the chain and its name
@@ -353,9 +353,9 @@
       const e = elementary(state.op);
       // waiting at E: the effect of P stays hidden until it is applied
       const effect = waiting()
-        ? `<div class="ch3l-actions"><button type="button" class="ch3l-btn is-primary" data-apply data-la-free${picked ? "" : ' disabled title="先在上方猜一猜"'}>作用 P</button></div>`
-        : `<p>${e.geo}</p><p>${tex(`\\det P=${fmt(e.det)}`)}：${Math.abs(e.det) === 1 ? "单位正方形的面积不变" : `单位正方形的面积变为原来的 ${tex(fmt(Math.abs(e.det)))} 倍`}${e.det < 0 ? "，定向翻转" : ""}。</p><p class="ch3l-muted">逆变换 ${tex(e.inv)}，所以 P 可逆。</p>`;
-      card.innerHTML = `<h4>对 E 做 ${tex(e.label)}</h4>${texD(`E=${texM(I)}\\ \\longrightarrow\\ P=${texM(e.E)}`)}${effect}`;
+        ? `<div class="ch3l-actions"><button type="button" class="ch3l-btn is-primary" data-apply data-la-free${picked ? "" : ' disabled title="先在上方猜一猜"'}>作用 ${tex("P")}</button></div>`
+        : `<p>${e.geo}</p><p>${tex(`\\det P=${fmt(e.det)}`)}：${Math.abs(e.det) === 1 ? "单位正方形的面积不变" : `单位正方形的面积变为原来的 ${tex(fmt(Math.abs(e.det)))} 倍`}${e.det < 0 ? "，定向翻转" : ""}。</p><p class="ch3l-muted">逆变换 ${tex(e.inv)}，所以 ${tex("P")} 可逆。</p>`;
+      card.innerHTML = `<h4>对 ${tex("E")} 做 ${tex(e.label)}</h4>${texD(`E=${texM(I)}\\ \\longrightarrow\\ P=${texM(e.E)}`)}${effect}`;
       card.querySelector("[data-apply]")?.addEventListener("click", () => {
         state.applied = true;
         singleInfo();
@@ -378,10 +378,10 @@
         return `<li class="${cls}">${tex(`P_${i + 1}=${texM(e.E)}`)}<small class="el6-why">${s.why}</small></li>`;
       }).join("");
       const note = k === BUILD.length
-        ? `网格到达 A：${tex("A=P_4P_3P_2P_1")}，A 是初等矩阵的乘积。`
+        ? `网格到达 ${tex("A")}：${tex("A=P_4P_3P_2P_1")}，${tex("A")} 是初等矩阵的乘积。`
         : k === 0
           ? `网格依次经过 ${tex("P_1")}、${tex("P_2")}、${tex("P_3")}、${tex("P_4")} 四步。`
-          : `再作用 ${BUILD.length - k} 步到达 A。`;
+          : `再作用 ${BUILD.length - k} 步到达 ${tex("A")}。`;
       // data-la-free: this button waits for the build prediction, which this lab tracks itself
       side.innerHTML = `<div class="ch3l-actions"><button type="button" class="ch3l-btn is-primary" data-next data-la-free${!picked || k >= BUILD.length ? " disabled" : ""}${picked ? "" : ' title="先在上方猜一猜"'}>作用下一步</button><button type="button" class="ch3l-btn" data-restart>重来</button></div>
         <div class="ch3l-card"><h4>目标 ${tex(`A=${texM(TARGET)}`)}</h4><ol class="el6-steps">${list}</ol></div>
@@ -426,16 +426,16 @@
     }
 
     const TASKS = {
-      single: "选一种行变换，先看它把单位矩阵变成哪个 P，再看 P 把整张网格变成什么样。淡色网格是原来的坐标网格。",
-      build: "可逆矩阵可以写成初等矩阵的乘积。逐步作用四个初等矩阵，看网格怎样一步步到达 A。虚线是前几步的像。",
+      single: `选一种行变换，先看它把单位矩阵变成哪个 ${tex("P")}，再看 ${tex("P")} 把整张网格变成什么样。淡色网格是原来的坐标网格。`,
+      build: `可逆矩阵可以写成初等矩阵的乘积。逐步作用四个初等矩阵，看网格怎样一步步到达 ${tex("A")}。虚线是前几步的像。`,
     };
     const modes = root.querySelector("[data-el-modes]");
-    const modeDefs = [["single", "一个初等矩阵"], ["build", "用初等矩阵拼出 A"]];
+    const modeDefs = [["single", "一个初等矩阵"], ["build", `用初等矩阵拼出 ${tex("A")}`]];
     modes.innerHTML = modeDefs.map(([k, l]) => `<button type="button" class="ch3l-chip${k === state.mode ? " is-active" : ""}" data-mode="${k}">${l}</button>`).join("");
     modes.querySelectorAll("[data-mode]").forEach((b) => b.addEventListener("click", () => {
       modes.querySelectorAll("[data-mode]").forEach((x) => x.classList.toggle("is-active", x === b));
       state.mode = b.dataset.mode;
-      task.textContent = TASKS[state.mode];
+      task.innerHTML = TASKS[state.mode];
       root.querySelector('[data-el-gate="single"]').hidden = state.mode !== "single";
       root.querySelector('[data-el-gate="build"]').hidden = state.mode !== "build";
       // a fresh start: no ghosts from an earlier build
@@ -448,7 +448,7 @@
       }
       update();
     }));
-    task.textContent = TASKS.single;
+    task.innerHTML = TASKS.single;
 
     // Prediction before the first exploration result is explained.
     const gate = root.querySelector('[data-el-gate="single"]');
@@ -471,7 +471,7 @@
       picked.classList.add(ok ? "is-right" : "is-wrong");
       gate.querySelector(".ch3l-predict").classList.add("is-done");
       fb.innerHTML = ok
-        ? "✓ 每个点的 y 坐标加上 2x，x 坐标不变：竖直方向的剪切。倍加矩阵的行列式为 1，所以面积不变，这正是第二章“倍加不改变行列式”的几何原因。"
+        ? `✓ 每个点的 ${tex("y")} 坐标加上 ${tex("2x")}，${tex("x")} 坐标不变：竖直方向的剪切。倍加矩阵的行列式为 1，所以面积不变，这正是第二章“倍加不改变行列式”的几何原因。`
         : `再看看图：${picked.dataset.why}`;
     };
     gate.querySelectorAll("[data-i]").forEach((b) => b.addEventListener("click", () => {
@@ -537,11 +537,11 @@
     if (!root) return;
     const block = (title, math, text) => `<article class="ch3l-theorem"><h3>${title}</h3>${math ? `<div class="ch3l-theorem-math">${texD(math)}</div>` : ""}<p>${text}</p></article>`;
     root.innerHTML = `<h2>定理概念</h2><div class="ch3l-formal">
-      ${block("对 E 做一次行变换，得到初等矩阵", "P(i,j),\\qquad P(i(k))\\ (k\\ne0),\\qquad P(i,j(k))", "三类初等矩阵分别来自交换 E 的两行、用非零数 k 乘 E 的一行、把 E 的第 j 行的 k 倍加到第 i 行。")}
-      ${block("左乘做行变换，右乘做列变换", "P\\,A=\\text{对 }A\\text{ 做同一行变换},\\qquad A\\,P=\\text{对 }A\\text{ 做对应的列变换}", `左乘时，P 的每一行组合 A 的各行，所以 P 记录的行规则原样作用到 A 上。三类初等矩阵都可逆，逆矩阵就是逆变换对应的初等矩阵；它们的行列式分别是 ${tex("-1")}、${tex("k")}、${tex("1")}。`)}
-      ${block("可逆矩阵 = 初等矩阵的乘积", "A\\ \\text{可逆}\\iff A=P_1P_2\\cdots P_s", "可逆矩阵可以经过初等行变换化成 E，把这些变换倒过来，就把 A 写成了初等矩阵的乘积。几何上，任何可逆线性变换都由若干次剪切、伸缩和反射复合而成。")}
+      ${block(`对 ${tex("E")} 做一次行变换，得到初等矩阵`, "P(i,j),\\qquad P(i(k))\\ (k\\ne0),\\qquad P(i,j(k))", `三类初等矩阵分别来自交换 ${tex("E")} 的两行、用非零数 ${tex("k")} 乘 ${tex("E")} 的一行、把 ${tex("E")} 的第 ${tex("j")} 行的 ${tex("k")} 倍加到第 ${tex("i")} 行。`)}
+      ${block("左乘做行变换，右乘做列变换", "P\\,A=\\text{对 }A\\text{ 做同一行变换},\\qquad A\\,P=\\text{对 }A\\text{ 做对应的列变换}", `左乘时，${tex("P")} 的每一行组合 ${tex("A")} 的各行，所以 ${tex("P")} 记录的行规则原样作用到 ${tex("A")} 上。三类初等矩阵都可逆，逆矩阵就是逆变换对应的初等矩阵；它们的行列式分别是 ${tex("-1")}、${tex("k")}、${tex("1")}。`)}
+      ${block("可逆矩阵 = 初等矩阵的乘积", "A\\ \\text{可逆}\\iff A=P_1P_2\\cdots P_s", `可逆矩阵可以经过初等行变换化成 ${tex("E")}，把这些变换倒过来，就把 ${tex("A")} 写成了初等矩阵的乘积。几何上，任何可逆线性变换都由若干次剪切、伸缩和反射复合而成。`)}
       <div class="ch3l-pitfalls"><h3>容易错在哪里</h3><ul>
-        <li>把 ${tex("R_2\\leftarrow R_2+2R_1")} 的 2 写到第 1 行第 2 列。对 E 做这次变换，改变的是第 2 行，2 应落在 (2,1) 位置。</li>
+        <li>把 ${tex("R_2\\leftarrow R_2+2R_1")} 的 2 写到第 1 行第 2 列。对 ${tex("E")} 做这次变换，改变的是第 2 行，2 应落在 ${tex("(2,1)")} 位置。</li>
         <li>把左乘和右乘弄反：行变换左乘，列变换右乘。</li>
         <li>以为“一行乘 0”也是初等变换。它不可逆，不对应初等矩阵。</li>
       </ul></div></div>`;

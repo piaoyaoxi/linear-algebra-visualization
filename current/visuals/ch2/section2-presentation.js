@@ -20,14 +20,14 @@
       root: root.querySelector(".ch2-lab"),
       manual: true,
       key: "visuals/ch2/section2-presentation.js#adjacent",
-      question: "从 3142 出发，每次交换一对相邻的逆序数，直到变成 1234。置换矩阵的 det P 一路怎样变？sgn(3142) 是多少？",
+      question: `从 ${tex("3142")} 出发，每次交换一对相邻的逆序数，直到变成 ${tex("1234")}。置换矩阵的 ${tex("\\det P")} 一路怎样变？${tex("\\operatorname{sgn}(3142)")} 是多少？`,
       options: [
-        [`每换一次翻一次号，sgn(3142)=${tex("(-1)^{\\tau}=(-1)^3=-1")}`, true, ""],
-        ["每换一次翻一次号，sgn(3142)=(−1)⁴，由排列长度决定", false, "翻号次数等于交换次数 τ，与长度 4 无关：τ 从 3 减到 0，翻了 3 次。"],
-        ["相邻交换不改变 det P，sgn(3142)=+1", false, "每一次相邻交换 τ 恰好减 1，det P 翻一次号。"],
-        ["翻号次数取决于先换哪一对，sgn 不确定", false, "无论先换哪一对相邻逆序数，τ 都恰好减 1，所以总共翻号 τ 次。"],
+        [`每换一次翻一次号，${tex("\\operatorname{sgn}(3142)=(-1)^{\\tau}=(-1)^3=-1")}`, true, ""],
+        [`每换一次翻一次号，${tex("\\operatorname{sgn}(3142)=(-1)^4")}，由排列长度决定`, false, "翻号次数等于交换次数 τ，与长度 4 无关：τ 从 3 减到 0，翻了 3 次。"],
+        [`相邻交换不改变 ${tex("\\det P")}，${tex("\\operatorname{sgn}(3142)=+1")}`, false, "每一次相邻交换 τ 恰好减 1，det P 翻一次号。"],
+        [`翻号次数取决于先换哪一对，${tex("\\operatorname{sgn}")} 不确定`, false, "无论先换哪一对相邻逆序数，τ 都恰好减 1，所以总共翻号 τ 次。"],
       ],
-      right: "✓ 每一次相邻交换只改变一对数的先后，τ 恰好减 1，det P 翻一次号。从 τ=3 到 τ=0 共 3 步，终点 det E=+1，所以 sgn(3142)=det P=(−1)³=−1。",
+      right: `✓ 每一次相邻交换只改变一对数的先后，${tex("\\tau")} 恰好减 1，${tex("\\det P")} 翻一次号。从 ${tex("\\tau=3")} 到 ${tex("\\tau=0")} 共 3 步，终点 ${tex("\\det E=+1")}，所以 ${tex("\\operatorname{sgn}(3142)=\\det P=(-1)^3=-1")}。`,
     });
 
     const tau = () => M().inversionPairs(permutation).length;
@@ -66,11 +66,11 @@
       const box = root.querySelector("[data-perm-matrix]");
       if (!box) return;
       box.innerHTML = `<table class="ch2-perm-matrix" aria-label="置换矩阵">${permutation.map((value, row) => `<tr class="${swappedRows.includes(row) ? "is-swapped" : ""}">${[1, 2, 3, 4].map((col) => `<td class="${col === value ? "is-one" : ""}">${col === value ? 1 : 0}</td>`).join("")}</tr>`).join("")}</table>
-        <p class="ch2-perm-det">det P = ${swappedRows.length ? `<s>${sign > 0 ? "−1" : "+1"}</s> → ` : ""}<b class="${sign > 0 ? "is-plus" : "is-minus"}">${sign > 0 ? "+1" : "−1"}</b></p>`;
+        <p class="ch2-perm-det">${tex("\\det P=")} ${swappedRows.length ? `<s>${sign > 0 ? "−1" : "+1"}</s> → ` : ""}<b class="${sign > 0 ? "is-plus" : "is-minus"}">${sign > 0 ? "+1" : "−1"}</b></p>`;
       const done = permutation.every((value, index) => value === index + 1);
       const counter = root.querySelector("[data-adj-count]");
       counter.innerHTML = done && adjSteps > 0
-        ? `从 ${startText} 出发：相邻交换 <b>${adjSteps}</b> 次，τ(${startText}) = <b>${startTau}</b>`
+        ? `从 ${startText} 出发：相邻交换 <b>${adjSteps}</b> 次，${tex(`\\tau(${startText})=`)} <b>${startTau}</b>`
         : `从 ${startText} 出发：相邻交换 <b>${adjSteps}</b> 次`;
       counter.classList.toggle("is-positive", done && adjSteps > 0);
       // τ strip: one cell per adjacent swap made so far, det P = (−1)^τ under each
@@ -80,7 +80,7 @@
         for (let k = 0; k <= adjSteps; k += 1) {
           const t = startTau - k;
           const plus = t % 2 === 0;
-          cells.push(`<span class="ch2-tau-cell${k === adjSteps ? " is-current" : ""}"><b>τ=${t}</b><small class="${plus ? "is-plus" : "is-minus"}">det P=${plus ? "+1" : "−1"}</small></span>`);
+          cells.push(`<span class="ch2-tau-cell${k === adjSteps ? " is-current" : ""}"><b>${tex(`\\tau=${t}`)}</b><small class="${plus ? "is-plus" : "is-minus"}">${tex(`\\det P=${plus ? "+1" : "-1"}`)}</small></span>`);
         }
         strip.innerHTML = cells.join('<i aria-hidden="true">→</i>');
       }
@@ -98,7 +98,7 @@
       const delta = afterTau - beforeTau;
       const magnitude = Math.abs(delta);
       const parityText = magnitude % 2 === 1 ? "奇数" : "偶数";
-      lastAction = `${action}：τ 从 ${beforeTau} 变为 ${afterTau}，改变 ${magnitude}（${parityText}），所以符号${magnitude % 2 === 1 ? "翻转" : "保持"}。`;
+      lastAction = `${action}：${tex("\\tau")} 从 ${beforeTau} 变为 ${afterTau}，改变 ${magnitude}（${parityText}），所以符号${magnitude % 2 === 1 ? "翻转" : "保持"}。`;
     }
 
     function render({ pulse = false } = {}) {
@@ -111,9 +111,9 @@
       root.querySelector("[data-parity]").textContent = inversions.length % 2 === 0 ? "偶排列" : "奇排列";
       root.querySelector("[data-sgn]").textContent = sign > 0 ? "+1" : "−1";
       root.querySelector("[data-perm-text]").textContent = permutation.join(" ");
-      root.querySelector("[data-action]").textContent = lastAction;
+      root.querySelector("[data-action]").innerHTML = lastAction;
       root.querySelector("[data-inv-list]").innerHTML = inversions.length
-        ? inversions.map(({ a, b }) => `<span>(${a},${b})</span>`).join("")
+        ? inversions.map(({ a, b }) => `<span>${tex(`(${a},${b})`)}</span>`).join("")
         : "<span>无逆序对</span>";
       drawWires();
       renderMatrix(sign);
@@ -158,7 +158,7 @@
           permutation = next;
           restart();
           const afterTau = tau();
-          lastAction = `把 ${moved} 从位置 ${dragIndex + 1} 移到位置 ${target + 1}，跨过 ${distance} 个相邻位置；这等价于 ${distance} 次相邻交换。τ：${beforeTau}→${afterTau}，符号${distance % 2 ? "翻转" : "保持"}。`;
+          lastAction = `把 ${moved} 从位置 ${dragIndex + 1} 移到位置 ${target + 1}，跨过 ${distance} 个相邻位置；这等价于 ${distance} 次相邻交换。${tex("\\tau")}：${tex(`${beforeTau}\\to${afterTau}`)}，符号${distance % 2 ? "翻转" : "保持"}。`;
           selected = -1;
           scannerIndex = 0;
           render({ pulse: true });
@@ -197,7 +197,7 @@
           const beforeTau = tau();
           [permutation[index], permutation[index + 1]] = [permutation[index + 1], permutation[index]];
           const afterTau = tau();
-          lastAction = `相邻交换位置 ${index + 1}、${index + 2}：τ 从 ${beforeTau} 降到 ${afterTau}，恰好减少 1，符号翻转。`;
+          lastAction = `相邻交换位置 ${index + 1}、${index + 2}：${tex("\\tau")} 从 ${beforeTau} 降到 ${afterTau}，恰好减少 1，符号翻转。`;
           adjSteps += 1;
           swappedRows = [index, index + 1];
           selected = -1;
@@ -208,7 +208,7 @@
         }
       }
       lastAction = "已经还原为恒等排列 1234，没有逆序。";
-      root.querySelector("[data-action]").textContent = lastAction;
+      root.querySelector("[data-action]").innerHTML = lastAction;
       root.querySelector("[data-scan-result]").textContent = "已经还原为恒等排列";
     }, { signal });
 
@@ -236,7 +236,7 @@
         ]) + misconception([
           "逆序数统计所有位置对，不等于最大元素或元素之和。",
           "一次对换一定翻转符号，但逆序数不一定只改变 1。",
-          "把一个数移过 d 个位置，等价于 d 次相邻交换，与一次对换不同。",
+          `把一个数移过 ${tex("d")} 个位置，等价于 ${tex("d")} 次相邻交换，与一次对换不同。`,
         ])),
       );
     },
@@ -261,9 +261,9 @@
             </div>
             <div class="ch2-side">
               <div class="ch2-meter">
-                <div class="ch2-meter-card" data-tau-card><strong>τ(σ)</strong><span data-tau></span></div>
+                <div class="ch2-meter-card" data-tau-card><strong>${tex("\\tau(\\sigma)")}</strong><span data-tau></span></div>
                 <div class="ch2-meter-card"><strong>奇偶</strong><span data-parity></span></div>
-                <div class="ch2-meter-card"><strong>sgn</strong><span data-sgn></span></div>
+                <div class="ch2-meter-card"><strong>${tex("\\operatorname{sgn}")}</strong><span data-sgn></span></div>
               </div>
               <div class="ch2-note" data-action aria-live="polite"></div>
               <div class="ch2-note"><strong>全部逆序对</strong><div class="ch2-inversion-list" data-inv-list></div></div>

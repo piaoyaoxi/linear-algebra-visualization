@@ -45,14 +45,14 @@ defineChapter3Section("elimination", {
     title: "例题：消元，并读出每一步的几何含义",
     question: `解方程组 ${texInline("x+y+z=2")}，${texInline("2x+2y+3z=5")}，${texInline("x-y+z=0")}。做完 ${texInline(String.raw`R_2\leftarrow R_2-2R_1`)} 以后，新的第二个平面与哪些坐标轴平行？`,
     choices: [
-      { correct: true, text: `解为 ${texInline("(0,1,1)")}；新平面 ${texInline("z=1")} 同时平行于 x 轴和 y 轴。` },
-      { text: `解为 ${texInline("(1,1,0)")}；新平面只平行于 x 轴。` },
-      { text: `解为 ${texInline("(0,1,1)")}；新平面平行于 z 轴。` },
+      { correct: true, text: `解为 ${texInline("(0,1,1)")}；新平面 ${texInline("z=1")} 同时平行于 ${texInline("x")} 轴和 ${texInline("y")} 轴。` },
+      { text: `解为 ${texInline("(1,1,0)")}；新平面只平行于 ${texInline("x")} 轴。` },
+      { text: `解为 ${texInline("(0,1,1)")}；新平面平行于 ${texInline("z")} 轴。` },
       { text: "方程组有无穷多解，因为第二行消元后只剩一个未知量。" },
     ],
     steps: [
       `增广矩阵为 ${texInline(String.raw`\left[\begin{array}{ccc|c}1&1&1&2\\2&2&3&5\\1&-1&1&0\end{array}\right]`)}。`,
-      `${texInline(String.raw`R_2\leftarrow R_2-2R_1`)} 得到 ${texInline("z=1")}：x、y 的系数同时变成 0，这个平面与 x 轴、y 轴都平行。`,
+      `${texInline(String.raw`R_2\leftarrow R_2-2R_1`)} 得到 ${texInline("z=1")}：${texInline("x")}、${texInline("y")} 的系数同时变成 0，这个平面与 ${texInline("x")} 轴、${texInline("y")} 轴都平行。`,
       `${texInline(String.raw`R_3\leftarrow R_3-R_1`)} 得到 ${texInline("-2y=-2")}。第二列的主元位置是 0，交换第二、三行后继续。`,
       `回代：${texInline("z=1")}，${texInline("y=1")}，${texInline("x=2-1-1=0")}。`,
       `代回三个原方程检验：${texInline("0+1+1=2")}，${texInline("0+2+3=5")}，${texInline("0-1+1=0")}。`,

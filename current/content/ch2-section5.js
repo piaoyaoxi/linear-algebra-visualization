@@ -3,7 +3,7 @@ defineChapter2Section("determinant-computation", {
   textbookSection: "行列式的计算",
   title: "行列式的计算",
   navTitle: "行列式计算",
-  question: "面对高阶行列式，怎样识别结构、制造零并正确记账，使计算从 n! 项缩短为少量步骤？",
+  question: `面对高阶行列式，怎样识别结构、制造零并正确记账，使计算从 ${texInline("n!")} 项缩短为少量步骤？`,
   goal: "掌握先读结构、再选择终点的计算流程；用造零、三角化、因子提取和零多方向展开缩短计算，并用倍率账本保证每一步可追溯。",
   tags: ["结构识别", "造零", "倍率账本"],
   prerequisites: [

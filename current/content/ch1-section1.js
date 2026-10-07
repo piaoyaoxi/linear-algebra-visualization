@@ -20,11 +20,11 @@ defineChapter1Section("number-fields", {
         text: `设 ${texInline("P")} 是含 0 与 1 的复数集合。若 ${texInline("P")} 中任意两数的和、差、积、商（除数不为 0）仍属于 ${texInline("P")}，就称 ${texInline("P")} 为数域。`,
       },
       {
-        title: "任何数域都含 Q",
+        title: `任何数域都含 ${texInline("\\mathbb{Q}")}`,
         text: `从 1 出发反复做加减，得到全体整数；再做除法，得到全体有理数。所以 ${texInline("\\mathbb{Q}")} 是最小的数域。`,
       },
       {
-        title: "Q(√2) 是数域",
+        title: `${texInline("\\mathbb{Q}(\\sqrt2)")} 是数域`,
         text: `${texInline("\\{a+b\\sqrt2:a,b\\in\\mathbb{Q}\\}")} 对加、减、乘显然封闭；非零元素的倒数 ${texInline("\\dfrac{a-b\\sqrt2}{a^2-2b^2}")} 仍是这种形式（${texInline("\\sqrt2")} 是无理数，故 ${texInline("a^2-2b^2\\ne0")}）。`,
       },
     ],

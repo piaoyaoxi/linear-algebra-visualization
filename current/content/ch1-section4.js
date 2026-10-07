@@ -38,8 +38,8 @@ defineChapter1Section("gcd-polynomials", {
   interactive: {
     type: "slot",
     title: "辗转相除法",
-    description: "逐步取余，最后读出最大公因式和 s、t。",
-    task: "先猜一猜，再逐步做完 gcd(x⁴−1, x³−1)：看余式次数阶梯降到 0 多项式时，前一个余式是什么；最后读出 s、t 并代回验证，再换到“互素示例”比较。",
+    description: `逐步取余，最后读出最大公因式和 ${texInline("s")}、${texInline("t")}。`,
+    task: `先猜一猜，再逐步做完 ${texInline("\\gcd(x^4-1,x^3-1)")}：看余式次数阶梯降到 0 多项式时，前一个余式是什么；最后读出 ${texInline("s")}、${texInline("t")} 并代回验证，再换到“互素示例”比较。`,
   },
   example: {
     title: "例题：求最大公因式并写成组合",

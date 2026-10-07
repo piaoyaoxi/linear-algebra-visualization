@@ -380,7 +380,7 @@
         drawSurface(canvas, D, camera, { frameMatrices: [D] });
         const final = $(root, "[data-s2-status]")?.textContent.includes("完成");
         const title = shell?.querySelector(".qv-orbit-title");
-        if (title) title.textContent = final ? "标准形 · 新变量 y" : "当前二次型";
+        if (title) title.innerHTML = final ? `标准形 · 新变量 ${inline("y")}` : "当前二次型";
       };
       const reset = bindOrbit(canvases, camera, redraw, controller);
       addViewTools(shell, reset, false);

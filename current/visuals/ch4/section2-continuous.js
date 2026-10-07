@@ -552,24 +552,24 @@
         <div class="s2c-panels">
           <section class="s2c-panel is-active" data-s2c-panel="compose" role="tabpanel">
             <div class="s2c-stage-copy">
-              <p>同一张网格先经过 B，再经过 A。紫色向量是输入 <span class="s2c-math-plain">x</span> 在当前变换下的像；虚线留下它经过的位置。</p>
+              <p>同一张网格先经过 ${texInline("B")}，再经过 ${texInline("A")}。紫色向量是输入 ${texInline("x")} 在当前变换下的像；虚线留下它经过的位置。</p>
             </div>
             <div data-s2c-compose-gate></div>
             <div class="s2c-canvas-shell">
               <canvas class="s2c-main-canvas" data-s2c-compose-canvas aria-label="矩阵复合连续动画"></canvas>
-              <div class="s2c-stage-badge" data-s2c-compose-badge>初始：单位网格与 x</div>
+              <div class="s2c-stage-badge" data-s2c-compose-badge>初始：单位网格与 ${texInline("x")}</div>
             </div>
             <div class="s2c-controls">
-              <button type="button" class="is-primary" data-s2c-compose-play>播放 B → A</button>
-              <button type="button" data-s2c-compose-direct>直接看 AB</button>
+              <button type="button" class="is-primary" data-s2c-compose-play>播放 ${texInline("B\\to A")}</button>
+              <button type="button" data-s2c-compose-direct>直接看 ${texInline("AB")}</button>
               <button type="button" data-s2c-compose-reset>重置</button>
             </div>
             <div class="s2c-process-track" data-s2c-process-track>
-              <span class="is-active" data-s2c-pt="0">x=(1, 1)ᵀ</span><i>经过 B</i><span data-s2c-pt="1">Bx</span><i>再经过 A</i><span data-s2c-pt="2">A(Bx)</span>
+              <span class="is-active" data-s2c-pt="0">${texInline("x=(1,1)^T")}</span><i>经过 ${texInline("B")}</i><span data-s2c-pt="1">${texInline("Bx")}</span><i>再经过 ${texInline("A")}</i><span data-s2c-pt="2">${texInline("A(Bx)")}</span>
             </div>
             <div class="s2c-conclusion" data-s2c-compose-conclusion hidden>
               <strong>${texInline("A(Bx)=(AB)x")}</strong>
-              <p>两步的终点 (4, 1)ᵀ 正是乘积矩阵 AB 作用在 x 上的结果。矩阵乘法 AB 就是“先做 B，再做 A”这个复合变换的矩阵。</p>
+              <p>两步的终点 ${texInline("(4,1)^T")} 正是乘积矩阵 ${texInline("AB")} 作用在 ${texInline("x")} 上的结果。矩阵乘法 ${texInline("AB")} 就是“先做 ${texInline("B")}，再做 ${texInline("A")}”这个复合变换的矩阵。</p>
             </div>
           </section>
 
@@ -579,12 +579,12 @@
             </div>
             <div class="s2c-order-grid">
               <article>
-                <header><strong>AB</strong><span>先 B，后 A</span></header>
+                <header><strong>${texInline("AB")}</strong><span>先 ${texInline("B")}，后 ${texInline("A")}</span></header>
                 <div class="s2c-canvas-shell"><canvas data-s2c-order-ab aria-label="AB 的作用顺序动画"></canvas><div class="s2c-stage-badge" data-s2c-order-ab-badge>初始</div></div>
                 <div>${texDisplay(`AB=${matrixTex(MODEL.AB)}`)}</div>
               </article>
               <article>
-                <header><strong>BA</strong><span>先 A，后 B</span></header>
+                <header><strong>${texInline("BA")}</strong><span>先 ${texInline("A")}，后 ${texInline("B")}</span></header>
                 <div class="s2c-canvas-shell"><canvas data-s2c-order-ba aria-label="BA 的作用顺序动画"></canvas><div class="s2c-stage-badge" data-s2c-order-ba-badge>初始</div></div>
                 <div>${texDisplay(`BA=${matrixTex(MODEL.BA)}`)}</div>
               </article>
@@ -677,23 +677,23 @@
     const points = [...root.querySelectorAll("[data-s2c-pt]")];
     const Bx = multiplyMatrixVector(MODEL.B, MODEL.x);
     const ABx = multiplyMatrixVector(MODEL.AB, MODEL.x);
-    const labels = ["初始：单位网格与 x", "第一步：B 完成剪切 → Bx", "第二步：A 继续拉伸 → A(Bx)"];
-    const vec = (v) => `(${v[0]}, ${v[1]})ᵀ`;
+    const labels = [`初始：单位网格与 ${texInline("x")}`, `第一步：${texInline("B")} 完成剪切 ${texInline("\\to Bx")}`, `第二步：${texInline("A")} 继续拉伸 ${texInline("\\to A(Bx)")}`];
+    const vec = (v) => `(${v[0]},${v[1]})^T`;
     const gate = window.LAPredictGate?.mount(root.querySelector("[data-s2c-compose-gate]"), {
       root: panel,
       manual: true,
       key: "visuals/ch4/section2-continuous.js#compose",
-      question: `x 先经过 B 到达 Bx，再经过 A 到达 A(Bx)。这个终点和乘积矩阵 AB 一次作用得到的 (AB)x 相比会怎样？`,
+      question: `${texInline("x")} 先经过 ${texInline("B")} 到达 ${texInline("Bx")}，再经过 ${texInline("A")} 到达 ${texInline("A(Bx)")}。这个终点和乘积矩阵 ${texInline("AB")} 一次作用得到的 ${texInline("(AB)x")} 相比会怎样？`,
       options: [
         ["两者是同一个点", true, ""],
         ["不同：两步走得更远", false, "两步的终点 (4, 1)ᵀ 和 (AB)x 完全重合。"],
-        ["只有 x 是 e₁ 或 e₂ 时才相同", false, "对任意 x 都有 A(Bx)=(AB)x，AB 的每一列正是 A 作用在 B 的列上。"],
-        ["和 (BA)x 是同一个点", false, "(BA)x=(3, 1)ᵀ，那是先 A 后 B 的结果。"],
+        [`只有 ${texInline("x")} 是 ${texInline("e_1")} 或 ${texInline("e_2")} 时才相同`, false, "对任意 x 都有 A(Bx)=(AB)x，AB 的每一列正是 A 作用在 B 的列上。"],
+        [`和 ${texInline("(BA)x")} 是同一个点`, false, "(BA)x=(3, 1)ᵀ，那是先 A 后 B 的结果。"],
       ],
-      right: `✓ 两步的终点 A(Bx)=(4, 1)ᵀ，与 (AB)x 重合。AB 就是“先 B 后 A”的复合变换的矩阵。`,
+      right: `✓ 两步的终点 ${texInline("A(Bx)=(4,1)^T")}，与 ${texInline("(AB)x")} 重合。${texInline("AB")} 就是“先 ${texInline("B")} 后 ${texInline("A")}”的复合变换的矩阵。`,
       onReveal: () => {
         conclusion.hidden = false;
-        points[2].textContent = `A(Bx)=(AB)x=${vec(ABx)}`;
+        points[2].innerHTML = texInline(`A(Bx)=(AB)x=${vec(ABx)}`);
       },
     });
     // stage = label stage, done = index of the last keyframe reached
@@ -714,26 +714,26 @@
     const reset = () => {
       cancelCanvasAnimation(canvas);
       drawTransformScene(canvas, MODEL.I, stageDrawOptions(0));
-      badge.textContent = labels[0];
+      badge.innerHTML = labels[0];
       setProcessStep(root, 0);
-      points[1].textContent = "Bx";
-      if (!gate?.revealed) points[2].textContent = "A(Bx)";
+      points[1].innerHTML = texInline("Bx");
+      if (!gate?.revealed) points[2].innerHTML = texInline("A(Bx)");
     };
     root.querySelector("[data-s2c-compose-play]")?.addEventListener(
       "click",
       async () => {
-        points[1].textContent = "Bx";
+        points[1].innerHTML = texInline("Bx");
         await animateCanvasSequence(canvas, [{ matrix: MODEL.I }, { matrix: MODEL.B }, { matrix: MODEL.AB }], {
           stageDrawOptions,
           onStage: (index, _frame, t) => {
             const stage = Math.min(index, 2);
-            badge.textContent = labels[stage];
+            badge.innerHTML = labels[stage];
             setProcessStep(root, stage);
-            if (stage >= 1 && t === 1) points[1].textContent = `Bx=${vec(Bx)}`;
+            if (stage >= 1 && t === 1) points[1].innerHTML = texInline(`Bx=${vec(Bx)}`);
           },
         });
         if (currentMatrices.get(canvas) === MODEL.AB) {
-          points[1].textContent = `Bx=${vec(Bx)}`;
+          points[1].innerHTML = texInline(`Bx=${vec(Bx)}`);
           gate?.acted();
           if (!gate) conclusion.hidden = false;
         }
@@ -746,7 +746,7 @@
         animateCanvasSequence(canvas, [{ matrix: MODEL.I }, { matrix: MODEL.AB }], {
           stageDrawOptions: (stage, done) => ({ ...stageDrawOptions(stage === 0 ? 0 : 2, 0), vectorLabel: stage === 0 ? "x" : "(AB)x" }),
           onStage: (index) => {
-            badge.textContent = index === 0 ? labels[0] : "一次完成：AB 直接把 x 送到终点";
+            badge.innerHTML = index === 0 ? labels[0] : `一次完成：${texInline("AB")} 直接把 ${texInline("x")} 送到终点`;
             setProcessStep(root, index === 0 ? 0 : 2);
           },
         });
@@ -866,13 +866,13 @@
         animateCanvasSequence(abCanvas, [{ matrix: MODEL.I }, { matrix: MODEL.B }, { matrix: MODEL.AB }], {
           drawOptions: drawOpts,
           onStage: (index) => {
-            abBadge.textContent = ["初始", "B：剪切", "A：拉伸后得到 AB"][Math.min(index, 2)];
+            abBadge.innerHTML = ["初始", `${texInline("B")}：剪切`, `${texInline("A")}：拉伸后得到 ${texInline("AB")}`][Math.min(index, 2)];
           },
         });
         animateCanvasSequence(baCanvas, [{ matrix: MODEL.I }, { matrix: MODEL.A }, { matrix: MODEL.BA }], {
           drawOptions: drawOpts,
           onStage: (index) => {
-            baBadge.textContent = ["初始", "A：先拉伸", "B：剪切后得到 BA"][Math.min(index, 2)];
+            baBadge.innerHTML = ["初始", `${texInline("A")}：先拉伸`, `${texInline("B")}：剪切后得到 ${texInline("BA")}`][Math.min(index, 2)];
           },
         });
       },

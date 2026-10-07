@@ -146,61 +146,61 @@
     d.text(p, text, color, { dx: left ? -14 : 14, dy, align: left ? "right" : "left" });
   }
 
-  function rangeRow(label, key, value, min, max) {
-    return `<label class="ch10l-range"><span>${label}</span><input type="range" min="${min}" max="${max}" step="1" value="${value}" data-${key} aria-label="${label.replace(/<[^>]+>/g, "")}" /><b data-${key}-v>${minus(value)}</b></label>`;
+  function rangeRow(label, key, value, min, max, aria = label.replace(/<[^>]+>/g, "")) {
+    return `<label class="ch10l-range"><span>${label}</span><input type="range" min="${min}" max="${max}" step="1" value="${value}" data-${key} aria-label="${aria}" /><b data-${key}-v>${minus(value)}</b></label>`;
   }
 
   /* ================= §1 线性函数 ================= */
 
   const FUNCTIONAL_PRESETS = {
     p31: {
-      label: "f(ε₁)=3, f(ε₂)=1",
+      label: tex(String.raw`f(\varepsilon_1)=3,\ f(\varepsilon_2)=1`),
       a: [3, 1],
       predict: {
-        question: `${tex("f(\\varepsilon_1)=3,\\ f(\\varepsilon_2)=1")}。f=0 的直线是哪一条？`,
+        question: `${tex("f(\\varepsilon_1)=3,\\ f(\\varepsilon_2)=1")}。${tex("f=0")} 的直线是哪一条？`,
         options: [
-          { text: "过原点、方向为 (1,−3) 的直线", correct: true },
-          { text: "过原点、方向为 (3,1) 的直线", why: "f(3,1)=10，沿这个方向读数增长最快。" },
-          { text: "过 ε₁、ε₂ 两个端点的直线", why: "这条线上 f(ε₁)=3、f(ε₂)=1，读数不相同。" },
+          { text: `过原点、方向为 ${tex("(1,-3)")} 的直线`, correct: true },
+          { text: `过原点、方向为 ${tex("(3,1)")} 的直线`, why: "f(3,1)=10，沿这个方向读数增长最快。" },
+          { text: `过 ${tex(String.raw`\varepsilon_1`)}、${tex(String.raw`\varepsilon_2`)} 两个端点的直线`, why: "这条线上 f(ε₁)=3、f(ε₂)=1，读数不相同。" },
           { text: "没有这样的直线", why: "f(0)=0，零向量总在 f=0 上。" },
         ],
-        conclusion: "f(ε₁)=3、f(ε₂)=1 时 f(x)=3x₁+x₂，f=0 是过原点的直线 3x₁+x₂=0，方向 (1,−3)。其余等值线都与它平行：x 沿一条等值线移动，读数不变；每跨过一条整数等值线，读数改变 1。",
+        conclusion: `${tex(String.raw`f(\varepsilon_1)=3`)}、${tex(String.raw`f(\varepsilon_2)=1`)} 时 ${tex("f(x)=3x_1+x_2")}，${tex("f=0")} 是过原点的直线 ${tex("3x_1+x_2=0")}，方向 ${tex("(1,-3)")}。其余等值线都与它平行：${tex("x")} 沿一条等值线移动，读数不变；每跨过一条整数等值线，读数改变 1。`,
       },
     },
     p11: {
-      label: "f(ε₁)=1, f(ε₂)=1",
+      label: tex(String.raw`f(\varepsilon_1)=1,\ f(\varepsilon_2)=1`),
       a: [1, 1],
       predict: {
-        question: `${tex("f(\\varepsilon_1)=f(\\varepsilon_2)=1")}。让 x 沿着它所在的等值线移动，读数怎样变？`,
+        question: `${tex("f(\\varepsilon_1)=f(\\varepsilon_2)=1")}。让 ${tex("x")} 沿着它所在的等值线移动，读数怎样变？`,
         options: [
           { text: "保持不变", correct: true },
           { text: "离原点越远越大", why: "等值线上的点可以离原点很远，读数仍然相同。" },
           { text: "先变大后变小", why: "f 沿一条直线是一次函数，在等值线上它是常数。" },
-          { text: "取决于 x 的长度", why: "(2,0) 与 (1,1) 长度不同，读数都是 2。" },
+          { text: `取决于 ${tex("x")} 的长度`, why: "(2,0) 与 (1,1) 长度不同，读数都是 2。" },
         ],
-        conclusion: "f(ε₁)=f(ε₂)=1 时 f(x)=x₁+x₂，它在每条直线 x₁+x₂=c 上取常值 c。读数只取决于 x 落在哪一条等值线上，与 x 的长度无关。",
+        conclusion: `${tex(String.raw`f(\varepsilon_1)=f(\varepsilon_2)=1`)} 时 ${tex("f(x)=x_1+x_2")}，它在每条直线 ${tex("x_1+x_2=c")} 上取常值 ${tex("c")}。读数只取决于 ${tex("x")} 落在哪一条等值线上，与 ${tex("x")} 的长度无关。`,
       },
     },
     p20: {
-      label: "f(ε₁)=2, f(ε₂)=0",
+      label: tex(String.raw`f(\varepsilon_1)=2,\ f(\varepsilon_2)=0`),
       a: [2, 0],
       predict: {
         question: `${tex("f(\\varepsilon_1)=2,\\ f(\\varepsilon_2)=0")}。等值线是什么方向？`,
         options: [
-          { text: "竖直，与 ε₂ 平行", correct: true },
-          { text: "水平，与 ε₁ 平行", why: "f(ε₁)=2≠0，沿 ε₁ 移动读数会变。" },
+          { text: `竖直，与 ${tex(String.raw`\varepsilon_2`)} 平行`, correct: true },
+          { text: `水平，与 ${tex(String.raw`\varepsilon_1`)} 平行`, why: "f(ε₁)=2≠0，沿 ε₁ 移动读数会变。" },
           { text: "斜 45°", why: "f(x)=2x₁ 与 x₂ 无关。" },
-          { text: "只有 f=0 这一条", why: "每个值 c 都有自己的等值线 x₁=c/2。" },
+          { text: `只有 ${tex("f=0")} 这一条`, why: "每个值 c 都有自己的等值线 x₁=c/2。" },
         ],
-        conclusion: "f(ε₁)=2、f(ε₂)=0 时 f(x)=2x₁。f(ε₂)=0 说明 ε₂∈ker f，ker f 就是 x₂ 轴，所以等值线都是竖直的，相邻两条整数等值线相距 1/2。",
+        conclusion: `${tex(String.raw`f(\varepsilon_1)=2`)}、${tex(String.raw`f(\varepsilon_2)=0`)} 时 ${tex("f(x)=2x_1")}。${tex(String.raw`f(\varepsilon_2)=0`)} 说明 ${tex(String.raw`\varepsilon_2\in\ker f`)}，${tex(String.raw`\ker f`)} 就是 ${tex("x_2")} 轴，所以等值线都是竖直的，相邻两条整数等值线相距 ${tex(String.raw`\tfrac12`)}。`,
       },
     },
   };
 
   function functionalLab(root) {
     const lab = K.labShell(root, {
-      title: "等值线读出 f(x)",
-      task: "每条绿色直线上 f 取同一个值，直线上的数字就是这个值，加粗的那条是 f=0，也就是 ker f。拖动金色的 x 读出 f(x)，它走过的路径越过哪几条直线会被加亮；用滑块改变 f(ε₁)、f(ε₂)，看整族直线怎样跟着变。",
+      title: `等值线读出 ${tex("f(x)")}`,
+      task: `每条绿色直线上 ${tex("f")} 取同一个值，直线上的数字就是这个值，加粗的那条是 ${tex("f=0")}，也就是 ${tex(String.raw`\ker f`)}。拖动金色的 ${tex("x")} 读出 ${tex("f(x)")}，它走过的路径越过哪几条直线会被加亮；用滑块改变 ${tex(String.raw`f(\varepsilon_1)`)}、${tex(String.raw`f(\varepsilon_2)`)}，看整族直线怎样跟着变。`,
     });
     const state = { key: "p31", a: [3, 1], x: [1, 0.5], path: [], dragging: false };
     const toolbar = el("div", "ch7l-toolbar");
@@ -218,7 +218,7 @@
     let flow = null;
     gateHost.addEventListener("click", () => redraw());
 
-    controls.innerHTML = `<h4>f 在基上的值</h4>${rangeRow(`f(ε₁)`, "a1", 3, -3, 3)}${rangeRow(`f(ε₂)`, "a2", 1, -3, 3)}`;
+    controls.innerHTML = `<h4>${tex("f")} 在基上的值</h4>${rangeRow(tex(String.raw`f(\varepsilon_1)`), "a1", 3, -3, 3, "f(ε₁)")}${rangeRow(tex(String.raw`f(\varepsilon_2)`), "a2", 1, -3, 3, "f(ε₂)")}`;
     const sliders = [controls.querySelector("[data-a1]"), controls.querySelector("[data-a2]")];
 
     function syncSliders() {
@@ -280,12 +280,12 @@
       const sum = `${paren(x[0])}\\cdot${paren(a[0])}+${paren(x[1])}\\cdot${paren(a[1])}`;
       let html = `<h4>读数</h4><div>${texD(`f(x)=x_1f(\\varepsilon_1)+x_2f(\\varepsilon_2)`)}${texD(`=${sum}=${lf(value)}`)}</div>`;
       if (zeroFn) {
-        html += `<p class="ch7l-muted">f(ε₁)=f(ε₂)=0：f 是零函数，整个平面都是 f=0。</p>`;
+        html += `<p class="ch7l-muted">${tex(String.raw`f(\varepsilon_1)=f(\varepsilon_2)=0`)}：${tex("f")} 是零函数，整个平面都是 ${tex("f=0")}。</p>`;
       } else {
         html += `<p>${tex(`f(x)=${formTex(a, ["x_1", "x_2"])}`)}，${tex(`\\ker f:\\ ${formTex(a, ["x_1", "x_2"])}=0`)}</p>`;
         html += isZero(value)
-          ? `<p class="ch7l-ok">x 落在 ker f 上。</p>`
-          : `<p class="ch7l-muted">x 所在的等值线（金色虚线）与 ker f 平行。</p>`;
+          ? `<p class="ch7l-ok">${tex("x")} 落在 ${tex(String.raw`\ker f`)} 上。</p>`
+          : `<p class="ch7l-muted">${tex("x")} 所在的等值线（金色虚线）与 ${tex(String.raw`\ker f`)} 平行。</p>`;
         if (pathF.length > 1) {
           const f0 = pathF[0];
           const change = M().sub(value, f0);
@@ -307,12 +307,12 @@
       if (result.hidden || (state.a[0] === preset[0] && state.a[1] === preset[1])) return;
       const [a1, a2] = state.a;
       let text;
-      if (zeroFn) text = "现在 f(ε₁)=f(ε₂)=0：f 是零函数，整个平面都是 ker f。";
+      if (zeroFn) text = `现在 ${tex(String.raw`f(\varepsilon_1)=f(\varepsilon_2)=0`)}：${tex("f")} 是零函数，整个平面都是 ${tex(String.raw`\ker f`)}。`;
       else {
         const g = gcdInt(Math.abs(a1), Math.abs(a2)) || 1;
         let d = [-a2 / g, a1 / g];
         if (d[0] < 0 || (d[0] === 0 && d[1] < 0)) d = [-d[0], -d[1]];
-        text = `现在 f(ε₁)=${minus(a1)}、f(ε₂)=${minus(a2)}：${tex(`f(x)=${formTex(a, ["x_1", "x_2"])}`)}，ker f 是过原点、方向为 (${d.map(minus).join(",")}) 的直线，其余等值线都与它平行。`;
+        text = `现在 ${tex(`f(\\varepsilon_1)=${a1}`)}、${tex(`f(\\varepsilon_2)=${a2}`)}：${tex(`f(x)=${formTex(a, ["x_1", "x_2"])}`)}，${tex("\\ker f")} 是过原点、方向为 ${tex(`(${d.join(",")})`)} 的直线，其余等值线都与它平行。`;
       }
       result.insertAdjacentHTML("beforeend", `<p data-lf-now>${text}</p>`);
     }
@@ -380,7 +380,7 @@
   function dualLab(root) {
     const lab = K.labShell(root, {
       title: "斜基与它的对偶基",
-      task: "η₁、η₂ 是一组斜的基，g₁、g₂ 是它的对偶基：g₁(η₁)=1，g₁(η₂)=0，g₂ 反过来。拖动 η₁、η₂ 看等值线族怎样跟着变（蓝线属于 g₁，朱线属于 g₂）；拖动金色的 x，读出它的两个坐标。",
+      task: `${tex(String.raw`\eta_1`)}、${tex(String.raw`\eta_2`)} 是一组斜的基，${tex("g_1")}、${tex("g_2")} 是它的对偶基：${tex(String.raw`g_1(\eta_1)=1`)}，${tex(String.raw`g_1(\eta_2)=0`)}，${tex("g_2")} 反过来。拖动 ${tex(String.raw`\eta_1`)}、${tex(String.raw`\eta_2`)} 看等值线族怎样跟着变（蓝线属于 ${tex("g_1")}，朱线属于 ${tex("g_2")}）；拖动金色的 ${tex("x")}，读出它的两个坐标。`,
     });
     const state = { view: "g1", eta: [[1.5, 0.5], [0.5, 1.5]], x: [1.75, 1.25] };
     const toolbar = el("div", "ch7l-toolbar");
@@ -446,29 +446,29 @@
       });
       if (rows && !open) {
         readCard.innerHTML = `<h4>读数</h4>${waitNote("等值线和读数")}`;
-        matCard.innerHTML = `<h4>过渡矩阵</h4><p class="ch10l-arrow">ε → η：${tex("(\\eta_1,\\eta_2)=(\\varepsilon_1,\\varepsilon_2)A")}</p><div>${texD(`A=${roomy(K.latexMatrix(X))}`)}</div>`;
+        matCard.innerHTML = `<h4>过渡矩阵</h4><p class="ch10l-arrow">${tex("\\varepsilon\\to\\eta")}：${tex("(\\eta_1,\\eta_2)=(\\varepsilon_1,\\varepsilon_2)A")}</p><div>${texD(`A=${roomy(K.latexMatrix(X))}`)}</div>`;
         return;
       }
       if (!rows) {
-        readCard.innerHTML = `<h4>读数</h4><p class="ch7l-bad">η₁、η₂ 共线，不构成基，没有对偶基。</p>`;
+        readCard.innerHTML = `<h4>读数</h4><p class="ch7l-bad">${tex(String.raw`\eta_1`)}、${tex(String.raw`\eta_2`)} 共线，不构成基，没有对偶基。</p>`;
         matCard.innerHTML = `<h4>过渡矩阵</h4><div>${texD(`A=${roomy(K.latexMatrix(X))},\\quad |A|=0`)}</div>`;
         return;
       }
       const parNote = {
-        g1: "g₁(η₂)=0：η₂ 躺在 g₁=0 上，g₁ 的每条等值线都与 η₂ 平行（虚线是平移到 η₁ 终点的 η₂）。",
-        g2: "g₂(η₁)=0：η₁ 躺在 g₂=0 上，g₂ 的每条等值线都与 η₁ 平行（虚线是平移到 η₂ 终点的 η₁）。",
-        both: "g₁ 的等值线平行于 η₂，g₂ 的等值线平行于 η₁，两族合成 η₁、η₂ 的斜网格。",
+        g1: `${tex(String.raw`g_1(\eta_2)=0`)}：${tex(String.raw`\eta_2`)} 躺在 ${tex("g_1=0")} 上，${tex("g_1")} 的每条等值线都与 ${tex(String.raw`\eta_2`)} 平行（虚线是平移到 ${tex(String.raw`\eta_1`)} 终点的 ${tex(String.raw`\eta_2`)}）。`,
+        g2: `${tex(String.raw`g_2(\eta_1)=0`)}：${tex(String.raw`\eta_1`)} 躺在 ${tex("g_2=0")} 上，${tex("g_2")} 的每条等值线都与 ${tex(String.raw`\eta_1`)} 平行（虚线是平移到 ${tex(String.raw`\eta_2`)} 终点的 ${tex(String.raw`\eta_1`)}）。`,
+        both: `${tex("g_1")} 的等值线平行于 ${tex(String.raw`\eta_2`)}，${tex("g_2")} 的等值线平行于 ${tex(String.raw`\eta_1`)}，两族合成 ${tex(String.raw`\eta_1`)}、${tex(String.raw`\eta_2`)} 的斜网格。`,
       }[state.view];
       readCard.innerHTML = `<h4>读数</h4><ul class="ch10l-readout">
         <li>${tex(`g_1(x)=${lf(reads[0])},\\quad g_2(x)=${lf(reads[1])}`)}</li>
         <li>${tex(`x=${formTex(reads, ["\\eta_1", "\\eta_2"])}`)}</li></ul>
         <p class="ch7l-muted" data-dual-par>${parNote}</p>
-        <p class="ch7l-muted">x 所在格点的两个编号就是它在 η₁、η₂ 下的坐标。</p>`;
+        <p class="ch7l-muted">${tex("x")} 所在格点的两个编号就是它在 ${tex("\\eta_1")}、${tex("\\eta_2")} 下的坐标。</p>`;
       const B = K.transpose(Xi);
       matCard.innerHTML = `<h4>两个过渡矩阵</h4>
-        <p class="ch10l-arrow">ε → η：${tex("(\\eta_1,\\eta_2)=(\\varepsilon_1,\\varepsilon_2)A")}</p>
+        <p class="ch10l-arrow">${tex("\\varepsilon\\to\\eta")}：${tex("(\\eta_1,\\eta_2)=(\\varepsilon_1,\\varepsilon_2)A")}</p>
         <div>${texD(`A=${roomy(K.latexMatrix(X))}`)}</div>
-        <p class="ch10l-arrow">f → g：${tex("(g_1,g_2)=(f_1,f_2)(A^T)^{-1}")}</p>
+        <p class="ch10l-arrow">${tex("f\\to g")}：${tex("(g_1,g_2)=(f_1,f_2)(A^T)^{-1}")}</p>
         <div>${texD(`(A^T)^{-1}=${roomy(K.latexMatrix(B))}`)}</div>
         <ul class="ch10l-readout"><li>${tex(`g_1=${formTex(rows[0], ["f_1", "f_2"])}`)}</li><li>${tex(`g_2=${formTex(rows[1], ["f_1", "f_2"])}`)}</li></ul>`;
     }
@@ -504,8 +504,8 @@
     K.chips(
       toolbar,
       [
-        ["g1", "g₁ 的等值线"],
-        ["g2", "g₂ 的等值线"],
+        ["g1", `${tex("g_1")} 的等值线`],
+        ["g2", `${tex("g_2")} 的等值线`],
         ["both", "两族一起"],
       ],
       (k) => {
@@ -517,14 +517,14 @@
     flow = K.predictFlow(gateHost, result, {
       question: `${tex("\\eta_1")} 不动，只拖动 ${tex("\\eta_2")}。${tex("g_1")} 的等值线方向怎样变？`,
       options: [
-        { text: "始终与 η₂ 平行，跟着 η₂ 转", correct: true },
-        { text: "始终与 η₁ 平行", why: "g₁(η₁)=1≠0，沿 η₁ 方向读数在变。" },
-        { text: "始终与 η₁ 垂直", why: "只有 η₂ 恰好与 η₁ 垂直时才如此。" },
-        { text: "不变，g₁ 只由 η₁ 决定", why: "g₁ 还要满足 g₁(η₂)=0。" },
+        { text: `始终与 ${tex(String.raw`\eta_2`)} 平行，跟着 ${tex(String.raw`\eta_2`)} 转`, correct: true },
+        { text: `始终与 ${tex(String.raw`\eta_1`)} 平行`, why: "g₁(η₁)=1≠0，沿 η₁ 方向读数在变。" },
+        { text: `始终与 ${tex(String.raw`\eta_1`)} 垂直`, why: "只有 η₂ 恰好与 η₁ 垂直时才如此。" },
+        { text: `不变，${tex("g_1")} 只由 ${tex(String.raw`\eta_1`)} 决定`, why: "g₁ 还要满足 g₁(η₂)=0。" },
       ],
       actHint: "记下了你的猜测。拖动 η₂，结论随后出现。",
       onReveal: () => redraw(),
-      conclusion: "g₁(η₂)=0，所以 g₁ 的零线就是 η₂ 所在的直线，g₁=1 的线经过 η₁ 的终点；同理 g₂ 的等值线都与 η₁ 平行。两族等值线织成 η₁、η₂ 的斜网格，x 所在格点的编号 (g₁(x), g₂(x)) 就是 x 在这组基下的坐标。",
+      conclusion: `${tex(String.raw`g_1(\eta_2)=0`)}，所以 ${tex("g_1")} 的零线就是 ${tex(String.raw`\eta_2`)} 所在的直线，${tex("g_1=1")} 的线经过 ${tex(String.raw`\eta_1`)} 的终点；同理 ${tex("g_2")} 的等值线都与 ${tex(String.raw`\eta_1`)} 平行。两族等值线织成 ${tex(String.raw`\eta_1`)}、${tex(String.raw`\eta_2`)} 的斜网格，${tex("x")} 所在格点的编号 ${tex("(g_1(x),g_2(x))")} 就是 ${tex("x")} 在这组基下的坐标。`,
     });
     redraw();
     return () => plane.destroy();
@@ -539,14 +539,14 @@
       x: [1, 1],
       y: [1, 0],
       predict: {
-        question: `现在 ${tex("y=\\varepsilon_1")}。${tex("f(x,\\varepsilon_1)")} 作为 x 的线性函数，系数由 A 的哪一部分给出？`,
+        question: `现在 ${tex("y=\\varepsilon_1")}。${tex("f(x,\\varepsilon_1)")} 作为 ${tex("x")} 的线性函数，系数由 ${tex("A")} 的哪一部分给出？`,
         options: [
-          { text: "A 的第 1 列", correct: true },
-          { text: "A 的第 1 行", why: "第 1 行给出 f(ε₁,y) 的系数，那是固定 x=ε₁ 的情形。" },
-          { text: "只有 a₁₁", why: "f(x,ε₁)=a₁₁x₁+a₂₁x₂，a₂₁ 也参与。" },
-          { text: "A 的行列式", why: "行列式只是一个数，定不出一族直线的方向。" },
+          { text: `${tex("A")} 的第 1 列`, correct: true },
+          { text: `${tex("A")} 的第 1 行`, why: "第 1 行给出 f(ε₁,y) 的系数，那是固定 x=ε₁ 的情形。" },
+          { text: `只有 ${tex("a_{11}")}`, why: "f(x,ε₁)=a₁₁x₁+a₂₁x₂，a₂₁ 也参与。" },
+          { text: `${tex("A")} 的行列式`, why: "行列式只是一个数，定不出一族直线的方向。" },
         ],
-        conclusion: "f(x,y)=xᵀ(Ay)，固定 y 后系数是 Ay。y=ε₁ 时 Ay 就是 A 的第 1 列 (a₁₁,a₂₁)ᵀ=(1,0)ᵀ，等值线是竖直的。y 一动，系数 Ay 跟着变，整族等值线转动，疏密也变。",
+        conclusion: `${tex("f(x,y)=x^T(Ay)")}，固定 ${tex("y")} 后系数是 ${tex("Ay")}。${tex(String.raw`y=\varepsilon_1`)} 时 ${tex("Ay")} 就是 ${tex("A")} 的第 1 列 ${tex("(a_{11},a_{21})^T=(1,0)^T")}，等值线是竖直的。${tex("y")} 一动，系数 ${tex("Ay")} 跟着变，整族等值线转动，疏密也变。`,
       },
     },
     sym: {
@@ -555,14 +555,14 @@
       x: [0.5, 1.5],
       y: [1, 0.5],
       predict: {
-        question: `${tex("A=A^T")}。交换 x 与 y，读数 ${tex("f(x,y)")} 怎样变？`,
+        question: `${tex("A=A^T")}。交换 ${tex("x")} 与 ${tex("y")}，读数 ${tex("f(x,y)")} 怎样变？`,
         options: [
           { text: "不变", correct: true },
           { text: "变号", why: "变号是反对称的情形，这里 A=Aᵀ。" },
           { text: "一般会变", why: "A 对称时 xᵀAy=(xᵀAy)ᵀ=yᵀAx。" },
           { text: "变成 0", why: "f(y,x)=f(x,y)，一般不为 0。" },
         ],
-        conclusion: "f(y,x)=yᵀAx 是一个数，等于它的转置 xᵀAᵀy，而 Aᵀ=A，所以 f(y,x)=xᵀAy=f(x,y)。A 对称时，固定 y 看 x 与固定 x 看 y 用的是同一个矩阵；切换到“不对称”再交换一次，读数就会改变。",
+        conclusion: `${tex("f(y,x)=y^TAx")} 是一个数，等于它的转置 ${tex("x^TA^Ty")}，而 ${tex("A^T=A")}，所以 ${tex("f(y,x)=x^TAy=f(x,y)")}。${tex("A")} 对称时，固定 ${tex("y")} 看 ${tex("x")} 与固定 ${tex("x")} 看 ${tex("y")} 用的是同一个矩阵；切换到“不对称”再交换一次，读数就会改变。`,
       },
     },
     deg: {
@@ -571,14 +571,14 @@
       x: [1, 1],
       y: [1, 0.5],
       predict: {
-        question: `${tex("A=\\begin{pmatrix}1&1\\\\1&1\\end{pmatrix}")}。是否有非零的 y，使 f(x,y) 对一切 x 都等于 0？`,
+        question: `${tex("A=\\begin{pmatrix}1&1\\\\1&1\\end{pmatrix}")}。是否有非零的 ${tex("y")}，使 ${tex("f(x,y)")} 对一切 ${tex("x")} 都等于 0？`,
         options: [
-          { text: "有，y 沿 (1,−1) 方向", correct: true },
-          { text: "没有，因为 A≠0", why: "A≠0 不够，这里 |A|=0。" },
-          { text: "有，y 沿 (1,1) 方向", why: "f(x,(1,1))=2x₁+2x₂，不恒为 0。" },
-          { text: "只有 y=0", why: "把 y 拖到 (1,−1) 看看。" },
+          { text: `有，${tex("y")} 沿 ${tex("(1,-1)")} 方向`, correct: true },
+          { text: `没有，因为 ${tex(String.raw`A\ne0`)}`, why: "A≠0 不够，这里 |A|=0。" },
+          { text: `有，${tex("y")} 沿 ${tex("(1,1)")} 方向`, why: "f(x,(1,1))=2x₁+2x₂，不恒为 0。" },
+          { text: `只有 ${tex("y=0")}`, why: "把 y 拖到 (1,−1) 看看。" },
         ],
-        conclusion: "Ay=0 有非零解 y=(1,−1)ᵀ，这时 f(·,y) 是零函数，画面上的等值线全部消失。|A|=0，f 退化；|A|≠0 时只有 y=0 才会这样。",
+        conclusion: `${tex("Ay=0")} 有非零解 ${tex("y=(1,-1)^T")}，这时 ${tex(String.raw`f(\cdot,y)`)} 是零函数，画面上的等值线全部消失。${tex("|A|=0")}，${tex("f")} 退化；${tex(String.raw`|A|\ne0`)} 时只有 ${tex("y=0")} 才会这样。`,
       },
     },
   };
@@ -586,7 +586,7 @@
   function bilinearLab(root) {
     const lab = K.labShell(root, {
       title: "固定一个变量，得到一个线性函数",
-      task: "f(x,y)=xᵀAy。固定朱色的 y，f(·,y) 就是 x 的线性函数，绿色直线是它的等值线，紫色箭头 Ay 是它们的法向。拖动 y 看这族直线怎样转动，拖动 x 读出 f(x,y)。",
+      task: `${tex("f(x,y)=x^TAy")}。固定朱色的 ${tex("y")}，${tex(String.raw`f(\cdot,y)`)} 就是 ${tex("x")} 的线性函数，绿色直线是它的等值线，紫色箭头 ${tex("Ay")} 是它们的法向。拖动 ${tex("y")} 看这族直线怎样转动，拖动 ${tex("x")} 读出 ${tex("f(x,y)")}。`,
     });
     const state = { key: "ns", mode: "fixY", x: [1, 1], y: [1, 0] };
     const toolbar = el("div", "ch7l-toolbar");
@@ -649,16 +649,16 @@
       });
       const fixedName = fixY ? "y" : "x";
       const coefTex = fixY ? "Ay" : "A^Tx";
-      let html = `<h4>固定 ${fixedName}，f 是 ${free} 的线性函数</h4>
+      let html = `<h4>固定 ${tex(fixedName)}，${tex("f")} 是 ${tex(free)} 的线性函数</h4>
         <ul class="ch10l-readout"><li>${tex(`${coefTex}=${K.latexVec(coef)}`)}</li>`;
       html += K.isZeroVec(coef)
-        ? `<li class="ch7l-bad">${tex(coefTex)} 是零向量：对一切 ${free}，f(x,y)=0。</li>`
-        : `<li>${tex(`f(x,y)=${formTex(coef, [`${free}_1`, `${free}_2`])}`)}</li><li class="ch7l-muted" data-bil-normal>紫色箭头 ${tex(coefTex)} 与每条等值线垂直；沿它的方向 f 增长最快。</li>`;
+        ? `<li class="ch7l-bad">${tex(coefTex)} 是零向量：对一切 ${tex(free)}，${tex("f(x,y)=0")}。</li>`
+        : `<li>${tex(`f(x,y)=${formTex(coef, [`${free}_1`, `${free}_2`])}`)}</li><li class="ch7l-muted" data-bil-normal>紫色箭头 ${tex(coefTex)} 与每条等值线垂直；沿它的方向 ${tex("f")} 增长最快。</li>`;
       html += `<li>${tex(`f(x,y)=x^TAy=${lf(value)}`)}</li></ul>`;
-      readCard.innerHTML = open ? html : `<h4>固定 ${fixedName}，f 是 ${free} 的线性函数</h4><p class="ch7l-muted">先在上方猜一猜，再动手操作一次，等值线和读数随后出现。</p>`;
+      readCard.innerHTML = open ? html : `<h4>固定 ${tex(fixedName)}，${tex("f")} 是 ${tex(free)} 的线性函数</h4><p class="ch7l-muted">先在上方猜一猜，再动手操作一次，等值线和读数随后出现。</p>`;
       const detA = K.det(a);
       matCard.innerHTML = `<h4>度量矩阵</h4><div>${texD(`A=${K.latexMatrix(a)},\\quad |A|=${lf(detA)}`)}</div>
-        <p><span class="ch10l-badge${isZero(detA) ? " is-off" : ""}">${isZero(detA) ? "退化" : "非退化"}</span> <span class="ch7l-muted">${K.eqMat(a, K.transpose(a)) ? "A=Aᵀ，f 对称" : "A≠Aᵀ，f(x,y) 与 f(y,x) 一般不同"}</span></p>`;
+        <p><span class="ch10l-badge${isZero(detA) ? " is-off" : ""}">${isZero(detA) ? "退化" : "非退化"}</span> <span class="ch7l-muted">${K.eqMat(a, K.transpose(a)) ? `${tex("A=A^T")}，${tex("f")} 对称` : `${tex("A\\ne A^T")}，${tex("f(x,y)")} 与 ${tex("f(y,x)")} 一般不同`}</span></p>`;
     }
 
     const handle = (key, color) => ({
@@ -691,8 +691,8 @@
       redraw();
     }
 
-    modes.innerHTML = `<button type="button" class="ch7l-chip is-active" data-key="fixY">固定 y，看 x</button><button type="button" class="ch7l-chip" data-key="fixX">固定 x，看 y</button>`;
-    modeRow.insertAdjacentHTML("beforeend", `<button type="button" class="ch7l-btn" data-swap>交换 x、y</button><button type="button" class="ch7l-btn" data-yeps>y=ε₁</button>`);
+    modes.innerHTML = `<button type="button" class="ch7l-chip is-active" data-key="fixY">固定 ${tex("y")}，看 ${tex("x")}</button><button type="button" class="ch7l-chip" data-key="fixX">固定 ${tex("x")}，看 ${tex("y")}</button>`;
+    modeRow.insertAdjacentHTML("beforeend", `<button type="button" class="ch7l-btn" data-swap>交换 ${tex("x")}、${tex("y")}</button><button type="button" class="ch7l-btn" data-yeps>${tex("y=\\varepsilon_1")}</button>`);
     const modeChips = [...modes.querySelectorAll(".ch7l-chip")];
     modeChips.forEach((b) => b.addEventListener("click", () => setMode(b.dataset.key)));
     modeRow.querySelector("[data-swap]").addEventListener("click", () => {
@@ -738,7 +738,7 @@
   function symplecticLab(root) {
     const lab = K.labShell(root, {
       title: "保持有向面积的变换",
-      task: "ω(x,y)=x₁y₂−x₂y₁ 是 x、y 张成的平行四边形的有向面积。选一个线性变换 K，比较虚线框（x、y）与实色框（Kx、Ky）：长度、夹角、ω 各变了没有。剪切时可以拖动滑块 s，让上边沿水平线滑动。",
+      task: `${tex(String.raw`\omega(x,y)=x_1y_2-x_2y_1`)} 是 ${tex("x")}、${tex("y")} 张成的平行四边形的有向面积。选一个线性变换 ${tex("K")}，比较虚线框（${tex("x")}、${tex("y")}）与实色框（${tex("Kx")}、${tex("Ky")}）：长度、夹角、${tex(String.raw`\omega`)} 各变了没有。剪切时可以拖动滑块 ${tex("s")}，让上边沿水平线滑动。`,
     });
     const state = { key: "shear", x: [1.5, 0], y: [0.5, 1.25], t: 1, s: 1 };
     const toolbar = el("div", "ch7l-toolbar");
@@ -749,10 +749,10 @@
     const readCard = el("div", "ch7l-card");
     const matCard = el("div", "ch7l-card");
     const shearCard = el("div", "ch7l-card");
-    shearCard.innerHTML = `<label class="ch10l-range"><span>剪切量 s</span><input type="range" min="-2" max="2" step="0.25" value="1" data-shear aria-label="剪切量 s" /><b data-shear-v>1</b></label>`;
+    shearCard.innerHTML = `<label class="ch10l-range"><span>剪切量 ${tex("s")}</span><input type="range" min="-2" max="2" step="0.25" value="1" data-shear aria-label="剪切量 s" /><b data-shear-v>1</b></label>`;
     // swapping x and y reverses the orientation of the parallelogram: ω(y,x)=−ω(x,y)
     const swapRow = el("div", "ch7l-actions");
-    swapRow.innerHTML = `<button type="button" class="ch7l-btn" data-swapxy>交换 x、y</button>`;
+    swapRow.innerHTML = `<button type="button" class="ch7l-btn" data-swapxy>交换 ${tex("x")}、${tex("y")}</button>`;
     side.append(swapRow, shearCard, readCard, matCard);
     body.append(stage, side);
     const result = el("div", "ch7l-result");
@@ -815,25 +815,25 @@
       const Kxn = Kx.map(num);
       const Kyn = Ky.map(num);
       readCard.innerHTML = `<h4>比较</h4>
-        <table class="ch7l-table"><thead><tr><th></th><th>x, y</th><th>Kx, Ky</th></tr></thead><tbody>
+        <table class="ch7l-table"><thead><tr><th></th><th>${tex("x,y")}</th><th>${tex("Kx,Ky")}</th></tr></thead><tbody>
         <tr><td>长度</td><td>${shown(len(state.x))}, ${shown(len(state.y))}</td><td>${shown(len(Kxn))}, ${shown(len(Kyn))}</td></tr>
         <tr><td>夹角</td><td>${shown(angle(state.x, state.y))}°</td><td>${shown(angle(Kxn, Kyn))}°</td></tr>
-        <tr><td>ω</td><td>${open ? minus(M().formatF(w0)) : "?"}</td><td>${open ? minus(M().formatF(w1)) : "?"}</td></tr></tbody></table>
-        ${isZero(w0) ? `<p class="ch7l-muted">x、y 共线，平行四边形压扁，ω(x,y)=0。</p>` : ""}`;
+        <tr><td>${tex("\\omega")}</td><td>${open ? minus(M().formatF(w0)) : "?"}</td><td>${open ? minus(M().formatF(w1)) : "?"}</td></tr></tbody></table>
+        ${isZero(w0) ? `<p class="ch7l-muted">${tex("x")}、${tex("y")} 共线，平行四边形压扁，${tex(String.raw`\omega(x,y)=0`)}。</p>` : ""}`;
       if (!open) {
-        matCard.innerHTML = `<h4>变换矩阵</h4><div>${texD(`K=${K.latexMatrix(Kf)}`)}</div><p class="ch7l-muted">先在上方猜一猜，再动手操作一次，ω 的读数随后出现。</p>`;
+        matCard.innerHTML = `<h4>变换矩阵</h4><div>${texD(`K=${K.latexMatrix(Kf)}`)}</div><p class="ch7l-muted">先在上方猜一猜，再动手操作一次，${tex("\\omega")} 的读数随后出现。</p>`;
         return;
       }
       const base = shearOn()
         ? state.x[1] === 0 && state.y[1] !== 0
-          ? `<p class="ch7l-muted" data-sym-base>底边 x 不动，上边沿水平虚线滑动，高 h 不变：同底同高，面积相等。</p>`
-          : `<p class="ch7l-muted" data-sym-base>每个点沿水平虚线滑动。把 x 拖回 x₁ 轴，可以看到同底同高。</p>`
+          ? `<p class="ch7l-muted" data-sym-base>底边 ${tex("x")} 不动，上边沿水平虚线滑动，高 ${tex("h")} 不变：同底同高，面积相等。</p>`
+          : `<p class="ch7l-muted" data-sym-base>每个点沿水平虚线滑动。把 ${tex("x")} 拖回 ${tex("x_1")} 轴，可以看到同底同高。</p>`
         : "";
       matCard.innerHTML = `<h4>变换矩阵</h4><div>${texD(`K=${K.latexMatrix(Kf)},\\quad |K|=${lf(detK)}`)}</div>
         <div>${texD(`\\omega(Kx,Ky)=|K|\\,\\omega(x,y)`)}</div>
-        <p><span class="ch10l-badge${keeps ? "" : " is-off"}">${keeps ? "K 保持 ω" : "K 不保持 ω"}</span></p>${base}
+        <p><span class="ch10l-badge${keeps ? "" : " is-off"}">${keeps ? `${tex("K")} 保持 ${tex("\\omega")}` : `${tex("K")} 不保持 ${tex("\\omega")}`}</span></p>${base}
         <p data-sym-swap>${tex(`\\omega(y,x)=${lf(M().neg(w0))}=-\\omega(x,y)`)}</p>
-        <p class="ch7l-muted">交换 x、y，平行四边形的定向反过来，ω 变号；所以 ${tex("\\omega(x,x)=0")}。</p>`;
+        <p class="ch7l-muted">交换 ${tex("x")}、${tex("y")}，平行四边形的定向反过来，${tex("\\omega")} 变号；所以 ${tex("\\omega(x,x)=0")}。</p>`;
     }
 
     /*
@@ -911,16 +911,16 @@
       state.key,
     );
     flow = K.predictFlow(gateHost, result, {
-      question: `剪切 ${tex("K=\\begin{pmatrix}1&1\\\\0&1\\end{pmatrix}")} 改变了 x、y 的长度和夹角。${tex("\\omega(Kx,Ky)")} 与 ${tex("\\omega(x,y)")} 相比怎样？`,
+      question: `剪切 ${tex("K=\\begin{pmatrix}1&1\\\\0&1\\end{pmatrix}")} 改变了 ${tex("x")}、${tex("y")} 的长度和夹角。${tex("\\omega(Kx,Ky)")} 与 ${tex("\\omega(x,y)")} 相比怎样？`,
       options: [
         { text: "相等", correct: true },
         { text: "变大", why: "拖动 x、y 看表格：ω 一栏的两个数始终相同。" },
         { text: "变号", why: "变号需要 |K|<0，剪切的 |K|=1。" },
-        { text: "取决于 x、y", why: "ω(Kx,Ky)=|K|ω(x,y) 对一切 x、y 成立。" },
+        { text: `取决于 ${tex("x")}、${tex("y")}`, why: "ω(Kx,Ky)=|K|ω(x,y) 对一切 x、y 成立。" },
       ],
       actHint: "记下了你的猜测。拖动 x、y 或换一个变换，结论随后出现。",
       onReveal: () => redraw(),
-      conclusion: "ω(Kx,Ky)=|K|·ω(x,y)。剪切、挤压与旋转的 |K|=1，有向面积不变，尽管长度与夹角都可能改变；横向拉伸 |K|=2，面积加倍；交换坐标 |K|=−1，有向面积变号。平面上保持 ω 的线性变换恰好是 |K|=1 的变换。",
+      conclusion: `${tex(String.raw`\omega(Kx,Ky)=|K|\,\omega(x,y)`)}。剪切、挤压与旋转的 ${tex("|K|=1")}，有向面积不变，尽管长度与夹角都可能改变；横向拉伸 ${tex("|K|=2")}，面积加倍；交换坐标 ${tex("|K|=-1")}，有向面积变号。平面上保持 ${tex(String.raw`\omega`)} 的线性变换恰好是 ${tex("|K|=1")} 的变换。`,
     });
     redraw();
     return () => {

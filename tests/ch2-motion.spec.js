@@ -5,6 +5,19 @@ async function openLesson(page, id) {
   await expect(page.locator(`#${id}-interactive .ch2-lab`).first()).toBeVisible();
 }
 
+// an element's text with every formula written as its TeX source (punctuation glued to a formula kept)
+function texText(locator) {
+  return locator.evaluate((element) => {
+    const copy = element.cloneNode(true);
+    copy.querySelectorAll(".tex[data-tex]").forEach((formula) => {
+      const marks = [...formula.querySelectorAll(".la-punct")].map((mark) => mark.textContent).join("");
+      formula.replaceWith(formula.dataset.tex + marks);
+    });
+    // the quarter-em gap beside formulas (U+2005) reads as a plain space
+    return copy.textContent.replace(/[\u2005\u00a0]/g, " ");
+  });
+}
+
 function browserErrors(page) {
   const errors = [];
   page.on("pageerror", (error) => errors.push(`pageerror: ${error.message}`));
@@ -46,7 +59,7 @@ test.describe("Chapter 2 normal-motion interactions", () => {
     await page.locator("[data-cramer-near]").click();
     await expect(page.locator("[data-d]")).toHaveText("1/10", { timeout: 4000 });
     await expect(page.locator("[data-sol]")).toContainText("接近共线", { timeout: 4000 });
-    await expect(page.locator("[data-slide-proof]")).toContainText("沿 a₂ 方向滑到 x₁a₁", { timeout: 4000 });
+    await expect.poll(() => texText(page.locator("[data-slide-proof]")), { timeout: 4000 }).toContain("沿 a_2 方向滑到 x_1a_1");
     expect(errors).toEqual([]);
   });
 

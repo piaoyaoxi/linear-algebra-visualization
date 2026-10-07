@@ -7,7 +7,7 @@ defineChapter3Section("binary-higher-degree", {
   goal: "理解二元多项式方程组的公共解是代数曲线交点；会选择消元变量；认识Sylvester 矩阵与结式；能够从结式得到候选根、回代求另一坐标并逐点验解，同时识别重根与次数退化。",
   tags: ["选学", "多项式消元", "Sylvester 矩阵", "结式", "回代验解"],
   intro:
-    "把两个方程都看成关于 x 的多项式，系数是 y 的多项式。结式 R(y) 为 0 的 y 是交点纵坐标的候选；每个候选都要回代求 x，并代回两个原方程检验。",
+    `把两个方程都看成关于 ${texInline("x")} 的多项式，系数是 ${texInline("y")} 的多项式。结式 ${texInline("R(y)")} 为 0 的 ${texInline("y")} 是交点纵坐标的候选；每个候选都要回代求 ${texInline("x")}，并代回两个原方程检验。`,
   videoPlan: {
     title: "从直线交点到曲线交点",
     duration: "约 2.5 分钟",
@@ -25,7 +25,7 @@ defineChapter3Section("binary-higher-degree", {
     },
     {
       label: "选择消元变量",
-      text: "把 f、g 看成关于 x 的多项式时，其系数是 y 的多项式；也可以反过来消去 y。不同选择影响计算复杂度。",
+      text: `把 ${texInline("f")}、${texInline("g")} 看成关于 ${texInline("x")} 的多项式时，其系数是 ${texInline("y")} 的多项式；也可以反过来消去 ${texInline("y")}。不同选择影响计算复杂度。`,
     },
     {
       label: "Sylvester 矩阵",
@@ -33,7 +33,7 @@ defineChapter3Section("binary-higher-degree", {
     },
     {
       label: "结式条件",
-      text: `在次数保持正常时，${texInline(String.raw`\operatorname{Res}_x(f,g)=0`)} 等价于 f、g 关于 x 有公共根。`,
+      text: `在次数保持正常时，${texInline(String.raw`\operatorname{Res}_x(f,g)=0`)} 等价于 ${texInline("f")}、${texInline("g")} 关于 ${texInline("x")} 有公共根。`,
     },
     {
       label: "候选与验解",
@@ -59,7 +59,7 @@ defineChapter3Section("binary-higher-degree", {
   },
   example: {
     title: "例题：单位圆与直线的结式",
-    question: `求 ${texInline(String.raw`x^2+y^2=1`)} 与 ${texInline(String.raw`x-y=0`)} 的公共实解。要求把两式看成关于 x 的多项式，写出Sylvester 矩阵与结式，并回代验解。`,
+    question: `求 ${texInline(String.raw`x^2+y^2=1`)} 与 ${texInline(String.raw`x-y=0`)} 的公共实解。要求把两式看成关于 ${texInline("x")} 的多项式，写出Sylvester 矩阵与结式，并回代验解。`,
     choices: [
       {
         correct: true,
@@ -67,7 +67,7 @@ defineChapter3Section("binary-higher-degree", {
       },
       { text: "结式为零的每个根都自动对应原方程组解，无需回代。" },
       { text: "圆与直线的次数分别为 2 和 1，因此一定有三个实交点。" },
-      { text: `消去 x 后只能得到 ${texInline(String.raw`y=0`)}。` },
+      { text: `消去 ${texInline("x")} 后只能得到 ${texInline(String.raw`y=0`)}。` },
     ],
     steps: [
       `写成 ${texInline(String.raw`f=x^2+(y^2-1)`)} 与 ${texInline(String.raw`g=x-y`)}。`,
@@ -80,16 +80,16 @@ defineChapter3Section("binary-higher-degree", {
   },
   quiz: [
     {
-      question: `解 ${texInline("x^2+y^2=5,\\ xy=2")} 时，候选 y=1 给出 ${texInline("x^2=4")}。${texInline("(-2,1)")} 是解吗？`,
-      answer: `不是。x 必须同时是 ${texInline("f(x,1)=x^2-4")} 与 ${texInline("g(x,1)=x-2")} 的根，只有 x=2。回代时要用两个方程。`,
+      question: `解 ${texInline("x^2+y^2=5,\\ xy=2")} 时，候选 ${texInline("y=1")} 给出 ${texInline("x^2=4")}。${texInline("(-2,1)")} 是解吗？`,
+      answer: `不是。${texInline("x")} 必须同时是 ${texInline("f(x,1)=x^2-4")} 与 ${texInline("g(x,1)=x-2")} 的根，只有 ${texInline("x=2")}。回代时要用两个方程。`,
     },
     {
-      question: `${texInline("x^2+y^2=2")} 与 ${texInline("y=x^2")} 消去 x 得 ${texInline("R(y)=(y-1)^2(y+2)^2")}。二重根 y=1 表示两条曲线在那里相切吗？`,
-      answer: "不是。y=1 对应两个横截交点 (1,1) 与 (−1,1)，它们纵坐标相同，所以 y=1 是二重根。y=−2 回代得 x=±√2 i，没有实交点。",
+      question: `${texInline("x^2+y^2=2")} 与 ${texInline("y=x^2")} 消去 ${texInline("x")} 得 ${texInline("R(y)=(y-1)^2(y+2)^2")}。二重根 ${texInline("y=1")} 表示两条曲线在那里相切吗？`,
+      answer: `不是。${texInline("y=1")} 对应两个横截交点 ${texInline("(1,1)")} 与 ${texInline("(-1,1)")}，它们纵坐标相同，所以 ${texInline("y=1")} 是二重根。${texInline("y=-2")} 回代得 ${texInline("x=\\pm\\sqrt2\\,i")}，没有实交点。`,
     },
     {
-      question: `${texInline("xy=1")} 与 ${texInline("xy=2")} 消去 x 得 ${texInline("R(y)=-y")}。y=0 为什么不是解？`,
-      answer: "两个方程关于 x 的首项系数都是 y，在 y=0 处同时为 0，结式的根在这里只是伪候选。回代得 0=1，不成立。",
+      question: `${texInline("xy=1")} 与 ${texInline("xy=2")} 消去 ${texInline("x")} 得 ${texInline("R(y)=-y")}。${texInline("y=0")} 为什么不是解？`,
+      answer: `两个方程关于 ${texInline("x")} 的首项系数都是 ${texInline("y")}，在 ${texInline("y=0")} 处同时为 0，结式的根在这里只是伪候选。回代得 ${texInline("0=1")}，不成立。`,
     },
   ],
   summary: [

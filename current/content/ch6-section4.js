@@ -9,10 +9,10 @@ defineChapter6Section("change-of-basis", {
   intro:
     `换基时向量本身不动，变的是度量它的那组基。把新基向量在旧基下的坐标排成列，得到过渡矩阵 ${texInline(String.raw`A`)}；同一向量的旧坐标 ${texInline(String.raw`X`)} 与新坐标 ${texInline(String.raw`Y`)} 满足 ${texInline(String.raw`X=AY`)}。拖动 ${texInline(String.raw`a`)}，看同一条抛物线在一族新基下的坐标。`,
   concepts: [
-    { label: "过渡矩阵", text: "由基 ε 到基 η 的过渡矩阵 A 满足 (η)=(ε)A，第 j 列是 ηⱼ 在 ε 下的坐标。" },
-    { label: "坐标变换", text: "旧坐标 X、新坐标 Y 满足 X=AY。" },
+    { label: "过渡矩阵", text: `由基 ${texInline("\\varepsilon")} 到基 ${texInline("\\eta")} 的过渡矩阵 ${texInline("A")} 满足 ${texInline("(\\eta)=(\\varepsilon)A")}，第 ${texInline("j")} 列是 ${texInline("\\eta_j")} 在 ${texInline("\\varepsilon")} 下的坐标。` },
+    { label: "坐标变换", text: `旧坐标 ${texInline("X")}、新坐标 ${texInline("Y")} 满足 ${texInline("X=AY")}。` },
   ],
-  textbook: { reference: "北大版《高等代数》第六章 §4", items: ["基变换与过渡矩阵", "过渡矩阵可逆", "坐标变换公式 X=AY"] },
+  textbook: { reference: "北大版《高等代数》第六章 §4", items: ["基变换与过渡矩阵", "过渡矩阵可逆", `坐标变换公式 ${texInline("X=AY")}`] },
   interactive: { type: "slot", title: "同一条曲线，换一组基" },
   lesson: {
     blocks: [

@@ -4,12 +4,12 @@ defineChapter1Section("multivariate-polynomials", {
   title: "多元多项式",
   navTitle: "多元多项式",
   question: "有多个变量时，多项式的各项怎样排列？次数怎样定义？",
-  goal: "理解 n 元多项式、次数与字典排列法；掌握齐次多项式与齐次成分。",
+  goal: `理解 ${texInline("n")} 元多项式、次数与字典排列法；掌握齐次多项式与齐次成分。`,
   tags: ["多元多项式", "次数", "齐次成分"],
   intro: `单项式 ${texInline("a\\,x_1^{k_1}\\cdots x_n^{k_n}")} 的次数是 ${texInline("k_1+\\cdots+k_n")}；多项式的次数是系数非零的各项次数的最大值。两个变量时，把 ${texInline("x^iy^j")} 放在格点 ${texInline("(i,j)")} 上：同类项落在同一点，单项式相乘就是指数向量相加。`,
   textbook: {
     reference: "北大版《高等代数》第一章 §10",
-    items: ["n 元多项式与次数", "字典排列法", "齐次多项式"],
+    items: [`${texInline("n")} 元多项式与次数`, "字典排列法", "齐次多项式"],
   },
   formal: {
     title: "次数与齐次成分",
@@ -38,7 +38,7 @@ defineChapter1Section("multivariate-polynomials", {
     type: "slot",
     title: "指数格点",
     description: "点击格点读取单项式，按次数分层，观察乘法。",
-    task: "点击格点读出单项式和它的次数，按 d=0,1,2,3 查看齐次成分；先猜一猜，再切到“乘法合成”，看两个指数向量首尾相接落在哪一点。",
+    task: `点击格点读出单项式和它的次数，按 ${texInline("d=0,1,2,3")} 查看齐次成分；先猜一猜，再切到“乘法合成”，看两个指数向量首尾相接落在哪一点。`,
   },
   example: {
     title: "例题：次数与齐次成分",

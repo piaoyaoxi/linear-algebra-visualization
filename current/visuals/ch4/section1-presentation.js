@@ -172,7 +172,7 @@
         left: "\\begin{bmatrix}1&2&3\\\\4&5&6\\end{bmatrix}",
         right: "\\begin{bmatrix}1&4\\\\2&5\\\\3&6\\end{bmatrix}",
         correct: "different",
-        explanation: "左边是 2×3，右边是 3×2，形状已经不同。",
+        explanation: `左边是 ${mathInline("2\\times3")}，右边是 ${mathInline("3\\times2")}，形状已经不同。`,
       },
     ];
 
@@ -289,14 +289,14 @@
           <div class="module-heading">
             <span>05</span>
             <div>
-              <h3 id="shape-machine-title">尺寸机器：n 个输入坐标，m 个输出坐标</h3>
+              <h3 id="shape-machine-title">尺寸机器：${mathInline("n")} 个输入坐标，${mathInline("m")} 个输出坐标</h3>
               <p>矩阵的列数对应输入坐标数，行数对应输出坐标数。</p>
             </div>
           </div>
           <div class="shape-machine" data-shape-machine>
             <div class="shape-controls">
-              <label>输出维数 m <input type="range" min="1" max="4" value="3" data-shape-m /><output data-shape-m-value>3</output></label>
-              <label>输入维数 n <input type="range" min="1" max="4" value="2" data-shape-n /><output data-shape-n-value>2</output></label>
+              <label><span>输出维数 ${mathInline("m")}</span> <input type="range" min="1" max="4" value="3" data-shape-m /><output data-shape-m-value>3</output></label>
+              <label><span>输入维数 ${mathInline("n")}</span> <input type="range" min="1" max="4" value="2" data-shape-n /><output data-shape-n-value>2</output></label>
             </div>
             <div class="shape-flow">
               <div class="shape-port-group">
@@ -305,7 +305,7 @@
               </div>
               <span class="shape-flow-arrow" aria-hidden="true">→</span>
               <div class="shape-matrix-card">
-                <strong data-shape-matrix-label>3 × 2</strong>
+                <strong data-shape-matrix-label>${mathInline("3\\times2")}</strong>
                 <div class="shape-mini-matrix" data-shape-matrix></div>
               </div>
               <span class="shape-flow-arrow" aria-hidden="true">→</span>
@@ -392,7 +392,7 @@
   function bindEqualityCases(root) {
     root.querySelectorAll("[data-equality-case]").forEach((card) => {
       const feedback = card.querySelector("[data-equality-feedback]");
-      const defaultText = feedback?.textContent || "";
+      const defaultHtml = feedback?.innerHTML.trim() || "";
       card.querySelectorAll("[data-equality-answer]").forEach((button) => {
         button.addEventListener("click", () => {
           const correct = button.dataset.equalityAnswer === card.dataset.correct;
@@ -401,7 +401,7 @@
           });
           card.classList.toggle("is-correct", correct);
           card.classList.toggle("is-wrong", !correct);
-          if (feedback) feedback.textContent = correct ? `判断正确。${defaultText}` : "再检查一次：先比较行数和列数，再逐个比较对应位置。";
+          if (feedback) feedback.innerHTML = correct ? `判断正确。${defaultHtml}` : "再检查一次：先比较行数和列数，再逐个比较对应位置。";
         });
       });
     });
@@ -420,13 +420,13 @@
       machine.querySelector("[data-shape-n-value]").value = n;
       machine.querySelector("[data-input-label]").textContent = `${n} 维输入`;
       machine.querySelector("[data-output-label]").textContent = `${m} 维输出`;
-      machine.querySelector("[data-shape-matrix-label]").textContent = `${m} × ${n}`;
+      machine.querySelector("[data-shape-matrix-label]").innerHTML = mathInline(`${m}\\times${n}`);
       machine.querySelector("[data-input-ports]").innerHTML = Array.from({ length: n }, (_, index) => `<span title="输入坐标 ${index + 1}">${index + 1}</span>`).join("");
       machine.querySelector("[data-output-ports]").innerHTML = Array.from({ length: m }, (_, index) => `<span title="输出坐标 ${index + 1}">${index + 1}</span>`).join("");
       const grid = machine.querySelector("[data-shape-matrix]");
       grid.style.setProperty("--shape-cols", n);
       grid.innerHTML = Array.from({ length: m * n }, () => "<span></span>").join("");
-      machine.querySelector("[data-shape-explanation]").textContent = `${m}×${n} 矩阵有 ${n} 列，所以接收 ${n} 个输入坐标；它有 ${m} 行，所以产生 ${m} 个输出坐标。`;
+      machine.querySelector("[data-shape-explanation]").innerHTML = `${mathInline(`${m}\\times${n}`)} 矩阵有 ${n} 列，所以接收 ${n} 个输入坐标；它有 ${m} 行，所以产生 ${m} 个输出坐标。`;
     };
 
     mInput.addEventListener("input", render);
@@ -450,16 +450,16 @@
     const state = { A: [[2, 1], [1, 3]], sel: [1, 0], ghost: null, col: null };
     root.innerHTML = `<h2>交互实验</h2>
       <section class="ch3l-lab ml1-lab">
-        <header class="ch3l-head"><h3>同一张表，三种读法</h3><p>下面三处用的是同一个矩阵 A。点 A 中的一个元素，三处会同时标出它；选中后可以改它的值（0 到 4）。点列标题，三处同时标出这一整列。</p></header>
+        <header class="ch3l-head"><h3>同一张表，三种读法</h3><p>下面三处用的是同一个矩阵 ${mathInline("A")}。点 ${mathInline("A")} 中的一个元素，三处会同时标出它；选中后可以改它的值（0 到 4）。点列标题，三处同时标出这一整列。</p></header>
         <div data-ml1-gate></div>
         <div class="ml1-control">
-          <div class="ml1-matrix" role="group" aria-label="矩阵 A 的元素"><b class="ml1-name">A =</b><div class="ml1-colwrap"><div class="ml1-colheads" data-ml1-colheads></div><div class="ml1-cells" data-ml1-cells></div></div></div>
+          <div class="ml1-matrix" role="group" aria-label="矩阵 A 的元素"><b class="ml1-name">${mathInline("A=")}</b><div class="ml1-colwrap"><div class="ml1-colheads" data-ml1-colheads></div><div class="ml1-cells" data-ml1-cells></div></div></div>
           <div class="ml1-stepper"><b data-ml1-selname></b><button type="button" class="ch3l-btn" data-ml1-step="-1" aria-label="减 1">−1</button><button type="button" class="ch3l-btn is-primary" data-ml1-step="1" aria-label="加 1">+1</button></div>
         </div>
         <div class="ml1-views">
           <figure class="ml1-view"><figcaption>数据表：行是店，列是水果（箱）</figcaption><div data-ml1-table></div></figure>
           <figure class="ml1-view"><figcaption>方程组：行是方程，列是未知量</figcaption><div class="ml1-eqs" data-ml1-eqs></div></figure>
-          <figure class="ml1-view ml1-plane"><figcaption>平面：第 j 列是 Ae<sub>j</sub> 的坐标</figcaption><canvas aria-label="Ae₁ 与 Ae₂"></canvas></figure>
+          <figure class="ml1-view ml1-plane"><figcaption>平面：第 ${mathInline("j")} 列是 ${mathInline("Ae_j")} 的坐标</figcaption><canvas aria-label="Ae₁ 与 Ae₂"></canvas></figure>
         </div>
         <div class="ch3l-card ml1-readout" data-ml1-readout></div>
       </section>`;
@@ -480,17 +480,17 @@
       const [si, sj] = state.sel;
       const A = state.A;
       cells.innerHTML = A.map((r, i) => r.map((v, j) => `<button type="button" class="${cls(i, j)}" data-ml1-cell="${i}${j}" aria-pressed="${isSel(i, j)}">${v}</button>`).join("")).join("");
-      selName.innerHTML = `a<sub>${si + 1}${sj + 1}</sub> = ${A[si][sj]}`;
+      selName.innerHTML = mathInline(`a_{${si + 1}${sj + 1}}=${A[si][sj]}`);
       lab.querySelector("[data-ml1-colheads]").innerHTML = [0, 1].map((j) => colHead(j, `第 ${j + 1} 列`)).join("");
       tableBox.innerHTML = `<table class="ml1-table"><thead><tr><th></th>${COLS.map((c, j) => `<th>${colHead(j, c)}</th>`).join("")}</tr></thead><tbody>${A.map((r, i) => `<tr><th>${ROWS[i]}</th>${r.map((v, j) => `<td class="${cls(i, j)}">${v}</td>`).join("")}</tr>`).join("")}</tbody></table>`;
-      eqs.innerHTML = A.map((r, i) => `<p>${r.map((v, j) => `${j ? " + " : ""}<b class="${cls(i, j)}">${v}</b><i>x</i>${SUB[j]}`).join("")} = <i>b</i>${SUB[i]}</p>`).join("");
+      eqs.innerHTML = A.map((r, i) => `<p>${r.map((v, j) => `${j ? " + " : ""}<b class="${cls(i, j)}">${v}</b>${mathInline(`x_${j + 1}`)}`).join("")} = ${mathInline(`b_${i + 1}`)}</p>`).join("");
       const v = A[si][sj];
       const cj = state.col;
       readout.innerHTML = cj !== null
-        ? `<div class="ml1-head"><b>第 ${cj + 1} 列的三种读法</b><strong>Ae${SUB[cj]} = (${A[0][cj]}, ${A[1][cj]})</strong></div><ul class="ml1-list"><li>数据表：两家店卖出的${COLS[cj]}，${A[0][cj]} 箱与 ${A[1][cj]} 箱。</li><li>方程组：两个方程中 <i>x</i>${SUB[cj]} 的系数。</li><li>平面：箭头 Ae${SUB[cj]} 的横、纵坐标。</li></ul>`
+        ? `<div class="ml1-head"><b>第 ${cj + 1} 列的三种读法</b><strong>${mathInline(`Ae_${cj + 1}=(${A[0][cj]},${A[1][cj]})`)}</strong></div><ul class="ml1-list"><li>数据表：两家店卖出的${COLS[cj]}，${A[0][cj]} 箱与 ${A[1][cj]} 箱。</li><li>方程组：两个方程中 ${mathInline(`x_${cj + 1}`)} 的系数。</li><li>平面：箭头 ${mathInline(`Ae_${cj + 1}`)} 的横、纵坐标。</li></ul>`
         : revealed
-        ? `<div class="ml1-head"><b>a<sub>${si + 1}${sj + 1}</sub> 的三种读法</b><strong>${v}</strong></div><ul class="ml1-list"><li>数据表：${ROWS[si]}卖出${COLS[sj]} ${v} 箱。</li><li>方程组：第 ${si + 1} 个方程中 <i>x</i>${SUB[sj]} 的系数。</li><li>平面：Ae${SUB[sj]} 的第 ${si + 1} 个坐标（${si === 0 ? "横" : "纵"}坐标）。</li></ul>`
-        : `<div class="ml1-head"><b>选中的元素</b><strong>a<sub>${si + 1}${sj + 1}</sub> = ${v}</strong></div><p>位于第 ${si + 1} 行、第 ${sj + 1} 列。下标先读行，再读列。</p>`;
+        ? `<div class="ml1-head"><b>${mathInline(`a_{${si + 1}${sj + 1}}`)} 的三种读法</b><strong>${v}</strong></div><ul class="ml1-list"><li>数据表：${ROWS[si]}卖出${COLS[sj]} ${v} 箱。</li><li>方程组：第 ${si + 1} 个方程中 ${mathInline(`x_${sj + 1}`)} 的系数。</li><li>平面：${mathInline(`Ae_${sj + 1}`)} 的第 ${si + 1} 个坐标（${si === 0 ? "横" : "纵"}坐标）。</li></ul>`
+        : `<div class="ml1-head"><b>选中的元素</b><strong>${mathInline(`a_{${si + 1}${sj + 1}}=${v}`)}</strong></div><p>位于第 ${si + 1} 行、第 ${sj + 1} 列。下标先读行，再读列。</p>`;
       lab.querySelector('[data-ml1-step="-1"]').disabled = !gate?.picked || v <= 0;
       const plus = lab.querySelector('[data-ml1-step="1"]');
       if (gate?.picked) plus.disabled = v >= 4;
@@ -605,14 +605,14 @@
       root: lab,
       manual: true,
       key: "visuals/ch4/section1-presentation.js#three-readings",
-      question: "把 a<sub>21</sub> 从 1 改成 2。平面里哪个箭头会动，往哪个方向动？",
+      question: `把 ${mathInline("a_{21}")} 从 1 改成 2。平面里哪个箭头会动，往哪个方向动？`,
       options: [
-        ["Ae₁ 向上移动一格", true, ""],
-        ["Ae₂ 向上移动一格", false, "a₂₁ 在第 1 列，第 1 列记录的是 Ae₁，Ae₂ 没有动。"],
-        ["Ae₁ 向右移动一格", false, "a₂₁ 在第 2 行，它是 Ae₁ 的第 2 个坐标，也就是纵坐标。"],
+        [`${mathInline("Ae_1")} 向上移动一格`, true, ""],
+        [`${mathInline("Ae_2")} 向上移动一格`, false, "a₂₁ 在第 1 列，第 1 列记录的是 Ae₁，Ae₂ 没有动。"],
+        [`${mathInline("Ae_1")} 向右移动一格`, false, "a₂₁ 在第 2 行，它是 Ae₁ 的第 2 个坐标，也就是纵坐标。"],
         ["两个箭头都动", false, "一个元素只属于一列，只有这一列对应的箭头会动。"],
       ],
-      right: "✓ a₂₁ 在第 1 列，所以属于 Ae₁；在第 2 行，所以是纵坐标。同一个位置 (i, j) 在数据表里是第 i 家店的第 j 种水果，在方程组里是第 i 个方程中 xⱼ 的系数。行和列的位置一旦定下，三种读法就同时定下。",
+      right: `✓ ${mathInline("a_{21}")} 在第 1 列，所以属于 ${mathInline("Ae_1")}；在第 2 行，所以是纵坐标。同一个位置 ${mathInline("(i,j)")} 在数据表里是第 ${mathInline("i")} 家店的第 ${mathInline("j")} 种水果，在方程组里是第 ${mathInline("i")} 个方程中 ${mathInline("x_j")} 的系数。行和列的位置一旦定下，三种读法就同时定下。`,
       onPick: () => { state.sel = [1, 0]; state.ghost = null; paint(); },
     });
 

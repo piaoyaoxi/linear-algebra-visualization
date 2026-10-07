@@ -359,3 +359,19 @@ _dev/research/3b1b_eola_chapter10.py
 
 - 十章已全部按以可视化为核心的标准重做。之后的工作以打磨为主：补充定理块小图和“停一下”问题，修手机端标签重叠等细节。
 - 新改动仍需通过 `site-audit` 与各章浏览器检查。
+
+## 第六轮 B：正文数学符号改 KaTeX（2026-10-08，分支 `content/round6-symbols`；第一至六、八章由接力账号完成，第七、九、十章由主账号完成）
+
+规则（用户定）：正文里会显示的单个符号、变量、带上下标的量和短式子改成 `texInline(...)`（第九章用 `t(...)`）；不改画布标签、aria-label、title、data-why（预测选项的 why）、按钮上的纯文字或数字、“第 2 行”“2 阶”这类计数、选项字母。每章一个提交，测试只改期望文字、不放宽。
+
+已完成并推送（每章自查过：node --check、site-audit、typo-scan、该章测试；合并后 52 节冒烟无报错、无 katex-error、无溢出）：第一、二、三、四、五、六、八章。
+- 测试改动：ch1 audit 一条（§3 标题期望 TeX 源 `x^2+x+1`）；ch2 两个 spec 加 `texText()`，按 TeX 源比文字；ch8 check 把“侧栏不含 νⱼ”改成“不含 ν，且揭晓前没有表格”。
+- 各章都故意保留的：小节标题（导航、目录用纯文字），例题标题（`example-challenge.js` 用 escapeText 插入，`lesson-presentation.js` 用 textContent），所以这几处仍是 Unicode；要改得先改这两个共用渲染器。why 字段在揭晓后的判定行里也还是 Unicode。
+
+已全部完成：第七章（应用接力账号的半成品并补完）、第九章、第十章也已转换；整分支跑过完整检查。
+- 第九章：`labs.css` 的 `.ch9l-steps span` 改成 `> span`（原来会把样式漏进 KaTeX，§2 手机上横向溢出）；ch9 检查脚本的 §3 断言改为比较 TeX 源（`B=E` / `B\ne E`）。
+- 第十章：`labs.js` 的 `rangeRow` 多一个纯文字的 aria 参数，滑块标签用 KaTeX，aria-label 不变。
+- 各章都保留 Unicode 的地方：小节标题、例题标题、实验 slot 标题、标签（tags）、画布标签、图注提示（hint）、aria、`why`、`actHint`、按钮上的纯文字。
+
+以后可选：
+共用渲染器里的例题标题、小节标题支持公式后，再统一这些地方。

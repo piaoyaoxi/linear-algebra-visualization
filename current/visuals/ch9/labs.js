@@ -262,14 +262,14 @@
     dot: { label: "标准内积", G: [[1, 0], [0, 1]] },
     diag: { label: tex("G=\\operatorname{diag}(1,4)"), G: [[1, 0], [0, 4]] },
     tilt: { label: tex("G=\\left[\\begin{smallmatrix}2&1\\\\1&2\\end{smallmatrix}\\right]"), G: [[2, 1], [1, 2]] },
-    bad: { label: "不正定的 G", G: [[1, 2], [2, 1]] },
+    bad: { label: `不正定的 ${tex("G")}`, G: [[1, 2], [2, 1]] },
   };
 
   function innerProductLab(root) {
     const lab = labShell(root, {
       kind: "inner-product",
-      title: "度量矩阵 G 决定什么叫“垂直”",
-      task: `在 ${tex("\\mathbb R^2")} 上取内积 ${tex("(\\alpha,\\beta)=X^TGY")}。绿色曲线是这个内积下的单位圆 ${tex("\\{\\alpha:(\\alpha,\\alpha)=1\\}")}，虚线圆是普通点积的单位圆。拖动 u、v（每次半格），读出它们的内积。`,
+      title: `度量矩阵 ${tex("G")} 决定什么叫“垂直”`,
+      task: `在 ${tex("\\mathbb R^2")} 上取内积 ${tex("(\\alpha,\\beta)=X^TGY")}。绿色曲线是这个内积下的单位圆 ${tex("\\{\\alpha:(\\alpha,\\alpha)=1\\}")}，虚线圆是普通点积的单位圆。拖动 ${tex("u")}、${tex("v")}（每次半格），读出它们的内积。`,
     });
     const toolbar = el("div", "ch9l-toolbar");
     lab.append(toolbar);
@@ -280,7 +280,7 @@
     info.dataset.ch9Readout = "ip";
     const gateHost = el("div");
     const result = resultBox(
-      `<p>同一个线性空间可以带不同的内积。单位圆换成椭圆后，与 u 正交的方向正是椭圆在 u 方向上那一点的切线方向，和屏幕上看到的直角无关。长度、夹角、正交全由内积给出，所以欧氏空间要把内积写进定义；取定基后它由正定的度量矩阵 ${tex("G=((\\varepsilon_i,\\varepsilon_j))")} 记录。</p>`,
+      `<p>同一个线性空间可以带不同的内积。单位圆换成椭圆后，与 ${tex("u")} 正交的方向正是椭圆在 ${tex("u")} 方向上那一点的切线方向，和屏幕上看到的直角无关。长度、夹角、正交全由内积给出，所以欧氏空间要把内积写进定义；取定基后它由正定的度量矩阵 ${tex("G=((\\varepsilon_i,\\varepsilon_j))")} 记录。</p>`,
     );
     side.append(info, gateHost, result);
     const state = { key: "diag", u: [1, 1], v: [1, -1], revealed: false };
@@ -318,16 +318,16 @@
       });
       let status;
       if (!pd) {
-        status = `<p class="ch9l-bad">G 不正定：${tex("\\alpha=(1,-1)")} 时 ${tex("(\\alpha,\\alpha)=-2<0")}。它满足对称性和线性，却不能当长度平方用，所以不是内积。</p>`;
+        status = `<p class="ch9l-bad">${tex("G")} 不正定：${tex("\\alpha=(1,-1)")} 时 ${tex("(\\alpha,\\alpha)=-2<0")}。它满足对称性和线性，却不能当长度平方用，所以不是内积。</p>`;
         if (!isZeroVec(v) && vv.n <= 0) status += `<p class="ch9l-bad">当前 ${tex(`(v,v)=${lf(vv)}`)}。</p>`;
       } else if (orth) {
-        status = `<p class="ch9l-ok">${tex("(u,v)=0")}：在这个内积下 u 与 v 正交。</p>`;
+        status = `<p class="ch9l-ok">${tex("(u,v)=0")}：在这个内积下 ${tex("u")} 与 ${tex("v")} 正交。</p>`;
       } else if (isZeroVec(u) || isZeroVec(v)) {
         status = `<p class="ch9l-muted">零向量与任何向量正交，但夹角没有定义。</p>`;
       } else {
         // θ is read off a dragged picture: cos θ is exact, the angle exact only for the special values
         const a = angleTex(uv, uu, vv);
-        status = `<p class="ch9l-muted" data-ip-angle>u 与 v 的夹角 θ：${tex(a.cos)}，${tex(a.angle)}</p>`;
+        status = `<p class="ch9l-muted" data-ip-angle>${tex("u")} 与 ${tex("v")} 的夹角 ${tex(String.raw`\theta`)}：${tex(a.cos)}，${tex(a.angle)}</p>`;
       }
       info.innerHTML = `<h4>当前读数</h4>
         <p>${tex(`G=${M().latexMatrix(G)}`)}</p>
@@ -354,9 +354,9 @@
           { text: tex("(1,-1)"), why: `它和 u 的普通点积为 0；在这个内积下 ${tex("(u,v)=1-4=-3")}。` },
           { text: tex("(4,-1)"), correct: true },
           { text: tex("(1,-4)"), why: `${tex("(u,v)=1\\cdot1+4\\cdot1\\cdot(-4)=-15")}。` },
-          { text: "没有与 u 正交的方向", why: "二维欧氏空间里，每个非零向量都有正交方向。" },
+          { text: `没有与 ${tex("u")} 正交的方向`, why: "二维欧氏空间里，每个非零向量都有正交方向。" },
         ],
-        right: `${tex("(u,v)=4-4=0")}。把 v 拖到 ${tex("(2,-\\tfrac12)")} 验证：绿色虚线上的向量都与 u 正交，它平行于椭圆在 u 方向那一点的切线。`,
+        right: `${tex("(u,v)=4-4=0")}。把 ${tex("v")} 拖到 ${tex("(2,-\\tfrac12)")} 验证：绿色虚线上的向量都与 ${tex("u")} 正交，它平行于椭圆在 ${tex("u")} 方向那一点的切线。`,
       },
       () => {
         state.revealed = true;
@@ -372,15 +372,15 @@
 
   const GS_PRESETS = {
     general: { label: "一般的基", a: [[1, 1, 0], [1, 0, 1], [0, 1, 1]] },
-    dependent: { label: "α₃ 落进平面", a: [[1, 1, 0], [1, 0, 1], [0, 1, -1]] },
+    dependent: { label: `${tex(String.raw`\alpha_3`)} 落进平面`, a: [[1, 1, 0], [1, 0, 1], [0, 1, -1]] },
   };
-  const GS_STEPS = ["原向量组", "β₁ = α₁", "β₂ = α₂ − 投影", "β₃ = α₃ − 平面上的投影", "单位化"];
+  const GS_STEPS = ["原向量组", `${tex(String.raw`\beta_1=\alpha_1`)}`, `${tex(String.raw`\beta_2=\alpha_2-\text{投影}`)}`, `${tex(String.raw`\beta_3=\alpha_3-\text{平面上的投影}`)}`, "单位化"];
 
   function gramSchmidtLab(root) {
     const lab = labShell(root, {
       kind: "gram-schmidt",
       title: "施密特正交化的第三步：减去平面上的投影",
-      task: "一步一步执行正交化。第二步减去 α₂ 在直线 β₁ 上的投影；第三步减去 α₃ 在 β₁、β₂ 所张平面上的投影，留下的 β₃ 垂直于整个平面。α₃ 可以拖动（每次半格）。",
+      task: `一步一步执行正交化。第二步减去 ${tex(String.raw`\alpha_2`)} 在直线 ${tex(String.raw`\beta_1`)} 上的投影；第三步减去 ${tex(String.raw`\alpha_3`)} 在 ${tex(String.raw`\beta_1`)}、${tex(String.raw`\beta_2`)} 所张平面上的投影，留下的 ${tex(String.raw`\beta_3`)} 垂直于整个平面。${tex(String.raw`\alpha_3`)} 可以拖动（每次半格）。`,
     });
     const toolbar = el("div", "ch9l-toolbar");
     lab.append(toolbar);
@@ -395,7 +395,7 @@
     info.dataset.ch9Readout = "gs";
     const gateHost = el("div");
     const result = resultBox(
-      `<p>第 k 步减去的是 ${tex("\\alpha_k")} 在 ${tex("\\operatorname{span}\\{\\beta_1,\\dots,\\beta_{k-1}\\}")} 上的投影。因为 ${tex("\\beta_1,\\beta_2")} 已经正交，平面上的投影才能拆成沿 ${tex("\\beta_1")}、沿 ${tex("\\beta_2")} 的两项相加。沿平面看时 ${tex("\\beta_3")} 与平面成直角；α₃ 落进平面时 ${tex("\\beta_3=0")}，原向量组线性相关。</p>`,
+      `<p>第 ${tex("k")} 步减去的是 ${tex("\\alpha_k")} 在 ${tex("\\operatorname{span}\\{\\beta_1,\\dots,\\beta_{k-1}\\}")} 上的投影。因为 ${tex("\\beta_1,\\beta_2")} 已经正交，平面上的投影才能拆成沿 ${tex("\\beta_1")}、沿 ${tex("\\beta_2")} 的两项相加。沿平面看时 ${tex("\\beta_3")} 与平面成直角；${tex(String.raw`\alpha_3`)} 落进平面时 ${tex("\\beta_3=0")}，原向量组线性相关。</p>`,
     );
     side.append(stepCard, info, gateHost, result);
     const state = { key: "general", a: GS_PRESETS.general.a.map((v) => v.slice()), step: 0, predicted: false };
@@ -479,12 +479,12 @@
         lines.push(
           dep
             ? `<p class="ch9l-bad" data-gs-status>${tex("\\beta_3=0")}：${tex("\\alpha_3")} 在 ${tex("\\operatorname{span}\\{\\alpha_1,\\alpha_2\\}")} 里，没有新方向，向量组线性相关，正交化在这里停止。</p>`
-            : `<p class="ch9l-ok" data-gs-status>${tex(`(\\beta_3,\\beta_1)=${lf(dotF(c.b3, c.b1))},\\ (\\beta_3,\\beta_2)=${lf(dotF(c.b3, c.b2))}`)}：β₃ 垂直于整个平面。</p>`,
+            : `<p class="ch9l-ok" data-gs-status>${tex(`(\\beta_3,\\beta_1)=${lf(dotF(c.b3, c.b1))},\\ (\\beta_3,\\beta_2)=${lf(dotF(c.b3, c.b2))}`)}：${tex(String.raw`\beta_3`)} 垂直于整个平面。</p>`,
         );
       }
       if (step >= 4) {
         const n2 = [c.b1, c.b2, c.b3].map((v) => lf(dotF(v, v)));
-        lines.push(`<p>${tex(`|\\beta_1|^2=${n2[0]},\\ |\\beta_2|^2=${n2[1]},\\ |\\beta_3|^2=${n2[2]}`)}</p><p>${tex("\\eta_i=\\beta_i/|\\beta_i|")}：η₁、η₂、η₃ 是一组标准正交基，单位立方体随之摆正。</p>`);
+        lines.push(`<p>${tex(`|\\beta_1|^2=${n2[0]},\\ |\\beta_2|^2=${n2[1]},\\ |\\beta_3|^2=${n2[2]}`)}</p><p>${tex("\\eta_i=\\beta_i/|\\beta_i|")}：${tex(String.raw`\eta_1`)}、${tex(String.raw`\eta_2`)}、${tex(String.raw`\eta_3`)} 是一组标准正交基，单位立方体随之摆正。</p>`);
       }
       info.innerHTML = lines.join("");
       // the verdict waits until the third step has actually run
@@ -538,22 +538,22 @@
 
   const ISO_G = [[2, 1], [1, 1]];
   const ISO_PRESETS = {
-    std: { label: "标准基 ε₁, ε₂", f: [[1, 0], [0, 1]] },
-    dotperp: { label: "(1,1), (1,−1)", f: [[1, 1], [1, -1]] },
-    other: { label: "(3/5,1/5), (−4/5,7/5)", f: [[0.6, 0.2], [-0.8, 1.4]] },
-    scaled: { label: "(1,0), (−1,2)", f: [[1, 0], [-1, 2]] },
+    std: { label: `标准基 ${tex(String.raw`\varepsilon_1,\varepsilon_2`)}`, f: [[1, 0], [0, 1]] },
+    dotperp: { label: `${tex(String.raw`(1,1),\ (1,-1)`)}`, f: [[1, 1], [1, -1]] },
+    other: { label: `${tex(String.raw`(\tfrac35,\tfrac15),\ (-\tfrac45,\tfrac75)`)}`, f: [[0.6, 0.2], [-0.8, 1.4]] },
+    scaled: { label: `${tex(String.raw`(1,0),\ (-1,2)`)}`, f: [[1, 0], [-1, 2]] },
   };
 
   function isometryLab(root) {
     const lab = labShell(root, {
       kind: "isometry",
-      title: "坐标映射把 V 的单位圆送到哪里",
-      task: `V 是 ${tex("\\mathbb R^2")} 配上度量矩阵 ${tex("G=\\left[\\begin{smallmatrix}2&1\\\\1&1\\end{smallmatrix}\\right]")} 的欧氏空间。选一组基 ${tex("f_1,f_2")}（可拖动），σ 把 ${tex("\\alpha=x_1f_1+x_2f_2")} 送到坐标 ${tex("(x_1,x_2)\\in\\mathbb R^2")}，右边用普通点积。`,
+      title: `坐标映射把 ${tex("V")} 的单位圆送到哪里`,
+      task: `${tex("V")} 是 ${tex("\\mathbb R^2")} 配上度量矩阵 ${tex("G=\\left[\\begin{smallmatrix}2&1\\\\1&1\\end{smallmatrix}\\right]")} 的欧氏空间。选一组基 ${tex("f_1,f_2")}（可拖动），${tex(String.raw`\sigma`)} 把 ${tex("\\alpha=x_1f_1+x_2f_2")} 送到坐标 ${tex("(x_1,x_2)\\in\\mathbb R^2")}，右边用普通点积。`,
     });
     const toolbar = el("div", "ch9l-toolbar");
     lab.append(toolbar);
     const pair = el("div", "ch9l-pair");
-    const left = el("div", "ch9l-view", `<div class="ch9l-view-title">V（内积由 G 给出）</div>`);
+    const left = el("div", "ch9l-view", `<div class="ch9l-view-title">${tex("V")}（内积由 ${tex("G")} 给出）</div>`);
     const right = el("div", "ch9l-view", `<div class="ch9l-view-title">${tex("\\mathbb R^2")}（普通点积）</div>`);
     pair.append(left, right);
     lab.append(pair);
@@ -564,7 +564,7 @@
     status.dataset.ch9Readout = "iso";
     const gateHost = el("div");
     const result = resultBox(
-      `<p>${tex("(\\alpha,\\beta)=X^TBY")}，其中 ${tex("B=C^TGC")} 是 ${tex("f_1,f_2")} 的度量矩阵，C 是从 ${tex("\\varepsilon_1,\\varepsilon_2")} 到 ${tex("f_1,f_2")} 的过渡矩阵。σ 保持内积 ⇔ ${tex("B=E")} ⇔ ${tex("f_1,f_2")} 是标准正交基。每个 n 维欧氏空间都有标准正交基，所以都同构于 ${tex("\\mathbb R^n")}。</p>`,
+      `<p>${tex("(\\alpha,\\beta)=X^TBY")}，其中 ${tex("B=C^TGC")} 是 ${tex("f_1,f_2")} 的度量矩阵，${tex("C")} 是从 ${tex("\\varepsilon_1,\\varepsilon_2")} 到 ${tex("f_1,f_2")} 的过渡矩阵。${tex(String.raw`\sigma`)} 保持内积 ${tex(String.raw`\Leftrightarrow`)} ${tex("B=E")} ${tex(String.raw`\Leftrightarrow`)} ${tex("f_1,f_2")} 是标准正交基。每个 ${tex("n")} 维欧氏空间都有标准正交基，所以都同构于 ${tex("\\mathbb R^n")}。</p>`,
     );
     lab.append(status, gateHost, result);
     const G = matF(ISO_G);
@@ -618,7 +618,7 @@
       ]);
       if (M().isZero(det)) {
         rp.setObjects(() => [{ type: "curve", pts: P().conic([[1, 0], [0, 1]]), closed: true, color: "axis", dash: [5, 5], width: 1.3 }]);
-        status.innerHTML = `<p class="ch9l-bad">${tex("f_1,f_2")} 共线，不是基，σ 无法定义。</p>`;
+        status.innerHTML = `<p class="ch9l-bad">${tex("f_1,f_2")} 共线，不是基，${tex(String.raw`\sigma`)} 无法定义。</p>`;
         return;
       }
       const B = matMulF(matMulF(transposeF(C), G), C);
@@ -637,14 +637,14 @@
       const xx = dotF(x, x);
       const marks = state.revealed
         ? `<p class="ch9l-muted" data-iso-tangent>${tex(`(f_1,f_2)=${lf(b12)}`)}：${
-            M().isZero(b12) ? "f₂ 平行于椭圆在 f₁ 方向上那一点的切线，f₁、f₂ 按 G 正交。" : "f₂（朱色虚线方向）偏离切线，f₁、f₂ 按 G 不正交。"
+            M().isZero(b12) ? `${tex("f_2")} 平行于椭圆在 ${tex("f_1")} 方向上那一点的切线，${tex("f_1")}、${tex("f_2")} 按 ${tex("G")} 正交。` : `${tex("f_2")}（朱色虚线方向）偏离切线，${tex("f_1")}、${tex("f_2")} 按 ${tex("G")} 不正交。`
           }${onEllipse.every(Boolean) ? "两个端点都在单位椭圆上，长度都是 1。" : ""}</p>`
         : "";
       status.innerHTML = `<p>${tex(`B=C^TGC=${M().latexMatrix(B)}`)}　${tex(`|\\alpha|^2=${lf(aa)}`)}，${tex(`|\\sigma\\alpha|^2=${lf(xx)}`)}</p>${marks}
         <p data-iso-status class="${iso ? "ch9l-ok" : "ch9l-muted"}">${
           iso
-            ? "B = E：σ 把 V 的单位椭圆送成单位圆，保持全部内积，是欧氏空间的同构。"
-            : `B ≠ E：σ 是线性同构，但 ${tex("(\\sigma\\alpha,\\sigma\\beta)=X^TY\\ne X^TBY=(\\alpha,\\beta)")}，单位椭圆的像不是单位圆。`
+            ? `${tex("B=E")}：${tex(String.raw`\sigma`)} 把 ${tex("V")} 的单位椭圆送成单位圆，保持全部内积，是欧氏空间的同构。`
+            : `${tex(String.raw`B\ne E`)}：${tex(String.raw`\sigma`)} 是线性同构，但 ${tex("(\\sigma\\alpha,\\sigma\\beta)=X^TY\\ne X^TBY=(\\alpha,\\beta)")}，单位椭圆的像不是单位圆。`
         }</p>`;
     }
 
@@ -660,14 +660,14 @@
     predictGate(
       gateHost,
       {
-        question: `σ 把 ${tex("f_1,f_2")} 送到 ${tex("e_1,e_2")}，右边按普通点积计算。${tex("f_1,f_2")} 满足什么条件时，σ 保持内积？`,
+        question: `${tex(String.raw`\sigma`)} 把 ${tex("f_1,f_2")} 送到 ${tex("e_1,e_2")}，右边按普通点积计算。${tex("f_1,f_2")} 满足什么条件时，${tex(String.raw`\sigma`)} 保持内积？`,
         options: [
-          { text: `${tex("f_1,f_2")} 按 V 的内积（G）是标准正交基`, correct: true },
+          { text: `${tex("f_1,f_2")} 按 ${tex("V")} 的内积（${tex("G")}）是标准正交基`, correct: true },
           { text: `${tex("f_1,f_2")} 按普通点积互相垂直、长度为 1`, why: "V 里的长度和角度要用 G 计算。试试 (1,1)、(1,−1)。" },
           { text: "任意一组基都可以", why: "看右图：标准基的像是一个椭圆，长度被改变了。" },
           { text: `只有 ${tex("f_1=\\varepsilon_1,\\ f_2=\\varepsilon_2")}`, why: `${tex("(\\varepsilon_1,\\varepsilon_1)=2")}，标准基在 V 里不是单位向量。` },
         ],
-        right: `例如 ${tex("f_1=(\\tfrac35,\\tfrac15),\\ f_2=(-\\tfrac45,\\tfrac75)")}：两个端点都在单位椭圆上，f₂ 平行于 f₁ 处的切线；${tex("B=E")}，右边的紫色曲线与虚线单位圆重合。`,
+        right: `例如 ${tex("f_1=(\\tfrac35,\\tfrac15),\\ f_2=(-\\tfrac45,\\tfrac75)")}：两个端点都在单位椭圆上，${tex("f_2")} 平行于 ${tex("f_1")} 处的切线；${tex("B=E")}，右边的紫色曲线与虚线单位圆重合。`,
         defer: lab,
         actHint: "记下了你的猜测。换一组基或拖动 f₁、f₂，结论随后出现。",
       },
@@ -699,7 +699,7 @@
     const lab = labShell(root, {
       kind: "orthogonal-transform",
       title: "保持全部长度与夹角的线性变换",
-      task: "选一个矩阵，看单位圆、小旗和两个可拖动的向量 x、y 的像。读数精确比较变换前后的长度平方和内积。",
+      task: `选一个矩阵，看单位圆、小旗和两个可拖动的向量 ${tex("x")}、${tex("y")} 的像。读数精确比较变换前后的长度平方和内积。`,
     });
     const toolbar = el("div", "ch9l-toolbar");
     lab.append(toolbar);
@@ -710,7 +710,7 @@
     info.dataset.ch9Readout = "ortho";
     const gateHost = el("div");
     const result = resultBox(
-      `<p>保持内积 ⇔ 保持长度 ⇔ 把标准正交基变成标准正交基 ⇔ 矩阵满足 ${tex("Q^TQ=E")}。${tex("\\det Q=\\pm1")} 只是必要条件：${tex("\\operatorname{diag}(2,\\tfrac12)")} 保持面积，却把 ${tex("\\varepsilon_1")} 拉长一倍。${tex("\\det Q=1")} 的是旋转（第一类），${tex("\\det Q=-1")} 的是反射（第二类）。</p>`,
+      `<p>保持内积 ${tex(String.raw`\Leftrightarrow`)} 保持长度 ${tex(String.raw`\Leftrightarrow`)} 把标准正交基变成标准正交基 ${tex(String.raw`\Leftrightarrow`)} 矩阵满足 ${tex("Q^TQ=E")}。${tex("\\det Q=\\pm1")} 只是必要条件：${tex("\\operatorname{diag}(2,\\tfrac12)")} 保持面积，却把 ${tex("\\varepsilon_1")} 拉长一倍。${tex("\\det Q=1")} 的是旋转（第一类），${tex("\\det Q=-1")} 的是反射（第二类）。</p>`,
     );
     side.append(info, gateHost, result);
     // the lab opens on the matrix the question asks about
@@ -811,7 +811,7 @@
     }
 
     function marksNote(mk) {
-      const len = mk.keepX && mk.keepY ? "Qx、Qy 带着与 x、y 相同的刻痕：长度不变" : "像上缺了刻痕：有长度被改变";
+      const len = mk.keepX && mk.keepY ? `${tex("Qx")}、${tex("Qy")} 带着与 ${tex("x")}、${tex("y")} 相同的刻痕：长度不变` : "像上缺了刻痕：有长度被改变";
       const ang = !mk.hasAngle ? "零向量没有夹角" : mk.sameAngle ? "两段弧都是实线：夹角不变" : "紫色弧是虚线：夹角变了";
       return `<p class="ch9l-muted" data-ortho-marks>${len}；${ang}。</p>`;
     }
@@ -836,12 +836,12 @@
     const gate = predictGate(
       gateHost,
       {
-        question: `${tex("A=\\operatorname{diag}(2,\\tfrac12)")} 的行列式为 1，它保持面积。A 是正交变换吗？`,
+        question: `${tex("A=\\operatorname{diag}(2,\\tfrac12)")} 的行列式为 1，它保持面积。${tex("A")} 是正交变换吗？`,
         options: [
           { text: `不是：它把 ${tex("\\varepsilon_1")} 拉长到长度 2`, correct: true },
           { text: "是：行列式为 1 的变换都是旋转", why: `行列式为 1 只说明面积不变。在 ${tex("\\operatorname{diag}(2,\\tfrac12)")} 下，单位圆变成了椭圆，长度被改变。` },
           { text: "是：单位圆的像面积不变", why: "面积不变，形状却变了：长度和夹角都可能改变。" },
-          { text: "要看 x 取在哪里", why: "正交变换要求对所有 x 保持长度；只要有一个 x 被拉长就不是。" },
+          { text: `要看 ${tex("x")} 取在哪里`, why: "正交变换要求对所有 x 保持长度；只要有一个 x 被拉长就不是。" },
         ],
         right: `单位圆变成半轴为 2 和 ${tex("\\tfrac12")} 的椭圆；${tex("Q^TQ=\\operatorname{diag}(4,\\tfrac14)\\ne E")}，长度被改变：缺了刻痕的像，长度与原来不同。`,
         manual: true,
@@ -860,15 +860,15 @@
   /* ================= §5 子空间：正交补与正交分解 ================= */
 
   const SUB_PRESETS = {
-    plane: { label: "W 是平面", w: [[1, 1, 0], [0, 1, 1]] },
-    line: { label: "W 是直线", w: [[1, 0, 1]] },
+    plane: { label: `${tex("W")} 是平面`, w: [[1, 1, 0], [0, 1, 1]] },
+    line: { label: `${tex("W")} 是直线`, w: [[1, 0, 1]] },
   };
 
   function complementLab(root) {
     const lab = labShell(root, {
       kind: "orthogonal-complement",
-      title: "W 与它的正交补 W⊥",
-      task: "W 由 w₁（和 w₂）张成，三个圆点都能拖动（每次半格）。猜过并动手操作后，图中出现 W⊥，以及 α 沿 W 与 W⊥ 的分解。",
+      title: `${tex("W")} 与它的正交补 ${tex(String.raw`W^\perp`)}`,
+      task: `${tex("W")} 由 ${tex("w_1")}（和 ${tex("w_2")}）张成，三个圆点都能拖动（每次半格）。猜过并动手操作后，图中出现 ${tex(String.raw`W^\perp`)}，以及 ${tex(String.raw`\alpha`)} 沿 ${tex("W")} 与 ${tex(String.raw`W^\perp`)} 的分解。`,
     });
     const toolbar = el("div", "ch9l-toolbar");
     lab.append(toolbar);
@@ -876,12 +876,12 @@
     const scene = S().create(stage, { range: 2.5, label: "子空间 W 与正交补", yaw: 0.8, pitch: 0.3, hint: "拖动空白处旋转 · 拖动圆点改变 w、α", clampLabels: true });
     lab.ch9Views = { scene };
     const tools = el("div", "ch9l-actions");
-    tools.innerHTML = `${btn("沿 W⊥ 看", "data-sub-look")}${btn("侧面看 W", "data-sub-side")}${btn("默认视角", "data-sub-reset")}`;
+    tools.innerHTML = `${btn(`沿 ${tex(String.raw`W^\perp`)} 看`, "data-sub-look")}${btn(`侧面看 ${tex("W")}`, "data-sub-side")}${btn("默认视角", "data-sub-reset")}`;
     const info = el("div", "ch9l-card");
     info.dataset.ch9Readout = "sub";
     const gateHost = el("div");
     const result = resultBox(
-      `<p>${tex("W^\\perp")} 由与 W 的每个生成元都正交的向量组成，就是齐次方程组 ${tex("w_i^TX=0")} 的解空间。于是 ${tex("\\dim W+\\dim W^\\perp=3")}，${tex("V=W\\oplus W^\\perp")}：每个 α 唯一地写成 ${tex("\\alpha_1+\\alpha_2")}，${tex("\\alpha_1\\in W")} 叫 α 在 W 上的内射影。拖动 w₁、w₂，W⊥ 始终跟着保持垂直。</p>`,
+      `<p>${tex("W^\\perp")} 由与 ${tex("W")} 的每个生成元都正交的向量组成，就是齐次方程组 ${tex("w_i^TX=0")} 的解空间。于是 ${tex("\\dim W+\\dim W^\\perp=3")}，${tex("V=W\\oplus W^\\perp")}：每个 ${tex(String.raw`\alpha`)} 唯一地写成 ${tex("\\alpha_1+\\alpha_2")}，${tex("\\alpha_1\\in W")} 叫 ${tex(String.raw`\alpha`)} 在 ${tex("W")} 上的内射影。拖动 ${tex("w_1")}、${tex("w_2")}，${tex(String.raw`W^\perp`)} 始终跟着保持垂直。</p>`,
     );
     side.append(tools, info, gateHost, result);
     const state = { key: "plane", w: SUB_PRESETS.plane.w.map((v) => v.slice()), alpha: [0.5, -1.5, 2], revealed: false };
@@ -975,10 +975,10 @@
         if (checks.length) lines.push(`<p class="ch9l-ok ch9l-lines">${checks.map((v, i) => `<span>${keep(`${tex(`(\\alpha_2,${vtex(c.basis[i])})=${v}`)}${i < checks.length - 1 ? "，" : "，"}`)}</span>`).join("")}<span>${keep(`所以 ${tex("\\alpha_2\\in W^\\perp")}。`)}</span></p>`);
         lines.push(`<p class="ch9l-muted">${tex(`\\dim W+\\dim W^\\perp=${c.r}+${c.perp.length}=${c.r + c.perp.length}`)}</p>`);
       } else {
-        lines.push(`<p class="ch9l-muted">猜过并动手操作后，显示 W⊥ 和 α 的分解。</p>`);
+        lines.push(`<p class="ch9l-muted">猜过并动手操作后，显示 ${tex(String.raw`W^\perp`)} 和 ${tex(String.raw`\alpha`)} 的分解。</p>`);
       }
       info.innerHTML = lines.join("");
-      tools.querySelector("[data-sub-look]").textContent = c.r === 1 ? "沿 W 看" : "沿 W⊥ 看";
+      tools.querySelector("[data-sub-look]").innerHTML = c.r === 1 ? `沿 ${tex("W")} 看` : `沿 ${tex(String.raw`W^\perp`)} 看`;
     }
 
     chips(toolbar, Object.entries(SUB_PRESETS).map(([k, p]) => [k, p.label]), (k) => {
@@ -1013,7 +1013,7 @@
           { text: `方向为 ${tex("(1,1,1)")} 的直线`, why: `${tex("(1,1,1)\\cdot(1,1,0)=2\\ne0")}。` },
           { text: "另一个平面", why: "W⊥ 的维数是 3−2=1。" },
         ],
-        right: `${tex("(1,-1,1)")} 与 ${tex("(1,1,0)")}、${tex("(0,1,1)")} 的内积都是 0。α 拆成 W 里的 α₁ 与 W⊥ 里的 α₂；在垂足 α₁ 处，α₂ 与 W 中两个互相垂直的方向都成直角。`,
+        right: `${tex("(1,-1,1)")} 与 ${tex("(1,1,0)")}、${tex("(0,1,1)")} 的内积都是 0。${tex(String.raw`\alpha`)} 拆成 ${tex("W")} 里的 ${tex(String.raw`\alpha_1`)} 与 ${tex(String.raw`W^\perp`)} 里的 ${tex(String.raw`\alpha_2`)}；在垂足 ${tex(String.raw`\alpha_1`)} 处，${tex(String.raw`\alpha_2`)} 与 ${tex("W")} 中两个互相垂直的方向都成直角。`,
         manual: true,
         actHint: "记下了你的猜测。在这个 W 下拖动 α，W⊥ 随后出现。",
       },
@@ -1032,15 +1032,15 @@
   const SP_PRESETS = {
     pos: { label: tex("\\left[\\begin{smallmatrix}2&1\\\\1&2\\end{smallmatrix}\\right]"), A: [[2, 1], [1, 2]], eig: [[3, [1, 1]], [1, [-1, 1]]] },
     indef: { label: tex("\\left[\\begin{smallmatrix}1&2\\\\2&-2\\end{smallmatrix}\\right]"), A: [[1, 2], [2, -2]], eig: [[2, [2, 1]], [-3, [-1, 2]]] },
-    rep: { label: "重特征值 2E", A: [[2, 0], [0, 2]], eig: [[2, [1, 0]], [2, [0, 1]]] },
+    rep: { label: `重特征值 ${tex("2E")}`, A: [[2, 0], [0, 2]], eig: [[2, [1, 0]], [2, [0, 1]]] },
     nonsym: { label: "非对称 " + tex("\\left[\\begin{smallmatrix}2&1\\\\0&1\\end{smallmatrix}\\right]"), A: [[2, 1], [0, 1]], eig: [[2, [1, 0]], [1, [1, -1]]] },
   };
 
   function spectralLab(root) {
     const lab = labShell(root, {
       kind: "spectral",
-      title: "A = TΛTᵀ：转过去、伸缩、转回来",
-      task: "拖动进度条或点“播放”。单位圆和两条特征方向依次经过 Tᵀ（转到坐标轴）、Λ（沿坐标轴伸缩）、T（转回原位），最后与 A 直接作用的结果重合。",
+      title: `${tex(String.raw`A=T\Lambda T^T`)}：转过去、伸缩、转回来`,
+      task: `拖动进度条或点“播放”。单位圆和两条特征方向依次经过 ${tex("T^T")}（转到坐标轴）、${tex(String.raw`\Lambda`)}（沿坐标轴伸缩）、${tex("T")}（转回原位），最后与 ${tex("A")} 直接作用的结果重合。`,
     });
     const toolbar = el("div", "ch9l-toolbar");
     lab.append(toolbar);
@@ -1055,7 +1055,7 @@
     info.dataset.ch9Readout = "sp";
     const gateHost = el("div");
     const result = resultBox(
-      `<p>实对称矩阵的特征向量可以取成两两正交的单位向量，排成正交矩阵 T，于是 ${tex("T^TAT=\\Lambda")}，即 ${tex("A=T\\Lambda T^T")}。单位圆的像是椭圆，主轴就是特征方向，半轴长是 ${tex("|\\lambda_i|")}；负特征值让那个方向反向。非对称的 ${tex("\\left[\\begin{smallmatrix}2&1\\\\0&1\\end{smallmatrix}\\right]")} 也有两个特征方向，但它们夹 45°，不能用正交矩阵对角化。</p>`,
+      `<p>实对称矩阵的特征向量可以取成两两正交的单位向量，排成正交矩阵 ${tex("T")}，于是 ${tex("T^TAT=\\Lambda")}，即 ${tex("A=T\\Lambda T^T")}。单位圆的像是椭圆，主轴就是特征方向，半轴长是 ${tex("|\\lambda_i|")}；负特征值让那个方向反向。非对称的 ${tex("\\left[\\begin{smallmatrix}2&1\\\\0&1\\end{smallmatrix}\\right]")} 也有两个特征方向，但它们夹 ${tex(String.raw`45^\circ`)}，不能用正交矩阵对角化。</p>`,
     );
     side.append(ctrl, info, gateHost, result);
     const state = { key: "pos", s: 0, picked: false, revealed: false };
@@ -1120,7 +1120,7 @@
         return objs;
       });
       const stepIdx = state.s < 1 ? 0 : state.s < 2 ? 1 : 2;
-      ctrl.querySelector("[data-sp-steps]").innerHTML = ["① Tᵀ：特征方向转到坐标轴", "② Λ：沿坐标轴伸缩", "③ T：转回原位"]
+      ctrl.querySelector("[data-sp-steps]").innerHTML = [`① ${tex("T^T")}：特征方向转到坐标轴`, `② ${tex(String.raw`\Lambda`)}：沿坐标轴伸缩`, `③ ${tex("T")}：转回原位`]
         .map((t, i) => `<span class="${!e.sym ? "" : i === stepIdx ? "is-active" : i < stepIdx ? "is-done" : ""}">${t}</span>`)
         .join("");
       // the progress bar is a playback position: name the step it shows instead of a decimal
@@ -1139,7 +1139,7 @@
       lines.push(
         e.perp
           ? `<p class="ch9l-ok" data-sp-status>${tex(`(${vtex(e.eig[0].v)},${vtex(e.eig[1].v)})=0`)}：两条特征方向正交。</p>`
-          : `<p class="ch9l-bad" data-sp-status>${tex(`(${vtex(e.eig[0].v)},${vtex(e.eig[1].v)})=${lf(dotF(e.eig[0].v, e.eig[1].v))}\\ne0`)}：特征方向不正交，不存在正交矩阵 T 使 ${tex("T^TAT")} 为对角形。</p>`,
+          : `<p class="ch9l-bad" data-sp-status>${tex(`(${vtex(e.eig[0].v)},${vtex(e.eig[1].v)})=${lf(dotF(e.eig[0].v, e.eig[1].v))}\\ne0`)}：特征方向不正交，不存在正交矩阵 ${tex("T")} 使 ${tex("T^TAT")} 为对角形。</p>`,
       );
       if (e.sym) {
         const n1 = lf(dotF(e.eig[0].v, e.eig[0].v));
@@ -1196,7 +1196,7 @@
           { text: `沿 ${tex("(2,1)")}，长 ${tex("\\sqrt5")}`, why: `${tex("(2,1)=A\\varepsilon_1")} 只是椭圆上的一点，不在主轴上。` },
           { text: `沿 ${tex("(1,-1)")}，长 1`, why: "那是短轴：λ=1 的特征方向。" },
         ],
-        right: `${tex("(1,1)")} 是属于 3 的特征向量，${tex("(-1,1)")} 是属于 1 的特征向量，两者正交。播放三步，紫色虚线是 A 直接作用的结果。`,
+        right: `${tex("(1,1)")} 是属于 3 的特征向量，${tex("(-1,1)")} 是属于 1 的特征向量，两者正交。播放三步，紫色虚线是 ${tex("A")} 直接作用的结果。`,
         actHint: "记下了你的猜测。播放三步或拖动进度条，结论随后出现。",
         onPick: () => {
           state.picked = true;
@@ -1223,11 +1223,11 @@
   function leastSquaresLab(root) {
     const lab = labShell(root, {
       kind: "least-squares",
-      title: "离 b 最近的 Ax：投影与拟合直线是同一件事",
-      task: `用直线 ${tex("y=C+Dt")} 拟合 ${tex("t=0,1,2")} 处的三个数据 ${tex("b_1,b_2,b_3")}。左图：${tex("b\\in\\mathbb R^3")} 与 A 的列空间（平面）。右图：数据点与直线。两图联动，可以拖动 b 或数据点，也可以调 C、D 试一条直线。`,
+      title: `离 ${tex("b")} 最近的 ${tex("Ax")}：投影与拟合直线是同一件事`,
+      task: `用直线 ${tex("y=C+Dt")} 拟合 ${tex("t=0,1,2")} 处的三个数据 ${tex("b_1,b_2,b_3")}。左图：${tex("b\\in\\mathbb R^3")} 与 ${tex("A")} 的列空间（平面）。右图：数据点与直线。两图联动，可以拖动 ${tex("b")} 或数据点，也可以调 ${tex("C")}、${tex("D")} 试一条直线。`,
     });
     const pair = el("div", "ch9l-pair");
-    const left = el("div", "ch9l-view", `<div class="ch9l-view-title">${tex("\\mathbb R^3")}：b 与列空间 W</div>`);
+    const left = el("div", "ch9l-view", `<div class="ch9l-view-title">${tex("\\mathbb R^3")}：${tex("b")} 与列空间 ${tex("W")}</div>`);
     const right = el("div", "ch9l-view", `<div class="ch9l-view-title">数据点与直线 ${tex("y=C+Dt")}</div>`);
     pair.append(left, right);
     lab.append(pair);
@@ -1237,12 +1237,12 @@
     const controls = el("div", "ch9l-controls");
     controls.innerHTML = `<label class="ch9l-range"><span>${tex("C")}</span><input type="range" min="-4" max="4" step="0.5" value="0" data-ls-c /><b data-ls-cv>0</b></label>
       <label class="ch9l-range"><span>${tex("D")}</span><input type="range" min="-4" max="4" step="0.5" value="1" data-ls-d /><b data-ls-dv>1</b></label>
-      <div class="ch9l-actions">${btn("看直角三角形", "data-ls-triview")}${btn("沿 e 的方向看", "data-ls-look")}${btn("沿平面看", "data-ls-side")}${btn("默认视角", "data-ls-reset")}</div>`;
+      <div class="ch9l-actions">${btn("看直角三角形", "data-ls-triview")}${btn(`沿 ${tex("e")} 的方向看`, "data-ls-look")}${btn("沿平面看", "data-ls-side")}${btn("默认视角", "data-ls-reset")}</div>`;
     const status = el("div", "ch9l-status");
     status.dataset.ch9Readout = "ls";
     const gateHost = el("div");
     const result = resultBox(
-      `<p>Ax 走遍平面 W。离 b 最近的点 ${tex("p=A\\hat x")} 是 b 在 W 上的内射影，误差 ${tex("e=b-A\\hat x")} 垂直于 W，也就垂直于 A 的两列：${tex("A^Te=0")}，即 ${tex("A^TA\\hat x=A^Tb")}。对任何一条直线都有 ${tex("|b-Ax|^2=|e|^2+|p-Ax|^2")}，所以投影给出的直线残差平方和最小。在右图里，${tex("e\\perp(1,1,1)")} 说明残差之和为 0，${tex("e\\perp(0,1,2)")} 说明 ${tex("\\sum t_ie_i=0")}。</p>`,
+      `<p>${tex("Ax")} 走遍平面 ${tex("W")}。离 ${tex("b")} 最近的点 ${tex("p=A\\hat x")} 是 ${tex("b")} 在 ${tex("W")} 上的内射影，误差 ${tex("e=b-A\\hat x")} 垂直于 ${tex("W")}，也就垂直于 ${tex("A")} 的两列：${tex("A^Te=0")}，即 ${tex("A^TA\\hat x=A^Tb")}。对任何一条直线都有 ${tex("|b-Ax|^2=|e|^2+|p-Ax|^2")}，所以投影给出的直线残差平方和最小。在右图里，${tex("e\\perp(1,1,1)")} 说明残差之和为 0，${tex("e\\perp(0,1,2)")} 说明 ${tex("\\sum t_ie_i=0")}。</p>`,
     );
     lab.append(controls, status, gateHost, result);
     const A = matF(LS_A);
@@ -1326,10 +1326,10 @@
       ];
       if (state.revealed) {
         parts.push(`<p data-ls-best>${tex(`\\hat x=${vtex(s.xh)},\\ p=A\\hat x=${vtex(s.p)},\\ e=${vtex(s.e)}`)}</p>`);
-        parts.push(`<p class="ch9l-ok">${tex(`(e,a_1)=${lf(dotF(s.e, A.map((r) => r[0])))},\\ (e,a_2)=${lf(dotF(s.e, A.map((r) => r[1])))}`)}：e 垂直于 W。</p>`);
-        parts.push(`<p data-ls-tri>${M().isZero(s.gap) || M().isZero(s.best) ? "" : "直角三角形 b–p–Ax（直角在 p）："}${tex(`|b-Ax|^2=${lf(s.sse)}=|e|^2+|p-Ax|^2=${lf(s.best)}+${lf(s.gap)}`)}</p>`);
+        parts.push(`<p class="ch9l-ok">${tex(`(e,a_1)=${lf(dotF(s.e, A.map((r) => r[0])))},\\ (e,a_2)=${lf(dotF(s.e, A.map((r) => r[1])))}`)}：${tex("e")} 垂直于 ${tex("W")}。</p>`);
+        parts.push(`<p data-ls-tri>${M().isZero(s.gap) || M().isZero(s.best) ? "" : `直角三角形 ${tex("b")}–${tex("p")}–${tex("Ax")}（直角在 ${tex("p")}）：`}${tex(`|b-Ax|^2=${lf(s.sse)}=|e|^2+|p-Ax|^2=${lf(s.best)}+${lf(s.gap)}`)}</p>`);
         if (M().isZero(s.gap)) parts.push(`<p class="ch9l-ok">试的直线就是最佳直线。</p>`);
-      } else parts.push(`<p class="ch9l-muted">调 C、D 让 ${tex("|b-Ax|^2")} 尽量小；猜过并动手操作后，显示最佳直线与投影。</p>`);
+      } else parts.push(`<p class="ch9l-muted">调 ${tex("C")}、${tex("D")} 让 ${tex("|b-Ax|^2")} 尽量小；猜过并动手操作后，显示最佳直线与投影。</p>`);
       status.innerHTML = parts.join("");
       controls.querySelector("[data-ls-triview]").disabled = !state.revealed;
     }
@@ -1385,12 +1385,12 @@
       {
         question: `数据点 ${tex("(0,3),(1,0),(2,3)")} 不在一条直线上。最佳直线对应的误差 ${tex("e=b-A\\hat x")} 有什么特点？`,
         options: [
-          { text: `e 与 A 的两列 ${tex("(1,1,1)")}、${tex("(0,1,2)")} 都正交`, correct: true },
-          { text: "e = 0", why: "三点不共线，b 不在列空间里，误差不可能为 0。" },
-          { text: "e 与 b 正交", why: "与 e 正交的是 p=Ax̂，b 本身不一定。" },
-          { text: "e 的三个分量相等", why: "那样 e 平行于 (1,1,1)，在平面 W 里，不会垂直于 W。" },
+          { text: `${tex("e")} 与 ${tex("A")} 的两列 ${tex("(1,1,1)")}、${tex("(0,1,2)")} 都正交`, correct: true },
+          { text: `${tex("e=0")}`, why: "三点不共线，b 不在列空间里，误差不可能为 0。" },
+          { text: `${tex("e")} 与 ${tex("b")} 正交`, why: "与 e 正交的是 p=Ax̂，b 本身不一定。" },
+          { text: `${tex("e")} 的三个分量相等`, why: "那样 e 平行于 (1,1,1)，在平面 W 里，不会垂直于 W。" },
         ],
-        right: `这里 ${tex("\\hat x=(2,0)")}，最佳直线是 ${tex("y=2")}，${tex("e=(1,-2,1)")}，正好沿 W 的法向。b、p、Ax 围成直角三角形，直角在 p：${tex("|b-Ax|^2=|e|^2+|p-Ax|^2")}，所以 Ax 取 p 时最小。`,
+        right: `这里 ${tex("\\hat x=(2,0)")}，最佳直线是 ${tex("y=2")}，${tex("e=(1,-2,1)")}，正好沿 ${tex("W")} 的法向。${tex("b")}、${tex("p")}、${tex("Ax")} 围成直角三角形，直角在 ${tex("p")}：${tex("|b-Ax|^2=|e|^2+|p-Ax|^2")}，所以 ${tex("Ax")} 取 ${tex("p")} 时最小。`,
         defer: lab,
         actHint: "记下了你的猜测。调 C、D 或拖动 b，结论随后出现。",
       },
@@ -1420,7 +1420,7 @@
       <line x1="190" y1="70" x2="190" y2="150" class="dash" />
       <text x="198" y="66" class="tz">z = 2 + i</text><text x="198" y="160" class="tzb">共轭 2 − i</text>
       <text x="22" y="204" class="t">(2 − i)(2 + i) = 5 = |z|²</text>
-    </svg><figcaption>共轭把 z 关于实轴翻折，辐角正负抵消，${tex("\\bar zz=|z|^2")} 是非负实数。若不取共轭，${tex("z^2=3+4i")} 不是实数。</figcaption></figure>`,
+    </svg><figcaption>共轭把 ${tex("z")} 关于实轴翻折，辐角正负抵消，${tex("\\bar zz=|z|^2")} 是非负实数。若不取共轭，${tex("z^2=3+4i")} 不是实数。</figcaption></figure>`,
   };
 
   function renderFormal(root, section) {

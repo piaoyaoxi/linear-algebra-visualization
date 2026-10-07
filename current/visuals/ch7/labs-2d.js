@@ -39,26 +39,26 @@
       label: "两个伸缩方向",
       A: [[2, 1], [0, 3]],
       eigen: [[1, 0], [1, 1]],
-      note: "σ 把直线 L((1,0)) 上的向量乘 2，把直线 L((1,1)) 上的向量乘 3。",
+      note: `${tex("\\sigma")} 把直线 ${tex("L((1,0))")} 上的向量乘 2，把直线 ${tex("L((1,1))")} 上的向量乘 3。`,
     },
     project: {
-      label: "投影到直线 x₁+x₂=0",
+      label: `投影到直线 ${tex("x_1+x_2=0")}`,
       A: [["1/2", "-1/2"], ["-1/2", "1/2"]],
       eigen: [[1, -1], [1, 1]],
-      note: "σ 保持直线 L((1,−1)) 上的向量，把直线 L((1,1)) 压成 0。",
+      note: `${tex("\\sigma")} 保持直线 ${tex("L((1,-1))")} 上的向量，把直线 ${tex("L((1,1))")} 压成 ${tex("0")}。`,
     },
     shear: {
       label: "剪切",
       A: [[1, 1], [0, 1]],
       eigen: [[1, 0]],
-      note: "σ 只保持 x₁ 轴这一条直线。",
+      note: `${tex("\\sigma")} 只保持 ${tex("x_1")} 轴这一条直线。`,
     },
   };
 
   function basisLab(root) {
     const lab = K.labShell(root, {
-      title: "同一个 σ，换一组基记录",
-      task: "左图用标准基 ε₁, ε₂ 记录 σ，右图用你拖动的 η₁, η₂ 记录同一个 σ。紫色箭头是基向量的像，它在网格里的坐标就是矩阵的一列。",
+      title: `同一个 ${tex("\\sigma")}，换一组基记录`,
+      task: `左图用标准基 ${tex("\\varepsilon_1,\\varepsilon_2")} 记录 ${tex("\\sigma")}，右图用你拖动的 ${tex("\\eta_1,\\eta_2")} 记录同一个 ${tex("\\sigma")}。紫色箭头是基向量的像，它在网格里的坐标就是矩阵的一列。`,
     });
     const state = { key: "stretch", eta: [[1, 0.5], [-0.5, 1]] };
     const toolbar = el("div", "ch7l-toolbar");
@@ -184,16 +184,16 @@
         <div>${B ? K.hlHtml(texD(`B=X^{-1}AX=${roomy(bTex)}`)) : texD("B=\\ ?")}</div></div>`;
       if (B) html += `<p>${tex(coord(0))}，${tex(coord(1))}</p>`;
       if (!B) {
-        html += `<p class="ch7l-bad">η₁, η₂ 共线，不构成基，B 无从谈起。</p>`;
+        html += `<p class="ch7l-bad">${tex("\\eta_1,\\eta_2")} 共线，不构成基，${tex("B")} 无从谈起。</p>`;
       } else {
         const trB = M().add(B[0][0], B[1][1]);
         html += `<p>${tex(`\\operatorname{tr}A=${lf(tr)}`)}，${tex(`\\operatorname{tr}B=${lf(trB)}`)}；${tex(`|A|=${lf(K.det(A))}`)}，<span class="la-keep">${tex(`|B|=${lf(K.det(B))}`)}。</span></p>`;
-        const named = ["η₁", "η₂"].filter((_, j) => lit[j]);
+        const named = [tex("\\eta_1"), tex("\\eta_2")].filter((_, j) => lit[j]);
         html += flow?.revealed && K.isDiagonal(B)
-          ? `<p class="ch7l-ok">B 是对角矩阵：每个 σηⱼ 都是 ηⱼ 的倍数。</p>`
+          ? `<p class="ch7l-ok">${tex("B")} 是对角矩阵：每个 ${tex("\\sigma\\eta_j")} 都是 ${tex("\\eta_j")} 的倍数。</p>`
           : flow?.revealed && named.length
-            ? `<p class="ch7l-muted">${named.join("、")} 在 σ 的不动直线上，B 中对应的非对角元为 0。</p>`
-            : `<p class="ch7l-muted">B 的第 j 列 = σηⱼ 在 η₁, η₂ 下的坐标（右图虚线）。</p>`;
+            ? `<p class="ch7l-muted">${named.join("、")} 在 ${tex("\\sigma")} 的不动直线上，${tex("B")} 中对应的非对角元为 ${tex("0")}。</p>`
+            : `<p class="ch7l-muted">${tex("B")} 的第 ${tex("j")} 列 ${tex("=\\sigma\\eta_j")} 在 ${tex("\\eta_1,\\eta_2")} 下的坐标（右图虚线）。</p>`;
       }
       strip.innerHTML = html;
     }
@@ -219,12 +219,12 @@
       flow = K.predictFlow(gateHost, result, {
         question: `拖动 ${tex("\\eta_1,\\eta_2")}。什么时候 ${tex("B=X^{-1}AX")} 会成为对角矩阵？`,
         options: [
-          { text: "η₁、η₂ 分别落在 σ 保持的两条直线上", correct: true },
-          { text: "η₁、η₂ 互相垂直且等长", why: "试试“两个伸缩方向”：垂直的 η 一般得不到对角的 B。" },
-          { text: "只有 η 等于 ε 时", why: "η=ε 时 B=A，A 本身不一定是对角的。" },
+          { text: `${tex("\\eta_1")}、${tex("\\eta_2")} 分别落在 ${tex("\\sigma")} 保持的两条直线上`, correct: true },
+          { text: `${tex("\\eta_1")}、${tex("\\eta_2")} 互相垂直且等长`, why: "试试“两个伸缩方向”：垂直的 η 一般得不到对角的 B。" },
+          { text: `只有 ${tex("\\eta")} 等于 ${tex("\\varepsilon")} 时`, why: "η=ε 时 B=A，A 本身不一定是对角的。" },
           { text: "永远不会，换基不改变矩阵", why: "换基不改变 σ，矩阵却会变。" },
         ],
-        conclusion: `B 的第 j 列是 ${tex("\\sigma\\eta_j")} 在新基下的坐标。B 是对角矩阵，当且仅当 ${tex("\\sigma\\eta_j=\\lambda_j\\eta_j")}，即每个 ${tex("\\eta_j")} 都在 σ 保持的直线上（图中绿色虚线，把 η 拖近它会吸附上去）。无论怎样换基，迹与行列式都不变，因为 B 与 A 相似。${preset().note}${state.key === "shear" ? "剪切只有一条这样的直线，B 最多化成三角形。" : ""}`,
+        conclusion: `${tex("B")} 的第 ${tex("j")} 列是 ${tex("\\sigma\\eta_j")} 在新基下的坐标。${tex("B")} 是对角矩阵，当且仅当 ${tex("\\sigma\\eta_j=\\lambda_j\\eta_j")}，即每个 ${tex("\\eta_j")} 都在 ${tex("\\sigma")} 保持的直线上（图中绿色虚线，把 ${tex("\\eta")} 拖近它会吸附上去）。无论怎样换基，迹与行列式都不变，因为 ${tex("B")} 与 ${tex("A")} 相似。${preset().note}${state.key === "shear" ? `剪切只有一条这样的直线，${tex("B")} 最多化成三角形。` : ""}`,
         onReveal: redraw,
       });
     }
@@ -253,14 +253,14 @@
       A: [[2, 1], [1, 2]],
       eigen: [{ angle: 45, v: [1, 1] }, { angle: 135, v: [-1, 1] }],
       predict: {
-        question: "把 v 从 0° 转到 180°，v 与 Av 共线会出现几次？",
+        question: `把 ${tex("v")} 从 0° 转到 180°，${tex("v")} 与 ${tex("Av")} 共线会出现几次？`,
         options: [
           { text: "2 次", correct: true },
           { text: "1 次", why: "转到 135° 附近再看一看。" },
           { text: "4 次", why: "θ 与 θ+180° 是同一条直线，0°–180° 已经走遍所有直线。" },
           { text: "0 次", why: "转到 45° 看 v 和 Av。" },
         ],
-        conclusion: "45° 与 135° 两条直线被保持，λ 分别是 3 和 1。对称矩阵的两条特征直线互相垂直。",
+        conclusion: `45° 与 135° 两条直线被保持，${tex("\\lambda")} 分别是 ${tex("3")} 和 ${tex("1")}。对称矩阵的两条特征直线互相垂直。`,
       },
     },
     upper: {
@@ -275,7 +275,7 @@
           { text: "只有一条特征直线", why: "这里有两个不同的特征值 1 和 2。" },
           { text: "没有特征直线", why: "转到 0°：Av=v。" },
         ],
-        conclusion: "0° 方向 λ=1，45° 方向 λ=2。特征直线只需线性无关，不必垂直。",
+        conclusion: `0° 方向 ${tex("\\lambda=1")}，45° 方向 ${tex("\\lambda=2")}。特征直线只需线性无关，不必垂直。`,
       },
     },
     shear: {
@@ -290,7 +290,7 @@
           { text: "0 条", why: "转到 0° 看看。" },
           { text: "无穷多条", why: "除了 0°，其余方向都被推歪了。" },
         ],
-        conclusion: "只有 x₁ 轴被保持（λ=1）。二重特征值只给出一条特征直线，所以凑不出两个线性无关的特征向量。",
+        conclusion: `只有 ${tex("x_1")} 轴被保持（${tex("\\lambda=1")}）。二重特征值只给出一条特征直线，所以凑不出两个线性无关的特征向量。`,
       },
     },
     project: {
@@ -298,14 +298,14 @@
       A: [[1, 0], [0, 0]],
       eigen: [{ angle: 0, v: [1, 0] }, { angle: 90, v: [0, 1] }],
       predict: {
-        question: "投影到 x₁ 轴时，x₂ 轴上的 v 满足 Av=0。x₂ 轴算特征直线吗？",
+        question: `投影到 ${tex("x_1")} 轴时，${tex("x_2")} 轴上的 ${tex("v")} 满足 ${tex("Av=0")}。${tex("x_2")} 轴算特征直线吗？`,
         options: [
-          { text: "算，对应 λ=0", correct: true },
-          { text: "不算，Av=0 不能叫伸缩", why: "Av=0·v 正是 λ=0 的情形，v 本身非零即可。" },
+          { text: `算，对应 ${tex("\\lambda=0")}`, correct: true },
+          { text: `不算，${tex("Av=0")} 不能叫伸缩`, why: "Av=0·v 正是 λ=0 的情形，v 本身非零即可。" },
           { text: "不算，零向量不是特征向量", why: "v 不是零向量；被送到零的是 Av。" },
-          { text: "只有 x₁ 轴才算", why: "转到 90° 看 Av。" },
+          { text: `只有 ${tex("x_1")} 轴才算`, why: "转到 90° 看 Av。" },
         ],
-        conclusion: "x₁ 轴上 λ=1，x₂ 轴上 λ=0。特征值可以是 0，此时特征子空间就是核。",
+        conclusion: `${tex("x_1")} 轴上 ${tex("\\lambda=1")}，${tex("x_2")} 轴上 ${tex("\\lambda=0")}。特征值可以是 ${tex("0")}，此时特征子空间就是核。`,
       },
     },
     rotate: {
@@ -318,9 +318,9 @@
           { text: "没有", correct: true },
           { text: "有一条", why: "转一整圈，Av 始终与 v 垂直。" },
           { text: "每条直线都是", why: "旋转把每条直线都转走了。" },
-          { text: "取决于 v 的长度", why: "是否共线与长度无关。" },
+          { text: `取决于 ${tex("v")} 的长度`, why: "是否共线与长度无关。" },
         ],
-        conclusion: "|λE−A|=λ²+1 在实数域上没有根。复数域上特征值是 ±i，但复特征向量不能画在实平面上。",
+        conclusion: `${tex("|\\lambda E-A|=\\lambda^2+1")} 在实数域上没有根。复数域上特征值是 ${tex("\\pm i")}，但复特征向量不能画在实平面上。`,
       },
     },
   };
@@ -342,7 +342,7 @@
   function eigenLab(root) {
     const lab = K.labShell(root, {
       title: "哪些方向只被伸缩",
-      task: "紫色曲线是单位圆上所有方向经过 A 以后的终点。转动金色的 v，看 Av 何时与 v 落在同一条直线上。",
+      task: `紫色曲线是单位圆上所有方向经过 ${tex("A")} 以后的终点。转动金色的 ${tex("v")}，看 ${tex("Av")} 何时与 ${tex("v")} 落在同一条直线上。`,
     });
     const modeBar = el("div", "ch7l-toolbar ch7l-modes");
     lab.append(modeBar);
@@ -361,7 +361,7 @@
   }
 
   function planeMode(host, lab) {
-    lab.querySelector(".ch7l-head p").textContent = "紫色曲线是单位圆上所有方向经过 A 以后的终点。转动金色的 v，看 Av 何时与 v 落在同一条直线上。";
+    lab.querySelector(".ch7l-head p").innerHTML = `紫色曲线是单位圆上所有方向经过 ${tex("A")} 以后的终点。转动金色的 ${tex("v")}，看 ${tex("Av")} 何时与 ${tex("v")} 落在同一条直线上。`;
     const state = { key: "sym", theta: 20 };
     const toolbar = el("div", "ch7l-toolbar");
     const body = el("div", "ch7l-body");
@@ -446,7 +446,7 @@
       const now = state.theta % 180;
       const pNow = psiAt(A, now);
       if (pNow != null) parts.push(`<circle cx="${sx(now)}" cy="${sy(pNow)}" r="4.5" class="ch7s-now"/>`);
-      strip.innerHTML = `<svg viewBox="0 0 ${SW} ${SH}" role="img" aria-label="v 与 Av 的有向夹角随 θ 的变化">${parts.join("")}</svg><figcaption>v 到 Av 的有向夹角（θ 从 0° 到 180°）${flow?.predicted ? "" : " · 猜过之后记录轨迹"}</figcaption>`;
+      strip.innerHTML = `<svg viewBox="0 0 ${SW} ${SH}" role="img" aria-label="v 与 Av 的有向夹角随 θ 的变化">${parts.join("")}</svg><figcaption>${tex("v")} 到 ${tex("Av")} 的有向夹角（${tex("\\theta")} 从 0° 到 180°）${flow?.predicted ? "" : " · 猜过之后记录轨迹"}</figcaption>`;
     }
 
     function hit() {
@@ -517,7 +517,7 @@
         const avLen = Math.hypot(Av[0], Av[1]);
         const ang = avLen < 1e-9 ? 0 : (Math.acos(Math.max(-1, Math.min(1, (v[0] * Av[0] + v[1] * Av[1]) / (r * avLen)))) * 180) / Math.PI;
         const line = Math.min(ang, 180 - ang);
-        info.innerHTML = `<h4>v 与 Av</h4><p>Av 偏离 v 所在直线 ${fmt(line, 1) === "0" ? "0" : `≈${fmt(line, 1)}`}°</p><p class="ch7l-muted">偏离为 0 时，Av=λv。</p>`;
+        info.innerHTML = `<h4>${tex("v")} 与 ${tex("Av")}</h4><p>${tex("Av")} 偏离 ${tex("v")} 所在直线 ${fmt(line, 1) === "0" ? "0" : `≈${fmt(line, 1)}`}°</p><p class="ch7l-muted">偏离为 0 时，${tex("Av=\\lambda v")}。</p>`;
       }
     }
 
@@ -597,7 +597,7 @@
   }
 
   function spaceMode(host, lab) {
-    lab.querySelector(".ch7l-head p").innerHTML = `${tex("A=\\begin{pmatrix}1&2&2\\\\2&1&2\\\\2&2&1\\end{pmatrix}")}。拖动 v 改变方向（图中 v 画成固定长度），看 Av 何时与 v 共线。`;
+    lab.querySelector(".ch7l-head p").innerHTML = `${tex("A=\\begin{pmatrix}1&2&2\\\\2&1&2\\\\2&2&1\\end{pmatrix}")}。拖动 ${tex("v")} 改变方向（图中 ${tex("v")} 画成固定长度），看 ${tex("Av")} 何时与 ${tex("v")} 共线。`;
     const A = K.mat(SPACE_A);
     const An = matNum(A);
     const state = { u: [1, 0, 0.5] };
@@ -608,7 +608,7 @@
     host.append(body);
     const scene = window.LAScene3D.create(stage, { range: 2.6, label: "三维中的 v 与 Av", hint: "拖动空白处旋转 · 拖动圆点改变 v", yaw: -0.75, pitch: 0.38 });
     const tools = el("div", "ch7l-actions");
-    tools.innerHTML = `<button type="button" class="ch7l-btn" data-plane>放进平面 x₁+x₂+x₃=0</button><button type="button" class="ch7l-btn" data-line>放到 (1,1,1) 方向</button><button type="button" class="ch7l-btn" data-look>沿 (1,1,1) 看</button><button type="button" class="ch7l-btn" data-edge>侧看平面</button>`;
+    tools.innerHTML = `<button type="button" class="ch7l-btn" data-plane>放进平面 ${tex("x_1+x_2+x_3=0")}</button><button type="button" class="ch7l-btn" data-line>放到 ${tex("(1,1,1)")} 方向</button><button type="button" class="ch7l-btn" data-look>沿 ${tex("(1,1,1)")} 看</button><button type="button" class="ch7l-btn" data-edge>侧看平面</button>`;
     const info = el("div", "ch7l-card");
     const gateHost = el("div");
     const result = el("div", "ch7l-result");
@@ -650,10 +650,10 @@
         objs.push({ type: "arrow", to: Av, color: "image", width: 2.6, label: "Av" });
         return objs;
       });
-      info.innerHTML = `<h4>读数</h4><p>v 的方向 ${tex(K.latexRow(s.u))}，${tex(`Av\\ \\text{的方向}\\ ${K.latexRow(s.Au)}`)}</p>${
+      info.innerHTML = `<h4>读数</h4><p>${tex("v")} 的方向 ${tex(K.latexRow(s.u))}，${tex(`Av\\ \\text{的方向}\\ ${K.latexRow(s.Au)}`)}</p>${
         s.parallel
           ? `<p class="ch7l-ok">共线：${tex(`Av=${lf(s.lambda)}\\,v`)}</p>`
-          : `<p class="ch7l-muted">不共线：Av 离开了 v 所在的直线。</p>`
+          : `<p class="ch7l-muted">不共线：${tex("Av")} 离开了 ${tex("v")} 所在的直线。</p>`
       }`;
     }
 
@@ -689,14 +689,14 @@
     tools.querySelector("[data-edge]").addEventListener("click", () => scene.lookAlong([1, -1, 0]));
 
     flow = K.predictFlow(gateHost, result, {
-      question: "A 保持多少条过原点的直线（直线上的 v 满足 Av 与 v 共线）？",
+      question: `${tex("A")} 保持多少条过原点的直线（直线上的 ${tex("v")} 满足 ${tex("Av")} 与 ${tex("v")} 共线）？`,
       options: [
         { text: "无穷多条", correct: true },
         { text: "恰好 3 条", why: "三阶矩阵最多三个特征值，可一个特征值可以对应一整个平面。" },
         { text: "1 条", why: "先点“放进平面”，看 Av 与 v 的关系。" },
         { text: "没有", why: "点“放到 (1,1,1) 方向”。" },
       ],
-      conclusion: `λ=5 只给出直线 ${tex("V_5=L((1,1,1)^T)")}；λ=−1 是二重根，${tex("(-E-A)x=0")} 只有一个独立方程 ${tex("x_1+x_2+x_3=0")}，${tex("V_{-1}")} 是一整个平面，平面里每条直线都被保持（v 被反向）。点“沿 (1,1,1) 看”：平面正对着你，V₅ 缩成一点。`,
+      conclusion: `${tex("\\lambda=5")} 只给出直线 ${tex("V_5=L((1,1,1)^T)")}；${tex("\\lambda=-1")} 是二重根，${tex("(-E-A)x=0")} 只有一个独立方程 ${tex("x_1+x_2+x_3=0")}，${tex("V_{-1}")} 是一整个平面，平面里每条直线都被保持（${tex("v")} 被反向）。点“沿 ${tex("(1,1,1)")} 看”：平面正对着你，${tex("V_5")} 缩成一点。`,
       onReveal: redraw,
     });
     redraw();
@@ -717,12 +717,12 @@
       predict: {
         question: "点会趋向原点。最后几步，它贴着哪条特征直线进来？",
         options: [
-          { text: "η₂ 方向（λ=4/5）", correct: true },
-          { text: "η₁ 方向（λ=1/2）", why: "1/2ᵏ 衰减得更快，这一份先消失。" },
-          { text: "沿 x₀ 与原点的连线", why: "两个分量缩小的速度不同，方向会改变。" },
+          { text: `${tex("\\eta_2")} 方向（${tex("\\lambda=4/5")}）`, correct: true },
+          { text: `${tex("\\eta_1")} 方向（${tex("\\lambda=1/2")}）`, why: "1/2ᵏ 衰减得更快，这一份先消失。" },
+          { text: `沿 ${tex("x_0")} 与原点的连线`, why: "两个分量缩小的速度不同，方向会改变。" },
           { text: "绕原点转圈", why: "两个特征值都是正实数，没有转动。" },
         ],
-        conclusion: "xₖ=c₁(1/2)ᵏη₁+c₂(4/5)ᵏη₂。两份都在缩小，(1/2)ᵏ 缩得快，剩下的主要是 η₂ 分量，所以点贴着 η₂ 所在的直线进入原点。",
+        conclusion: `${tex("x_k=c_1(1/2)^k\\eta_1+c_2(4/5)^k\\eta_2")}。两份都在缩小，${tex("(1/2)^k")} 缩得快，剩下的主要是 ${tex("\\eta_2")} 分量，所以点贴着 ${tex("\\eta_2")} 所在的直线进入原点。`,
       },
     },
     saddle: {
@@ -733,14 +733,14 @@
       x0: [1.5, 0.5],
       extent: 4.2,
       predict: {
-        question: "λ₁=1/2，λ₂=6/5。多数初始点最后沿哪条直线跑远？",
+        question: `${tex("\\lambda_1=1/2")}，${tex("\\lambda_2=6/5")}。多数初始点最后沿哪条直线跑远？`,
         options: [
-          { text: "η₂ 所在直线", correct: true },
-          { text: "η₁ 所在直线", why: "η₁ 分量每步乘 1/2，越来越小。" },
+          { text: `${tex("\\eta_2")} 所在直线`, correct: true },
+          { text: `${tex("\\eta_1")} 所在直线`, why: "η₁ 分量每步乘 1/2，越来越小。" },
           { text: "所有点都跑向原点", why: "6/5>1，η₂ 分量在增长。" },
           { text: "点停在原地不动", why: "按一次“作用一次”看看。" },
         ],
-        conclusion: "η₂ 分量每步乘 6/5，越来越大，η₁ 分量趋于 0，点沿 η₂ 的方向跑远。只有恰好落在 η₁ 直线上（c₂=0）的点会跑向原点：把 x₀ 拖到 x₁ 轴上试试。",
+        conclusion: `${tex("\\eta_2")} 分量每步乘 ${tex("6/5")}，越来越大，${tex("\\eta_1")} 分量趋于 ${tex("0")}，点沿 ${tex("\\eta_2")} 的方向跑远。只有恰好落在 ${tex("\\eta_1")} 直线上（${tex("c_2=0")}）的点会跑向原点：把 ${tex("x_0")} 拖到 ${tex("x_1")} 轴上试试。`,
       },
     },
     markov: {
@@ -751,14 +751,14 @@
       x0: [2, 0],
       extent: 2.6,
       predict: {
-        question: "每列元素之和为 1。从 x₀=(2,0) 出发，最后停在哪里？",
+        question: `每列元素之和为 1。从 ${tex("x_0=(2,0)")} 出发，最后停在哪里？`,
         options: [
-          { text: "(6/5, 4/5)", correct: true },
-          { text: "(1, 1)", why: "极限在 λ=1 的特征直线 L((3,2)) 上。" },
+          { text: `${tex("(6/5,4/5)")}`, correct: true },
+          { text: `${tex("(1,1)")}`, why: "极限在 λ=1 的特征直线 L((3,2)) 上。" },
           { text: "原点", why: "λ=1 的分量不衰减。" },
           { text: "不会停下", why: "λ=1/2 的分量越来越小，点会停下。" },
         ],
-        conclusion: "λ=1 的分量保持不变，λ=1/2 的分量衰减为 0，xₖ 趋于 c₁η₁。分量之和保持为 2，所以极限是 2·(3/5, 2/5)=(6/5, 4/5)。",
+        conclusion: `${tex("\\lambda=1")} 的分量保持不变，${tex("\\lambda=1/2")} 的分量衰减为 ${tex("0")}，${tex("x_k")} 趋于 ${tex("c_1\\eta_1")}。分量之和保持为 ${tex("2")}，所以极限是 ${tex("2\\cdot(3/5,2/5)=(6/5,4/5)")}。`,
       },
     },
     jordan: {
@@ -776,15 +776,15 @@
           { text: "趋向原点", why: "特征值是 1，没有衰减。" },
           { text: "绕原点转动", why: "x₂ 坐标始终不变。" },
         ],
-        conclusion: "Aᵏ=(1 k; 0 1)，xₖ=(x₁+k·x₂, x₂)：每步平移 x₂，是等差的漂移。特征向量只有一个，x₀ 拆不成两个按几何级数伸缩的分量，A 不能对角化。",
+        conclusion: `${tex("A^k=\\begin{pmatrix}1&k\\\\0&1\\end{pmatrix}")}，${tex("x_k=(x_1+k\\cdot x_2,x_2)")}：每步平移 ${tex("x_2")}，是等差的漂移。特征向量只有一个，${tex("x_0")} 拆不成两个按几何级数伸缩的分量，${tex("A")} 不能对角化。`,
       },
     },
   };
 
   function iterationLab(root) {
     const lab = K.labShell(root, {
-      title: "反复作用 A，点跑向哪里",
-      task: "拖动金色的 x₀，然后按“作用一次”。蓝、朱两支箭头是 xₖ 的两个特征分量，每按一次各乘自己的 λ；紫色折线是轨迹。",
+      title: `反复作用 ${tex("A")}，点跑向哪里`,
+      task: `拖动金色的 ${tex("x_0")}，然后按“作用一次”。蓝、朱两支箭头是 ${tex("x_k")} 的两个特征分量，每按一次各乘自己的 ${tex("\\lambda")}；紫色折线是轨迹。`,
     });
     const state = { key: "attract", x0: [3, 1], k: 0 };
     const toolbar = el("div", "ch7l-toolbar");
@@ -795,7 +795,7 @@
     lab.append(toolbar, body);
     const plane = K.plane2d(stage, { extent: 3.2, hint: "拖动 x₀（每次半格）", label: "迭代轨迹" });
     const tools = el("div", "ch7l-actions");
-    tools.innerHTML = `<button type="button" class="ch7l-btn is-primary" data-step>作用一次 A</button><button type="button" class="ch7l-btn" data-ten>连续 10 次</button><button type="button" class="ch7l-btn" data-reset>回到 x₀</button>`;
+    tools.innerHTML = `<button type="button" class="ch7l-btn is-primary" data-step>作用一次 ${tex("A")}</button><button type="button" class="ch7l-btn" data-ten>连续 10 次</button><button type="button" class="ch7l-btn" data-reset>回到 ${tex("x_0")}</button>`;
     const info = el("div", "ch7l-card");
     const gateHost = el("div");
     const result = el("div", "ch7l-result");
@@ -850,7 +850,7 @@
         pts.forEach((p, i) => d.point(p, i ? "image" : "drag", { r: i === pts.length - 1 ? 5.5 : 3, alpha: i === pts.length - 1 ? 1 : 0.7 }));
         d.text(xk, state.k ? `x${toSub(state.k)}` : "x₀", state.k ? "image" : "drag", { dx: 10, dy: 12 });
       });
-      let html = `<h4>k = ${state.k}</h4><p>${tex(`x_{${state.k}}=`)} ${vecNice(xk)}</p>`;
+      let html = `<h4>${tex(`k=${state.k}`)}</h4><p>${tex(`x_{${state.k}}=`)} ${vecNice(xk)}</p>`;
       if (c) {
         const co = (x) => { const t = lf(x); return t === "1" ? "" : t === "-1" ? "-" : t; };
         html += `<p>${tex(`x_0=${co(c[0])}\\eta_1${c[1].n < 0 ? "" : "+"}${co(c[1])}\\eta_2`)}</p>`;
@@ -868,10 +868,10 @@
         const comp = (i, k) => num(c[i]) * lam[i] ** k;
         const rows = [];
         for (let k = Math.max(0, state.k - 4); k <= state.k; k += 1) rows.push(k);
-        const ratioHead = `η${"₁₂"[weak]} / η${"₁₂"[strong]}`;
-        html += `<table class="ch7l-table ch7l-iter"><thead><tr><th>k</th>
-          <th style="color:var(--cv-v1)">η₁ 分量 ×${P.lambdas[0]}</th>
-          <th style="color:var(--cv-v2)">η₂ 分量 ×${P.lambdas[1]}</th>
+        const ratioHead = tex(`\\eta_${weak + 1}/\\eta_${strong + 1}`);
+        html += `<table class="ch7l-table ch7l-iter"><thead><tr><th>${tex("k")}</th>
+          <th style="color:var(--cv-v1)">${tex("\\eta_1")} 分量 ${tex(`\\times${P.lambdas[0]}`)}</th>
+          <th style="color:var(--cv-v2)">${tex("\\eta_2")} 分量 ${tex(`\\times${P.lambdas[1]}`)}</th>
           <th>${ratioHead}</th></tr></thead><tbody>
           ${rows.map((k) => {
             const a = comp(0, k), b = comp(1, k);
@@ -881,9 +881,9 @@
           }).join("")}
           </tbody></table>`;
         const onLine = c.findIndex((x) => M().isZero(x));
-        if (onLine >= 0) html += `<p class="ch7l-ok">x₀ 在 η${"₁₂"[1 - onLine]} 所在直线上：c${"₁₂"[onLine]}=0，点永远不离开这条直线。</p>`;
+        if (onLine >= 0) html += `<p class="ch7l-ok">${tex("x_0")} 在 ${tex(`\\eta_${2 - onLine}`)} 所在直线上：${tex(`c_${onLine + 1}=0`)}，点永远不离开这条直线。</p>`;
       } else {
-        html += `<p class="ch7l-muted">只有一条特征直线，xₖ 拆不成两个特征分量。${tex(`A^{k}=\\begin{pmatrix}1&${state.k}\\\\0&1\\end{pmatrix}`)}</p>`;
+        html += `<p class="ch7l-muted">只有一条特征直线，${tex("x_k")} 拆不成两个特征分量。${tex(`A^{k}=\\begin{pmatrix}1&${state.k}\\\\0&1\\end{pmatrix}`)}</p>`;
       }
       info.innerHTML = html;
     }

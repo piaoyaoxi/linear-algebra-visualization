@@ -64,40 +64,40 @@
   function counts(inn){return `<div class="qv-counts"><span>正<strong>${inn.p}</strong></span><span>负<strong>${inn.q}</strong></span><span>零<strong>${inn.zero}</strong></span></div>`;}
 
   function mountS1(root){
-    root.innerHTML=`<h2>交互实验</h2><div class="qv-lab"><header class="qv-head"><h3>矩阵变了，曲面上的同一个高度没有变</h3><p>选择变量替换，再选择测试向量。左边在 x=Cy 处读 A 的曲面高度，右边在 y 处读 B=CᵀAC 的曲面高度。</p></header><div data-s1-gate></div><div class="ch5-toolbar" role="group">${[["identity","不变"],["swap","交换变量"],["shear","剪切"],["scale","缩放"],["singular","奇异压缩"]].map(([k,l],i)=>`<button type="button" ${i?'':'class="is-active"'} data-s1-preset="${k}">${l}</button>`).join('')}</div><div class="qv-same"><figure><canvas data-s1-a-canvas></canvas><figcaption>先算 x=Cy，再看 xᵀAx</figcaption></figure><div class="qv-equals"><strong data-s1-eq>?</strong><span data-s1-eq-copy>两根高度杆</span></div><figure><canvas data-s1-b-canvas></canvas><figcaption>在 y 坐标中直接看 yᵀBy</figcaption></figure></div><div class="ch5-toolbar" role="group">${[["e1","y=(1,0)"],["e2","y=(0,1)"],["sum","y=(1,1)"]].map(([k,l],i)=>`<button type="button" ${i?'':'class="is-active"'} data-s1-y="${k}">${l}</button>`).join('')}</div><div class="qv-data"><div><span>C</span><div class="ch5-matrix-wrap" data-s1-c></div></div><div><span>B=CᵀAC</span><div class="ch5-matrix-wrap" data-s1-b></div></div><div class="qv-values"><span>det C<strong data-s1-det></strong></span><span>x=Cy<strong data-s1-x></strong></span><span>xᵀAx<strong data-s1-left></strong></span><span>yᵀBy<strong data-s1-right></strong></span></div></div><div class="qv-result" data-s1-result><span class="ch5-status" data-s1-status></span><div><h4 data-s1-title></h4><p data-s1-copy></p></div></div></div>`;
+    root.innerHTML=`<h2>交互实验</h2><div class="qv-lab"><header class="qv-head"><h3>矩阵变了，曲面上的同一个高度没有变</h3><p>选择变量替换，再选择测试向量。左边在 ${inline('x=Cy')} 处读 ${inline('A')} 的曲面高度，右边在 ${inline('y')} 处读 ${inline('B=C^TAC')} 的曲面高度。</p></header><div data-s1-gate></div><div class="ch5-toolbar" role="group">${[["identity","不变"],["swap","交换变量"],["shear","剪切"],["scale","缩放"],["singular","奇异压缩"]].map(([k,l],i)=>`<button type="button" ${i?'':'class="is-active"'} data-s1-preset="${k}">${l}</button>`).join('')}</div><div class="qv-same"><figure><canvas data-s1-a-canvas></canvas><figcaption>先算 ${inline('x=Cy')}，再看 ${inline('x^TAx')}</figcaption></figure><div class="qv-equals"><strong data-s1-eq>?</strong><span data-s1-eq-copy>两根高度杆</span></div><figure><canvas data-s1-b-canvas></canvas><figcaption>在 ${inline('y')} 坐标中直接看 ${inline('y^TBy')}</figcaption></figure></div><div class="ch5-toolbar" role="group">${[["e1","y=(1,0)"],["e2","y=(0,1)"],["sum","y=(1,1)"]].map(([k,l],i)=>`<button type="button" ${i?'':'class="is-active"'} data-s1-y="${k}">${inline(l)}</button>`).join('')}</div><div class="qv-data"><div><span>${inline('C')}</span><div class="ch5-matrix-wrap" data-s1-c></div></div><div><span>${inline('B=C^TAC')}</span><div class="ch5-matrix-wrap" data-s1-b></div></div><div class="qv-values"><span>${inline('\\det C')}<strong data-s1-det></strong></span><span>${inline('x=Cy')}<strong data-s1-x></strong></span><span>${inline('x^TAx')}<strong data-s1-left></strong></span><span>${inline('y^TBy')}<strong data-s1-right></strong></span></div></div><div class="qv-result" data-s1-result><span class="ch5-status" data-s1-status></span><div><h4 data-s1-title></h4><p data-s1-copy></p></div></div></div>`;
     const A=[[2,1],[1,1]], presets={identity:[[1,0],[0,1]],swap:[[0,1],[1,0]],shear:[[1,1],[0,1]],scale:[[2,0],[0,1]],singular:[[1,1],[1,1]]},vectors={e1:[1,0],e2:[0,1],sum:[1,1]}; const state={p:'identity',v:'e1'}; const ctl=new AbortController();
     const lab=$(root,'.qv-lab');
     const gate=window.LAPredictGate?.mount($(root,'[data-s1-gate]'),{
       root:lab,manual:true,key:'visuals/ch5/geometry-upgrade.js#s1',
-      question:`换一种变量替换 x=Cy。左图在 x 处读 A 的曲面高度 xᵀAx，右图在 y 处读 B=CᵀAC 的曲面高度 yᵀBy。两根高度杆会怎样？`,
+      question:`换一种变量替换 ${inline('x=Cy')}。左图在 ${inline('x')} 处读 ${inline('A')} 的曲面高度 ${inline('x^TAx')}，右图在 ${inline('y')} 处读 ${inline('B=C^TAC')} 的曲面高度 ${inline('y^TBy')}。两根高度杆会怎样？`,
       options:[
         ['一样高：同一个函数值，只是换了变量写法',true,''],
-        ['右边更高：B 的元素变大了',false,'B 的元素变大，但它在 y 处读数，而 x=Cy 往往更长；两根杆顶在同一水平面上。'],
-        ['要看测试向量 y 取哪一个',false,'三个 y 下两根杆都一样高。'],
-        ['只有 det C≠0 时才一样高',false,'奇异压缩下两根杆也一样高；det C=0 影响的是能不能称为合同。'],
+        [`右边更高：${inline('B')} 的元素变大了`,false,'B 的元素变大，但它在 y 处读数，而 x=Cy 往往更长；两根杆顶在同一水平面上。'],
+        [`要看测试向量 ${inline('y')} 取哪一个`,false,'三个 y 下两根杆都一样高。'],
+        [`只有 ${inline('\\det C\\ne0')} 时才一样高`,false,'奇异压缩下两根杆也一样高；det C=0 影响的是能不能称为合同。'],
       ],
       right:`✓ 两根杆顶在同一个水平面上：${inline('y^TBy=y^T(C^TAC)y=(Cy)^TA(Cy)=x^TAx')}。所以换变量后，新矩阵就是 ${inline('C^TAC')}。`,
       onReveal:()=>paint(),
     });
-    function paint(){const C=presets[state.p],B=M().symmetrize(M().congruence(A,C)),y=vectors[state.v],x=M().matVec(C,y),l=M().qForm(A,x),r=M().qForm(B,y),det=M().det2(C),ok=Math.abs(det)>1e-8;surface($(root,'[data-s1-a-canvas]'),A,'A · 原坐标',x);surface($(root,'[data-s1-b-canvas]'),B,'B · 新坐标',y);$(root,'[data-s1-c]').innerHTML=M().matrixHtml(C);$(root,'[data-s1-b]').innerHTML=M().matrixHtml(B);$(root,'[data-s1-det]').textContent=fmt(det,4);$(root,'[data-s1-x]').textContent=`(${x.map(v=>fmt(v)).join(', ')})`;const open=!gate||gate.revealed;lab.toggleAttribute('data-s1-open',open);$(root,'[data-s1-left]').textContent=open?fmt(l,4):'?';$(root,'[data-s1-right]').textContent=open?fmt(r,4):'?';$(root,'[data-s1-eq]').textContent=open?'=':'?';$(root,'[data-s1-eq-copy]').textContent=open?`同一高度 ${fmt(l,4)}`:'两根高度杆';const s=$(root,'[data-s1-status]');if(!open){s.className='ch5-status';s.textContent='先猜一猜';$(root,'[data-s1-title]').textContent='猜好之后换一种替换';$(root,'[data-s1-copy]').textContent='看两根高度杆的顶端：它们是否落在同一个水平面上。';return;}s.className=`ch5-status ${ok?'is-ok':'is-warn'}`;s.textContent=ok?'合同成立':'不是合同';$(root,'[data-s1-title]').textContent=ok?'坐标换了，二次型没有换':'一个方向被压掉，无法反解';$(root,'[data-s1-copy]').textContent=ok?'det C≠0，新旧变量可互相恢复；两根高度杆顶在同一个水平面上。':'代数恒等式仍成立，但 det C=0，所以这不是非退化变量替换，也不能称为合同。';}
+    function paint(){const C=presets[state.p],B=M().symmetrize(M().congruence(A,C)),y=vectors[state.v],x=M().matVec(C,y),l=M().qForm(A,x),r=M().qForm(B,y),det=M().det2(C),ok=Math.abs(det)>1e-8;surface($(root,'[data-s1-a-canvas]'),A,'A · 原坐标',x);surface($(root,'[data-s1-b-canvas]'),B,'B · 新坐标',y);$(root,'[data-s1-c]').innerHTML=M().matrixHtml(C);$(root,'[data-s1-b]').innerHTML=M().matrixHtml(B);$(root,'[data-s1-det]').textContent=fmt(det,4);$(root,'[data-s1-x]').textContent=`(${x.map(v=>fmt(v)).join(', ')})`;const open=!gate||gate.revealed;lab.toggleAttribute('data-s1-open',open);$(root,'[data-s1-left]').textContent=open?fmt(l,4):'?';$(root,'[data-s1-right]').textContent=open?fmt(r,4):'?';$(root,'[data-s1-eq]').textContent=open?'=':'?';$(root,'[data-s1-eq-copy]').textContent=open?`同一高度 ${fmt(l,4)}`:'两根高度杆';const s=$(root,'[data-s1-status]');if(!open){s.className='ch5-status';s.textContent='先猜一猜';$(root,'[data-s1-title]').textContent='猜好之后换一种替换';$(root,'[data-s1-copy]').textContent='看两根高度杆的顶端：它们是否落在同一个水平面上。';return;}s.className=`ch5-status ${ok?'is-ok':'is-warn'}`;s.textContent=ok?'合同成立':'不是合同';$(root,'[data-s1-title]').textContent=ok?'坐标换了，二次型没有换':'一个方向被压掉，无法反解';$(root,'[data-s1-copy]').innerHTML=ok?`${inline('\\det C\\ne0')}，新旧变量可互相恢复；两根高度杆顶在同一个水平面上。`:`代数恒等式仍成立，但 ${inline('\\det C=0')}，所以这不是非退化变量替换，也不能称为合同。`;}
     $$(root,'[data-s1-preset]').forEach(b=>b.addEventListener('click',()=>{state.p=b.dataset.s1Preset;$$(root,'[data-s1-preset]').forEach(x=>x.classList.toggle('is-active',x===b));if(gate?.picked&&state.p!=='identity')gate.acted();paint();},{signal:ctl.signal}));$$(root,'[data-s1-y]').forEach(b=>b.addEventListener('click',()=>{state.v=b.dataset.s1Y;$$(root,'[data-s1-y]').forEach(x=>x.classList.toggle('is-active',x===b));if(gate?.picked&&state.p!=='identity')gate.acted();paint();},{signal:ctl.signal}));window.addEventListener('resize',paint,{signal:ctl.signal,passive:true});paint();return()=>ctl.abort();
   }
 
   function mountS2(root){
-    root.innerHTML=`<h2>交互实验</h2><div class="qv-lab"><header class="qv-head"><h3>配方：换一组变量，让交叉项消失</h3><p>每前进一步，公式、替换矩阵 C 和曲面同步更新。曲面始终画在当前变量的坐标里；曲面下方的小图是从正上方看到的等高线。</p></header><div data-s2-gate></div><div class="ch5-toolbar">${[["regular","含交叉项"],["cross","只有交叉项"],["rank1","退化为一个平方"],["indef","一正一负"]].map(([k,l],i)=>`<button type="button" ${i?'':'class="is-active"'} data-s2-preset="${k}">${l}</button>`).join('')}</div><div class="qv-stepbar"><span data-s2-step-count></span><button data-s2-nav="prev">上一步</button><button class="is-primary" data-s2-nav="next">下一步</button><button data-s2-nav="reset">重置</button></div><div class="qv-progress" data-s2-progress></div><div class="qv-two"><section><div class="qv-s2-stage"><canvas class="qv-main-canvas" data-s2-canvas></canvas><figure class="qv-s2-inset"><canvas data-s2-top aria-label="俯视等高线"></canvas><figcaption data-s2-top-caption>俯视 · 等高线</figcaption></figure></div><p data-s2-look></p></section><aside><div class="qv-step"><span data-s2-kicker></span><h4 data-s2-title></h4><div data-s2-poly></div><p data-s2-note></p></div><div class="qv-s2-mats"><div><h4>当前替换 C</h4><div class="ch5-matrix-wrap" data-s2-c></div></div><div><h4>当前矩阵</h4><div class="ch5-matrix-wrap" data-s2-d></div></div><p data-s2-substitution></p></div><div class="qv-values"><span>det C<strong data-s2-det></strong></span><span>交叉项系数<strong data-s2-cross></strong></span><span>原秩<strong data-s2-rank-a></strong></span><span>当前秩<strong data-s2-rank-d></strong></span></div><div class="qv-result" data-s2-result><span class="ch5-status" data-s2-status></span><div><h4 data-s2-result-title></h4><p data-s2-result-copy></p></div></div></aside></div></div>`;
+    root.innerHTML=`<h2>交互实验</h2><div class="qv-lab"><header class="qv-head"><h3>配方：换一组变量，让交叉项消失</h3><p>每前进一步，公式、替换矩阵 ${inline('C')} 和曲面同步更新。曲面始终画在当前变量的坐标里；曲面下方的小图是从正上方看到的等高线。</p></header><div data-s2-gate></div><div class="ch5-toolbar">${[["regular","含交叉项"],["cross","只有交叉项"],["rank1","退化为一个平方"],["indef","一正一负"]].map(([k,l],i)=>`<button type="button" ${i?'':'class="is-active"'} data-s2-preset="${k}">${l}</button>`).join('')}</div><div class="qv-stepbar"><span data-s2-step-count></span><button data-s2-nav="prev">上一步</button><button class="is-primary" data-s2-nav="next">下一步</button><button data-s2-nav="reset">重置</button></div><div class="qv-progress" data-s2-progress></div><div class="qv-two"><section><div class="qv-s2-stage"><canvas class="qv-main-canvas" data-s2-canvas></canvas><figure class="qv-s2-inset"><canvas data-s2-top aria-label="俯视等高线"></canvas><figcaption data-s2-top-caption>俯视 · 等高线</figcaption></figure></div><p data-s2-look></p></section><aside><div class="qv-step"><span data-s2-kicker></span><h4 data-s2-title></h4><div data-s2-poly></div><p data-s2-note></p></div><div class="qv-s2-mats"><div><h4>当前替换 ${inline('C')}</h4><div class="ch5-matrix-wrap" data-s2-c></div></div><div><h4>当前矩阵</h4><div class="ch5-matrix-wrap" data-s2-d></div></div><p data-s2-substitution></p></div><div class="qv-values"><span>${inline('\\det C')}<strong data-s2-det></strong></span><span>交叉项系数<strong data-s2-cross></strong></span><span>原秩<strong data-s2-rank-a></strong></span><span>当前秩<strong data-s2-rank-d></strong></span></div><div class="qv-result" data-s2-result><span class="ch5-status" data-s2-status></span><div><h4 data-s2-result-title></h4><p data-s2-result-copy></p></div></div></aside></div></div>`;
     const presets={regular:M().mat2FromAbc(1,2,6),cross:M().mat2FromAbc(0,1,0),rank1:M().mat2FromAbc(1,1,1),indef:M().mat2FromAbc(1,1,-2)},state={p:'regular',step:0,t:1},ctl=new AbortController();
     const lab=$(root,'.qv-lab');
     let raf=0;
     const gate=window.LAPredictGate?.mount($(root,'[data-s2-gate]'),{
       root:lab,manual:true,key:'visuals/ch5/geometry-upgrade.js#s2',
-      question:`例子“含交叉项”：${inline('q=x_1^2+4x_1x_2+6x_2^2')} 的等高线是斜着的椭圆。配方换成新变量 y 以后，在 y 的坐标里这些椭圆会怎样？`,
+      question:`例子“含交叉项”：${inline('q=x_1^2+4x_1x_2+6x_2^2')} 的等高线是斜着的椭圆。配方换成新变量 ${inline('y')} 以后，在 ${inline('y')} 的坐标里这些椭圆会怎样？`,
       options:[
-        ['椭圆的两条轴摆正，落在 y₁、y₂ 坐标轴上',true,''],
+        [`椭圆的两条轴摆正，落在 ${inline('y_1')}、${inline('y_2')} 坐标轴上`,true,''],
         ['椭圆仍然斜着，只是大小变了',false,'终点没有 y₁y₂ 项，等高线 y₁²+2y₂²=常数 的轴就在坐标轴上。'],
         ['椭圆变成圆',false,'两个平方项的系数是 1 和 2，不相等，仍是椭圆。'],
         ['椭圆变成双曲线',false,'可逆替换不改变曲面向上的方向个数，碗仍是碗，等高线仍是椭圆。'],
       ],
-      right:`✓ 交叉项消失以后，等高线 ${inline('y_1^2+2y_2^2=c')} 的两条轴就是 y₁、y₂ 轴。配方就是在找一组让等高线摆正的新坐标。`,
+      right:`✓ 交叉项消失以后，等高线 ${inline('y_1^2+2y_2^2=c')} 的两条轴就是 ${inline('y_1')}、${inline('y_2')} 轴。配方就是在找一组让等高线摆正的新坐标。`,
       onPick:()=>{if(state.p!=='regular')$(root,'[data-s2-preset="regular"]')?.click();},
     });
     function pack(){return M().completeSquareSteps2(presets[state.p]);}
@@ -124,7 +124,7 @@
       const tick=(now)=>{const t=dur?Math.min(1,(now-t0)/dur):1,e=t<.5?2*t*t:1-(-2*t+2)**2/2,C=[[1,r*e],[0,1]];topView(c,t<1?M().symmetrize(M().congruence(A,C)):D,A,t<1?'x':'y');if(t<1)raf=requestAnimationFrame(tick);else raf=0;};
       raf=requestAnimationFrame(tick);
     }
-    function paint(){const A=presets[state.p],pk=pack(),steps=pk.steps||[];state.step=M().clamp(state.step,0,Math.max(0,steps.length-1));const st=steps[state.step]||{title:'起点',poly:M().polyPlain2(A),note:'',kind:'start',matrix:A},C=st.C||M().identity(2),D=st.matrix||A,final=state.step===steps.length-1,det=M().det2(C),cross=2*D[0][1],ra=M().matrixRank(A),rd=M().matrixRank(D);$(root,'[data-s2-step-count]').textContent=`第 ${state.step+1} 步 / ${steps.length}`;$(root,'[data-s2-progress]').style.setProperty('--p',`${100*(state.step+1)/steps.length}%`);$(root,'[data-s2-kicker]').textContent=st.kind==='done'?'标准形':'当前步骤';$(root,'[data-s2-title]').textContent=st.title;$(root,'[data-s2-poly]').innerHTML=inline(st.poly.replace(/(^|[+−=(-]\s*)1\s+(?=[xy(])/g,'$1').replace(/²/g,'^2').replace(/x₁/g,'x_1').replace(/x₂/g,'x_2').replace(/y₁/g,'y_1').replace(/y₂/g,'y_2'));$(root,'[data-s2-note]').textContent=st.note;$(root,'[data-s2-look]').textContent=final?'在新变量 y 的坐标里，等高线不再倾斜，交叉项为 0。把 y 轴画回原来的 x 平面，它们一般是斜的，并不是曲面的主轴。':'继续配方，观察当前坐标里的倾斜怎样消失。';$(root,'[data-s2-c]').innerHTML=M().matrixHtml(C);$(root,'[data-s2-d]').innerHTML=M().matrixHtml(D);$(root,'[data-s2-substitution]').textContent=st.C?(pk.method==='sumdiff'?'和差替换：x₁=(y₁+y₂)/2，x₂=(y₁−y₂)/2。':'已经写出 x=Cy，新旧变量可互相恢复。'):'尚未定义新变量，C 为单位矩阵。';const vars=st.C?'y':'x';lab.dataset.s2Vars=vars;if(!raf)topView($(root,'[data-s2-top]'),D,st.C?A:null,vars);$(root,'[data-s2-top-caption]').textContent=st.C?'俯视 · 新坐标 y 中的等高线（虚线是起点）':'俯视 · 原坐标 x 中的等高线';if(final&&gate?.picked&&state.p==='regular')gate.acted();$(root,'[data-s2-det]').textContent=fmt(det,4);$(root,'[data-s2-cross]').textContent=fmt(cross,6);$(root,'[data-s2-rank-a]').textContent=ra;$(root,'[data-s2-rank-d]').textContent=rd;surface($(root,'[data-s2-canvas]'),D,final?'标准形 · 新变量 y':'当前二次型');const s=$(root,'[data-s2-status]');if(final){const ok=Math.abs(det)>1e-8&&Math.abs(cross)<1e-7&&ra===rd;s.className=`ch5-status ${ok?'is-ok':'is-warn'}`;s.textContent=ok?'标准形完成':'还需检查';$(root,'[data-s2-result-title]').textContent=ok?'可逆、无交叉项、秩保持':'尚未闭环';$(root,'[data-s2-result-copy]').textContent=ok?'三项同时成立，说明这一步确实是合同化标准形。':'检查变量替换和最终矩阵。';}else{s.className='ch5-status';s.textContent='处理中';$(root,'[data-s2-result-title]').textContent='还没有到终点';$(root,'[data-s2-result-copy]').textContent='不要只看公式；同时看当前坐标里的等高线是否仍然倾斜。';}if(gate?.picked&&!gate.revealed&&state.p!=='regular'){$(root,'[data-s2-result-copy]').textContent+='你的猜测针对“含交叉项”：回到这个例子走到最后一步，再核对猜测。';}}
+    function paint(){const A=presets[state.p],pk=pack(),steps=pk.steps||[];state.step=M().clamp(state.step,0,Math.max(0,steps.length-1));const st=steps[state.step]||{title:'起点',poly:M().polyPlain2(A),note:'',kind:'start',matrix:A},C=st.C||M().identity(2),D=st.matrix||A,final=state.step===steps.length-1,det=M().det2(C),cross=2*D[0][1],ra=M().matrixRank(A),rd=M().matrixRank(D);$(root,'[data-s2-step-count]').textContent=`第 ${state.step+1} 步 / ${steps.length}`;$(root,'[data-s2-progress]').style.setProperty('--p',`${100*(state.step+1)/steps.length}%`);$(root,'[data-s2-kicker]').textContent=st.kind==='done'?'标准形':'当前步骤';$(root,'[data-s2-title]').textContent=st.title;$(root,'[data-s2-poly]').innerHTML=inline(st.poly.replace(/(^|[+−=(-]\s*)1\s+(?=[xy(])/g,'$1').replace(/²/g,'^2').replace(/x₁/g,'x_1').replace(/x₂/g,'x_2').replace(/y₁/g,'y_1').replace(/y₂/g,'y_2'));$(root,'[data-s2-note]').innerHTML=st.note;$(root,'[data-s2-look]').innerHTML=final?`在新变量 ${inline('y')} 的坐标里，等高线不再倾斜，交叉项为 0。把 ${inline('y')} 轴画回原来的 ${inline('x')} 平面，它们一般是斜的，并不是曲面的主轴。`:'继续配方，观察当前坐标里的倾斜怎样消失。';$(root,'[data-s2-c]').innerHTML=M().matrixHtml(C);$(root,'[data-s2-d]').innerHTML=M().matrixHtml(D);$(root,'[data-s2-substitution]').innerHTML=st.C?(pk.method==='sumdiff'?`和差替换：${inline('x_1=(y_1+y_2)/2')}，${inline('x_2=(y_1-y_2)/2')}。`:`已经写出 ${inline('x=Cy')}，新旧变量可互相恢复。`):`尚未定义新变量，${inline('C')} 为单位矩阵。`;const vars=st.C?'y':'x';lab.dataset.s2Vars=vars;if(!raf)topView($(root,'[data-s2-top]'),D,st.C?A:null,vars);$(root,'[data-s2-top-caption]').innerHTML=st.C?`俯视 · 新坐标 ${inline('y')} 中的等高线（虚线是起点）`:`俯视 · 原坐标 ${inline('x')} 中的等高线`;if(final&&gate?.picked&&state.p==='regular')gate.acted();$(root,'[data-s2-det]').textContent=fmt(det,4);$(root,'[data-s2-cross]').textContent=fmt(cross,6);$(root,'[data-s2-rank-a]').textContent=ra;$(root,'[data-s2-rank-d]').textContent=rd;surface($(root,'[data-s2-canvas]'),D,final?'标准形 · 新变量 y':'当前二次型');const s=$(root,'[data-s2-status]');if(final){const ok=Math.abs(det)>1e-8&&Math.abs(cross)<1e-7&&ra===rd;s.className=`ch5-status ${ok?'is-ok':'is-warn'}`;s.textContent=ok?'标准形完成':'还需检查';$(root,'[data-s2-result-title]').textContent=ok?'可逆、无交叉项、秩保持':'尚未闭环';$(root,'[data-s2-result-copy]').textContent=ok?'三项同时成立，说明这一步确实是合同化标准形。':'检查变量替换和最终矩阵。';}else{s.className='ch5-status';s.textContent='处理中';$(root,'[data-s2-result-title]').textContent='还没有到终点';$(root,'[data-s2-result-copy]').textContent='不要只看公式；同时看当前坐标里的等高线是否仍然倾斜。';}if(gate?.picked&&!gate.revealed&&state.p!=='regular'){$(root,'[data-s2-result-copy]').textContent+='你的猜测针对“含交叉项”：回到这个例子走到最后一步，再核对猜测。';}}
     $$(root,'[data-s2-preset]').forEach(b=>b.addEventListener('click',()=>{state.p=b.dataset.s2Preset;state.step=0;$$(root,'[data-s2-preset]').forEach(x=>x.classList.toggle('is-active',x===b));paint();},{signal:ctl.signal}));$$(root,'[data-s2-nav]').forEach(b=>b.addEventListener('click',()=>{const before=(pack().steps||[])[state.step];if(b.dataset.s2Nav==='next')state.step+=1;if(b.dataset.s2Nav==='prev')state.step-=1;if(b.dataset.s2Nav==='reset')state.step=0;cancelAnimationFrame(raf);raf=0;paint();const steps=pack().steps||[],now=steps[Math.min(state.step,steps.length-1)],A=presets[state.p];if(before&&!before.C&&now?.C&&now.C[1][0]===0&&Math.abs(A[0][0])>1e-9){animateTop(A,now.matrix);}},{signal:ctl.signal}));ctl.signal.addEventListener('abort',()=>cancelAnimationFrame(raf));window.addEventListener('resize',paint,{signal:ctl.signal,passive:true});paint();return()=>ctl.abort();
   }
 
@@ -195,26 +195,26 @@
   }
 
   function mountS3(root){
-    root.innerHTML=`<h2>交互实验</h2><div class="qv-lab qv-s3"><header class="qv-head"><h3>可逆变换可以扭曲曲面，却改不了向上、向下和平坦方向的数量</h3><p>B=CᵀAC，C=${inline('\\begin{bmatrix}1&h\\\\0&1\\end{bmatrix}')}，det C=1。曲面上画出向上、向下的主方向；下方的符号轮把每个方向按 q 的正负着色。</p></header>
+    root.innerHTML=`<h2>交互实验</h2><div class="qv-lab qv-s3"><header class="qv-head"><h3>可逆变换可以扭曲曲面，却改不了向上、向下和平坦方向的数量</h3><p>${inline('B=C^TAC')}，${inline('C=\\begin{bmatrix}1&h\\\\0&1\\end{bmatrix}')}，${inline('\\det C=1')}。曲面上画出向上、向下的主方向；下方的符号轮把每个方向按 ${inline('q')} 的正负着色。</p></header>
       <div data-s3-gate></div>
       <div class="ch5-toolbar">${[["positive","两个正方向"],["indefinite","一正一负"],["rank1","一正一零"]].map(([k,l],i)=>`<button type="button" ${i===1?'class="is-active"':''} data-s3-preset="${k}">${l}</button>`).join('')}</div>
-      <label class="ch5-range"><span>剪切参数 h</span><input type="range" min="-1.5" max="1.5" step=".5" value="0" data-s3-h><output data-s3-h-value>0</output></label>
-      <div class="qv-same"><figure><canvas data-s3-a-canvas></canvas><figcaption>原曲面 A<div data-s3-a-counts></div></figcaption></figure><div class="qv-equals"><strong>CᵀAC</strong><span>可逆时只换坐标</span></div><figure><canvas data-s3-b-canvas></canvas><figcaption>变换后 B<div data-s3-b-counts></div></figcaption></figure></div>
+      <label class="ch5-range"><span>剪切参数 ${inline('h')}</span><input type="range" min="-1.5" max="1.5" step=".5" value="0" data-s3-h><output data-s3-h-value>0</output></label>
+      <div class="qv-same"><figure><canvas data-s3-a-canvas></canvas><figcaption>原曲面 ${inline('A')}<div data-s3-a-counts></div></figcaption></figure><div class="qv-equals"><strong>${inline('C^TAC')}</strong><span>可逆时只换坐标</span></div><figure><canvas data-s3-b-canvas></canvas><figcaption>变换后 ${inline('B')}<div data-s3-b-counts></div></figcaption></figure></div>
       <div class="qv-s3-wheels"><figure><canvas data-s3-a-wheel aria-label="A 的符号轮"></canvas></figure><figure><canvas data-s3-b-wheel aria-label="B 的符号轮"></canvas></figure></div>
-      <div class="qv-data"><div><span>C</span><div class="ch5-matrix-wrap" data-s3-c></div></div><div><span>A</span><div class="ch5-matrix-wrap" data-s3-a></div></div><div><span>B</span><div class="ch5-matrix-wrap" data-s3-b></div></div><div class="qv-values"><span>det C<strong data-s3-det></strong></span><span>A 的多项式<strong data-s3-poly-a></strong></span><span>B 的多项式<strong data-s3-poly-b></strong></span></div></div>
+      <div class="qv-data"><div><span>${inline('C')}</span><div class="ch5-matrix-wrap" data-s3-c></div></div><div><span>${inline('A')}</span><div class="ch5-matrix-wrap" data-s3-a></div></div><div><span>${inline('B')}</span><div class="ch5-matrix-wrap" data-s3-b></div></div><div class="qv-values"><span>${inline('\\det C')}<strong data-s3-det></strong></span><span>${inline('A')} 的多项式<strong data-s3-poly-a></strong></span><span>${inline('B')} 的多项式<strong data-s3-poly-b></strong></span></div></div>
       <div class="qv-actions"><button data-s3-singular>让替换奇异</button><button data-s3-reset>恢复可逆</button></div>
       <div class="qv-result" data-s3-result><span class="ch5-status" data-s3-status></span><div><h4 data-s3-title></h4><p data-s3-copy></p></div></div></div>`;
     const presets={positive:[[2,.5],[.5,1]],indefinite:[[1,.5],[.5,-1]],rank1:[[1,1],[1,1]]},state={p:'indefinite',h:0,singular:false},ctl=new AbortController();
     const gate=window.LAPredictGate?.mount($(root,'[data-s3-gate]'),{
       root:$(root,'.qv-lab'),manual:true,key:'visuals/ch5/geometry-upgrade.js#s3',
-      question:`A 是一正一负的马鞍面。拖动 h（det C=1 始终可逆），B 的曲面能不能变成两个方向都向上的碗？`,
+      question:`${inline('A')} 是一正一负的马鞍面。拖动 ${inline('h')}（${inline('\\det C=1')} 始终可逆），${inline('B')} 的曲面能不能变成两个方向都向上的碗？`,
       options:[
         ['不能：始终恰好一个方向向上、一个方向向下',true,''],
-        ['能：h 足够大时',false,'h 越大曲面越斜，但符号轮上蓝色的“向下”弧一直在。'],
+        [`能：${inline('h')} 足够大时`,false,'h 越大曲面越斜，但符号轮上蓝色的“向下”弧一直在。'],
         ['能：交叉项消失的那一刻',false,'交叉项消失时 B 是对角的，对角元仍是一正一负。'],
         ['会变成一个向上、一个平坦',false,'平坦方向意味着某个非零方向上 q 恒为 0，可逆替换造不出这样的方向。'],
       ],
-      right:`✓ 可逆的 C 把 A 的“向下”方向 v 换成 B 的方向 C⁻¹v：${inline('(C^{-1}v)^TB(C^{-1}v)=v^TAv<0')}。向下的方向只是换了位置，不会消失；向上的方向也一样。这就是惯性定理：p、q 由二次型本身决定。`,
+      right:`✓ 可逆的 ${inline('C')} 把 ${inline('A')} 的“向下”方向 ${inline('v')} 换成 ${inline('B')} 的方向 ${inline('C^{-1}v')}：${inline('(C^{-1}v)^TB(C^{-1}v)=v^TAv<0')}。向下的方向只是换了位置，不会消失；向上的方向也一样。这就是惯性定理：${inline('p')}、${inline('q')} 由二次型本身决定。`,
       onPick:()=>{if(state.p!=='indefinite')$(root,'[data-s3-preset="indefinite"]')?.click();},
       onReveal:()=>paint(),
     });
@@ -234,10 +234,10 @@
       signWheel($(root,'[data-s3-a-wheel]'),A,'A 的符号轮');signWheel($(root,'[data-s3-b-wheel]'),B,'B 的符号轮');
       $(root,'[data-s3-singular]').disabled=!open;
       const s=$(root,'[data-s3-status]');
-      if(!open){s.className='ch5-status';s.textContent='先猜一猜';$(root,'[data-s3-title]').textContent='猜好之后拖动 h';$(root,'[data-s3-copy]').textContent=gate?.picked&&state.p!=='indefinite'?'你的猜测针对“一正一负”：回到这个例子拖动 h，再核对猜测。':'盯住右边的曲面和符号轮：蓝色弧是 q<0 的方向。';return;}
+      if(!open){s.className='ch5-status';s.textContent='先猜一猜';$(root,'[data-s3-title]').innerHTML=`猜好之后拖动 ${inline('h')}`;$(root,'[data-s3-copy]').innerHTML=gate?.picked&&state.p!=='indefinite'?`你的猜测针对“一正一负”：回到这个例子拖动 ${inline('h')}，再核对猜测。`:`盯住右边的曲面和符号轮：蓝色弧是 ${inline('q<0')} 的方向。`;return;}
       s.className=`ch5-status ${ok&&same?'is-ok':'is-warn'}`;s.textContent=ok?(same?'惯性锁定':'数值异常'):'合同停止';
       $(root,'[data-s3-title]').textContent=ok?'形状被拉斜，符号骨架没有变':'一个方向被真正丢失';
-      $(root,'[data-s3-copy]').textContent=ok?'det C≠0，正、负、零方向数量与 A 完全一致。':'det C=0，平面被压到一条线；此时替换不可逆，已经离开合同的前提。';
+      $(root,'[data-s3-copy]').innerHTML=ok?`${inline('\\det C\\ne0')}，正、负、零方向数量与 ${inline('A')} 完全一致。`:`${inline('\\det C=0')}，平面被压到一条线；此时替换不可逆，已经离开合同的前提。`;
     }
     $$(root,'[data-s3-preset]').forEach(b=>b.addEventListener('click',()=>{state.p=b.dataset.s3Preset;state.h=0;state.singular=false;$$(root,'[data-s3-preset]').forEach(x=>x.classList.toggle('is-active',x===b));paint();},{signal:ctl.signal}));
     $(root,'[data-s3-h]').addEventListener('input',e=>{state.h=Number(e.target.value);state.singular=false;if(gate?.picked&&state.h!==0&&state.p==='indefinite')gate.acted();paint();},{signal:ctl.signal});
@@ -316,14 +316,14 @@
   }
 
   function mountS4(root){
-    root.innerHTML=`<h2>交互实验</h2><div class="qv-lab qv-s4"><header class="qv-head"><h3>正定性就是曲面是否在每个方向都向上</h3><p>改变交叉项 t，让 ${inline('A(t)=\\begin{bmatrix}1&t\\\\t&1\\end{bmatrix}')} 连续变化。曲面底面上的曲线是等高线 q(x)=c：从正上方看，同一高度的点连成的线。</p></header>
+    root.innerHTML=`<h2>交互实验</h2><div class="qv-lab qv-s4"><header class="qv-head"><h3>正定性就是曲面是否在每个方向都向上</h3><p>改变交叉项 ${inline('t')}，让 ${inline('A(t)=\\begin{bmatrix}1&t\\\\t&1\\end{bmatrix}')} 连续变化。曲面底面上的曲线是等高线 ${inline('q(x)=c')}：从正上方看，同一高度的点连成的线。</p></header>
       <div data-s4-gate></div>
-      <div class="ch5-toolbar" role="group" aria-label="t 的预设">${S4_PRESETS.map(([t],i)=>`<button type="button" ${i?'':'class="is-active"'} data-s4-preset="${t}">t=${fracStr(t)}</button>`).join('')}</div>
-      <label class="ch5-range"><span>连续调节 t</span><input type="range" min="-1.5" max="1.5" step="0.25" value="0" data-s4-t><output data-s4-t-value>0</output></label>
+      <div class="ch5-toolbar" role="group" aria-label="t 的预设">${S4_PRESETS.map(([t],i)=>`<button type="button" ${i?'':'class="is-active"'} data-s4-preset="${t}">${inline(`t=${fracStr(t)}`)}</button>`).join('')}</div>
+      <label class="ch5-range"><span>连续调节 ${inline('t')}</span><input type="range" min="-1.5" max="1.5" step="0.25" value="0" data-s4-t><output data-s4-t-value>0</output></label>
       <div class="qv-s4-grid">
         <div class="qv-s4-main"><div class="qv-hero"><canvas data-s4-surface></canvas><div><span class="ch5-status" data-s4-status></span><div><h4 data-s4-title></h4><p data-s4-scan-copy></p></div></div></div></div>
         <aside class="qv-s4-side">
-          <figure class="qv-s4-wheel"><canvas data-s4-scan aria-label="方向轮：单位圆上每个方向的 q 值"></canvas><figcaption>方向轮：单位圆上的每个方向按 q 的正负着色。圆点是 q 最小的方向，虚线是 q=0 的方向。</figcaption></figure>
+          <figure class="qv-s4-wheel"><canvas data-s4-scan aria-label="方向轮：单位圆上每个方向的 q 值"></canvas><figcaption>方向轮：单位圆上的每个方向按 ${inline('q')} 的正负着色。圆点是 ${inline('q')} 最小的方向，虚线是 ${inline('q=0')} 的方向。</figcaption></figure>
           <div class="qv-s4-read"><div class="ch5-matrix-wrap" data-s4-matrix></div><div class="qv-values">
             <span class="qv-s4-wide"><b class="qv-s4-label" data-s4-label="min"></b><strong data-s4-min></strong></span>
             <span>${inline('\\Delta_1')}<strong data-s4-d1></strong></span>
@@ -337,14 +337,14 @@
     const state={k:0},ctl=new AbortController(),lab=$(root,'.qv-lab');
     const gate=window.LAPredictGate?.mount($(root,'[data-s4-gate]'),{
       root:lab,manual:true,key:'visuals/ch5/geometry-upgrade.js#s4',
-      question:`${inline('A(t)')} 的对角元始终是 1。把交叉项 t 从 0 往右拖，曲面从什么时候开始出现向下的方向？`,
+      question:`${inline('A(t)')} 的对角元始终是 1。把交叉项 ${inline('t')} 从 0 往右拖，曲面从什么时候开始出现向下的方向？`,
       options:[
-        ['t 超过 1 以后',true,''],
-        ['t 一离开 0 就出现',false,'t=3/4 时方向轮仍然全在 0 上方，底面的等高线还是椭圆。'],
+        [`${inline('t')} 超过 1 以后`,true,''],
+        [`${inline('t')} 一离开 0 就出现`,false,'t=3/4 时方向轮仍然全在 0 上方，底面的等高线还是椭圆。'],
         ['不会出现：对角元都是正的',false,'t=5/4 时沿 x=(1,−1) 方向 q=2−2t=−1/2，曲面在这个方向向下。'],
-        ['t 超过 1/2 以后：交叉项系数 2t 超过对角元 1',false,'t=3/4 时 2t=3/2 已经超过 1，方向轮仍然全在 0 上方。'],
+        [`${inline('t')} 超过 ${inline('1/2')} 以后：交叉项系数 ${inline('2t')} 超过对角元 1`,false,'t=3/4 时 2t=3/2 已经超过 1，方向轮仍然全在 0 上方。'],
       ],
-      right:`✓ 沿 x=(1,−1) 方向 ${inline('q=2-2t')}：t=1 时等于 0，曲面沿这条直线贴住底面；t&gt;1 时变成负的，曲面向下。同时 ${inline('\\Delta_2=1-t^2')} 由正变 0 再变负，所以 A(t) 正定恰好是 −1&lt;t&lt;1。`,
+      right:`✓ 沿 ${inline('x=(1,-1)')} 方向 ${inline('q=2-2t')}：${inline('t=1')} 时等于 0，曲面沿这条直线贴住底面；${inline('t>1')} 时变成负的，曲面向下。同时 ${inline('\\Delta_2=1-t^2')} 由正变 0 再变负，所以 ${inline('A(t)')} 正定恰好是 ${inline('-1<t<1')}。`,
       onPick:()=>setK(0),
       onReveal:()=>paint(),
     });
@@ -368,7 +368,7 @@
       // shape names would give the boundary away, so they join the presets after the prediction
       // the shape names (碗、山谷、马鞍) answer the prediction: they join the chips once it is revealed
       const named=!gate||Boolean(gate.revealed);
-      $$(root,'[data-s4-preset]').forEach(b=>{const pk=Math.round(Number(b.dataset.s4Preset)*4);b.classList.toggle('is-active',pk===k);b.textContent=`t=${fracStr(pk/4)}${named?` · ${nameOf(pk)}`:''}`;});
+      $$(root,'[data-s4-preset]').forEach(b=>{const pk=Math.round(Number(b.dataset.s4Preset)*4);b.classList.toggle('is-active',pk===k);b.innerHTML=`${inline(`t=${fracStr(pk/4)}`)}${named?` · ${nameOf(pk)}`:''}`;});
       const full=Boolean(!gate||gate.revealed);
       if(labelsShown!==full){labelsShown=full;$$(root,'[data-s4-label]').forEach(b=>{b.innerHTML=inline(S4_LABELS[b.dataset.s4Label][full?1:0]);});}
       $(root,'[data-s4-matrix]').innerHTML=fracMatrix(A);
@@ -380,12 +380,12 @@
       $(root,'[data-s4-min]').textContent=open?fracStr(1-ak/4):'?';
       s4Wheel($(root,'[data-s4-scan]'),k,open);
       const status=$(root,'[data-s4-status]'),title=$(root,'[data-s4-title]'),copy=$(root,'[data-s4-scan-copy]');
-      if(!open){status.className='ch5-status';status.textContent='先猜一猜';title.textContent='先在上方选一个猜测';copy.textContent='选好以后把 t 从 0 往右拖。曲面底面会画出等高线，方向轮会按 q 的正负着色。';return;}
+      if(!open){status.className='ch5-status';status.textContent='先猜一猜';title.textContent='先在上方选一个猜测';copy.innerHTML=`选好以后把 ${inline('t')} 从 0 往右拖。曲面底面会画出等高线，方向轮会按 ${inline('q')} 的正负着色。`;return;}
       status.className=`ch5-status ${type==='inside'?'is-ok':'is-warn'}`;
       status.textContent=type==='inside'?'正定':type==='edge'?'半正定':'不定';
-      if(type==='inside'){title.textContent='每个方向都向上：碗面';copy.textContent=k===0?'底面的等高线是圆，方向轮全在 0 上方；Δ₁>0，Δ₂>0。':'底面的等高线是椭圆，t 离 0 越远越狭长；方向轮全在 0 上方，Δ₁>0，Δ₂>0。';}
-      else if(type==='edge'){title.textContent='一个方向变平：山谷';copy.textContent=`沿 ${k>0?'x₁=−x₂':'x₁=x₂'} 方向 q=0：曲面沿这条直线贴住底面，等高线变成平行直线，方向轮在这里碰到 0；Δ₂=0。`;}
-      else{title.textContent='一个方向向下：马鞍';copy.textContent='方向轮出现 0 下方的弧：曲面沿两条虚线穿过底面，等高线变成双曲线；Δ₂<0。';}
+      if(type==='inside'){title.textContent='每个方向都向上：碗面';copy.innerHTML=k===0?`底面的等高线是圆，方向轮全在 0 上方；${inline('\\Delta_1>0')}，${inline('\\Delta_2>0')}。`:`底面的等高线是椭圆，${inline('t')} 离 0 越远越狭长；方向轮全在 0 上方，${inline('\\Delta_1>0')}，${inline('\\Delta_2>0')}。`;}
+      else if(type==='edge'){title.textContent='一个方向变平：山谷';copy.innerHTML=`沿 ${inline(k>0?'x_1=-x_2':'x_1=x_2')} 方向 ${inline('q=0')}：曲面沿这条直线贴住底面，等高线变成平行直线，方向轮在这里碰到 0；${inline('\\Delta_2=0')}。`;}
+      else{title.textContent='一个方向向下：马鞍';copy.innerHTML=`方向轮出现 0 下方的弧：曲面沿两条虚线穿过底面，等高线变成双曲线；${inline('\\Delta_2<0')}。`;}
     }
     $$(root,'[data-s4-preset]').forEach(b=>b.addEventListener('click',()=>act(Math.round(Number(b.dataset.s4Preset)*4)),{signal:ctl.signal}));
     $(root,'[data-s4-t]').addEventListener('input',e=>act(Math.round(Number(e.target.value)*4)),{signal:ctl.signal});

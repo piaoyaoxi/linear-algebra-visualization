@@ -188,17 +188,17 @@ body.dark .ch9l-btn.is-primary {
   font-size: 13.5px;
 }
 
-.ch9l-steps span {
+.ch9l-steps > span {
   padding: 3px 9px;
   border-radius: 8px;
   color: var(--faint);
 }
 
-.ch9l-steps span.is-done {
+.ch9l-steps > span.is-done {
   color: var(--muted);
 }
 
-.ch9l-steps span.is-active {
+.ch9l-steps > span.is-active {
   background: var(--accent-soft);
   color: var(--accent-strong);
   font-weight: 700;

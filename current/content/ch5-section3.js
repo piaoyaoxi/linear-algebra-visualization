@@ -20,11 +20,11 @@ defineChapter5Section("quadratic-uniqueness", {
   concepts: [
     {
       label: "复规范形",
-      text: `复数域上非零项可全部化为系数 1：${texInline("f=z_1^2+\\cdots+z_r^2")}，唯一信息是秩 r。`,
+      text: `复数域上非零项可全部化为系数 1：${texInline("f=z_1^2+\\cdots+z_r^2")}，唯一信息是秩 ${texInline("r")}。`,
     },
     {
       label: "实规范形",
-      text: `${texInline("f=z_1^2+\\cdots+z_p^2-z_{p+1}^2-\\cdots-z_{p+q}^2")}，其中 p、q 分别为正、负惯性指数。`,
+      text: `${texInline("f=z_1^2+\\cdots+z_p^2-z_{p+1}^2-\\cdots-z_{p+q}^2")}，其中 ${texInline("p")}、${texInline("q")} 分别为正、负惯性指数。`,
     },
     {
       label: "惯性定理",
@@ -47,8 +47,8 @@ defineChapter5Section("quadratic-uniqueness", {
   interactive: {
     type: "slot",
     title: "实验：惯性锁",
-    description: "固定对称矩阵 A，拖动剪切参数 h 观察 B=CᵀAC；曲面和符号轮上向上、向下的方向换了位置，数量不变。",
-    task: "先猜一猜马鞍面能否被可逆替换变成碗，再拖动 h；最后让替换奇异，看定理前提何时失效。",
+    description: `固定对称矩阵 ${texInline("A")}，拖动剪切参数 ${texInline("h")} 观察 ${texInline("B=C^TAC")}；曲面和符号轮上向上、向下的方向换了位置，数量不变。`,
+    task: `先猜一猜马鞍面能否被可逆替换变成碗，再拖动 ${texInline("h")}；最后让替换奇异，看定理前提何时失效。`,
   },
   example: {
     title: "例题：从标准形读惯性",
@@ -56,29 +56,29 @@ defineChapter5Section("quadratic-uniqueness", {
     choices: [
       {
         correct: true,
-        text: "秩 3；p=2，q=1；符号差 1；规范形 z₁²+z₂²−z₃²。",
+        text: `秩 3；${texInline("p=2")}，${texInline("q=1")}；符号差 1；规范形 ${texInline("z_1^2+z_2^2-z_3^2")}。`,
       },
       {
-        text: "秩 3；p=3，q=0，因为绝对值都非零。",
+        text: `秩 3；${texInline("p=3")}，${texInline("q=0")}，因为绝对值都非零。`,
       },
       {
         text: "秩 2；只统计不同的系数绝对值种类。",
       },
       {
-        text: "符号差等于三个系数之和 3−2+7。",
+        text: `符号差等于三个系数之和 ${texInline("3-2+7")}。`,
       },
     ],
     steps: [
-      "正系数两项，负系数一项，故 p=2，q=1。",
-      "秩 = p+q = 3；符号差 = p−q = 1。",
-      "实规范形把正项缩为 +1、负项缩为 −1：z₁²+z₂²−z₃²。",
-      "具体系数 3、2、7 可被缩放改变，但 (p,q) 不变。",
+      `正系数两项，负系数一项，故 ${texInline("p=2")}，${texInline("q=1")}。`,
+      `秩 ${texInline("=p+q=3")}；符号差 ${texInline("=p-q=1")}。`,
+      `实规范形把正项缩为 ${texInline("+1")}、负项缩为 ${texInline("-1")}：${texInline("z_1^2+z_2^2-z_3^2")}。`,
+      `具体系数 3、2、7 可被缩放改变，但 ${texInline("(p,q)")} 不变。`,
     ],
   },
   quiz: [
     {
       question: "标准形唯一吗？规范形呢？",
-      answer: "标准形系数一般不唯一；实规范形在忽略变量次序时由 (p,q) 唯一确定。",
+      answer: `标准形系数一般不唯一；实规范形在忽略变量次序时由 ${texInline("(p,q)")} 唯一确定。`,
     },
     {
       question: "只用秩能否判断两个实对称矩阵合同？",
@@ -89,18 +89,18 @@ defineChapter5Section("quadratic-uniqueness", {
       answer: "秩。",
     },
     {
-      question: "p=1，q=1，n=2 的等高线典型形状是什么？",
+      question: `${texInline("p=1")}，${texInline("q=1")}，${texInline("n=2")} 的等高线典型形状是什么？`,
       answer: "双曲线型（马鞍对应的水平截线），二次型可取正也可取负。",
     },
   ],
   summary: [
     "标准形系数可改，正、负、零项数量是真正的不变量。",
     "实规范形由正、负惯性指数刻画；复规范形由秩刻画。",
-    "惯性定理给出合同分类：同阶实对称矩阵合同 ⇔ 相同 (p,q)。",
-    "p=n 时二次型在一切非零向量上取正值，这样的二次型称为正定的。",
+    `惯性定理给出合同分类：同阶实对称矩阵合同 ${texInline("\\Leftrightarrow")} 相同 ${texInline("(p,q)")}。`,
+    `${texInline("p=n")} 时二次型在一切非零向量上取正值，这样的二次型称为正定的。`,
   ],
   exercises: [
     "构造两个秩相同但不合同的 2 阶实对称矩阵。",
-    "对含参数的二次型讨论 (p,q) 随参数如何变化。",
+    `对含参数的二次型讨论 ${texInline("(p,q)")} 随参数如何变化。`,
   ],
 });

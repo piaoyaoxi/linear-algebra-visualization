@@ -1,18 +1,18 @@
 /*
- * 首页：首屏轮换词与问题卡、开场像素显影与换词时的局部像素波动、顶栏底色、
+ * 首页：首屏轮换词与问题卡、开场与换词时的像素波、顶栏底色、
  * 丝带屏、“一节怎么学”的小演示、继续学习入口与学习进度标记。
  */
 (() => {
   const LEARN_HREF = "./learn.html";
   const INTRO_KEY = "la-home-intro";
-  const MOSAIC_STEPS = [48, 30, 18, 10, 5];
-  const MOSAIC_STEP_MS = 110;
-  const BURST_STEPS = [10, 18, 28, 28, 18, 10];
-  // 首图中平行六面体连同底座所占的范围：[左, 上, 右, 下]，按原图宽高的比例
-  const SUBJECT = [0.2, 0.26, 0.6, 0.78];
-  const BURST_STEP_MS = 100;
+  // 像素波：网格边长与三档方块（CSS 像素），波前处用最大一档
+  const WAVE_CELL = 32;
+  const WAVE_LEVELS = [32, 16, 8];
+  const WAVE_PASS_MS = 640;
+  const WAVE_REVEAL_MS = 1150;
   const HOLD_MS = 4000;
   const TYPE_MS = 42;
+  const INTRO_TYPE_MS = 24;
   const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
   const narrow = window.matchMedia("(max-width: 600px)");
 
@@ -133,133 +133,140 @@
     resume.hidden = false;
   }
 
-  /* ---------- 首屏像素：开场显影与换词波动 ---------- */
+  /* ---------- 首屏像素：开场显影与换词时的像素波 ---------- */
 
+  // 一道像素波从下往上扫过：波前处方块最大，两侧逐级变小，边缘参差不齐。
+  // 换词时（pass）只有波经过的一条带变成方块；开场（reveal）整张先是方块，
+  // 波扫过之后才露出清晰的画面。
   const mosaic = {
-    busy: false,
-    small: null,
+    running: false,
+    cache: null,
 
     setup() {
       const canvas = $("#heroMosaic");
       const img = $("#heroImage");
       const ctx = canvas?.getContext("2d");
       if (!canvas || !img || !ctx || !img.naturalWidth) return null;
-      const rect = canvas.getBoundingClientRect();
       const dpr = Math.min(window.devicePixelRatio || 1, 2);
-      const width = Math.max(1, Math.round(rect.width * dpr));
-      const height = Math.max(1, Math.round(rect.height * dpr));
-      if (canvas.width !== width || canvas.height !== height) {
-        canvas.width = width;
-        canvas.height = height;
-      }
-      const scale = Math.max(width / img.naturalWidth, height / img.naturalHeight);
-      const drawWidth = img.naturalWidth * scale;
-      const drawHeight = img.naturalHeight * scale;
+      const width = Math.max(1, Math.round(canvas.clientWidth * dpr));
+      const height = Math.max(1, Math.round(canvas.clientHeight * dpr));
+      const key = `${width}x${height}@${img.currentSrc}`;
+      if (this.cache?.key === key) return this.cache;
+      canvas.width = width;
+      canvas.height = height;
+      const natW = img.naturalWidth;
+      const natH = img.naturalHeight;
+      const scale = Math.max(width / natW, height / natH);
+      const drawWidth = natW * scale;
+      const drawHeight = natH * scale;
       const parts = window.getComputedStyle(img).objectPosition.split(/\s+/);
       const ratio = (value) => (value && value.endsWith("%") ? parseFloat(value) / 100 : 0.5);
-      return {
-        canvas, ctx, img, dpr, width, height, drawWidth, drawHeight,
-        dx: (width - drawWidth) * ratio(parts[0]),
-        dy: (height - drawHeight) * ratio(parts[1])
-      };
-    },
-
-    draw(m, block, rects) {
-      const size = block * m.dpr;
-      const cols = Math.max(1, Math.ceil(m.drawWidth / size));
-      const rows = Math.max(1, Math.ceil(m.drawHeight / size));
-      const small = this.small || (this.small = document.createElement("canvas"));
-      const smallCtx = small.getContext("2d");
-      small.width = cols;
-      small.height = rows;
-      smallCtx.imageSmoothingEnabled = true;
-      smallCtx.imageSmoothingQuality = "high";
-      smallCtx.drawImage(m.img, 0, 0, cols, rows);
-      m.ctx.clearRect(0, 0, m.width, m.height);
-      m.ctx.imageSmoothingEnabled = false;
-      rects.forEach((r) => {
-        m.ctx.save();
-        m.ctx.beginPath();
-        m.ctx.rect(r.x, r.y, r.w, r.h);
-        m.ctx.clip();
-        m.ctx.drawImage(small, 0, 0, cols, rows, m.dx, m.dy, cols * size, rows * size);
-        m.ctx.restore();
+      const dx = (width - drawWidth) * ratio(parts[0]);
+      const dy = (height - drawHeight) * ratio(parts[1]);
+      // 每一档方块各做一张缩小图，画的时候按格子取一块放大
+      const levels = WAVE_LEVELS.map((level) => {
+        const size = level * dpr;
+        const small = document.createElement("canvas");
+        small.width = Math.ceil(drawWidth / size) + 1;
+        small.height = Math.ceil(drawHeight / size) + 1;
+        const sctx = small.getContext("2d");
+        sctx.imageSmoothingEnabled = true;
+        sctx.imageSmoothingQuality = "high";
+        sctx.drawImage(img, 0, 0, drawWidth / size, drawHeight / size);
+        return { small, span: WAVE_CELL / level };
       });
+      this.cache = { key, canvas, ctx, width, height, dx, dy, drawWidth, drawHeight, cell: WAVE_CELL * dpr, levels };
+      return this.cache;
     },
 
-    run(m, steps, ms, rects, done) {
-      let i = 0;
-      this.busy = true;
-      this.draw(m, steps[i], rects);
+    // 每一格的固定扰动，让波前参差而不是一条直线
+    noise(i, j, seed) {
+      const v = Math.sin(i * 12.9898 + j * 78.233 + seed) * 43758.5453;
+      return v - Math.floor(v);
+    },
+
+    draw(m, front, band, seed, reveal) {
+      const { ctx, cell, dx, dy, levels } = m;
+      ctx.clearRect(0, 0, m.width, m.height);
+      ctx.imageSmoothingEnabled = false;
+      const i0 = Math.max(0, Math.floor(-dx / cell));
+      const i1 = Math.ceil((m.width - dx) / cell);
+      const j0 = Math.max(0, Math.floor(-dy / cell));
+      const j1 = Math.ceil((m.height - dy) / cell);
+      for (let i = i0; i < i1; i += 1) {
+        const columnShift = (this.noise(i, 0, seed) - 0.5) * 0.7;
+        for (let j = j0; j < j1; j += 1) {
+          const y = dy + (j + 0.5) * cell;
+          const u = (y - front) / band + columnShift + (this.noise(i, j, seed) - 0.5) * 0.45;
+          let a;
+          if (reveal) a = u <= -1 ? 1 : (1 - u) / 2;
+          else a = 1 - Math.abs(u);
+          if (a <= 0.14) continue;
+          const level = levels[a > 0.68 ? 0 : a > 0.38 ? 1 : 2];
+          ctx.drawImage(level.small, i * level.span, j * level.span, level.span, level.span, dx + i * cell, dy + j * cell, cell, cell);
+        }
+      }
+    },
+
+    run(reveal, duration, onStart, onDone) {
+      const m = this.setup();
+      if (!m) {
+        onStart?.();
+        onDone?.();
+        return;
+      }
+      this.running = true;
+      const seed = Math.random() * 1000;
+      const band = m.height * 0.24;
+      const travel = m.height + band * 2.8;
+      const frontAt = (t) => {
+        const e = t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
+        return m.height + band * 1.4 - e * travel;
+      };
+      this.draw(m, frontAt(0), band, seed, reveal);
       m.canvas.classList.add("is-active");
-      const timer = window.setInterval(() => {
-        i += 1;
-        if (i < steps.length) {
-          this.draw(m, steps[i], rects);
+      onStart?.();
+      const begin = performance.now();
+      const frame = (now) => {
+        const t = Math.min(1, (now - begin) / duration);
+        this.draw(m, frontAt(t), band, seed, reveal);
+        if (t < 1) {
+          window.requestAnimationFrame(frame);
           return;
         }
-        window.clearInterval(timer);
-        this.busy = false;
-        done();
-      }, ms);
-    },
-
-    // 换词时随机挑 3–5 块矩形，碎成方块再恢复
-    burst() {
-      if (reduceMotion.matches || this.busy || document.documentElement.classList.contains("home-intro")) return;
-      const m = this.setup();
-      if (!m) return;
-      const grid = BURST_STEPS[2] * m.dpr;
-      const snap = (v) => Math.round(v / grid) * grid;
-      // 平行六面体和底座（原图坐标）不参与波动，免得主体像被打码
-      const keep = {
-        x0: m.dx + SUBJECT[0] * m.drawWidth, x1: m.dx + SUBJECT[2] * m.drawWidth,
-        y0: m.dy + SUBJECT[1] * m.drawHeight, y1: m.dy + SUBJECT[3] * m.drawHeight
-      };
-      const hitsSubject = (r) => r.x < keep.x1 && r.x + r.w > keep.x0 && r.y < keep.y1 && r.y + r.h > keep.y0;
-      const count = 3 + Math.floor(Math.random() * 3);
-      const rects = [];
-      for (let tries = 0; rects.length < count && tries < 60; tries += 1) {
-        const w = snap((0.08 + Math.random() * 0.14) * m.width) || grid;
-        const h = snap((0.1 + Math.random() * 0.16) * m.height) || grid;
-        const r = { x: snap(Math.random() * (m.width - w)), y: snap(Math.random() * (m.height - h)), w, h };
-        if (!hitsSubject(r)) rects.push(r);
-      }
-      if (!rects.length) return;
-      this.run(m, BURST_STEPS, BURST_STEP_MS, rects, () => {
         m.ctx.clearRect(0, 0, m.width, m.height);
         m.canvas.classList.remove("is-active");
-      });
+        this.running = false;
+        onDone?.();
+      };
+      window.requestAnimationFrame(frame);
+    },
+
+    pass() {
+      if (reduceMotion.matches || this.running || document.documentElement.classList.contains("home-intro")) return;
+      this.run(false, WAVE_PASS_MS);
     },
 
     intro() {
       const root = document.documentElement;
       if (!root.classList.contains("home-intro")) return;
       const img = $("#heroImage");
-      const canvas = $("#heroMosaic");
-      const finish = () => {
-        root.classList.remove("home-intro");
-        canvas?.classList.remove("is-active");
-      };
-      if (!img || !canvas || reduceMotion.matches) {
-        finish();
+      const show = () => root.classList.remove("home-intro");
+      if (!img || reduceMotion.matches) {
+        show();
         return;
       }
       writeStorage(window.sessionStorage, INTRO_KEY, "1");
-      const fallback = later(finish, 3000);
+      const fallback = later(show, 3000);
       const ready = img.complete && img.naturalWidth ? Promise.resolve() : img.decode();
       ready.then(() => {
         window.clearTimeout(fallback);
         if (!root.classList.contains("home-intro")) return;
-        const m = this.setup();
-        if (!m) {
-          finish();
-          return;
-        }
-        this.run(m, MOSAIC_STEPS, MOSAIC_STEP_MS, [{ x: 0, y: 0, w: m.width, h: m.height }], finish);
+        // 先铺满方块，再露出底下的图片，然后让波把画面“洗”清楚
+        this.run(true, WAVE_REVEAL_MS, show);
       }).catch(() => {
         window.clearTimeout(fallback);
-        finish();
+        show();
       });
     }
   };
@@ -280,6 +287,7 @@
   }
 
   function initHeadline() {
+    const root = document.documentElement;
     const hero = $(".home-hero");
     const word = $("#homeWord");
     const box = $("#homeCards");
@@ -287,20 +295,22 @@
     const wordCn = word.querySelector(".home-word-cn");
     const wordEn = word.querySelector(".home-word-en");
     const n = WORDS.length;
+    const entering = root.classList.contains("home-entering") && !reduceMotion.matches;
     let idx = 0;
+    let serial = 0;
     let hover = false;
     let heroVisible = true;
     let elapsed = 0;
     let typer = 0;
+    let rotating = false;
     let cards = [];
 
     const step = () => parseFloat(getComputedStyle(box).getPropertyValue("--card-h")) + parseFloat(getComputedStyle(box).getPropertyValue("--card-gap"));
 
     function place(card) {
-      const shown = card.slot >= 0 && card.slot <= 2;
-      card.el.style.transform = `translateY(${card.slot * step() + (card.slot < 0 ? -10 : 0)}px)`;
+      const shown = !card.waiting && card.slot >= 0 && card.slot <= 2;
+      card.el.style.transform = `translateY(${card.slot * step() + (card.slot < 0 ? -12 : 0)}px)`;
       card.el.classList.toggle("is-shown", shown);
-      card.num.textContent = String(Math.min(3, Math.max(1, card.slot + 1))).padStart(2, "0");
       if (shown) {
         card.el.removeAttribute("aria-hidden");
         card.el.removeAttribute("tabindex");
@@ -310,8 +320,10 @@
       }
     }
 
-    function makeCard(w, slot, typed) {
+    // 卡片编号一直往上数，像一串依次排进来的问题
+    function makeCard(w, slot, typed, waiting) {
       const data = WORDS[w];
+      serial += 1;
       const el = document.createElement("a");
       el.className = "home-card";
       el.href = LEARN_HREF + data.href;
@@ -319,6 +331,7 @@
       const num = document.createElement("span");
       num.className = "home-card-num";
       num.setAttribute("aria-hidden", "true");
+      num.textContent = String(serial).padStart(2, "0");
       const q = document.createElement("span");
       q.className = "home-card-q";
       q.setAttribute("aria-hidden", "true");
@@ -327,7 +340,7 @@
       tag.setAttribute("aria-hidden", "true");
       tag.textContent = data.tag;
       el.append(num, q, tag);
-      const card = { el, num, q, w, slot, units: questionUnits(data), typed: 0 };
+      const card = { el, q, w, slot, waiting: !!waiting, units: questionUnits(data), typed: 0 };
       if (typed) fillCard(card, card.units.length);
       box.append(el);
       place(card);
@@ -344,17 +357,18 @@
       }
     }
 
-    function typeCard(card) {
+    function typeCard(card, ms, done) {
       window.clearInterval(typer);
       fillCard(card, 0);
       typer = window.setInterval(() => {
         if (document.hidden) return;
         if (card.typed >= card.units.length) {
           window.clearInterval(typer);
+          done?.();
           return;
         }
         fillCard(card, card.typed + 1);
-      }, TYPE_MS);
+      }, ms);
     }
 
     function showWord(i) {
@@ -365,10 +379,10 @@
       word.setAttribute("aria-label", `线性${data.cn}：${data.tag}`);
     }
 
+    // 换词：旧词模糊淡出 → 卡片整体上移、像素波由下往上扫过 → 新词在波中淡入 → 新卡开始打字
     function advance() {
       elapsed = 0;
       const next = (idx + 1) % n;
-      mosaic.burst();
       word.classList.add("is-out");
       cards.forEach((card) => {
         card.slot -= 1;
@@ -380,6 +394,7 @@
         fresh.slot = 2;
         place(fresh);
       });
+      later(() => mosaic.pass(), 80);
       later(() => {
         cards = cards.filter((card) => {
           if (card.slot >= 0) return true;
@@ -393,17 +408,22 @@
         word.classList.remove("is-out");
         word.classList.add("is-pre");
         nextFrame(() => word.classList.remove("is-pre"));
-        typeCard(fresh);
-      }, 300);
+      }, 340);
+      later(() => typeCard(fresh, TYPE_MS), 440);
     }
 
-    // 开场：上两张是上一轮的问题，最下面一张对应当前词
-    showWord(0);
-    cards = [makeCard(n - 2, 0, true), makeCard(n - 1, 1, true), makeCard(0, 2, reduceMotion.matches)];
-    window.addEventListener("resize", () => cards.forEach(place), { passive: true });
-    if (reduceMotion.matches) return;
-    typeCard(cards[2]);
+    function startRotation() {
+      if (rotating || reduceMotion.matches) return;
+      rotating = true;
+      window.setInterval(() => {
+        if (hover || document.hidden || !heroVisible) return;
+        elapsed += 100;
+        if (elapsed >= HOLD_MS) advance();
+      }, 100);
+    }
 
+    showWord(0);
+    window.addEventListener("resize", () => cards.forEach(place), { passive: true });
     [box, $("#homeHeadline")].forEach((el) => {
       el?.addEventListener("mouseenter", () => { hover = true; });
       el?.addEventListener("mouseleave", () => { hover = false; });
@@ -413,11 +433,30 @@
     if ("IntersectionObserver" in window) {
       new IntersectionObserver(([entry]) => { heroVisible = entry.isIntersecting; }, { threshold: 0.15 }).observe(hero);
     }
-    window.setInterval(() => {
-      if (hover || document.hidden || !heroVisible) return;
-      elapsed += 100;
-      if (elapsed >= HOLD_MS) advance();
-    }, 100);
+
+    if (entering) {
+      // 开场：画面洗清楚之后，三张卡依次出现并打出问题，最后才开始轮换
+      cards = [makeCard(n - 2, 0, false, true), makeCard(n - 1, 1, false, true), makeCard(0, 2, false, true)];
+      const reveal = (k) => {
+        if (k >= cards.length) {
+          startRotation();
+          return;
+        }
+        const card = cards[k];
+        card.waiting = false;
+        place(card);
+        later(() => typeCard(card, INTRO_TYPE_MS, () => later(() => reveal(k + 1), 120)), 180);
+      };
+      later(() => reveal(0), 760);
+      later(() => root.classList.add("home-entered"), 3200);
+      return;
+    }
+
+    // 再次进入：上两张直接显示，最下面一张对应当前词并打字
+    cards = [makeCard(n - 2, 0, true), makeCard(n - 1, 1, true), makeCard(0, 2, reduceMotion.matches)];
+    if (reduceMotion.matches) return;
+    typeCard(cards[2], TYPE_MS);
+    startRotation();
   }
 
   function escapeHtml(text) {

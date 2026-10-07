@@ -101,7 +101,15 @@ a:focus-visible { outline: 2px solid currentColor; outline-offset: 4px; border-r
   color: var(--on-image);
   background: linear-gradient(180deg, #7ea3c8 0%, #c7a497 52%, #86a9c6 100%);
 }
-.home-hero-media { position: absolute; inset: 0; z-index: -2; will-change: transform; }
+.home-hero-media {
+  position: absolute;
+  inset: 0;
+  z-index: -2;
+  transform-origin: 44% 58%;
+  will-change: transform;
+  /* 极慢的推近，让静止的画面有一点呼吸 */
+  animation: homeDrift 30s ease-in-out infinite alternate;
+}
 .home-hero-img,
 .home-hero-mosaic { position: absolute; inset: 0; display: block; width: 100%; height: 100%; }
 /* 平行六面体在原图横向 26%–55%，比 2:1 窄的屏幕往左取景，让它避开左侧问题卡 */
@@ -188,7 +196,7 @@ a:focus-visible { outline: 2px solid currentColor; outline-offset: 4px; border-r
   display: flex;
   flex-direction: column;
   align-items: inherit;
-  transition: filter 400ms ease, opacity 400ms ease;
+  transition: filter 460ms ease, opacity 460ms ease;
 }
 .home-word.is-out { filter: blur(14px); opacity: 0; transition-duration: 300ms; }
 .home-word.is-pre { filter: blur(14px); opacity: 0; transition: none; }
@@ -292,6 +300,27 @@ a:focus-visible { outline: 2px solid currentColor; outline-offset: 4px; border-r
 .home-scroll-line::after { content: ""; position: absolute; top: -40%; left: 0; width: 100%; height: 40%; background: currentColor; animation: homeScrollDrop 2.4s cubic-bezier(0.6, 0, 0.2, 1) infinite; }
 
 @keyframes homeImageFallback { to { opacity: 1; } }
+@keyframes homeDrift { to { scale: 1.04; } }
+@keyframes homeBlurIn { from { opacity: 0; filter: blur(14px); } }
+
+/* 第一次进入：画面洗清楚 → 问题卡逐张出现 → 标题 → 入口 */
+.home-entering .home-bar { animation: homeFade 900ms ease 900ms both; }
+.home-entering .home-cards { animation: none; }
+.home-entering .home-headline { animation: none; }
+.home-entering .home-headline-fixed { animation: homeRise 900ms var(--ease-out) 1000ms both; }
+.home-entering .home-word { animation: homeBlurIn 760ms ease 1300ms both; }
+.home-entering .home-cta { animation-delay: 1650ms; }
+.home-entering .home-resume { animation-delay: 1800ms; }
+.home-entering .home-scroll { animation-delay: 2100ms; }
+/* 开场结束后撤掉这些一次性动画；直接移除 .home-entering 会让默认的入场动画重播一遍 */
+.home-entered .home-bar,
+.home-entered .home-cards,
+.home-entered .home-headline,
+.home-entered .home-headline-fixed,
+.home-entered .home-word,
+.home-entered .home-cta,
+.home-entered .home-resume,
+.home-entered .home-scroll { animation: none; }
 @keyframes homeFade { from { opacity: 0; } }
 @keyframes homeRise {
   from { opacity: 0; translate: 0 14px; }
@@ -537,6 +566,7 @@ a:focus-visible { outline: 2px solid currentColor; outline-offset: 4px; border-r
   .home-headline, .home-cards, .home-cta, .home-resume, .home-scroll, .home-scroll-line::after { animation: none; }
   .home-scroll-line::after { top: 30%; }
   .home-hero-media, .home-ribbon-bg { will-change: auto; }
+  .home-hero-media { animation: none; }
   .home-cta, .home-cta-arrow, .home-hero-mosaic, .home-word, .home-statement, .home-example-answer { transition: none; }
   .home-ribbon { height: auto; }
   .home-ribbon-stage { position: relative; }

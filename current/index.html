@@ -14,14 +14,14 @@
         try { if (localStorage.getItem("la-visual-theme") === "dark") root.dataset.theme = "dark"; } catch (error) {}
         var played = false;
         try { played = sessionStorage.getItem("la-home-intro") === "1"; } catch (error) {}
-        if (!played && !window.matchMedia("(prefers-reduced-motion: reduce)").matches) root.classList.add("home-intro");
+        if (!played && !window.matchMedia("(prefers-reduced-motion: reduce)").matches) root.classList.add("home-intro", "home-entering");
       })();
     </script>
     <link rel="stylesheet" href="./fonts.css?v=s2" />
     <link rel="stylesheet" href="./vendor/katex/katex.min.css" />
-    <link rel="stylesheet" href="./cover.css?v=b3" />
+    <link rel="stylesheet" href="./cover.css?v=b4" />
     <script defer src="./vendor/katex/katex.min.js"></script>
-    <script defer src="./cover.js?v=home7"></script>
+    <script defer src="./cover.js?v=home8"></script>
   </head>
   <body>
     <nav class="home-bar" id="homeBar" data-bar="hero" aria-label="站点">

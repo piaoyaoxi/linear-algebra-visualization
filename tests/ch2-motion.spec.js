@@ -13,7 +13,8 @@ function texText(locator) {
       const marks = [...formula.querySelectorAll(".la-punct")].map((mark) => mark.textContent).join("");
       formula.replaceWith(formula.dataset.tex + marks);
     });
-    return copy.textContent;
+    // the quarter-em gap beside formulas (U+2005) reads as a plain space
+    return copy.textContent.replace(/[\u2005\u00a0]/g, " ");
   });
 }
 

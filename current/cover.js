@@ -9,7 +9,7 @@
   const WAVE_CELL = 32;
   const WAVE_LEVELS = [32, 16, 8];
   // 以下时长取自 Perplexity Computer 首屏 120 帧/秒录屏的逐帧测量
-  const WAVE_PASS_MS = 1100;
+  const WAVE = { top: 680, grow: 420, ramp: 0.3, clear: 130 };
   const HOLD_MS = 3800;
   const WORD_OUT_MS = 250;
   const CARD_ENTER_DELAY_MS = 300;
@@ -18,6 +18,7 @@
   // 开场（实测，自标题开始淡入起）：三张卡在 260/375/500ms 依次淡入（约 1.37s 先快后慢），标题 2s 淡入，3.4s 第一次换词
   const INTRO_CARD_AT = [260, 375, 500];
   const INTRO_FIRST_SWITCH_MS = 3400;
+  const INTRO_WAVE_AT = 900;
   const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
   const narrow = window.matchMedia("(max-width: 600px)");
 
@@ -189,20 +190,35 @@
       return v - Math.floor(v);
     },
 
-    draw(m, front, band, seed) {
+    // 按 Perplexity 录屏逐带测得的形状：
+    // · 波前从底部出发，先慢后快（位置 ∝ t⁵），约 680ms 到达顶部；
+    // · 波前上方约 30% 屏高是渐变区，方块随距离和时间逐渐变大（前 420ms 整体慢慢长起来，
+    //   所以开头主要是文字在动，画面底部只是悄悄起方块）；
+    // · 波前经过之后，该处约 130ms 内恢复清晰。
+    draw(m, t, seed) {
       const { ctx, cell, dx, dy, levels } = m;
       ctx.clearRect(0, 0, m.width, m.height);
       ctx.imageSmoothingEnabled = false;
+      const front = Math.pow(Math.min(t, WAVE.top) / WAVE.top, 5);
+      const grow = Math.min(1, t / WAVE.grow);
       const i0 = Math.max(0, Math.floor(-dx / cell));
       const i1 = Math.ceil((m.width - dx) / cell);
       const j0 = Math.max(0, Math.floor(-dy / cell));
       const j1 = Math.ceil((m.height - dy) / cell);
       for (let i = i0; i < i1; i += 1) {
-        const columnShift = (this.noise(i, 0, seed) - 0.5) * 0.7;
+        const columnShift = (this.noise(i, 0, seed) - 0.5) * 0.1;
         for (let j = j0; j < j1; j += 1) {
           const y = dy + (j + 0.5) * cell;
-          const u = (y - front) / band + columnShift + (this.noise(i, j, seed) - 0.5) * 0.45;
-          const a = 1 - Math.abs(u);
+          const sCell = Math.min(1, Math.max(0, 1 - y / m.height + columnShift + (this.noise(i, j, seed) - 0.5) * 0.06));
+          const passAt = WAVE.top * Math.pow(sCell, 0.2);
+          let a;
+          if (t <= passAt) {
+            const ahead = sCell - front;
+            if (ahead >= WAVE.ramp) continue;
+            a = Math.min(1 - ahead / WAVE.ramp, grow);
+          } else {
+            a = 1 - (t - passAt) / WAVE.clear;
+          }
           if (a <= 0.14) continue;
           const level = levels[a > 0.68 ? 0 : a > 0.38 ? 1 : 2];
           ctx.drawImage(level.small, i * level.span, j * level.span, level.span, level.span, dx + i * cell, dy + j * cell, cell, cell);
@@ -210,24 +226,19 @@
       }
     },
 
-    run(duration) {
+    run() {
       const m = this.setup();
       if (!m) return;
       this.running = true;
       const seed = Math.random() * 1000;
-      const band = m.height * 0.24;
-      const travel = m.height + band * 2.8;
-      const frontAt = (t) => {
-        const e = t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
-        return m.height + band * 1.4 - e * travel;
-      };
-      this.draw(m, frontAt(0), band, seed);
+      const end = WAVE.top * Math.pow(1.06, 0.2) + WAVE.clear;
+      this.draw(m, 0, seed);
       m.canvas.classList.add("is-active");
       const begin = performance.now();
       const frame = (now) => {
-        const t = Math.min(1, (now - begin) / duration);
-        this.draw(m, frontAt(t), band, seed);
-        if (t < 1) {
+        const t = now - begin;
+        if (t < end) {
+          this.draw(m, t, seed);
           window.requestAnimationFrame(frame);
           return;
         }
@@ -240,7 +251,7 @@
 
     pass() {
       if (reduceMotion.matches || this.running) return;
-      this.run(WAVE_PASS_MS);
+      this.run();
     },
 
     // 首图解码好以后再开场；图片迟迟不来时 3 秒后照常开始
@@ -427,7 +438,8 @@
       cards.forEach((card) => card.el.classList.add("is-intro"));
       mosaic.whenReady(() => {
         root.classList.add("home-go");
-        mosaic.pass();
+        // 先让标题和问题卡动起来，像素波随后再从底部升起
+        later(() => mosaic.pass(), INTRO_WAVE_AT);
         cards.forEach((card, k) => later(() => {
           card.waiting = false;
           place(card);

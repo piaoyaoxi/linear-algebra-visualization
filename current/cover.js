@@ -7,7 +7,9 @@
   const INTRO_KEY = "la-home-intro";
   const MOSAIC_STEPS = [48, 30, 18, 10, 5];
   const MOSAIC_STEP_MS = 110;
-  const BURST_STEPS = [14, 26, 44, 44, 26, 14];
+  const BURST_STEPS = [10, 18, 28, 28, 18, 10];
+  // 首图中平行六面体连同底座所占的范围：[左, 上, 右, 下]，按原图宽高的比例
+  const SUBJECT = [0.2, 0.26, 0.6, 0.78];
   const BURST_STEP_MS = 100;
   const HOLD_MS = 4000;
   const TYPE_MS = 42;
@@ -207,15 +209,23 @@
       if (reduceMotion.matches || this.busy || document.documentElement.classList.contains("home-intro")) return;
       const m = this.setup();
       if (!m) return;
-      const grid = 44 * m.dpr;
+      const grid = BURST_STEPS[2] * m.dpr;
       const snap = (v) => Math.round(v / grid) * grid;
+      // 平行六面体和底座（原图坐标）不参与波动，免得主体像被打码
+      const keep = {
+        x0: m.dx + SUBJECT[0] * m.drawWidth, x1: m.dx + SUBJECT[2] * m.drawWidth,
+        y0: m.dy + SUBJECT[1] * m.drawHeight, y1: m.dy + SUBJECT[3] * m.drawHeight
+      };
+      const hitsSubject = (r) => r.x < keep.x1 && r.x + r.w > keep.x0 && r.y < keep.y1 && r.y + r.h > keep.y0;
       const count = 3 + Math.floor(Math.random() * 3);
       const rects = [];
-      for (let k = 0; k < count; k += 1) {
-        const w = snap((0.1 + Math.random() * 0.16) * m.width) || grid;
-        const h = snap((0.12 + Math.random() * 0.2) * m.height) || grid;
-        rects.push({ x: snap(Math.random() * (m.width - w)), y: snap(Math.random() * (m.height - h)), w, h });
+      for (let tries = 0; rects.length < count && tries < 60; tries += 1) {
+        const w = snap((0.08 + Math.random() * 0.14) * m.width) || grid;
+        const h = snap((0.1 + Math.random() * 0.16) * m.height) || grid;
+        const r = { x: snap(Math.random() * (m.width - w)), y: snap(Math.random() * (m.height - h)), w, h };
+        if (!hitsSubject(r)) rects.push(r);
       }
+      if (!rects.length) return;
       this.run(m, BURST_STEPS, BURST_STEP_MS, rects, () => {
         m.ctx.clearRect(0, 0, m.width, m.height);
         m.canvas.classList.remove("is-active");

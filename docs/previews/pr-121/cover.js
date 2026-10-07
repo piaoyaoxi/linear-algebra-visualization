@@ -10,13 +10,14 @@
   const WAVE_LEVELS = [32, 16, 8];
   // 以下时长取自 Perplexity Computer 首屏 120 帧/秒录屏的逐帧测量
   const WAVE_PASS_MS = 1100;
-  const WAVE_REVEAL_MS = 1150;
   const HOLD_MS = 3800;
   const WORD_OUT_MS = 250;
   const CARD_ENTER_DELAY_MS = 300;
   const CARD_TEXT_DELAY_MS = 450;
   const TYPE_MS = 22;
-  const INTRO_TYPE_MS = 22;
+  // 开场（实测，自标题开始淡入起）：三张卡在 260/375/500ms 依次淡入（约 1.37s 先快后慢），标题 2s 淡入，3.4s 第一次换词
+  const INTRO_CARD_AT = [260, 375, 500];
+  const INTRO_FIRST_SWITCH_MS = 3400;
   const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
   const narrow = window.matchMedia("(max-width: 600px)");
 
@@ -139,9 +140,8 @@
 
   /* ---------- 首屏像素：开场显影与换词时的像素波 ---------- */
 
-  // 一道像素波从下往上扫过：波前处方块最大，两侧逐级变小，边缘参差不齐。
-  // 换词时（pass）只有波经过的一条带变成方块；开场（reveal）整张先是方块，
-  // 波扫过之后才露出清晰的画面。
+  // 一道像素波从下往上扫过：只有波经过的一条带变成方块，波前处方块最大，
+  // 两侧逐级变小，边缘参差不齐。开场和每次换词都用它。
   const mosaic = {
     running: false,
     cache: null,
@@ -189,7 +189,7 @@
       return v - Math.floor(v);
     },
 
-    draw(m, front, band, seed, reveal) {
+    draw(m, front, band, seed) {
       const { ctx, cell, dx, dy, levels } = m;
       ctx.clearRect(0, 0, m.width, m.height);
       ctx.imageSmoothingEnabled = false;
@@ -202,9 +202,7 @@
         for (let j = j0; j < j1; j += 1) {
           const y = dy + (j + 0.5) * cell;
           const u = (y - front) / band + columnShift + (this.noise(i, j, seed) - 0.5) * 0.45;
-          let a;
-          if (reveal) a = u <= -1 ? 1 : (1 - u) / 2;
-          else a = 1 - Math.abs(u);
+          const a = 1 - Math.abs(u);
           if (a <= 0.14) continue;
           const level = levels[a > 0.68 ? 0 : a > 0.38 ? 1 : 2];
           ctx.drawImage(level.small, i * level.span, j * level.span, level.span, level.span, dx + i * cell, dy + j * cell, cell, cell);
@@ -212,13 +210,9 @@
       }
     },
 
-    run(reveal, duration, onStart, onDone) {
+    run(duration) {
       const m = this.setup();
-      if (!m) {
-        onStart?.();
-        onDone?.();
-        return;
-      }
+      if (!m) return;
       this.running = true;
       const seed = Math.random() * 1000;
       const band = m.height * 0.24;
@@ -227,13 +221,12 @@
         const e = t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
         return m.height + band * 1.4 - e * travel;
       };
-      this.draw(m, frontAt(0), band, seed, reveal);
+      this.draw(m, frontAt(0), band, seed);
       m.canvas.classList.add("is-active");
-      onStart?.();
       const begin = performance.now();
       const frame = (now) => {
         const t = Math.min(1, (now - begin) / duration);
-        this.draw(m, frontAt(t), band, seed, reveal);
+        this.draw(m, frontAt(t), band, seed);
         if (t < 1) {
           window.requestAnimationFrame(frame);
           return;
@@ -241,37 +234,27 @@
         m.ctx.clearRect(0, 0, m.width, m.height);
         m.canvas.classList.remove("is-active");
         this.running = false;
-        onDone?.();
       };
       window.requestAnimationFrame(frame);
     },
 
     pass() {
-      if (reduceMotion.matches || this.running || document.documentElement.classList.contains("home-intro")) return;
-      this.run(false, WAVE_PASS_MS);
+      if (reduceMotion.matches || this.running) return;
+      this.run(WAVE_PASS_MS);
     },
 
-    intro() {
-      const root = document.documentElement;
-      if (!root.classList.contains("home-intro")) return;
+    // 首图解码好以后再开场；图片迟迟不来时 3 秒后照常开始
+    whenReady(fn) {
       const img = $("#heroImage");
-      const show = () => root.classList.remove("home-intro");
-      if (!img || reduceMotion.matches) {
-        show();
-        return;
-      }
-      writeStorage(window.sessionStorage, INTRO_KEY, "1");
-      const fallback = later(show, 3000);
-      const ready = img.complete && img.naturalWidth ? Promise.resolve() : img.decode();
-      ready.then(() => {
-        window.clearTimeout(fallback);
-        if (!root.classList.contains("home-intro")) return;
-        // 先铺满方块，再露出底下的图片，然后让波把画面“洗”清楚
-        this.run(true, WAVE_REVEAL_MS, show);
-      }).catch(() => {
-        window.clearTimeout(fallback);
-        show();
-      });
+      let done = false;
+      const go = () => {
+        if (done) return;
+        done = true;
+        fn();
+      };
+      later(go, 3000);
+      if (!img) return go();
+      (img.complete && img.naturalWidth ? Promise.resolve() : img.decode()).then(go, go);
     }
   };
 
@@ -305,7 +288,6 @@
     let hover = false;
     let heroVisible = true;
     let elapsed = 0;
-    let typer = 0;
     let rotating = false;
     let cards = [];
 
@@ -360,14 +342,12 @@
       card.chars = Array.from(card.q.children);
     }
 
-    function typeCard(card, ms, done) {
-      window.clearInterval(typer);
-      if (!card.chars) fillCard(card, 0);
-      typer = window.setInterval(() => {
+    function typeCard(card, ms) {
+      window.clearInterval(card.timer);
+      card.timer = window.setInterval(() => {
         if (document.hidden) return;
         if (card.typed >= card.chars.length) {
-          window.clearInterval(typer);
-          done?.();
+          window.clearInterval(card.timer);
           return;
         }
         card.chars[card.typed].classList.add("is-on");
@@ -417,9 +397,10 @@
       later(() => typeCard(fresh, TYPE_MS), CARD_TEXT_DELAY_MS);
     }
 
-    function startRotation() {
+    function startRotation(firstAfter = HOLD_MS) {
       if (rotating || reduceMotion.matches) return;
       rotating = true;
+      elapsed = HOLD_MS - firstAfter;
       window.setInterval(() => {
         if (hover || document.hidden || !heroVisible) return;
         elapsed += 100;
@@ -440,20 +421,21 @@
     }
 
     if (entering) {
-      // 开场：画面洗清楚之后，三张卡依次出现并打出问题，最后才开始轮换
+      // 开场：图片已在，像素波扫过一次；标题慢慢淡入；三张卡错开约 120ms 依次淡入，各自同时出字
+      writeStorage(window.sessionStorage, INTRO_KEY, "1");
       cards = [makeCard(n - 2, 0, false, true), makeCard(n - 1, 1, false, true), makeCard(0, 2, false, true)];
-      const reveal = (k) => {
-        if (k >= cards.length) {
-          startRotation();
-          return;
-        }
-        const card = cards[k];
-        card.waiting = false;
-        place(card);
-        later(() => typeCard(card, INTRO_TYPE_MS, () => later(() => reveal(k + 1), 120)), 180);
-      };
-      later(() => reveal(0), 760);
-      later(() => root.classList.add("home-entered"), 3200);
+      cards.forEach((card) => card.el.classList.add("is-intro"));
+      mosaic.whenReady(() => {
+        root.classList.add("home-go");
+        mosaic.pass();
+        cards.forEach((card, k) => later(() => {
+          card.waiting = false;
+          place(card);
+          typeCard(card, TYPE_MS);
+          later(() => card.el.classList.remove("is-intro"), 1400);
+        }, INTRO_CARD_AT[k]));
+        startRotation(INTRO_FIRST_SWITCH_MS);
+      });
       return;
     }
 
@@ -846,7 +828,6 @@
     initLead();
     initScroll(initRibbon());
     initDemos();
-    mosaic.intro();
   }
 
   if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", init, { once: true });

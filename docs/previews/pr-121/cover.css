@@ -160,14 +160,15 @@ a:focus-visible { outline: 2px solid currentColor; outline-offset: 4px; border-r
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.7), 0 10px 30px rgba(var(--shade), 0.12);
   color: #1d211e;
   opacity: 0;
-  transition: transform 640ms var(--ease-out), opacity 460ms ease, border-color 200ms ease, background-color 200ms ease;
+  transition: transform 700ms cubic-bezier(0.16, 1, 0.3, 1), opacity 450ms ease, border-color 200ms ease, background-color 200ms ease;
 }
 .home-card.is-shown { opacity: 1; }
 .home-card:hover { border-color: rgba(255, 255, 255, 0.9); background: rgba(255, 252, 246, 0.7); }
 .home-card-num { color: #5d625c; font-size: 12.5px; letter-spacing: 0.1em; font-variant-numeric: tabular-nums; }
 .home-card-q { flex: 1; margin-top: 8px; font-size: 14.5px; line-height: 1.7; letter-spacing: 0.02em; }
 .home-card-q .katex { font-size: 1.04em; }
-.home-card-caret { display: inline-block; width: 1.5px; height: 1em; margin-left: 2px; vertical-align: -0.12em; background: currentColor; opacity: 0.8; }
+.home-ch { opacity: 0; transition: opacity 240ms ease; }
+.home-ch.is-on { opacity: 1; }
 .home-card-tag { align-self: flex-end; color: #5d625c; font-size: 12px; letter-spacing: 0.08em; }
 
 /* 首屏右侧：线性 + 轮换词 */
@@ -196,9 +197,9 @@ a:focus-visible { outline: 2px solid currentColor; outline-offset: 4px; border-r
   display: flex;
   flex-direction: column;
   align-items: inherit;
-  transition: filter 460ms ease, opacity 460ms ease;
+  transition: filter 270ms cubic-bezier(0, 0, 0.2, 1), opacity 270ms cubic-bezier(0, 0, 0.2, 1);
 }
-.home-word.is-out { filter: blur(14px); opacity: 0; transition-duration: 300ms; }
+.home-word.is-out { filter: blur(14px); opacity: 0; transition-duration: 250ms; transition-timing-function: cubic-bezier(0.4, 0, 1, 1); }
 .home-word.is-pre { filter: blur(14px); opacity: 0; transition: none; }
 .home-word-en { margin-top: 12px; color: rgba(255, 253, 248, 0.92); font-size: clamp(12px, 1vw, 15px); font-weight: 500; letter-spacing: 0.3em; }
 
@@ -567,7 +568,7 @@ a:focus-visible { outline: 2px solid currentColor; outline-offset: 4px; border-r
   .home-scroll-line::after { top: 30%; }
   .home-hero-media, .home-ribbon-bg { will-change: auto; }
   .home-hero-media { animation: none; }
-  .home-cta, .home-cta-arrow, .home-hero-mosaic, .home-word, .home-statement, .home-example-answer { transition: none; }
+  .home-cta, .home-cta-arrow, .home-hero-mosaic, .home-word, .home-statement, .home-example-answer, .home-ch { transition: none; }
   .home-ribbon { height: auto; }
   .home-ribbon-stage { position: relative; }
   .home-clouds, .home-ribbon-paper { display: none; }

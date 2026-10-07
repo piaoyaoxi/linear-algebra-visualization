@@ -7,7 +7,7 @@
     <meta name="theme-color" content="#7ea3c8" />
     <title>高等代数可视化</title>
     <link rel="icon" href="data:," />
-    <link rel="preload" as="image" href="./assets/home/hero-dots-2400.webp" imagesrcset="./assets/home/hero-dots-1600.webp 1600w, ./assets/home/hero-dots-2400.webp 2400w, ./assets/home/hero-dots-3104.webp 3104w" imagesizes="(max-aspect-ratio: 2/1) 200vh, 100vw" fetchpriority="high" />
+    <link rel="preload" as="image" href="./assets/home/hero-2400.webp" imagesrcset="./assets/home/hero-1600.webp 1600w, ./assets/home/hero-2400.webp 2400w, ./assets/home/hero-3104.webp 3104w" imagesizes="(max-aspect-ratio: 2/1) 200vh, 100vw" fetchpriority="high" />
     <script>
       (function () {
         var root = document.documentElement;
@@ -19,9 +19,9 @@
     </script>
     <link rel="stylesheet" href="./fonts.css?v=s2" />
     <link rel="stylesheet" href="./vendor/katex/katex.min.css" />
-    <link rel="stylesheet" href="./cover.css?v=b6" />
+    <link rel="stylesheet" href="./cover.css?v=c1" />
     <script defer src="./vendor/katex/katex.min.js"></script>
-    <script defer src="./cover.js?v=home11"></script>
+    <script defer src="./cover.js?v=c1"></script>
   </head>
   <body>
     <nav class="home-bar" id="homeBar" data-bar="hero" aria-label="站点">
@@ -34,8 +34,8 @@
         <img
           class="home-hero-img"
           id="heroImage"
-          src="./assets/home/hero-dots-2400.webp"
-          srcset="./assets/home/hero-dots-1600.webp 1600w, ./assets/home/hero-dots-2400.webp 2400w, ./assets/home/hero-dots-3104.webp 3104w"
+          src="./assets/home/hero-2400.webp"
+          srcset="./assets/home/hero-1600.webp 1600w, ./assets/home/hero-2400.webp 2400w, ./assets/home/hero-3104.webp 3104w"
           sizes="(max-aspect-ratio: 2/1) 200vh, 100vw"
           width="3104"
           height="1552"
@@ -43,16 +43,6 @@
           decoding="async"
           fetchpriority="high"
         />
-        <script>
-          // 对比用：?bg=smooth 换成不加点的背景
-          (function () {
-            if (!/[?&]bg=smooth\b/.test(location.search)) return;
-            var img = document.getElementById("heroImage");
-            img.srcset = img.srcset.replace(/hero-dots-/g, "hero-smooth-");
-            img.src = img.src.replace("hero-dots-", "hero-smooth-");
-            document.documentElement.style.setProperty("--hero-mid", 'url("./assets/home/hero-smooth-2400.webp")');
-          })();
-        </script>
         <canvas class="home-hero-mosaic" id="heroMosaic"></canvas>
       </div>
 

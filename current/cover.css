@@ -112,8 +112,7 @@ a:focus-visible { outline: 2px solid currentColor; outline-offset: 4px; border-r
 }
 .home-hero-img,
 .home-hero-mosaic { position: absolute; inset: 0; display: block; width: 100%; height: 100%; }
-/* 平行六面体在原图横向 26%–55%，比 2:1 窄的屏幕往左取景，让它避开左侧问题卡 */
-.home-hero-img { object-fit: cover; object-position: 12% 50%; }
+.home-hero-img { object-fit: cover; object-position: 50% 50%; }
 .home-hero-mosaic { opacity: 0; transition: opacity 420ms ease; pointer-events: none; }
 .home-hero-mosaic.is-active { opacity: 1; transition: none; }
 .home-hero::before,
@@ -122,7 +121,7 @@ a:focus-visible { outline: 2px solid currentColor; outline-offset: 4px; border-r
   top: 0;
   bottom: 0;
   background:
-    radial-gradient(ellipse 40% 36% at 78% 34%, rgba(var(--shade), 0.18), transparent 72%),
+    radial-gradient(ellipse 40% 36% at 78% 34%, rgba(var(--shade), 0.26), transparent 72%),
     linear-gradient(180deg, rgba(var(--shade), 0.3) 0%, rgba(var(--shade), 0) 24%);
 }
 .home-hero::after {
@@ -151,24 +150,25 @@ a:focus-visible { outline: 2px solid currentColor; outline-offset: 4px; border-r
   width: 100%;
   height: var(--card-h);
   padding: 13px 16px 12px;
-  border: 1px solid rgba(255, 255, 255, 0.6);
+  border: 1px solid rgba(255, 255, 255, 0.32);
   border-radius: 14px;
-  background: linear-gradient(180deg, rgba(255, 252, 246, 0.62), rgba(255, 252, 246, 0.5));
-  -webkit-backdrop-filter: blur(20px) saturate(115%);
-  backdrop-filter: blur(20px) saturate(115%);
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.7), 0 10px 30px rgba(var(--shade), 0.12);
-  color: #1d211e;
+  background: linear-gradient(180deg, rgba(40, 52, 86, 0.24), rgba(40, 52, 86, 0.14));
+  -webkit-backdrop-filter: blur(22px) saturate(120%);
+  backdrop-filter: blur(22px) saturate(120%);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.38), 0 10px 30px rgba(var(--shade), 0.14);
+  color: var(--on-image);
+  text-shadow: 0 1px 8px rgba(var(--shade), 0.4);
   opacity: 0;
   transition: transform 700ms cubic-bezier(0.16, 1, 0.3, 1), opacity 450ms ease, border-color 200ms ease, background-color 200ms ease;
 }
 .home-card.is-shown { opacity: 1; }
-.home-card:hover { border-color: rgba(255, 255, 255, 0.9); background: rgba(255, 252, 246, 0.7); }
-.home-card-num { color: #5d625c; font-size: 12.5px; letter-spacing: 0.1em; font-variant-numeric: tabular-nums; }
+.home-card:hover { border-color: rgba(255, 255, 255, 0.5); }
+.home-card-num { font-size: 12.5px; letter-spacing: 0.1em; opacity: 0.9; font-variant-numeric: tabular-nums; }
 .home-card-q { flex: 1; margin-top: 8px; font-size: 14.5px; line-height: 1.7; letter-spacing: 0.02em; }
 .home-card-q .katex { font-size: 1.04em; }
 .home-ch { opacity: 0; transition: opacity 240ms ease; }
 .home-ch.is-on { opacity: 1; }
-.home-card-tag { align-self: flex-end; color: #5d625c; font-size: 12px; letter-spacing: 0.08em; }
+.home-card-tag { align-self: flex-end; font-size: 12px; letter-spacing: 0.08em; opacity: 0.92; }
 
 /* 首屏右侧：线性 + 轮换词 */
 .home-headline {
@@ -179,7 +179,7 @@ a:focus-visible { outline: 2px solid currentColor; outline-offset: 4px; border-r
   flex-direction: column;
   align-items: flex-end;
   text-align: right;
-  text-shadow: 0 2px 24px rgba(var(--shade), 0.26), 0 1px 2px rgba(var(--shade), 0.22);
+  text-shadow: 0 2px 36px rgba(var(--shade), 0.32), 0 1px 3px rgba(var(--shade), 0.26);
   transform: translateY(-50%);
   animation: homeRise 900ms var(--ease-out) 200ms both;
 }
@@ -228,9 +228,9 @@ a:focus-visible { outline: 2px solid currentColor; outline-offset: 4px; border-r
   height: 58px;
   padding: 0 34px;
   overflow: hidden;
-  border: 1px solid rgba(255, 255, 255, 0.4);
+  border: 1px solid rgba(255, 255, 255, 0.34);
   border-radius: 18px;
-  background: rgba(var(--shade), 0.22);
+  background: rgba(255, 255, 255, 0.2);
   -webkit-backdrop-filter: blur(28px) saturate(115%) brightness(1.06);
   backdrop-filter: blur(28px) saturate(115%) brightness(1.06);
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.45), 0 10px 32px rgba(var(--shade), 0.16);
@@ -250,8 +250,8 @@ a:focus-visible { outline: 2px solid currentColor; outline-offset: 4px; border-r
   pointer-events: none;
 }
 .home-cta:hover {
-  border-color: rgba(255, 255, 255, 0.58);
-  background: rgba(var(--shade), 0.3);
+  border-color: rgba(255, 255, 255, 0.5);
+  background: rgba(255, 255, 255, 0.28);
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.55), 0 14px 40px rgba(var(--shade), 0.2);
   transform: translateY(-1px);
 }
@@ -353,8 +353,8 @@ a:focus-visible { outline: 2px solid currentColor; outline-offset: 4px; border-r
 .home-ribbon-bg {
   position: absolute;
   inset: -4%;
-  background-image: var(--hero-mid, url("./assets/home/hero-dots-2400.webp"));
-  background-position: 8% 4%;
+  background-image: url("./assets/home/hero-2400.webp");
+  background-position: 36% 6%;
   background-repeat: no-repeat;
   background-size: auto 150%;
   filter: brightness(0.54) saturate(1.3);
@@ -527,14 +527,8 @@ a:focus-visible { outline: 2px solid currentColor; outline-offset: 4px; border-r
 .home-foot-links { display: flex; gap: 24px; }
 .home-foot-links a:hover { color: var(--ink); }
 
-/* 竖屏只露出中间一窄条，让平行六面体留在画面里 */
 @media (max-aspect-ratio: 1/1) {
-  .home-hero-img { object-position: 38% 50%; }
-}
-
-/* 比 3:2 窄的横屏上平行六面体更靠右，标题上移到它的上方 */
-@media (max-aspect-ratio: 3/2) and (min-width: 601px) {
-  .home-headline { top: 21%; }
+  .home-hero-img { object-position: 54% 50%; }
 }
 
 /* 问题卡会碰到 Start：窄屏或矮屏时收起 */
@@ -558,7 +552,7 @@ a:focus-visible { outline: 2px solid currentColor; outline-offset: 4px; border-r
   .home-cta-label { font-size: 16px; }
   .home-resume { font-size: 13px; }
   /* 窄屏上取神殿一带，不再放大，橙蓝两色都留得住 */
-  .home-ribbon-bg { background-position: 10% 0%; background-size: auto 110%; filter: brightness(0.6) saturate(1.15); }
+  .home-ribbon-bg { background-position: 64% 0%; background-size: auto 100%; filter: brightness(0.62) saturate(1.1); }
 }
 
 @media (prefers-reduced-motion: reduce) {

@@ -8,11 +8,15 @@
   // 像素波：网格边长与三档方块（CSS 像素），波前处用最大一档
   const WAVE_CELL = 32;
   const WAVE_LEVELS = [32, 16, 8];
-  const WAVE_PASS_MS = 640;
+  // 以下时长取自 Perplexity Computer 首屏 120 帧/秒录屏的逐帧测量
+  const WAVE_PASS_MS = 1100;
   const WAVE_REVEAL_MS = 1150;
-  const HOLD_MS = 4000;
-  const TYPE_MS = 42;
-  const INTRO_TYPE_MS = 24;
+  const HOLD_MS = 3800;
+  const WORD_OUT_MS = 250;
+  const CARD_ENTER_DELAY_MS = 300;
+  const CARD_TEXT_DELAY_MS = 450;
+  const TYPE_MS = 22;
+  const INTRO_TYPE_MS = 22;
   const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
   const narrow = window.matchMedia("(max-width: 600px)");
 
@@ -340,34 +344,34 @@
       tag.setAttribute("aria-hidden", "true");
       tag.textContent = data.tag;
       el.append(num, q, tag);
-      const card = { el, q, w, slot, waiting: !!waiting, units: questionUnits(data), typed: 0 };
-      if (typed) fillCard(card, card.units.length);
+      const card = { el, q, w, slot, waiting: !!waiting, units: questionUnits(data), typed: 0, chars: null };
+      fillCard(card, typed ? card.units.length : 0);
       box.append(el);
       place(card);
       return card;
     }
 
+    // 问题先整句排好（透明），再逐字淡入：最新的几个字还半透明，读起来像一道柔和的边
     function fillCard(card, count) {
       card.typed = count;
-      card.q.innerHTML = card.units.slice(0, count).map((u) => (typeof u === "string" ? escapeHtml(u) : u.html)).join("");
-      if (count < card.units.length) {
-        const caret = document.createElement("span");
-        caret.className = "home-card-caret";
-        card.q.append(caret);
-      }
+      card.q.innerHTML = card.units
+        .map((u, i) => `<span class="home-ch${i < count ? " is-on" : ""}">${typeof u === "string" ? escapeHtml(u) : u.html}</span>`)
+        .join("");
+      card.chars = Array.from(card.q.children);
     }
 
     function typeCard(card, ms, done) {
       window.clearInterval(typer);
-      fillCard(card, 0);
+      if (!card.chars) fillCard(card, 0);
       typer = window.setInterval(() => {
         if (document.hidden) return;
-        if (card.typed >= card.units.length) {
+        if (card.typed >= card.chars.length) {
           window.clearInterval(typer);
           done?.();
           return;
         }
-        fillCard(card, card.typed + 1);
+        card.chars[card.typed].classList.add("is-on");
+        card.typed += 1;
       }, ms);
     }
 
@@ -379,37 +383,38 @@
       word.setAttribute("aria-label", `线性${data.cn}：${data.tag}`);
     }
 
-    // 换词：旧词模糊淡出 → 卡片整体上移、像素波由下往上扫过 → 新词在波中淡入 → 新卡开始打字
+    // 换词（同一时刻开始）：旧词模糊淡出 250ms、卡片整体上移 700ms、像素波 900ms；
+    // 250ms 时新词模糊淡入 270ms，200ms 时新卡从下方滑入，450ms 时新卡文字逐字淡入
     function advance() {
       elapsed = 0;
       const next = (idx + 1) % n;
       word.classList.add("is-out");
+      mosaic.pass();
       cards.forEach((card) => {
         card.slot -= 1;
         place(card);
       });
       const fresh = makeCard(next, 3, false);
       cards.push(fresh);
-      nextFrame(() => {
+      later(() => {
         fresh.slot = 2;
         place(fresh);
-      });
-      later(() => mosaic.pass(), 80);
+      }, CARD_ENTER_DELAY_MS);
       later(() => {
         cards = cards.filter((card) => {
           if (card.slot >= 0) return true;
           card.el.remove();
           return false;
         });
-      }, 720);
+      }, 800);
       later(() => {
         idx = next;
         showWord(idx);
         word.classList.remove("is-out");
         word.classList.add("is-pre");
         nextFrame(() => word.classList.remove("is-pre"));
-      }, 340);
-      later(() => typeCard(fresh, TYPE_MS), 440);
+      }, WORD_OUT_MS);
+      later(() => typeCard(fresh, TYPE_MS), CARD_TEXT_DELAY_MS);
     }
 
     function startRotation() {

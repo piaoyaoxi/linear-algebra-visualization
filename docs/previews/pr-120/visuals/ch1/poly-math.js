@@ -571,8 +571,15 @@
   function observeCanvas(root, draw) {
     const old = observers.get(root);
     old?.disconnect();
-    const observer = new ResizeObserver(() => {
+    // redraw when the width changes: the canvases size from it. A height change comes from
+    // the text the drawing itself writes (typeset.js may rewrap it), and redrawing on it
+    // would rewrite that text, rewrap, and loop
+    let lastWidth = -1;
+    const observer = new ResizeObserver((entries) => {
       if (!root.isConnected) { observer.disconnect(); return; }
+      const width = Math.round(entries[entries.length - 1].contentRect.width);
+      if (width === lastWidth) return;
+      lastWidth = width;
       draw();
     });
     observer.observe(root);

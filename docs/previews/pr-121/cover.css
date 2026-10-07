@@ -104,7 +104,8 @@ a:focus-visible { outline: 2px solid currentColor; outline-offset: 4px; border-r
 .home-hero-media { position: absolute; inset: 0; z-index: -2; will-change: transform; }
 .home-hero-img,
 .home-hero-mosaic { position: absolute; inset: 0; display: block; width: 100%; height: 100%; }
-.home-hero-img { object-fit: cover; object-position: 50% 50%; }
+/* 平行六面体在原图横向 26%–55%，比 2:1 窄的屏幕往左取景，让它避开左侧问题卡 */
+.home-hero-img { object-fit: cover; object-position: 12% 50%; }
 .home-intro .home-hero-img { opacity: 0; animation: homeImageFallback 1ms linear 3.5s forwards; }
 .home-hero-mosaic { opacity: 0; transition: opacity 420ms ease; pointer-events: none; }
 .home-hero-mosaic.is-active { opacity: 1; transition: none; }
@@ -114,7 +115,7 @@ a:focus-visible { outline: 2px solid currentColor; outline-offset: 4px; border-r
   top: 0;
   bottom: 0;
   background:
-    radial-gradient(ellipse 46% 44% at 78% 46%, rgba(var(--shade), 0.26), transparent 72%),
+    radial-gradient(ellipse 40% 36% at 78% 34%, rgba(var(--shade), 0.18), transparent 72%),
     linear-gradient(180deg, rgba(var(--shade), 0.3) 0%, rgba(var(--shade), 0) 24%);
 }
 .home-hero::after {
@@ -143,45 +144,44 @@ a:focus-visible { outline: 2px solid currentColor; outline-offset: 4px; border-r
   width: 100%;
   height: var(--card-h);
   padding: 13px 16px 12px;
-  border: 1px solid rgba(255, 255, 255, 0.32);
+  border: 1px solid rgba(255, 255, 255, 0.6);
   border-radius: 14px;
-  background: linear-gradient(180deg, rgba(40, 52, 86, 0.24), rgba(40, 52, 86, 0.14));
-  -webkit-backdrop-filter: blur(22px) saturate(120%);
-  backdrop-filter: blur(22px) saturate(120%);
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.38), 0 10px 30px rgba(var(--shade), 0.14);
-  color: var(--on-image);
-  text-shadow: 0 1px 8px rgba(var(--shade), 0.4);
+  background: linear-gradient(180deg, rgba(255, 252, 246, 0.62), rgba(255, 252, 246, 0.5));
+  -webkit-backdrop-filter: blur(20px) saturate(115%);
+  backdrop-filter: blur(20px) saturate(115%);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.7), 0 10px 30px rgba(var(--shade), 0.12);
+  color: #1d211e;
   opacity: 0;
   transition: transform 640ms var(--ease-out), opacity 460ms ease, border-color 200ms ease, background-color 200ms ease;
 }
 .home-card.is-shown { opacity: 1; }
-.home-card:hover { border-color: rgba(255, 255, 255, 0.5); }
-.home-card-num { font-size: 12.5px; letter-spacing: 0.1em; opacity: 0.9; font-variant-numeric: tabular-nums; }
+.home-card:hover { border-color: rgba(255, 255, 255, 0.9); background: rgba(255, 252, 246, 0.7); }
+.home-card-num { color: #5d625c; font-size: 12.5px; letter-spacing: 0.1em; font-variant-numeric: tabular-nums; }
 .home-card-q { flex: 1; margin-top: 8px; font-size: 14.5px; line-height: 1.7; letter-spacing: 0.02em; }
 .home-card-q .katex { font-size: 1.04em; }
 .home-card-caret { display: inline-block; width: 1.5px; height: 1em; margin-left: 2px; vertical-align: -0.12em; background: currentColor; opacity: 0.8; }
-.home-card-tag { align-self: flex-end; font-size: 12px; letter-spacing: 0.08em; opacity: 0.92; }
+.home-card-tag { align-self: flex-end; color: #5d625c; font-size: 12px; letter-spacing: 0.08em; }
 
 /* 首屏右侧：线性 + 轮换词 */
 .home-headline {
   position: absolute;
-  top: 43%;
-  right: clamp(28px, 7.5vw, 128px);
+  top: 34%;
+  right: clamp(32px, 9vw, 160px);
   display: flex;
   flex-direction: column;
   align-items: flex-end;
   text-align: right;
-  text-shadow: 0 2px 36px rgba(var(--shade), 0.32), 0 1px 3px rgba(var(--shade), 0.26);
+  text-shadow: 0 2px 24px rgba(var(--shade), 0.26), 0 1px 2px rgba(var(--shade), 0.22);
   transform: translateY(-50%);
   animation: homeRise 900ms var(--ease-out) 200ms both;
 }
 .home-headline-fixed,
 .home-word-cn {
   margin: 0;
-  font-size: clamp(60px, 9.4vw, 152px);
-  font-weight: 800;
-  line-height: 1.08;
-  letter-spacing: 0.06em;
+  font-size: clamp(48px, 6vw, 104px);
+  font-weight: 600;
+  line-height: 1.12;
+  letter-spacing: 0.08em;
   white-space: nowrap;
 }
 .home-word {
@@ -192,7 +192,7 @@ a:focus-visible { outline: 2px solid currentColor; outline-offset: 4px; border-r
 }
 .home-word.is-out { filter: blur(14px); opacity: 0; transition-duration: 300ms; }
 .home-word.is-pre { filter: blur(14px); opacity: 0; transition: none; }
-.home-word-en { margin-top: 14px; color: rgba(255, 253, 248, 0.9); font-size: clamp(13px, 1.1vw, 16px); font-weight: 500; letter-spacing: 0.3em; }
+.home-word-en { margin-top: 12px; color: rgba(255, 253, 248, 0.92); font-size: clamp(12px, 1vw, 15px); font-weight: 500; letter-spacing: 0.3em; }
 
 /* 入口：磨砂玻璃 */
 .home-start {
@@ -220,9 +220,9 @@ a:focus-visible { outline: 2px solid currentColor; outline-offset: 4px; border-r
   height: 58px;
   padding: 0 34px;
   overflow: hidden;
-  border: 1px solid rgba(255, 255, 255, 0.34);
+  border: 1px solid rgba(255, 255, 255, 0.4);
   border-radius: 18px;
-  background: rgba(255, 255, 255, 0.2);
+  background: rgba(var(--shade), 0.22);
   -webkit-backdrop-filter: blur(28px) saturate(115%) brightness(1.06);
   backdrop-filter: blur(28px) saturate(115%) brightness(1.06);
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.45), 0 10px 32px rgba(var(--shade), 0.16);
@@ -242,8 +242,8 @@ a:focus-visible { outline: 2px solid currentColor; outline-offset: 4px; border-r
   pointer-events: none;
 }
 .home-cta:hover {
-  border-color: rgba(255, 255, 255, 0.5);
-  background: rgba(255, 255, 255, 0.28);
+  border-color: rgba(255, 255, 255, 0.58);
+  background: rgba(var(--shade), 0.3);
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.55), 0 14px 40px rgba(var(--shade), 0.2);
   transform: translateY(-1px);
 }
@@ -255,10 +255,15 @@ a:focus-visible { outline: 2px solid currentColor; outline-offset: 4px; border-r
 .home-cta:hover .home-cta-arrow { transform: translateX(4px); }
 .home-resume {
   margin: 18px 0 0;
-  color: rgba(255, 253, 248, 0.9);
+  padding: 6px 14px;
+  border-radius: 999px;
+  background: rgba(var(--shade), 0.28);
+  -webkit-backdrop-filter: blur(12px);
+  backdrop-filter: blur(12px);
+  color: rgba(255, 253, 248, 0.94);
   font-size: 13.5px;
   letter-spacing: 0.08em;
-  text-shadow: 0 1px 2px rgba(var(--shade), 0.35), 0 1px 14px rgba(var(--shade), 0.5);
+  text-shadow: 0 1px 2px rgba(var(--shade), 0.35);
   animation-delay: 460ms;
 }
 .home-resume a {
@@ -319,8 +324,8 @@ a:focus-visible { outline: 2px solid currentColor; outline-offset: 4px; border-r
 .home-ribbon-bg {
   position: absolute;
   inset: -4%;
-  background-image: url("./assets/home/hero-2400.webp");
-  background-position: 36% 6%;
+  background-image: var(--hero-mid, url("./assets/home/hero-dots-2400.webp"));
+  background-position: 8% 4%;
   background-repeat: no-repeat;
   background-size: auto 150%;
   filter: brightness(0.54) saturate(1.3);
@@ -493,8 +498,14 @@ a:focus-visible { outline: 2px solid currentColor; outline-offset: 4px; border-r
 .home-foot-links { display: flex; gap: 24px; }
 .home-foot-links a:hover { color: var(--ink); }
 
+/* 竖屏只露出中间一窄条，让平行六面体留在画面里 */
 @media (max-aspect-ratio: 1/1) {
-  .home-hero-img { object-position: 54% 50%; }
+  .home-hero-img { object-position: 38% 50%; }
+}
+
+/* 比 3:2 窄的横屏上平行六面体更靠右，标题上移到它的上方 */
+@media (max-aspect-ratio: 3/2) and (min-width: 601px) {
+  .home-headline { top: 21%; }
 }
 
 /* 问题卡会碰到 Start：窄屏或矮屏时收起 */
@@ -513,12 +524,12 @@ a:focus-visible { outline: 2px solid currentColor; outline-offset: 4px; border-r
 }
 
 @media (max-width: 600px) {
-  .home-headline { top: 40%; left: 0; right: 0; align-items: center; text-align: center; }
+  .home-headline { top: 22%; left: 0; right: 0; align-items: center; text-align: center; }
   .home-cta { min-width: 164px; height: 54px; padding: 0 30px; border-radius: 16px; }
   .home-cta-label { font-size: 16px; }
   .home-resume { font-size: 13px; }
   /* 窄屏上取神殿一带，不再放大，橙蓝两色都留得住 */
-  .home-ribbon-bg { background-position: 64% 0%; background-size: auto 100%; filter: brightness(0.62) saturate(1.1); }
+  .home-ribbon-bg { background-position: 10% 0%; background-size: auto 110%; filter: brightness(0.6) saturate(1.15); }
 }
 
 @media (prefers-reduced-motion: reduce) {

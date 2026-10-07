@@ -115,6 +115,18 @@ a:focus-visible { outline: 2px solid currentColor; outline-offset: 4px; border-r
 /* 平行六面体在原图横向 26%–55%，比 2:1 窄的屏幕往左取景，让它避开左侧问题卡 */
 .home-hero-img { object-fit: cover; object-position: 12% 50%; }
 .home-hero-mosaic { opacity: 0; transition: opacity 420ms ease; pointer-events: none; }
+/* 水晶光影：只在有光影变化的地方露出视频，其余仍是静图 */
+.home-hero-glint {
+  position: absolute;
+  display: block;
+  object-fit: fill;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 1800ms cubic-bezier(0.45, 0, 0.55, 1);
+  -webkit-mask: url("./assets/home/hero-glint-mask.png") 0 0 / 100% 100% no-repeat;
+  mask: url("./assets/home/hero-glint-mask.png") 0 0 / 100% 100% no-repeat;
+}
+.home-hero-glint.is-on { opacity: 1; }
 .home-hero-mosaic.is-active { opacity: 1; transition: none; }
 .home-hero::before,
 .home-hero::after { content: ""; position: absolute; left: 0; right: 0; z-index: -1; pointer-events: none; }
@@ -353,7 +365,7 @@ a:focus-visible { outline: 2px solid currentColor; outline-offset: 4px; border-r
 .home-ribbon-bg {
   position: absolute;
   inset: -4%;
-  background-image: var(--hero-mid, url("./assets/home/hero-dots-2400.webp"));
+  background-image: var(--hero-mid, url("./assets/home/hero-crystal-2400.webp"));
   background-position: 8% 4%;
   background-repeat: no-repeat;
   background-size: auto 150%;
@@ -570,5 +582,5 @@ a:focus-visible { outline: 2px solid currentColor; outline-offset: 4px; border-r
   .home-cta, .home-cta-arrow, .home-hero-mosaic, .home-word, .home-statement, .home-example-answer, .home-ch { transition: none; }
   .home-ribbon { height: auto; }
   .home-ribbon-stage { position: relative; }
-  .home-clouds, .home-ribbon-paper { display: none; }
+  .home-clouds, .home-ribbon-paper, .home-hero-glint { display: none; }
 }

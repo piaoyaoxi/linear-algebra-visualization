@@ -11,6 +11,10 @@
   // 以下时长取自 Perplexity Computer 首屏 120 帧/秒录屏的逐帧测量
   const WAVE = { top: 680, grow: 420, ramp: 0.3, clear: 130 };
   const HOLD_MS = 3800;
+  // 光影视频在整张背景图里的位置（以 2400×1200 的图为准：x 446、y 80、宽 1476、高 1120）
+  const GLINT_RECT = { x: 446 / 2400, y: 80 / 1200, w: 1476 / 2400, h: 1120 / 1200 };
+  const GLINT_SIZES = [738, 1476];
+  const GLINT_DELAY_MS = 1200;
   const WORD_OUT_MS = 250;
   const CARD_ENTER_DELAY_MS = 300;
   const CARD_TEXT_DELAY_MS = 450;
@@ -139,6 +143,80 @@
     resume.hidden = false;
   }
 
+  // object-fit: cover 时图片实际画在哪里（与 CSS 的 object-position 一致）
+  function coverRect(img, width, height) {
+    const scale = Math.max(width / img.naturalWidth, height / img.naturalHeight);
+    const drawWidth = img.naturalWidth * scale;
+    const drawHeight = img.naturalHeight * scale;
+    const parts = window.getComputedStyle(img).objectPosition.split(/\s+/);
+    const ratio = (value) => (value && value.endsWith("%") ? parseFloat(value) / 100 : 0.5);
+    return { dx: (width - drawWidth) * ratio(parts[0]), dy: (height - drawHeight) * ratio(parts[1]), drawWidth, drawHeight };
+  }
+
+  /* ---------- 首屏：水晶的光影 ---------- */
+
+  // 只有水晶、底座和水中倒影这一块是视频，按它在整张图里的位置叠在静图上；
+  // 遮罩只露出有光影变化的地方，并羽化进静图。
+  const glint = {
+    video: null,
+    on: false,
+    playing: false,
+
+    init() {
+      const video = $("#heroGlint");
+      const img = $("#heroImage");
+      if (!video || !img || reduceMotion.matches || navigator.connection?.saveData) return;
+      this.video = video;
+      this.img = img;
+      window.addEventListener("resize", () => this.place(), { passive: true });
+      video.addEventListener("playing", () => {
+        this.place();
+        this.on = true;
+        video.classList.add("is-on");
+      }, { once: true });
+      if ("IntersectionObserver" in window) {
+        new IntersectionObserver(([entry]) => {
+          this.visible = entry.isIntersecting;
+          this.sync();
+        }, { threshold: 0 }).observe($(".home-hero"));
+      }
+      document.addEventListener("visibilitychange", () => this.sync());
+    },
+
+    // 静图解码、开场动起来之后再去拉视频，不和首屏抢带宽
+    start() {
+      const video = this.video;
+      if (!video || video.src) return;
+      this.place();
+      const box = video.parentElement;
+      const cssWidth = GLINT_RECT.w * coverRect(this.img, box.clientWidth, box.clientHeight).drawWidth;
+      const big = cssWidth * Math.min(window.devicePixelRatio || 1, 2) > 900;
+      const type = video.canPlayType('video/mp4; codecs="avc1.640028"') ? "mp4" : "webm";
+      video.src = `./assets/home/hero-glint-${big ? GLINT_SIZES[1] : GLINT_SIZES[0]}.${type}`;
+      this.visible = this.visible ?? true;
+      this.sync();
+    },
+
+    sync() {
+      const video = this.video;
+      if (!video?.src) return;
+      if (this.visible !== false && !document.hidden) video.play().catch(() => {});
+      else video.pause();
+    },
+
+    place() {
+      const video = this.video;
+      if (!video || !this.img.naturalWidth) return;
+      const box = video.parentElement;
+      const { dx, dy, drawWidth, drawHeight } = coverRect(this.img, box.clientWidth, box.clientHeight);
+      const r = GLINT_RECT;
+      video.style.left = `${dx + r.x * drawWidth}px`;
+      video.style.top = `${dy + r.y * drawHeight}px`;
+      video.style.width = `${r.w * drawWidth}px`;
+      video.style.height = `${r.h * drawHeight}px`;
+    }
+  };
+
   /* ---------- 首屏像素：开场显影与换词时的像素波 ---------- */
 
   // 一道像素波从下往上扫过：只有波经过的一条带变成方块，波前处方块最大，
@@ -159,15 +237,7 @@
       if (this.cache?.key === key) return this.cache;
       canvas.width = width;
       canvas.height = height;
-      const natW = img.naturalWidth;
-      const natH = img.naturalHeight;
-      const scale = Math.max(width / natW, height / natH);
-      const drawWidth = natW * scale;
-      const drawHeight = natH * scale;
-      const parts = window.getComputedStyle(img).objectPosition.split(/\s+/);
-      const ratio = (value) => (value && value.endsWith("%") ? parseFloat(value) / 100 : 0.5);
-      const dx = (width - drawWidth) * ratio(parts[0]);
-      const dy = (height - drawHeight) * ratio(parts[1]);
+      const { dx, dy, drawWidth, drawHeight } = coverRect(img, width, height);
       // 每一档方块各做一张缩小图，画的时候按格子取一块放大
       const levels = WAVE_LEVELS.map((level) => {
         const size = level * dpr;
@@ -178,7 +248,11 @@
         sctx.imageSmoothingEnabled = true;
         sctx.imageSmoothingQuality = "high";
         sctx.drawImage(img, 0, 0, drawWidth / size, drawHeight / size);
-        return { small, span: WAVE_CELL / level };
+        const base = document.createElement("canvas");
+        base.width = small.width;
+        base.height = small.height;
+        base.getContext("2d").drawImage(small, 0, 0);
+        return { small, sctx, base, size, span: WAVE_CELL / level };
       });
       this.cache = { key, canvas, ctx, width, height, dx, dy, drawWidth, drawHeight, cell: WAVE_CELL * dpr, levels };
       return this.cache;
@@ -226,9 +300,25 @@
       }
     },
 
+    // 光影视频在播时，把它当前这一帧也叠进方块图，波扫过时水晶的光不会突然消失
+    refresh(m) {
+      const video = glint.video;
+      const live = glint.on && video && video.readyState >= 2;
+      if (!live && !m.withVideo) return;
+      m.withVideo = live;
+      const r = GLINT_RECT;
+      m.levels.forEach((level) => {
+        level.sctx.drawImage(level.base, 0, 0);
+        if (live) {
+          level.sctx.drawImage(video, (r.x * m.drawWidth) / level.size, (r.y * m.drawHeight) / level.size, (r.w * m.drawWidth) / level.size, (r.h * m.drawHeight) / level.size);
+        }
+      });
+    },
+
     run() {
       const m = this.setup();
       if (!m) return;
+      this.refresh(m);
       this.running = true;
       const seed = Math.random() * 1000;
       const end = WAVE.top * Math.pow(1.06, 0.2) + WAVE.clear;
@@ -836,6 +926,8 @@
   function init() {
     renderTexBlocks();
     applyLearningState();
+    glint.init();
+    mosaic.whenReady(() => later(() => glint.start(), GLINT_DELAY_MS));
     initHeadline();
     initLead();
     initScroll(initRibbon());

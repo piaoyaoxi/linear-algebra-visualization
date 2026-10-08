@@ -543,6 +543,22 @@ a:focus-visible { outline: 2px solid currentColor; outline-offset: 4px; border-r
 @media (max-aspect-ratio: 1/1) {
   .home-hero-img { object-position: 38% 50%; }
 }
+/* 竖屏手机：图片撑满整屏高度时水晶比屏幕还宽。改为限高（约 140vw，矮屏再收一点），
+   并让水晶底边落在 Start 上方；上方接天蓝，下方接水色，图片上下边缘羽化过去 */
+@media (max-aspect-ratio: 3/4) and (max-width: 760px) {
+  .home-hero { background: linear-gradient(180deg, #2a68bc 0%, #2c6ec0 45%, #8ca1b9 85%, #8ca1b9 100%); }
+  .home-hero-media {
+    --media-h: min(140vw, 66%);
+    /* 水晶下沿在图片高度的 68% 处；Start 中心在 78%，按钮半高 27px，再留 14px */
+    top: calc(78% - 41px - var(--media-h) * 0.68);
+    bottom: auto;
+    height: var(--media-h);
+    -webkit-mask-image: linear-gradient(180deg, transparent 0, #000 16%, #000 90%, transparent);
+    mask-image: linear-gradient(180deg, transparent 0, #000 16%, #000 90%, transparent);
+  }
+  .home-hero-img { object-position: 34% 50%; }
+}
+
 
 /* 比 3:2 窄的横屏上平行六面体更靠右，标题上移到它的上方 */
 @media (max-aspect-ratio: 3/2) and (min-width: 601px) {

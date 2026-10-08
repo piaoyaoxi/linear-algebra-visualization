@@ -558,6 +558,8 @@ a:focus-visible { outline: 2px solid currentColor; outline-offset: 4px; border-r
     mask-image: linear-gradient(180deg, transparent 0, #000 16%, #000 90%, transparent);
   }
   .home-hero-img { object-position: 34% 50%; }
+  /* 图片仍按 78% 定位，按钮再往下挪一点，离水晶下沿更松 */
+  .home-start { top: 80.5%; }
 }
 
 

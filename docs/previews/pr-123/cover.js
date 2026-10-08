@@ -638,7 +638,7 @@
     const TALL = { w: 900, h: 1600, sx: 900 / 1600, cy: 820, sy: 1.15, width: 0.8, fonts: [22, 30, 42] };
     const WIDE_FONTS = [24, 38, 54];
 
-    function frame(p) {
+    function frame(p, enter, pinned) {
       const f = reduceMotion.matches ? 0 : p;
       const tall = portrait.matches;
       const box = tall ? `0 0 ${TALL.w} ${TALL.h}` : "0 0 1600 900";
@@ -701,6 +701,20 @@
 
       if (reduceMotion.matches) return;
       if (bg) bg.style.transform = `scale(${(1 + 0.08 * p).toFixed(4)}) translateY(${(-p * 2).toFixed(2)}%)`;
+      // 进场：先是和上一屏一样的纸色，纸色褪去时云还聚着，随后云向四周散开露出画面
+      if (enter < 1) {
+        const hold = 1 - smooth(pinned + 0.12, 1, enter);
+        if (paper) paper.style.opacity = String(1 - smooth(pinned, pinned + 0.4, enter));
+        clouds.forEach((cloud, i) => {
+          const from = CLOUD_FROM[i];
+          const to = CLOUD_TO[i];
+          const x = to[0] + (from[0] - to[0]) * (1 - hold);
+          const y = to[1] + (from[1] - to[1]) * (1 - hold);
+          cloud.style.opacity = hold.toFixed(3);
+          cloud.style.transform = `translate(${(x - 50).toFixed(2)}vw, ${(y - 50).toFixed(2)}vh) scale(${(1 + 0.25 * (1 - hold)).toFixed(3)})`;
+        });
+        return;
+      }
       const gather = smooth(0.55, 0.8, p);
       const spread = smooth(0.82, 1, p);
       if (paper) paper.style.opacity = String(smooth(0.72, 0.92, p));
@@ -717,20 +731,30 @@
     }
 
     let lastP = -1;
+    let lastEnter = -1;
     return {
       update(vh) {
         const r = track.getBoundingClientRect();
         const span = Math.max(1, r.height - vh);
         const p = reduceMotion.matches ? 0.3 : Math.min(1, Math.max(0, -r.top / span));
+        // 进场进度：这一段顶边升到屏幕 15% 处开始，钉住后再滚 16% 结束；
+        // 纸色要等整屏都被这一段占满（钉住）之后才褪，不然会露出一条硬边
+        const enterFrom = -0.15 * vh;
+        const enterTo = 0.16 * span;
+        const enter = reduceMotion.matches ? 1 : Math.min(1, Math.max(0, (-r.top - enterFrom) / (enterTo - enterFrom)));
+        const pinned = -enterFrom / (enterTo - enterFrom);
         const onScreen = r.top < vh && r.bottom > 0;
-        if (onScreen && p !== lastP) {
+        if (onScreen && (p !== lastP || enter !== lastEnter)) {
           lastP = p;
-          frame(p);
+          lastEnter = enter;
+          frame(p, enter, pinned);
         }
-        return { p, inside: r.top <= 32 && r.bottom >= 32 };
+        // 进场时纸色还没褪完，顶栏先保持纸色样式
+        return { p, inside: r.top <= 32 && r.bottom >= 32 && enter >= pinned + 0.2 };
       },
       redraw() {
         lastP = -1;
+        lastEnter = -1;
       }
     };
   }

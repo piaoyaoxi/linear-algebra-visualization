@@ -783,8 +783,10 @@
     // 01：向量 ξ 在 A = [[2,1],[1,2]] 下的像，转到特征方向上时放慢
     const ev = {
       v: $("#eigenV"), vTip: $("#eigenVTip"), av: $("#eigenAv"), avTip: $("#eigenAvTip"),
-      vLab: $("#eigenVLabel"), avLab: $("#eigenAvLabel"), line1: $("#eigenLine1"), line2: $("#eigenLine2")
+      vLab: $("#eigenVLabel"), avLab: $("#eigenAvLabel"), line1: $("#eigenLine1"), line2: $("#eigenLine2"),
+      bg: $("#eigenBg")
     };
+    let repaint = false;
     let theta = 0.3;
     let align = 1;
     function drawEigen() {
@@ -813,6 +815,9 @@
       const onFirst = Math.abs(vx + vy) > Math.abs(vx - vy);
       set(ev.line1, { opacity: String(0.22 + (onFirst ? 0.68 * highlight : 0)) });
       set(ev.line2, { opacity: String(0.22 + (onFirst ? 0 : 0.68 * highlight)) });
+      // Safari 只重绘移动元素的大致范围，细线边缘会留下残影；每帧轻轻改一下整块底色，让整张图重画
+      repaint = !repaint;
+      ev.bg?.setAttribute("opacity", repaint ? "1" : "0.999");
     }
 
     // 02：拖动 ε₁、ε₂ 的像，网格跟着变
@@ -824,6 +829,12 @@
     let gj = [0.35, 1];
     let dragging = null;
     let userDragged = false;
+    // 松手后停一会儿没再拖，就慢慢回到自动变化
+    const RESUME_AFTER_MS = 2500;
+    const RESUME_BLEND_S = 1.2;
+    let resumeTimer = 0;
+    let blendFrom = null;
+    let blendT = 0;
     function drawGrid() {
       if (!gr.lines) return;
       const U = 76;
@@ -852,6 +863,8 @@
         event.preventDefault();
         dragging = which;
         userDragged = true;
+        blendFrom = null;
+        window.clearTimeout(resumeTimer);
         try { gr.svg.setPointerCapture(event.pointerId); } catch (error) { /* 不支持时照常拖动 */ }
       };
       gr.iHit?.addEventListener("pointerdown", start("i"));
@@ -867,7 +880,16 @@
         else gj = v;
         drawGrid();
       });
-      const end = () => { dragging = null; };
+      const end = () => {
+        if (!dragging) return;
+        dragging = null;
+        window.clearTimeout(resumeTimer);
+        resumeTimer = window.setTimeout(() => {
+          blendFrom = { gi: gi.slice(), gj: gj.slice() };
+          blendT = 0;
+          userDragged = false;
+        }, RESUME_AFTER_MS);
+      };
       gr.svg.addEventListener("pointerup", end);
       gr.svg.addEventListener("pointercancel", end);
     }
@@ -904,8 +926,18 @@
       theta += dt * 0.9 * (0.18 + 0.82 * Math.min(1, align * 4));
       drawEigen();
       if (!userDragged) {
-        gi = [1 + 0.3 * Math.sin(0.8 * elapsed), 0.35 * Math.sin(0.55 * elapsed)];
-        gj = [0.45 * Math.sin(0.5 * elapsed + 1), 1 + 0.25 * Math.cos(0.7 * elapsed)];
+        let ai = [1 + 0.3 * Math.sin(0.8 * elapsed), 0.35 * Math.sin(0.55 * elapsed)];
+        let aj = [0.45 * Math.sin(0.5 * elapsed + 1), 1 + 0.25 * Math.cos(0.7 * elapsed)];
+        if (blendFrom) {
+          blendT = Math.min(1, blendT + dt / RESUME_BLEND_S);
+          const k = blendT * blendT * (3 - 2 * blendT);
+          const mix = (from, to) => from.map((v, n) => v + (to[n] - v) * k);
+          ai = mix(blendFrom.gi, ai);
+          aj = mix(blendFrom.gj, aj);
+          if (blendT >= 1) blendFrom = null;
+        }
+        gi = ai;
+        gj = aj;
         drawGrid();
       }
       window.requestAnimationFrame(loop);

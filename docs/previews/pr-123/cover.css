@@ -549,7 +549,7 @@ a:focus-visible { outline: 2px solid currentColor; outline-offset: 4px; border-r
   .home-hero { background: linear-gradient(180deg, #2a68bc 0%, #2c6ec0 45%, #8ca1b9 85%, #8ca1b9 100%); }
   .home-hero-media {
     --media-h: min(140vw, 66%);
-    /* 水晶下沿在图片高度的 68% 处；Start 中心在 78%，按钮半高 27px，再留 14px */
+    /* 水晶下沿在图片高度的 68% 处；Start 中心在 78%，按钮半高 22px，再留 19px */
     top: calc(78% - 41px - var(--media-h) * 0.68);
     bottom: auto;
     height: var(--media-h);
@@ -582,9 +582,10 @@ a:focus-visible { outline: 2px solid currentColor; outline-offset: 4px; border-r
 
 @media (max-width: 600px) {
   .home-headline { top: 22%; left: 0; right: 0; align-items: center; text-align: center; }
-  .home-cta { min-width: 164px; height: 54px; padding: 0 30px; border-radius: 16px; }
-  .home-cta-label { font-size: 16px; }
-  .home-resume { font-size: 13px; }
+  .home-cta { gap: 10px; min-width: 0; height: 44px; padding: 0 22px; border-radius: 13px; }
+  .home-cta-label { font-size: 14.5px; }
+  .home-cta-arrow svg { width: 16px; height: 16px; }
+  .home-resume { margin-top: 14px; font-size: 12px; }
   /* 窄屏上取神殿一带，不再放大，橙蓝两色都留得住 */
   .home-ribbon-bg { background-position: 10% 0%; background-size: auto 110%; filter: brightness(0.6) saturate(1.15); }
 }

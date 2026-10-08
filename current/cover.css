@@ -426,7 +426,7 @@ a:focus-visible { outline: 2px solid currentColor; outline-offset: 4px; border-r
 .home-step-stage { position: relative; aspect-ratio: 4 / 3; border-bottom: 1px solid var(--line); background: var(--cv-paper); }
 .home-step-svg { position: absolute; inset: 0; width: 100%; height: 100%; }
 .home-step-svg.is-draggable { touch-action: none; }
-.home-step-question { position: absolute; top: 16px; left: 18px; right: 18px; margin: 0; color: var(--ink-2); font-size: 14px; line-height: 1.6; letter-spacing: 0.04em; }
+.home-step-question { position: absolute; z-index: 1; top: 16px; left: 18px; right: 18px; margin: 0; color: var(--ink-2); pointer-events: none; font-size: 14px; line-height: 1.6; letter-spacing: 0.04em; text-shadow: 0 0 3px var(--cv-paper), 0 0 6px var(--cv-paper), 0 0 10px var(--cv-paper); }
 .home-step-readout { position: absolute; top: 14px; left: 18px; margin: 0; color: var(--ink-2); font-size: 13.5px; line-height: 1.7; font-variant-numeric: tabular-nums; white-space: pre-line; pointer-events: none; }
 .home-step-hint { position: absolute; right: 18px; bottom: 12px; margin: 0; color: var(--muted); font-size: 12.5px; letter-spacing: 0.06em; pointer-events: none; }
 .home-step-body { padding: 24px 28px 30px; }
@@ -436,6 +436,7 @@ a:focus-visible { outline: 2px solid currentColor; outline-offset: 4px; border-r
 
 .home-demo-grid { fill: none; stroke: var(--cv-grid); stroke-width: 1; }
 .home-demo-axis { fill: none; stroke: var(--cv-axis); stroke-opacity: 0.55; stroke-width: 1; }
+.home-demo-bg { fill: var(--cv-paper); }
 .home-demo-eigen { fill: none; stroke: var(--cv-v1); stroke-dasharray: 3 5; stroke-width: 1.4; opacity: 0.22; }
 .home-demo-warp { fill: none; stroke: var(--cv-axis); stroke-opacity: 0.32; stroke-width: 1; }
 .home-demo-cell { fill: var(--cv-v1); fill-opacity: 0.1; }

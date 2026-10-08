@@ -361,8 +361,6 @@ a:focus-visible { outline: 2px solid currentColor; outline-offset: 4px; border-r
 
 /* 丝带屏 */
 .home-ribbon { position: relative; height: 260vh; background: #141618; }
-/* 竖屏丝带要从屏幕下方一路升到上方，滚动距离留长一些 */
-@media (max-aspect-ratio: 3/4) { .home-ribbon { height: 320vh; } }
 .home-ribbon-stage { position: sticky; top: 0; height: 100vh; height: 100svh; overflow: hidden; }
 .home-ribbon-bg {
   position: absolute;

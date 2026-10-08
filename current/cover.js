@@ -24,7 +24,6 @@
   const INTRO_FIRST_SWITCH_MS = 3400;
   const INTRO_WAVE_AT = 900;
   const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
-  const narrow = window.matchMedia("(max-width: 600px)");
   // 竖屏（手机、竖放的平板）：丝带换成竖版画法
   const portrait = window.matchMedia("(max-aspect-ratio: 3/4)");
 
@@ -634,19 +633,27 @@
     const reversed = (s) => `M${s.p3.join(" ")}C${s.c2.join(" ")} ${s.c1.join(" ")} ${s.p0.join(" ")}`;
     const offset = (text, v) => text?.firstElementChild?.setAttribute("startOffset", v.toFixed(1));
 
-    function landscapeFrame(p, f) {
-      portraitCache?.forEach((line) => { line.text.style.display = "none"; });
-      texts[1].style.display = "";
-      const mob = narrow.matches;
+    // 竖屏沿用桌面的 Z 形丝带，只按竖版画布重新摆放：横向压到 900 宽、纵向拉开，
+    // 两端仍伸出屏幕左右两侧；丝带宽度和字号按比例收一点
+    const TALL = { w: 900, h: 1600, sx: 900 / 1600, cy: 820, sy: 1.15, width: 0.8, fonts: [22, 30, 42] };
+    const WIDE_FONTS = [24, 38, 54];
+
+    function frame(p) {
+      const f = reduceMotion.matches ? 0 : p;
+      const tall = portrait.matches;
+      const box = tall ? `0 0 ${TALL.w} ${TALL.h}` : "0 0 1600 900";
+      if (svg && svg.getAttribute("viewBox") !== box) svg.setAttribute("viewBox", box);
       const wob = Math.sin(p * Math.PI * 2);
       const wob2 = Math.cos(p * Math.PI * 1.5);
-      const segs = mob
-        ? [{ p0: [-200, 690 + wob * 18], c1: [420, 560 - wob * 26], c2: [1180, 560 + wob * 26], p3: [1800, 690 - wob * 18], w0: 74, w1: 74 }]
-        : [
-            { p0: [1760, -60 + wob * 20], c1: [1300, 110 + wob * 40], c2: [560, 230 - wob * 30], p3: [180, 330], w0: 56, w1: 82 },
-            { p0: [180, 330], c1: [-80, 385 + wob * 16], c2: [640, 530 + wob2 * 40], p3: [1340, 620 + wob * 20], w0: 82, w1: 124 },
-            { p0: [1340, 620 + wob * 20], c1: [1640, 660 - wob2 * 16], c2: [900, 820 - wob2 * 36], p3: [-240, 1000], w0: 124, w1: 150 }
-          ];
+      let segs = [
+        { p0: [1760, -60 + wob * 20], c1: [1300, 110 + wob * 40], c2: [560, 230 - wob * 30], p3: [180, 330], w0: 56, w1: 82 },
+        { p0: [180, 330], c1: [-80, 385 + wob * 16], c2: [640, 530 + wob2 * 40], p3: [1340, 620 + wob * 20], w0: 82, w1: 124 },
+        { p0: [1340, 620 + wob * 20], c1: [1640, 660 - wob2 * 16], c2: [900, 820 - wob2 * 36], p3: [-240, 1000], w0: 124, w1: 150 }
+      ];
+      if (tall) {
+        const pt = ([x, y]) => [x * TALL.sx, TALL.cy + (y - 450) * TALL.sy];
+        segs = segs.map((s) => ({ p0: pt(s.p0), c1: pt(s.c1), c2: pt(s.c2), p3: pt(s.p3), w0: s.w0 * TALL.width, w1: s.w1 * TALL.width }));
+      }
       const flipT = 0.3 + 0.4 * p;
       const N = 56;
       const left = [];
@@ -654,13 +661,13 @@
       const segLeft = segs.map(() => []);
       const segRight = segs.map(() => []);
       segs.forEach((s, si) => {
-        const span = mob ? [0, 1] : TEXT_SPAN[si];
+        const span = TEXT_SPAN[si];
         for (let k = 0; k <= N; k += 1) {
           const t = k / N;
           const [x, y, dx, dy] = bezier(s, t);
           const len = Math.hypot(dx, dy) || 1;
           let pinch = 1;
-          if (!mob && si === 1) {
+          if (si === 1) {
             const dd = Math.abs(t - flipT) / 0.2;
             pinch = dd >= 1 ? 1 : 0.02 + 0.98 * (1 - Math.cos(dd * Math.PI)) / 2;
           }
@@ -683,112 +690,14 @@
       body.setAttribute("d", d);
       glow?.setAttribute("d", d);
 
-      if (mob) {
-        paths[1].setAttribute("d", curve(segs[0]));
-        clips[1].setAttribute("d", polygon(segLeft[0], segRight[0]));
-        texts[0].style.display = "none";
-        texts[2].style.display = "none";
-        texts[1].setAttribute("font-size", "30");
-        offset(texts[1], -2400 + f * 1400);
-      } else {
-        paths[0].setAttribute("d", reversed(segs[0]));
-        paths[1].setAttribute("d", curve(segs[1]));
-        paths[2].setAttribute("d", reversed(segs[2]));
-        segs.forEach((s, si) => clips[si].setAttribute("d", polygon(segLeft[si], segRight[si])));
-        texts[0].style.display = "";
-        texts[2].style.display = "";
-        texts[1].setAttribute("font-size", "38");
-        offset(texts[0], -(1500 + f * 900));
-        offset(texts[1], -3000 + f * 1600);
-        offset(texts[2], -(5000 + f * 2600));
-      }
-    }
-
-    // 竖屏：一条连续的丝带来回横穿整个屏幕，掉头都在屏幕左右两侧之外，
-    // 所以文字在可见范围里永远走在平缓的斜线上；随滚动整条从屏幕下方升上来再离开
-    const PORTRAIT = { w: 900, h: 1600, sweeps: 5, rise: 300, turn: 230, band: 62, font: 26, left: -240, right: 1140 };
-    function portraitSegments(p) {
-      const P = PORTRAIT;
-      const length = P.sweeps * (P.rise + P.turn);
-      const q = Math.min(1, Math.max(0, (p - 0.04) / 0.8));
-      let y = P.h + length - q * (P.h + length);
-      let dir = 1;
-      const segs = [];
-      for (let k = 0; k < P.sweeps; k += 1) {
-        const a = dir > 0 ? P.left : P.right;
-        const b = dir > 0 ? P.right : P.left;
-        const y1 = y - P.rise;
-        const wob = Math.sin(p * Math.PI * 2 + k * 1.3) * 34;
-        segs.push({ p0: [a, y], c1: [a + dir * 640, y + wob], c2: [b - dir * 640, y1], p3: [b, y1], n: 44 });
-        if (k < P.sweeps - 1) segs.push({ p0: [b, y1], c1: [b + dir * 180, y1], c2: [b + dir * 180, y1 - P.turn], p3: [b, y1 - P.turn], n: 14 });
-        y = y1 - P.turn;
-        dir = -dir;
-      }
-      return segs;
-    }
-
-    function portraitFrame(p, f) {
-      const segs = portraitSegments(p);
-      const hw = PORTRAIT.band / 2;
-      const left = [];
-      const right = [];
-      segs.forEach((s, si) => {
-        for (let k = si === 0 ? 0 : 1; k <= s.n; k += 1) {
-          const [x, y, dx, dy] = bezier(s, k / s.n);
-          const len = Math.hypot(dx, dy) || 1;
-          const nx = (-dy / len) * hw;
-          const ny = (dx / len) * hw;
-          left.push(`${(x + nx).toFixed(1)} ${(y + ny).toFixed(1)}`);
-          right.push(`${(x - nx).toFixed(1)} ${(y - ny).toFixed(1)}`);
-        }
-      });
-      const d = polygon(left, right);
-      body.setAttribute("d", d);
-      glow?.setAttribute("d", d);
-      clips[1].setAttribute("d", d);
-      texts.forEach((text) => { text.style.display = "none"; });
-      // 每一趟横穿各用一段从左往右的文字路径：丝带在屏幕外掉头时相当于翻了个面，字始终是正的
-      const lines = portraitLines();
-      segs.filter((s, i) => i % 2 === 0).forEach((s, k) => {
-        lines[k].path.setAttribute("d", k % 2 === 0 ? curve(s) : reversed(s));
-        lines[k].text.style.display = "";
-        offset(lines[k].text, -(2600 + k * 900) + f * 1500);
-      });
-    }
-
-    let portraitCache = null;
-    function portraitLines() {
-      if (portraitCache) return portraitCache;
-      const ns = "http://www.w3.org/2000/svg";
-      const defs = svg.querySelector("defs");
-      const group = texts[1].parentElement;
-      portraitCache = Array.from({ length: PORTRAIT.sweeps }, (_, k) => {
-        const path = document.createElementNS(ns, "path");
-        path.id = `homeRibPathP${k}`;
-        defs.append(path);
-        const text = document.createElementNS(ns, "text");
-        text.setAttribute("class", "home-ribbon-text");
-        text.setAttribute("font-size", String(PORTRAIT.font));
-        text.setAttribute("letter-spacing", "2");
-        text.setAttribute("fill-opacity", "0.74");
-        text.setAttribute("dominant-baseline", "central");
-        const tp = document.createElementNS(ns, "textPath");
-        tp.setAttribute("href", `#homeRibPathP${k}`);
-        tp.textContent = RIBBON_TEXT.repeat(3);
-        text.append(tp);
-        group.append(text);
-        return { path, text };
-      });
-      return portraitCache;
-    }
-
-    function frame(p) {
-      const f = reduceMotion.matches ? 0 : p;
-      const tall = portrait.matches;
-      const box = tall ? `0 0 ${PORTRAIT.w} ${PORTRAIT.h}` : "0 0 1600 900";
-      if (svg && svg.getAttribute("viewBox") !== box) svg.setAttribute("viewBox", box);
-      if (tall) portraitFrame(p, f);
-      else landscapeFrame(p, f);
+      paths[0].setAttribute("d", reversed(segs[0]));
+      paths[1].setAttribute("d", curve(segs[1]));
+      paths[2].setAttribute("d", reversed(segs[2]));
+      segs.forEach((s, si) => clips[si].setAttribute("d", polygon(segLeft[si], segRight[si])));
+      (tall ? TALL.fonts : WIDE_FONTS).forEach((size, i) => texts[i].setAttribute("font-size", String(size)));
+      offset(texts[0], -(1500 + f * 900));
+      offset(texts[1], -3000 + f * 1600);
+      offset(texts[2], -(5000 + f * 2600));
 
       if (reduceMotion.matches) return;
       if (bg) bg.style.transform = `scale(${(1 + 0.08 * p).toFixed(4)}) translateY(${(-p * 2).toFixed(2)}%)`;
@@ -856,10 +765,10 @@
       ribbon?.redraw();
       request();
     }, { passive: true });
-    [narrow, portrait].forEach((query) => query.addEventListener?.("change", () => {
+    portrait.addEventListener?.("change", () => {
       ribbon?.redraw();
       request();
-    }));
+    });
     update();
   }
 

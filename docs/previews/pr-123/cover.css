@@ -361,6 +361,8 @@ a:focus-visible { outline: 2px solid currentColor; outline-offset: 4px; border-r
 
 /* 丝带屏 */
 .home-ribbon { position: relative; height: 260vh; background: #141618; }
+/* 竖屏丝带要从屏幕下方一路升到上方，滚动距离留长一些 */
+@media (max-aspect-ratio: 3/4) { .home-ribbon { height: 320vh; } }
 .home-ribbon-stage { position: sticky; top: 0; height: 100vh; height: 100svh; overflow: hidden; }
 .home-ribbon-bg {
   position: absolute;
@@ -587,7 +589,7 @@ a:focus-visible { outline: 2px solid currentColor; outline-offset: 4px; border-r
   .home-cta-arrow svg { width: 16px; height: 16px; }
   .home-resume { margin-top: 14px; font-size: 12px; }
   /* 窄屏上取神殿一带，不再放大，橙蓝两色都留得住 */
-  .home-ribbon-bg { background-position: 10% 0%; background-size: auto 110%; filter: brightness(0.6) saturate(1.15); }
+  .home-ribbon-bg { background-position: 0% 0%; background-size: auto 110%; filter: brightness(0.6) saturate(1.15); }
 }
 
 @media (prefers-reduced-motion: reduce) {

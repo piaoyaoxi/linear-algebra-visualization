@@ -25,6 +25,8 @@
   const INTRO_WAVE_AT = 900;
   const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
   const narrow = window.matchMedia("(max-width: 600px)");
+  // 竖屏（手机、竖放的平板）：丝带换成竖版画法
+  const portrait = window.matchMedia("(max-aspect-ratio: 3/4)");
 
   // 轮换词与对应小节的起点问题（原样取自各节 question 字段）。
   const WORDS = [
@@ -615,6 +617,7 @@
     const body = $("#ribBody");
     if (!track || !body) return null;
     const glow = $("#ribGlow");
+    const svg = track.querySelector(".home-ribbon-svg");
     const bg = $("#ribbonBg");
     const paper = $("#ribbonPaper");
     const texts = ["A", "B", "C"].map((k) => $(`#ribText${k}`));
@@ -631,8 +634,9 @@
     const reversed = (s) => `M${s.p3.join(" ")}C${s.c2.join(" ")} ${s.c1.join(" ")} ${s.p0.join(" ")}`;
     const offset = (text, v) => text?.firstElementChild?.setAttribute("startOffset", v.toFixed(1));
 
-    function frame(p) {
-      const f = reduceMotion.matches ? 0 : p;
+    function landscapeFrame(p, f) {
+      portraitCache?.forEach((line) => { line.text.style.display = "none"; });
+      texts[1].style.display = "";
       const mob = narrow.matches;
       const wob = Math.sin(p * Math.PI * 2);
       const wob2 = Math.cos(p * Math.PI * 1.5);
@@ -698,6 +702,93 @@
         offset(texts[1], -3000 + f * 1600);
         offset(texts[2], -(5000 + f * 2600));
       }
+    }
+
+    // 竖屏：一条连续的丝带来回横穿整个屏幕，掉头都在屏幕左右两侧之外，
+    // 所以文字在可见范围里永远走在平缓的斜线上；随滚动整条从屏幕下方升上来再离开
+    const PORTRAIT = { w: 900, h: 1600, sweeps: 5, rise: 300, turn: 230, band: 62, font: 26, left: -240, right: 1140 };
+    function portraitSegments(p) {
+      const P = PORTRAIT;
+      const length = P.sweeps * (P.rise + P.turn);
+      const q = Math.min(1, Math.max(0, (p - 0.04) / 0.8));
+      let y = P.h + length - q * (P.h + length);
+      let dir = 1;
+      const segs = [];
+      for (let k = 0; k < P.sweeps; k += 1) {
+        const a = dir > 0 ? P.left : P.right;
+        const b = dir > 0 ? P.right : P.left;
+        const y1 = y - P.rise;
+        const wob = Math.sin(p * Math.PI * 2 + k * 1.3) * 34;
+        segs.push({ p0: [a, y], c1: [a + dir * 640, y + wob], c2: [b - dir * 640, y1], p3: [b, y1], n: 44 });
+        if (k < P.sweeps - 1) segs.push({ p0: [b, y1], c1: [b + dir * 180, y1], c2: [b + dir * 180, y1 - P.turn], p3: [b, y1 - P.turn], n: 14 });
+        y = y1 - P.turn;
+        dir = -dir;
+      }
+      return segs;
+    }
+
+    function portraitFrame(p, f) {
+      const segs = portraitSegments(p);
+      const hw = PORTRAIT.band / 2;
+      const left = [];
+      const right = [];
+      segs.forEach((s, si) => {
+        for (let k = si === 0 ? 0 : 1; k <= s.n; k += 1) {
+          const [x, y, dx, dy] = bezier(s, k / s.n);
+          const len = Math.hypot(dx, dy) || 1;
+          const nx = (-dy / len) * hw;
+          const ny = (dx / len) * hw;
+          left.push(`${(x + nx).toFixed(1)} ${(y + ny).toFixed(1)}`);
+          right.push(`${(x - nx).toFixed(1)} ${(y - ny).toFixed(1)}`);
+        }
+      });
+      const d = polygon(left, right);
+      body.setAttribute("d", d);
+      glow?.setAttribute("d", d);
+      clips[1].setAttribute("d", d);
+      texts.forEach((text) => { text.style.display = "none"; });
+      // 每一趟横穿各用一段从左往右的文字路径：丝带在屏幕外掉头时相当于翻了个面，字始终是正的
+      const lines = portraitLines();
+      segs.filter((s, i) => i % 2 === 0).forEach((s, k) => {
+        lines[k].path.setAttribute("d", k % 2 === 0 ? curve(s) : reversed(s));
+        lines[k].text.style.display = "";
+        offset(lines[k].text, -(2600 + k * 900) + f * 1500);
+      });
+    }
+
+    let portraitCache = null;
+    function portraitLines() {
+      if (portraitCache) return portraitCache;
+      const ns = "http://www.w3.org/2000/svg";
+      const defs = svg.querySelector("defs");
+      const group = texts[1].parentElement;
+      portraitCache = Array.from({ length: PORTRAIT.sweeps }, (_, k) => {
+        const path = document.createElementNS(ns, "path");
+        path.id = `homeRibPathP${k}`;
+        defs.append(path);
+        const text = document.createElementNS(ns, "text");
+        text.setAttribute("class", "home-ribbon-text");
+        text.setAttribute("font-size", String(PORTRAIT.font));
+        text.setAttribute("letter-spacing", "2");
+        text.setAttribute("fill-opacity", "0.74");
+        text.setAttribute("dominant-baseline", "central");
+        const tp = document.createElementNS(ns, "textPath");
+        tp.setAttribute("href", `#homeRibPathP${k}`);
+        tp.textContent = RIBBON_TEXT.repeat(3);
+        text.append(tp);
+        group.append(text);
+        return { path, text };
+      });
+      return portraitCache;
+    }
+
+    function frame(p) {
+      const f = reduceMotion.matches ? 0 : p;
+      const tall = portrait.matches;
+      const box = tall ? `0 0 ${PORTRAIT.w} ${PORTRAIT.h}` : "0 0 1600 900";
+      if (svg && svg.getAttribute("viewBox") !== box) svg.setAttribute("viewBox", box);
+      if (tall) portraitFrame(p, f);
+      else landscapeFrame(p, f);
 
       if (reduceMotion.matches) return;
       if (bg) bg.style.transform = `scale(${(1 + 0.08 * p).toFixed(4)}) translateY(${(-p * 2).toFixed(2)}%)`;
@@ -765,10 +856,10 @@
       ribbon?.redraw();
       request();
     }, { passive: true });
-    narrow.addEventListener?.("change", () => {
+    [narrow, portrait].forEach((query) => query.addEventListener?.("change", () => {
       ribbon?.redraw();
       request();
-    });
+    }));
     update();
   }
 

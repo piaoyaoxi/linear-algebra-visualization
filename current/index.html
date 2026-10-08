@@ -7,28 +7,35 @@
     <meta name="theme-color" content="#7ea3c8" />
     <title>高等代数可视化</title>
     <link rel="icon" href="data:," />
-    <link rel="preload" as="image" href="./assets/home/hero-2400.webp" imagesrcset="./assets/home/hero-1600.webp 1600w, ./assets/home/hero-2400.webp 2400w, ./assets/home/hero-3104.webp 3104w" imagesizes="(max-aspect-ratio: 2/1) 200vh, 100vw" fetchpriority="high" />
+    <link rel="preload" as="image" href="./assets/home/hero-crystal-2400.webp" imagesrcset="./assets/home/hero-crystal-1600.webp 1600w, ./assets/home/hero-crystal-2400.webp 2400w, ./assets/home/hero-crystal-3104.webp 3104w" imagesizes="(max-aspect-ratio: 2/1) 200vh, 100vw" fetchpriority="high" />
     <script>
       (function () {
         var root = document.documentElement;
         try { if (localStorage.getItem("la-visual-theme") === "dark") root.dataset.theme = "dark"; } catch (error) {}
         var played = false;
         try { played = sessionStorage.getItem("la-home-intro") === "1"; } catch (error) {}
-        if (!played && !window.matchMedia("(prefers-reduced-motion: reduce)").matches) root.classList.add("home-intro");
+        if (!played && !window.matchMedia("(prefers-reduced-motion: reduce)").matches) root.classList.add("home-entering");
       })();
     </script>
     <link rel="stylesheet" href="./fonts.css?v=s2" />
-    <link rel="stylesheet" href="./cover.css?v=a1" />
-    <script defer src="./cover.js?v=home5"></script>
+    <link rel="stylesheet" href="./vendor/katex/katex.min.css" />
+    <link rel="stylesheet" href="./cover.css?v=g9" />
+    <script defer src="./vendor/katex/katex.min.js"></script>
+    <script defer src="./cover.js?v=g7"></script>
   </head>
   <body>
+    <nav class="home-bar" id="homeBar" data-bar="hero" aria-label="站点">
+      <h1 class="home-brand"><a href="#top">高等代数可视化</a></h1>
+      <a class="home-bar-link" href="#contents">目录</a>
+    </nav>
+
     <header class="home-hero" id="top">
       <div class="home-hero-media" id="heroMedia" aria-hidden="true">
         <img
           class="home-hero-img"
           id="heroImage"
-          src="./assets/home/hero-2400.webp"
-          srcset="./assets/home/hero-1600.webp 1600w, ./assets/home/hero-2400.webp 2400w, ./assets/home/hero-3104.webp 3104w"
+          src="./assets/home/hero-crystal-2400.webp"
+          srcset="./assets/home/hero-crystal-1600.webp 1600w, ./assets/home/hero-crystal-2400.webp 2400w, ./assets/home/hero-crystal-3104.webp 3104w"
           sizes="(max-aspect-ratio: 2/1) 200vh, 100vw"
           width="3104"
           height="1552"
@@ -36,14 +43,21 @@
           decoding="async"
           fetchpriority="high"
         />
+        <video class="home-hero-glint" id="heroGlint" muted playsinline loop preload="none" disablepictureinpicture></video>
         <canvas class="home-hero-mosaic" id="heroMosaic"></canvas>
       </div>
 
-      <img class="home-mark" src="./assets/brand/linear-algebra-sm.png" alt="Linear Algebra" width="353" height="72" draggable="false" />
+      <div class="home-cards" id="homeCards" aria-label="起点问题"></div>
 
-      <div class="home-hero-body">
-        <p class="home-kicker">北大版《高等代数》</p>
-        <h1 class="home-title">高等代数<wbr />可视化</h1>
+      <div class="home-headline" id="homeHeadline">
+        <p class="home-headline-fixed">线性</p>
+        <a class="home-word" id="homeWord" href="./learn.html#ch4/matrix-operations" aria-label="线性代数：第四章 §2">
+          <span class="home-word-cn">代数</span>
+          <span class="home-word-en" lang="en">Linear Algebra</span>
+        </a>
+      </div>
+
+      <div class="home-start">
         <a class="home-cta" href="./learn.html#guide" aria-label="开始学习">
           <span class="home-cta-label" aria-hidden="true">Start</span>
           <span class="home-cta-arrow" aria-hidden="true">
@@ -53,11 +67,129 @@
         <p class="home-resume" id="homeResume" hidden>上次学到<a id="homeResumeLink" href="./learn.html#guide"></a></p>
       </div>
 
-      <a class="home-scroll" href="#contents">
-        <span>目录</span>
+      <a class="home-scroll" href="#lead" aria-label="向下滚动">
         <span class="home-scroll-line" aria-hidden="true"></span>
       </a>
     </header>
+
+    <section class="home-lead" id="lead">
+      <div class="home-lead-inner">
+        <p class="home-statement">按北大版《高等代数》十章七十三节编排。</p>
+        <p class="home-statement">每一节从一个问题开始。</p>
+        <p class="home-statement">先动手拖一拖，再回到定理和公式。</p>
+      </div>
+    </section>
+
+    <section class="home-ribbon" id="ribbon" aria-label="从多项式到辛空间">
+      <div class="home-ribbon-stage">
+        <div class="home-ribbon-bg" id="ribbonBg" aria-hidden="true"></div>
+        <div class="home-ribbon-shade" aria-hidden="true"></div>
+        <svg class="home-ribbon-svg" viewBox="0 0 1600 900" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
+          <defs>
+            <linearGradient id="homeRibFill" x1="0" y1="0" x2="0" y2="900" gradientUnits="userSpaceOnUse">
+              <stop offset="0" stop-color="#ffffff" stop-opacity="0.66" />
+              <stop offset="0.55" stop-color="#fffdf8" stop-opacity="0.8" />
+              <stop offset="1" stop-color="#ffffff" stop-opacity="0.86" />
+            </linearGradient>
+            <filter id="homeRibGlow" x="-10%" y="-10%" width="120%" height="120%"><feGaussianBlur stdDeviation="14" /></filter>
+            <filter id="homeRibSoft" x="-5%" y="-5%" width="110%" height="110%"><feGaussianBlur stdDeviation="3.2" /></filter>
+            <clipPath id="homeRibClipA"><path id="ribClipA" d="M0 0" /></clipPath>
+            <clipPath id="homeRibClipB"><path id="ribClipB" d="M0 0" /></clipPath>
+            <clipPath id="homeRibClipC"><path id="ribClipC" d="M0 0" /></clipPath>
+            <path id="homeRibPathA" d="M180 330 C560 230 1300 110 1760 -60" />
+            <path id="homeRibPathB" d="M180 330 C-80 385 640 530 1340 620" />
+            <path id="homeRibPathC" d="M-240 1000 C900 820 1640 660 1340 620" />
+          </defs>
+          <path id="ribGlow" d="M0 0" fill="#ffffff" opacity="0.3" filter="url(#homeRibGlow)" />
+          <path id="ribBody" d="M0 0" fill="url(#homeRibFill)" filter="url(#homeRibSoft)" />
+          <g clip-path="url(#homeRibClipA)">
+            <text class="home-ribbon-text" id="ribTextA" font-size="24" letter-spacing="1" fill-opacity="0.66" dominant-baseline="central"><textPath href="#homeRibPathA" startOffset="-1500"></textPath></text>
+          </g>
+          <g clip-path="url(#homeRibClipB)">
+            <text class="home-ribbon-text" id="ribTextB" font-size="38" letter-spacing="2" fill-opacity="0.74" dominant-baseline="central"><textPath href="#homeRibPathB" startOffset="-3000"></textPath></text>
+          </g>
+          <g clip-path="url(#homeRibClipC)">
+            <text class="home-ribbon-text" id="ribTextC" font-size="54" letter-spacing="2" fill-opacity="0.8" dominant-baseline="central"><textPath href="#homeRibPathC" startOffset="-5000"></textPath></text>
+          </g>
+        </svg>
+        <p class="home-ribbon-title">从多项式到辛空间</p>
+        <div class="home-ribbon-paper" id="ribbonPaper" aria-hidden="true"></div>
+        <div class="home-clouds" id="homeClouds" aria-hidden="true"></div>
+      </div>
+    </section>
+
+    <section class="home-how" id="how" aria-labelledby="howTitle">
+      <div class="home-inner">
+        <h2 class="home-section-title" id="howTitle">一节怎么学</h2>
+        <div class="home-how-grid">
+          <article class="home-step">
+            <div class="home-step-stage">
+              <p class="home-step-question">哪些方向在线性变换下只被伸缩？</p>
+              <svg class="home-step-svg" viewBox="0 0 320 240" aria-hidden="true">
+                <rect class="home-demo-bg" id="eigenBg" width="320" height="240" />
+                <path class="home-demo-grid" d="M30 0V240M56 0V240M82 0V240M108 0V240M134 0V240M186 0V240M212 0V240M238 0V240M264 0V240M290 0V240M0 26H320M0 52H320M0 78H320M0 104H320M0 156H320M0 182H320M0 208H320M0 234H320" />
+                <path class="home-demo-axis" d="M160 0V240M0 130H320" />
+                <path class="home-demo-eigen" id="eigenLine1" d="M50 240L290 0" />
+                <path class="home-demo-eigen" id="eigenLine2" d="M50 20L270 240" />
+                <line class="home-demo-image" id="eigenAv" x1="160" y1="130" x2="230" y2="80" />
+                <circle class="home-demo-image-tip" id="eigenAvTip" cx="230" cy="80" r="4.5" />
+                <line class="home-demo-vector" id="eigenV" x1="160" y1="130" x2="190" y2="110" />
+                <circle class="home-demo-vector-tip" id="eigenVTip" cx="190" cy="110" r="4.5" />
+                <text class="home-demo-label is-vector" id="eigenVLabel" x="196" y="104">ξ</text>
+                <text class="home-demo-label is-image" id="eigenAvLabel" x="236" y="74">Aξ</text>
+              </svg>
+            </div>
+            <div class="home-step-body">
+              <span class="home-step-num">01</span>
+              <h3>起点问题</h3>
+              <p>每一节先抛出一个问题。</p>
+            </div>
+          </article>
+
+          <article class="home-step">
+            <div class="home-step-stage">
+              <svg class="home-step-svg is-draggable" id="gridSvg" viewBox="0 0 320 240" aria-hidden="true">
+                <path class="home-demo-warp" id="gridLines" d="M0 0" />
+                <path class="home-demo-cell" id="gridCell" d="M0 0" />
+                <line class="home-demo-image" id="gridI" x1="160" y1="150" x2="236" y2="150" />
+                <line class="home-demo-vector" id="gridJ" x1="160" y1="150" x2="160" y2="74" />
+                <circle class="home-demo-handle is-image" id="gridIHandle" cx="236" cy="150" r="8" />
+                <circle class="home-demo-handle is-vector" id="gridJHandle" cx="160" cy="74" r="8" />
+                <circle class="home-demo-hit" id="gridIHit" cx="236" cy="150" r="16" />
+                <circle class="home-demo-hit" id="gridJHit" cx="160" cy="74" r="16" />
+              </svg>
+              <p class="home-step-readout" id="gridReadout"></p>
+              <p class="home-step-hint">拖动两个端点</p>
+            </div>
+            <div class="home-step-body">
+              <span class="home-step-num">02</span>
+              <h3>动手实验</h3>
+              <p>拖动参数，看空间怎样变化。</p>
+            </div>
+          </article>
+
+          <article class="home-step">
+            <div class="home-step-stage home-step-example">
+              <p class="home-example-question"><span class="home-example-tag">例</span>求 <span class="home-tex" data-tex="A=\begin{pmatrix}2&amp;1\\1&amp;2\end{pmatrix}" data-fallback="A = (2 1; 1 2)"></span> 的特征值。</p>
+              <div class="home-example-answer" id="exampleAnswer">
+                <div>
+                  <p>特征多项式 <span class="home-tex" data-tex="|\lambda E-A|=(\lambda-2)^2-1=(\lambda-3)(\lambda-1)" data-fallback="|λE − A| = (λ − 2)² − 1 = (λ − 3)(λ − 1)"></span>，所以特征值为 <span class="home-tex" data-tex="\lambda_1=3,\ \lambda_2=1" data-fallback="λ₁ = 3，λ₂ = 1"></span>。</p>
+                </div>
+              </div>
+              <div class="home-example-actions">
+                <button class="home-example-toggle" id="exampleToggle" type="button" aria-expanded="false" aria-controls="exampleAnswer">展开答案</button>
+                <span class="home-example-hint" id="exampleHint">先自己想一想。</span>
+              </div>
+            </div>
+            <div class="home-step-body">
+              <span class="home-step-num">03</span>
+              <h3>例题与自测</h3>
+              <p>先自己想，再展开答案。</p>
+            </div>
+          </article>
+        </div>
+      </div>
+    </section>
 
     <main class="home-contents" id="contents">
       <div class="home-inner">
@@ -213,6 +345,14 @@
         </ol>
       </div>
     </main>
+
+    <section class="home-end">
+      <p class="home-end-line">第一节从数域讲起。</p>
+      <a class="home-end-cta" href="./learn.html#ch1/number-fields">
+        <span>从第一章开始</span>
+        <svg viewBox="0 0 20 20" aria-hidden="true"><path d="M4 10h11M11 5.5 15.5 10 11 14.5" /></svg>
+      </a>
+    </section>
 
     <footer class="home-foot">
       <div class="home-inner">

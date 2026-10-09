@@ -15,6 +15,23 @@
     const canvas = root.querySelector("[data-row-canvas]");
     let animating = false;
     let guide = null;
+    /*
+     * Both canvases share one view (same scale, same origin), so equal areas look equal:
+     * the view frames the initial columns and the current ones, and glides when that box changes.
+     */
+    let world = null;
+    const viewKey = {};
+    const size = () => {
+      const rect = canvas.getBoundingClientRect();
+      return { width: rect.width || 360, height: rect.height || 320 };
+    };
+    const frame = (...matrices) => {
+      const { width, height } = size();
+      return M().fitWorld([initial, ...matrices], width, height, { pad: 34 });
+    };
+    const lerpWorld = (from, to, t) => ({ cx: M().lerp(from.cx, to.cx, t), cy: M().lerp(from.cy, to.cy, t), scale: M().lerp(from.scale, to.scale, t) });
+    // the height over C₁ answers the prediction, so it appears with the verdict
+    const revealed = () => !gate || gate.revealed;
     const gate = window.LAPredictGate?.mount(root.querySelector("[data-op-gate]"), {
       root: root.querySelector(".ch2-lab"),
       manual: true,
@@ -22,11 +39,11 @@
       question: `两列 ${tex("C_1")}、${tex("C_2")} 围成平行四边形。做倍加 ${tex("C_2\\leftarrow C_2+C_1")} 以后，它的有向面积 ${tex("\\det")} 会怎样？`,
       options: [
         ["不变", true, ""],
-        ["变大：多加了一列", false, "C₂ 的端点沿平行于 C₁ 的虚线滑动，底 C₁ 和高都没变。"],
+        ["变大：多加了一列", false, "C₂ 的端点沿平行于 C₁ 的虚线滑动，底 C₁ 和金色的高都没变。"],
         ["变成原来的两倍", false, "倍加不是倍乘；面积仍是 3。"],
         ["变号", false, "只有交换两列才变号；倍加不改变两列的先后次序。"],
       ],
-      right: `✓ ${tex("C_2")} 的端点沿着与 ${tex("C_1")} 平行的直线滑动：底不变、高不变，所以 ${tex("\\det")} 不变。交换乘 −1，倍乘 ${tex("C_1\\times2")} 乘 2，倍加乘 1。`,
+      right: `✓ ${tex("C_2")} 的端点沿着与 ${tex("C_1")} 平行的直线滑动：底不变、高（金色虚线）不变，所以 ${tex("\\det")} 不变。交换乘 −1，倍乘 ${tex("C_1\\times2")} 乘 2，倍加乘 1。`,
     });
 
     function matrixHtml(value) {
@@ -47,20 +64,28 @@
       root.querySelector("[data-check]").textContent = M().formatNum(baseDet * factor, 3);
       root.querySelector("[data-ledger]").innerHTML = ledger.length ? ledger.map((line) => `<li>${line}</li>`).join("") : "<li>起点：累计倍率 1</li>";
       root.querySelector("[data-op-undo]").disabled = history.length === 0 || animating;
-      M().drawTransformScene(canvas, matrix, {
-        firstLabel: "C₁",
-        secondLabel: "C₂",
-        ghost: initial,
-        guide,
-        guideLabel: guide ? "∥ C₁" : "",
-        orientation: true,
-        caption: `当前 det=${M().formatNum(det, 3)} · 虚线是初始图形`,
-      });
-      M().drawTransformScene(beforeCanvas, initial, {
-        firstLabel: "C₁",
-        secondLabel: "C₂",
-        orientation: true,
-        caption: `固定参照 · det=${M().formatNum(baseDet, 3)}`,
+      if (!world) world = frame(matrix);
+      paint(matrix, world, `当前 det=${M().formatNum(det, 3)} · 虚线是初始图形`);
+    }
+
+    function paint(current, view, caption) {
+      const { width, height } = size();
+      const { origin, scale } = M().worldView(view, width, height);
+      const shared = { firstLabel: "C₁", secondLabel: "C₂", orientation: true, showUnit: false, altitude: revealed(), origin, scale };
+      M().drawTransformScene(canvas, current, { ...shared, ghost: initial, guide, guideLabel: guide ? "平行于 C₁" : "", caption });
+      M().drawTransformScene(beforeCanvas, initial, { ...shared, caption: `固定参照 · det=${M().formatNum(baseDet, 3)}` });
+    }
+
+    // move the columns from `from` to `to` while the shared view glides to frame both ends
+    function glide(from, to, duration, caption) {
+      const startWorld = world || frame(from);
+      const endWorld = frame(from, to);
+      const finalWorld = frame(to);
+      return M().animateTo(viewKey, 0, 1, duration, (t) => {
+        // the view settles on the larger box first, then eases onto the final one
+        const view = t < 0.5 ? lerpWorld(startWorld, endWorld, Math.min(1, t * 2.4)) : lerpWorld(endWorld, finalWorld, (t - 0.5) * 2);
+        world = view;
+        paint(M().lerpMat2(from, to, M().easeInOutCubic(t)), view, caption);
       });
     }
 
@@ -72,21 +97,27 @@
       ledger.push(line.html);
       // C₁ ← 2C₁ keeps C₂ and the direction of C₁, so the slide line of an earlier shear stays valid
       guide = track || (multiplier === 2 ? guide : null);
+      // the readouts show where the move lands; the orientation arc turns over during a swap
+      root.querySelector("[data-cur-det]").textContent = M().formatNum(M().det2(next), 3);
+      root.querySelector("[data-mat]").innerHTML = matrixHtml(next);
       try {
-        await M().animateMatrix(canvas, next, {
-          duration: track ? 900 : 560,
-          // the orientation arc turns over during a swap; the readouts show where the move lands
-          drawOptions: { firstLabel: "C₁", secondLabel: "C₂", caption: line.text, ghost: initial, guide, guideLabel: guide ? "∥ C₁" : "", orientation: true },
-          onUpdate() {
-            root.querySelector("[data-cur-det]").textContent = M().formatNum(M().det2(next), 3);
-            root.querySelector("[data-mat]").innerHTML = matrixHtml(next);
-          },
-        });
+        await glide(M().cloneMat(matrix), next, track ? 900 : 560, line.text);
+        matrix = M().cloneMat(next);
+      } finally {
+        animating = false;
+        if (track) gate?.acted();
+        sync();
+      }
+    }
+
+    async function jumpTo(next) {
+      animating = true;
+      try {
+        await glide(M().cloneMat(matrix), next, 380, "");
         matrix = M().cloneMat(next);
       } finally {
         animating = false;
         sync();
-        if (track) gate?.acted();
       }
     }
 
@@ -110,27 +141,30 @@
     root.querySelector("[data-op-undo]").addEventListener("click", () => {
       if (animating || !history.length) return;
       const previous = history.pop();
-      matrix = previous.matrix;
       factor = previous.factor;
       guide = null;
       ledger.splice(0, ledger.length, ...previous.ledger);
-      sync();
+      jumpTo(previous.matrix);
     }, { signal });
     root.querySelector("[data-op-reset]").addEventListener("click", () => {
-      matrix = M().cloneMat(initial);
+      if (animating) return;
       factor = 1;
       guide = null;
       ledger.length = 0;
       history.length = 0;
-      sync();
+      jumpTo(M().cloneMat(initial));
     }, { signal });
-    window.addEventListener("resize", () => document.body.contains(canvas) && sync(), { signal, passive: true });
+    window.addEventListener("resize", () => {
+      if (!document.body.contains(canvas) || animating) return;
+      world = frame(matrix);
+      sync();
+    }, { signal, passive: true });
 
     sync();
+    document.fonts?.ready.then(() => document.body.contains(canvas) && !animating && sync());
     return () => {
       controller.abort();
-      M().cancelAnim(canvas);
-      M().cancelAnim(beforeCanvas);
+      M().cancelAnim(viewKey);
     };
   }
 
@@ -169,7 +203,7 @@
         <div class="ch2-lab">
           <div class="ch2-lab-head"><h3>三种列操作 · 对比几何变化</h3></div>
           <div data-op-gate></div>
-          <p class="ch2-lab-hint">平行四边形由两列生成，所以画面直接操作列。右图的虚线是初始图形；读数同步验证当前 ${tex("\\det")}=初始 ${tex("\\det")}×累计倍率。</p>
+          <p class="ch2-lab-hint">平行四边形由两列生成，所以画面直接操作列。两幅图比例相同，面积可以直接比较；右图的虚线是初始图形，读数同步验证当前 ${tex("\\det")}=初始 ${tex("\\det")}×累计倍率。</p>
           <div class="ch2-operation-layout">
             <div class="ch2-compare-stage">
               <div><span>变换前 · 固定参照</span><div class="ch2-stage"><canvas data-row-before aria-label="列操作前的有向面积"></canvas></div></div>

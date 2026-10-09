@@ -342,10 +342,10 @@
           const moving = i === state.target && state.c !== 0 && state.target !== state.source;
           objs.push(planeObj(r, PLANE_COLORS[i], { label: `平面 ${i + 1}`, alpha: moving ? 0.22 : 0.12, width: moving ? 2.2 : 1.2 }));
         });
-        // the hinge names the answer to the prediction, so it appears with the verdict
+        // the intersection line names the answer to the prediction, so it appears with the verdict
         if (state.target !== state.source && !resultBox.hidden) {
           const hinge = planeLine(state.rows[state.target], state.rows[state.source]);
-          if (hinge) objs.push({ type: "line", ...hinge, color: "axis", width: 2.8, dash: [8, 5], label: "铰链" });
+          if (hinge) objs.push({ type: "line", ...hinge, color: "axis", width: 2.8, dash: [8, 5], label: "交线" });
         }
         objs.push(...solutionObjects(rows));
         return objs;
@@ -469,7 +469,7 @@
           { text: "绕平面 2 与平面 3 的交线转动", why: "平面 3 没有参与这次操作。" },
           { text: `绕 ${tex("x_1")} 轴转动`, why: "转轴由参与操作的两个方程决定。" },
         ],
-        right: "新方程是两个旧方程的组合，凡满足旧方程 1、2 的点都满足它，所以新平面始终含着这条交线（图中的虚线“铰链”），解点也就一直在上面。",
+        right: "新方程是两个旧方程的组合，凡满足旧方程 1、2 的点都满足它，所以新平面始终含着平面 1、2 的交线（图中的虚线），解点也就一直在上面。",
       },
       () => {
         resultBox.hidden = false;

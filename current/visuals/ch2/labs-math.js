@@ -141,44 +141,47 @@
     return { ctx, width, height, dpr };
   }
 
+  /*
+   * The tip lands exactly on `to`: the shaft stops inside the head (butt end) so no stroke
+   * pokes past the point, and the head has a shallow notch at its back.
+   */
   function drawArrow(ctx, from, to, color, width = 2.8) {
     const dx = to.x - from.x;
     const dy = to.y - from.y;
     const length = Math.hypot(dx, dy);
     if (length < 2) return;
-    const angle = Math.atan2(dy, dx);
-    const head = Math.min(12, Math.max(7, length * 0.14));
+    const ux = dx / length;
+    const uy = dy / length;
+    const head = Math.min(length * 0.5, clamp(width * 3.4 + 3, 9, 15));
+    const half = head * 0.4;
+    const notch = head * 0.74;
     ctx.save();
     ctx.strokeStyle = color;
     ctx.fillStyle = color;
     ctx.lineWidth = width;
-    ctx.lineCap = "round";
-    ctx.lineJoin = "round";
+    ctx.lineCap = "butt";
     ctx.beginPath();
     ctx.moveTo(from.x, from.y);
-    ctx.lineTo(to.x, to.y);
+    ctx.lineTo(to.x - ux * (notch - 0.5), to.y - uy * (notch - 0.5));
     ctx.stroke();
     ctx.beginPath();
     ctx.moveTo(to.x, to.y);
-    ctx.lineTo(to.x - head * Math.cos(angle - 0.35), to.y - head * Math.sin(angle - 0.35));
-    ctx.lineTo(to.x - head * Math.cos(angle + 0.35), to.y - head * Math.sin(angle + 0.35));
+    ctx.lineTo(to.x - ux * head - uy * half, to.y - uy * head + ux * half);
+    ctx.lineTo(to.x - ux * notch, to.y - uy * notch);
+    ctx.lineTo(to.x - ux * head + uy * half, to.y - uy * head - ux * half);
     ctx.closePath();
     ctx.fill();
     ctx.restore();
   }
 
-  function fitView(matrix, width, height, options = {}) {
-    const [a, b] = matrix[0];
-    const [c, d] = matrix[1];
-    const points = [
-      [0, 0], [1, 0], [0, 1], [1, 1],
-      [a, c], [b, d], [a + b, c + d],
-      [-0.35, -0.35], [1.25, 1.25],
-    ];
-    if (options.ghost) {
-      const [[ga, gb], [gc, gd]] = options.ghost;
-      points.push([ga, gc], [gb, gd], [ga + gb, gc + gd]);
-    }
+  /*
+   * The world box a view has to show: the unit square, a little margin around the origin and
+   * every column and parallelogram corner of the given matrices. Returns the world centre and
+   * the scale, so two canvases of the same size can share one view (equal areas look equal).
+   */
+  function fitWorld(matrices, width, height, options = {}) {
+    const points = [[0, 0], [1, 0], [0, 1], [1, 1], [-0.35, -0.35], [1.25, 1.25]];
+    matrices.filter(Boolean).forEach(([[a, b], [c, d]]) => points.push([a, c], [b, d], [a + b, c + d]));
     let minX = Infinity;
     let maxX = -Infinity;
     let minY = Infinity;
@@ -193,13 +196,19 @@
     const worldWidth = Math.max(1e-6, maxX - minX);
     const worldHeight = Math.max(1e-6, maxY - minY);
     const scale = clamp(Math.min((width - pad * 2) / worldWidth, (height - pad * 2) / worldHeight), 20, Math.min(width, height) * 0.42);
-    const centerX = (minX + maxX) / 2;
-    const centerY = (minY + maxY) / 2;
+    return { cx: (minX + maxX) / 2, cy: (minY + maxY) / 2, scale, bounds: { minX, maxX, minY, maxY } };
+  }
+
+  function worldView(world, width, height) {
     return {
-      origin: { x: width * 0.5 - centerX * scale, y: height * 0.55 + centerY * scale },
-      scale,
-      bounds: { minX, maxX, minY, maxY },
+      origin: { x: width * 0.5 - world.cx * world.scale, y: height * 0.55 + world.cy * world.scale },
+      scale: world.scale,
+      bounds: world.bounds,
     };
+  }
+
+  function fitView(matrix, width, height, options = {}) {
+    return worldView(fitWorld([matrix, options.ghost], width, height, options), width, height);
   }
 
   /*
@@ -222,33 +231,100 @@
     return { u, n };
   }
 
-  function haloText(ctx, text, x, y, palette, color = palette.text) {
+  const LABEL_SERIF = "'LA Serif Latin', 'LA Serif SC', 'Songti SC', serif";
+  const SUBSCRIPTS = "₀₁₂₃₄₅₆₇₈₉";
+
+  /*
+   * Canvas labels such as "C₁", "Be₂" or "平行于 C₁": a Latin name with Unicode subscript digits
+   * is set like the page's KaTeX (math italic, a real lowered subscript); other text stays upright.
+   * `size` is the upright text size in px.
+   */
+  function labelRuns(text, size, weight = 600) {
+    const runs = [];
+    String(text).split(/([A-Za-z]+[₀-₉]+)/).forEach((part, index) => {
+      if (!part) return;
+      if (index % 2) {
+        const [, base, sub] = /^([A-Za-z]+)([₀-₉]+)$/.exec(part);
+        runs.push({ text: base, font: `italic ${Math.round(size * 1.18)}px KaTeX_Math, ${LABEL_SERIF}`, dy: 0 });
+        runs.push({ text: [...sub].map((ch) => SUBSCRIPTS.indexOf(ch)).join(""), font: `${Math.round(size * 0.86)}px KaTeX_Main, ${LABEL_SERIF}`, dy: size * 0.3 });
+      } else {
+        runs.push({ text: part, font: `${weight} ${size}px ${LABEL_SERIF}`, dy: 0 });
+      }
+    });
+    return runs;
+  }
+
+  function measureLabel(ctx, text, size = 12, weight = 600) {
     ctx.save();
-    ctx.lineWidth = 4;
+    const width = labelRuns(text, size, weight).reduce((sum, run) => {
+      ctx.font = run.font;
+      return sum + ctx.measureText(run.text).width;
+    }, 0);
+    ctx.restore();
+    return width;
+  }
+
+  // x is the left edge, y the middle of the line
+  function haloText(ctx, text, x, y, palette, color = palette.text, size = 12, weight = 600) {
+    ctx.save();
+    ctx.textAlign = "left";
+    ctx.textBaseline = "middle";
     ctx.lineJoin = "round";
-    ctx.strokeStyle = palette.paper;
-    ctx.strokeText(text, x, y);
-    ctx.fillStyle = color;
-    ctx.fillText(text, x, y);
+    let cursor = x;
+    labelRuns(text, size, weight).forEach((run) => {
+      ctx.font = run.font;
+      ctx.lineWidth = 4;
+      ctx.strokeStyle = palette.paper;
+      ctx.strokeText(run.text, cursor, y + run.dy);
+      ctx.fillStyle = color;
+      ctx.fillText(run.text, cursor, y + run.dy);
+      cursor += ctx.measureText(run.text).width;
+    });
     ctx.restore();
   }
 
   function tipLabel(ctx, text, base, tip, other, palette, width, height, fallback = 1) {
     const { u, n } = sideAway(base, tip, other, fallback);
-    const w = ctx.measureText(text).width;
+    const w = measureLabel(ctx, text, 13);
     // a point 13px off the line, a little before the tip; the text grows away from the line
     let x = tip.x - u.x * 4 + n.x * 13;
     let y = tip.y - u.y * 4 + n.y * 13;
-    ctx.save();
-    ctx.textBaseline = "middle";
-    ctx.textAlign = "left";
     if (n.x < -0.35) x -= w;
     else if (Math.abs(n.x) <= 0.35) x -= w / 2;
     y += n.y * 3;
     x = clamp(x, 4, width - w - 4);
     y = clamp(y, 9, height - 9);
-    haloText(ctx, text, x, y, palette);
-    ctx.restore();
+    haloText(ctx, text, x, y, palette, palette.text, 13);
+    return { x, y: y - 9, w, h: 18 };
+  }
+
+  // does the segment a–b pass through the box {x, y, w, h}?
+  function segmentHitsBox(a, b, box) {
+    const steps = Math.max(2, Math.ceil(Math.hypot(b.x - a.x, b.y - a.y) / 3));
+    for (let i = 0; i <= steps; i += 1) {
+      const x = a.x + ((b.x - a.x) * i) / steps;
+      const y = a.y + ((b.y - a.y) * i) / steps;
+      if (x >= box.x && x <= box.x + box.w && y >= box.y && y <= box.y + box.h) return true;
+    }
+    return false;
+  }
+
+  /*
+   * Place a w×h label centred on one of the candidate points; the first spot that stays on the
+   * canvas and clear of the given segments wins, otherwise the one with the fewest hits.
+   */
+  function placeLabel(candidates, w, h, segments, width, height, boxes = []) {
+    let best = null;
+    const overlaps = (p, q) => p.x < q.x + q.w && q.x < p.x + p.w && p.y < q.y + q.h && q.y < p.y + p.h;
+    candidates.forEach((c, order) => {
+      const box = { x: c.x - w / 2 - 3, y: c.y - h / 2 - 3, w: w + 6, h: h + 6 };
+      const outside = box.x < 2 || box.y < 2 || box.x + box.w > width - 2 || box.y + box.h > height - 2;
+      const hits = segments.filter(([a, b]) => segmentHitsBox(a, b, box)).length;
+      const covered = boxes.filter((other) => overlaps(box, other)).length;
+      const cost = hits * 10 + covered * 30 + (outside ? 100 : 0) + order * 0.1;
+      if (!best || cost < best.cost) best = { cost, x: c.x, y: c.y, box };
+    });
+    return best;
   }
 
   function drawTransformScene(canvas, matrix, options = {}) {
@@ -266,6 +342,20 @@
     ctx.fillStyle = palette.paper;
     ctx.fillRect(0, 0, width, height);
     ctx.restore();
+
+    // quarter lines once a unit is wide enough to show them: the drag snaps to them
+    if (options.minorGrid && scale >= 96) {
+      ctx.save();
+      ctx.strokeStyle = palette.gridMajor;
+      ctx.globalAlpha = 0.45;
+      ctx.lineWidth = 0.6;
+      const step = scale / 4;
+      ctx.beginPath();
+      for (let x = origin.x - Math.ceil(origin.x / step) * step; x <= width; x += step) { ctx.moveTo(x, 0); ctx.lineTo(x, height); }
+      for (let y = origin.y - Math.ceil(origin.y / step) * step; y <= height; y += step) { ctx.moveTo(0, y); ctx.lineTo(width, y); }
+      ctx.stroke();
+      ctx.restore();
+    }
 
     ctx.save();
     ctx.strokeStyle = palette.gridMajor;
@@ -308,6 +398,13 @@
       ctx.restore();
     }
 
+    // everything drawn is an obstacle for the labels placed at the end
+    const obstacles = [
+      [{ x: 0, y: origin.y }, { x: width, y: origin.y }],
+      [{ x: origin.x, y: 0 }, { x: origin.x, y: height }],
+    ];
+    const deferred = [];
+
     // ghost of the previous stage: same colours, dashed, 35% alpha
     if (options.ghost) {
       const [[ga, gb], [gc, gd]] = options.ghost;
@@ -326,6 +423,7 @@
       drawArrow(ctx, g0, g1, palette.v1, 2);
       drawArrow(ctx, g0, g3, palette.v2, 2);
       ctx.restore();
+      obstacles.push([g0, g1], [g0, g3]);
     }
 
     // guide: a dashed line through `point` along `dir` (e.g. the track of C₂'s tip in a shear)
@@ -345,22 +443,28 @@
       ctx.lineTo(to.x, to.y);
       ctx.stroke();
       ctx.restore();
+      obstacles.push([from, to]);
       if (options.guideLabel) {
-        // named halfway along the slide, a little off the line on its upper side
-        const mid = map(point[0] + dir[0] * 0.5, point[1] + dir[1] * 0.5);
+        // along the slide line, just off it: before the old tip first, then past the new one
         const sx = to.x - from.x;
         const sy = to.y - from.y;
         const sl = Math.hypot(sx, sy) || 1;
-        let nx = -sy / sl;
-        let ny = sx / sl;
-        if (ny > 0) { nx = -nx; ny = -ny; }
-        ctx.save();
-        ctx.fillStyle = palette.v2;
-        ctx.font = "italic 600 14px 'LA Serif Latin', 'LA Serif SC', 'Songti SC', serif";
-        ctx.textAlign = "center";
-        ctx.textBaseline = "middle";
-        ctx.fillText(options.guideLabel, mid.x + nx * 14, mid.y + ny * 14);
-        ctx.restore();
+        const nx = -sy / sl;
+        const ny = sx / sl;
+        const text = options.guideLabel;
+        deferred.push((boxes) => {
+          const w = measureLabel(ctx, text, 12, 500);
+          const candidates = [];
+          [-0.45, -0.8, 1.4, 1.75, -1.2, 0.5].forEach((t) => {
+            const at = map(point[0] + dir[0] * t, point[1] + dir[1] * t);
+            // the upper side of the line first
+            const ext = 8 + Math.abs(nx) * (w / 2) + Math.abs(ny) * 7;
+            (ny < 0 ? [1, -1] : [-1, 1]).forEach((side) => candidates.push({ x: at.x + nx * side * ext, y: at.y + ny * side * ext }));
+          });
+          const spot = placeLabel(candidates, w, 14, obstacles, width, height, boxes);
+          haloText(ctx, text, spot.x - w / 2, spot.y, palette, palette.v2, 12, 500);
+          boxes.push(spot.box);
+        });
       }
     }
 
@@ -385,8 +489,61 @@
     ctx.restore();
 
     /*
-     * orientation: the smaller turn from column 1 to column 2, with an arrowhead.
-     * It runs counterclockwise exactly when det > 0 and flips when det < 0.
+     * altitude: the height of the parallelogram over the base column 1, a dashed drop from the
+     * tip of column 2 with a right-angle mark. Shears keep it; scaling column 1 keeps it too.
+     */
+    if (options.altitude && !nearZero) {
+      const bl = Math.hypot(p1.x - p0.x, p1.y - p0.y);
+      if (bl > 4) {
+        const u = { x: (p1.x - p0.x) / bl, y: (p1.y - p0.y) / bl };
+        const along = (p3.x - p0.x) * u.x + (p3.y - p0.y) * u.y;
+        const foot = { x: p0.x + u.x * along, y: p0.y + u.y * along };
+        const drop = Math.hypot(p3.x - foot.x, p3.y - foot.y);
+        const v = { x: (p3.x - foot.x) / (drop || 1), y: (p3.y - foot.y) / (drop || 1) };
+        ctx.save();
+        ctx.strokeStyle = palette.warning;
+        ctx.fillStyle = palette.warning;
+        ctx.lineWidth = 1;
+        ctx.globalAlpha = 0.55;
+        ctx.setLineDash([3, 4]);
+        // extend the base line when the foot falls outside column 1
+        if (along < 0 || along > bl) {
+          const from = along < 0 ? p0 : p1;
+          ctx.beginPath(); ctx.moveTo(from.x, from.y); ctx.lineTo(foot.x, foot.y); ctx.stroke();
+        }
+        ctx.globalAlpha = 1;
+        ctx.lineWidth = 1.6;
+        ctx.setLineDash([5, 4]);
+        ctx.beginPath(); ctx.moveTo(p3.x, p3.y); ctx.lineTo(foot.x, foot.y); ctx.stroke();
+        ctx.setLineDash([]);
+        const k = Math.min(8, drop * 0.4);
+        const side = along > bl / 2 ? -1 : 1;
+        ctx.lineWidth = 1.2;
+        ctx.beginPath();
+        ctx.moveTo(foot.x + u.x * k * side, foot.y + u.y * k * side);
+        ctx.lineTo(foot.x + u.x * k * side + v.x * k, foot.y + u.y * k * side + v.y * k);
+        ctx.lineTo(foot.x + v.x * k, foot.y + v.y * k);
+        ctx.stroke();
+        ctx.restore();
+        obstacles.push([p3, foot]);
+        const text = options.altitudeLabel || "高";
+        deferred.push((boxes) => {
+          const w = measureLabel(ctx, text, 12);
+          const candidates = [0.5, 0.3, 0.7].flatMap((t) => {
+            const m = { x: foot.x + (p3.x - foot.x) * t, y: foot.y + (p3.y - foot.y) * t };
+            const off = Math.abs(u.x) * (w / 2) + Math.abs(u.y) * 7 + 6;
+            return [-side, side].map((sd) => ({ x: m.x + u.x * sd * off, y: m.y + u.y * sd * off }));
+          });
+          const spot = placeLabel(candidates, w, 14, obstacles, width, height, boxes);
+          haloText(ctx, text, spot.x - w / 2, spot.y, palette, palette.warning, 12);
+          boxes.push(spot.box);
+        });
+      }
+    }
+
+    /*
+     * orientation: the smaller turn from column 1 to column 2, with an arrowhead whose point
+     * stops just short of column 2. It runs counterclockwise exactly when det > 0.
      */
     if (options.orientation && !nearZero) {
       const t1 = Math.atan2(c, a);
@@ -395,51 +552,79 @@
       while (turn <= -Math.PI) turn += 2 * Math.PI;
       const shortest = Math.min(Math.hypot(a, c), Math.hypot(b, d)) * scale;
       const r = clamp(shortest * 0.42, 18, 46);
-      const end = t1 + turn;
+      const sgn = turn > 0 ? 1 : -1;
+      // canvas y points down: the point at math angle t is (cos t, −sin t)
+      const at = (t) => ({ x: p0.x + r * Math.cos(t), y: p0.y - r * Math.sin(t) });
+      const head = 9;
+      const tipAngle = t1 + turn - sgn * (3.5 / r);
+      const backAngle = tipAngle - sgn * (head / r);
+      const startAngle = t1 + sgn * (2.5 / r);
       ctx.save();
       ctx.strokeStyle = palette.image;
       ctx.fillStyle = palette.image;
       ctx.lineWidth = 2;
+      ctx.lineCap = "round";
+      if ((backAngle - startAngle) * sgn > 0) {
+        ctx.beginPath();
+        ctx.arc(p0.x, p0.y, r, -startAngle, -(backAngle + sgn * (1.5 / r)), turn > 0);
+        ctx.stroke();
+      }
+      // the head's axis is the chord from the arc point `head` px back to the tip
+      const tip = at(tipAngle);
+      const back = at(backAngle);
+      const hl = Math.hypot(tip.x - back.x, tip.y - back.y) || 1;
+      const hx = (tip.x - back.x) / hl;
+      const hy = (tip.y - back.y) / hl;
       ctx.beginPath();
-      // canvas y points down: math angle t is screen angle −t
-      ctx.arc(p0.x, p0.y, r, -t1, -end, turn > 0);
-      ctx.stroke();
-      const tip = { x: p0.x + r * Math.cos(-end), y: p0.y + r * Math.sin(-end) };
-      // tangent in the direction of travel
-      const dir = turn > 0 ? -end - Math.PI / 2 : -end + Math.PI / 2;
-      ctx.beginPath();
-      ctx.moveTo(tip.x + 8 * Math.cos(dir), tip.y + 8 * Math.sin(dir));
-      ctx.lineTo(tip.x + 8 * Math.cos(dir + 2.6), tip.y + 8 * Math.sin(dir + 2.6));
-      ctx.lineTo(tip.x + 8 * Math.cos(dir - 2.6), tip.y + 8 * Math.sin(dir - 2.6));
+      ctx.moveTo(tip.x, tip.y);
+      ctx.lineTo(back.x - hy * head * 0.42, back.y + hx * head * 0.42);
+      ctx.lineTo(back.x + hx * head * 0.22, back.y + hy * head * 0.22);
+      ctx.lineTo(back.x + hy * head * 0.42, back.y - hx * head * 0.42);
       ctx.closePath();
       ctx.fill();
-      const mid = -(t1 + turn / 2);
-      ctx.font = "650 12px 'LA Serif Latin', 'LA Serif SC', 'Songti SC', serif";
-      ctx.textAlign = Math.cos(mid) < -0.3 ? "right" : Math.cos(mid) > 0.3 ? "left" : "center";
-      ctx.textBaseline = "middle";
-      const label = det > 0 ? "逆时针 · det>0" : "顺时针 · det<0";
-      const lx = clamp(p0.x + (r + 14) * Math.cos(mid), 8, width - 8);
-      const ly = clamp(p0.y + (r + 14) * Math.sin(mid), 10, height - 10);
-      ctx.lineWidth = 4;
-      ctx.strokeStyle = palette.paper;
-      ctx.strokeText(label, lx, ly);
-      ctx.fillText(label, lx, ly);
       ctx.restore();
+      // the label goes where it crosses nothing drawn: beside the arc first, then behind the origin
+      const label = det > 0 ? "逆时针 · det>0" : "顺时针 · det<0";
+      deferred.push((boxes) => {
+        const w = measureLabel(ctx, label, 12, 650);
+        const mid = t1 + turn / 2;
+        const ray = (angle, gap) => {
+          const ux = Math.cos(angle);
+          const uy = -Math.sin(angle);
+          const extent = Math.abs(ux) * (w / 2) + Math.abs(uy) * 7;
+          return { x: p0.x + ux * (gap + extent), y: p0.y + uy * (gap + extent) };
+        };
+        const candidates = [];
+        [r + 8, r + 26].forEach((gap) => {
+          [0, 1, -1, 2, -2, 3, -3, 4, -4].forEach((k) => candidates.push(ray(mid + k * 0.26, gap)));
+        });
+        [12, 30, 52].forEach((gap) => [0, 1, -1, 2, -2].forEach((k) => candidates.push(ray(mid + Math.PI + k * 0.4, gap))));
+        // last resort: a wider ring around the origin
+        [r + 50, r + 80, r + 120].forEach((gap) => {
+          for (let k = 0; k < 16; k += 1) candidates.push(ray(mid + (k * Math.PI) / 8, gap));
+        });
+        const spot = placeLabel(candidates, w, 14, obstacles, width, height, boxes);
+        haloText(ctx, label, spot.x - w / 2, spot.y, palette, palette.image, 12, 650);
+        boxes.push(spot.box);
+      });
     }
 
     drawArrow(ctx, p0, p1, palette.v1, 3);
     drawArrow(ctx, p0, p3, palette.v2, 3);
 
     ctx.save();
-    ctx.font = "600 12px 'LA Serif Latin', 'LA Serif SC', 'Songti SC', serif";
-    tipLabel(ctx, options.firstLabel || "Ae₁", p0, p1, p3, palette, width, height, 1);
-    tipLabel(ctx, options.secondLabel || "Ae₂", p0, p3, p1, palette, width, height, -1);
-    ctx.fillStyle = palette.text;
+    const boxes = [...(options.avoid || [])];
+    boxes.push(tipLabel(ctx, options.firstLabel || "Ae₁", p0, p1, p3, palette, width, height, 1));
+    boxes.push(tipLabel(ctx, options.secondLabel || "Ae₂", p0, p3, p1, palette, width, height, -1));
     if (options.caption) {
       ctx.fillStyle = palette.muted;
       ctx.font = "12px 'LA Serif Latin', 'LA Serif SC', 'Songti SC', serif";
+      ctx.textBaseline = "alphabetic";
       ctx.fillText(options.caption, 15, height - 14);
+      boxes.push({ x: 11, y: height - 30, w: ctx.measureText(options.caption).width + 8, h: 24 });
     }
+    obstacles.push([p0, p1], [p0, p3], [p1, p2], [p3, p2]);
+    deferred.forEach((place) => place(boxes));
     ctx.restore();
 
     matrixState.set(canvas, cloneMat(matrix));
@@ -449,6 +634,17 @@
   function animateMatrix(canvas, target, options = {}) {
     const from = cloneMat(matrixState.get(canvas) || [[1, 0], [0, 1]]);
     const to = cloneMat(target);
+    // a fixed view (scale and origin given) stays put during and after the move
+    if (options.drawOptions?.scale != null && options.drawOptions?.origin) {
+      return animateTo(canvas, from, to, options.duration ?? 620, (current) => {
+        drawTransformScene(canvas, current, options.drawOptions);
+        options.onUpdate?.(current);
+      }).then(() => {
+        matrixState.set(canvas, to);
+        drawTransformScene(canvas, to, options.drawOptions);
+        return to;
+      });
+    }
     const rect = canvas.getBoundingClientRect();
     const width = Math.max(1, rect.width || canvas.clientWidth || 520);
     const height = Math.max(1, rect.height || canvas.clientHeight || 320);
@@ -571,6 +767,10 @@
     setupCanvas,
     drawArrow,
     fitView,
+    fitWorld,
+    worldView,
+    measureLabel,
+    placeLabel,
     drawTransformScene,
     sideAway,
     haloText,

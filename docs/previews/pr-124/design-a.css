@@ -1287,12 +1287,16 @@ body .ch10l-moderow > .ch7l-toolbar {
 /* ---------- round 3: a formula keeps the punctuation that follows it ---------- */
 
 /* a closing mark such as 。or ， never starts a line after a formula */
-body .la-keep {
+body .la-keep,
+body la-okeep {
   white-space: nowrap;
 }
 
-/* the glued mark sits inside the formula's box: give it the text font and size back */
+/* the glued mark sits inside the formula's box: give it the text font and size back.
+   An inline block, so justification does not pad it: as text, a lone full-width comma between
+   formulas was the only place a justified line could stretch, and opened wide holes around it */
 body .la-punct {
+  display: inline-block;
   font-family: var(--font-serif);
   font-size: calc(1em / var(--la-math, 1.06));
   font-style: normal;

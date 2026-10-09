@@ -532,7 +532,8 @@
       const maxJourney = isSingular ? 1 : 2;
       let journey = Math.min(Number(elements.progress.value), maxJourney);
       elements.progress.value = String(journey);
-      elements.stageControl.style.setProperty("--journey-progress", `${(journey / 2) * 100}%`);
+      // the fill ends under the thumb's centre, which travels 9px inside each end of the track
+      elements.stageControl.style.setProperty("--journey-progress", `calc(9px + (100% - 18px) * ${journey / 2})`);
 
       const currentMatrix = effectiveMatrix(preset.matrix, journey, preset.factors);
       renderKernel(isSingular, currentMatrix, journey);

@@ -21,6 +21,31 @@
   const cjkCount = (s) => (s.match(CJK) || []).length;
   const FUNC = "的了是在和与对把被为及或等也就都而且向从到由以之其个";
 
+  /*
+   * WebKit (Safari, and every browser on iOS) allows no line break on either side of a nowrap
+   * box (<la-w>, <la-t>); Chromium breaks there as between any two Chinese characters. Without an
+   * explicit <wbr>, a sentence made of kept words could not wrap at all and ran past a phone's
+   * screen. A break is offered unless it would end a line on an opening mark or start one on a
+   * closing mark; a space already offers one.
+   */
+  const OPENERS = "“‘（《「『【〈([{";
+  const CLOSING = /^[，。：；、！？）」』”’》〉…,.;:!?)\]}]/;
+  function allowBreakBefore(el) {
+    const prev = el.previousSibling;
+    if (!prev || prev.nodeName === "WBR") return;
+    const before = prev.textContent;
+    const ch = before.charAt(before.length - 1);
+    if (!ch || /\s/.test(ch) || OPENERS.includes(ch) || CLOSING.test(el.textContent)) return;
+    el.before(document.createElement("wbr"));
+  }
+  function allowBreakAfter(el) {
+    const next = el.nextSibling;
+    if (!next || next.nodeName === "WBR") return;
+    const after = next.textContent;
+    if (!after || /^\s/.test(after) || CLOSING.test(after) || OPENERS.includes(el.textContent.slice(-1))) return;
+    el.after(document.createElement("wbr"));
+  }
+
   /* the last non-empty piece of inline content of a block: a text node, or null */
   function tailText(block) {
     let node = block.lastChild;
@@ -94,6 +119,7 @@
     const keep = document.createElement("la-t");
     tail.before(keep);
     keep.append(tail);
+    allowBreakBefore(keep);
   }
 
   /* a block that ends “… formula 中。” or “… z 轴。”: the single character stays with the short
@@ -104,7 +130,7 @@
     // one character with its marks, or the marks alone (“<span>有解</span>。”)
     if (!text || text.length > 3 || cjkCount(text) > 1 || (cjkCount(text) === 0 && !PUNCT.test(text))) return;
     let prev = node.previousSibling;
-    while (prev && (prev.nodeName === "LA-SP" || (prev.nodeType === Node.TEXT_NODE && !prev.textContent.trim()))) prev = prev.previousSibling;
+    while (prev && (prev.nodeName === "LA-SP" || prev.nodeName === "WBR" || (prev.nodeType === Node.TEXT_NODE && !prev.textContent.trim()))) prev = prev.previousSibling;
     if (!prev) return;
     const latin = prev.nodeType === Node.TEXT_NODE && LATIN_WORD.test(prev.textContent);
     const word = prev.nodeType === Node.ELEMENT_NODE && !prev.matches(SKIP) && !prev.matches(".tex, .katex, .la-keep, la-sp")
@@ -121,6 +147,9 @@
       if (cur === node) break;
       cur = next;
     }
+    // the kept tail is one unit: no break offered inside it
+    keep.querySelectorAll("wbr").forEach((w) => w.remove());
+    allowBreakBefore(keep);
   }
 
   /* short texts (titles, questions, options, captions): a word is never split over two lines */
@@ -153,7 +182,12 @@
         frag.append(w);
       });
       if (plain) frag.append(plain);
+      const words = [...frag.querySelectorAll("la-w")];
       node.replaceWith(frag);
+      words.forEach((w) => {
+        allowBreakBefore(w);
+        allowBreakAfter(w);
+      });
     });
   }
 
@@ -162,7 +196,7 @@
    * a sentence “文字 公式 文字” inside one falls apart into a column or wide gaps. Such a
    * sentence is wrapped (<la-run>) and flows as ordinary text again.
    */
-  const INLINE = ".tex, la-sp, la-t, la-w, b, strong, em, i, sub, sup, a, code";
+  const INLINE = ".tex, la-sp, la-t, la-w, wbr, b, strong, em, i, sub, sup, a, code";
   function joinRuns(box) {
     if (box.closest(".katex, svg")) return;
     const runs = [[]];
@@ -175,7 +209,7 @@
     // of its own, so its last words can be kept together inside it
     const items = [...box.childNodes].filter((n) => n.nodeType === Node.ELEMENT_NODE || n.textContent.trim()).length;
     const sentence = (run) => items > run.length && !box.matches("button, label, a, [role='button']")
-      && run.every((n) => n.nodeType === Node.TEXT_NODE || n.matches("la-sp, la-w, b, strong, em, i, sub, sup"))
+      && run.every((n) => n.nodeType === Node.TEXT_NODE || n.matches("la-sp, la-w, wbr, b, strong, em, i, sub, sup"))
       && cjkCount(run.map((n) => n.textContent).join("")) >= 12;
     runs.forEach((run) => {
       const texts = run.filter((n) => n.nodeType === Node.TEXT_NODE && cjkCount(n.textContent) > 0);
@@ -213,7 +247,7 @@
     // when it is shown (typeset.js sees the open / hidden change)
     if (!html.getBoundingClientRect().width) return;
     html.dataset.laGrouped = "1";
-    const bases = [...html.children].filter((c) => c.classList.contains("base") || (c.classList.contains("la-keep") && c.querySelector(".base")));
+    const bases = [...html.children].filter((c) => c.classList.contains("base") || (c.matches(".la-keep, la-okeep") && c.querySelector(".base")));
     if (bases.length < 2) return;
     // a short formula (A=CᵀC) stays whole: broken after its relation it reads as two pieces
     const em = parseFloat(getComputedStyle(katex.closest(".tex") || katex).fontSize);
@@ -291,7 +325,24 @@
     if (unit.dataset.laSp) return;
     unit.dataset.laSp = "1";
     if (getComputedStyle(unit).display === "block") return;
-    const before = neighbourText(unit, -1);
+    let before = neighbourText(unit, -1);
+    // an opening mark right before the formula (“（det C=1”) goes with its first piece, so a
+    // line never ends on “（”: the mirror of the closing marks lab-layout.js glues to the last piece
+    const opener = before?.textContent.slice(-1);
+    if (opener && OPENERS.includes(opener) && !before.parentElement.closest(".katex, la-okeep")) {
+      const first = katex.querySelector(":scope > .katex-html .base");
+      if (first) {
+        before.textContent = before.textContent.slice(0, -1);
+        const mark = document.createElement("span");
+        mark.className = "la-punct";
+        mark.textContent = opener;
+        const keep = document.createElement("la-okeep");
+        first.before(keep);
+        keep.append(mark, first);
+        // the mark sits flush against the formula: no gap before it
+        before = null;
+      }
+    }
     if (before && !before.parentElement.closest("la-sp")) {
       const m = before.textContent.match(HAN_END);
       if (m) before.textContent = before.textContent.slice(0, -m[1].length);

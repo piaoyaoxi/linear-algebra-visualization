@@ -617,11 +617,9 @@
     boxes.push(tipLabel(ctx, options.firstLabel || "Ae₁", p0, p1, p3, palette, width, height, 1));
     boxes.push(tipLabel(ctx, options.secondLabel || "Ae₂", p0, p3, p1, palette, width, height, -1));
     if (options.caption) {
-      ctx.fillStyle = palette.muted;
-      ctx.font = "12px 'LA Serif Latin', 'LA Serif SC', 'Songti SC', serif";
-      ctx.textBaseline = "alphabetic";
-      ctx.fillText(options.caption, 15, height - 14);
-      boxes.push({ x: 11, y: height - 30, w: ctx.measureText(options.caption).width + 8, h: 24 });
+      // on a paper halo, so an axis running under it does not cut through the words
+      haloText(ctx, options.caption, 15, height - 18, palette, palette.muted, 12, 400);
+      boxes.push({ x: 11, y: height - 30, w: measureLabel(ctx, options.caption, 12, 400) + 8, h: 24 });
     }
     obstacles.push([p0, p1], [p0, p3], [p1, p2], [p3, p2]);
     deferred.forEach((place) => place(boxes));

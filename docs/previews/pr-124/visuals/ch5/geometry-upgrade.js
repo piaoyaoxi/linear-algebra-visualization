@@ -129,6 +129,45 @@
   }
 
   /*
+   * A slider that follows the pointer continuously (the lab redraws on every input), and on
+   * release eases to the nearest stop, where every readout is an exact fraction again. Arrow keys
+   * and glide(v) (presets) move from stop to stop with the same easing. get/set read and write
+   * the lab's value; settle() runs once a stop is reached.
+   */
+  function smoothRange(input, { step, get, set, settle, signal }) {
+    const min = Number(input.min), max = Number(input.max);
+    let frame = 0, target = 0;
+    const stop = () => { cancelAnimationFrame(frame); frame = 0; };
+    const nearest = (v) => M().clamp(Math.round(v / step) * step, min, max);
+    function glide(to) {
+      stop();
+      target = to;
+      const from = get(), dist = to - from;
+      if (Math.abs(dist) < 1e-9 || M().reducedMotion()) { set(to); settle(); return; }
+      const start = performance.now(), dur = Math.min(340, 150 + (Math.abs(dist) / step) * 50);
+      const tick = (now) => {
+        const u = Math.min(1, (now - start) / dur);
+        if (u < 1) { set(from + dist * (1 - (1 - u) ** 3)); frame = requestAnimationFrame(tick); }
+        else { frame = 0; set(to); settle(); }
+      };
+      frame = requestAnimationFrame(tick);
+    }
+    input.addEventListener("input", () => { stop(); set(Number(input.value)); }, { signal });
+    input.addEventListener("change", () => glide(nearest(get())), { signal });
+    input.addEventListener("keydown", (e) => {
+      const dir = { ArrowRight: 1, ArrowUp: 1, PageUp: 1, ArrowLeft: -1, ArrowDown: -1, PageDown: -1 }[e.key];
+      if (!dir && e.key !== "Home" && e.key !== "End") return;
+      e.preventDefault();
+      // the next stop in the arrow's direction, counted from where a running glide is heading
+      const v = (frame ? target : get()) / step;
+      const next = (dir > 0 ? Math.floor(v + 1e-9) + 1 : Math.ceil(v - 1e-9) - 1) * step;
+      glide(e.key === "Home" ? min : e.key === "End" ? max : M().clamp(next, min, max));
+    }, { signal });
+    signal.addEventListener("abort", stop);
+    return { glide, stop };
+  }
+
+  /*
    * §3 inertia lab. A is fixed; C = (1 h; 0 1), h in steps of 1/2, det C = 1.
    * Entries are multiples of 1/4, shown as exact fractions (cells carry data-v for the surfaces).
    * Each surface gets its up / down principal directions; a sign wheel under it colours
@@ -241,42 +280,15 @@
       $(root,'[data-s3-title]').textContent=ok?'形状被拉斜，符号骨架没有变':'一个方向被真正丢失';
       $(root,'[data-s3-copy]').innerHTML=ok?`${inline('\\det C\\ne0')}，正、负、零方向数量与 ${inline('A')} 完全一致。`:`${inline('\\det C=0')}，平面被压到一条线；此时替换不可逆，已经离开合同的前提。`;
     }
-    /*
-     * h follows the pointer continuously, so the surfaces and wheels move smoothly; on release it
-     * eases to the nearest half step, where every entry is an exact fraction again.
-     * Arrow keys jump straight from one half step to the next.
-     */
-    let snapFrame=0,snapTarget=0;
-    const stopSnap=()=>{cancelAnimationFrame(snapFrame);snapFrame=0;};
-    const settled=()=>{if(gate?.picked&&state.h!==0&&state.p==='indefinite')gate.acted();paint();};
-    function snapTo(target){
-      stopSnap();
-      snapTarget=target;
-      const from=state.h,dist=target-from;
-      if(Math.abs(dist)<1e-9||M().reducedMotion()){state.h=target;settled();return;}
-      const start=performance.now(),dur=Math.min(260,140+Math.abs(dist)*240);
-      const step=(now)=>{const t=Math.min(1,(now-start)/dur);state.h=t<1?from+dist*(1-(1-t)**3):target;if(t<1){paint();snapFrame=requestAnimationFrame(step);}else{snapFrame=0;settled();}};
-      snapFrame=requestAnimationFrame(step);
-    }
-    const nearestHalf=(v)=>M().clamp(Math.round(v*2)/2,-1.5,1.5);
-    $$(root,'[data-s3-preset]').forEach(b=>b.addEventListener('click',()=>{stopSnap();state.p=b.dataset.s3Preset;state.h=0;state.singular=false;$$(root,'[data-s3-preset]').forEach(x=>x.classList.toggle('is-active',x===b));paint();},{signal:ctl.signal}));
-    const slider=$(root,'[data-s3-h]');
-    slider.addEventListener('input',e=>{stopSnap();state.h=Number(e.target.value);state.singular=false;paint();},{signal:ctl.signal});
-    slider.addEventListener('change',()=>snapTo(nearestHalf(state.h)),{signal:ctl.signal});
-    slider.addEventListener('keydown',e=>{
-      const dir={ArrowRight:1,ArrowUp:1,PageUp:1,ArrowLeft:-1,ArrowDown:-1,PageDown:-1}[e.key];
-      if(!dir&&e.key!=='Home'&&e.key!=='End')return;
-      e.preventDefault();
-      if(state.singular)return;
-      // the next half step in the arrow's direction
-      // (from the step a running glide is heading to, so quick presses add up)
-      const h=snapFrame?snapTarget:state.h;
-      const next=dir>0?Math.floor(h*2+1e-9)/2+0.5:Math.ceil(h*2-1e-9)/2-0.5;
-      snapTo(e.key==='Home'?-1.5:e.key==='End'?1.5:M().clamp(next,-1.5,1.5));
-    },{signal:ctl.signal});
-    $(root,'[data-s3-singular]').addEventListener('click',()=>{stopSnap();state.singular=true;paint();},{signal:ctl.signal});
-    $(root,'[data-s3-reset]').addEventListener('click',()=>{stopSnap();state.singular=false;state.h=0;paint();},{signal:ctl.signal});
-    ctl.signal.addEventListener('abort',stopSnap);
+    const hRange=smoothRange($(root,'[data-s3-h]'),{
+      step:0.5,signal:ctl.signal,
+      get:()=>state.h,
+      set:(v)=>{state.h=v;state.singular=false;paint();},
+      settle:()=>{if(gate?.picked&&state.h!==0&&state.p==='indefinite')gate.acted();paint();},
+    });
+    $$(root,'[data-s3-preset]').forEach(b=>b.addEventListener('click',()=>{hRange.stop();state.p=b.dataset.s3Preset;state.h=0;state.singular=false;$$(root,'[data-s3-preset]').forEach(x=>x.classList.toggle('is-active',x===b));paint();},{signal:ctl.signal}));
+    $(root,'[data-s3-singular]').addEventListener('click',()=>{hRange.stop();state.singular=true;paint();},{signal:ctl.signal});
+    $(root,'[data-s3-reset]').addEventListener('click',()=>{state.singular=false;hRange.glide(0);},{signal:ctl.signal});
     // phones: each sign wheel becomes a small inset on the corner of its own surface
     const wheelHome=$(root,'.qv-s3-wheels'),wheelFigs=[$(root,'[data-s3-a-wheel]').closest('figure'),$(root,'[data-s3-b-wheel]').closest('figure')];
     const surfaceFigs=[$(root,'[data-s3-a-canvas]').closest('figure'),$(root,'[data-s3-b-canvas]').closest('figure')];
@@ -353,7 +365,7 @@
     root.innerHTML=`<h2>交互实验</h2><div class="qv-lab qv-s4"><header class="qv-head"><h3>正定性就是曲面是否在每个方向都向上</h3><p>改变交叉项 ${inline('t')}，让 ${inline('A(t)=\\begin{bmatrix}1&t\\\\t&1\\end{bmatrix}')} 连续变化。曲面底面上的曲线是等高线 ${inline('q(x)=c')}：从正上方看，同一高度的点连成的线。</p></header>
       <div data-s4-gate></div>
       <div class="ch5-toolbar" role="group" aria-label="t 的预设">${S4_PRESETS.map(([t],i)=>`<button type="button" ${i?'':'class="is-active"'} data-s4-preset="${t}">${inline(`t=${fracStr(t)}`)}</button>`).join('')}</div>
-      <label class="ch5-range"><span>连续调节 ${inline('t')}</span><input type="range" min="-1.5" max="1.5" step="0.25" value="0" data-s4-t><output data-s4-t-value>0</output></label>
+      <label class="ch5-range"><span>连续调节 ${inline('t')}</span><input type="range" min="-1.5" max="1.5" step="0.01" value="0" data-s4-t><output data-s4-t-value>0</output></label>
       <div class="qv-s4-grid">
         <div class="qv-s4-main"><div class="qv-hero"><canvas data-s4-surface></canvas><div><span class="ch5-status" data-s4-status></span><div><h4 data-s4-title></h4><p data-s4-scan-copy></p></div></div></div></div>
         <aside class="qv-s4-side">
@@ -368,7 +380,8 @@
           </div></div>
         </aside>
       </div></div>`;
-    const state={k:0},ctl=new AbortController(),lab=$(root,'.qv-lab');
+    // t moves continuously while dragged and settles on quarters (t = k/4), where every readout is exact
+    const state={t:0},ctl=new AbortController(),lab=$(root,'.qv-lab');
     const gate=window.LAPredictGate?.mount($(root,'[data-s4-gate]'),{
       root:lab,manual:true,key:'visuals/ch5/geometry-upgrade.js#s4',
       question:`${inline('A(t)')} 的对角元始终是 1。把交叉项 ${inline('t')} 从 0 往右拖，曲面从什么时候开始出现向下的方向？`,
@@ -379,7 +392,7 @@
         [`${inline('t')} 超过 ${inline('1/2')} 以后：交叉项系数 ${inline('2t')} 超过对角元 1`,false,'t=3/4 时 2t=3/2 已经超过 1，方向轮仍然全在 0 上方。'],
       ],
       right:`✓ 沿 ${inline('x=(1,-1)')} 方向 ${inline('q=2-2t')}：${inline('t=1')} 时等于 0，曲面沿这条直线贴住底面；${inline('t>1')} 时变成负的，曲面向下。同时 ${inline('\\Delta_2=1-t^2')} 由正变 0 再变负，所以 ${inline('A(t)')} 正定恰好是 ${inline('-1<t<1')}。`,
-      onPick:()=>setK(0),
+      onPick:()=>{tRange.stop();state.t=0;paint();},
       onReveal:()=>paint(),
     });
     // the formulas in t would give the boundary t = ±1 away, so they appear with the verdict
@@ -391,10 +404,9 @@
     };
     let labelsShown=null;
     const nameOf=(k)=>(S4_PRESETS.find(([t])=>t*4===k)||[])[1];
-    function setK(k){state.k=M().clamp(k,-6,6);paint();}
-    function act(k){setK(k);if(gate?.picked&&Math.abs(state.k)>4)gate.acted();}
     function paint(){
-      const k=state.k,ak=Math.abs(k),t=k/4,A=[[1,t],[t,1]],open=!gate||gate.picked;
+      // on a stop k is an integer and every comparison below is exact
+      const t=state.t,k=Math.abs(t*4-Math.round(t*4))<1e-9?Math.round(t*4):t*4,ak=Math.abs(k),A=[[1,t],[t,1]],open=!gate||gate.picked;
       const type=ak<4?'inside':ak===4?'edge':'outside';
       lab.toggleAttribute('data-s4-open',open);
       $(root,'[data-s4-t]').value=String(t);
@@ -413,6 +425,7 @@
       $(root,'[data-s4-lm]').textContent=open?fracStr(1-t):'?';
       $(root,'[data-s4-min]').textContent=open?fracStr(1-ak/4):'?';
       s4Wheel($(root,'[data-s4-scan]'),k,open);
+      lab.dispatchEvent(new Event('la-redraw',{bubbles:true}));
       const status=$(root,'[data-s4-status]'),title=$(root,'[data-s4-title]'),copy=$(root,'[data-s4-scan-copy]');
       if(!open){status.className='ch5-status';status.textContent='先猜一猜';title.textContent='先在上方选一个猜测';copy.innerHTML=`选好以后把 ${inline('t')} 从 0 往右拖。曲面底面会画出等高线，方向轮会按 ${inline('q')} 的正负着色。`;return;}
       status.className=`ch5-status ${type==='inside'?'is-ok':'is-warn'}`;
@@ -421,8 +434,14 @@
       else if(type==='edge'){title.textContent='一个方向变平：山谷';copy.innerHTML=`沿 ${inline(k>0?'x_1=-x_2':'x_1=x_2')} 方向 ${inline('q=0')}：曲面沿这条直线贴住底面，等高线变成平行直线，方向轮在这里碰到 0；${inline('\\Delta_2=0')}。`;}
       else{title.textContent='一个方向向下：马鞍';copy.innerHTML=`方向轮出现 0 下方的弧：曲面沿两条虚线穿过底面，等高线变成双曲线；${inline('\\Delta_2<0')}。`;}
     }
-    $$(root,'[data-s4-preset]').forEach(b=>b.addEventListener('click',()=>act(Math.round(Number(b.dataset.s4Preset)*4)),{signal:ctl.signal}));
-    $(root,'[data-s4-t]').addEventListener('input',e=>act(Math.round(Number(e.target.value)*4)),{signal:ctl.signal});
+    // past |t| = 1 the prediction is checked, whether dragged, stepped or reached by a preset
+    const tRange=smoothRange($(root,'[data-s4-t]'),{
+      step:0.25,signal:ctl.signal,
+      get:()=>state.t,
+      set:(v)=>{state.t=v;if(gate?.picked&&Math.abs(v)>1)gate.acted();paint();},
+      settle:()=>paint(),
+    });
+    $$(root,'[data-s4-preset]').forEach(b=>b.addEventListener('click',()=>tRange.glide(Number(b.dataset.s4Preset)),{signal:ctl.signal}));
     window.addEventListener('resize',paint,{signal:ctl.signal,passive:true});paint();return()=>ctl.abort();
   }
 

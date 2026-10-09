@@ -3012,7 +3012,9 @@ body.dark :is(main, #la) :is(.lesson-page-section, #lb) .basis-label rect {
 
 /* ch2 §3: on an upper triangular matrix the five paths through a zero are greyed */
 :is(main, #la) .ch2-term-btn.is-zero-path {
-  opacity: 0.42;
+  /* struck through and receded; ink, not grey, so the faded term still reads */
+  color: var(--text);
+  opacity: 0.64;
   text-decoration: line-through;
   text-decoration-color: var(--muted);
 }
@@ -3057,8 +3059,9 @@ body.dark :is(main, #la) :is(.lesson-page-section, #lb) .basis-label rect {
 
 :is(main, #la) .ch2-cof-tile.is-zero {
   border-color: var(--line);
+  border-style: dashed;
   background: var(--surface-soft);
-  opacity: 0.48;
+  opacity: 0.7;
 }
 
 :is(main, #la) .ch2-cof-tile.is-sum {
@@ -3124,7 +3127,7 @@ body.dark :is(main, #la) :is(.lesson-page-section, #lb) .basis-label rect {
   border: 1px solid var(--line);
   border-radius: 8px;
   background: var(--surface-solid);
-  opacity: 0.6;
+  opacity: 0.68;
 }
 
 :is(main, #la) .ch2-leib-term > small {
@@ -3521,7 +3524,11 @@ body.dark :is(main, #la) :is(.lesson-page-section, #lb) .basis-label rect {
 }
 
 :is(main, #la) .ch2-term-matrix td.is-zero-cell.is-locked-col:not(.is-selected) {
-  opacity: 0.55;
+  opacity: 0.8;
+}
+
+:is(main, #la) .ch2-term-matrix td.is-locked-col:not(.is-selected) > button {
+  background-image: repeating-linear-gradient(135deg, transparent 0 6px, color-mix(in srgb, var(--line-strong) 75%, transparent) 6px 7px);
 }
 
 /* ch2 §7: A, A₁, A₂ side by side, each label above its matrix */

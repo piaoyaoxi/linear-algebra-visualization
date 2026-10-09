@@ -67,7 +67,8 @@
 
 #quadratic-matrix-formal .ch5s1-term-list button:not(.is-active),
 #quadratic-matrix-formal .ch5s1-matrix-map button:not(.is-active) {
-  opacity: 0.48;
+  /* receded, still readable (about 6:1 in both themes) */
+  opacity: 0.72;
 }
 
 #quadratic-matrix-formal .ch5s1-term-list button:focus-visible,

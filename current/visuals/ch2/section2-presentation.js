@@ -128,7 +128,7 @@
       const wait = gate?.picked ? "已记下你的猜测。按“相邻交换一步”，读数随后出现。" : "先在上方猜一猜，读数随后出现。";
       root.querySelector("[data-action]").innerHTML = shown || (neutral && !gate?.picked) ? lastAction : wait;
       root.querySelector("[data-inv-list]").innerHTML = !shown
-        ? "<span>猜一猜并动手后显示</span>"
+        ? "猜一猜并动手后显示"
         : inversions.length
           ? inversions.map(({ a, b }) => `<span>${tex(`(${a},${b})`)}</span>`).join("")
           : "<span>无逆序对</span>";

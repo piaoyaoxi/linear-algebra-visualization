@@ -512,3 +512,74 @@ body.dark .ch7p {
     height: 300px;
   }
 }
+
+/* §1 translation figure: two routes on the same grid, side by side (stacked on phones) */
+.ch7l-figure:has(> .ch7f-pair) {
+  max-width: 760px;
+}
+
+.ch7f-pair {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 18px;
+}
+
+.ch7f-panel {
+  min-width: 0;
+}
+
+.ch7f-cap {
+  margin: 0 0 4px;
+  color: var(--muted);
+  font: 600 13px var(--font-serif);
+  text-align: center;
+}
+
+.ch7f-axis {
+  stroke: var(--muted);
+  stroke-width: 1;
+  opacity: 0.55;
+}
+
+.ch7f-math {
+  fill: var(--text);
+  font: italic 500 16px var(--font-serif);
+}
+
+.ch7f-sub {
+  font-size: 11px;
+  font-style: normal;
+}
+
+.ch7f-math.is-muted { fill: var(--muted); }
+.ch7f-math.is-accent { fill: var(--accent-strong); }
+.ch7f-math.is-coral { fill: var(--coral); }
+.ch7f-math.is-gold { fill: var(--gold); }
+.ch7f-math.is-strong { font-weight: 650; }
+
+.ch7f-stroke {
+  stroke-linecap: butt;
+}
+
+.ch7f-stroke.is-thin { stroke-width: 1.6; }
+.ch7f-stroke.is-text.is-mid { stroke-width: 2.2; }
+.ch7f-stroke.is-strong { stroke-width: 2.8; }
+.ch7f-stroke.is-faint,
+.ch7f-fill.is-faint { opacity: 0.5; }
+
+.ch7f-dot { stroke-width: 1.6; }
+.ch7f-dot.is-accent { fill: var(--accent); stroke: var(--accent); }
+.ch7f-dot.is-coral { fill: var(--coral); stroke: var(--coral); }
+.ch7f-dot.is-hollow { fill: var(--cv-paper, var(--surface-solid)); }
+
+@media (max-width: 620px) {
+  .ch7f-pair {
+    grid-template-columns: 1fr;
+    gap: 10px;
+  }
+}
+
+.ch7f-cjk {
+  font-style: normal;
+  font-weight: 600;
+}

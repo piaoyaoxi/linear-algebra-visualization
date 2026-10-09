@@ -146,7 +146,8 @@
         return tex ? `${sign}\\tfrac{${n}}{${d}}` : `${sign}${n}/${d}`;
       }
     }
-    return `${sign}${fmt(x, 3)}`;
+    // between the half steps while the slider is dragged: a rounded value, marked as such in text
+    return tex ? `${sign}${fmt(x, 2)}` : `≈${sign}${fmt(x, 2)}`;
   }
   const fracMatrix = (A) => `<div class="ch5-matrix" role="table" aria-label="矩阵">${A.map((row, i) => `<div class="ch5-matrix-row">${row.map((v, j) => `<span class="ch5-cell" data-i="${i}" data-j="${j}" data-v="${v}">${fracStr(v)}</span>`).join("")}</div>`).join("")}</div>`;
   function polyFracTex(A) {
@@ -198,7 +199,7 @@
     root.innerHTML=`<h2>交互实验</h2><div class="qv-lab qv-s3"><header class="qv-head"><h3>可逆变换可以扭曲曲面，却改不了向上、向下和平坦方向的数量</h3><p>${inline('B=C^TAC')}，${inline('C=\\begin{bmatrix}1&h\\\\0&1\\end{bmatrix}')}，${inline('\\det C=1')}。曲面上画出向上、向下的主方向；下方的符号轮把每个方向按 ${inline('q')} 的正负着色。</p></header>
       <div data-s3-gate></div>
       <div class="ch5-toolbar">${[["positive","两个正方向"],["indefinite","一正一负"],["rank1","一正一零"]].map(([k,l],i)=>`<button type="button" ${i===1?'class="is-active"':''} data-s3-preset="${k}">${l}</button>`).join('')}</div>
-      <label class="ch5-range"><span>剪切参数 ${inline('h')}</span><input type="range" min="-1.5" max="1.5" step=".5" value="0" data-s3-h><output data-s3-h-value>0</output></label>
+      <label class="ch5-range"><span>剪切参数 ${inline('h')}</span><input type="range" min="-1.5" max="1.5" step="0.01" value="0" data-s3-h><output data-s3-h-value>0</output></label>
       <div class="qv-same"><figure><canvas data-s3-a-canvas></canvas><figcaption>原曲面 ${inline('A')}<div data-s3-a-counts></div></figcaption></figure><div class="qv-equals"><strong>${inline('C^TAC')}</strong><span>可逆时只换坐标</span></div><figure><canvas data-s3-b-canvas></canvas><figcaption>变换后 ${inline('B')}<div data-s3-b-counts></div></figcaption></figure></div>
       <div class="qv-s3-wheels"><figure><canvas data-s3-a-wheel aria-label="A 的符号轮"></canvas></figure><figure><canvas data-s3-b-wheel aria-label="B 的符号轮"></canvas></figure></div>
       <div class="qv-data"><div><span>${inline('C')}</span><div class="ch5-matrix-wrap" data-s3-c></div></div><div><span>${inline('A')}</span><div class="ch5-matrix-wrap" data-s3-a></div></div><div><span>${inline('B')}</span><div class="ch5-matrix-wrap" data-s3-b></div></div><div class="qv-values"><span>${inline('\\det C')}<strong data-s3-det></strong></span><span>${inline('A')} 的多项式<strong data-s3-poly-a></strong></span><span>${inline('B')} 的多项式<strong data-s3-poly-b></strong></span></div></div>
@@ -234,15 +235,48 @@
       signWheel($(root,'[data-s3-a-wheel]'),A,'A 的符号轮');signWheel($(root,'[data-s3-b-wheel]'),B,'B 的符号轮');
       $(root,'[data-s3-singular]').disabled=!open;
       const s=$(root,'[data-s3-status]');
+      $(root,'.qv-lab').dispatchEvent(new Event('la-redraw',{bubbles:true}));
       if(!open){s.className='ch5-status';s.textContent='先猜一猜';$(root,'[data-s3-title]').innerHTML=`猜好之后拖动 ${inline('h')}`;$(root,'[data-s3-copy]').innerHTML=gate?.picked&&state.p!=='indefinite'?`你的猜测针对“一正一负”：回到这个例子拖动 ${inline('h')}，再核对猜测。`:`盯住右边的曲面和符号轮：蓝色弧是 ${inline('q<0')} 的方向。`;return;}
       s.className=`ch5-status ${ok&&same?'is-ok':'is-warn'}`;s.textContent=ok?(same?'惯性锁定':'数值异常'):'合同停止';
       $(root,'[data-s3-title]').textContent=ok?'形状被拉斜，符号骨架没有变':'一个方向被真正丢失';
       $(root,'[data-s3-copy]').innerHTML=ok?`${inline('\\det C\\ne0')}，正、负、零方向数量与 ${inline('A')} 完全一致。`:`${inline('\\det C=0')}，平面被压到一条线；此时替换不可逆，已经离开合同的前提。`;
     }
-    $$(root,'[data-s3-preset]').forEach(b=>b.addEventListener('click',()=>{state.p=b.dataset.s3Preset;state.h=0;state.singular=false;$$(root,'[data-s3-preset]').forEach(x=>x.classList.toggle('is-active',x===b));paint();},{signal:ctl.signal}));
-    $(root,'[data-s3-h]').addEventListener('input',e=>{state.h=Number(e.target.value);state.singular=false;if(gate?.picked&&state.h!==0&&state.p==='indefinite')gate.acted();paint();},{signal:ctl.signal});
-    $(root,'[data-s3-singular]').addEventListener('click',()=>{state.singular=true;paint();},{signal:ctl.signal});
-    $(root,'[data-s3-reset]').addEventListener('click',()=>{state.singular=false;state.h=0;paint();},{signal:ctl.signal});
+    /*
+     * h follows the pointer continuously, so the surfaces and wheels move smoothly; on release it
+     * eases to the nearest half step, where every entry is an exact fraction again.
+     * Arrow keys jump straight from one half step to the next.
+     */
+    let snapFrame=0,snapTarget=0;
+    const stopSnap=()=>{cancelAnimationFrame(snapFrame);snapFrame=0;};
+    const settled=()=>{if(gate?.picked&&state.h!==0&&state.p==='indefinite')gate.acted();paint();};
+    function snapTo(target){
+      stopSnap();
+      snapTarget=target;
+      const from=state.h,dist=target-from;
+      if(Math.abs(dist)<1e-9||M().reducedMotion()){state.h=target;settled();return;}
+      const start=performance.now(),dur=Math.min(260,140+Math.abs(dist)*240);
+      const step=(now)=>{const t=Math.min(1,(now-start)/dur);state.h=t<1?from+dist*(1-(1-t)**3):target;if(t<1){paint();snapFrame=requestAnimationFrame(step);}else{snapFrame=0;settled();}};
+      snapFrame=requestAnimationFrame(step);
+    }
+    const nearestHalf=(v)=>M().clamp(Math.round(v*2)/2,-1.5,1.5);
+    $$(root,'[data-s3-preset]').forEach(b=>b.addEventListener('click',()=>{stopSnap();state.p=b.dataset.s3Preset;state.h=0;state.singular=false;$$(root,'[data-s3-preset]').forEach(x=>x.classList.toggle('is-active',x===b));paint();},{signal:ctl.signal}));
+    const slider=$(root,'[data-s3-h]');
+    slider.addEventListener('input',e=>{stopSnap();state.h=Number(e.target.value);state.singular=false;paint();},{signal:ctl.signal});
+    slider.addEventListener('change',()=>snapTo(nearestHalf(state.h)),{signal:ctl.signal});
+    slider.addEventListener('keydown',e=>{
+      const dir={ArrowRight:1,ArrowUp:1,PageUp:1,ArrowLeft:-1,ArrowDown:-1,PageDown:-1}[e.key];
+      if(!dir&&e.key!=='Home'&&e.key!=='End')return;
+      e.preventDefault();
+      if(state.singular)return;
+      // the next half step in the arrow's direction
+      // (from the step a running glide is heading to, so quick presses add up)
+      const h=snapFrame?snapTarget:state.h;
+      const next=dir>0?Math.floor(h*2+1e-9)/2+0.5:Math.ceil(h*2-1e-9)/2-0.5;
+      snapTo(e.key==='Home'?-1.5:e.key==='End'?1.5:M().clamp(next,-1.5,1.5));
+    },{signal:ctl.signal});
+    $(root,'[data-s3-singular]').addEventListener('click',()=>{stopSnap();state.singular=true;paint();},{signal:ctl.signal});
+    $(root,'[data-s3-reset]').addEventListener('click',()=>{stopSnap();state.singular=false;state.h=0;paint();},{signal:ctl.signal});
+    ctl.signal.addEventListener('abort',stopSnap);
     // phones: each sign wheel becomes a small inset on the corner of its own surface
     const wheelHome=$(root,'.qv-s3-wheels'),wheelFigs=[$(root,'[data-s3-a-wheel]').closest('figure'),$(root,'[data-s3-b-wheel]').closest('figure')];
     const surfaceFigs=[$(root,'[data-s3-a-canvas]').closest('figure'),$(root,'[data-s3-b-canvas]').closest('figure')];

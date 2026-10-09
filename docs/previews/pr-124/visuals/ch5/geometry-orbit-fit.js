@@ -524,6 +524,8 @@
     root.addEventListener("pointermove", schedule, { signal: controller.signal });
     root.addEventListener("click", schedule, { signal: controller.signal });
     root.addEventListener("input", schedule, { signal: controller.signal });
+    // a lab that animates a value without input events asks for a redraw this way
+    root.addEventListener("la-redraw", schedule, { signal: controller.signal });
     window.addEventListener("resize", schedule, { signal: controller.signal, passive: true });
     schedule();
     return () => controller.abort();

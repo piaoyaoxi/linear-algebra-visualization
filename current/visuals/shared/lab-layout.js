@@ -101,6 +101,16 @@
       }
       next.textContent = next.textContent.slice(count);
       if (!next.textContent) next.remove();
+      // a line may break after the mark. Chromium breaks between the formula's last box and
+      // what follows anyway; WebKit (Safari, every iOS browser) does not, so "B=CᵀAC，C=…，
+      // det C=1。曲面…" became one unbreakable run wider than a phone and pushed the lab past
+      // the screen edge
+      // (after the whole unit: without pieces the formula and its mark share one wrapper)
+      const unit = bases.length ? formula : keep;
+      const after = unit.nextSibling;
+      if (!(after && after.nodeName === "WBR") && !(after?.nodeType === Node.TEXT_NODE && /^\s/.test(after.textContent))) {
+        unit.after(document.createElement("wbr"));
+      }
     });
   }
 

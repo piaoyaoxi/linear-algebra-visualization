@@ -629,6 +629,14 @@ body.dark .tex-inline {
   color: var(--text);
 }
 
+/* inside a button (primary, chip, option, preset) a formula is part of the label: it takes the
+   button's own text colour, or a dark formula would sit on the dark green of a primary button
+   (and a light one on its light green in dark mode) */
+body :is(button, [role="button"], .is-primary) .tex,
+body.dark :is(button, [role="button"], .is-primary) .tex {
+  color: inherit;
+}
+
 body .tex .katex {
   font-size: 1.02em;
 }

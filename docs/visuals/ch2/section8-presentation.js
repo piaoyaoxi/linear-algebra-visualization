@@ -83,6 +83,19 @@
       right: `✓ ${tex("B")} 把单位正方形变成面积 3 的图形，${tex("A")} 再把其中每一小块的面积都乘 2：${tex("\\det(AB)=\\det A\\cdot\\det B=6")}。符号同样相乘：翻转两次等于不翻转。`,
     });
 
+    /*
+     * One view for all three canvases (same scale, same origin), framing E, B and AB of the current
+     * pair: a square of area 1 has the same size in every panel, so the area multiplies visibly.
+     */
+    function viewFor(A, B) {
+      const rect = cI.getBoundingClientRect();
+      const width = rect.width || 300;
+      const height = rect.height || 285;
+      const world = M().fitWorld([I, B, M().mul2(A, B)], width, height, { pad: 26 });
+      const { origin, scale } = M().worldView(world, width, height);
+      return { origin, scale };
+    }
+
     function setBusy(value) {
       busy = value;
       root.querySelectorAll("[data-prod-preset]").forEach((button) => { button.disabled = value; });
@@ -119,9 +132,10 @@
       run += 1;
       finished = false;
       [cI, cB, cAB].forEach((canvas) => M().cancelAnim(canvas));
-      M().drawTransformScene(cI, I, { firstLabel: "e₁", secondLabel: "e₂", caption: "单位正方形" });
-      M().drawTransformScene(cB, I, { firstLabel: "e₁", secondLabel: "e₂", caption: "等待作用 B" });
-      M().drawTransformScene(cAB, I, { firstLabel: "e₁", secondLabel: "e₂", caption: "等待作用 A" });
+      const view = viewFor(A, B);
+      M().drawTransformScene(cI, I, { firstLabel: "e₁", secondLabel: "e₂", caption: "单位正方形", ...view });
+      M().drawTransformScene(cB, I, { firstLabel: "e₁", secondLabel: "e₂", caption: "等待作用 B", ...view });
+      M().drawTransformScene(cAB, I, { firstLabel: "e₁", secondLabel: "e₂", caption: "等待作用 A", ...view });
       showGivens(A, B);
       liveLabel.innerHTML = tex("\\det(AB)");
       root.querySelector("[data-dab]").textContent = "?";
@@ -145,21 +159,22 @@
         liveLabel.textContent = "当前有向面积（动画中）";
         dab.textContent = "1";
         status.innerHTML = `第一步：作用 ${tex("B")}。`;
+        const view = viewFor(A, B);
         await M().animateMatrix(cB, B, {
           duration: 700,
-          drawOptions: { firstLabel: "Be₁", secondLabel: "Be₂", caption: "第一步：E → B", ghost: I },
+          drawOptions: { firstLabel: "Be₁", secondLabel: "Be₂", caption: "第一步：E → B", ghost: I, ...view },
           onUpdate(m) { dab.textContent = `≈ ${M().formatNum(M().det2(m), 2)}`; },
         });
         if (id !== run) return;
         dab.textContent = n(dB);
         paintTiles(A, B, 1);
-        M().drawTransformScene(cAB, B, { firstLabel: "Be₁", secondLabel: "Be₂", caption: "从 B 的结果出发" });
+        M().drawTransformScene(cAB, B, { firstLabel: "Be₁", secondLabel: "Be₂", caption: "从 B 的结果出发", ...view });
         status.innerHTML = `第二步：从 ${tex("B")} 的结果出发，再作用 ${tex("A")}。`;
         await new Promise((resolve) => setTimeout(resolve, M().reducedMotion() ? 0 : 360));
         if (id !== run) return;
         await M().animateMatrix(cAB, AB, {
           duration: 780,
-          drawOptions: { firstLabel: "ABe₁", secondLabel: "ABe₂", caption: "第二步：B → AB", ghost: B },
+          drawOptions: { firstLabel: "ABe₁", secondLabel: "ABe₂", caption: "第二步：B → AB", ghost: B, ...view },
           onUpdate(m) { dab.textContent = `≈ ${M().formatNum(M().det2(m), 2)}`; },
         });
         if (id !== run) return;
@@ -193,9 +208,10 @@
       if (!document.body.contains(cI) || busy) return;
       if (!finished) { idle(current.A, current.B); return; }
       const AB = M().mul2(current.A, current.B);
-      M().drawTransformScene(cI, I, { firstLabel: "e₁", secondLabel: "e₂", caption: "单位正方形" });
-      M().drawTransformScene(cB, current.B, { firstLabel: "Be₁", secondLabel: "Be₂", caption: "第一步：E → B", ghost: I });
-      M().drawTransformScene(cAB, AB, { firstLabel: "ABe₁", secondLabel: "ABe₂", caption: "第二步：B → AB", ghost: current.B });
+      const view = viewFor(current.A, current.B);
+      M().drawTransformScene(cI, I, { firstLabel: "e₁", secondLabel: "e₂", caption: "单位正方形", ...view });
+      M().drawTransformScene(cB, current.B, { firstLabel: "Be₁", secondLabel: "Be₂", caption: "第一步：E → B", ghost: I, ...view });
+      M().drawTransformScene(cAB, AB, { firstLabel: "ABe₁", secondLabel: "ABe₂", caption: "第二步：B → AB", ghost: current.B, ...view });
     }, { signal, passive: true });
 
     idle(current.A, current.B);
@@ -247,7 +263,7 @@
         <div class="ch2-lab" data-prod-lab>
           <div class="ch2-lab-head"><h3>两次变换，面积倍率相乘</h3></div>
           <div data-prod-gate></div>
-          <p class="ch2-lab-hint">单位正方形先经过 ${tex("B")}，再从 ${tex("B")} 的结果出发经过 ${tex("A")}，合起来就是 ${tex("AB")}。</p>
+          <p class="ch2-lab-hint">单位正方形先经过 ${tex("B")}，再从 ${tex("B")} 的结果出发经过 ${tex("A")}，合起来就是 ${tex("AB")}。三幅图比例相同，一格面积都是 1。</p>
           <div class="ch2-presets">
             <button type="button" class="is-primary" data-prod-replay>播放 ${tex("E\\to B\\to AB")}</button>
             <button type="button" class="is-active" data-prod-preset="scale">两次缩放</button>

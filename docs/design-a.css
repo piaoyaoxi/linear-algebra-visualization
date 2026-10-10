@@ -629,6 +629,14 @@ body.dark .tex-inline {
   color: var(--text);
 }
 
+/* inside a button (primary, chip, option, preset) a formula is part of the label: it takes the
+   button's own text colour, or a dark formula would sit on the dark green of a primary button
+   (and a light one on its light green in dark mode) */
+body :is(button, [role="button"], .is-primary) .tex,
+body.dark :is(button, [role="button"], .is-primary) .tex {
+  color: inherit;
+}
+
 body .tex .katex {
   font-size: 1.02em;
 }
@@ -1279,12 +1287,16 @@ body .ch10l-moderow > .ch7l-toolbar {
 /* ---------- round 3: a formula keeps the punctuation that follows it ---------- */
 
 /* a closing mark such as 。or ， never starts a line after a formula */
-body .la-keep {
+body .la-keep,
+body la-okeep {
   white-space: nowrap;
 }
 
-/* the glued mark sits inside the formula's box: give it the text font and size back */
+/* the glued mark sits inside the formula's box: give it the text font and size back.
+   An inline block, so justification does not pad it: as text, a lone full-width comma between
+   formulas was the only place a justified line could stretch, and opened wide holes around it */
 body .la-punct {
+  display: inline-block;
   font-family: var(--font-serif);
   font-size: calc(1em / var(--la-math, 1.06));
   font-style: normal;

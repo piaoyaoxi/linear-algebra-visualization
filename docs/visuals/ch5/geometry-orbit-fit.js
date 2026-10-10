@@ -507,8 +507,10 @@
         // the level curves would give the type away, so the floor stays bare until a prediction
         const open = Boolean(root.querySelector(".qv-lab[data-s4-open]"));
         surface.dataset.floor = open ? "on" : "off";
-        // q = 0 directions (1, m) with 1 + 2tm + m² = 0; t = k/4, so |k| decides exactly
-        const k = Math.abs(Math.round(t * 4));
+        // q = 0 directions (1, m) with 1 + 2tm + m² = 0; on a stop t = k/4, so |k| decides exactly
+        // (between stops, while the slider is dragged, |4t| is compared as it is)
+        const k4 = Math.abs(t * 4);
+        const k = Math.abs(k4 - Math.round(k4)) < 1e-9 ? Math.round(k4) : k4;
         const root2 = k > 4 ? Math.sqrt(t * t - 1) : 0;
         const zeroDirections = (k < 4 ? [] : k === 4 ? [-t] : [-t + root2, -t - root2])
           .map((m) => [1 / Math.hypot(1, m), m / Math.hypot(1, m)]);
@@ -524,6 +526,8 @@
     root.addEventListener("pointermove", schedule, { signal: controller.signal });
     root.addEventListener("click", schedule, { signal: controller.signal });
     root.addEventListener("input", schedule, { signal: controller.signal });
+    // a lab that animates a value without input events asks for a redraw this way
+    root.addEventListener("la-redraw", schedule, { signal: controller.signal });
     window.addEventListener("resize", schedule, { signal: controller.signal, passive: true });
     schedule();
     return () => controller.abort();

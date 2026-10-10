@@ -7,7 +7,12 @@
     let permutation = [3, 1, 4, 2];
     let selected = -1;
     let scannerIndex = 0;
-    let lastAction = "起点 3142 有三个逆序，因此是奇排列。";
+    const HINT = "先在上方猜一猜，再动手：按“相邻交换一步”，或点两个数字对换。";
+    let lastAction = HINT;
+    // the readouts (τ, parity, sgn, det P, the inversion list) answer the prediction: they
+    // appear once a guess has been made and the student has then changed the permutation
+    let touched = false;
+    const open = () => !gate || (gate.picked && touched);
     const pairOrder = M().allPositionPairs(4);
     const list = root.querySelector("[data-perm-list]");
     // adjacent swaps counted from the last loaded or hand-made permutation
@@ -22,11 +27,16 @@
       key: "visuals/ch2/section2-presentation.js#adjacent",
       question: `从 ${tex("3142")} 出发，每次交换一对相邻的逆序数，直到变成 ${tex("1234")}。置换矩阵的 ${tex("\\det P")} 一路怎样变？${tex("\\operatorname{sgn}(3142)")} 是多少？`,
       options: [
-        [`每换一次翻一次号，${tex("\\operatorname{sgn}(3142)=(-1)^{\\tau}=(-1)^3=-1")}`, true, ""],
+        [`每换一次翻一次号，${tex("\\operatorname{sgn}(3142)=-1")}`, true, ""],
         [`每换一次翻一次号，${tex("\\operatorname{sgn}(3142)=(-1)^4")}，由排列长度决定`, false, "翻号次数等于交换次数 τ，与长度 4 无关：τ 从 3 减到 0，翻了 3 次。"],
         [`相邻交换不改变 ${tex("\\det P")}，${tex("\\operatorname{sgn}(3142)=+1")}`, false, "每一次相邻交换 τ 恰好减 1，det P 翻一次号。"],
         [`翻号次数取决于先换哪一对，${tex("\\operatorname{sgn}")} 不确定`, false, "无论先换哪一对相邻逆序数，τ 都恰好减 1，所以总共翻号 τ 次。"],
       ],
+      // a (new) guess waits for the next action before the readouts appear
+      onPick: () => {
+        touched = false;
+        render();
+      },
       right: `✓ 每一次相邻交换只改变一对数的先后，${tex("\\tau")} 恰好减 1，${tex("\\det P")} 翻一次号。从 ${tex("\\tau=3")} 到 ${tex("\\tau=0")} 共 3 步，终点 ${tex("\\det E=+1")}，所以 ${tex("\\operatorname{sgn}(3142)=\\det P=(-1)^3=-1")}。`,
     });
 
@@ -66,7 +76,7 @@
       const box = root.querySelector("[data-perm-matrix]");
       if (!box) return;
       box.innerHTML = `<table class="ch2-perm-matrix" aria-label="置换矩阵">${permutation.map((value, row) => `<tr class="${swappedRows.includes(row) ? "is-swapped" : ""}">${[1, 2, 3, 4].map((col) => `<td class="${col === value ? "is-one" : ""}">${col === value ? 1 : 0}</td>`).join("")}</tr>`).join("")}</table>
-        <p class="ch2-perm-det">${tex("\\det P=")} ${swappedRows.length ? `<s>${sign > 0 ? "−1" : "+1"}</s> → ` : ""}<b class="${sign > 0 ? "is-plus" : "is-minus"}">${sign > 0 ? "+1" : "−1"}</b></p>`;
+        <p class="ch2-perm-det">${tex("\\det P=")} ${!open() ? "<b>?</b>" : `${swappedRows.length ? `<s>${sign > 0 ? "−1" : "+1"}</s> → ` : ""}<b class="${sign > 0 ? "is-plus" : "is-minus"}">${sign > 0 ? "+1" : "−1"}</b>`}</p>`;
       const done = permutation.every((value, index) => value === index + 1);
       const counter = root.querySelector("[data-adj-count]");
       counter.innerHTML = done && adjSteps > 0
@@ -75,7 +85,8 @@
       counter.classList.toggle("is-positive", done && adjSteps > 0);
       // τ strip: one cell per adjacent swap made so far, det P = (−1)^τ under each
       const strip = root.querySelector("[data-tau-strip]");
-      if (strip) {
+      if (strip && !open()) strip.innerHTML = "";
+      else if (strip) {
         const cells = [];
         for (let k = 0; k <= adjSteps; k += 1) {
           const t = startTau - k;
@@ -107,14 +118,20 @@
       `).join("");
       const inversions = M().inversionPairs(permutation);
       const sign = M().signFromPerm(permutation);
-      root.querySelector("[data-tau]").textContent = String(inversions.length);
-      root.querySelector("[data-parity]").textContent = inversions.length % 2 === 0 ? "偶排列" : "奇排列";
-      root.querySelector("[data-sgn]").textContent = sign > 0 ? "+1" : "−1";
+      const shown = open();
+      root.querySelector("[data-tau]").textContent = shown ? String(inversions.length) : "—";
+      root.querySelector("[data-parity]").textContent = !shown ? "—" : inversions.length % 2 === 0 ? "偶排列" : "奇排列";
+      root.querySelector("[data-sgn]").textContent = !shown ? "—" : sign > 0 ? "+1" : "−1";
       root.querySelector("[data-perm-text]").textContent = permutation.join(" ");
-      root.querySelector("[data-action]").innerHTML = lastAction;
-      root.querySelector("[data-inv-list]").innerHTML = inversions.length
-        ? inversions.map(({ a, b }) => `<span>${tex(`(${a},${b})`)}</span>`).join("")
-        : "<span>无逆序对</span>";
+      // selecting a number says nothing about τ; every other message does
+      const neutral = lastAction === HINT || lastAction.startsWith("已选择") || lastAction.startsWith("已取消");
+      const wait = gate?.picked ? "已记下你的猜测。按“相邻交换一步”，读数随后出现。" : "先在上方猜一猜，读数随后出现。";
+      root.querySelector("[data-action]").innerHTML = shown || (neutral && !gate?.picked) ? lastAction : wait;
+      root.querySelector("[data-inv-list]").innerHTML = !shown
+        ? "猜一猜并动手后显示"
+        : inversions.length
+          ? inversions.map(({ a, b }) => `<span>${tex(`(${a},${b})`)}</span>`).join("")
+          : "<span>无逆序对</span>";
       drawWires();
       renderMatrix(sign);
 
@@ -139,6 +156,7 @@
           [permutation[first], permutation[index]] = [permutation[index], permutation[first]];
           const afterTau = tau();
           describeParityChange(beforeTau, afterTau, `对换位置 ${first + 1} 与 ${index + 1}`);
+          touched = !gate || gate.picked;
           restart();
           swappedRows = [first, index];
           selected = -1;
@@ -156,6 +174,7 @@
           const [moved] = next.splice(dragIndex, 1);
           next.splice(target, 0, moved);
           permutation = next;
+          touched = !gate || gate.picked;
           restart();
           const afterTau = tau();
           lastAction = `把 ${moved} 从位置 ${dragIndex + 1} 移到位置 ${target + 1}，跨过 ${distance} 个相邻位置；这等价于 ${distance} 次相邻交换。${tex("\\tau")}：${tex(`${beforeTau}\\to${afterTau}`)}，符号${distance % 2 ? "翻转" : "保持"}。`;
@@ -178,6 +197,7 @@
           example: [3, 1, 4, 2],
         };
         permutation = presets[button.dataset.permPreset].slice();
+        touched = !gate || gate.picked;
         restart();
         selected = -1;
         scannerIndex = 0;
@@ -199,6 +219,7 @@
           const afterTau = tau();
           lastAction = `相邻交换位置 ${index + 1}、${index + 2}：${tex("\\tau")} 从 ${beforeTau} 降到 ${afterTau}，恰好减少 1，符号翻转。`;
           adjSteps += 1;
+          touched = !gate || gate.picked;
           swappedRows = [index, index + 1];
           selected = -1;
           scannerIndex = 0;

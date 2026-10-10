@@ -427,8 +427,10 @@
         const value = Number($(root, "[data-s4-t]")?.value || 0);
         const A = [[1, value], [value, 1]];
         drawSurface(canvas, A, camera, { frameMatrices: [A], padding: { top: 58, bottom: 42 } });
-        // t = k/4: the type is read off |k| exactly, and joins the title once a prediction is picked
-        const k = Math.abs(Math.round(value * 4));
+        // on a stop t = k/4 and the type is read off |k| exactly (between stops, while dragged, |4t|
+        // as it is); it joins the title once a prediction is picked
+        const k4 = Math.abs(value * 4);
+        const k = Math.abs(k4 - Math.round(k4)) < 1e-9 ? Math.round(k4) : k4;
         const open = Boolean(root.querySelector(".qv-lab[data-s4-open]"));
         const clsNode = $(root, "[data-orbit-class]");
         if (clsNode) clsNode.textContent = open ? ` · ${k < 4 ? "正定" : k === 4 ? "半正定" : "不定"}` : "";
@@ -441,6 +443,8 @@
     const schedule = () => requestAnimationFrame(redraw);
     root.addEventListener("click", schedule, { signal: controller.signal });
     root.addEventListener("input", schedule, { signal: controller.signal });
+    // a lab that animates a value without input events asks for a redraw this way
+    root.addEventListener("la-redraw", schedule, { signal: controller.signal });
     window.addEventListener("resize", schedule, { signal: controller.signal, passive: true });
     redraw();
     return () => controller.abort();

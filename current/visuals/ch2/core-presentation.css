@@ -556,7 +556,7 @@
 }
 
 .ch2-matrix-table td.is-locked-col {
-  opacity: .42;
+  opacity: .64;
 }
 
 .ch2-matrix-table td.is-deleted {
@@ -1102,8 +1102,9 @@
   font-size: 1.04rem;
 }
 
+/* a used column: hatched and receded, its entries still readable */
 .ch2-term-matrix td.is-locked-col:not(.is-selected) {
-  opacity: .18;
+  opacity: .64;
 }
 
 .ch2-term-matrix .tex,

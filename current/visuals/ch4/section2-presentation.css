@@ -388,7 +388,8 @@
   text-align: center;
 }
 
-#matrix-operations-formal .s2-property-grid article > span {
+/* the label only: the formula below is a span too, and must keep the ink colour */
+#matrix-operations-formal .s2-property-grid article > span:not(.tex) {
   display: block;
   margin-bottom: 7px;
   color: var(--faint);

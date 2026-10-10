@@ -619,7 +619,7 @@ body.dark .inverse-transform-lab {
 .inverse-journey small {
   min-width: 0;
   overflow: hidden;
-  color: var(--faint);
+  color: var(--muted);
   font-size: 9px;
   line-height: 1.2;
   text-overflow: ellipsis;
@@ -684,10 +684,13 @@ body.dark .inverse-transform-lab {
   );
 }
 
+/* the thumb is 18px (border-box: `*` does not reach pseudo-elements), so its centre travels
+   from 9px to 100% − 9px of the track; the marks and the green fill follow that span */
 .inverse-range-shell input[type="range"]::-webkit-slider-thumb {
-  width: 14px;
-  height: 14px;
-  margin-top: -5.5px;
+  box-sizing: border-box;
+  width: 18px;
+  height: 18px;
+  margin-top: -7.5px;
   appearance: none;
   border: 3px solid var(--surface-solid);
   border-radius: 50%;
@@ -708,8 +711,9 @@ body.dark .inverse-transform-lab {
 }
 
 .inverse-range-shell input[type="range"]::-moz-range-thumb {
-  width: 10px;
-  height: 10px;
+  box-sizing: border-box;
+  width: 18px;
+  height: 18px;
   border: 3px solid var(--surface-solid);
   border-radius: 50%;
   background: var(--accent);
@@ -720,8 +724,9 @@ body.dark .inverse-transform-lab {
   position: absolute;
   z-index: 1;
   top: 7px;
-  right: calc(16.666% - 6px);
-  left: calc(16.666% - 6px);
+  /* each 8px dot centred where the thumb's centre stops: 9px inside the track ends */
+  right: calc(16.666% + 5px);
+  left: calc(16.666% + 5px);
   display: flex;
   justify-content: space-between;
   pointer-events: none;
@@ -896,7 +901,7 @@ body.dark .inverse-transform-lab {
 /* 11px, not 9: rank(A) and det(A) here were the smallest formulas on the page, and at
    9.5px rounded glyph advances made the site audit see a style leak into them */
 .inverse-facts dt {
-  color: var(--faint);
+  color: var(--muted);
   font-size: 11px;
   font-weight: 760;
 }

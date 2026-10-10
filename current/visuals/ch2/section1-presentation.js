@@ -6,7 +6,21 @@
     const { signal } = controller;
     const canvas = root.querySelector("[data-ch2-canvas]");
     // quarter steps keep every entry and det exact (det = 7/8 at the start)
-    const state = { matrix: [[1, 0.5], [0.25, 1]], view: null, dragging: -1, animating: false };
+    const state = { matrix: [[1, 0.5], [0.25, 1]], view: null, dragging: -1, animating: false, zoom: 1 };
+    /*
+     * The view is fixed: the origin sits in the middle and one grid square is always area 1,
+     * so a bigger |det| is a bigger shape on screen. Zoom only changes how many squares fit.
+     * At zoom 1 the columns' whole drag range (±2.5) is in view.
+     */
+    const ZOOMS = [0.55, 0.75, 1, 1.4, 2];
+    let zoomIndex = 2;
+    const zoomKey = {};
+    function view() {
+      const rect = canvas.getBoundingClientRect();
+      const width = rect.width || canvas.clientWidth || 520;
+      const height = rect.height || canvas.clientHeight || 420;
+      return { origin: { x: width / 2, y: height / 2 }, scale: (Math.min(width, height) / (2 * 2.75)) * state.zoom };
+    }
     const snap = (x) => Math.round(x * 4) / 4;
     const lab = root.querySelector(".ch2-lab");
     const gate = window.LAPredictGate?.mount(root.querySelector("[data-orient-gate]"), {
@@ -72,13 +86,21 @@
       M().pulseClass(root.querySelector("[data-det-card]"));
     }
 
-    function draw(matrix) {
+    function paint(matrix) {
       state.view = M().drawTransformScene(canvas, matrix, {
         firstLabel: "第 1 列",
         secondLabel: "第 2 列",
-        caption: `det = ${M().formatFrac(M().det2(state.target || matrix))} · 可拖动两个箭头端点`,
+        caption: `det = ${M().formatFrac(M().det2(state.target || matrix))} · 一格面积为 1`,
         orientation: open(),
+        minorGrid: true,
+        // keep labels clear of the zoom control in the top-right corner
+        avoid: [{ x: canvas.getBoundingClientRect().width - 140, y: 0, w: 140, h: 48 }],
+        ...view(),
       });
+    }
+
+    function draw(matrix) {
+      paint(matrix);
       writeControls(matrix, state.target || matrix);
       syncReadout(state.target || matrix);
     }
@@ -88,19 +110,16 @@
     async function goTo(target) {
       const id = ++run;
       M().cancelAnim(canvas);
-      M().matrixState.set(canvas, M().cloneMat(state.matrix));
+      const from = M().cloneMat(state.matrix);
       state.animating = true;
       state.target = M().cloneMat(target);
       writeControls(state.matrix, target);
       syncReadout(target);
       try {
-        await M().animateMatrix(canvas, target, {
-          duration: 650,
-          drawOptions: { firstLabel: "第 1 列", secondLabel: "第 2 列", orientation: open() },
-          onUpdate(current) {
-            state.matrix = M().cloneMat(current);
-            writeControls(current, target);
-          },
+        await M().animateTo(canvas, from, target, 650, (current) => {
+          state.matrix = M().cloneMat(current);
+          paint(current);
+          writeControls(current, target);
         });
         if (id !== run) return;
         state.matrix = M().cloneMat(target);
@@ -129,19 +148,40 @@
       }, { signal });
     });
 
-    canvas.addEventListener("pointerdown", (event) => {
-      if (state.animating || !state.view) return;
+    // zooming is not an action on the columns: it neither counts for the prediction nor moves them
+    root.querySelectorAll("[data-zoom]").forEach((button) => {
+      ["pointerup", "click"].forEach((type) => button.addEventListener(type, (event) => event.stopPropagation(), { signal }));
+      button.addEventListener("click", () => {
+        const step = Number(button.dataset.zoom);
+        zoomIndex = step ? M().clamp(zoomIndex + step, 0, ZOOMS.length - 1) : 2;
+        root.querySelector('[data-zoom="-1"]').disabled = zoomIndex === 0;
+        root.querySelector('[data-zoom="1"]').disabled = zoomIndex === ZOOMS.length - 1;
+        M().animateTo(zoomKey, state.zoom, ZOOMS[zoomIndex], 260, (z) => {
+          state.zoom = z;
+          paint(state.matrix);
+        });
+      }, { signal });
+    });
+
+    const nearEnd = (event) => {
       const rect = canvas.getBoundingClientRect();
       const point = { x: event.clientX - rect.left, y: event.clientY - rect.top };
       const distances = state.view.endpoints.map((end) => Math.hypot(end.x - point.x, end.y - point.y));
       const nearest = distances[0] <= distances[1] ? 0 : 1;
-      if (distances[nearest] > 34) return;
+      return distances[nearest] > 34 ? -1 : nearest;
+    };
+
+    canvas.addEventListener("pointerdown", (event) => {
+      if (state.animating || !state.view) return;
+      const nearest = nearEnd(event);
+      if (nearest < 0) return;
       state.dragging = nearest;
       canvas.setPointerCapture(event.pointerId);
       canvas.classList.add("is-dragging");
     }, { signal });
 
     canvas.addEventListener("pointermove", (event) => {
+      if (state.dragging < 0 && state.view && event.pointerType === "mouse") canvas.classList.toggle("is-grabbable", !state.animating && nearEnd(event) >= 0);
       if (state.dragging < 0 || !state.view) return;
       const rect = canvas.getBoundingClientRect();
       const x = snap(M().clamp((event.clientX - rect.left - state.view.origin.x) / state.view.scale, -2.5, 2.5));
@@ -165,9 +205,12 @@
     window.addEventListener("resize", () => document.body.contains(canvas) && draw(state.matrix), { signal, passive: true });
 
     draw(state.matrix);
+    // the subscript labels use KaTeX's fonts; redraw once they are ready
+    document.fonts?.ready.then(() => document.body.contains(canvas) && !state.animating && draw(state.matrix));
     return () => {
       controller.abort();
       M().cancelAnim(canvas);
+      M().cancelAnim(zoomKey);
     };
   }
 
@@ -202,9 +245,9 @@
         <div class="ch2-lab">
           <div class="ch2-lab-head"><h3>有向面积 · 拖动两列</h3></div>
           <div data-orient-gate></div>
-          <p class="ch2-lab-hint">拖动两根列向量的端点（每次四分之一格），也可以使用滑杆与预设。图形、${tex("ad-bc")}、${tex("|\\det|")} 与状态同步更新；猜过并动手后，紫色弧标出从第 1 列到第 2 列的转向。</p>
+          <p class="ch2-lab-hint">拖动两根列向量的端点（每次四分之一格），也可以使用滑杆与预设。视角固定，一格面积为 1，平行四边形占几格，${tex("|\\det|")} 就是几；猜过并动手后，紫色弧标出从第 1 列到第 2 列的转向。</p>
           <div class="ch2-lab-grid ch2-area-layout">
-            <div class="ch2-stage"><canvas data-ch2-canvas aria-label="可拖动两列向量的有向面积画布"></canvas></div>
+            <div class="ch2-stage"><canvas data-ch2-canvas aria-label="可拖动两列向量的有向面积画布"></canvas><div class="ch2-zoom" role="group" aria-label="缩放视图"><button type="button" data-zoom="-1" aria-label="缩小">−</button><button type="button" data-zoom="0" aria-label="恢复原始大小">1:1</button><button type="button" data-zoom="1" aria-label="放大">+</button></div></div>
             <div class="ch2-side">
               <div class="ch2-meter">
                 <div class="ch2-meter-card" data-det-card><strong>${tex("\\det")}</strong><span data-det>1</span></div>
@@ -216,15 +259,18 @@
               <div class="ch2-sliders">
                 ${["a", "b", "c", "d"].map((key) => `<label><span>${tex(key)}</span><input data-key="${key}" type="range" min="-2.5" max="2.5" step="0.25" aria-label="矩阵元素 ${key}" /><span data-val="${key}">0</span></label>`).join("")}
               </div>
+              <div class="ch2-side-presets">
+                <span>预设</span>
+                <div class="ch2-presets">
+                  <button type="button" data-preset="identity">单位</button>
+                  <button type="button" data-preset="scale2">面积 ${tex("\\times2")}</button>
+                  <button type="button" data-preset="shear">剪切 ${tex("\\det=1")}</button>
+                  <button type="button" data-preset="mirror">镜像</button>
+                  <button type="button" data-preset="collinear">共线</button>
+                  <button type="button" data-preset="negative2">${tex("\\det=-2")}</button>
+                </div>
+              </div>
             </div>
-          </div>
-          <div class="ch2-presets ch2-wide-controls">
-            <button type="button" data-preset="identity">单位</button>
-            <button type="button" data-preset="scale2">面积 ${tex("\\times2")}</button>
-            <button type="button" data-preset="shear">剪切 ${tex("\\det=1")}</button>
-            <button type="button" data-preset="mirror">镜像</button>
-            <button type="button" data-preset="collinear">共线</button>
-            <button type="button" data-preset="negative2">${tex("\\det=-2")}</button>
           </div>
         </div>`;
       return mountDetMeter(root);

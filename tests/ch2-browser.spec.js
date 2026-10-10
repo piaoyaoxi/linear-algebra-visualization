@@ -134,7 +134,9 @@ test.describe("Chapter 2 desktop visual system", () => {
 
   test("§2 turns one adjacent exchange into one inversion change", async ({ page }) => {
     await openLesson(page, "permutations");
-    await expect(page.locator("[data-tau]")).toHaveText("3");
+    // the readouts answer the prediction: hidden until a guess and an action
+    await expect(page.locator("[data-tau]")).toHaveText("—");
+    await expect(page.locator("[data-sgn]")).toHaveText("—");
     await expect(page.locator("[data-wires] path")).toHaveCount(4);
     await expect(page.locator("[data-perm-matrix] td.is-one")).toHaveCount(4);
     // predict first: the step button stays locked until then

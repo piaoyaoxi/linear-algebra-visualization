@@ -367,9 +367,11 @@
     () => {
       const y = window.scrollY;
       if (y < 0 || y > maxScroll()) return;
-      // Safari's toolbars grow back at the ends of the page and change the visible height;
-      // the scroll position moves with them, which is not the reader scrolling
-      if (performance.now() < viewportSettleUntil) {
+      // Safari's toolbars grow back at the bottom of the page and change the visible height;
+      // the scroll position moves with them, which is not the reader scrolling. Only near the
+      // bottom: mid-page the toolbars shrink on every scroll down, and ignoring those events
+      // held the tuck back until the scroll had stopped.
+      if (performance.now() < viewportSettleUntil && y > maxScroll() - 120) {
         lastY = y;
         return;
       }

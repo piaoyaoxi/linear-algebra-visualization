@@ -30,8 +30,6 @@
     "a.button",
     "summary",
     "label.example-choice",
-    ".home-cta",
-    ".home-card",
     ".lesson-card",
     ".lesson-neighbor-card",
     "a.route-card",
@@ -39,7 +37,7 @@
     "a.nav-section",
     ".toc-rail-item",
   ].join(", ");
-  const BLOOM = ".is-primary, .button.primary, .home-cta";
+  const BLOOM = ".is-primary, .button.primary";
   let pressed = null;
 
   const isDisabled = (el) => el.disabled || el.getAttribute("aria-disabled") === "true" || el.closest("[data-no-press]");
@@ -123,7 +121,7 @@
 
   /* ---------- pointer light ---------- */
 
-  const LIT = ".topbar .icon-button, .topbar-search, .home-card";
+  const LIT = ".topbar .icon-button, .topbar-search";
   const fine = window.matchMedia("(hover: hover) and (pointer: fine)");
   let litFrame = 0;
   document.addEventListener(
@@ -335,24 +333,40 @@
     requestAnimationFrame(frame);
   }
 
-  let lastY = window.scrollY;
+  // Scroll rule (as the Chrome / Edge mobile toolbars): 24px down tucks, 16px up brings it back,
+  // the top 30px always shows it. Guards against flicker at the ends of the page:
+  //  - iOS rubber-banding reports positions past either end; that bounce is not the reader
+  //    scrolling, so those events are skipped (otherwise the bounce back at the bottom read as
+  //    "scrolled up" and popped the capsule out);
+  //  - it only tucks below 80px, so small moves near the top cannot toggle it;
+  //  - after each change the opposite change waits 350ms.
+  const maxScroll = () => Math.max(0, document.documentElement.scrollHeight - window.innerHeight);
+  let lastY = clamp(window.scrollY, 0, maxScroll());
   let travel = 0;
+  let quietUntil = 0;
+  const setTuck = (target) => {
+    if (spring.t === target) return;
+    quietUntil = performance.now() + 350;
+    tuckTo(target);
+  };
   window.addEventListener(
     "scroll",
     () => {
       const y = window.scrollY;
+      if (y < 0 || y > maxScroll()) return;
       const dy = y - lastY;
       lastY = y;
       if (!phone.matches || body.classList.contains("search-modal-open") || body.classList.contains("sidebar-open")) return;
       if (y < 30) {
         travel = 0;
-        tuckTo(0);
+        setTuck(0);
         return;
       }
       if (dy * travel < 0) travel = 0;
       travel += dy;
-      if (travel > 24) tuckTo(1);
-      else if (travel < -16) tuckTo(0);
+      if (performance.now() < quietUntil) return;
+      if (travel > 24 && y > 80) setTuck(1);
+      else if (travel < -16) setTuck(0);
     },
     { passive: true },
   );

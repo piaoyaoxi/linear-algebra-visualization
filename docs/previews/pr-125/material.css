@@ -1,8 +1,8 @@
 /*
  * Floating-layer material “透光亚克力” and the press spring (docs/design-spec.md §5, §7).
  * Loaded last on both pages. Only things that float above the page use it:
- * the top controls, the search capsule and results, the phone sidebar, and the
- * home question cards. Lesson content stays solid paper.
+ * the top controls, the search capsule and results, and the phone sidebar.
+ * Lesson content stays solid paper. The home page keeps its own look for now.
  *
  * Recipe: thin tint + wide blur so brighter or more saturated things behind
  * glow through softly; a 1px rim lit from above; fine noise; a soft light at
@@ -30,8 +30,7 @@
   --spring-pop-ms: 740ms;
 }
 
-body.dark,
-:root[data-theme="dark"] {
+body.dark {
   /* a shade lighter than the page, so the tone alone draws the edge (as OKX does) */
   --acr-tint: rgba(44, 48, 45, 0.55);
   --acr-tint-hover: rgba(54, 59, 55, 0.62);
@@ -135,38 +134,6 @@ html :is(body.dark, body) .search-results-panel {
   }
 }
 
-/* ---------- home: question cards and Start sit on the painting ---------- */
-
-html body .home-card {
-  border: 0;
-  background:
-    radial-gradient(160px circle at 18% -20%, rgba(255, 255, 255, 0.55), transparent 70%),
-    var(--acr-noise) 0 0 / 160px 160px,
-    rgba(255, 252, 246, 0.58);
-  box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.9),
-    0 1px 2px rgba(50, 42, 20, 0.08),
-    0 12px 30px -10px rgba(50, 42, 20, 0.3);
-  -webkit-backdrop-filter: blur(30px) saturate(160%);
-  backdrop-filter: blur(30px) saturate(160%);
-}
-
-@media (hover: hover) and (pointer: fine) {
-  html body .home-card:hover {
-    background:
-      radial-gradient(160px circle at var(--lg-x, 18%) var(--lg-y, -20%), rgba(255, 255, 255, 0.6), transparent 70%),
-      var(--acr-noise) 0 0 / 160px 160px,
-      rgba(255, 252, 246, 0.68);
-  }
-}
-
-html body .home-cta {
-  border: 0;
-  box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.5),
-    0 12px 30px -10px rgba(50, 42, 20, 0.32);
-}
-
 /* ---------- press light (primary buttons only, see material.js) ---------- */
 
 .la-bloom {
@@ -188,8 +155,7 @@ html body .home-cta {
   opacity: 0;
 }
 
-body.dark .la-bloom i,
-:root[data-theme="dark"] .la-bloom i {
+body.dark .la-bloom i {
   background: radial-gradient(circle, rgba(255, 255, 255, 0.28), rgba(255, 255, 255, 0) 70%);
 }
 

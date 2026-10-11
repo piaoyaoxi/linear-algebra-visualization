@@ -116,11 +116,6 @@ body.dark .topbar-search {
   backdrop-filter: blur(14px) saturate(120%);
 }
 
-.lg-refract body .icon-button[data-lg-filter],
-.lg-refract body .topbar-search[data-lg-filter] {
-  backdrop-filter: blur(14px) saturate(120%);
-}
-
 body .icon-button:hover,
 body.dark .icon-button:hover,
 body .topbar-search:hover,

@@ -92,12 +92,6 @@ body.dark.search-modal-open .search-capsule-stage .topbar-search {
   outline: 0;
 }
 
-/* The capsule resizes every frame while searching; keep it to plain glass. */
-.lg-refract body.search-modal-open .topbar-search[data-lg-filter] {
-  -webkit-backdrop-filter: blur(var(--lg-blur)) saturate(var(--lg-saturate)) brightness(var(--lg-brightness));
-  backdrop-filter: blur(var(--lg-blur)) saturate(var(--lg-saturate)) brightness(var(--lg-brightness));
-}
-
 .search-capsule-open {
   position: absolute;
   inset: 0;

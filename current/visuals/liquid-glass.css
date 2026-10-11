@@ -101,12 +101,6 @@ body.dark .topbar-search {
     color 160ms ease;
 }
 
-/* Chromium: edge refraction from liquid-glass.js. */
-.lg-refract body .icon-button[data-lg-filter],
-.lg-refract body .topbar-search[data-lg-filter] {
-  backdrop-filter: var(--lg-refraction) blur(var(--lg-blur)) saturate(var(--lg-saturate)) brightness(var(--lg-brightness));
-}
-
 body .icon-button:hover,
 body.dark .icon-button:hover,
 body .topbar-search:hover,

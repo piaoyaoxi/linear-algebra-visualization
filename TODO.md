@@ -460,3 +460,12 @@ _dev/research/3b1b_eola_chapter10.py
 - 第四章 §4 阶段滑杆：滑块 18px（border-box，`*` 管不到伪元素），三个刻度点和绿色进度都按滑块中心的行程（两端各缩 9px）对齐，iOS 上末端刻度不再露在滑块外。
 - 检查工具：`.github/scripts/webkit-overflow-scan.mjs`，WebKit 375/390 下逐节找比父盒子或屏幕宽的元素（需先 `npx playwright install webkit`）。剩下的只有第二章 §6 棋盘格激活时 scale 放大 2px（变换，不影响布局）。
 - 待定（内容线）：全站多处“左图/右图”，手机上图上下排列，应考虑改成不依赖方位的说法。
+
+## 第八轮：统一设计语言——浮层材质与弹性动效（2026-10-12，`ui/material-motion`，Claude）
+
+- 材质研究结论：不用液态玻璃（SVG 位移折射只有 Chromium 渲染，Safari/Firefox 只剩模糊；尺寸一变就要重算），采用“透光亚克力”：薄底 + 大模糊 + 上亮下暗光边 + 细噪点 + 指针光。浅色纸面上它和旧玻璃几乎看不出区别（背后没有更亮的东西），差别在暗色模式、首页大图、滑过绿按钮/画布时。规范见 `docs/design-spec.md` §5、§7。
+- 新文件 `current/material.css`（两页都最后加载）、`current/material.js`（按下弹簧、主按钮按下光、指针光、手机顶栏收起）。`visuals/liquid-glass.js` 去掉了已被样式关掉的折射位移图（每次加载都在算）和旧的指针光，只留滚动边缘；相关 `.lg-refract` 规则一并删除。
+- 搜索：`visuals/search.js` 胶囊位移改为直接跟随弹簧（阻尼 0.74/0.76），过冲沿运动方向；去掉原来到位时的尺寸鼓胀。
+- 用户确认过的取舍：手机收起时汉堡不动、不要水滴颈；搜索仍飞到屏幕中间，不要两侧展开；不加下拉菜单。原型在会话 scratchpad，不进仓库。
+- 待验证：Safari 真机（用户 Safari 只允许 HTTPS，本地 http 打不开；无头 WebKit 不渲染 backdrop 模糊）→ 用 PR 预览页在 iPhone 上看模糊、遮罩、回弹。
+

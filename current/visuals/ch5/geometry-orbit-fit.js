@@ -526,8 +526,11 @@
     root.addEventListener("pointermove", schedule, { signal: controller.signal });
     root.addEventListener("click", schedule, { signal: controller.signal });
     root.addEventListener("input", schedule, { signal: controller.signal });
-    // a lab that animates a value without input events asks for a redraw this way
-    root.addEventListener("la-redraw", schedule, { signal: controller.signal });
+    // a lab that animates a value without input events asks for a redraw this way. Redraw at
+    // once: the lab has just painted its flat preview surface on the same canvas, and waiting for
+    // the next frame would let that preview (at another scale) show for a frame — every frame
+    // while the slider glides to its stop.
+    root.addEventListener("la-redraw", () => redraw(), { signal: controller.signal });
     window.addEventListener("resize", schedule, { signal: controller.signal, passive: true });
     schedule();
     return () => controller.abort();

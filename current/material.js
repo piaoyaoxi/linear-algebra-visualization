@@ -23,7 +23,22 @@
 
   /* ---------- press spring ---------- */
 
-  const PRESSABLE = 'button, [role="button"], a.button, .home-cta, .home-card, .lesson-card, .lesson-neighbor-card';
+  // every control a student presses: buttons, options, fold-outs, cards and the navigation links
+  const PRESSABLE = [
+    "button",
+    '[role="button"]',
+    "a.button",
+    "summary",
+    "label.example-choice",
+    ".home-cta",
+    ".home-card",
+    ".lesson-card",
+    ".lesson-neighbor-card",
+    "a.route-card",
+    "a.nav-chapter",
+    "a.nav-section",
+    ".toc-rail-item",
+  ].join(", ");
   const BLOOM = ".is-primary, .button.primary, .home-cta";
   let pressed = null;
 
@@ -91,7 +106,8 @@
       press(el);
       if (el.matches(BLOOM)) bloom(el, event.clientX, event.clientY);
     },
-    { passive: true },
+    // capture: labs that stop pointerdown for their own dragging still get the press
+    { passive: true, capture: true },
   );
   window.addEventListener("pointerup", release, { passive: true });
   window.addEventListener("pointercancel", release, { passive: true });

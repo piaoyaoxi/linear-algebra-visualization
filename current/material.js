@@ -243,19 +243,26 @@
   let running = false;
   let last = 0;
   let home = null;
-  const STYLE_KEYS = ["position", "left", "top", "width", "height", "transform", "opacity"];
+  // Everything is laid out in the capsule's own box (left/top relative to its resting place),
+  // so nothing depends on where the top bar happens to be on screen. iOS shifts fixed bars by
+  // a few pixels while the page rubber-bands; positions read from the screen then were off
+  // and the capsule jumped when the bounce settled.
+  const BUTTON_KEYS = ["left", "top", "width", "height"];
 
   function clearStage() {
-    STYLE_KEYS.forEach((key) => stage.style.removeProperty(key));
+    stage.style.removeProperty("opacity");
+    BUTTON_KEYS.forEach((key) => openButton.style.removeProperty(key));
     openButton.style.removeProperty("--search-closed-content-opacity");
     openButton.querySelectorAll(":scope > svg, :scope > .topbar-search-text").forEach((el) => el.style.removeProperty("filter"));
     home = null;
   }
 
+  // the capsule's size and the menu button's centre, measured together so a shift of the
+  // whole bar cancels out
   function measure() {
-    STYLE_KEYS.forEach((key) => stage.style.removeProperty(key));
-    const r = stage.getBoundingClientRect();
-    home = { left: r.left, top: r.top, width: r.width, height: r.height };
+    const s = stage.getBoundingClientRect();
+    const mr = menu.getBoundingClientRect();
+    home = { width: s.width, height: s.height, menuX: mr.left + mr.width / 2 - s.left, menuR: mr.width / 2 };
   }
 
   // m = 0 at rest, 1 tucked. The capsule shortens from the right while it
@@ -268,24 +275,21 @@
     }
     if (!home) measure();
     const R = home.height / 2;
-    const mr = menu.getBoundingClientRect();
-    const x1 = mr.left + mr.width / 2;
-    const a0 = home.left + R;
-    const b0 = home.left + home.width - R;
+    const x1 = home.menuX;
+    const a0 = R;
+    const b0 = home.width - R;
     const t = clamp(m);
     const k = outCubic(clamp(t / 0.62));
     let a = lerp(a0, x1, inOut(t));
     let r = lerp(R, R * 0.75, k);
     let b = a + (b0 - a0) * (1 - k);
-    const f = clamp(1 - (a - x1) / (mr.width / 2 + r));
+    const f = clamp(1 - (a - x1) / (home.menuR + r));
     if (f > 0) r *= Math.sqrt(1 - f);
     if (m < 0) b += (b0 - a0) * 1.1 * -m; // springing back out: a little long, then settle
-    stage.style.position = "fixed";
-    stage.style.transform = "none";
-    stage.style.left = `${(a - r).toFixed(2)}px`;
-    stage.style.top = `${(home.top + R - r).toFixed(2)}px`;
-    stage.style.width = `${Math.max(0, b - a + 2 * r).toFixed(2)}px`;
-    stage.style.height = `${Math.max(0, 2 * r).toFixed(2)}px`;
+    openButton.style.left = `${(a - r).toFixed(2)}px`;
+    openButton.style.top = `${(R - r).toFixed(2)}px`;
+    openButton.style.width = `${Math.max(0, b - a + 2 * r).toFixed(2)}px`;
+    openButton.style.height = `${Math.max(0, 2 * r).toFixed(2)}px`;
     stage.style.opacity = (1 - f).toFixed(3);
     const label = clamp(1 - m / 0.3);
     openButton.style.setProperty("--search-closed-content-opacity", label.toFixed(3));
@@ -344,6 +348,15 @@
   let lastY = clamp(window.scrollY, 0, maxScroll());
   let travel = 0;
   let quietUntil = 0;
+  let viewportSettleUntil = 0;
+  let viewportH = window.visualViewport?.height || window.innerHeight;
+  const onViewport = () => {
+    const h = window.visualViewport?.height || window.innerHeight;
+    if (Math.abs(h - viewportH) > 1) viewportSettleUntil = performance.now() + 400;
+    viewportH = h;
+  };
+  window.visualViewport?.addEventListener("resize", onViewport, { passive: true });
+  window.addEventListener("resize", onViewport, { passive: true });
   const setTuck = (target) => {
     if (spring.t === target) return;
     quietUntil = performance.now() + 350;
@@ -354,6 +367,12 @@
     () => {
       const y = window.scrollY;
       if (y < 0 || y > maxScroll()) return;
+      // Safari's toolbars grow back at the ends of the page and change the visible height;
+      // the scroll position moves with them, which is not the reader scrolling
+      if (performance.now() < viewportSettleUntil) {
+        lastY = y;
+        return;
+      }
       const dy = y - lastY;
       lastY = y;
       if (!phone.matches || body.classList.contains("search-modal-open") || body.classList.contains("sidebar-open")) return;

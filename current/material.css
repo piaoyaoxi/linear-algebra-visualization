@@ -25,6 +25,9 @@
   /* springs, sampled from duration/bounce (WWDC23 “Animate with springs”) */
   --spring-release: linear(0, 0.026, 0.094, 0.189, 0.297, 0.41, 0.521, 0.625, 0.718, 0.799, 0.868, 0.923, 0.967, 1, 1.024, 1.04, 1.049, 1.054, 1.054, 1.052, 1.047, 1.042, 1.036, 1.03, 1.024, 1.018, 1.013, 1.009, 1.006, 1.003, 1.001, 0.999, 0.998, 0.998, 0.997, 0.997, 1);
   --spring-release-ms: 650ms;
+  /* duration 0.5 s, bounce 0.3: a selection that slides to its new place (~4.6% overshoot) */
+  --spring-pop: linear(0, 0.024, 0.086, 0.173, 0.273, 0.379, 0.484, 0.583, 0.674, 0.755, 0.824, 0.882, 0.93, 0.967, 0.996, 1.017, 1.031, 1.04, 1.045, 1.046, 1.045, 1.042, 1.038, 1.033, 1.028, 1.024, 1.019, 1.015, 1.011, 1.008, 1.005, 1.003, 1.001, 1, 0.999, 0.998, 1);
+  --spring-pop-ms: 740ms;
 }
 
 body.dark,
@@ -201,5 +204,49 @@ body.dark .la-bloom i,
   html body .topbar .topbar-center {
     position: relative;
     z-index: 1;
+  }
+}
+
+/* ---------- segmented controls: the selection slides between options (material.js) ---------- */
+
+.la-seg {
+  position: relative;
+  isolation: isolate;
+}
+
+.la-seg::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  z-index: -1;
+  box-sizing: border-box;
+  width: var(--seg-w, 0);
+  height: var(--seg-h, 0);
+  border: var(--seg-border, 0 solid transparent);
+  border-radius: var(--seg-r, 999px);
+  background: var(--seg-bg, transparent);
+  box-shadow: var(--seg-shadow, none);
+  transform: translate(var(--seg-x, 0), var(--seg-y, 0));
+  pointer-events: none;
+}
+
+.la-seg.is-seg-live::before {
+  transition:
+    transform var(--spring-pop-ms) var(--spring-pop),
+    width var(--spring-pop-ms) var(--spring-pop),
+    background-color 200ms ease;
+}
+
+/* the chosen option hands its own fill to the sliding layer */
+.la-seg.is-seg-handoff > :is(.is-active, [aria-pressed="true"], [aria-selected="true"]) {
+  border-color: transparent !important;
+  background: transparent !important;
+  box-shadow: none !important;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .la-seg.is-seg-live::before {
+    transition: none;
   }
 }

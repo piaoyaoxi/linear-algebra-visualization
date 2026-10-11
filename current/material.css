@@ -16,11 +16,10 @@
   --acr-tint-regular: rgba(250, 247, 240, 0.74);
   --acr-filter: blur(30px) saturate(185%) brightness(1.03);
   --acr-filter-regular: blur(30px) saturate(160%);
-  --acr-rim-top: rgba(255, 255, 255, 0.82);
-  --acr-rim-bottom: rgba(255, 255, 255, 0.14);
-  --acr-edge: rgba(60, 52, 30, 0.11);
+  /* no outline: the edge comes from a rim lit only from above, the tone, and the shadow */
+  --acr-rim-top: rgba(255, 255, 255, 0.9);
   --acr-glow: rgba(255, 255, 255, 0.5);
-  --acr-shadow: 0 1px 1px rgba(50, 42, 20, 0.05), 0 10px 26px -10px rgba(50, 42, 20, 0.28);
+  --acr-shadow: 0 1px 2px rgba(50, 42, 20, 0.09), 0 10px 26px -10px rgba(50, 42, 20, 0.32);
   --acr-noise: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.8' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='1 0 0 0 0 1 0 0 0 0 1 0 0 0 0 0 0 0 0 .07'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
 
   /* springs, sampled from duration/bounce (WWDC23 “Animate with springs”) */
@@ -30,14 +29,13 @@
 
 body.dark,
 :root[data-theme="dark"] {
-  --acr-tint: rgba(26, 29, 27, 0.5);
-  --acr-tint-hover: rgba(36, 40, 37, 0.6);
+  /* a shade lighter than the page, so the tone alone draws the edge (as OKX does) */
+  --acr-tint: rgba(44, 48, 45, 0.55);
+  --acr-tint-hover: rgba(54, 59, 55, 0.62);
   --acr-tint-regular: rgba(28, 31, 29, 0.78);
   --acr-filter: blur(30px) saturate(170%);
   --acr-filter-regular: blur(30px) saturate(150%);
-  --acr-rim-top: rgba(255, 255, 255, 0.2);
-  --acr-rim-bottom: rgba(255, 255, 255, 0.04);
-  --acr-edge: rgba(255, 255, 255, 0.07);
+  --acr-rim-top: rgba(255, 255, 255, 0.26);
   --acr-glow: rgba(255, 255, 255, 0.1);
   --acr-shadow: 0 1px 1px rgba(0, 0, 0, 0.2), 0 12px 28px -10px rgba(0, 0, 0, 0.6);
 }
@@ -51,13 +49,29 @@ html :is(body.dark, body) .topbar .search-capsule-stage .topbar-search {
     radial-gradient(90px circle at 24% -30%, var(--acr-glow), transparent 70%),
     var(--acr-noise) 0 0 / 160px 160px,
     var(--acr-tint);
-  box-shadow:
-    inset 0 1px 0 var(--acr-rim-top),
-    inset 0 -1px 0 var(--acr-rim-bottom),
-    inset 0 0 0 1px var(--acr-edge),
-    var(--acr-shadow);
+  box-shadow: var(--acr-shadow);
   -webkit-backdrop-filter: var(--acr-filter);
   backdrop-filter: var(--acr-filter);
+}
+
+html :is(body.dark, body) .topbar .icon-button {
+  position: relative;
+}
+
+/* the rim: a 1px ring, bright at the top and gone by half height — light catching the top edge */
+html :is(body.dark, body) .topbar .icon-button::after,
+html :is(body.dark, body) .topbar .search-capsule-stage .topbar-search::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  padding: 1px;
+  border-radius: inherit;
+  background: linear-gradient(180deg, var(--acr-rim-top), transparent 50%);
+  -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  opacity: 1;
+  pointer-events: none;
 }
 
 /* the capsule thickens into the regular material while it travels to the search position */
@@ -80,22 +94,23 @@ html :is(body.dark, body) .topbar .search-capsule-stage .topbar-search {
 
 html :is(body.dark, body).search-modal-open .topbar .search-capsule-stage .topbar-search {
   box-shadow:
-    inset 0 1px 0 var(--acr-rim-top),
-    inset 0 0 0 1px var(--acr-edge),
-    0 1px 1px rgb(50 42 20 / calc(0.05 * (1 - var(--search-surface-merge, 0)))),
-    0 10px 26px -10px rgb(50 42 20 / calc(0.28 * (1 - var(--search-surface-merge, 0))));
+    0 1px 2px rgb(50 42 20 / calc(0.09 * (1 - var(--search-surface-merge, 0)))),
+    0 10px 26px -10px rgb(50 42 20 / calc(0.32 * (1 - var(--search-surface-merge, 0))));
 }
 
 html body.dark.search-modal-open .topbar .search-capsule-stage .topbar-search {
   box-shadow:
-    inset 0 1px 0 var(--acr-rim-top),
-    inset 0 0 0 1px var(--acr-edge),
     0 12px 28px -10px rgb(0 0 0 / calc(0.6 * (1 - var(--search-surface-merge, 0))));
 }
 
 /* ---------- search results and the phone sidebar: regular material ---------- */
 
 html :is(body.dark, body) .search-results-panel {
+  border: 0;
+  box-shadow:
+    inset 0 1px 0 var(--acr-rim-top),
+    0 28px 64px rgb(20 28 40 / calc(0.16 * (1 - var(--search-surface-merge, 0)))),
+    0 5px 16px rgb(20 28 40 / calc(0.08 * (1 - var(--search-surface-merge, 0))));
   background:
     var(--acr-noise) 0 0 / 160px 160px,
     var(--acr-tint-regular);
@@ -108,9 +123,9 @@ html :is(body.dark, body) .search-results-panel {
     background:
       var(--acr-noise) 0 0 / 160px 160px,
       var(--acr-tint-regular);
+    border: 0;
     box-shadow:
       inset 0 1px 0 var(--acr-rim-top),
-      inset 0 0 0 1px var(--acr-edge),
       var(--acr-shadow);
     -webkit-backdrop-filter: var(--acr-filter-regular);
     backdrop-filter: var(--acr-filter-regular);
@@ -126,11 +141,9 @@ html body .home-card {
     var(--acr-noise) 0 0 / 160px 160px,
     rgba(255, 252, 246, 0.58);
   box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.85),
-    inset 0 -1px 0 rgba(255, 255, 255, 0.18),
-    inset 0 0 0 1px rgba(255, 255, 255, 0.32),
-    0 1px 1px rgba(50, 42, 20, 0.05),
-    0 12px 30px -10px rgba(50, 42, 20, 0.28);
+    inset 0 1px 0 rgba(255, 255, 255, 0.9),
+    0 1px 2px rgba(50, 42, 20, 0.08),
+    0 12px 30px -10px rgba(50, 42, 20, 0.3);
   -webkit-backdrop-filter: blur(30px) saturate(160%);
   backdrop-filter: blur(30px) saturate(160%);
 }
@@ -145,10 +158,9 @@ html body .home-card {
 }
 
 html body .home-cta {
+  border: 0;
   box-shadow:
     inset 0 1px 0 rgba(255, 255, 255, 0.5),
-    inset 0 -1px 0 rgba(255, 255, 255, 0.1),
-    inset 0 0 0 1px rgba(255, 255, 255, 0.22),
     0 12px 30px -10px rgba(50, 42, 20, 0.32);
 }
 

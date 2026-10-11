@@ -470,3 +470,4 @@ _dev/research/3b1b_eola_chapter10.py
 - 待验证：Safari 真机（用户 Safari 只允许 HTTPS，本地 http 打不开；无头 WebKit 不渲染 backdrop 模糊）→ 用 PR 预览页在 iPhone 上看模糊、遮罩、回弹。
 - 追加（同一 PR）：浮层去掉整圈描边，改为只在上沿的渐隐高光 + 色调差 + 柔影（用户看了 OKX 的处理后确认）；第五章 §3/§4 滑杆松手时曲面闪大（main 上原有）改为收到 `la-redraw` 立即重画；按下回弹补到侧栏、进度条、折叠块、例题选项、路线卡。
 - 追加：切换片滑块（原型里有、首版漏做）。`material.js` 找“圆角轨道 + 全是按钮 + 恰好一个选中（`.is-active` / `aria-pressed` / `aria-selected`）”的容器，选中项的底色移到轨道 `::before`，切换时弹簧滑动；读取底色时只临时撤掉 `.is-seg-handoff`，不撤 `.la-seg`（撤了 `::before` 会重建，滑动就没了）。
+- 追加：首页退回原样（不加载 `material.css/js`），首页材质以后再定，届时沿用学习页这套。手机明暗切换的月亮缩到与太阳同样大小（design-spec §8）。手机顶栏滚动收起加防抖（iOS 回弹、顶部 80px、350ms），修复滑到顶部/底部时搜索框来回跳。

@@ -236,6 +236,22 @@ body.theme-transitioning::before {
   }
 }
 
+/*
+ * Portrait phones: the two images frame their discs differently, so under the same cover fit
+ * the moon came out larger than the sun. Scale the moon so both discs have the same radius and
+ * their curved edges sit at the same place. Fitted from the images: moon disc r 679 centred at
+ * (232, 766) of 930×1024 (its rim is dotted, so the fit counts sparse pixels); sun disc r 553 at
+ * (410, 687) of 1166×941. With a height-limited cover fit (every portrait screen) the ratio is
+ * 0.886 and the shift below lines the edges up. The vertical position is left as it is (the
+ * moon sits 5% of the height lower): lifting it would show the straight bottom edge of its image.
+ */
+@media (max-width: 720px) and (orientation: portrait) {
+  .theme-transition[data-mode="luna"] .theme-transition__art {
+    scale: 0.886;
+    translate: calc(11.374% - 19.929vh) 0;
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   :root {
     --theme-tx-duration: 420ms;

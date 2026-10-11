@@ -216,8 +216,10 @@
       this.motion = new ReversibleSpring({
         openFrequency: reduced ? 48 : 19.5,
         closeFrequency: reduced ? 50 : 21,
-        openDamping: reduced ? 1 : 0.92,
-        closeDamping: reduced ? 1 : 0.97,
+        // ~3% overshoot each way: the capsule lands a little past the search
+        // position, and on the way home a little past its top-bar slot.
+        openDamping: reduced ? 1 : 0.74,
+        closeDamping: reduced ? 1 : 0.76,
         onUpdate: (value, raw, target) => this.render(value, raw, target),
         onSettle: (value) => this.settle(value),
       });
@@ -427,10 +429,12 @@
       if (!this.geometry) this.measure();
 
       const backdropProgress = smootherstep(range(p, 0.01, 0.3));
-      const travelProgress = smootherstep(range(p, 0.02, 0.54));
+      // Travel follows the spring itself (not clamped), so its overshoot
+      // carries on along the path: further down and wider when opening,
+      // further up and narrower when returning, then settles.
+      const travelProgress = clamp(raw, -0.08, 1.08);
       const closedContentProgress = 1 - smootherstep(range(p, 0.18, 0.48));
       const openContentProgress = smootherstep(range(p, 0.38, 0.62));
-      const overshoot = target === 1 ? clamp(raw - 1, -0.05, 0.05) : 0;
 
       backdrop.style.opacity = backdropProgress.toFixed(4);
       open.style.setProperty("--search-closed-content-opacity", closedContentProgress.toFixed(4));
@@ -443,7 +447,7 @@
 
       const { start, end } = this.geometry;
       const press = target === 1 ? Math.sin(range(p, 0, 0.16) * Math.PI) * 0.008 : 0;
-      const pulse = 1 - press + overshoot * 0.08;
+      const pulse = 1 - press;
       capsule.style.width = `${px(lerp(start.width, end.width, travelProgress) * pulse)}px`;
       capsule.style.height = `${px(lerp(start.height, end.height, travelProgress) * pulse)}px`;
       capsule.style.transform = `translate3d(${px(lerp(0, end.left - start.left, travelProgress))}px, ${px(

@@ -34,18 +34,28 @@ if (styles.length < 40) throw new Error('Expected ordered stylesheets: ' + style
 const bundleStyles = styles.filter(match => !match[1].startsWith('./vendor/katex/'));
 function rewriteCssUrls(source, file) {
   const from = path.posix.dirname(file);
-  return source.replace(/url\(\s*(["']?)([^"')]+)\1\s*\)/gi, (full, quote, original) => {
-    const ref = original.trim();
+  // Match a WHOLE quoted URL, including its internal quotes/parentheses.
+  // The acrylic noise data URI contains filter='url(%23n)' inside a double-
+  // quoted url("data:..."). A naive URL regex rewrote that embedded SVG fragment
+  // as ../%23n, which made the topbar's thin noise layer opaque black on Safari.
+  return source.replace(/url\(\s*(?:(["'])(.*?)\1|([^"')]+))\s*\)/gi, (full, quote, quoted, unquoted) => {
+    const ref = (quoted ?? unquoted).trim();
     if (/^(?:data:|https?:|\/\/|\/|#|blob:)/i.test(ref)) return full;
     const rewritten = path.posix.normalize(path.posix.join(from, ref));
     if (rewritten.startsWith('../')) throw new Error('CSS URL escapes root: ' + file + ' -> ' + ref);
-    return 'url(' + quote + '../' + rewritten + quote + ')';
+    return 'url(' + (quote || '') + '../' + rewritten + (quote || '') + ')';
   });
 }
 const cssCode = bundleStyles.map(match => {
   const {file, source} = sourceFile(match[1]);
   return '\n/* ' + file + ' */\n' + rewriteCssUrls(source, file) + '\n';
 }).join('\n');
+// Regression guard: the inline SVG's internal filter reference MUST survive
+// untouched. Its corruption caused black opaque top controls on mobile Safari.
+const originalNoise = sourceFile('./material.css').source.match(/--acr-noise:\s*(url\("data:[^"]+"\))/)?.[1];
+if (!originalNoise || !cssCode.includes(originalNoise)) {
+  throw new Error('Bundled acrylic noise SVG was modified (broken fragment filter reference)');
+}
 const cssLink = '<link rel="stylesheet" href="' + writeBundle('learn-style', 'css', cssCode) + '" />';
 bundleStyles.forEach((match, index) => { html = html.replace(match[0], index === 0 ? cssLink : ''); });
 

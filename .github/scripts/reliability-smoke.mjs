@@ -11,14 +11,13 @@ async function open(route, initScript) {
   page.on("pageerror", (error) => errors.push(error.message));
   if (initScript) await page.addInitScript(initScript);
   await page.goto(`${origin}/learn.html#${route}`, { waitUntil: "networkidle" });
-  console.log("route", route, await page.evaluate(() => ({ bodyRoute: document.body.dataset.route, view: document.body.dataset.view, count: document.querySelectorAll("#chapterNav .chapter-group").length, examples: document.querySelectorAll("[data-example-challenge]").length, title: document.title, h1: document.querySelector("main h1")?.textContent, assetCount: document.querySelectorAll("script[src*=ch6]").length })), errors);
   await page.locator("#chapterNav .chapter-group").first().waitFor({ state: "attached" });
   return { page, errors };
 }
 
 try {
   {
-    const { page, errors } = await open("home");
+    const { page, errors } = await open("guide");
     assert.equal(await page.evaluate(() => typeof window.Ch8Poly), "undefined", "home should not load chapter 8 lab code");
     assert.ok(await page.locator("#chapterNav [data-section-link]").count() >= 70, "all chapter links remain visible");
     assert.deepEqual(errors, [], "home must not raise page errors");
@@ -54,7 +53,7 @@ try {
     await page.close();
   }
   {
-    const { page, errors } = await open("home", () => {
+    const { page, errors } = await open("guide", () => {
       window.localStorage.setItem("la-visual-progress", "{ invalid json");
     });
     assert.ok(await page.locator("#chapterNav [data-section-link]").count() >= 70);
@@ -62,7 +61,7 @@ try {
     await page.close();
   }
   {
-    const { page, errors } = await open("home", () => {
+    const { page, errors } = await open("guide", () => {
       Object.defineProperty(window, "localStorage", { configurable: true, get() { throw new Error("storage unavailable"); } });
     });
     assert.ok(await page.locator("#chapterNav [data-section-link]").count() >= 70);

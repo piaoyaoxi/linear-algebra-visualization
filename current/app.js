@@ -386,17 +386,16 @@ function ensureChapterAssets(chapterId) {
   const sources = [...document.querySelectorAll("script[data-lazy-chapter]")]
     .filter((node) => node.dataset.lazyChapter === chapterId)
     .map((node) => node.dataset.src);
-  const promise = (async () => {
-    for (const src of sources) {
-      await new Promise((resolve, reject) => {
-        const script = document.createElement("script");
-        script.src = src;
-        script.onload = resolve;
-        script.onerror = () => reject(new Error("Failed to load chapter asset: " + src));
-        document.head.append(script);
-      });
-    }
-  })();
+  // Fetch in parallel while executing in markup order (classic scripts with
+  // async=false); sequential downloads add a round trip per file on mobile.
+  const promise = Promise.all(sources.map((src) => new Promise((resolve, reject) => {
+    const script = document.createElement("script");
+    script.async = false;
+    script.src = src;
+    script.onload = resolve;
+    script.onerror = () => reject(new Error("Failed to load chapter asset: " + src));
+    document.head.append(script);
+  })));
   chapterAssetPromises.set(chapterId, promise);
   return promise;
 }

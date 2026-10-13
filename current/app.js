@@ -405,7 +405,7 @@ async function renderRoute() {
   const requestId = ++routeRequestId;
   const raw = decodeURIComponent(window.location.hash.replace(/^#/, "")) || "home";
   const [requestedChapter, requestedSection] = raw.split("/");
-  if (requestedSection && /^ch\\d+$/.test(requestedChapter)) {
+  if (requestedSection && /^ch\d+$/.test(requestedChapter)) {
     try {
       await ensureChapterAssets(requestedChapter);
     } catch (error) {

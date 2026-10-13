@@ -1,0 +1,49 @@
+/* Final overlay corrections for the orbit-camera layer. */
+.qv-orbit-hero > .qv-orbit-title,
+.qv-orbit-hero > .qv-orbit-hint {
+  bottom: auto;
+  display: block;
+  min-height: 0;
+  margin: 0;
+}
+
+.qv-orbit-hero > .qv-orbit-title {
+  top: 14px;
+  left: 14px;
+  right: auto;
+  width: auto;
+  max-width: calc(100% - 170px);
+  padding: 8px 12px;
+}
+
+.qv-orbit-hero > .qv-orbit-hint {
+  top: 15px;
+  left: auto;
+  right: 14px;
+  width: auto;
+  max-width: none;
+  padding: 7px 10px;
+}
+
+.qv-orbit-hero canvas {
+  position: relative;
+  z-index: 1;
+}
+
+.qv-orbit-caption {
+  margin-top: 0;
+}
+
+@media (max-width: 680px) {
+  .qv-orbit-hero > .qv-orbit-title {
+    top: 10px;
+    left: 10px;
+    max-width: calc(100% - 20px);
+  }
+
+  .qv-orbit-hero > .qv-orbit-hint {
+    top: auto;
+    right: 10px;
+    bottom: 10px;
+  }
+}

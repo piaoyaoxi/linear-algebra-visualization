@@ -89,6 +89,8 @@ body.dark {
 html {
   scroll-behavior: auto;
   scroll-padding-top: 92px;
+  /* Avoid the native gray tap flash on iOS; preserve custom button feedback. */
+  -webkit-tap-highlight-color: transparent;
 }
 
 body {

@@ -37,7 +37,7 @@ function rewriteCssUrls(source, file) {
     if (/^(?:data:|https?:|\/\/|\/|#|blob:)/i.test(ref)) return full;
     const rewritten = path.posix.normalize(path.posix.join(from, ref));
     if (rewritten.startsWith('../')) throw new Error('CSS URL escapes root: ' + file + ' -> ' + ref);
-    return 'url(' + quote + './' + rewritten + quote + ')';
+    return 'url(' + quote + '../' + rewritten + quote + ')';
   });
 }
 const cssCode = styles.map(match => {

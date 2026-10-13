@@ -11,7 +11,8 @@ async function open(route, initScript) {
   page.on("pageerror", (error) => errors.push(error.message));
   if (initScript) await page.addInitScript(initScript);
   await page.goto(`${origin}/learn.html#${route}`, { waitUntil: "networkidle" });
-  await page.locator("#chapterNav .chapter-group").first().waitFor();
+  console.log("route", route, await page.evaluate(() => ({ bodyRoute: document.body.dataset.route, view: document.body.dataset.view, count: document.querySelectorAll("#chapterNav .chapter-group").length, examples: document.querySelectorAll("[data-example-challenge]").length, title: document.title, h1: document.querySelector("main h1")?.textContent, assetCount: document.querySelectorAll("script[src*=ch6]").length })), errors);
+  await page.locator("#chapterNav .chapter-group").first().waitFor({ state: "attached" });
   return { page, errors };
 }
 

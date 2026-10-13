@@ -30,6 +30,8 @@ function sourceFile(ref) {
 }
 const styles = [...html.matchAll(/<link rel="stylesheet" href="(\.\/[^\"]+\.css(?:\?[^\"]+)?)"\s*\/>/g)];
 if (styles.length < 40) throw new Error('Expected ordered stylesheets: ' + styles.length);
+// Keep KaTeX CSS separate; the math-style isolation audit intentionally imports only this file.
+const bundleStyles = styles.filter(match => !match[1].startsWith('./vendor/katex/'));
 function rewriteCssUrls(source, file) {
   const from = path.posix.dirname(file);
   return source.replace(/url\(\s*(["']?)([^"')]+)\1\s*\)/gi, (full, quote, original) => {
@@ -40,12 +42,12 @@ function rewriteCssUrls(source, file) {
     return 'url(' + quote + '../' + rewritten + quote + ')';
   });
 }
-const cssCode = styles.map(match => {
+const cssCode = bundleStyles.map(match => {
   const {file, source} = sourceFile(match[1]);
   return '\n/* ' + file + ' */\n' + rewriteCssUrls(source, file) + '\n';
 }).join('\n');
 const cssLink = '<link rel="stylesheet" href="' + writeBundle('learn-style', 'css', cssCode) + '" />';
-styles.forEach((match, index) => { html = html.replace(match[0], index === 0 ? cssLink : ''); });
+bundleStyles.forEach((match, index) => { html = html.replace(match[0], index === 0 ? cssLink : ''); });
 
 // Keep KaTeX as an independently cacheable dependency.
 const defer = [...html.matchAll(/<script defer src="(\.\/[^\"]+\.js(?:\?[^\"]+)?)"><\/script>/g)];
@@ -82,6 +84,6 @@ for (const [chapter, items] of chapters) {
     '<script type="application/x-algebra-chapter" data-lazy-chapter="' + chapter + '" data-src="' + href + '"></script>' : ''); });
 }
 fs.writeFileSync(htmlPath, html);
-console.log(JSON.stringify({styles: styles.length, coreScripts: sourceScripts.length,
+console.log(JSON.stringify({styles: styles.length, combinedStyles: bundleStyles.length, coreScripts: sourceScripts.length,
   coreBundles: chunks.length, chapterScripts: lazy.length, chapterBundles: chapters.size,
   cssBytes: Buffer.byteLength(cssCode), vendor: vendor.length}, null, 2));

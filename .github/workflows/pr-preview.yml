@@ -36,6 +36,9 @@ jobs:
           path: pages
           persist-credentials: true
 
+      - name: Bundle learning page for realistic preview performance
+        run: node source/.github/scripts/build-learn-bundles.mjs source/current
+
       - name: Publish current website under this pull request
         id: publish
         run: |

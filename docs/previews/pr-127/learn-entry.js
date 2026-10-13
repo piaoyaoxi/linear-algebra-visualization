@@ -44,7 +44,7 @@ function learnFirstStructuredTarget() {
 }
 
 function learnLastTarget() {
-  const last = localStorage.getItem("la-visual-last");
+  const last = readPreference("la-visual-last");
   if (!last || !last.startsWith("#")) return null;
 
   const [route, section] = last.slice(1).split("/");
@@ -216,7 +216,7 @@ renderRoute = function renderLearningRoute() {
   else renderPlaceholder(chapter);
 
   if (chapter.id !== "guide") {
-    localStorage.setItem("la-visual-last", `#${state.route}${state.section ? `/${state.section}` : ""}`);
+    writePreference("la-visual-last", `#${state.route}${state.section ? `/${state.section}` : ""}`);
   }
 
   updateDocumentTitle(chapter);

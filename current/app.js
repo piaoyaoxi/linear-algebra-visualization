@@ -75,10 +75,29 @@ window.registerAlgebraChapter = registerAlgebraChapter;
 window.texInline = texInline;
 window.texDisplay = texDisplay;
 
+// Storage can be blocked (private browsing, sandboxed embeds) or contain stale data.
+// Keep the learning UI usable even when a preference cannot be read or saved.
+function readPreference(key) {
+  try { return window.localStorage.getItem(key); } catch { return null; }
+}
+
+function writePreference(key, value) {
+  try { window.localStorage.setItem(key, value); } catch { /* Session-only state still works. */ }
+}
+
+function readCompletedSections() {
+  try {
+    const value = JSON.parse(readPreference("la-visual-progress") || "[]");
+    return new Set(Array.isArray(value) ? value.filter((id) => typeof id === "string" && id.length > 0) : []);
+  } catch {
+    return new Set();
+  }
+}
+
 const state = {
   route: "home",
   section: "",
-  completed: new Set(JSON.parse(localStorage.getItem("la-visual-progress") || "[]")),
+  completed: readCompletedSections(),
   openChapters: new Set(),
 };
 
@@ -212,10 +231,10 @@ function getProgress() {
 }
 
 function init() {
-  const savedTheme = localStorage.getItem("la-visual-theme");
+  const savedTheme = readPreference("la-visual-theme");
   if (savedTheme === "dark") document.body.classList.add("dark");
 
-  const collapsed = localStorage.getItem("la-visual-sidebar") === "collapsed";
+  const collapsed = readPreference("la-visual-sidebar") === "collapsed";
   if (collapsed) document.body.classList.add("sidebar-collapsed");
 
   updateThemeIcon();
@@ -252,7 +271,7 @@ function bindChrome() {
       return;
     }
     document.body.classList.toggle("sidebar-collapsed");
-    localStorage.setItem(
+    writePreference(
       "la-visual-sidebar",
       document.body.classList.contains("sidebar-collapsed") ? "collapsed" : "open",
     );
@@ -264,7 +283,7 @@ function bindChrome() {
 
   els.themeToggle.addEventListener("click", () => {
     document.body.classList.toggle("dark");
-    localStorage.setItem("la-visual-theme", document.body.classList.contains("dark") ? "dark" : "light");
+    writePreference("la-visual-theme", document.body.classList.contains("dark") ? "dark" : "light");
     updateThemeIcon();
     drawTransformCanvas();
   });
@@ -357,11 +376,46 @@ function getChapterSubtitle(id) {
   return getChapterById(id).subtitle || "章节导览";
 }
 
-function renderRoute() {
+// Chapter content remains eager for full navigation, progress and search coverage;
+// chapter-specific visualization code loads only when a lesson is opened.
+const chapterAssetPromises = new Map();
+let routeRequestId = 0;
+
+function ensureChapterAssets(chapterId) {
+  if (chapterAssetPromises.has(chapterId)) return chapterAssetPromises.get(chapterId);
+  const sources = [...document.querySelectorAll("script[data-lazy-chapter]")]
+    .filter((node) => node.dataset.lazyChapter === chapterId)
+    .map((node) => node.dataset.src);
+  const promise = (async () => {
+    for (const src of sources) {
+      await new Promise((resolve, reject) => {
+        const script = document.createElement("script");
+        script.src = src;
+        script.onload = resolve;
+        script.onerror = () => reject(new Error("Failed to load chapter asset: " + src));
+        document.head.append(script);
+      });
+    }
+  })();
+  chapterAssetPromises.set(chapterId, promise);
+  return promise;
+}
+
+async function renderRoute() {
+  const requestId = ++routeRequestId;
+  const raw = decodeURIComponent(window.location.hash.replace(/^#/, "")) || "home";
+  const [requestedChapter, requestedSection] = raw.split("/");
+  if (requestedSection && /^ch\\d+$/.test(requestedChapter)) {
+    try {
+      await ensureChapterAssets(requestedChapter);
+    } catch (error) {
+      // A failed optional lab script must not prevent reading the lesson itself.
+      console.error("Chapter interaction assets could not be loaded:", error);
+    }
+    if (requestId !== routeRequestId) return;
+  }
   cancelTransformAnimation();
   window.teardownSection2ContinuousLab?.();
-
-  const raw = decodeURIComponent(window.location.hash.replace(/^#/, "")) || "home";
   const [route, section] = raw.split("/");
   state.route = route || "home";
   state.section = section || "";
@@ -1185,7 +1239,7 @@ function bindCompleteButtons() {
     button.onclick = () => {
       if (state.completed.has(id)) state.completed.delete(id);
       else state.completed.add(id);
-      localStorage.setItem("la-visual-progress", JSON.stringify([...state.completed]));
+      writePreference("la-visual-progress", JSON.stringify([...state.completed]));
       updateProgressUI();
       bindCompleteButtons();
     };

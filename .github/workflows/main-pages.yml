@@ -33,6 +33,9 @@ jobs:
           path: pages
           persist-credentials: true
 
+      - name: Bundle learning page for production
+        run: node source/.github/scripts/build-learn-bundles.mjs source/current
+
       - name: Publish current website at the Pages root
         run: |
           target="pages/docs"

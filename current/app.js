@@ -401,6 +401,8 @@ function ensureChapterAssets(chapterId) {
   return promise;
 }
 
+window.ensureChapterAssets = ensureChapterAssets;
+
 async function renderRoute() {
   const requestId = ++routeRequestId;
   const raw = decodeURIComponent(window.location.hash.replace(/^#/, "")) || "home";

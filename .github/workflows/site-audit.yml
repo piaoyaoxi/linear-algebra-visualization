@@ -5,6 +5,9 @@ on:
     paths:
       - "current/**"
       - ".github/scripts/site-audit.mjs"
+      - ".github/scripts/reliability-smoke.mjs"
+      - ".github/scripts/build-learn-bundles.mjs"
+      - ".github/scripts/learn-perf-compare.mjs"
       - ".github/scripts/theme-transition-check.mjs"
       - ".github/scripts/layout-check.mjs"
       - ".github/workflows/site-audit.yml"
@@ -35,9 +38,16 @@ jobs:
           npm install --no-save playwright@1.52.0
           npx playwright install --with-deps chromium
 
+      - name: Save equivalent unbundled source for comparison
+        run: cp -a current /tmp/learn-raw-current
+
+      - name: Build optimized learning page under test
+        run: node .github/scripts/build-learn-bundles.mjs current
+
       - name: Start static site
         run: |
           python3 -m http.server 4173 --directory current > /tmp/site-static.log 2>&1 &
+          python3 -m http.server 4174 --directory /tmp/learn-raw-current > /tmp/raw-static.log 2>&1 &
           for attempt in {1..20}; do
             if curl --fail --silent http://127.0.0.1:4173/learn.html > /dev/null; then
               exit 0
@@ -46,6 +56,12 @@ jobs:
           done
           cat /tmp/site-static.log
           exit 1
+
+      - name: Regression smoke (lazy chapters, prediction, storage)
+        run: node .github/scripts/reliability-smoke.mjs
+
+      - name: Compare cold mobile-like raw and bundled startup
+        run: node .github/scripts/learn-perf-compare.mjs
 
       - name: Audit every lesson section
         run: node .github/scripts/site-audit.mjs

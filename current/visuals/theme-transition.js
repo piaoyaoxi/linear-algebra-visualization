@@ -175,11 +175,11 @@
     return `rgba(${r}, ${g}, ${b}, ${Number(a.toFixed(4))})`;
   }
 
-  function loadImage(src) {
+  function loadImage(src, priority = "low") {
     return new Promise((resolve, reject) => {
       const img = new Image();
       img.decoding = "async";
-      img.fetchPriority = "high";
+      img.fetchPriority = priority;
       img.onload = () => {
         if (typeof img.decode !== "function") {
           resolve(img);
@@ -193,17 +193,36 @@
     });
   }
 
-  const preparations = {
-    luna: loadImage(ASSETS.luna),
-    sol: loadImage(ASSETS.sol),
-  };
+  // Theme artwork is optional until the user requests a transition.
+  // Avoid competing with the first lesson, math fonts and active lab on slow networks.
+  const preparations = {};
+  function prepareArt(mode, priority = "low") {
+    if (!preparations[mode]) {
+      preparations[mode] = loadImage(ASSETS[mode], priority).then((img) => {
+        images[mode] = img;
+        return img;
+      }).catch((error) => {
+        delete preparations[mode];
+        throw error;
+      });
+    }
+    return preparations[mode];
+  }
 
-  Promise.all([preparations.luna, preparations.sol])
-    .then(([luna, sol]) => {
-      images.luna = luna;
-      images.sol = sol;
-    })
-    .catch((error) => console.warn("Theme art preload failed.", error));
+  function preloadWhenIdle() {
+    window.setTimeout(() => {
+      const start = () => {
+        Promise.allSettled([prepareArt("luna"), prepareArt("sol")])
+          .then((results) => results.forEach((result) => {
+            if (result.status === "rejected") console.warn("Theme artwork could not be prepared.", result.reason);
+          }));
+      };
+      if ("requestIdleCallback" in window) window.requestIdleCallback(start, { timeout: 10000 });
+      else start();
+    }, 3500);
+  }
+  if (document.readyState === "complete") preloadWhenIdle();
+  else window.addEventListener("load", preloadWhenIdle, { once: true });
 
   function ensureOverlay() {
     if (overlay) return overlay;
@@ -447,7 +466,7 @@
 
     const ready = images[mode]
       ? Promise.resolve(images[mode])
-      : preparations[mode].then((img) => {
+      : prepareArt(mode, "high").then((img) => {
           images[mode] = img;
           return img;
         });

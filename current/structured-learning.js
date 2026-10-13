@@ -2,6 +2,7 @@
 (() => {
   const legacyRenderChapter4 = window.renderChapter4;
   let mountedChapterId = "";
+  let structuredRouteRequest = 0;
 
   function structuredSections(chapter) {
     return (chapter?.sections || []).filter(
@@ -173,7 +174,7 @@
   window.findStructuredSection = findSection;
 
   learnLastTarget = function learnStructuredLastTarget() {
-    const last = localStorage.getItem("la-visual-last");
+    const last = readPreference("la-visual-last");
     if (!last || !last.startsWith("#")) return null;
 
     const [route, sectionId] = last.slice(1).split("/");
@@ -239,7 +240,8 @@
       : `${chapter.title} | 高等代数可视化`;
   };
 
-  renderRoute = function renderStructuredLearningRoute() {
+  renderRoute = async function renderStructuredLearningRoute() {
+    const requestId = ++structuredRouteRequest;
     if (typeof window.cancelTransformAnimation === "function") window.cancelTransformAnimation();
     window.teardownSection2ContinuousLab?.();
     if (mountedChapterId) window.teardownStructuredChapter?.(mountedChapterId);
@@ -258,6 +260,15 @@
         ? LEARN_GUIDE_CHAPTER
         : algebraContent.chapters.find((item) => item.id === requestedRoute) || LEARN_GUIDE_CHAPTER;
     const section = findSection(chapter, requestedSection);
+
+    if (section && typeof window.ensureChapterAssets === "function") {
+      try {
+        await window.ensureChapterAssets(chapter.id);
+      } catch (error) {
+        console.error("Could not load this chapter's interactive scripts:", error);
+      }
+      if (requestId !== structuredRouteRequest) return;
+    }
 
     state.route = chapter.id;
     state.section = section?.id || "";
@@ -278,7 +289,7 @@
     }
 
     if (chapter.id !== "guide") {
-      localStorage.setItem("la-visual-last", `#${state.route}${state.section ? `/${state.section}` : ""}`);
+      writePreference("la-visual-last", `#${state.route}${state.section ? `/${state.section}` : ""}`);
     }
 
     updateDocumentTitle(chapter);

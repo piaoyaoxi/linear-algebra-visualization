@@ -84,12 +84,12 @@
   const SCAN_PRESETS = {
     jordan: {
       label: `${tex(String.raw`\lambda E-A`)}，${tex("A")} 有一个 2 阶若尔当块`,
-      M: () => P.charMatrix([[2, 1], [0, 2]]),
+      M: () => P.charMatrix([[2, 0], [1, 2]]),
       predict: {
-        question: `${tex("A=\\begin{pmatrix}2&1\\\\0&2\\end{pmatrix}")}，${tex("|\\lambda E-A|=(\\lambda-2)^2")}。${tex(String.raw`\lambda`)} 扫到 2 时，数字矩阵 ${tex("2E-A")} 的秩是多少？`,
+        question: `${tex("A=\\begin{pmatrix}2&0\\\\1&2\\end{pmatrix}")}，${tex("|\\lambda E-A|=(\\lambda-2)^2")}。${tex(String.raw`\lambda`)} 扫到 2 时，数字矩阵 ${tex("2E-A")} 的秩是多少？`,
         options: [
           { text: "1", correct: true },
-          { text: "0", why: "2E−A 的右上角是 −1，不是零矩阵。" },
+          { text: "0", why: "2E−A 的左下角是 −1，不是零矩阵。" },
           { text: "2", why: "|2E−A|=0，秩必须小于 2。" },
           { text: "由二重根决定，必为 0", why: "二重根只说明行列式在 λ=2 处有二重零点，秩要看 2E−A 本身。" },
         ],
@@ -332,13 +332,13 @@
       },
     },
     jordan: {
-      label: `${tex(String.raw`\lambda E-A`)}，${tex(String.raw`A=\left(\begin{smallmatrix}2&1\\0&2\end{smallmatrix}\right)`)}`,
-      A: () => P.charMatrix([[2, 1], [0, 2]]),
+      label: `${tex(String.raw`\lambda E-A`)}，${tex(String.raw`A=\left(\begin{smallmatrix}2&0\\1&2\end{smallmatrix}\right)`)}`,
+      A: () => P.charMatrix([[2, 0], [1, 2]]),
       predict: {
-        question: `${tex("A=\\begin{pmatrix}2&1\\\\0&2\\end{pmatrix}")}。${tex("\\lambda E-A")} 的标准形是什么？`,
+        question: `${tex("A=\\begin{pmatrix}2&0\\\\1&2\\end{pmatrix}")}。${tex("\\lambda E-A")} 的标准形是什么？`,
         options: [
           { text: tex("\\operatorname{diag}(1,(\\lambda-2)^2)"), correct: true },
-          { text: tex("\\operatorname{diag}(\\lambda-2,\\lambda-2)"), why: "这是 A=2E 的情形。这里右上角是非零常数 −1，它能整除一切，d₁=1。" },
+          { text: tex("\\operatorname{diag}(\\lambda-2,\\lambda-2)"), why: "这是 A=2E 的情形。这里左下角是非零常数 −1，它能整除一切，d₁=1。" },
           { text: tex("\\operatorname{diag}(1,\\lambda-2)"), why: "对角元之积要等于行列式 (λ−2)²（相差一个非零常数）。" },
           { text: tex("\\operatorname{diag}(-1,(\\lambda-2)^2)"), why: "标准形的对角元取首项系数为 1 的多项式。" },
         ],

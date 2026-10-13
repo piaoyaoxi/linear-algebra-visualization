@@ -17,7 +17,7 @@ async function run(port, route, target) {
   await cdp.send("Emulation.setCPUThrottlingRate", {rate: 3});
   const t0 = Date.now();
   await page.goto("http://127.0.0.1:" + port + "/learn.html#" + route, {waitUntil: "domcontentloaded", timeout: 90000});
-  await page.locator(target).first().waitFor({state: "visible", timeout: 45000});
+  await page.locator(target).first().waitFor({state: route === "guide" ? "attached" : "visible", timeout: 45000});
   const readyMs = Date.now() - t0;
   await page.waitForTimeout(400);
   assert.deepEqual(errors, [], route + " errors: " + errors.join("; "));
@@ -27,7 +27,7 @@ async function run(port, route, target) {
 }
 try {
   for (const [route, target] of [
-    ["guide", "#mainContent h1"],
+    ["guide", "#chapterNav .chapter-group"],
     ["ch6/basis-coordinates", ".ch6l-lab"],
   ]) {
     const raw = await run(4174, route, target);

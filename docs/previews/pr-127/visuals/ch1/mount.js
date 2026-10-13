@@ -221,7 +221,13 @@
   const baseRenderLessonPage = window.renderLessonPage;
   if (typeof baseRenderLessonPage !== "function") return;
 
-  window.addEventListener("hashchange", () => window.teardownChapter1Lesson?.());
+  // In lazy-loaded builds this listener can be installed during the first
+  // hashchange dispatch. Do not tear down the lab just mounted for Chapter 1.
+  window.addEventListener("hashchange", () => {
+    if (!window.location.hash.startsWith("#ch1/") && window.location.hash !== "#ch1") {
+      window.teardownChapter1Lesson?.();
+    }
+  });
 
   window.renderLessonPage = function renderLessonPageWithChapter1Extensions(section, chapter) {
     baseRenderLessonPage(section, chapter);

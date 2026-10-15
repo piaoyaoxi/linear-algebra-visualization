@@ -478,4 +478,4 @@ _dev/research/3b1b_eola_chapter10.py
 - 移出仓库：`references/`（早期原型截图）、`docs/review/`（已审完的对照截图）、`例题动效/`（已并入 `visuals/example-challenge.*`）、ch1 浏览器审计 v1/v2（CI 只跑 v3）、根目录 `.nojekyll`（部署工作流在 gh-pages 里生成）。需要时从 git 历史取回。
 - `.gitignore` 补上 `Linear Algebra/`、`references/`、`browser-evidence/`、`artifacts/`、`.claude/`、`node_modules` 等本地目录。
 - 新增 `README.md`，配图在 `docs/readme/`：首页、浅/深色课程页（README 里用 `<picture>` 跟随 GitHub 主题）、三台手机、六张实验区裁图、第七章 §4 特征方向扫描动图。界面有明显变化时这些图要重截（Playwright，桌面 1280/1440 宽 2 倍图，手机 390×844 3 倍图）。
-- `legacy/` 暂时保留（AGENTS.md 规定未经用户明确同意不动）。
+- `legacy/`（最早的一版原型）经用户同意也已删除，AGENTS.md 里相应的规则一并去掉；需要对照旧版时从 git 历史取回。

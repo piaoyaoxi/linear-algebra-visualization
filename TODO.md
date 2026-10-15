@@ -472,3 +472,10 @@ _dev/research/3b1b_eola_chapter10.py
 - 追加：切换片滑块（原型里有、首版漏做）。`material.js` 找“圆角轨道 + 全是按钮 + 恰好一个选中（`.is-active` / `aria-pressed` / `aria-selected`）”的容器，选中项的底色移到轨道 `::before`，切换时弹簧滑动；读取底色时只临时撤掉 `.is-seg-handoff`，不撤 `.la-seg`（撤了 `::before` 会重建，滑动就没了）。
 - 追加：首页退回原样（不加载 `material.css/js`），首页材质以后再定，届时沿用学习页这套。手机明暗切换的月亮缩到与太阳同样大小（design-spec §8）。手机顶栏滚动收起加防抖（iOS 回弹、顶部 80px、350ms），修复滑到顶部/底部时搜索框来回跳。
 - 已用 iPhone 镜像在真机 Safari 上验证（PR #125 预览页）：往下滑立即收起、往上滑约 0.4s 放出、滑到底部回弹和工具栏展开时保持收起不跳。iPhone 镜像的滚轮每格只滚约 10px，测试时需连发多次 scroll。
+
+## 仓库整理与 README（2026-10-15，`content/repo-tidy-readme`，Claude）
+
+- 移出仓库：`references/`（早期原型截图）、`docs/review/`（已审完的对照截图）、`例题动效/`（已并入 `visuals/example-challenge.*`）、ch1 浏览器审计 v1/v2（CI 只跑 v3）、根目录 `.nojekyll`（部署工作流在 gh-pages 里生成）。需要时从 git 历史取回。
+- `.gitignore` 补上 `Linear Algebra/`、`references/`、`browser-evidence/`、`artifacts/`、`.claude/`、`node_modules` 等本地目录。
+- 新增 `README.md`，配图在 `docs/readme/`：首页、浅/深色课程页（README 里用 `<picture>` 跟随 GitHub 主题）、三台手机、六张实验区裁图、第七章 §4 特征方向扫描动图。界面有明显变化时这些图要重截（Playwright，桌面 1280/1440 宽 2 倍图，手机 390×844 3 倍图）。
+- `legacy/` 暂时保留（AGENTS.md 规定未经用户明确同意不动）。

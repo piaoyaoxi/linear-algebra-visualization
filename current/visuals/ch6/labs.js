@@ -158,6 +158,7 @@
           snap: 0.5,
           get: () => state.polys[i],
           set: (p) => {
+            if (!gate?.predicted) return;
             state.polys[i] = p;
             redraw();
             acted();
@@ -207,6 +208,7 @@
     }
 
     function load(key) {
+      if (gate && !gate.predicted) return;
       state.key = key;
       state.polys = PRESETS[key].polys.map((p) => p.slice());
       state.c = [F(0), F(0), F(0)];
@@ -231,6 +233,7 @@
     });
     controls.querySelector("[data-reset]").addEventListener("click", () => scene.setCamera(PRESETS[state.key].cam));
     controls.querySelector("[data-look]").addEventListener("click", () => {
+      if (!gate?.predicted) return;
       const ps = polysF();
       const nonzero = ps.find((p) => p.some((x) => !M().isZero(x)));
       if (nonzero) scene.lookAlong(nonzero.map(num));
@@ -256,6 +259,17 @@
       },
     );
 
+    // Keep the question tied to its original three polynomials until a guess is made.
+    // Camera rotation and zoom remain available before the prediction.
+    const syncBasisPrediction = () => {
+      const locked = !gate?.predicted;
+      controls.querySelector("[data-look]").disabled = locked;
+      toolbar.querySelectorAll("button").forEach((button) => { button.disabled = locked; });
+    };
+    gateHost.addEventListener("click", (event) => {
+      if (event.target.closest("button[data-i]")) syncBasisPrediction();
+    });
+    syncBasisPrediction();
     redraw();
     return () => scene.destroy();
   }
@@ -697,12 +711,13 @@
           get: () => state.u,
           set: (p) => {
             const before = Math.abs(state.u[2]);
+            if (!gates.split?.predicted) return;
             state.u = nonzero(p, state.u);
             redraw();
             if (lowered(before)) acted();
           },
         },
-        { color: "drag", snap: 0.5, get: () => state.v, set: (p) => ((state.v = p), redraw()) },
+        { color: "drag", snap: 0.5, get: () => state.v, set: (p) => { if (!gates.split?.predicted) return; state.v = p; redraw(); } },
       ]);
       const inter = ok ? 0 : 1;
       const sum = ok ? 3 : 2;
@@ -748,7 +763,7 @@
         }
         return K().placeLabels(scene, objs, { handles: [state.w3] });
       });
-      scene.setHandles([{ color: "drag", snap: 0.5, get: () => state.w3, set: (p) => ((state.w3 = nonzero(p, state.w3)), redraw(), threeInPlane() && acted()) }]);
+      scene.setHandles([{ color: "drag", snap: 0.5, get: () => state.w3, set: (p) => { if (!gates.three?.predicted) return; state.w3 = nonzero(p, state.w3); redraw(); if (threeInPlane()) acted(); } }]);
       const pairsText = pairOk.every(Boolean) ? `两两交为 ${tex("\\{0\\}")}` : "有两条直线重合";
       let html = `<h4>读数</h4><p>${pairsText}</p>`;
       if (state.revealed) {
@@ -785,6 +800,16 @@
       else drawThree();
     }
 
+    function syncDirectSumTools() {
+      const locked = !gates[state.mode]?.predicted;
+      tools.querySelectorAll("[data-low], [data-flat], [data-vflat], [data-lift], [data-top]")
+        .forEach((button) => { button.disabled = locked; });
+    }
+
+    Object.values(gateHosts).forEach((host) => host.addEventListener("click", (event) => {
+      if (event.target.closest("button[data-i]")) syncDirectSumTools();
+    }));
+
     function setTools() {
       tools.innerHTML =
         state.mode === "split"
@@ -815,6 +840,7 @@
         scene.lookAlong([0, 0, 1]);
         if (threeInPlane()) acted();
       });
+      syncDirectSumTools();
     }
 
     function load(mode) {

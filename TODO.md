@@ -353,7 +353,7 @@ _dev/research/3b1b_eola_chapter10.py
   - 防孤字（`<la-t>`）补了三种情况：“… z 轴。”（单字前是短西文）、“<span>有解</span>。”（结尾只剩标点）、flex 盒子里标签旁的长句（先包成 `<la-run>`）。
 - A3 居中说明：全站扫描，“居中展示公式 + 一两行短说明”的卡片只有第五章 §3（diag、正负项数）和 §4（BᵀB、A=CᵀC）；说明居中、balance，去掉公式块上方的空白（`design-a-legacy.css`）。居中行以 。，；等结尾时，最后一个标点包进 `<la-hang>`（右边距 −0.5em），按墨迹居中。宽度不到 7em 的行内公式整体不断行。
 - A4 预测选项：选项不再 balance，第一行排满再折行。手机（≤720px）上，一个框里只要有一个选项单行放不下，全部选项一行一个、整行宽（`predict-ux.js` 量单行宽，`data-la-stack`；不用 class，kit 靠类名结尾 `-predict-options` 找框）。61 个预测框都走同一套 ch3l/ch6l/ch7l/ch9l 结构，第一、二、四、五章也覆盖到了。
-- 对照截图在 `docs/review/round6-type/`（审查完可删）。WebKit 的 iPhone 检查：`npx playwright install webkit` 后 `npx playwright install-deps webkit`；注意 WebKit 不能访问 4190 等受限端口。
+- 对照截图原在 `docs/review/round6-type/`，已删除（见 git 历史）。WebKit 的 iPhone 检查：`npx playwright install webkit` 后 `npx playwright install-deps webkit`；注意 WebKit 不能访问 4190 等受限端口。
 
 ## 下一步
 
@@ -383,7 +383,7 @@ _dev/research/3b1b_eola_chapter10.py
 - 按钮里的公式颜色：`body .tex { color: var(--text) }`（#84/#85 起就有）让按钮里的公式也用正文的深色。#120 把很多按钮文字改成 KaTeX 后，主按钮深绿底上是深色公式，暗色模式浅绿底上是浅色公式（例如第四章 §3 的“同步播放 AB 与 BA”，浅色 2.2:1、暗色 1.6:1）。`design-a.css` 加了一条：`button`、`[role="button"]`、`.is-primary` 里的 `.tex` 用 `color: inherit`（learn.html `?v=r7a1`）。
 - 第二章 §2 排列实验先给答案：原来猜之前 τ、奇偶、sgn、det P 和逆序列表就已显示。现在要先猜、猜之后再动手一次（点两个数字对换、拖动、预设、“相邻交换一步”都算），读数才出现；猜之前动过的不算（`onPick` 把 `touched` 清零）。没出现时 τ、奇偶、sgn 显示“—”，det P 显示“?”，逆序列表写“猜一猜并动手后显示”。正确选项改成“每换一次翻一次号，sgn(3142)=−1”。揭晓时机不变（从 3142 换到 τ=0 时 `gate.acted()`）。learn.html `?v=r7a2`；`tests/ch2-browser.spec.js` 的 §2 期望同步改。
 - 新增 `.github/scripts/contrast-scan.mjs`：逐节、浅色/暗色、初始/选完预测后，量每个公式与它实际所在背景的对比度，低于 4.5:1 记下来。等待默认 1500ms（等得太短会量到还在淡入的内容，出现假的 1:1）。结果：main 54 处 → 本分支 26 处，按钮里的 28 处（13 节）全部消失。剩下 26 处是有意的颜色，可再斟酌：第一章 §6 金色 u、v（浅色 1.96、暗色 2.49，偏淡），第四章 §2/§4 淡化公式（`--faint`，2.97），第五章 §1 淡化项（3.0），第一章 §2/§6 和第五章 §1 的 4.1–4.3。
-- 检查：ch2 spec 35 条通过（4173 端口，`--workers=1`）；site-audit、typo-scan（390/375/1280）、layout-check、theme-transition、字体覆盖都通过。对照截图在 `docs/review/round7-fix/`（审查完可删）。
+- 检查：ch2 spec 35 条通过（4173 端口，`--workers=1`）；site-audit、typo-scan（390/375/1280）、layout-check、theme-transition、字体覆盖都通过。对照截图原在 `docs/review/round7-fix/`，2026-10-15 整理仓库时删除（见 git 历史）。
 
 ### 审阅发现、还没修的问题
 
@@ -472,3 +472,10 @@ _dev/research/3b1b_eola_chapter10.py
 - 追加：切换片滑块（原型里有、首版漏做）。`material.js` 找“圆角轨道 + 全是按钮 + 恰好一个选中（`.is-active` / `aria-pressed` / `aria-selected`）”的容器，选中项的底色移到轨道 `::before`，切换时弹簧滑动；读取底色时只临时撤掉 `.is-seg-handoff`，不撤 `.la-seg`（撤了 `::before` 会重建，滑动就没了）。
 - 追加：首页退回原样（不加载 `material.css/js`），首页材质以后再定，届时沿用学习页这套。手机明暗切换的月亮缩到与太阳同样大小（design-spec §8）。手机顶栏滚动收起加防抖（iOS 回弹、顶部 80px、350ms），修复滑到顶部/底部时搜索框来回跳。
 - 已用 iPhone 镜像在真机 Safari 上验证（PR #125 预览页）：往下滑立即收起、往上滑约 0.4s 放出、滑到底部回弹和工具栏展开时保持收起不跳。iPhone 镜像的滚轮每格只滚约 10px，测试时需连发多次 scroll。
+
+## 仓库整理与 README（2026-10-15，`content/repo-tidy-readme`，Claude）
+
+- 移出仓库：`references/`（早期原型截图）、`docs/review/`（已审完的对照截图）、`例题动效/`（已并入 `visuals/example-challenge.*`）、ch1 浏览器审计 v1/v2（CI 只跑 v3）、根目录 `.nojekyll`（部署工作流在 gh-pages 里生成）。需要时从 git 历史取回。
+- `.gitignore` 补上 `Linear Algebra/`、`references/`、`browser-evidence/`、`artifacts/`、`.claude/`、`node_modules` 等本地目录。
+- 新增 `README.md`，配图在 `docs/readme/`：首页、浅/深色课程页（README 里用 `<picture>` 跟随 GitHub 主题）、三台手机、六张实验区裁图、第七章 §4 特征方向扫描动图。界面有明显变化时这些图要重截（Playwright，桌面 1280/1440 宽 2 倍图，手机 390×844 3 倍图）。
+- `legacy/`（最早的一版原型）经用户同意也已删除，AGENTS.md 里相应的规则一并去掉；需要对照旧版时从 git 历史取回。

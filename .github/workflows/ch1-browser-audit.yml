@@ -4,8 +4,6 @@ on:
   pull_request:
     paths:
       - "current/**"
-      - "tests/ch1-browser-audit.mjs"
-      - "tests/ch1-browser-audit-v2.mjs"
       - "tests/ch1-browser-audit-v3.mjs"
       - "tests/ch1-failure-capture.mjs"
       - ".github/workflows/ch1-browser-audit.yml"

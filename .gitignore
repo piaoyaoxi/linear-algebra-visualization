@@ -1,7 +1,19 @@
+# OS / editor
 .DS_Store
+
+# Local tooling and agent state
 .playwright-mcp/
+.claude/
+node_modules
 output/
 _dev/
+artifacts/
+browser-evidence/
+test-results/
+
+# Reference books and research material (kept locally, not published)
+Linear Algebra/
+references/
 
 # Local experiments and references
 apple_ribbon.html
@@ -22,4 +34,3 @@ portfolio.html
 
 # Source documents
 *.pdf
-test-results/

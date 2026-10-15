@@ -75,10 +75,29 @@ window.registerAlgebraChapter = registerAlgebraChapter;
 window.texInline = texInline;
 window.texDisplay = texDisplay;
 
+// Storage can be blocked (private browsing, sandboxed embeds) or contain stale data.
+// Keep the learning UI usable even when a preference cannot be read or saved.
+function readPreference(key) {
+  try { return window.localStorage.getItem(key); } catch { return null; }
+}
+
+function writePreference(key, value) {
+  try { window.localStorage.setItem(key, value); } catch { /* Session-only state still works. */ }
+}
+
+function readCompletedSections() {
+  try {
+    const value = JSON.parse(readPreference("la-visual-progress") || "[]");
+    return new Set(Array.isArray(value) ? value.filter((id) => typeof id === "string" && id.length > 0) : []);
+  } catch {
+    return new Set();
+  }
+}
+
 const state = {
   route: "home",
   section: "",
-  completed: new Set(JSON.parse(localStorage.getItem("la-visual-progress") || "[]")),
+  completed: readCompletedSections(),
   openChapters: new Set(),
 };
 
@@ -212,10 +231,10 @@ function getProgress() {
 }
 
 function init() {
-  const savedTheme = localStorage.getItem("la-visual-theme");
+  const savedTheme = readPreference("la-visual-theme");
   if (savedTheme === "dark") document.body.classList.add("dark");
 
-  const collapsed = localStorage.getItem("la-visual-sidebar") === "collapsed";
+  const collapsed = readPreference("la-visual-sidebar") === "collapsed";
   if (collapsed) document.body.classList.add("sidebar-collapsed");
 
   updateThemeIcon();
@@ -252,7 +271,7 @@ function bindChrome() {
       return;
     }
     document.body.classList.toggle("sidebar-collapsed");
-    localStorage.setItem(
+    writePreference(
       "la-visual-sidebar",
       document.body.classList.contains("sidebar-collapsed") ? "collapsed" : "open",
     );
@@ -264,7 +283,7 @@ function bindChrome() {
 
   els.themeToggle.addEventListener("click", () => {
     document.body.classList.toggle("dark");
-    localStorage.setItem("la-visual-theme", document.body.classList.contains("dark") ? "dark" : "light");
+    writePreference("la-visual-theme", document.body.classList.contains("dark") ? "dark" : "light");
     updateThemeIcon();
     drawTransformCanvas();
   });
@@ -1185,7 +1204,7 @@ function bindCompleteButtons() {
     button.onclick = () => {
       if (state.completed.has(id)) state.completed.delete(id);
       else state.completed.add(id);
-      localStorage.setItem("la-visual-progress", JSON.stringify([...state.completed]));
+      writePreference("la-visual-progress", JSON.stringify([...state.completed]));
       updateProgressUI();
       bindCompleteButtons();
     };

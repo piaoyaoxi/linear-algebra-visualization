@@ -21,7 +21,7 @@ defineChapter8Section("lambda-matrix", {
         tex: String.raw`A(\lambda)=\begin{pmatrix}a_{11}(\lambda)&\cdots&a_{1n}(\lambda)\\\vdots&&\vdots\\a_{m1}(\lambda)&\cdots&a_{mn}(\lambda)\end{pmatrix},\qquad a_{ij}(\lambda)\in P[\lambda]`,
         text: `${texInline(String.raw`\lambda`)}-矩阵的加法、乘法和行列式与数字矩阵的规则相同，只是元素换成了多项式。${texInline(String.raw`A(\lambda)`)} 中不恒为零的子式的最高阶数称为它的秩。${texInline(String.raw`|\lambda E-A|`)} 是 ${texInline("n")} 次多项式，不是零多项式，所以 ${texInline(String.raw`\lambda E-A`)} 的秩总是 ${texInline("n")}；把 ${texInline(String.raw`\lambda`)} 换成一个数 ${texInline(String.raw`\lambda_0`)} 以后，数字矩阵 ${texInline(String.raw`\lambda_0E-A`)} 的秩可能更小，降低的数目 ${texInline(String.raw`n-\operatorname{rank}(\lambda_0E-A)`)} 就是属于 ${texInline(String.raw`\lambda_0`)} 的线性无关特征向量的个数。`,
         ponder: {
-          q: `${texInline(String.raw`A=\begin{pmatrix}2&1\\0&2\end{pmatrix}`)} 与 ${texInline("2E")} 的特征多项式都是 ${texInline(String.raw`(\lambda-2)^2`)}。代入 ${texInline(String.raw`\lambda=2`)} 后，两个特征矩阵的秩一样吗？`,
+          q: `${texInline(String.raw`A=\begin{pmatrix}2&0\\1&2\end{pmatrix}`)} 与 ${texInline("2E")} 的特征多项式都是 ${texInline(String.raw`(\lambda-2)^2`)}。代入 ${texInline(String.raw`\lambda=2`)} 后，两个特征矩阵的秩一样吗？`,
           a: `不一样。${texInline("2E-A")} 的秩是 1，${texInline("2E-2E")} 是零矩阵，秩为 0。特征多项式相同，特征矩阵却不同。`,
         },
       },

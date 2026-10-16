@@ -479,3 +479,9 @@ _dev/research/3b1b_eola_chapter10.py
 - `.gitignore` 补上 `Linear Algebra/`、`references/`、`browser-evidence/`、`artifacts/`、`.claude/`、`node_modules` 等本地目录。
 - 新增 `README.md`，配图在 `docs/readme/`：首页、浅/深色课程页（README 里用 `<picture>` 跟随 GitHub 主题）、三台手机、六张实验区裁图、第七章 §4 特征方向扫描动图。界面有明显变化时这些图要重截（Playwright，桌面 1280/1440 宽 2 倍图，手机 390×844 3 倍图）。
 - `legacy/`（最早的一版原型）经用户同意也已删除，AGENTS.md 里相应的规则一并去掉；需要对照旧版时从 git 历史取回。
+
+## 加载提速第 1 层：首页空闲时预下载学习页（2026-10-16，`ui/home-prefetch-learn`，Claude）
+
+- 背景：PR #127 的按需加载会让第一、二、五章的「停一下」和定理小图消失（共用增强脚本先于章节脚本运行，被覆盖），已从中拆出 #129（若尔当下三角、预测门锁定、存储容错）合并。加载提速改为分三层逐步做：① 首页预下载（本条）；② 学习页先加载外壳和当前章、其余章空闲时后台加载，章节加载完要重新跑共用增强脚本，并加逐节「停一下」/定理小图数量对比的 CI 检查和切章加载提示；③ 部署时生成搜索索引文件。#127 第 ②③ 层做完后关闭。
+- 新文件 `current/home-prefetch.js`（index.html 加载）：首页 load 后 4 秒、浏览器空闲时，读取 learn.html，把其中的样式、脚本、字体预加载项用 `fetch` 下载进 HTTP 缓存（同时 4 个、低优先级）；不下载学习页的预加载图片。省流量模式和 2G 网络不预下载；指针移到、按到或聚焦到 learn.html 链接时立即开始。文件清单运行时从 learn.html 读，改学习页不用改它。
+- 实测（本地模拟 GitHub Pages：gzip + max-age=600；CDP 限速 1.6 Mbps / 150 ms）：从首页点 Start 到导学显示，桌面 18.5 s → 4.9 s，手机 21.2 s → 6.4 s；停留 6 秒就点也有 10–13 s。预下载 237 个文件约 893 KB（压缩后），慢 4G 下约 11 s 下完。GitHub Pages 的缓存是 10 分钟，超过后浏览器会用 ETag 重新验证。

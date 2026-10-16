@@ -31,9 +31,8 @@
  * kit redraws keep their place because the hidden flag is re-applied after every change.
  * With follow (a selector such as ".is-current"), the bar moves on by itself when the lab
  * marks another panel as current (a stepping lab's “下一步”); the student can still look back.
- * The shared lab kits get the same bar without a list: when a lab's side column holds two or
- * more titled readout cards (no buttons or sliders in them) that together run over 280px, the
- * cards become tabs named by their own titles (kitTabs). Cards with controls always stay.
+ * Tabs are listed lab by lab on purpose: a readout that answers the student's last action
+ * must never sit on a hidden tab, so the kits' readout cards are not tabbed automatically.
  * A growing table of iterates (ch7 §5) scrolls inside its card, kept at the newest row.
  */
 (() => {
@@ -94,7 +93,7 @@
 
   function choose() {
     tabs();
-    kitTabs();
+    iterTables();
     pack();
     const phone = Boolean(PHONE?.matches);
     const screen = phone ? screenHeight() : 0;
@@ -240,72 +239,9 @@
     });
   }
 
-  // one segmented bar over groups of nodes; the bar's buttons show labels (HTML) of the groups
-  function applyTabs(host, bar, groups, labels, onPick) {
-    if (bar.children.length !== groups.length) {
-      bar.replaceChildren(...groups.map((_, i) => {
-        const b = document.createElement("button");
-        b.type = "button";
-        b.setAttribute("role", "tab");
-        b.addEventListener("click", () => onPick(i));
-        return b;
-      }));
-    }
-    const current = Math.min(Number(host.dataset.laTab || 0), groups.length - 1);
-    [...bar.children].forEach((b, i) => {
-      if (b.dataset.label !== labels[i]) {
-        b.dataset.label = labels[i];
-        b.innerHTML = `<span>${labels[i]}</span>`;
-      }
-      b.classList.toggle("is-active", i === current);
-      b.setAttribute("aria-selected", String(i === current));
-    });
-    groups.forEach((group, i) => group.forEach((p) => p.toggleAttribute("data-la-tab-hidden", i !== current)));
-  }
-
-  const KIT_SIDE = ".ch3l-side, .ch6l-side, .ch7l-side, .ch9l-side";
-  const KIT_CARD = ":scope > :is(.ch3l-card, .ch6l-card, .ch7l-card, .ch9l-card)";
-  const CONTROL = "input, select, textarea, button";
-  const MIN_TABBED = 280;
-
-  function kitTabs() {
-    const phone = Boolean(PHONE?.matches);
-    document.querySelectorAll(KIT_SIDE).forEach((side) => {
-      let bar = side.querySelector(":scope > .la-tabs[data-la-kit]");
-      const cards = phone
-        ? [...side.querySelectorAll(KIT_CARD)].filter((c) => c.querySelector(":scope > h4") && !c.querySelector(CONTROL) && (c.hasAttribute("data-la-tab-hidden") || getComputedStyle(c).display !== "none"))
-        : [];
-      // first time: only when the cards are long enough to be worth a bar
-      const tall = bar || cards.reduce((sum, c) => sum + c.getBoundingClientRect().height, 0) > MIN_TABBED;
-      if (cards.length < 2 || !tall) {
-        bar?.remove();
-        side.querySelectorAll(":scope > [data-la-kit-tab]").forEach((c) => {
-          c.removeAttribute("data-la-kit-tab");
-          c.removeAttribute("data-la-tab-hidden");
-        });
-        delete side.dataset.laTab;
-        return;
-      }
-      if (!bar) {
-        bar = document.createElement("div");
-        bar.className = "la-tabs";
-        bar.dataset.laKit = "1";
-        bar.setAttribute("role", "tablist");
-      }
-      if (bar.nextElementSibling !== cards[0]) cards[0].before(bar);
-      cards.forEach((c) => c.setAttribute("data-la-kit-tab", ""));
-      const labels = cards.map((c) => {
-        const h = c.querySelector(":scope > h4").cloneNode(true);
-        h.querySelectorAll(".katex-mathml, wbr").forEach((n) => n.remove());
-        return h.innerHTML.trim();
-      });
-      applyTabs(side, bar, cards.map((c) => [c]), labels, (i) => {
-        side.dataset.laTab = String(i);
-        kitTabs();
-      });
-    });
-    // a growing table of iterates: keep its newest row in view
-    if (phone) document.querySelectorAll("table.ch7l-iter").forEach((t) => (t.scrollTop = t.scrollHeight));
+  // ch7 §5: a growing table of iterates scrolls inside its card; keep its newest row in view
+  function iterTables() {
+    if (PHONE?.matches) document.querySelectorAll("table.ch7l-iter").forEach((t) => (t.scrollTop = t.scrollHeight));
   }
 
   // is-stuck: the stage sits at its sticky top and the row still goes on under it

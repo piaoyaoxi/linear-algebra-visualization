@@ -33,7 +33,10 @@
  * marks another panel as current (a stepping lab's “下一步”); the student can still look back.
  * Tabs are listed lab by lab on purpose: a readout that answers the student's last action
  * must never sit on a hidden tab, so the kits' readout cards are not tabbed automatically.
+ * With start, another tab than the first is shown until the student picks one.
  * A growing table of iterates (ch7 §5) scrolls inside its card, kept at the newest row.
+ * A stepping lab without a canvas (ch1 §3, §4) sticks its row of step buttons instead, so
+ * “下一步” stays at hand while the student reads the step it added further down.
  */
 (() => {
   const PHONE = window.matchMedia?.("(max-width: 720px)");
@@ -48,6 +51,8 @@
     ".ch3-lab-grid > .ch3-stage",
     ".s2c-panel > .s2c-canvas-shell",
     ".inverse-workbench > .inverse-plane-card",
+    // labs without a canvas whose step buttons drive the readouts below them
+    ":is(.ch1-section-polynomial-divisibility, .ch1-section-gcd-polynomials) > .ch1-controls",
   ].join(", ");
   const TOOLS = ".ch3l-actions, .ch6l-actions, .ch7l-actions, .ch9l-actions";
   const MAX_SHARE = 0.5;
@@ -55,7 +60,8 @@
   const MAX_TOOLS_H = 52;
   const MIN_BELOW = 120;
   const PACK = [
-    ".ch1-metrics",
+    // ch1 §4 lays its three status cards out itself (lab-fit.css)
+    ".ch1-metrics:not(.ch1-section-gcd-polynomials > *)",
     ".ch1-equation-grid",
     ".ch1-ld-summary",
     ".ch1-multivariate-layer-grid",
@@ -168,6 +174,7 @@
       host: ".ch1-section-gcd-polynomials",
       panels: [".ch1-stairs-card", ".ch1-euclid-panel", ".ch1-bezout-panel"],
       labels: ["余式次数", "每一步", "倒着代回"],
+      start: 1,
     },
     {
       host: ".ch1-section-polynomial-divisibility",
@@ -229,7 +236,7 @@
             host.dataset.laTab = String(live);
           }
         }
-        const current = Number(host.dataset.laTab || 0);
+        const current = Number(host.dataset.laTab || cfg.start || 0);
         panels.forEach((group, i) => group.forEach((p) => p.toggleAttribute("data-la-tab-hidden", i !== current)));
         [...bar.children].forEach((b, i) => {
           b.classList.toggle("is-active", i === current);

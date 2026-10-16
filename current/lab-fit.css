@@ -120,6 +120,12 @@ body .la-opt-more {
     box-shadow: 0 14px 14px -14px rgba(0, 0, 0, 0.7);
   }
 
+  /* the strip below reaches past the card to the screen edges; clip it there, or the page
+     scrolls sideways while a stage is stuck (clip keeps sticky working, hidden would not) */
+  body .app-layout {
+    overflow-x: clip;
+  }
+
   /* the strip between the stage and the top of the screen, behind the floating controls */
   body main .la-stick.is-stuck::before {
     content: "";
@@ -263,6 +269,19 @@ body .la-opt-more {
     line-height: 1.5;
   }
 
+  /* a step “A = qB + r” (§4) or the invariant f = qg + r (§3) wider than the phone continues
+     after its = (typeset.js groups the pieces); the chapter's labs otherwise keep every
+     formula on one unbreakable line */
+  html body :is(main, #la) :is(.ch1-section-gcd-polynomials .ch1-euclid-step-copy p, .ch1-section-polynomial-divisibility .ch1-ld-invariant strong) > .tex {
+    display: inline !important;
+    overflow: visible !important;
+    white-space: normal !important;
+  }
+
+  html body :is(main, #la) :is(.ch1-section-gcd-polynomials .ch1-euclid-step-copy p, .ch1-section-polynomial-divisibility .ch1-ld-invariant strong) > .tex > .katex {
+    white-space: normal !important;
+  }
+
   html body :is(main, #la) .ch1-section-gcd-polynomials :is(.ch1-euclid-panel, .ch1-bezout-panel) {
     padding: 12px !important;
   }
@@ -300,6 +319,87 @@ body .la-opt-more {
   html body :is(main, #la) .ch1-bezout-panel .ch1-bezout-verify [data-verify] {
     overflow-x: auto;
     font-size: 15px !important;
+  }
+}
+
+/* ch1 §3, §4: step buttons on one row, the examples on the next; the bar sticks (mobile-lab.js).
+   Readout cards put label and value on one line, so the step text starts closer to the buttons. */
+@media (max-width: 720px) {
+  html body :is(main, #la) :is(.ch1-section-polynomial-divisibility, .ch1-section-gcd-polynomials) > .ch1-controls {
+    gap: 6px !important;
+    padding: 6px 0;
+  }
+
+  html body :is(main, #la) :is(.ch1-section-polynomial-divisibility, .ch1-section-gcd-polynomials) > .ch1-controls > :is([data-prev], [data-play], [data-next], [data-reset]) {
+    flex: 1 1 0;
+    order: -2;
+    padding-inline: 4px !important;
+  }
+
+  html body :is(main, #la) :is(.ch1-section-polynomial-divisibility, .ch1-section-gcd-polynomials) > .ch1-controls > .ch1-control-separator {
+    display: block !important;
+    flex: 0 0 100%;
+    order: -1;
+    width: auto !important;
+    height: 0 !important;
+    margin: -3px 0 !important;
+    border: 0 !important;
+  }
+
+  html body :is(main, #la) :is(.ch1-section-polynomial-divisibility, .ch1-section-gcd-polynomials) > .ch1-controls > [data-preset] {
+    flex: 1 1 auto;
+    min-height: 30px !important;
+    padding: 3px 8px !important;
+    font-size: 13px !important;
+  }
+
+  html body :is(main, #la) :is(.ch1-section-gcd-polynomials > :is(.ch1-metrics, .ch1-equation-grid), .ch1-section-polynomial-divisibility .ch1-ld-summary) > * {
+    display: flex !important;
+    flex-wrap: wrap;
+    align-items: baseline;
+    column-gap: 10px !important;
+    padding: 6px 11px !important;
+  }
+
+  html body :is(main, #la) :is(.ch1-section-gcd-polynomials > :is(.ch1-metrics, .ch1-equation-grid), .ch1-section-polynomial-divisibility .ch1-ld-summary) > * > strong {
+    min-width: 0;
+    font-size: 15.5px !important;
+  }
+
+  html body :is(main, #la) :is(.ch1-section-gcd-polynomials > :is(.ch1-metrics, .ch1-equation-grid), .ch1-section-polynomial-divisibility .ch1-ld-summary) {
+    gap: 8px !important;
+  }
+
+  /* §4: example and step count on one row, the verdict under them */
+  html body :is(main, #la) .ch1-section-gcd-polynomials > .ch1-metrics {
+    display: grid !important;
+    grid-template-columns: minmax(0, 1fr) auto !important;
+  }
+
+  html body :is(main, #la) .ch1-section-gcd-polynomials > .ch1-metrics > :nth-child(3) {
+    grid-column: 1 / -1;
+  }
+
+  /* §3: what this step does comes first under the sheet, then the status and the readouts;
+     the degree chart sits on the same tab place (it was above the tab bar) */
+  html body :is(main, #la) .ch1-section-polynomial-divisibility .ch1-ld-side > .la-tabs {
+    order: 1;
+  }
+
+  html body :is(main, #la) .ch1-section-polynomial-divisibility .ch1-ld-side > :is(.ch1-ld-focus, .ch1-stairs-card) {
+    order: 2;
+  }
+
+  html body :is(main, #la) .ch1-section-polynomial-divisibility .ch1-ld-side > .ch1-status {
+    order: 3;
+  }
+
+  html body :is(main, #la) .ch1-section-polynomial-divisibility .ch1-ld-side > .ch1-ld-summary {
+    order: 4;
+  }
+
+  html body :is(main, #la) .ch1-section-polynomial-divisibility .ch1-ld-side > .ch1-ld-invariant {
+    order: 5;
   }
 }
 

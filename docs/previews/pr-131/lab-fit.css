@@ -1,11 +1,17 @@
 /*
- * Labs on phones (≤720px): canvas and readouts share one screen.
+ * Lab layout fitted to the screen (loaded last on learn.html).
+ * Phones (≤720px), most of the file — canvas and readouts share one screen:
  *  - the main canvas is shorter (--la-stage-h) and, where mobile-lab.js finds it safe,
  *    sticks under the top bar while the readouts scroll under it;
- *  - canvases shown two or three in a column are shortened as well (--la-pair-h);
+ *  - canvases shown two or three in a column are shortened (--la-pair-h), or set side by side
+ *    where comparing them is the point (ch2 §4/§8, ch4 §2, ch5 §1/§3);
  *  - after a guess, the prediction box keeps only the picked option (predict-ux.js);
+ *  - one-value readout cards two to a row (data-la-pack), companion panels as tabs (la-tabs),
+ *    and per-chapter re-ordering with display: contents + order (no DOM moves);
  *  - preset chips, readout cards and the gaps between lab blocks are tighter.
- * Loaded last on learn.html, so plain specificity with a body main prefix is enough.
+ * Wider screens, at the end of the file: a few labs taller than a screen on a desktop.
+ * The legacy chapter styles carry an id in their selectors (:is(main, #la)), so rules here
+ * use the same prefix and, for layout, !important.
  */
 :root {
   --la-stage-h: clamp(240px, 38svh, 280px);

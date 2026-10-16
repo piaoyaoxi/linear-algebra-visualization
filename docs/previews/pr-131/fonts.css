@@ -6,6 +6,8 @@
  * Self-hosted: Google Fonts is unreliable from mainland China.
  * The Latin face comes first so Greek letters are not set full-width by the CJK font;
  * Chinese punctuation and curly quotes are not in it and fall through to the CJK face.
+ * The Chinese face's default instance is Regular (wght 400..900): iOS Safari drew regular
+ * text at the default instance, which was ExtraLight in the upstream font, so it looked thin.
  */
 @font-face {
   font-family: "LA Serif Latin";
@@ -17,12 +19,18 @@
 
 @font-face {
   font-family: "LA Serif SC";
-  src: url("./vendor/fonts/noto-serif-sc/NotoSerifSC-subset.woff2") format("woff2");
-  font-weight: 200 900;
+  src: url("./vendor/fonts/noto-serif-sc/NotoSerifSC-subset.woff2?v=w400") format("woff2");
+  font-weight: 400 900;
   font-style: normal;
   font-display: swap;
 }
 
 :root {
   --font-serif: "LA Serif Latin", "LA Serif SC", "Songti SC", "STSong", "Noto Serif CJK SC", serif;
+}
+
+/* Chinese inside a formula (\text{行空间}): KaTeX_Main has no Chinese, so without this it fell
+   back to the system font (PingFang on iOS) next to the serif text around it */
+.katex .cjk_fallback {
+  font-family: "LA Serif SC", var(--font-serif);
 }

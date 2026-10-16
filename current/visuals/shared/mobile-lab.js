@@ -3,7 +3,7 @@
  * A lab's main canvas sits in a box (the "stage") next to, or above, its readouts; on a
  * phone the readouts come after it in one column, so dragging and reading never shared a
  * screen. Here the stage becomes sticky (class la-stick) just under the floating top bar
- * and stays there while the rest of its row scrolls under it; mobile-lab.css shortens the
+ * and stays there while the rest of its row scrolls under it; lab-fit.css shortens the
  * canvas so that about half the screen is left for the readouts.
  *
  * A stage is made sticky only when it is short enough (at most half the screen, toolbars
@@ -13,7 +13,7 @@
  * Labs with two canvases one under another are left as they are (their canvases are only
  * shortened): sticking the first one would cover the second.
  * While stuck, the stage gets is-stuck: a paper strip fills the gap up to the top of the
- * screen and a soft shadow marks its lower edge (mobile-lab.css).
+ * screen and a soft shadow marks its lower edge (lab-fit.css).
  * When the readout column starts with one row of buttons (“作用一次 A”, “沿平面看” …), that
  * row sticks right under the stage (la-stick-tools), so the buttons stay at hand while the
  * student reads further down. The row is not moved: some kits redraw it in place.
@@ -142,7 +142,7 @@
       box.dataset.laPack = "1";
       const gap = parseFloat(getComputedStyle(box).columnGap) || 0;
       const half = (box.clientWidth - gap) / 2;
-      // natural widths: mobile-lab.css lays the cards out at max-content while data-la-measure is on
+      // natural widths: lab-fit.css lays the cards out at max-content while data-la-measure is on
       box.dataset.laMeasure = "1";
       const widths = kids.map((k) => k.getBoundingClientRect().width);
       delete box.dataset.laMeasure;

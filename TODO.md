@@ -489,7 +489,7 @@ _dev/research/3b1b_eola_chapter10.py
 ## 手机端实验区：画布吸顶、预测框收起（2026-10-16，`claude/sharp-mayer-7wx8v6`，Claude）
 
 - 用户反馈：手机上看不全交互实验，图太大、下面的读数太松。实测（390×844）实验区高 1100–2700px，画布本身 322×300 不算大；问题是画布上方压着导语、预设、预测框（合计 400–800px），读数卡在画布下方，拖动时看不到读数，看读数时画布已滑出屏幕。
-- 新文件 `current/visuals/shared/mobile-lab.js` + `current/mobile-lab.css`（learn.html 最后加载），只在 ≤720px 生效：
+- 新文件 `current/visuals/shared/mobile-lab.js` + `current/mobile-lab.css`（learn.html 最后加载；第二轮加入电脑端规则后改名为 `current/lab-fit.css`），只在 ≤720px 生效：
   - 画布吸顶：每个实验找一个“画布 + 后面跟着读数”的容器（选择器清单写在 `mobile-lab.js` 的 `STAGES`，覆盖四套共用外壳和第一、二、三、四章的旧标记），满足“高度不超过半屏、后面至少还有 120px 内容、祖先没有 overflow 裁剪”才加 `la-stick`（sticky，顶在顶栏下方 72px）；吸住时加 `is-stuck`，上方补一条纸色底、下沿柔影。目前 31 节生效。第四章 §2 的 `.s2c-lab` 原来是 `overflow: hidden`，手机上改成 `clip`，否则吸不住。
   - 画布高度：主画布 `--la-stage-h: clamp(240px, 38svh, 280px)`；上下两三块画布的实验（第二章 §4/§8、第三章 §2/§4/§5、第四章 §3、第五章 §1/§3、第六章 §1/§2/§5、第七章 §3、第九章 §3/§7）不吸顶，每块降到 `--la-pair-h: 240px`（ch9 检查要求画布不低于 240）。第五章 §2 主曲面降到 `--la-stage-h`、§4 主曲面 430→300（ch5-orbit-check 要求不低于 300），§3 角上的符号轮缩到 78×72，读数两列。
   - 读数栏最上面如果是一行按钮（`.chXl-actions`，高不超过 52px，且画布 + 按钮不超过 0.58 屏），这一行也吸顶，接在画布正下方（`la-stick-tools`），看读数时“作用一次 A”等按钮还在手边；按钮行不移动 DOM（有的套件会原地重绘它）。目前第七章 §5、第九章 §5 生效。

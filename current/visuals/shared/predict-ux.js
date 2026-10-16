@@ -7,7 +7,7 @@
  *    the student's own pick keeps a “你的猜测” mark;
  *  - on phones, once a guess is made, only the picked option (and, after the reveal, the
  *    answer) stays; a small link (“改选” / “看全部选项”) opens the rest (data-la-fold,
- *    mobile-lab.css), so the canvas comes up right under the question.
+ *    lab-fit.css), so the canvas comes up right under the question.
  * Before the reveal the kits already let the student change the pick freely.
  * Every lab's wrong-guess hint starts “再看看图：”; a hint that itself starts with “看…”
  * would say it twice, so that lead is dropped.

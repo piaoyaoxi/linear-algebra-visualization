@@ -4,7 +4,10 @@
  *  - a “不确定，直接看” option: it unlocks the lab without a guess, and the reveal then
  *    simply shows the answer, with no right or wrong verdict;
  *  - after the reveal, every option can be clicked to read why it is right or wrong;
- *    the student's own pick keeps a “你的猜测” mark.
+ *    the student's own pick keeps a “你的猜测” mark;
+ *  - on phones, once a guess is made, only the picked option (and, after the reveal, the
+ *    answer) stays; a small link (“改选” / “看全部选项”) opens the rest (data-la-fold,
+ *    mobile-lab.css), so the canvas comes up right under the question.
  * Before the reveal the kits already let the student change the pick freely.
  * Every lab's wrong-guess hint starts “再看看图：”; a hint that itself starts with “看…”
  * would say it twice, so that lead is dropped.
@@ -38,6 +41,17 @@
     unsure.textContent = "不确定，直接看";
     options.append(unsure);
 
+    const more = document.createElement("button");
+    more.type = "button";
+    more.className = "la-opt-more";
+    options.append(more);
+    more.addEventListener("click", (event) => {
+      event.stopPropagation();
+      if (box.dataset.laOpen) delete box.dataset.laOpen;
+      else box.dataset.laOpen = "1";
+      fold();
+    });
+
     const why = document.createElement("p");
     why.className = "la-option-why";
     why.hidden = true;
@@ -49,6 +63,7 @@
       const answer = right();
       if (!answer) return;
       box.dataset.unsure = "1";
+      delete box.dataset.laOpen;
       // register a pick with the kit so the lab unlocks, without showing which one
       answer.click();
       const settle = () => {
@@ -69,6 +84,7 @@
     options.addEventListener("click", (event) => {
       if (!event.isTrusted || !event.target.closest("button[data-i]") || box.dataset.laUxRevealed) return;
       delete box.dataset.unsure;
+      delete box.dataset.laOpen;
       unsure.classList.remove("is-picked");
     });
 
@@ -142,8 +158,21 @@
       why.innerHTML = `<span class="la-option-hint">点其他选项，可以看它为什么对或错。</span>`;
     }
 
-    new MutationObserver(onReveal).observe(box, { attributes: true, subtree: true, attributeFilter: ["class", "data-answered"] });
+    function fold() {
+      const picked = Boolean(options.querySelector(":scope > button:is(.is-picked, .is-right, .is-wrong)"));
+      if (!picked) delete box.dataset.laOpen;
+      if (picked && !box.dataset.laOpen) box.dataset.laFold = "1";
+      else delete box.dataset.laFold;
+      const label = box.dataset.laOpen ? "收起选项" : box.dataset.laUxRevealed ? "看全部选项" : "改选";
+      if (more.textContent !== label) more.textContent = label;
+    }
+
+    new MutationObserver(() => {
+      onReveal();
+      fold();
+    }).observe(box, { attributes: true, subtree: true, attributeFilter: ["class", "data-answered"] });
     onReveal();
+    fold();
   }
 
   const LOOK = /再看看图：\s*(?:请)?(?:注意)?(?:看一看|看看|看一下|观察一下|观察|看(?![清出到成作起见]))[，,：:\s]*/;
@@ -166,8 +195,9 @@
   const PHONE = window.matchMedia?.("(max-width: 720px)");
   function stackOptions() {
     document.querySelectorAll(`:is(${BOX}) > [class$='-predict-options']`).forEach((options) => {
-      const buttons = [...options.querySelectorAll(":scope > button")];
-      if (!buttons.length || !options.getBoundingClientRect().width) return;
+      const buttons = [...options.querySelectorAll(":scope > button:not(.la-opt-more)")];
+      // a folded box shows one or two options: keep the layout measured with all of them
+      if (!buttons.length || !options.getBoundingClientRect().width || options.parentElement?.dataset.laFold) return;
       let stack = false;
       if (PHONE?.matches) {
         const cs = getComputedStyle(options);

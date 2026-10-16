@@ -485,3 +485,16 @@ _dev/research/3b1b_eola_chapter10.py
 - 背景：PR #127 的按需加载会让第一、二、五章的「停一下」和定理小图消失（共用增强脚本先于章节脚本运行，被覆盖），已从中拆出 #129（若尔当下三角、预测门锁定、存储容错）合并。加载提速改为分三层逐步做：① 首页预下载（本条）；② 学习页先加载外壳和当前章、其余章空闲时后台加载，章节加载完要重新跑共用增强脚本，并加逐节「停一下」/定理小图数量对比的 CI 检查和切章加载提示；③ 部署时生成搜索索引文件。#127 第 ②③ 层做完后关闭。
 - 新文件 `current/home-prefetch.js`（index.html 加载）：首页 load 后 4 秒、浏览器空闲时，读取 learn.html，把其中的样式、脚本、字体预加载项用 `fetch` 下载进 HTTP 缓存（同时 4 个、低优先级）；不下载学习页的预加载图片。省流量模式和 2G 网络不预下载；指针移到、按到或聚焦到 learn.html 链接时立即开始。文件清单运行时从 learn.html 读，改学习页不用改它。
 - 实测（本地模拟 GitHub Pages：gzip + max-age=600；CDP 限速 1.6 Mbps / 150 ms）：从首页点 Start 到导学显示，桌面 18.5 s → 4.9 s，手机 21.2 s → 6.4 s；停留 6 秒就点也有 10–13 s。预下载 237 个文件约 893 KB（压缩后），慢 4G 下约 11 s 下完。GitHub Pages 的缓存是 10 分钟，超过后浏览器会用 ETag 重新验证。
+
+## 手机端实验区：画布吸顶、预测框收起（2026-10-16，`claude/sharp-mayer-7wx8v6`，Claude）
+
+- 用户反馈：手机上看不全交互实验，图太大、下面的读数太松。实测（390×844）实验区高 1100–2700px，画布本身 322×300 不算大；问题是画布上方压着导语、预设、预测框（合计 400–800px），读数卡在画布下方，拖动时看不到读数，看读数时画布已滑出屏幕。
+- 新文件 `current/visuals/shared/mobile-lab.js` + `current/mobile-lab.css`（learn.html 最后加载），只在 ≤720px 生效：
+  - 画布吸顶：每个实验找一个“画布 + 后面跟着读数”的容器（选择器清单写在 `mobile-lab.js` 的 `STAGES`，覆盖四套共用外壳和第一、二、三、四章的旧标记），满足“高度不超过半屏、后面至少还有 120px 内容、祖先没有 overflow 裁剪”才加 `la-stick`（sticky，顶在顶栏下方 72px）；吸住时加 `is-stuck`，上方补一条纸色底、下沿柔影。目前 31 节生效。第四章 §2 的 `.s2c-lab` 原来是 `overflow: hidden`，手机上改成 `clip`，否则吸不住。
+  - 画布高度：主画布 `--la-stage-h: clamp(240px, 38svh, 280px)`；上下两三块画布的实验（第二章 §4/§8、第三章 §2/§4/§5、第四章 §3、第五章 §1/§3、第六章 §1/§2/§5、第七章 §3、第九章 §3/§7）不吸顶，每块降到 `--la-pair-h: 240px`（ch9 检查要求画布不低于 240）。第五章 §2 主曲面降到 `--la-stage-h`、§4 主曲面 430→300（ch5-orbit-check 要求不低于 300），§3 角上的符号轮缩到 78×72，读数两列。
+  - 读数栏最上面如果是一行按钮（`.chXl-actions`，高不超过 52px，且画布 + 按钮不超过 0.58 屏），这一行也吸顶，接在画布正下方（`la-stick-tools`），看读数时“作用一次 A”等按钮还在手边；按钮行不移动 DOM（有的套件会原地重绘它）。目前第七章 §5、第九章 §5 生效。
+  - 预测框收起（`predict-ux.js`，data-la-fold）：选过之后只留选中项（揭晓后再加正确答案），旁边一个“改选”/“看全部选项”链接展开全部；揭晓前重新选一项会自动再收起。桌面不变。
+  - 预设小钮、读数卡、预测框的内边距和行距在手机上收紧一点。
+- 结果（390 宽，选过预测）：例如第七章 §3 1871→1553px，第九章 §1 1339→1229px，第五章 §3 2722→2420px；更重要的是单画布实验里拖动和读数同屏。
+- 吸顶生效的 31 节（路由）：ch1 complex-real-factorization、multivariate-polynomials；ch2 determinant-intro、n-order-determinant、cramer-rule；ch3 elimination、linear-dependence、solution-structure、binary-higher-degree；ch4 matrix-operations、matrix-inverse、elementary-matrices；ch6 intersection-sum、direct-sum；ch7 diagonal-matrices、image-and-kernel、invariant-subspaces、minimal-polynomial；ch8 lambda-matrix、elementary-divisors、jordan-derivation、rational-canonical-form；ch9 inner-product-geometry、orthonormal-bases、orthogonal-transformations、orthogonal-subspaces、symmetric-canonical-form；ch10 全部四节。其余是多画布、非画布型（排列、消元、展开）、画布下还有别的大块（ch7 eigenvalues 的角度条、ch8 smith-form/invariant-factors 的棋盘 + 轨迹）或第五章（读数在另一栏）；以后可逐个改结构。
+- 检查：site-audit、layout-check、reliability-smoke、theme-transition、第一、五至十章检查都过；Chromium 版溢出扫描只剩 TODO 已记的第二章 §6 棋盘格 2px。WebKit 未装（环境不让跑 playwright install），iPhone 真机上要再看：sticky + 底部工具栏伸缩、`svh` 取值。

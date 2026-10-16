@@ -145,6 +145,9 @@ async function dragConjugate(page) {
 }
 
 async function checkMultivariateLayout(page, viewport) {
+  // phones show the layer module on its own tab (mobile-lab.js): open it before measuring
+  const layerTab = page.locator("#multivariate-polynomials-interactive .la-tabs > button", { hasText: "按次数分层" });
+  if (await layerTab.count()) await layerTab.click();
   const result = await page.evaluate(() => {
     const primary = document.querySelector("#multivariate-polynomials-interactive .ch1-multivariate-primary");
     const stage = primary?.querySelector(".ch1-multivariate-stage");
@@ -173,6 +176,7 @@ async function checkMultivariateLayout(page, viewport) {
   } else {
     ensure(!result.sameRow, "§10 tablet/mobile: graph and inspector should stack instead of squeezing");
   }
+  if (await layerTab.count()) await page.locator("#multivariate-polynomials-interactive .la-tabs > button").first().click();
 }
 
 async function operate(page, section, viewport, theme) {

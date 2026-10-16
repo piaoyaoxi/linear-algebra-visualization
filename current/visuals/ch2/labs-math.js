@@ -616,7 +616,9 @@
     const boxes = [...(options.avoid || [])];
     boxes.push(tipLabel(ctx, options.firstLabel || "Ae₁", p0, p1, p3, palette, width, height, 1));
     boxes.push(tipLabel(ctx, options.secondLabel || "Ae₂", p0, p3, p1, palette, width, height, -1));
-    if (options.caption) {
+    // a narrow canvas (two side by side on a phone) leaves no room for it; the caption under
+    // the canvas says the same
+    if (options.caption && width >= 240) {
       // on a paper halo, so an axis running under it does not cut through the words
       haloText(ctx, options.caption, 15, height - 18, palette, palette.muted, 12, 400);
       boxes.push({ x: 11, y: height - 30, w: measureLabel(ctx, options.caption, 12, 400) + 8, h: 24 });

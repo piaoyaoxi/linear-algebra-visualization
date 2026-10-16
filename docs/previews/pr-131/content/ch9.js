@@ -417,8 +417,8 @@
         title: "例题：用正交矩阵对角化",
         question: `${t("A=\\begin{bmatrix}0&1&1\\\\1&0&1\\\\1&1&0\\end{bmatrix}")}。下列哪个 ${t("T")} 是正交矩阵并使 ${t("T^TAT")} 为对角形？`,
         choices: [
-          { correct: true, text: `${t("T")} 的列为 ${t("\\tfrac1{\\sqrt3}(1,1,1),\\ \\tfrac1{\\sqrt2}(1,-1,0),\\ \\tfrac1{\\sqrt6}(1,1,-2)")}` },
-          { text: `${t("T")} 的列为 ${t("\\tfrac1{\\sqrt3}(1,1,1),\\ \\tfrac1{\\sqrt2}(1,-1,0),\\ \\tfrac1{\\sqrt2}(1,0,-1)")}` },
+          { correct: true, text: `${t("T")} 的列为 ${t("\\tfrac1{\\sqrt3}(1,1,1),\\allowbreak\\ \\tfrac1{\\sqrt2}(1,-1,0),\\allowbreak\\ \\tfrac1{\\sqrt6}(1,1,-2)")}` },
+          { text: `${t("T")} 的列为 ${t("\\tfrac1{\\sqrt3}(1,1,1),\\allowbreak\\ \\tfrac1{\\sqrt2}(1,-1,0),\\allowbreak\\ \\tfrac1{\\sqrt2}(1,0,-1)")}` },
           { text: `${t("T")} 的列为 ${t("(1,1,1),\\ (1,-1,0),\\ (1,1,-2)")}` },
           { text: `${t("T=E")}，因为 ${t("A")} 已经对称` },
         ],

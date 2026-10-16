@@ -847,11 +847,6 @@ body .la-opt-more {
 
 /* ---------- shared kits (chapters 3, 6–10) ---------- */
 @media (max-width: 720px) {
-  /* a tabbed readout card: its title is on the bar */
-  html body :is(main, #la) [data-la-kit-tab] > h4 {
-    display: none !important;
-  }
-
   html body :is(main, #la) .la-tabs > button > span {
     display: block;
     overflow: hidden;

@@ -498,3 +498,16 @@ _dev/research/3b1b_eola_chapter10.py
 - 结果（390 宽，选过预测）：例如第七章 §3 1871→1553px，第九章 §1 1339→1229px，第五章 §3 2722→2420px；更重要的是单画布实验里拖动和读数同屏。
 - 吸顶生效的 31 节（路由）：ch1 complex-real-factorization、multivariate-polynomials；ch2 determinant-intro、n-order-determinant、cramer-rule；ch3 elimination、linear-dependence、solution-structure、binary-higher-degree；ch4 matrix-operations、matrix-inverse、elementary-matrices；ch6 intersection-sum、direct-sum；ch7 diagonal-matrices、image-and-kernel、invariant-subspaces、minimal-polynomial；ch8 lambda-matrix、elementary-divisors、jordan-derivation、rational-canonical-form；ch9 inner-product-geometry、orthonormal-bases、orthogonal-transformations、orthogonal-subspaces、symmetric-canonical-form；ch10 全部四节。其余是多画布、非画布型（排列、消元、展开）、画布下还有别的大块（ch7 eigenvalues 的角度条、ch8 smith-form/invariant-factors 的棋盘 + 轨迹）或第五章（读数在另一栏）；以后可逐个改结构。
 - 检查：site-audit、layout-check、reliability-smoke、theme-transition、第一、五至十章检查都过；Chromium 版溢出扫描只剩 TODO 已记的第二章 §6 棋盘格 2px。WebKit 未装（环境不让跑 playwright install），iPhone 真机上要再看：sticky + 底部工具栏伸缩、`svh` 取值。
+
+### 第二轮：手机端重新排版（同一 PR #131，2026-10-16）
+
+- 用户看了第一轮（只吸顶）后反馈：第一章 §4 这类实验在手机上是“一个读数一张通栏卡片”的长条，吸顶没用，要按手机重新排版，美观、简洁、和原来一样清楚；电脑端放不下一屏的也要优化。
+- 共用做法（`mobile-lab.js` / `lab-fit.css`，≤720px）：
+  - 读数打包（`PACK`）：一张卡一个值的读数列表改成两列网格（`data-la-pack`），值放不下半宽的卡占整行（`data-la-wide`），落单的卡也占整行，保持阅读顺序、不留洞；每次读数变化后重新量。目前用于 `.ch1-metrics`、`.ch1-equation-grid`、`.ch1-ld-summary`、`.ch1-multivariate-layer-grid`。
+  - 切换片（`TABS`）：实验末尾几块并列的辅助面板改成一条切换片，一次显示一块，内容不删。逐个实验列出（不自动套用）：一个读数如果正好回答学生刚做的操作，就不能藏在另一页里（第八章 §5“初等因子”、§1“代入 λ₀”就是反例，CI 抓到过）。现有：第一章 §2（这一步 / 余式次数）、§4（余式次数 / 每一步 / 倒着代回）、§5（f、f′ 与 gcd / 各阶导数）、§10（当前格点 / 按次数分层）、第三章 §7（四个求解步骤，`follow: ".is-current"` 随“下一步”自动翻页）。默认页都是会随操作变化的那块。
+  - 修正：变化监听原来是防抖，长除法动画不停改 DOM 时永远不触发，改成每 160ms 最多一次的节流。
+- 各章结构调整（手机）：第二章 §4 前后两图并排、§8 E 与 B 并排 AB 通栏、§2 连线图与置换矩阵并排且 τ 条一行、§6 子式与位置符号并排，三个短读数一行；第四章 §2 数据条、标签、按钮各一行，x→Bx→A(Bx) 改成可换行的流式（揭晓后最后一格很长），“交换顺序”页 AB/BA 并排（1543→970px）；第五章 §1/§3 两曲面并排（符号轮放到各自曲面下方的矮条里，`signWheel` 高度不足 100 时用小号，不画标题），§2 改成“曲面 → 上一步/下一步 → 当前步骤 → 细节”的顺序，§4 t 滑杆移到曲面正下方（都用 `display: contents` + `order`，不动 DOM）；第七章 §5 k 表在卡内限高滚动、停在最新一行；第二章画布宽度不足 240 时不画图内说明（图下已有）。
+- 结果（390×844，选过预测并按几次主按钮）：第一章 §4 2759→1526、§2 1998→1537、§10 2095→1348；第二章 §2 1906→1484、§4 1692→1284、§8 1932→1524；第三章 §7 2121→1650；第四章 §2 1542→1121；第五章 §1 2285→1692、§3 2440→1889。第六到十章大多 1000–1600，剩下超过 1700 的（第五章 §2/§4、第六章 §1、第八章 §3/§6、第九章 §2/§6）主要是推导和结论文字本身多，没有再藏内容。
+- 电脑端（≥721 / ≥1081）：长除法竖式限宽 680px；第一章 §4 余式次数图放到读数右边（1578→1452），代回验证公式不再被截断；第五章 §3 符号轮 190→130。第八章 §3 子式墙电脑上两列是脚本按因式宽度自动选的（`tooWide`），没改。
+- 检查要求的下限（改高度前先看）：ch7 画布 ≥200、ch8 主画布 ≥260（<1000 宽）、ch9 画布 ≥240、ch5 §4 曲面 ≥300、ch2 余子式读数 2 列 / Cramer 3 列。第一章审计的 §10 布局检查在手机上先点开“按次数分层”页再量（`tests/ch1-browser-audit-v3.mjs`）。
+- 本地跑第二章 Playwright spec：`npm install --no-save @playwright/test@1.56.1`（与全局 playwright 同版本），用它自带的 `cli.js test` 跑，避免两份 @playwright/test。

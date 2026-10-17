@@ -37,6 +37,8 @@
  * A growing table of iterates (ch7 §5) scrolls inside its card, kept at the newest row.
  * A stepping lab without a canvas (ch1 §3, §4) sticks its row of step buttons instead, so
  * “下一步” stays at hand while the student reads the step it added further down.
+ * Chapter 5 lays its surface out through display: contents boxes, so its control row (the
+ * step bar of §2, the t slider of §4) is named in PAIRED_TOOLS and sticks under the surface.
  */
 (() => {
   const PHONE = window.matchMedia?.("(max-width: 720px)");
@@ -53,7 +55,17 @@
     ".inverse-workbench > .inverse-plane-card",
     // labs without a canvas whose step buttons drive the readouts below them
     ":is(.ch1-section-polynomial-divisibility, .ch1-section-gcd-polynomials) > .ch1-controls",
+    // ch5 §2, §4: the surface, laid out in the lab's grid through display: contents boxes
+    ".qv-s2-stage > .qv-orbit-shell",
+    ".qv-s4-main > .qv-orbit-hero",
+    // ch8 §3: the λ-matrix over the wall of minors (lab-fit.css re-orders the cards under it)
+    "#invariant-factors-interactive .ch8l-stagebox > .ch8l-mat",
   ].join(", ");
+  // a stage whose control row is not the first child of its next sibling: the row is named
+  const PAIRED_TOOLS = [
+    { stage: ".qv-s2-stage > .qv-orbit-shell", tools: ".qv-lab > .qv-stepbar" },
+    { stage: ".qv-s4-main > .qv-orbit-hero", tools: ".qv-s4 > .ch5-range" },
+  ];
   const TOOLS = ".ch3l-actions, .ch6l-actions, .ch7l-actions, .ch9l-actions";
   const MAX_SHARE = 0.5;
   const MAX_SHARE_WITH_TOOLS = 0.58;
@@ -75,11 +87,18 @@
     return false;
   };
 
+  // the box a stage moves in: its parent, or the first ancestor that is not display: contents
+  function row(el) {
+    let node = el.parentElement;
+    while (node && node !== document.body && getComputedStyle(node).display === "contents") node = node.parentElement;
+    return node || el.parentElement;
+  }
+
   // how much of the row comes after the stage (siblings may be display: contents), measured
   // where the stage sits unstuck: a stuck stage has moved down its row
   function below(stage) {
     stage.style.setProperty("position", "static", "important");
-    const rest = stage.parentElement.getBoundingClientRect().bottom - stage.getBoundingClientRect().bottom;
+    const rest = row(stage).getBoundingClientRect().bottom - stage.getBoundingClientRect().bottom;
     stage.style.removeProperty("position");
     return rest;
   }
@@ -117,10 +136,11 @@
       });
       picked?.classList.add("la-stick");
 
-      let tools = picked?.nextElementSibling?.firstElementChild;
+      const paired = picked && PAIRED_TOOLS.find((t) => picked.matches(t.stage));
+      let tools = paired ? section.querySelector(paired.tools) : picked?.nextElementSibling?.firstElementChild;
       const stageH = picked ? picked.getBoundingClientRect().height : 0;
       const toolsH = tools ? tools.getBoundingClientRect().height : 0;
-      if (!tools?.matches(TOOLS) || !toolsH || toolsH > MAX_TOOLS_H || stageH + toolsH > screen * MAX_SHARE_WITH_TOOLS) tools = null;
+      if (!(paired ? tools : tools?.matches(TOOLS)) || !toolsH || toolsH > (paired ? 72 : MAX_TOOLS_H) || stageH + toolsH > screen * MAX_SHARE_WITH_TOOLS) tools = null;
       section.querySelectorAll(".la-stick-tools").forEach((t) => {
         if (t === tools) return;
         t.classList.remove("la-stick-tools", "is-stuck");
@@ -251,13 +271,15 @@
     if (PHONE?.matches) document.querySelectorAll("table.ch7l-iter").forEach((t) => (t.scrollTop = t.scrollHeight));
   }
 
-  // is-stuck: the stage sits at its sticky top and the row still goes on under it
+  // is-stuck: the stage sits at its sticky top and the row still goes on under it, or the end
+  // of the row has pushed it up over the last readouts (they would show through its caption)
   function mark() {
     document.querySelectorAll(".la-stick, .la-stick-tools").forEach((stage) => {
       const top = parseFloat(getComputedStyle(stage).top) || 0;
       const r = stage.getBoundingClientRect();
-      const row = stage.parentElement.getBoundingClientRect();
-      const stuck = Math.abs(r.top - top) < 1.5 && row.top < r.top - 1;
+      const box = row(stage).getBoundingClientRect();
+      const pushed = r.top < top - 1 && r.bottom >= box.bottom - 2;
+      const stuck = (Math.abs(r.top - top) < 1.5 || pushed) && box.top < r.top - 1;
       stage.classList.toggle("is-stuck", stuck);
     });
   }

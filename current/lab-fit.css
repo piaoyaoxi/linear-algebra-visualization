@@ -111,13 +111,15 @@ body .la-opt-more {
     z-index: 4;
   }
 
-  body main .la-stick.is-stuck {
+  /* the second shadow, a copy of the box moved up by the top bar's height, fills the gap above
+     the stage too: the ::before strip below is cut off when the stage clips its overflow (ch5) */
+  html body :is(main, #la) .la-stick.is-stuck {
     background: var(--surface-solid);
-    box-shadow: 0 14px 14px -14px rgba(26, 29, 27, 0.32);
+    box-shadow: 0 14px 14px -14px rgba(26, 29, 27, 0.32), 0 calc(-1 * var(--la-stick-top)) 0 0 var(--surface-solid) !important;
   }
 
-  body.dark main .la-stick.is-stuck {
-    box-shadow: 0 14px 14px -14px rgba(0, 0, 0, 0.7);
+  html body.dark :is(main, #la) .la-stick.is-stuck {
+    box-shadow: 0 14px 14px -14px rgba(0, 0, 0, 0.7), 0 calc(-1 * var(--la-stick-top)) 0 0 var(--surface-solid) !important;
   }
 
   /* the strip below reaches past the card to the screen edges; clip it there, or the page
@@ -145,8 +147,9 @@ body .la-opt-more {
     z-index: 5;
   }
 
+  /* !important: some control rows (ch5's slider label) are transparent under an id selector */
   body main .la-stick-tools.is-stuck {
-    background: var(--surface-solid);
+    background: var(--surface-solid) !important;
     box-shadow: 0 14px 14px -14px rgba(26, 29, 27, 0.32);
   }
 
@@ -504,6 +507,153 @@ body .la-opt-more {
   }
 }
 
+/* ch4 §1: the ±1 stepper beside the matrix; the data table and the equations side by side,
+   the plane under them, so the matrix and all three readings share one screen */
+@media (max-width: 720px) {
+  html body :is(main, #la) .ml1-lab .ml1-control {
+    flex-wrap: nowrap !important;
+    align-items: center !important;
+    gap: 14px !important;
+  }
+
+  html body :is(main, #la) .ml1-lab .ml1-stepper {
+    display: grid !important;
+    flex: 1 1 auto;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 8px !important;
+    min-width: 0;
+  }
+
+  html body :is(main, #la) .ml1-lab .ml1-stepper > b {
+    grid-column: 1 / -1;
+  }
+
+  html body :is(main, #la) .ml1-lab .ml1-views {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    gap: 8px !important;
+  }
+
+  html body :is(main, #la) .ml1-lab .ml1-plane {
+    grid-column: 1 / -1 !important;
+  }
+
+  html body :is(main, #la) .ml1-lab .ml1-view {
+    gap: 8px !important;
+    padding: 10px !important;
+  }
+
+  html body :is(main, #la) .ml1-lab .ml1-view > figcaption {
+    font-size: 12px !important;
+    line-height: 1.45 !important;
+  }
+
+  html body :is(main, #la) .ml1-lab .ml1-table :is(th, td) {
+    padding: 5px 2px !important;
+  }
+
+  html body :is(main, #la) .ml1-lab .ml1-table td {
+    font-size: 16px !important;
+  }
+
+  html body :is(main, #la) .ml1-lab .ml1-eqs > p {
+    font-size: 15px !important;
+  }
+
+  html body :is(main, #la) .ml1-lab .ml1-plane canvas {
+    max-width: 240px !important;
+  }
+}
+
+/* ch4 §3: AB over BA, each shorter, so the play button and both results share one screen
+   (side by side they were 156px wide; the drawing scales with the short side and its labels
+   ran into each other) */
+@media (max-width: 720px) {
+  html body :is(main, #la) #matrix-product-determinant-rank-interactive .s3-product-grid {
+    gap: 8px !important;
+  }
+
+  html body :is(main, #la) #matrix-product-determinant-rank-interactive .s3-product-grid .s3-canvas-card canvas {
+    height: 190px !important;
+  }
+
+  html body :is(main, #la) #matrix-product-determinant-rank-interactive .s3-product-grid .s3-stage-top {
+    padding: 7px 12px !important;
+  }
+}
+
+/* ch8 §2: the board, then the “下一步” card with its buttons, then the degree trail and the
+   list of steps; the trail used to sit between the board and the buttons that change it */
+@media (max-width: 720px) {
+  html body :is(main, #la) #smith-form-interactive .ch7l-body > :is(.ch7l-stage, .ch7l-side) {
+    display: contents !important;
+  }
+
+  html body :is(main, #la) #smith-form-interactive .ch7l-body .ch8l-board {
+    order: 1;
+  }
+
+  html body :is(main, #la) #smith-form-interactive .ch7l-body .ch7l-side > .ch7l-card:first-child {
+    order: 2;
+  }
+
+  html body :is(main, #la) #smith-form-interactive .ch7l-body .ch8l-trail {
+    order: 3;
+  }
+
+  html body :is(main, #la) #smith-form-interactive .ch7l-body .ch7l-side > .ch7l-card:not(:first-child) {
+    order: 4;
+  }
+}
+
+/* ch8 §3: the λ-matrix sticks (mobile-lab.js); under it the “初等变换” card, the determinant
+   and invariant factors it changes, then the wall of minors (the button was 870px below the
+   matrix and the factors) */
+@media (max-width: 720px) {
+  html body :is(main, #la) #invariant-factors-interactive .ch7l-body > :is(.ch7l-stage, .ch7l-side),
+  html body :is(main, #la) #invariant-factors-interactive .ch7l-stage > .ch8l-stagebox {
+    display: contents !important;
+  }
+
+  html body :is(main, #la) #invariant-factors-interactive .ch8l-mat {
+    order: 1;
+    justify-self: stretch !important;
+    justify-content: center !important;
+    padding-block: 6px;
+  }
+
+  html body :is(main, #la) #invariant-factors-interactive .ch7l-side > .ch7l-card:last-child {
+    order: 2;
+  }
+
+  html body :is(main, #la) #invariant-factors-interactive .ch7l-side > .ch7l-card:first-child {
+    order: 3;
+  }
+
+  html body :is(main, #la) #invariant-factors-interactive .ch8l-wall-head {
+    order: 4;
+  }
+
+  html body :is(main, #la) #invariant-factors-interactive .ch8l-wall {
+    order: 5;
+  }
+}
+
+/* ch2 §2: the presets above the permutation; the step buttons right under the wire diagram,
+   at the top of the readouts */
+@media (max-width: 720px) {
+  html body :is(main, #la) .ch2-lab:has(> .ch2-permutation-layout) > .ch2-presets {
+    order: 1;
+  }
+
+  html body :is(main, #la) .ch2-lab:has(> .ch2-permutation-layout) > .ch2-permutation-layout {
+    order: 2;
+  }
+
+  html body :is(main, #la) .ch2-permutation-layout > .ch2-side:not(.ch2-permutation-scene) > .ch2-toolbar {
+    order: -1;
+  }
+}
+
 /* ---------- chapter 2 ---------- */
 @media (max-width: 720px) {
   /* readout cards: label above value, tighter; three short values share a row */
@@ -785,6 +935,22 @@ body .la-opt-more {
     font-size: 13px !important;
   }
 
+  /* up to three presets share one row (they were half-width pills on two rows) */
+  html body :is(main, #la) .qv-lab .ch5-toolbar:not(:has(> :nth-child(4))) {
+    flex-wrap: nowrap !important;
+  }
+
+  html body :is(main, #la) .qv-lab .ch5-toolbar:not(:has(> :nth-child(4))) > button {
+    flex: 1 1 auto !important;
+    min-width: 0 !important;
+    white-space: nowrap;
+  }
+
+  /* §3: the wheels moved under their surfaces; the empty row kept two gaps */
+  html body :is(main, #la) .qv-lab > .qv-s3-wheels:empty {
+    display: none !important;
+  }
+
   /* “drag the surface” hint and the reset button on one row */
   html body :is(main, #la) .qv-lab .qv-orbit-tools {
     display: flex !important;
@@ -985,16 +1151,26 @@ body .la-opt-more {
     height: 210px !important;
   }
 
+  /* presets that came before the prediction box move under it, right above the views they
+     change (ch7 §3: presets → views was 830px); the guess still comes first */
+  html body :is(main, #la) :is(.ch3l-lab, .ch6l-lab, .ch7l-lab, .ch9l-lab) > :is(.ch3l-toolbar, .ch6l-toolbar, .ch7l-toolbar, .ch9l-toolbar) {
+    order: 1;
+  }
+
+  html body :is(main, #la) :is(.ch3l-lab, .ch6l-lab, .ch7l-lab, .ch9l-lab) > :is(.ch3l-toolbar, .ch6l-toolbar, .ch7l-toolbar, .ch9l-toolbar) ~ :not(:has(> :is(.ch3l-predict, .ch6l-predict, .ch7l-predict, .ch9l-predict))) {
+    order: 2;
+  }
+
   /* chapters 7 and 9 keep their two views stacked (their checks want canvases ≥ 200/240 wide);
      sliders and buttons that came after the pair move above it, so with them at the top of the
      screen both views stay in sight while the student drags or presses (ch9 §7) */
   html body :is(main, #la) :is(.ch7l-lab, .ch9l-lab):has(> :is(.ch7l-pair, .ch9l-pair) + :is(.ch7l-controls, .ch9l-controls)) > :is(.ch7l-pair, .ch9l-pair),
-  html body :is(main, #la) :is(.ch7l-lab, .ch9l-lab):has(> :is(.ch7l-pair, .ch9l-pair) + :is(.ch7l-controls, .ch9l-controls)) > :is(.ch7l-pair, .ch9l-pair) ~ * {
-    order: 2;
+  html body :is(main, #la) :is(.ch7l-lab, .ch9l-lab):has(> :is(.ch7l-pair, .ch9l-pair) + :is(.ch7l-controls, .ch9l-controls)) > :is(.ch7l-pair, .ch9l-pair) ~ :not(.ch7l-controls, .ch9l-controls) {
+    order: 4 !important;
   }
 
   html body :is(main, #la) :is(.ch7l-lab, .ch9l-lab) > :is(.ch7l-pair, .ch9l-pair) + :is(.ch7l-controls, .ch9l-controls) {
-    order: 1 !important;
+    order: 3 !important;
   }
 
   /* chapters 3 and 6: the two views side by side, so both views, the matrix and the step

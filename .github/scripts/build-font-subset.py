@@ -5,7 +5,7 @@ Sources: https://github.com/google/fonts/raw/main/ofl/notoserifsc/NotoSerifSC%5B
          https://github.com/google/fonts/raw/main/ofl/notoserif/NotoSerif%5Bwdth%2Cwght%5D.ttf
 The Chinese face keeps every character used under current/ plus GB2312 level 1; the
 Latin face keeps Latin, Greek, sub/superscripts and a few math symbols. Both stay
-variable in wght. Needs: pip install fonttools brotli
+variable in wght (the Chinese face 400–900, Regular as default). Needs: pip install fonttools brotli
 """
 import os
 import sys
@@ -79,6 +79,10 @@ def main(source):
     subsetter = subset.Subsetter(options)
     subsetter.populate(text=text)
     subsetter.subset(font)
+    # the upstream default instance is ExtraLight (wght 200); iOS Safari drew normal-weight
+    # text at the default instance, so make Regular the default and drop the unused light end
+    from fontTools.varLib import instancer
+    font = instancer.instantiateVariableFont(font, {"wght": (400, 400, 900)})
     font.flavor = "woff2"
     font.save(OUT)
     print(f"{len(text)} characters -> {OUT} ({os.path.getsize(OUT) // 1024} KB)")

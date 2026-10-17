@@ -171,7 +171,15 @@ async function check(viewport, dark) {
     assert.ok(order, `${label}: lab sits above the theorem blocks`);
     if (route.preset != null) await lab.locator(".ch7l-toolbar").first().locator(".ch7l-chip").nth(route.preset).click();
     const stage = route.canvas ? lab.locator(".ch7p-canvas") : lab.locator(".ch8l-board, .ch8l-stagebox");
-    const stageBox = await stage.first().boundingBox();
+    // on a phone the stage box of §3 is display: contents (lab-fit.css re-orders its matrix and
+    // wall around the side cards): measure what it holds instead
+    const stageBox = await stage.first().evaluate((el) => {
+      const parts = getComputedStyle(el).display === "contents" ? [...el.children] : [el];
+      const rs = parts.map((p) => p.getBoundingClientRect()).filter((r) => r.width && r.height);
+      if (!rs.length) return null;
+      const x = Math.min(...rs.map((r) => r.left)), y = Math.min(...rs.map((r) => r.top));
+      return { x, y, width: Math.max(...rs.map((r) => r.right)) - x, height: Math.max(...rs.map((r) => r.bottom)) - y };
+    });
     const minH = route.minH ?? (viewport.width >= 1000 ? 380 : 260);
     assert.ok(stageBox && stageBox.width >= 200 && stageBox.height >= minH, `${label}: stage ${JSON.stringify(stageBox)}`);
 

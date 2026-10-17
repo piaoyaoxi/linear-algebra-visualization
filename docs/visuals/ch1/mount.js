@@ -11,7 +11,7 @@
   };
 
   addStylesheet("./visuals/ch1/refinement.css?v=ch1-final2");
-  addStylesheet("./visuals/ch1/learning-design.css?v=ch1-learning2");
+  addStylesheet("./visuals/ch1/learning-design.css?v=lf4");
 
   const math = window.Ch1Math;
   if (math) {
@@ -158,7 +158,6 @@
     const parameterRow = document.createElement("div");
     parameterRow.className = "ch1-coeff-parameters";
     if (scaleBox) parameterRow.append(scaleBox);
-    if (kBox) parameterRow.append(kBox);
     operation.append(parameterRow);
 
     const result = document.createElement("section");
@@ -169,6 +168,14 @@
     const explanation = document.createElement("section");
     explanation.className = "ch1-learning-module ch1-coeff-analysis";
     explanation.append(moduleHeading(n(4), "乘积中指定次数的全部贡献"));
+    // the k slider sits above the table it drives (it was under the operation buttons, a
+    // screen away from the table on a phone)
+    if (kBox) {
+      const kRow = document.createElement("div");
+      kRow.className = "ch1-coeff-parameters";
+      kRow.append(kBox);
+      explanation.append(kRow);
+    }
     const analysisGrid = document.createElement("div");
     analysisGrid.className = "ch1-coeff-analysis-grid";
     [...explanationPair.children].forEach((child) => analysisGrid.append(child));
@@ -180,7 +187,8 @@
     graph.innerHTML = `<summary><span>结果的函数图像</span></summary>`;
     graph.append(stage);
 
-    workflow.append(editor, operation, result, explanation, graph);
+    // the graph of the result follows the result; the product's k-th coefficient comes last
+    workflow.append(editor, operation, result, graph, explanation);
     // the section's question is the middle 0; the operations workbench folds away under it
     const more = document.createElement("details");
     more.className = "ch1-more-ops";

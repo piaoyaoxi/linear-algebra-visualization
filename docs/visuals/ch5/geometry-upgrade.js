@@ -202,8 +202,9 @@
   function signWheel(canvas, A, label) {
     const { ctx, width, height } = M().setupCanvas(canvas); if (!ctx) return;
     const p = M().getPalette();
-    // small = the inset on a surface's corner (phones): no title, tighter ring
-    const small = width < 130;
+    // small = the phone version (an inset on a surface's corner, or a short strip under a surface
+    // in the side-by-side layout): no title, tighter ring
+    const small = width < 130 || height < 100;
     const cx = width / 2, cy = height / 2 + (small ? 0 : 4), r = Math.min(width, height) * (small ? 0.3 : 0.32);
     ctx.fillStyle = p.soft; ctx.fillRect(0, 0, width, height);
     const N = 360;

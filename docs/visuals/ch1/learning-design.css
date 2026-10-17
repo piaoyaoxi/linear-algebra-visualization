@@ -315,7 +315,8 @@
   gap: 12px;
 }
 
-.ch1-coeff-parameters:empty {
+.ch1-coeff-parameters:empty,
+.ch1-coeff-parameters:not(:has(> :not([hidden]))) {
   display: none;
 }
 

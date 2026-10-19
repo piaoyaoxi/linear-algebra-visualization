@@ -30,7 +30,7 @@
 }
 
 /* how to work the lab: after the prediction, before the lab itself */
-:is(main, #la) .ch2-lab > .ch2-lab-hint {
+main .ch2-lab > .ch2-lab-hint {
   margin: 0;
   max-width: 76ch;
   color: var(--text-2);
@@ -264,13 +264,6 @@
   transition: background .18s ease, border-color .18s ease, color .18s ease, transform .15s ease;
 }
 
-.ch2-presets button:hover,
-.ch2-toolbar button:hover,
-.ch2-pair:hover {
-  border-color: color-mix(in srgb, var(--accent) 42%, var(--line));
-  background: var(--accent-soft);
-}
-
 .ch2-presets button.is-active,
 .ch2-toolbar button.is-active,
 .ch2-pair.is-active {
@@ -420,11 +413,6 @@
   align-items: start;
   padding-top: 12px;
   border-top: 1px solid var(--line);
-}
-
-.ch2-cramer-controls .ch2-tuning {
-  border-top: 0;
-  padding-top: 7px;
 }
 
 .ch2-matrix-box {
@@ -693,7 +681,6 @@
 .ch2-wires path.is-focus {
   stroke: var(--coral);
   stroke-width: 2.2;
-  opacity: .95;
 }
 
 .ch2-wires text {
@@ -1123,14 +1110,6 @@
   font-size: .94em;
 }
 
-body.dark .ch2-lab,
-body.dark .ch2-meter-card,
-body.dark .ch2-card,
-body.dark .ch2-def,
-body.dark .ch2-matrix-box {
-  background: color-mix(in srgb, var(--surface-solid) 92%, #000);
-}
-
 @keyframes ch2-card-pulse {
   0%, 100% { transform: scale(1); }
   42% { transform: scale(1.018); border-color: color-mix(in srgb, var(--accent) 45%, var(--line)); }
@@ -1253,7 +1232,7 @@ body.dark .ch2-matrix-box {
 
 /* phones: the Laplace expansion stays on one line inside the column */
 @media (max-width: 430px) {
-  :is(main, #la) .ch2-def.ch2-laplace-formula > strong {
+  main .ch2-def.ch2-laplace-formula > strong {
     font-size: 15px;
   }
 }

@@ -136,9 +136,6 @@
 
 body.dark .inverse-transform-lab {
   --inverse-vector: #6b8cff;
-  border-color: var(--glass-border);
-  background: var(--surface-solid);
-  box-shadow: none;
 }
 
 .inverse-lab-head {

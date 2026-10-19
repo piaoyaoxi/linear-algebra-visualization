@@ -18,7 +18,7 @@
    ====================================================================== */
 
 /* lab card */
-:is(main, #la) :is(.ch1-lab, .ch2-lab, .qv-lab, .s2c-lab, .s3-lab, .inverse-transform-lab, .visual-panel, .block-lab) {
+main :is(.ch1-lab, .ch2-lab, .qv-lab, .s2c-lab, .s3-lab, .inverse-transform-lab, .visual-panel, .block-lab) {
   padding: 28px;
   border: 1px solid var(--line);
   border-radius: 12px;
@@ -29,20 +29,20 @@
 }
 
 @media (max-width: 720px) {
-  :is(main, #la) :is(.ch1-lab, .ch2-lab, .qv-lab, .s2c-lab, .s3-lab, .inverse-transform-lab, .visual-panel, .block-lab) {
+  main :is(.ch1-lab, .ch2-lab, .qv-lab, .s2c-lab, .s3-lab, .inverse-transform-lab, .visual-panel, .block-lab) {
     padding: 16px;
   }
 }
 
 /* a bare canvas is its own frame; inside a frame it is just the drawing */
-:is(main, #la) :is(.ch1-lab, .ch2-lab, .qv-lab, .s2c-lab, .s3-lab, .inverse-transform-lab, .visual-panel, .block-lab, .ch2-formal, .ch5-foundation, .s2-foundation, .s3-formal, .section-one-foundation) canvas {
+main :is(.ch1-lab, .ch2-lab, .qv-lab, .s2c-lab, .s3-lab, .inverse-transform-lab, .visual-panel, .block-lab, .ch2-formal, .ch5-foundation, .s2-foundation, .s3-formal, .section-one-foundation) canvas {
   border: 1px solid var(--line);
   border-radius: 8px;
   background: var(--cv-paper);
   box-shadow: none;
 }
 
-:is(main, #la) :is(.ch1-stage, .ch1-complex-canvas-shell, .ch1-long-division-stage) canvas {
+main :is(.ch1-stage, .ch1-complex-canvas-shell, .ch1-long-division-stage) canvas {
   border: 0;
   border-radius: 0;
   background: transparent;
@@ -720,11 +720,11 @@
 :is(main, #la) .ch1-stairs-svg :is(.ch1-stairs-value, .ch1-stairs-name, .ch1-stairs-callout).is-r { fill: var(--cv-image); }
 
 /* ch3 §7 (结式): later steps stay hidden until they are reached */
-:is(main, #la) [data-ch3-lab="resultant"] .ch3-resultant-steps > section[hidden] {
+main [data-ch3-lab="resultant"] .ch3-resultant-steps > section[hidden] {
   display: none;
 }
 
-:is(main, #la) [data-ch3-lab="resultant"] .ch3-verification-item.is-rejected {
+main [data-ch3-lab="resultant"] .ch3-verification-item.is-rejected {
   color: var(--muted);
 }
 
@@ -783,16 +783,16 @@
    2  Chapter 2 行列式
    ====================================================================== */
 
-:is(main, #la) .ch2-lab {
+main .ch2-lab {
   gap: 20px;
 }
 
-:is(main, #la) .ch2-lab-head > h3 {
+main .ch2-lab-head > h3 {
   font-size: 21px;
   font-weight: 600;
 }
 
-:is(main, #la) .ch2-lab-head > p {
+main .ch2-lab-head > p {
   color: var(--text-2);
   font-size: 15.5px;
   line-height: 1.8;
@@ -801,7 +801,7 @@
 /* “观察任务”: quiet paper, label in the accent */
 
 /* buttons */
-:is(main, #la) :is(.ch2-presets button, .ch2-toolbar button, .ch2-pair) {
+main :is(.ch2-presets button, .ch2-toolbar button, .ch2-pair) {
   border: 1px solid var(--line-strong);
   border-radius: 8px;
   background: var(--surface-solid);
@@ -811,12 +811,12 @@
   box-shadow: none;
 }
 
-:is(main, #la) :is(.ch2-presets button, .ch2-toolbar button, .ch2-pair):hover:not(:disabled) {
+main :is(.ch2-presets button, .ch2-toolbar button, .ch2-pair):hover:not(:disabled) {
   border-color: var(--accent);
   background: var(--surface-solid);
 }
 
-:is(main, #la) :is(.ch2-presets button, .ch2-toolbar button, .ch2-pair).is-active {
+main :is(.ch2-presets button, .ch2-toolbar button, .ch2-pair).is-active {
   border-color: var(--accent);
   background: var(--accent-soft);
   color: var(--accent-strong);
@@ -824,20 +824,20 @@
   box-shadow: inset 0 0 0 1px var(--accent);
 }
 
-:is(main, #la) :is(.ch2-presets button, .ch2-toolbar button, .ch2-pair):disabled {
+main :is(.ch2-presets button, .ch2-toolbar button, .ch2-pair):disabled {
   opacity: 0.4;
 }
 
 /* §8 product lab: the primary action leads the preset row */
-:is(main, #la) :is(.ch2-presets, .ch2-toolbar) > button.is-primary,
-:is(main, #la) :is(.ch2-presets, .ch2-toolbar) > button.is-primary:hover:not(:disabled) {
+main :is(.ch2-presets, .ch2-toolbar) > button.is-primary,
+main :is(.ch2-presets, .ch2-toolbar) > button.is-primary:hover:not(:disabled) {
   border-color: var(--accent);
   background: var(--accent);
   color: var(--on-accent);
   font-weight: 600;
 }
 
-:is(main, #la) .ch2-tile-row {
+main .ch2-tile-row {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
@@ -850,7 +850,7 @@
 
 /* phones: the lab card is the only box around the area blocks; the band becomes a hairline */
 @media (max-width: 720px) {
-  :is(main, #la) .ch2-lab .ch2-tile-row {
+  main .ch2-lab .ch2-tile-row {
     min-height: 0;
     padding: 14px 0 0;
     border-top: 1px solid var(--line);
@@ -859,26 +859,26 @@
   }
 }
 
-:is(main, #la) .ch2-tile-group {
+main .ch2-tile-group {
   display: grid;
   justify-items: center;
   gap: 8px;
   margin: 0;
 }
 
-:is(main, #la) .ch2-tile-group > figcaption {
+main .ch2-tile-group > figcaption {
   color: var(--muted);
   font-size: 13px;
   font-variant-numeric: tabular-nums;
 }
 
-:is(main, #la) .ch2-tiles {
+main .ch2-tiles {
   display: grid;
   grid-template-columns: repeat(var(--cols, 1), 22px);
   gap: 3px;
 }
 
-:is(main, #la) .ch2-tiles > i {
+main .ch2-tiles > i {
   width: 22px;
   height: 22px;
   border: 1px solid var(--cv-image);
@@ -886,18 +886,18 @@
   background: color-mix(in srgb, var(--cv-image) 14%, transparent);
 }
 
-:is(main, #la) .ch2-tiles > i.is-unit {
+main .ch2-tiles > i.is-unit {
   border-color: var(--cv-axis);
   background: color-mix(in srgb, var(--cv-axis) 12%, transparent);
 }
 
 /* a negative orientation keeps the area and is drawn dashed, as on the canvas */
-:is(main, #la) .ch2-tiles.is-flipped > i {
+main .ch2-tiles.is-flipped > i {
   border-style: dashed;
   background: color-mix(in srgb, var(--cv-image) 7%, transparent);
 }
 
-:is(main, #la) .ch2-tiles.is-zero {
+main .ch2-tiles.is-zero {
   display: grid;
   place-items: center;
   width: 46px;
@@ -906,13 +906,13 @@
   border-radius: 3px;
 }
 
-:is(main, #la) .ch2-tiles.is-zero > i {
+main .ch2-tiles.is-zero > i {
   color: var(--muted);
   font-size: 13px;
   font-style: normal;
 }
 
-:is(main, #la) .ch2-tile-op {
+main .ch2-tile-op {
   color: var(--accent-strong);
   font-size: 15px;
   font-weight: 600;
@@ -920,7 +920,7 @@
 }
 
 /* §8 worked Laplace example (static) */
-:is(main, #la) .ch2-laplace-example-body {
+main .ch2-laplace-example-body {
   display: grid;
   grid-template-columns: auto minmax(0, 1fr);
   gap: 20px;
@@ -928,48 +928,48 @@
   margin: 10px 0;
 }
 
-:is(main, #la) .ch2-laplace-terms {
+main .ch2-laplace-terms {
   width: 100%;
   border-collapse: collapse;
   font-variant-numeric: tabular-nums;
 }
 
-:is(main, #la) .ch2-laplace-terms :is(th, td) {
+main .ch2-laplace-terms :is(th, td) {
   padding: 6px 8px;
   border-bottom: 1px solid var(--line);
   text-align: center;
   font-size: 14px;
 }
 
-:is(main, #la) .ch2-laplace-terms th {
+main .ch2-laplace-terms th {
   color: var(--muted);
   font-size: 12.5px;
   font-weight: 600;
 }
 
-:is(main, #la) .ch2-laplace-terms tfoot td {
+main .ch2-laplace-terms tfoot td {
   border-bottom: 0;
   color: var(--text-2);
 }
 
 @media (max-width: 720px) {
-  :is(main, #la) .ch2-laplace-example-body {
+  main .ch2-laplace-example-body {
     grid-template-columns: minmax(0, 1fr);
   }
 
-  :is(main, #la) .ch2-laplace-terms :is(th, td) {
+  main .ch2-laplace-terms :is(th, td) {
     padding: 6px 4px;
     font-size: 13px;
   }
 }
 
-:is(main, #la) .ch2-wide-controls {
+main .ch2-wide-controls {
   border-top-color: var(--line);
 }
 
 /* canvas and matrix display frames */
-:is(main, #la) :is(.ch2-stage, .ch2-matrix-box, .ch2-term-scene),
-body.dark :is(main, #la) .ch2-matrix-box {
+main :is(.ch2-stage, .ch2-matrix-box, .ch2-term-scene),
+body.dark main .ch2-matrix-box {
   border: 1px solid var(--line);
   border-radius: 8px;
   background: var(--cv-paper);
@@ -977,106 +977,106 @@ body.dark :is(main, #la) .ch2-matrix-box {
   box-shadow: none;
 }
 
-:is(main, #la) .ch2-stage canvas,
-:is(main, #la) .ch2-stage-panel .ch2-stage canvas {
+main .ch2-stage canvas,
+main .ch2-stage-panel .ch2-stage canvas {
   border: 0;
   border-radius: 0;
   background: transparent;
 }
 
-:is(main, #la) .ch2-stage-caption {
+main .ch2-stage-caption {
   color: var(--muted);
   font-size: 13px;
   font-weight: 400;
 }
 
 /* readouts */
-:is(main, #la) .ch2-meter-card,
-body.dark :is(main, #la) .ch2-meter-card {
+main .ch2-meter-card,
+body.dark main .ch2-meter-card {
   border: 1px solid var(--line);
   border-radius: 10px;
   background: var(--surface-solid);
   box-shadow: none;
 }
 
-:is(main, #la) .ch2-meter-card > strong {
+main .ch2-meter-card > strong {
   color: var(--muted);
   font-size: 12.5px;
   font-weight: 400;
   letter-spacing: 0.04em;
 }
 
-:is(main, #la) .ch2-meter-card > .is-positive {
+main .ch2-meter-card > .is-positive {
   color: var(--ok-text);
 }
 
-:is(main, #la) .ch2-meter-card > .is-negative {
+main .ch2-meter-card > .is-negative {
   color: var(--bad-text);
 }
 
-:is(main, #la) .ch2-meter-card > .is-zero {
+main .ch2-meter-card > .is-zero {
   color: var(--predict-text);
 }
 
-:is(main, #la) .ch2-note {
+main .ch2-note {
   border: 0;
   border-radius: 10px;
   background: var(--surface-soft);
   color: var(--text-2);
 }
 
-:is(main, #la) .ch2-note.is-positive {
+main .ch2-note.is-positive {
   border: 1px solid var(--ok-line);
   background: var(--ok-bg);
   color: var(--ok-text);
 }
 
-:is(main, #la) .ch2-note.is-negative {
+main .ch2-note.is-negative {
   border: 1px solid var(--bad-line);
   background: var(--bad-bg);
   color: var(--bad-text);
 }
 
-:is(main, #la) .ch2-note.is-zero {
+main .ch2-note.is-zero {
   border: 1px solid var(--predict-line);
   background: var(--predict-bg);
   color: var(--predict-text);
 }
 
-:is(main, #la) :is(.ch2-ledger, .ch2-tuning) {
+main :is(.ch2-ledger, .ch2-tuning) {
   border: 1px solid var(--line);
   border-radius: 10px;
   background: var(--surface-solid);
 }
 
-:is(main, #la) .ch2-tuning {
+main .ch2-tuning {
   padding: 10px 14px;
 }
 
-:is(main, #la) .ch2-ledger > strong {
+main .ch2-ledger > strong {
   color: var(--muted);
   font-size: 12.5px;
   font-weight: 400;
   letter-spacing: 0.04em;
 }
 
-:is(main, #la) .ch2-cramer-proof {
+main .ch2-cramer-proof {
   border: 0;
   border-radius: 10px;
   background: var(--surface-soft);
 }
 
 /* §7 the action (b₂ − 1/10) heads the readout column, full width */
-:is(main, #la) .ch2-cramer-act {
+main .ch2-cramer-act {
   margin: 0;
 }
 
-:is(main, #la) .ch2-cramer-act > button {
+main .ch2-cramer-act > button {
   flex: 1 1 auto;
 }
 
 /* permutation tiles */
-:is(main, #la) .ch2-perm-item {
+main .ch2-perm-item {
   border: 1px solid var(--line-strong);
   border-radius: 8px;
   background: var(--surface-solid);
@@ -1084,70 +1084,70 @@ body.dark :is(main, #la) .ch2-meter-card {
   box-shadow: none;
 }
 
-:is(main, #la) .ch2-perm-item.is-selected {
+main .ch2-perm-item.is-selected {
   border-color: var(--accent);
   background: var(--accent-soft);
   box-shadow: inset 0 0 0 1px var(--accent);
 }
 
-:is(main, #la) .ch2-perm-item.is-scanning {
+main .ch2-perm-item.is-scanning {
   border-color: var(--cv-v2);
   box-shadow: 0 0 0 3px color-mix(in srgb, var(--cv-v2) 16%, transparent);
 }
 
-:is(main, #la) .ch2-wires path {
+main .ch2-wires path {
   stroke: var(--cv-axis);
   opacity: 1;
 }
 
-:is(main, #la) .ch2-wires path.is-focus {
+main .ch2-wires path.is-focus {
   stroke: var(--cv-v2);
 }
 
-:is(main, #la) .ch2-inversion-list > span {
+main .ch2-inversion-list > span {
   background: color-mix(in srgb, var(--cv-v2) 12%, transparent);
 }
 
-:is(main, #la) .ch2-checkerboard > span.plus {
+main .ch2-checkerboard > span.plus {
   color: var(--text);
 }
 
-:is(main, #la) .ch2-checkerboard > span.minus {
+main .ch2-checkerboard > span.minus {
   color: var(--cv-v2);
 }
 
-:is(main, #la) .ch2-checkerboard > span.is-active {
+main .ch2-checkerboard > span.is-active {
   color: var(--accent-strong);
 }
 
-:is(main, #la) .ch2-cut-label {
+main .ch2-cut-label {
   color: var(--cv-v2);
 }
 
-:is(main, #la) .ch2-matrix-table td.is-complement {
+main .ch2-matrix-table td.is-complement {
   outline-color: color-mix(in srgb, var(--cv-v2) 55%, var(--line));
   background: color-mix(in srgb, var(--cv-v2) 8%, var(--cv-paper));
 }
 
 /* formal block */
-:is(main, #la) .ch2-module-heading > span:first-child {
+main .ch2-module-heading > span:first-child {
   border: 1px solid var(--line);
   background: transparent;
   color: var(--faint);
   font-weight: 400;
 }
 
-:is(main, #la) .ch2-module-heading h3 {
+main .ch2-module-heading h3 {
   font-size: 21px;
   font-weight: 600;
 }
 
-:is(main, #la) .ch2-def-stack {
+main .ch2-def-stack {
   gap: 0;
 }
 
-:is(main, #la) .ch2-def,
-body.dark :is(main, #la) .ch2-def {
+main .ch2-def,
+body.dark main .ch2-def {
   padding: 18px 0 18px 52px;
   border: 0;
   border-top: 1px solid var(--line);
@@ -1157,81 +1157,81 @@ body.dark :is(main, #la) .ch2-def {
 }
 
 @media (max-width: 720px) {
-  :is(main, #la) .ch2-def,
-  body.dark :is(main, #la) .ch2-def {
+  main .ch2-def,
+  body.dark main .ch2-def {
     padding-left: 0;
   }
 }
 
-:is(main, #la) .ch2-def > strong {
+main .ch2-def > strong {
   font-size: 17px;
   font-weight: 600;
 }
 
-:is(main, #la) .ch2-def > p {
+main .ch2-def > p {
   color: var(--text-2);
   font-size: 15.5px;
   line-height: 1.85;
 }
 
-:is(main, #la) .ch2-card,
-body.dark :is(main, #la) .ch2-card {
+main .ch2-card,
+body.dark main .ch2-card {
   border: 1px solid var(--line);
   border-radius: 10px;
   background: var(--surface-solid);
   box-shadow: none;
 }
 
-:is(main, #la) :is(.ch2-def, .ch2-card) > .kicker {
+main :is(.ch2-def, .ch2-card) > .kicker {
   color: var(--muted);
   font-size: 12.5px;
   font-weight: 400;
   letter-spacing: 0.08em;
 }
 
-:is(main, #la) .ch2-proof-steps {
+main .ch2-proof-steps {
   gap: 0;
   border-top: 1px solid var(--line);
 }
 
-:is(main, #la) .ch2-proof-steps > li {
+main .ch2-proof-steps > li {
   border-left: 0;
   border-bottom: 1px solid var(--line);
   background: none;
 }
 
-:is(main, #la) .ch2-proof-steps > li::before {
+main .ch2-proof-steps > li::before {
   background: none;
   color: var(--faint);
   font-weight: 400;
 }
 
-:is(main, #la) .ch2-misconception {
+main .ch2-misconception {
   border: 1px solid var(--bad-line);
   border-radius: 10px;
   background: var(--bad-bg);
 }
 
-:is(main, #la) .ch2-misconception > strong {
+main .ch2-misconception > strong {
   color: var(--bad-text);
   font-size: 12.5px;
   letter-spacing: 0.08em;
 }
 
-:is(main, #la) .ch2-reading-note {
+main .ch2-reading-note {
   border: 0;
   border-radius: 10px;
   background: var(--surface-soft);
 }
 
-:is(main, #la) .ch2-reading-note > strong {
+main .ch2-reading-note > strong {
   color: var(--accent);
   font-size: 12.5px;
   font-weight: 600;
   letter-spacing: 0.08em;
 }
 
-:is(main, #la) .ch2-lesson-bridge {
+main .ch2-lesson-bridge {
   border: 0;
   border-top: 1px solid var(--line);
   border-radius: 0;
@@ -1239,7 +1239,7 @@ body.dark :is(main, #la) .ch2-card {
   box-shadow: none;
 }
 
-:is(main, #la) .ch2-lesson-bridge > strong {
+main .ch2-lesson-bridge > strong {
   color: var(--muted);
 }
 
@@ -2762,7 +2762,7 @@ body.dark :is(main, #la) :is(.lesson-page-section, #lb) .basis-label rect {
 
 /* long display formulas in theorem rows shrink a little on phones instead of scrolling */
 @media (max-width: 420px) {
-  :is(main, #la) :is(.ch3l-theorem-math, .ch6l-theorem-math, .ch7l-theorem-math, .ch9l-theorem-math) .katex-display > .katex {
+  main :is(.ch3l-theorem-math, .ch6l-theorem-math, .ch7l-theorem-math, .ch9l-theorem-math) .katex-display > .katex {
     font-size: 0.86em;
   }
 }
@@ -2855,49 +2855,49 @@ body.dark :is(main, #la) :is(.lesson-page-section, #lb) .basis-label rect {
 }
 
 /* ch2 §5: an arrow from the pivot row to the entry being zeroed */
-:is(main, #la) .ch2-pivot-wrap {
+main .ch2-pivot-wrap {
   position: relative;
   padding-left: 64px;
 }
 
-:is(main, #la) .ch2-pivot-arrow {
+main .ch2-pivot-arrow {
   position: absolute;
   inset: 0;
   overflow: visible;
   pointer-events: none;
 }
 
-:is(main, #la) .ch2-pivot-arrow path.ch2-pivot-path {
+main .ch2-pivot-arrow path.ch2-pivot-path {
   fill: none;
   stroke: var(--cv-v1);
   stroke-width: 1.6;
 }
 
-:is(main, #la) .ch2-pivot-arrow marker path {
+main .ch2-pivot-arrow marker path {
   fill: var(--cv-v1);
 }
 
-:is(main, #la) .ch2-pivot-arrow .ch2-pivot-text {
+main .ch2-pivot-arrow .ch2-pivot-text {
   fill: var(--cv-v1);
   font: 600 13px var(--font-serif, serif);
 }
 
 /* ch2 §2: the permutation matrix beside the wiring */
-:is(main, #la) .ch2-wire-pair {
+main .ch2-wire-pair {
   display: grid;
   grid-template-columns: minmax(0, 1fr) auto;
   align-items: center;
   gap: 16px;
 }
 
-:is(main, #la) .ch2-perm-matrix-box {
+main .ch2-perm-matrix-box {
   display: grid;
   justify-items: center;
   gap: 6px;
   margin: 0;
 }
 
-:is(main, #la) .ch2-perm-matrix {
+main .ch2-perm-matrix {
   border-collapse: separate;
   border-spacing: 4px;
   padding: 2px 6px;
@@ -2906,7 +2906,7 @@ body.dark :is(main, #la) :is(.lesson-page-section, #lb) .basis-label rect {
   font-variant-numeric: tabular-nums;
 }
 
-:is(main, #la) .ch2-perm-matrix td {
+main .ch2-perm-matrix td {
   width: 1.7rem;
   height: 1.7rem;
   padding: 0;
@@ -2916,34 +2916,34 @@ body.dark :is(main, #la) :is(.lesson-page-section, #lb) .basis-label rect {
   font: 600 14px var(--font-serif, serif);
 }
 
-:is(main, #la) .ch2-perm-matrix td.is-one {
+main .ch2-perm-matrix td.is-one {
   color: var(--cv-image);
   background: color-mix(in srgb, var(--cv-image) 12%, transparent);
 }
 
-:is(main, #la) .ch2-perm-matrix tr.is-swapped td.is-one {
+main .ch2-perm-matrix tr.is-swapped td.is-one {
   box-shadow: 0 0 0 4px color-mix(in srgb, var(--cv-image) 18%, transparent);
 }
 
-:is(main, #la) .ch2-perm-det {
+main .ch2-perm-det {
   margin: 0;
   color: var(--muted);
   font-size: 14px;
 }
 
-:is(main, #la) .ch2-perm-det > b {
+main .ch2-perm-det > b {
   color: var(--cv-image);
   font-variant-numeric: tabular-nums;
 }
 
 @media (max-width: 520px) {
-  :is(main, #la) .ch2-wire-pair {
+  main .ch2-wire-pair {
     grid-template-columns: 1fr;
   }
 }
 
 /* ch2 §3: on an upper triangular matrix the five paths through a zero are greyed */
-:is(main, #la) .ch2-term-btn.is-zero-path {
+main .ch2-term-btn.is-zero-path {
   /* struck through and receded; ink, not grey, so the faded term still reads */
   color: var(--text);
   opacity: 0.64;
@@ -2951,21 +2951,21 @@ body.dark :is(main, #la) :is(.lesson-page-section, #lb) .basis-label rect {
   text-decoration-color: var(--muted);
 }
 
-:is(main, #la) .ch2-term-btn > .ch2-term-zero {
+main .ch2-term-btn > .ch2-term-zero {
   display: inline-block;
   margin-left: 6px;
   color: var(--muted);
   font-weight: 600;
 }
 
-:is(main, #la) .ch2-six-sum {
+main .ch2-six-sum {
   margin: 10px 0 0;
   color: var(--ok-text, var(--accent-strong));
   font-size: 14.5px;
 }
 
 /* ch2 §6: the terms of one row (column) as tiles a_ij × C_ij, zero tiles greyed */
-:is(main, #la) .ch2-cof-tiles {
+main .ch2-cof-tiles {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
@@ -2973,7 +2973,7 @@ body.dark :is(main, #la) :is(.lesson-page-section, #lb) .basis-label rect {
   margin: 10px 0;
 }
 
-:is(main, #la) .ch2-cof-tile {
+main .ch2-cof-tile {
   display: grid;
   gap: 4px;
   min-width: 0;
@@ -2984,24 +2984,24 @@ body.dark :is(main, #la) :is(.lesson-page-section, #lb) .basis-label rect {
   background: color-mix(in srgb, var(--cv-image) 7%, var(--surface-solid));
 }
 
-:is(main, #la) .ch2-cof-tile > small {
+main .ch2-cof-tile > small {
   color: var(--muted);
   font-size: 12px;
 }
 
-:is(main, #la) .ch2-cof-tile.is-zero {
+main .ch2-cof-tile.is-zero {
   border-color: var(--line);
   border-style: dashed;
   background: var(--surface-soft);
   opacity: 0.7;
 }
 
-:is(main, #la) .ch2-cof-tile.is-sum {
+main .ch2-cof-tile.is-sum {
   border-color: var(--accent);
   background: var(--accent-soft);
 }
 
-:is(main, #la) .ch2-cof-op {
+main .ch2-cof-op {
   color: var(--muted);
   font-size: 18px;
   font-weight: 600;
@@ -3015,13 +3015,13 @@ body.dark :is(main, #la) :is(.lesson-page-section, #lb) .basis-label rect {
 }
 
 /* ch2 §1: det and |det| stay on one line */
-:is(main, #la) .ch2-meter-card > :is([data-det], [data-abs]) {
+main .ch2-meter-card > :is([data-det], [data-abs]) {
   white-space: nowrap;
   font-variant-numeric: tabular-nums;
 }
 
 /* ch2 §6: the six Leibniz terms, the two containing a_ij lit */
-:is(main, #la) .ch2-leibniz {
+main .ch2-leibniz {
   display: grid;
   gap: 10px;
   margin: 16px 0;
@@ -3031,25 +3031,25 @@ body.dark :is(main, #la) :is(.lesson-page-section, #lb) .basis-label rect {
   background: var(--surface-soft);
 }
 
-:is(main, #la) .ch2-leibniz > p {
+main .ch2-leibniz > p {
   margin: 0;
   color: var(--text-2);
   font-size: 15px;
   line-height: 1.7;
 }
 
-:is(main, #la) .ch2-leibniz > .ch2-leib-title {
+main .ch2-leibniz > .ch2-leib-title {
   color: var(--text);
   font-weight: 600;
 }
 
-:is(main, #la) .ch2-leib-terms {
+main .ch2-leib-terms {
   display: grid;
   grid-template-columns: repeat(6, minmax(0, 1fr));
   gap: 6px;
 }
 
-:is(main, #la) .ch2-leib-term {
+main .ch2-leib-term {
   display: grid;
   justify-items: center;
   gap: 2px;
@@ -3062,44 +3062,44 @@ body.dark :is(main, #la) :is(.lesson-page-section, #lb) .basis-label rect {
   opacity: 0.68;
 }
 
-:is(main, #la) .ch2-leib-term > small {
+main .ch2-leib-term > small {
   color: var(--muted);
   font-size: 12px;
 }
 
-:is(main, #la) .ch2-leib-term.is-hit {
+main .ch2-leib-term.is-hit {
   border-color: color-mix(in srgb, var(--cv-image) 55%, var(--line));
   background: color-mix(in srgb, var(--cv-image) 9%, var(--surface-solid));
   box-shadow: 0 0 0 3px color-mix(in srgb, var(--cv-image) 16%, transparent);
   opacity: 1;
 }
 
-:is(main, #la) .ch2-leibniz > .ch2-leib-factor {
+main .ch2-leibniz > .ch2-leib-factor {
   overflow-x: auto;
   color: var(--text);
 }
 
 @media (max-width: 720px) {
-  :is(main, #la) .ch2-leib-terms {
+  main .ch2-leib-terms {
     grid-template-columns: repeat(3, minmax(0, 1fr));
   }
 }
 
 /* ch2 §3: the zero below the diagonal that the current path picks, circled */
-:is(main, #la) .ch2-term-matrix td.is-zero-hit > :is(button, span) {
+main .ch2-term-matrix td.is-zero-hit > :is(button, span) {
   border-radius: 999px;
   box-shadow: 0 0 0 2px var(--bad-text, #a3402a), 0 0 0 7px color-mix(in srgb, var(--bad-text, #a3402a) 16%, transparent);
   color: var(--bad-text, #a3402a);
 }
 
 /* ch2 §2: the starting wiring as a ghost, and the τ strip */
-:is(main, #la) .ch2-wires path.is-ghost {
+main .ch2-wires path.is-ghost {
   stroke: var(--cv-axis);
   stroke-dasharray: 5 4;
   opacity: 0.35;
 }
 
-:is(main, #la) .ch2-tau-strip {
+main .ch2-tau-strip {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
@@ -3107,12 +3107,12 @@ body.dark :is(main, #la) :is(.lesson-page-section, #lb) .basis-label rect {
   margin-top: 8px;
 }
 
-:is(main, #la) .ch2-tau-strip > i {
+main .ch2-tau-strip > i {
   color: var(--faint);
   font-style: normal;
 }
 
-:is(main, #la) .ch2-tau-cell {
+main .ch2-tau-cell {
   display: grid;
   justify-items: center;
   gap: 2px;
@@ -3123,24 +3123,24 @@ body.dark :is(main, #la) :is(.lesson-page-section, #lb) .basis-label rect {
   font-variant-numeric: tabular-nums;
 }
 
-:is(main, #la) .ch2-tau-cell > b {
+main .ch2-tau-cell > b {
   font-size: 14px;
 }
 
-:is(main, #la) .ch2-tau-cell > small {
+main .ch2-tau-cell > small {
   font-size: 12.5px;
   font-weight: 600;
 }
 
-:is(main, #la) .ch2-tau-cell > .is-plus {
+main .ch2-tau-cell > .is-plus {
   color: var(--ok-text);
 }
 
-:is(main, #la) .ch2-tau-cell > .is-minus {
+main .ch2-tau-cell > .is-minus {
   color: var(--bad-text);
 }
 
-:is(main, #la) .ch2-tau-cell.is-current {
+main .ch2-tau-cell.is-current {
   border-color: color-mix(in srgb, var(--cv-image) 55%, var(--line));
   box-shadow: 0 0 0 3px color-mix(in srgb, var(--cv-image) 16%, transparent);
 }
@@ -3334,7 +3334,7 @@ body.dark :is(main, #la) :is(.lesson-page-section, #lb) .basis-label rect {
 }
 
 /* ch2 §8: the signed area written on each block of tiles */
-:is(main, #la) .ch2-tile-group > .ch2-tile-val {
+main .ch2-tile-group > .ch2-tile-val {
   padding: 1px 8px;
   border: 1px solid color-mix(in srgb, var(--cv-image) 35%, var(--line));
   border-radius: 6px;
@@ -3441,55 +3441,55 @@ body.dark :is(main, #la) :is(.lesson-page-section, #lb) .basis-label rect {
 }
 
 /* ch2 §1: the 状态 tile keeps “方向保持 / 方向翻转” on one line */
-:is(main, #la) .ch2-meter:has(> .ch2-meter-card > [data-status]) {
+main .ch2-meter:has(> .ch2-meter-card > [data-status]) {
   grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) max-content;
 }
 
-:is(main, #la) .ch2-meter-card > [data-status] {
+main .ch2-meter-card > [data-status] {
   white-space: nowrap;
 }
 
 /* ch2 §3: the zeros below the diagonal stay legible while their column is locked */
-:is(main, #la) .ch2-term-matrix td.is-zero-cell > button {
+main .ch2-term-matrix td.is-zero-cell > button {
   color: var(--bad-text);
   font-weight: 600;
 }
 
-:is(main, #la) .ch2-term-matrix td.is-zero-cell.is-locked-col:not(.is-selected) {
+main .ch2-term-matrix td.is-zero-cell.is-locked-col:not(.is-selected) {
   opacity: 0.8;
 }
 
-:is(main, #la) .ch2-term-matrix td.is-locked-col:not(.is-selected) > button {
+main .ch2-term-matrix td.is-locked-col:not(.is-selected) > button {
   background-image: repeating-linear-gradient(135deg, transparent 0 6px, color-mix(in srgb, var(--line-strong) 75%, transparent) 6px 7px);
 }
 
 /* ch2 §7: A, A₁, A₂ side by side, each label above its matrix */
-:is(main, #la) .ch2-cramer-mats {
+main .ch2-cramer-mats {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 10px;
   align-items: start;
 }
 
-:is(main, #la) .ch2-cramer-mats > div {
+main .ch2-cramer-mats > div {
   display: grid;
   gap: 4px;
   justify-items: start;
   min-width: 0;
 }
 
-:is(main, #la) .ch2-cramer-mats > div > span {
+main .ch2-cramer-mats > div > span {
   max-width: 100%;
   overflow-x: auto;
 }
 
 /* ch2 §5: the stepper row, then the comparison row for swap and row scaling */
-:is(main, #la) .ch2-elim-compare {
+main .ch2-elim-compare {
   align-items: center;
   margin-top: 8px;
 }
 
-:is(main, #la) .ch2-elim-compare > span {
+main .ch2-elim-compare > span {
   color: var(--muted);
   font-size: 13px;
 }
@@ -3512,7 +3512,7 @@ body.dark :is(main, #la) :is(.lesson-page-section, #lb) .basis-label rect {
 }
 
 /* ch2 §6: the Leibniz panel takes no space until it is revealed */
-:is(main, #la) .ch2-leibniz[hidden] {
+main .ch2-leibniz[hidden] {
   display: none;
 }
 
@@ -3564,17 +3564,17 @@ body.dark :is(main, #la) :is(.lesson-page-section, #lb) .basis-label rect {
 }
 
 /* ch2 §1: presets fill the side column under the sliders; zoom sits on the canvas corner */
-:is(main, #la) .ch2-area-layout {
+main .ch2-area-layout {
   align-items: stretch;
 }
 
-:is(main, #la) .ch2-area-layout > .ch2-side {
+main .ch2-area-layout > .ch2-side {
   display: flex;
   flex-direction: column;
   gap: 12px;
 }
 
-:is(main, #la) .ch2-side-presets {
+main .ch2-side-presets {
   display: grid;
   gap: 8px;
   margin-top: auto;
@@ -3582,23 +3582,23 @@ body.dark :is(main, #la) :is(.lesson-page-section, #lb) .basis-label rect {
   border-top: 1px solid var(--line);
 }
 
-:is(main, #la) .ch2-side-presets > span {
+main .ch2-side-presets > span {
   color: var(--muted);
   font-size: 12.5px;
 }
 
-:is(main, #la) .ch2-side-presets > .ch2-presets {
+main .ch2-side-presets > .ch2-presets {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(112px, 1fr));
   gap: 8px;
   margin: 0;
 }
 
-:is(main, #la) .ch2-stage canvas.is-grabbable {
+main .ch2-stage canvas.is-grabbable {
   cursor: grab;
 }
 
-:is(main, #la) .ch2-zoom {
+main .ch2-zoom {
   position: absolute;
   top: 10px;
   right: 10px;
@@ -3609,7 +3609,7 @@ body.dark :is(main, #la) :is(.lesson-page-section, #lb) .basis-label rect {
   overflow: hidden;
 }
 
-:is(main, #la) .ch2-zoom > button {
+main .ch2-zoom > button {
   min-width: 34px;
   height: 30px;
   padding: 0 8px;
@@ -3624,21 +3624,21 @@ body.dark :is(main, #la) :is(.lesson-page-section, #lb) .basis-label rect {
   cursor: pointer;
 }
 
-:is(main, #la) .ch2-zoom > button:first-child {
+main .ch2-zoom > button:first-child {
   border-left: 0;
 }
 
-:is(main, #la) .ch2-zoom > button:hover:not(:disabled) {
+main .ch2-zoom > button:hover:not(:disabled) {
   background: var(--accent-soft);
   color: var(--accent-strong);
 }
 
-:is(main, #la) .ch2-zoom > button:disabled {
+main .ch2-zoom > button:disabled {
   opacity: 0.35;
   cursor: default;
 }
 
-:is(main, #la) .ch2-zoom > button:focus-visible {
+main .ch2-zoom > button:focus-visible {
   outline: 2px solid var(--accent);
   outline-offset: -2px;
 }

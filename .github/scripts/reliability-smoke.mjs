@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import { chromium } from "playwright";
 
-// Regression gate for prediction locks, chapter deep links and browser storage failures.
+// Regression gate for prediction locks (no answer before a guess), chapter deep links and browser storage failures.
 const origin = process.env.SITE_ORIGIN || "http://127.0.0.1:4173";
 const browser = await chromium.launch();
 
@@ -49,6 +49,61 @@ try {
     await gate.locator("button[data-i]").first().click();
     assert.equal(await low.isEnabled(), true, "decomposition unlocks once predicted");
     assert.deepEqual(errors, [], "direct sum lesson must have no page errors");
+    await page.close();
+  }
+  {
+    // the question asks for the sign of det: no preset may show it before a guess
+    const { page, errors } = await open("ch2/determinant-intro");
+    const gate = page.locator("#determinant-intro-interactive .ch3l-predict");
+    await gate.waitFor();
+    const det = page.locator("[data-det]");
+    const labels = await page.locator("[data-preset]").allTextContents();
+    assert.ok(!labels.some((label) => /[−-]\s*\d/.test(label)), "no preset label may name a signed det before a guess");
+    await page.locator('[data-preset="mirror"]').click();
+    await page.waitForFunction(() => document.querySelector("[data-abs]")?.textContent === "1");
+    assert.equal(await det.textContent(), "?", "the mirror preset must not show the sign of det before a guess");
+    assert.ok(!(await page.locator("[data-status]").textContent()).includes("方向"), "the orientation status waits for a guess");
+    await gate.locator("button[data-i]").first().click();
+    await page.waitForFunction(() => document.querySelector("[data-det]")?.textContent === "−1");
+    assert.deepEqual(errors, [], "determinant intro must have no page errors");
+    await page.close();
+  }
+  {
+    // the question asks how many real solutions the circle and x = y have
+    const { page, errors } = await open("ch3/binary-higher-degree");
+    const lab = page.locator("#binary-higher-degree-interactive");
+    const gate = lab.locator(".ch3l-predict");
+    await gate.waitFor();
+    const canvas = lab.locator("[data-canvas]");
+    const description = lab.locator("[data-description]");
+    assert.equal(await canvas.getAttribute("data-second-curve"), null, "the line x = y waits for a guess");
+    assert.ok(!(await description.textContent()).includes("交点"), "the equations card must not count the crossings before a guess");
+    const next = lab.locator("[data-next]");
+    assert.equal(await next.isDisabled(), true, "stepping on to the verification waits for a guess");
+    await gate.locator("button[data-i]").first().click();
+    assert.equal(await next.isEnabled(), true, "the steps unlock once predicted");
+    assert.equal(await canvas.getAttribute("data-second-curve"), "", "the line x = y is drawn once predicted");
+    assert.ok((await description.textContent()).includes("交点"), "the crossings are described once predicted");
+    assert.deepEqual(errors, [], "resultant lesson must have no page errors");
+    await page.close();
+  }
+  {
+    // the question asks which minors row 2 needs: a₂₂ must not be preselected
+    const { page, errors } = await open("ch2/cofactor-expansion");
+    await page.locator("#cofactor-expansion-interactive .ch3l-predict").waitFor();
+    const selected = page.locator("[data-cof-table] td.is-selected button");
+    assert.equal(await selected.count(), 1);
+    assert.notEqual(await selected.getAttribute("data-r"), "1", "the starting selection must sit outside row 2");
+    assert.deepEqual(errors, [], "cofactor lesson must have no page errors");
+    await page.close();
+  }
+  {
+    // the block count is ν₁ = dim ker N: the question may give rank N, not the kernel or the count
+    const { page, errors } = await open("ch8/jordan-derivation");
+    const question = page.locator("#jordan-derivation-interactive .ch7l-predict-q p");
+    await question.waitFor();
+    assert.ok(!/核|ker|贡献/.test(await question.textContent()), "the A₁ question must not hand over dim ker N");
+    assert.deepEqual(errors, [], "Jordan derivation lesson must have no page errors");
     await page.close();
   }
   {

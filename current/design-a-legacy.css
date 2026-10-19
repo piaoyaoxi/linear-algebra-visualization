@@ -475,15 +475,6 @@ main :is(.ch1-stage, .ch1-complex-canvas-shell, .ch1-long-division-stage) canvas
   gap: 0;
 }
 
-:is(main, #la) .ch1-formal .definition-row {
-  padding: 20px 0;
-  border: 0;
-  border-top: 1px solid var(--line);
-  border-radius: 0;
-  background: none;
-  box-shadow: none;
-}
-
 :is(main, #la) .ch1-formal .definition-row > strong {
   color: var(--text);
   font-size: 17px;
@@ -1245,12 +1236,12 @@ main .ch2-lesson-bridge > strong {
 
 /* ======================================================================
    4  Chapter 4 矩阵
-   The chapter stylesheets scope by section id, so these rules add a second
-   id-weight arm: `:is(.lesson-page-section, #lb)`.
+   The chapter stylesheets scope by section id; the declarations these rules
+   replace are gone from them, so the section id never competes with these.
    ====================================================================== */
 
 /* labs whose header and body carry their own inner padding */
-:is(main, #la) :is(.lesson-page-section, #lb) :is(.visual-panel, .s2c-lab, .s3-lab) {
+main .lesson-page-section :is(.visual-panel, .s2c-lab, .s3-lab) {
   padding: 0;
   border: 1px solid var(--line);
   border-radius: 12px;
@@ -1258,29 +1249,29 @@ main .ch2-lesson-bridge > strong {
   box-shadow: none;
 }
 
-:is(main, #la) :is(.lesson-page-section, #lb) :is(.s2c-header, .s3-lab-heading, .visual-title) {
+main .lesson-page-section :is(.s2c-header, .s3-lab-heading, .visual-title) {
   padding: 28px 28px 20px;
 }
 
-:is(main, #la) :is(.lesson-page-section, #lb) :is(.s2c-header, .s3-lab-heading) h3,
-:is(main, #la) :is(.lesson-page-section, #lb) .visual-title > h3,
-:is(main, #la) :is(.lesson-page-section, #lb) .inverse-lab-head h3,
-:is(main, #la) :is(.lesson-page-section, #lb) .block-lab h3 {
+main .lesson-page-section :is(.s2c-header, .s3-lab-heading) h3,
+main .lesson-page-section .visual-title > h3,
+main .lesson-page-section .inverse-lab-head h3,
+main .lesson-page-section .block-lab h3 {
   font-size: 21px;
   font-weight: 600;
   letter-spacing: 0;
 }
 
-:is(main, #la) :is(.lesson-page-section, #lb) :is(.s2c-header, .s3-lab-heading, .inverse-lab-head) p,
-:is(main, #la) :is(.lesson-page-section, #lb) .visual-title > p {
+main .lesson-page-section :is(.s2c-header, .s3-lab-heading, .inverse-lab-head) p,
+main .lesson-page-section .visual-title > p {
   color: var(--text-2);
   font-size: 15.5px;
   line-height: 1.8;
 }
 
 /* eyebrow labels */
-:is(main, #la) :is(.lesson-page-section, #lb) :is(.s2c-kicker, .s2c-stage-kicker, .inverse-lab-kicker),
-:is(main, #la) :is(.lesson-page-section, #lb) .s3-lab-heading > div > span:first-child {
+main .lesson-page-section :is(.s2c-kicker, .s2c-stage-kicker, .inverse-lab-kicker),
+main .lesson-page-section .s3-lab-heading > div > span:first-child {
   color: var(--muted);
   font-size: 12.5px;
   font-weight: 400;
@@ -1288,19 +1279,19 @@ main .ch2-lesson-bridge > strong {
 }
 
 /* formula chips in the lab headers */
-:is(main, #la) :is(.lesson-page-section, #lb) :is(.s2c-data-strip, .s3-main-formulas) {
+main .lesson-page-section :is(.s2c-data-strip, .s3-main-formulas) {
   border: 0;
   border-radius: 6px;
   background: var(--surface-soft);
   color: var(--text-2);
 }
 
-:is(main, #la) :is(.lesson-page-section, #lb) .inverse-core-rule {
+main .lesson-page-section .inverse-core-rule {
   border-left: 1px solid var(--line);
 }
 
 /* segmented tab controls */
-:is(main, #la) :is(.lesson-page-section, #lb) :is(.s2c-tabs, .s3-tabs, .s2-chip-bar) {
+main .lesson-page-section :is(.s2c-tabs, .s3-tabs, .s2-chip-bar) {
   gap: 2px;
   padding: 3px;
   border: 1px solid var(--line);
@@ -1308,7 +1299,7 @@ main .ch2-lesson-bridge > strong {
   background: var(--surface-soft);
 }
 
-:is(main, #la) :is(.lesson-page-section, #lb) :is(.s2c-tabs, .s3-tabs, .s2-chip-bar) > button {
+main .lesson-page-section :is(.s2c-tabs, .s3-tabs, .s2-chip-bar) > button {
   min-height: 34px;
   border: 1px solid transparent;
   border-radius: 999px;
@@ -1320,11 +1311,11 @@ main .ch2-lesson-bridge > strong {
   transform: none;
 }
 
-:is(main, #la) :is(.lesson-page-section, #lb) :is(.s2c-tabs, .s3-tabs, .s2-chip-bar) > button:hover {
+main .lesson-page-section :is(.s2c-tabs, .s3-tabs, .s2-chip-bar) > button:hover {
   color: var(--text);
 }
 
-:is(main, #la) :is(.lesson-page-section, #lb) :is(.s2c-tabs, .s3-tabs, .s2-chip-bar) > button.is-active {
+main .lesson-page-section :is(.s2c-tabs, .s3-tabs, .s2-chip-bar) > button.is-active {
   border-color: var(--line);
   background: var(--surface-solid);
   color: var(--accent-strong);
@@ -1334,7 +1325,7 @@ main .ch2-lesson-bridge > strong {
 
 /* on phones the tabs wrap, so they become separate small chips (as in design-a.css) */
 @media (max-width: 720px) {
-  :is(main, #la) :is(.lesson-page-section, #lb) :is(.s2c-tabs, .s3-tabs, .s2-chip-bar) {
+  main .lesson-page-section :is(.s2c-tabs, .s3-tabs, .s2-chip-bar) {
     gap: 6px;
     padding: 0;
     border: 0;
@@ -1342,21 +1333,21 @@ main .ch2-lesson-bridge > strong {
     background: none;
   }
 
-  :is(main, #la) :is(.lesson-page-section, #lb) :is(.s2c-tabs, .s3-tabs, .s2-chip-bar) > button {
+  main .lesson-page-section :is(.s2c-tabs, .s3-tabs, .s2-chip-bar) > button {
     border-color: var(--line);
     background: var(--surface-solid);
   }
 
-  :is(main, #la) :is(.lesson-page-section, #lb) :is(.s2c-tabs, .s3-tabs, .s2-chip-bar) > button.is-active {
+  main .lesson-page-section :is(.s2c-tabs, .s3-tabs, .s2-chip-bar) > button.is-active {
     border-color: var(--accent);
     background: var(--accent-soft);
   }
 }
 
 /* buttons: 8px boxes, primary = solid accent, chosen = 1px border + 1px inner line */
-:is(main, #la) :is(.lesson-page-section, #lb) :is(.transform-preset-bar, .s2c-controls, .s3-preset-row, .s3-bottleneck-controls,
+main .lesson-page-section :is(.transform-preset-bar, .s2c-controls, .s3-preset-row, .s3-bottleneck-controls,
   .s3-transpose-rank, .s3-product-actions, .anatomy-toolbar, .equality-actions, .inverse-control-row, .block-lab) button,
-:is(main, #la) :is(.lesson-page-section, #lb) :is(.s2-action-button, .block-lab .button, .s3-lab .button, .inverse-transform-lab .button) {
+main .lesson-page-section :is(.s2-action-button, .block-lab .button, .s3-lab .button, .inverse-transform-lab .button) {
   border: 1px solid var(--line-strong);
   border-radius: 8px;
   background: var(--surface-solid);
@@ -1367,13 +1358,18 @@ main .ch2-lesson-bridge > strong {
   transform: none;
 }
 
-:is(main, #la) :is(.lesson-page-section, #lb) :is(.transform-preset-bar, .s2c-controls, .s3-preset-row, .s3-bottleneck-controls,
+main .lesson-page-section :is(.transform-preset-bar, .s2c-controls, .s3-preset-row, .s3-bottleneck-controls,
   .s3-transpose-rank, .s3-product-actions, .anatomy-toolbar, .equality-actions, .inverse-control-row, .block-lab) button:hover:not(:disabled) {
   border-color: var(--accent);
   color: var(--text);
 }
 
-:is(main, #la) :is(.lesson-page-section, #lb) :is(.transform-preset-bar, .s2c-controls, .s3-preset-row, .s3-bottleneck-controls,
+/* styles.css tints .button.ghost on hover; the §4 reset button keeps its paper */
+main .lesson-page-section .inverse-control-row .button.ghost:hover {
+  background: var(--surface-solid);
+}
+
+main .lesson-page-section :is(.transform-preset-bar, .s2c-controls, .s3-preset-row, .s3-bottleneck-controls,
   .s3-transpose-rank, .anatomy-toolbar, .equality-actions, .block-lab) button:is(.is-active, .is-selected) {
   border-color: var(--accent);
   background: var(--accent-soft);
@@ -1382,26 +1378,26 @@ main .ch2-lesson-bridge > strong {
   box-shadow: inset 0 0 0 1px var(--accent);
 }
 
-:is(main, #la) :is(.lesson-page-section, #lb) :is(.s2c-controls button.is-primary, .button.primary, .s2-action-button) {
+main .lesson-page-section :is(.s2c-controls button.is-primary, .button.primary, .s2-action-button) {
   border-color: var(--accent);
   background: var(--accent);
   color: var(--on-accent);
   font-weight: 600;
 }
 
-:is(main, #la) :is(.lesson-page-section, #lb) :is(.s2c-controls button.is-primary, .button.primary, .s2-action-button):hover:not(:disabled) {
+main .lesson-page-section :is(.s2c-controls button.is-primary, .button.primary, .s2-action-button):hover:not(:disabled) {
   border-color: var(--accent-strong);
   background: var(--accent-strong);
   color: var(--on-accent);
 }
 
-:is(main, #la) :is(.lesson-page-section, #lb) :is(.block-lab, .s3-lab, .inverse-transform-lab, .s2c-lab) button:disabled {
+main .lesson-page-section :is(.block-lab, .s3-lab, .inverse-transform-lab, .s2c-lab) button:disabled {
   opacity: 0.4;
 }
 
 /* §1 transform lab: title, presets, then canvas | controls */
 
-:is(main, #la) :is(.lesson-page-section, #lb) :is(.matrix-readout, .section-one-transform-status) {
+main .lesson-page-section :is(.matrix-readout, .section-one-transform-status) {
   border: 1px solid var(--line);
   border-radius: 10px;
   background: var(--surface-solid);
@@ -1409,7 +1405,7 @@ main .ch2-lesson-bridge > strong {
 }
 
 @media (max-width: 720px) {
-  :is(main, #la) :is(.lesson-page-section, #lb) :is(.s2c-header, .s3-lab-heading, .visual-title) {
+  main .lesson-page-section :is(.s2c-header, .s3-lab-heading, .visual-title) {
     padding: 16px 16px 12px;
   }
 
@@ -1419,8 +1415,8 @@ main .ch2-lesson-bridge > strong {
 }
 
 /* “操作任务”: quiet paper, label in the accent */
-:is(main, #la) :is(.lesson-page-section, #lb) .script-panel,
-body.dark :is(main, #la) :is(.lesson-page-section, #lb) .script-panel {
+main .lesson-page-section .script-panel,
+body.dark main .lesson-page-section .script-panel {
   padding: 18px 22px;
   border: 0;
   border-radius: 10px;
@@ -1430,7 +1426,7 @@ body.dark :is(main, #la) :is(.lesson-page-section, #lb) .script-panel {
   backdrop-filter: none;
 }
 
-:is(main, #la) :is(.lesson-page-section, #lb) .script-panel > h3 {
+main .lesson-page-section .script-panel > h3 {
   margin: 0 0 6px;
   color: var(--accent);
   font-size: 12.5px;
@@ -1438,16 +1434,16 @@ body.dark :is(main, #la) :is(.lesson-page-section, #lb) .script-panel {
   letter-spacing: 0.08em;
 }
 
-:is(main, #la) :is(.lesson-page-section, #lb) .script-panel :is(ol, ul) {
+main .lesson-page-section .script-panel :is(ol, ul) {
   color: var(--text-2);
   font-size: 15px;
   line-height: 1.8;
 }
 
 /* canvas frames */
-:is(main, #la) :is(.lesson-page-section, #lb) :is(.s2c-canvas-shell, .s3-canvas-card, .source-basis-stage, .inverse-plane-card,
+main .lesson-page-section :is(.s2c-canvas-shell, .s3-canvas-card, .source-basis-stage, .inverse-plane-card,
   .el6-stage, .blk-stage, .s2-transpose-stage, .s2c-formula-stage, .s2-gate-stage),
-body.dark :is(main, #la) :is(.lesson-page-section, #lb) :is(.s2c-canvas-shell, .s3-canvas-card, .source-basis-stage, .el6-stage, .s2-transpose-stage) {
+body.dark main .lesson-page-section :is(.s2c-canvas-shell, .s3-canvas-card, .source-basis-stage, .el6-stage, .s2-transpose-stage) {
   border: 1px solid var(--line);
   border-radius: 8px;
   background: var(--cv-paper);
@@ -1455,42 +1451,42 @@ body.dark :is(main, #la) :is(.lesson-page-section, #lb) :is(.s2c-canvas-shell, .
   box-shadow: none;
 }
 
-:is(main, #la) :is(.lesson-page-section, #lb) :is(.s2c-canvas-shell, .s3-canvas-card, .el6-stage, .blk-stage, .inverse-plane-wrap) canvas {
+main .lesson-page-section :is(.s2c-canvas-shell, .s3-canvas-card, .el6-stage, .blk-stage, .inverse-plane-wrap) canvas {
   border: 0;
   border-radius: 0;
   background: transparent;
 }
 
 /* §6: the grid fills its frame when the step list beside it is taller than the canvas */
-:is(main, #la) :is(.lesson-page-section, #lb) .el6-stage {
+main .lesson-page-section .el6-stage {
   display: flex;
   flex-direction: column;
 }
 
-:is(main, #la) :is(.lesson-page-section, #lb) .el6-canvas {
+main .lesson-page-section .el6-canvas {
   flex: 1 1 0;
   height: auto;
   min-height: clamp(300px, 40vw, 420px);
 }
 
-:is(main, #la) :is(.lesson-page-section, #lb) .inverse-plane-wrap {
+main .lesson-page-section .inverse-plane-wrap {
   background: var(--cv-paper);
 }
 
-:is(main, #la) :is(.lesson-page-section, #lb) :is(.s3-stage-top, .inverse-plane-toolbar) {
+main .lesson-page-section :is(.s3-stage-top, .inverse-plane-toolbar) {
   border-bottom: 1px solid var(--line);
   background: none;
 }
 
-:is(main, #la) :is(.lesson-page-section, #lb) .s3-canvas-card > footer,
-:is(main, #la) :is(.lesson-page-section, #lb) .inverse-plane-card > figcaption {
+main .lesson-page-section .s3-canvas-card > footer,
+main .lesson-page-section .inverse-plane-card > figcaption {
   border-top: 1px solid var(--line);
   background: none;
   color: var(--muted);
   font-size: 13px;
 }
 
-:is(main, #la) :is(.lesson-page-section, #lb) .s2c-stage-badge {
+main .lesson-page-section .s2c-stage-badge {
   border: 1px solid var(--line);
   border-radius: 6px;
   background: var(--cv-paper);
@@ -1501,15 +1497,15 @@ body.dark :is(main, #la) :is(.lesson-page-section, #lb) :is(.s2c-canvas-shell, .
 }
 
 /* side columns: no box of their own, cards inside */
-:is(main, #la) :is(.lesson-page-section, #lb) :is(.s3-area-controls, .inverse-control-panel),
-body.dark :is(main, #la) :is(.lesson-page-section, #lb) .inverse-control-panel {
+main .lesson-page-section :is(.s3-area-controls, .inverse-control-panel),
+body.dark main .lesson-page-section .inverse-control-panel {
   border: 0;
   border-radius: 0;
   background: none;
   box-shadow: none;
 }
 
-:is(main, #la) :is(.lesson-page-section, #lb) .inverse-workbench {
+main .lesson-page-section .inverse-workbench {
   gap: 22px;
   overflow: visible;
   border: 0;
@@ -1517,64 +1513,64 @@ body.dark :is(main, #la) :is(.lesson-page-section, #lb) .inverse-control-panel {
   background: none;
 }
 
-:is(main, #la) :is(.lesson-page-section, #lb) .inverse-control-panel {
+main .lesson-page-section .inverse-control-panel {
   gap: 12px;
   border-left: 0;
 }
 
 /* readout cards */
-:is(main, #la) :is(.lesson-page-section, #lb) :is(.s2c-column-readout, .s3-live-matrix, .s3-area-meter, .s2c-dot-work, .inverse-stage-control, .inverse-state-summary),
-:is(main, #la) :is(.lesson-page-section, #lb) .s3-status-grid > div,
-:is(main, #la) :is(.lesson-page-section, #lb) .s3-slider-grid > label,
-:is(main, #la) :is(.lesson-page-section, #lb) .s3-area-meter > div,
-:is(main, #la) :is(.lesson-page-section, #lb) .s3-product-conclusion > div {
+main .lesson-page-section :is(.s2c-column-readout, .s3-live-matrix, .s3-area-meter, .s2c-dot-work, .inverse-stage-control, .inverse-state-summary),
+main .lesson-page-section .s3-status-grid > div,
+main .lesson-page-section .s3-slider-grid > label,
+main .lesson-page-section .s3-area-meter > div,
+main .lesson-page-section .s3-product-conclusion > div {
   border: 1px solid var(--line);
   border-radius: 10px;
   background: var(--surface-solid);
   box-shadow: none;
 }
 
-:is(main, #la) :is(.lesson-page-section, #lb) .s3-area-meter > div.is-result,
-:is(main, #la) :is(.lesson-page-section, #lb) .s2-dimension-card.is-result {
+main .lesson-page-section .s3-area-meter > div.is-result,
+main .lesson-page-section .s2-dimension-card.is-result {
   border-color: var(--accent);
   background: var(--accent-soft);
 }
 
-:is(main, #la) :is(.lesson-page-section, #lb) .s3-area-meter {
+main .lesson-page-section .s3-area-meter {
   background: var(--surface-soft);
   border-color: transparent;
 }
 
-:is(main, #la) :is(.lesson-page-section, #lb) .s3-live-matrix i,
-:is(main, #la) :is(.lesson-page-section, #lb) .s2c-matrix > button,
-:is(main, #la) :is(.lesson-page-section, #lb) .s2-matrix-grid > span {
+main .lesson-page-section .s3-live-matrix i,
+main .lesson-page-section .s2c-matrix > button,
+main .lesson-page-section .s2-matrix-grid > span {
   border-radius: 6px;
   background: var(--surface-soft);
   box-shadow: none;
 }
 
-:is(main, #la) :is(.lesson-page-section, #lb) .s2c-process-track > span {
+main .lesson-page-section .s2c-process-track > span {
   border: 1px solid var(--line);
   border-radius: 8px;
   background: var(--surface-solid);
   color: var(--muted);
 }
 
-:is(main, #la) :is(.lesson-page-section, #lb) .s2c-process-track > span.is-active {
+main .lesson-page-section .s2c-process-track > span.is-active {
   border-color: var(--accent);
   background: var(--accent-soft);
   color: var(--accent-strong);
 }
 
 /* conclusions and observations */
-:is(main, #la) :is(.lesson-page-section, #lb) :is(.s2c-conclusion, .s3-product-conclusion, .block-note) {
+main .lesson-page-section :is(.s2c-conclusion, .s3-product-conclusion, .block-note) {
   border: 1px solid var(--ok-line);
   border-radius: 10px;
   background: var(--ok-bg);
   box-shadow: none;
 }
 
-:is(main, #la) :is(.lesson-page-section, #lb) :is(.s3-observation, .s3-bottleneck-readout, .s3-invertible-note, .column-reading-note,
+main .lesson-page-section :is(.s3-observation, .s3-bottleneck-readout, .s3-invertible-note, .column-reading-note,
   .s2-rule-note, .s2-side-preview, .s2-gate-message) {
   border: 0;
   border-radius: 10px;
@@ -1582,91 +1578,91 @@ body.dark :is(main, #la) :is(.lesson-page-section, #lb) .inverse-control-panel {
   color: var(--text-2);
 }
 
-:is(main, #la) :is(.lesson-page-section, #lb) .s3-product-conclusion > div {
+main .lesson-page-section .s3-product-conclusion > div {
   background: var(--cv-paper);
 }
 
 /* §4 inverse lab */
-:is(main, #la) :is(.lesson-page-section, #lb) .inverse-transform-lab {
+main .lesson-page-section .inverse-transform-lab {
   --inverse-coral: var(--cv-v2);
   --inverse-vector: var(--cv-image);
 }
 
-:is(main, #la) :is(.lesson-page-section, #lb) .inverse-preset {
+main .lesson-page-section .inverse-preset {
   border: 1px solid var(--line-strong);
   border-radius: 8px;
   background: var(--surface-solid);
   box-shadow: none;
 }
 
-:is(main, #la) :is(.lesson-page-section, #lb) .inverse-preset:hover {
+main .lesson-page-section .inverse-preset:hover {
   border-color: var(--accent);
 }
 
-:is(main, #la) :is(.lesson-page-section, #lb) .inverse-preset.is-active {
+main .lesson-page-section .inverse-preset.is-active {
   border-color: var(--accent);
   background: var(--accent-soft);
   box-shadow: inset 0 0 0 1px var(--accent);
 }
 
-:is(main, #la) :is(.lesson-page-section, #lb) .inverse-preset.is-singular.is-active {
+main .lesson-page-section .inverse-preset.is-singular.is-active {
   border-color: var(--bad-line);
   background: var(--bad-bg);
   box-shadow: inset 0 0 0 1px var(--bad-line);
 }
 
-:is(main, #la) :is(.lesson-page-section, #lb) .inverse-reference-line {
+main .lesson-page-section .inverse-reference-line {
   stroke: var(--cv-grid-major);
 }
 
-:is(main, #la) :is(.lesson-page-section, #lb) .inverse-reference-line.is-axis {
+main .lesson-page-section .inverse-reference-line.is-axis {
   stroke: var(--cv-axis);
 }
 
-:is(main, #la) :is(.lesson-page-section, #lb) .inverse-current-line {
+main .lesson-page-section .inverse-current-line {
   stroke: color-mix(in srgb, var(--cv-image) 34%, transparent);
 }
 
-:is(main, #la) :is(.lesson-page-section, #lb) .inverse-current-line.is-axis {
+main .lesson-page-section .inverse-current-line.is-axis {
   stroke: color-mix(in srgb, var(--cv-image) 70%, transparent);
 }
 
-:is(main, #la) :is(.lesson-page-section, #lb) .inverse-current-square {
+main .lesson-page-section .inverse-current-square {
   fill: color-mix(in srgb, var(--cv-image) 10%, transparent);
   stroke: var(--cv-image);
 }
 
-:is(main, #la) :is(.lesson-page-section, #lb) :is(.inverse-basis.is-x) {
+main .lesson-page-section :is(.inverse-basis.is-x) {
   stroke: var(--cv-v1);
 }
 
-:is(main, #la) :is(.lesson-page-section, #lb) :is(.inverse-arrowhead.is-x, .inverse-basis-label.is-x) {
+main .lesson-page-section :is(.inverse-arrowhead.is-x, .inverse-basis-label.is-x) {
   fill: var(--cv-v1);
 }
 
-:is(main, #la) :is(.lesson-page-section, #lb) .inverse-plane-legend i.is-current {
+main .lesson-page-section .inverse-plane-legend i.is-current {
   background: var(--cv-image);
 }
 
-:is(main, #la) :is(.lesson-page-section, #lb) :is(.inverse-equation, .inverse-journey > li.is-current, .inverse-journey > li.is-current > button) {
+main .lesson-page-section :is(.inverse-equation, .inverse-journey > li.is-current, .inverse-journey > li.is-current > button) {
   border-radius: 6px;
 }
 
 /* §5 / §6 blocks and elementary matrices (ch3l shell, own stage) */
-:is(main, #la) :is(.lesson-page-section, #lb) .blk-readout {
+main .lesson-page-section .blk-readout {
   border: 0;
   border-radius: 10px;
   background: var(--surface-soft);
 }
 
-:is(main, #la) :is(.lesson-page-section, #lb) .blk-readout > .blk-wait {
+main .lesson-page-section .blk-readout > .blk-wait {
   color: var(--muted);
 }
 
 /* §5 block sizes: a ruler bracket over every column group and beside every row
    group; after the prediction the inner pair (A's columns, B's rows) turns
    ok/bad, and the strip spells C_ij as sizes with the inner pair bracketed */
-:is(main, #la) :is(.lesson-page-section, #lb) .blk-grid th {
+main .lesson-page-section .blk-grid th {
   padding: 0;
   border: 0;
   background: none;
@@ -1677,34 +1673,34 @@ body.dark :is(main, #la) :is(.lesson-page-section, #lb) .inverse-control-panel {
   line-height: 1;
 }
 
-:is(main, #la) :is(.lesson-page-section, #lb) .blk-grid th.blk-rule {
+main .lesson-page-section .blk-grid th.blk-rule {
   position: relative;
 }
 
-:is(main, #la) :is(.lesson-page-section, #lb) .blk-grid th.blk-rule.is-col {
+main .lesson-page-section .blk-grid th.blk-rule.is-col {
   height: 24px;
   vertical-align: top;
   text-align: center;
 }
 
-:is(main, #la) :is(.lesson-page-section, #lb) .blk-grid th.blk-rule.is-row {
+main .lesson-page-section .blk-grid th.blk-rule.is-row {
   padding-right: 10px;
   text-align: right;
   vertical-align: middle;
 }
 
 /* centre the matrix name over the cells, past the row ruler */
-:is(main, #la) :is(.lesson-page-section, #lb) .blk-lab .blk-mat > span {
+main .lesson-page-section .blk-lab .blk-mat > span {
   padding-left: 24px;
 }
 
-:is(main, #la) :is(.lesson-page-section, #lb) .blk-grid th.blk-rule::after {
+main .lesson-page-section .blk-grid th.blk-rule::after {
   content: "";
   position: absolute;
   border: 1px solid var(--cv-axis);
 }
 
-:is(main, #la) :is(.lesson-page-section, #lb) .blk-grid th.blk-rule.is-col::after {
+main .lesson-page-section .blk-grid th.blk-rule.is-col::after {
   right: 4px;
   bottom: 3px;
   left: 4px;
@@ -1712,7 +1708,7 @@ body.dark :is(main, #la) :is(.lesson-page-section, #lb) .inverse-control-panel {
   border-bottom: 0;
 }
 
-:is(main, #la) :is(.lesson-page-section, #lb) .blk-grid th.blk-rule.is-row::after {
+main .lesson-page-section .blk-grid th.blk-rule.is-row::after {
   top: 4px;
   right: 3px;
   bottom: 4px;
@@ -1720,7 +1716,7 @@ body.dark :is(main, #la) :is(.lesson-page-section, #lb) .inverse-control-panel {
   border-right: 0;
 }
 
-:is(main, #la) :is(.lesson-page-section, #lb) .blk-grid th.blk-rule > i {
+main .lesson-page-section .blk-grid th.blk-rule > i {
   display: inline-block;
   min-width: 13px;
   padding: 1px 2px;
@@ -1729,36 +1725,36 @@ body.dark :is(main, #la) :is(.lesson-page-section, #lb) .inverse-control-panel {
   text-align: center;
 }
 
-:is(main, #la) :is(.lesson-page-section, #lb) .blk-grid th.blk-rule.is-sel {
+main .lesson-page-section .blk-grid th.blk-rule.is-sel {
   color: var(--text);
 }
 
-:is(main, #la) :is(.lesson-page-section, #lb) .blk-grid th.blk-rule:is(.is-ok, .is-bad) {
+main .lesson-page-section .blk-grid th.blk-rule:is(.is-ok, .is-bad) {
   font-weight: 700;
 }
 
-:is(main, #la) :is(.lesson-page-section, #lb) .blk-grid th.blk-rule.is-ok {
+main .lesson-page-section .blk-grid th.blk-rule.is-ok {
   color: var(--ok-text);
 }
 
-:is(main, #la) :is(.lesson-page-section, #lb) .blk-grid th.blk-rule.is-bad {
+main .lesson-page-section .blk-grid th.blk-rule.is-bad {
   color: var(--bad-text);
 }
 
-:is(main, #la) :is(.lesson-page-section, #lb) .blk-grid th.blk-rule:is(.is-ok, .is-bad)::after {
+main .lesson-page-section .blk-grid th.blk-rule:is(.is-ok, .is-bad)::after {
   border-color: currentColor;
   border-width: 1.5px;
 }
 
-:is(main, #la) :is(.lesson-page-section, #lb) .blk-grid th.blk-rule.is-ok > i {
+main .lesson-page-section .blk-grid th.blk-rule.is-ok > i {
   background: var(--ok-bg);
 }
 
-:is(main, #la) :is(.lesson-page-section, #lb) .blk-grid th.blk-rule.is-bad > i {
+main .lesson-page-section .blk-grid th.blk-rule.is-bad > i {
   background: var(--bad-bg);
 }
 
-:is(main, #la) :is(.lesson-page-section, #lb) .blk-sizes {
+main .lesson-page-section .blk-sizes {
   display: flex;
   flex: 0 0 100%;
   flex-wrap: wrap;
@@ -1770,7 +1766,7 @@ body.dark :is(main, #la) :is(.lesson-page-section, #lb) .inverse-control-panel {
   font-variant-numeric: tabular-nums;
 }
 
-:is(main, #la) :is(.lesson-page-section, #lb) .blk-term {
+main .lesson-page-section .blk-term {
   display: inline-grid;
   grid-template-areas:
     "na na . nb nb"
@@ -1779,34 +1775,34 @@ body.dark :is(main, #la) :is(.lesson-page-section, #lb) .inverse-control-panel {
   justify-items: center;
 }
 
-:is(main, #la) :is(.lesson-page-section, #lb) :is(.blk-term, .blk-res) > .blk-nm {
+main .lesson-page-section :is(.blk-term, .blk-res) > .blk-nm {
   color: var(--muted);
   font-size: 12.5px;
   font-style: italic;
   line-height: 18px;
 }
 
-:is(main, #la) :is(.lesson-page-section, #lb) .blk-term > .blk-nm.is-a { grid-area: na; }
-:is(main, #la) :is(.lesson-page-section, #lb) .blk-term > .blk-nm.is-b { grid-area: nb; }
-:is(main, #la) :is(.lesson-page-section, #lb) .blk-term > .blk-d.is-a { grid-area: ao; justify-self: end; }
-:is(main, #la) :is(.lesson-page-section, #lb) .blk-term > .blk-k.is-a { grid-area: ak; }
-:is(main, #la) :is(.lesson-page-section, #lb) .blk-term > .blk-dot { grid-area: dot; padding: 0 4px; color: var(--muted); }
-:is(main, #la) :is(.lesson-page-section, #lb) .blk-term > .blk-k.is-b { grid-area: bk; }
-:is(main, #la) :is(.lesson-page-section, #lb) .blk-term > .blk-d.is-b { grid-area: bo; justify-self: start; }
+main .lesson-page-section .blk-term > .blk-nm.is-a { grid-area: na; }
+main .lesson-page-section .blk-term > .blk-nm.is-b { grid-area: nb; }
+main .lesson-page-section .blk-term > .blk-d.is-a { grid-area: ao; justify-self: end; }
+main .lesson-page-section .blk-term > .blk-k.is-a { grid-area: ak; }
+main .lesson-page-section .blk-term > .blk-dot { grid-area: dot; padding: 0 4px; color: var(--muted); }
+main .lesson-page-section .blk-term > .blk-k.is-b { grid-area: bk; }
+main .lesson-page-section .blk-term > .blk-d.is-b { grid-area: bo; justify-self: start; }
 
-:is(main, #la) :is(.lesson-page-section, #lb) :is(.blk-term, .blk-res) > :is(.blk-d, .blk-k, .blk-dot),
-:is(main, #la) :is(.lesson-page-section, #lb) .blk-sizes > .blk-plus {
+main .lesson-page-section :is(.blk-term, .blk-res) > :is(.blk-d, .blk-k, .blk-dot),
+main .lesson-page-section .blk-sizes > .blk-plus {
   font-size: 15px;
   line-height: 22px;
 }
 
-:is(main, #la) :is(.lesson-page-section, #lb) .blk-term > .blk-k {
+main .lesson-page-section .blk-term > .blk-k {
   min-width: 12px;
   font-weight: 700;
   text-align: center;
 }
 
-:is(main, #la) :is(.lesson-page-section, #lb) .blk-term > .blk-link {
+main .lesson-page-section .blk-term > .blk-link {
   display: grid;
   grid-area: ln;
   justify-self: stretch;
@@ -1816,7 +1812,7 @@ body.dark :is(main, #la) :is(.lesson-page-section, #lb) .inverse-control-panel {
   line-height: 16px;
 }
 
-:is(main, #la) :is(.lesson-page-section, #lb) .blk-term > .blk-link::before {
+main .lesson-page-section .blk-term > .blk-link::before {
   content: "";
   justify-self: stretch;
   height: 5px;
@@ -1825,55 +1821,55 @@ body.dark :is(main, #la) :is(.lesson-page-section, #lb) .inverse-control-panel {
   border-top: 0;
 }
 
-:is(main, #la) :is(.lesson-page-section, #lb) .blk-term.is-ok > :is(.blk-k, .blk-link) {
+main .lesson-page-section .blk-term.is-ok > :is(.blk-k, .blk-link) {
   color: var(--ok-text);
 }
 
-:is(main, #la) :is(.lesson-page-section, #lb) .blk-term.is-bad > :is(.blk-k, .blk-link) {
+main .lesson-page-section .blk-term.is-bad > :is(.blk-k, .blk-link) {
   color: var(--bad-text);
 }
 
-:is(main, #la) :is(.lesson-page-section, #lb) .blk-sizes > .blk-plus {
+main .lesson-page-section .blk-sizes > .blk-plus {
   margin-top: 18px;
   color: var(--accent-strong);
 }
 
-:is(main, #la) :is(.lesson-page-section, #lb) .blk-res {
+main .lesson-page-section .blk-res {
   display: grid;
   justify-items: center;
 }
 
-:is(main, #la) :is(.lesson-page-section, #lb) .blk-res > :is(.blk-nm, .blk-d) {
+main .lesson-page-section .blk-res > :is(.blk-nm, .blk-d) {
   color: var(--cv-image);
 }
 
-:is(main, #la) :is(.lesson-page-section, #lb) .blk-res > .blk-d {
+main .lesson-page-section .blk-res > .blk-d {
   font-weight: 700;
 }
 
 @media (max-width: 760px) {
-  :is(main, #la) :is(.lesson-page-section, #lb) .blk-grid th.blk-rule.is-row {
+  main .lesson-page-section .blk-grid th.blk-rule.is-row {
     padding-right: 9px;
   }
 
-  :is(main, #la) :is(.lesson-page-section, #lb) .blk-grid th.blk-rule.is-col {
+  main .lesson-page-section .blk-grid th.blk-rule.is-col {
     height: 22px;
   }
 
-  :is(main, #la) :is(.lesson-page-section, #lb) .blk-lab .blk-mat > span {
+  main .lesson-page-section .blk-lab .blk-mat > span {
     padding-left: 22px;
   }
 }
 
 /* §7 block elimination */
 
-:is(main, #la) :is(.lesson-page-section, #lb) :is(.block-lab-panel, .block-map-main) {
+main .lesson-page-section :is(.block-lab-panel, .block-map-main) {
   border: 0;
   border-radius: 10px;
   background: var(--surface-soft);
 }
 
-:is(main, #la) :is(.lesson-page-section, #lb) :is(.block-system-card, .block-map) {
+main .lesson-page-section :is(.block-system-card, .block-map) {
   border: 1px solid var(--line);
   border-radius: 10px;
   background: var(--surface-solid);
@@ -1881,16 +1877,16 @@ body.dark :is(main, #la) :is(.lesson-page-section, #lb) .inverse-control-panel {
 }
 
 /* §7 lab: E (M | b) with real 2×2 blocks (ch3l shell) */
-:is(main, #la) :is(.lesson-page-section, #lb) .bk7-lab {
+main .lesson-page-section .bk7-lab {
   display: grid;
   gap: 20px;
 }
 
-:is(main, #la) :is(.lesson-page-section, #lb) .bk7-stage {
+main .lesson-page-section .bk7-stage {
   gap: 12px 14px;
 }
 
-:is(main, #la) :is(.lesson-page-section, #lb) .bk7-grid td {
+main .lesson-page-section .bk7-grid td {
   position: relative;
   width: 40px;
   height: 36px;
@@ -1898,50 +1894,50 @@ body.dark :is(main, #la) :is(.lesson-page-section, #lb) .inverse-control-panel {
   color: var(--text);
 }
 
-:is(main, #la) :is(.lesson-page-section, #lb) .bk7-grid tr.cut-below td {
+main .lesson-page-section .bk7-grid tr.cut-below td {
   border-bottom: 2px solid var(--line-strong);
 }
 
-:is(main, #la) :is(.lesson-page-section, #lb) .bk7-grid td.cut-right {
+main .lesson-page-section .bk7-grid td.cut-right {
   border-right: 2px solid var(--line-strong);
 }
 
-:is(main, #la) :is(.lesson-page-section, #lb) .bk7-grid td.bk7-bar {
+main .lesson-page-section .bk7-grid td.bk7-bar {
   border-right: 2px dashed var(--cv-axis);
 }
 
-:is(main, #la) :is(.lesson-page-section, #lb) .bk7-grid td > b {
+main .lesson-page-section .bk7-grid td > b {
   font-weight: 600;
 }
 
-:is(main, #la) :is(.lesson-page-section, #lb) .bk7-grid td.bk7-c {
+main .lesson-page-section .bk7-grid td.bk7-c {
   background: color-mix(in srgb, var(--cv-v2) 14%, var(--surface-solid));
   color: var(--cv-v2);
 }
 
-:is(main, #la) :is(.lesson-page-section, #lb) .bk7-grid td.bk7-f {
+main .lesson-page-section .bk7-grid td.bk7-f {
   background: color-mix(in srgb, var(--cv-v1) 12%, var(--surface-solid));
   color: var(--cv-v1);
 }
 
-:is(main, #la) :is(.lesson-page-section, #lb) .bk7-grid td.bk7-x {
+main .lesson-page-section .bk7-grid td.bk7-x {
   background: color-mix(in srgb, var(--cv-drag) 16%, var(--surface-solid));
   color: var(--predict-text);
 }
 
-:is(main, #la) :is(.lesson-page-section, #lb) .bk7-grid td.bk7-res {
+main .lesson-page-section .bk7-grid td.bk7-res {
   background: color-mix(in srgb, var(--cv-image) 12%, var(--surface-solid));
   color: var(--cv-image);
 }
 
-:is(main, #la) :is(.lesson-page-section, #lb) .bk7-grid td.bk7-zero {
+main .lesson-page-section .bk7-grid td.bk7-zero {
   background: color-mix(in srgb, var(--cv-subspace) 12%, var(--surface-solid));
   color: var(--cv-subspace);
 }
 
 /* the previous value stays as a faint ghost in the corner */
 
-:is(main, #la) :is(.lesson-page-section, #lb) .bk7-grid td.is-new > b {
+main .lesson-page-section .bk7-grid td.is-new > b {
   animation: bk7-arrive 520ms ease-out both;
 }
 
@@ -1951,40 +1947,40 @@ body.dark :is(main, #la) :is(.lesson-page-section, #lb) .inverse-control-panel {
 }
 
 @media (prefers-reduced-motion: reduce) {
-  :is(main, #la) :is(.lesson-page-section, #lb) .bk7-grid td.is-new > b {
+  main .lesson-page-section .bk7-grid td.is-new > b {
     animation: none;
   }
 }
 
-:is(main, #la) :is(.lesson-page-section, #lb) .bk7-tools {
+main .lesson-page-section .bk7-tools {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
   gap: 8px 12px;
 }
 
-:is(main, #la) :is(.lesson-page-section, #lb) .bk7-tools-label {
+main .lesson-page-section .bk7-tools-label {
   color: var(--muted);
   font-size: 12.5px;
   font-weight: 600;
   letter-spacing: 0.08em;
 }
 
-:is(main, #la) :is(.lesson-page-section, #lb) .bk7-actions > .is-primary {
+main .lesson-page-section .bk7-actions > .is-primary {
   flex: 1 1 auto;
 }
 
-:is(main, #la) :is(.lesson-page-section, #lb) .bk7-readout {
+main .lesson-page-section .bk7-readout {
   display: grid;
   gap: 8px;
 }
 
-:is(main, #la) :is(.lesson-page-section, #lb) .bk7-readout p {
+main .lesson-page-section .bk7-readout p {
   margin: 0;
   line-height: 1.8;
 }
 
-:is(main, #la) :is(.lesson-page-section, #lb) :is(.bk7-head, .ml1-head) {
+main .lesson-page-section :is(.bk7-head, .ml1-head) {
   display: flex;
   align-items: baseline;
   justify-content: space-between;
@@ -1993,19 +1989,19 @@ body.dark :is(main, #la) :is(.lesson-page-section, #lb) .inverse-control-panel {
   border-bottom: 1px solid var(--line);
 }
 
-:is(main, #la) :is(.lesson-page-section, #lb) :is(.bk7-head, .ml1-head) > b {
+main .lesson-page-section :is(.bk7-head, .ml1-head) > b {
   color: var(--muted);
   font-size: 12.5px;
   letter-spacing: 0.08em;
 }
 
 /* §1 lab: one table, three readings (ch3l shell) */
-:is(main, #la) :is(.lesson-page-section, #lb) .ml1-lab {
+main .lesson-page-section .ml1-lab {
   display: grid;
   gap: 20px;
 }
 
-:is(main, #la) :is(.lesson-page-section, #lb) .ml1-control {
+main .lesson-page-section .ml1-control {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
@@ -2013,18 +2009,18 @@ body.dark :is(main, #la) :is(.lesson-page-section, #lb) .inverse-control-panel {
   gap: 12px 20px;
 }
 
-:is(main, #la) :is(.lesson-page-section, #lb) .ml1-matrix {
+main .lesson-page-section .ml1-matrix {
   display: flex;
   align-items: center;
   gap: 10px;
 }
 
-:is(main, #la) :is(.lesson-page-section, #lb) .ml1-name {
+main .lesson-page-section .ml1-name {
   font-style: italic;
   font-weight: 600;
 }
 
-:is(main, #la) :is(.lesson-page-section, #lb) .ml1-cells {
+main .lesson-page-section .ml1-cells {
   display: grid;
   grid-template-columns: repeat(2, 46px);
   gap: 6px;
@@ -2034,7 +2030,7 @@ body.dark :is(main, #la) :is(.lesson-page-section, #lb) .inverse-control-panel {
   border-radius: 8px;
 }
 
-:is(main, #la) :is(.lesson-page-section, #lb) .ml1-cells > button {
+main .lesson-page-section .ml1-cells > button {
   height: 40px;
   border: 1px solid var(--line);
   border-radius: 6px;
@@ -2046,47 +2042,47 @@ body.dark :is(main, #la) :is(.lesson-page-section, #lb) .inverse-control-panel {
   cursor: pointer;
 }
 
-:is(main, #la) :is(.lesson-page-section, #lb) .ml1-stepper {
+main .lesson-page-section .ml1-stepper {
   display: flex;
   align-items: center;
   gap: 8px;
 }
 
-:is(main, #la) :is(.lesson-page-section, #lb) .ml1-stepper > b {
+main .lesson-page-section .ml1-stepper > b {
   min-width: 70px;
   font-variant-numeric: tabular-nums;
 }
 
-:is(main, #la) :is(.lesson-page-section, #lb) .ml1-stepper > .ch3l-btn {
+main .lesson-page-section .ml1-stepper > .ch3l-btn {
   min-width: 56px;
 }
 
 /* column 1 = Ae₁ (blue), column 2 = Ae₂ (vermilion), in every reading */
-:is(main, #la) :is(.lesson-page-section, #lb) .ml1-lab .ml1-c1 {
+main .lesson-page-section .ml1-lab .ml1-c1 {
   color: var(--cv-v1);
 }
 
-:is(main, #la) :is(.lesson-page-section, #lb) .ml1-lab .ml1-c2 {
+main .lesson-page-section .ml1-lab .ml1-c2 {
   color: var(--cv-v2);
 }
 
-:is(main, #la) :is(.lesson-page-section, #lb) .ml1-lab .ml1-c1.is-sel {
+main .lesson-page-section .ml1-lab .ml1-c1.is-sel {
   background: color-mix(in srgb, var(--cv-v1) 16%, var(--surface-solid));
   box-shadow: inset 0 0 0 1px var(--cv-v1);
 }
 
-:is(main, #la) :is(.lesson-page-section, #lb) .ml1-lab .ml1-c2.is-sel {
+main .lesson-page-section .ml1-lab .ml1-c2.is-sel {
   background: color-mix(in srgb, var(--cv-v2) 16%, var(--surface-solid));
   box-shadow: inset 0 0 0 1px var(--cv-v2);
 }
 
-:is(main, #la) :is(.lesson-page-section, #lb) .ml1-views {
+main .lesson-page-section .ml1-views {
   display: grid;
   grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) minmax(0, 1.15fr);
   gap: 16px;
 }
 
-:is(main, #la) :is(.lesson-page-section, #lb) .ml1-view {
+main .lesson-page-section .ml1-view {
   display: grid;
   align-content: start;
   gap: 12px;
@@ -2097,13 +2093,13 @@ body.dark :is(main, #la) :is(.lesson-page-section, #lb) .inverse-control-panel {
   background: var(--surface-solid);
 }
 
-:is(main, #la) :is(.lesson-page-section, #lb) .ml1-view > figcaption {
+main .lesson-page-section .ml1-view > figcaption {
   color: var(--muted);
   font-size: 13px;
   line-height: 1.6;
 }
 
-:is(main, #la) :is(.lesson-page-section, #lb) .ml1-plane canvas {
+main .lesson-page-section .ml1-plane canvas {
   justify-self: center;
   width: 100%;
   max-width: 300px;
@@ -2114,44 +2110,44 @@ body.dark :is(main, #la) :is(.lesson-page-section, #lb) .inverse-control-panel {
   background: var(--cv-paper);
 }
 
-:is(main, #la) :is(.lesson-page-section, #lb) .ml1-table {
+main .lesson-page-section .ml1-table {
   width: 100%;
   border-collapse: collapse;
   font-variant-numeric: tabular-nums;
 }
 
-:is(main, #la) :is(.lesson-page-section, #lb) .ml1-table :is(th, td) {
+main .lesson-page-section .ml1-table :is(th, td) {
   padding: 8px 6px;
   border-bottom: 1px solid var(--line);
   text-align: center;
 }
 
-:is(main, #la) :is(.lesson-page-section, #lb) .ml1-table th {
+main .lesson-page-section .ml1-table th {
   color: var(--muted);
   font-size: 13px;
   font-weight: 600;
 }
 
-:is(main, #la) :is(.lesson-page-section, #lb) .ml1-table td {
+main .lesson-page-section .ml1-table td {
   border-radius: 6px;
   font-size: 17px;
   font-weight: 600;
 }
 
-:is(main, #la) :is(.lesson-page-section, #lb) .ml1-eqs {
+main .lesson-page-section .ml1-eqs {
   display: grid;
   gap: 8px;
   padding-top: 6px;
 }
 
-:is(main, #la) :is(.lesson-page-section, #lb) .ml1-eqs > p {
+main .lesson-page-section .ml1-eqs > p {
   margin: 0;
   font-size: 18px;
   font-variant-numeric: tabular-nums;
   white-space: nowrap;
 }
 
-:is(main, #la) :is(.lesson-page-section, #lb) .ml1-eqs > p > b {
+main .lesson-page-section .ml1-eqs > p > b {
   display: inline-block;
   min-width: 24px;
   padding: 0 4px;
@@ -2159,39 +2155,39 @@ body.dark :is(main, #la) :is(.lesson-page-section, #lb) .inverse-control-panel {
   text-align: center;
 }
 
-:is(main, #la) :is(.lesson-page-section, #lb) .ml1-readout {
+main .lesson-page-section .ml1-readout {
   display: grid;
   gap: 8px;
 }
 
-:is(main, #la) :is(.lesson-page-section, #lb) .ml1-readout p,
-:is(main, #la) :is(.lesson-page-section, #lb) .ml1-list {
+main .lesson-page-section .ml1-readout p,
+main .lesson-page-section .ml1-list {
   margin: 0;
   line-height: 1.8;
 }
 
-:is(main, #la) :is(.lesson-page-section, #lb) .ml1-list {
+main .lesson-page-section .ml1-list {
   padding-left: 20px;
 }
 
 @media (max-width: 900px) {
-  :is(main, #la) :is(.lesson-page-section, #lb) .ml1-views {
+  main .lesson-page-section .ml1-views {
     grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
   }
 
-  :is(main, #la) :is(.lesson-page-section, #lb) .ml1-plane {
+  main .lesson-page-section .ml1-plane {
     grid-column: 1 / -1;
   }
 }
 
 @media (max-width: 560px) {
-  :is(main, #la) :is(.lesson-page-section, #lb) .ml1-views {
+  main .lesson-page-section .ml1-views {
     grid-template-columns: minmax(0, 1fr);
   }
 }
 
 @media (max-width: 720px) {
-  :is(main, #la) :is(.lesson-page-section, #lb) .bk7-grid td {
+  main .lesson-page-section .bk7-grid td {
     width: 30px;
     height: 30px;
     font-size: 13px;
@@ -2201,8 +2197,8 @@ body.dark :is(main, #la) :is(.lesson-page-section, #lb) .inverse-control-panel {
 }
 
 /* formal blocks: quiet module numbers, paper cards, radii 10 */
-:is(main, #la) :is(.lesson-page-section, #lb) :is(.module-heading, .s2-module-heading, .s3-module-heading) > span:first-child,
-:is(main, #la) :is(.lesson-page-section, #lb) .definition-index {
+main .lesson-page-section :is(.module-heading, .s2-module-heading, .s3-module-heading) > span:first-child,
+main .lesson-page-section .definition-index {
   border: 1px solid var(--line);
   border-radius: 50%;
   background: transparent;
@@ -2210,25 +2206,25 @@ body.dark :is(main, #la) :is(.lesson-page-section, #lb) .inverse-control-panel {
   font-weight: 400;
 }
 
-:is(main, #la) :is(.lesson-page-section, #lb) :is(.s2-module, .s3-formal-module, .anatomy-lab, .shape-machine, .block-definition,
+main .lesson-page-section :is(.s2-module, .s3-formal-module, .anatomy-lab, .shape-machine, .block-definition,
   .matrix-source-card, .matrix-type-card, .equality-case, .s2-dimension-card),
-:is(main, #la) :is(.lesson-page-section, #lb) :is(.s3-det-one-gallery, .s3-law-pair, .s3-two-meters) > article {
+main .lesson-page-section :is(.s3-det-one-gallery, .s3-law-pair, .s3-two-meters) > article {
   border: 1px solid var(--line);
   border-radius: 10px;
   background: var(--surface-solid);
   box-shadow: none;
 }
 
-:is(main, #la) :is(.lesson-page-section, #lb) :is(.s2-law-card, .shape-matrix-card, .shape-port-group, .anatomy-matrix-shell),
-:is(main, #la) :is(.lesson-page-section, #lb) .s2-extension-grid > details {
+main .lesson-page-section :is(.s2-law-card, .shape-matrix-card, .shape-port-group, .anatomy-matrix-shell),
+main .lesson-page-section .s2-extension-grid > details {
   border: 0;
   border-radius: 10px;
   background: var(--surface-soft);
   box-shadow: none;
 }
 
-:is(main, #la) :is(.lesson-page-section, #lb) .definition-row,
-:is(main, #la) :is(.lesson-page-section, #lb) .definition-row.is-anchor {
+main .lesson-page-section .definition-row,
+main .lesson-page-section .definition-row.is-anchor {
   border: 1px solid var(--line);
   border-radius: 10px;
   background: var(--surface-solid);
@@ -2237,71 +2233,65 @@ body.dark :is(main, #la) :is(.lesson-page-section, #lb) .inverse-control-panel {
   padding: 18px 22px;
 }
 
-:is(main, #la) :is(.lesson-page-section, #lb) .definition-row.is-anchor {
+main .lesson-page-section .definition-row.is-anchor {
   border-color: var(--accent);
 }
 
-:is(main, #la) :is(.lesson-page-section, #lb) .anatomy-cell.is-selected {
-  border-color: var(--accent);
-  background: var(--accent-soft);
-  box-shadow: inset 0 0 0 1px var(--accent);
-}
-
-:is(main, #la) :is(.lesson-page-section, #lb) .anatomy-readout {
+main .lesson-page-section .anatomy-readout {
   border-left: 1px solid var(--line);
 }
 
-:is(main, #la) :is(.lesson-page-section, #lb) :is(.s2-machine-line, .s2-packaging-line, .shape-ports) > :is(strong, span) {
+main .lesson-page-section :is(.s2-machine-line, .s2-packaging-line, .shape-ports) > :is(strong, span) {
   border-radius: 6px;
 }
 
-:is(main, #la) :is(.lesson-page-section, #lb) .s2-transpose-matrix > span {
+main .lesson-page-section .s2-transpose-matrix > span {
   border: 1px solid var(--line);
   border-radius: 8px;
   background: var(--surface-solid);
   box-shadow: none;
 }
 
-:is(main, #la) :is(.lesson-page-section, #lb) :is(.s2-module-heading, .s3-module-heading) > span:first-child {
+main .lesson-page-section :is(.s2-module-heading, .s3-module-heading) > span:first-child {
   border-radius: 50%;
 }
 
-:is(main, #la) :is(.lesson-page-section, #lb) .section4-formal-head + .section4-formal :is(article, .section4-card) {
+main .lesson-page-section .section4-formal-head + .section4-formal :is(article, .section4-card) {
   box-shadow: none;
 }
 
 /* §1 “方向变化” mini plane: columns are v1 / v2, the cell a result */
-:is(main, #la) :is(.lesson-page-section, #lb) .basis-grid path {
+main .lesson-page-section .basis-grid path {
   stroke: var(--cv-grid-major);
 }
 
-:is(main, #la) :is(.lesson-page-section, #lb) .basis-axis path {
+main .lesson-page-section .basis-axis path {
   stroke: var(--cv-axis);
 }
 
-:is(main, #la) :is(.lesson-page-section, #lb) .basis-cell {
+main .lesson-page-section .basis-cell {
   fill: color-mix(in srgb, var(--cv-image) 10%, transparent);
   stroke: color-mix(in srgb, var(--cv-image) 60%, transparent);
 }
 
-:is(main, #la) :is(.lesson-page-section, #lb) .basis-arrow-one {
+main .lesson-page-section .basis-arrow-one {
   color: var(--cv-v1);
 }
 
-:is(main, #la) :is(.lesson-page-section, #lb) .basis-arrow-two {
+main .lesson-page-section .basis-arrow-two {
   color: var(--cv-v2);
 }
 
-:is(main, #la) :is(.lesson-page-section, #lb) .basis-label rect,
-body.dark :is(main, #la) :is(.lesson-page-section, #lb) .basis-label rect {
+main .lesson-page-section .basis-label rect,
+body.dark main .lesson-page-section .basis-label rect {
   fill: var(--cv-paper);
 }
 
-:is(main, #la) :is(.lesson-page-section, #lb) .basis-label-one text {
+main .lesson-page-section .basis-label-one text {
   fill: var(--cv-v1);
 }
 
-:is(main, #la) :is(.lesson-page-section, #lb) .basis-label-two text {
+main .lesson-page-section .basis-label-two text {
   fill: var(--cv-v2);
 }
 
@@ -2749,12 +2739,12 @@ body.dark :is(main, #la) :is(.lesson-page-section, #lb) .basis-label rect {
 }
 
 /* ch4 §3: the canvas grows with its card instead of leaving a blank block under it */
-:is(main, #la) #matrix-product-determinant-rank-interactive .s3-canvas-card {
+main #matrix-product-determinant-rank-interactive .s3-canvas-card {
   display: flex;
   flex-direction: column;
 }
 
-:is(main, #la) #matrix-product-determinant-rank-interactive .s3-canvas-card > canvas {
+main #matrix-product-determinant-rank-interactive .s3-canvas-card > canvas {
   flex: 1 1 auto;
   height: auto;
   min-height: 360px;
@@ -2769,40 +2759,40 @@ body.dark :is(main, #la) :is(.lesson-page-section, #lb) .basis-label rect {
 
 /* ch4 §4: five presets in one row; the line x + ker A and two inputs on it (rank-1 preset) */
 @media (min-width: 900px) {
-  :is(main, #la) :is(.lesson-page-section, #lb) .inverse-preset-grid {
+  main .lesson-page-section .inverse-preset-grid {
     grid-template-columns: repeat(5, minmax(0, 1fr));
   }
 }
 
-:is(main, #la) :is(.lesson-page-section, #lb) .inverse-kernel-line {
+main .lesson-page-section .inverse-kernel-line {
   stroke: var(--cv-subspace);
   stroke-width: 1.4;
   stroke-dasharray: 5 5;
 }
 
-:is(main, #la) :is(.lesson-page-section, #lb) .inverse-kernel-image {
+main .lesson-page-section .inverse-kernel-image {
   stroke: color-mix(in srgb, var(--cv-subspace) 55%, transparent);
   stroke-width: 1.2;
 }
 
-:is(main, #la) :is(.lesson-page-section, #lb) .inverse-kernel-path {
+main .lesson-page-section .inverse-kernel-path {
   stroke: var(--cv-axis);
   stroke-width: 1;
   stroke-dasharray: 2 3;
 }
 
-:is(main, #la) :is(.lesson-page-section, #lb) .inverse-kernel-ghost {
+main .lesson-page-section .inverse-kernel-ghost {
   fill: none;
   stroke: color-mix(in srgb, var(--cv-image) 45%, transparent);
   stroke-width: 1.6;
   stroke-dasharray: 3 2;
 }
 
-:is(main, #la) :is(.lesson-page-section, #lb) .inverse-kernel-dot {
+main .lesson-page-section .inverse-kernel-dot {
   fill: var(--cv-image);
 }
 
-:is(main, #la) :is(.lesson-page-section, #lb) :is(.inverse-kernel-label, .inverse-kernel-text) {
+main .lesson-page-section :is(.inverse-kernel-label, .inverse-kernel-text) {
   fill: var(--cv-image);
   font: italic 600 14px var(--font-serif, serif);
   paint-order: stroke;
@@ -2810,7 +2800,7 @@ body.dark :is(main, #la) :is(.lesson-page-section, #lb) .basis-label rect {
   stroke-width: 3px;
 }
 
-:is(main, #la) :is(.lesson-page-section, #lb) .inverse-kernel-text {
+main .lesson-page-section .inverse-kernel-text {
   fill: var(--cv-subspace);
 }
 
@@ -3158,7 +3148,7 @@ main .ch2-tau-cell.is-current {
 }
 
 /* ch4 §7: the x → y coupling through the lower-left block */
-:is(main, #la) :is(.lesson-page-section, #lb) .bk7-couple {
+main .lesson-page-section .bk7-couple {
   margin: 0;
   padding: 8px 12px;
   border: 1px solid var(--line);
@@ -3166,7 +3156,7 @@ main .ch2-tau-cell.is-current {
   background: var(--cv-paper);
 }
 
-:is(main, #la) :is(.lesson-page-section, #lb) .bk7-couple > svg {
+main .lesson-page-section .bk7-couple > svg {
   display: block;
   width: 100%;
   max-width: 420px;
@@ -3174,44 +3164,44 @@ main .ch2-tau-cell.is-current {
   margin: 0 auto;
 }
 
-:is(main, #la) :is(.lesson-page-section, #lb) .bk7-couple .bk7-node {
+main .lesson-page-section .bk7-couple .bk7-node {
   fill: var(--surface-solid);
   stroke-width: 1.6;
 }
 
-:is(main, #la) :is(.lesson-page-section, #lb) .bk7-couple .bk7-node.is-x { stroke: var(--cv-v1); }
-:is(main, #la) :is(.lesson-page-section, #lb) .bk7-couple .bk7-node.is-y { stroke: var(--cv-image); }
+main .lesson-page-section .bk7-couple .bk7-node.is-x { stroke: var(--cv-v1); }
+main .lesson-page-section .bk7-couple .bk7-node.is-y { stroke: var(--cv-image); }
 
-:is(main, #la) :is(.lesson-page-section, #lb) .bk7-couple .bk7-node-name {
+main .lesson-page-section .bk7-couple .bk7-node-name {
   fill: var(--text);
   font: italic 600 16px var(--font-serif, serif);
 }
 
-:is(main, #la) :is(.lesson-page-section, #lb) .bk7-couple .bk7-node-note {
+main .lesson-page-section .bk7-couple .bk7-node-note {
   fill: var(--muted);
   font: 12.5px var(--font-serif, serif);
 }
 
-:is(main, #la) :is(.lesson-page-section, #lb) .bk7-couple .bk7-link {
+main .lesson-page-section .bk7-couple .bk7-link {
   stroke: var(--cv-v2);
   transition: stroke-width 420ms ease, opacity 420ms ease;
 }
 
-:is(main, #la) :is(.lesson-page-section, #lb) .bk7-couple .bk7-link-head { fill: var(--cv-v2); }
-:is(main, #la) :is(.lesson-page-section, #lb) .bk7-couple .bk7-link.is-grow { stroke: var(--bad-text); }
-:is(main, #la) :is(.lesson-page-section, #lb) .bk7-couple .bk7-link-head.is-grow { fill: var(--bad-text); }
-:is(main, #la) :is(.lesson-page-section, #lb) .bk7-couple .bk7-link.is-zero { stroke: var(--cv-axis); }
+main .lesson-page-section .bk7-couple .bk7-link-head { fill: var(--cv-v2); }
+main .lesson-page-section .bk7-couple .bk7-link.is-grow { stroke: var(--bad-text); }
+main .lesson-page-section .bk7-couple .bk7-link-head.is-grow { fill: var(--bad-text); }
+main .lesson-page-section .bk7-couple .bk7-link.is-zero { stroke: var(--cv-axis); }
 
-:is(main, #la) :is(.lesson-page-section, #lb) .bk7-couple .bk7-link-label {
+main .lesson-page-section .bk7-couple .bk7-link-label {
   fill: var(--cv-v2);
   font: italic 600 14px var(--font-serif, serif);
 }
 
-:is(main, #la) :is(.lesson-page-section, #lb) .bk7-couple .bk7-link-label.is-grow { fill: var(--bad-text); }
-:is(main, #la) :is(.lesson-page-section, #lb) .bk7-couple .bk7-link-label.is-zero { fill: var(--cv-subspace); }
+main .lesson-page-section .bk7-couple .bk7-link-label.is-grow { fill: var(--bad-text); }
+main .lesson-page-section .bk7-couple .bk7-link-label.is-zero { fill: var(--cv-subspace); }
 
 @media (prefers-reduced-motion: reduce) {
-  :is(main, #la) :is(.lesson-page-section, #lb) .bk7-couple .bk7-link { transition: none; }
+  main .lesson-page-section .bk7-couple .bk7-link { transition: none; }
 }
 
 /* ch1 §2: the operations workbench folded under the opening question */
@@ -3347,19 +3337,19 @@ main .ch2-tile-group > .ch2-tile-val {
 }
 
 /* ch4 §1: column titles pick a whole column; its cells glow in all three readings */
-:is(main, #la) :is(.lesson-page-section, #lb) .ml1-colwrap {
+main .lesson-page-section .ml1-colwrap {
   display: grid;
   gap: 4px;
 }
 
-:is(main, #la) :is(.lesson-page-section, #lb) .ml1-colheads {
+main .lesson-page-section .ml1-colheads {
   display: grid;
   grid-template-columns: repeat(2, 46px);
   gap: 6px;
   padding: 0 9.5px;
 }
 
-:is(main, #la) :is(.lesson-page-section, #lb) .ml1-colhead {
+main .lesson-page-section .ml1-colhead {
   min-height: 26px;
   padding: 2px 4px;
   border: 1px solid var(--line);
@@ -3372,28 +3362,28 @@ main .ch2-tile-group > .ch2-tile-val {
   cursor: pointer;
 }
 
-:is(main, #la) :is(.lesson-page-section, #lb) .ml1-table th > .ml1-colhead {
+main .lesson-page-section .ml1-table th > .ml1-colhead {
   font-size: 13px;
 }
 
-:is(main, #la) :is(.lesson-page-section, #lb) .ml1-lab .ml1-c1.is-col {
+main .lesson-page-section .ml1-lab .ml1-c1.is-col {
   background: color-mix(in srgb, var(--cv-v1) 16%, var(--surface-solid));
   box-shadow: inset 0 0 0 1px var(--cv-v1), 0 0 0 3px color-mix(in srgb, var(--cv-v1) 16%, transparent);
 }
 
-:is(main, #la) :is(.lesson-page-section, #lb) .ml1-lab .ml1-c2.is-col {
+main .lesson-page-section .ml1-lab .ml1-c2.is-col {
   background: color-mix(in srgb, var(--cv-v2) 16%, var(--surface-solid));
   box-shadow: inset 0 0 0 1px var(--cv-v2), 0 0 0 3px color-mix(in srgb, var(--cv-v2) 16%, transparent);
 }
 
 /* ch4 §5: when the cuts do not match, C greys out */
-:is(main, #la) :is(.lesson-page-section, #lb) .blk-mat.is-void > .blk-grid {
+main .lesson-page-section .blk-mat.is-void > .blk-grid {
   opacity: 0.4;
   filter: grayscale(1);
   transition: opacity 240ms ease;
 }
 
-:is(main, #la) :is(.lesson-page-section, #lb) .blk-mat.is-void > span {
+main .lesson-page-section .blk-mat.is-void > span {
   color: var(--bad-text);
 }
 
@@ -3494,21 +3484,11 @@ main .ch2-elim-compare > span {
   font-size: 13px;
 }
 
-/* ch4 §3: the area tiles and the det(AB)=det(BA) conclusion wait until the products have played */
-:is(main, #la) :is(.lesson-page-section, #lb) [data-s3-product-answer][hidden] {
-  display: none;
-}
-
 /* ch4 §5: after the verdict, one line reads the current cuts */
-:is(main, #la) :is(.lesson-page-section, #lb) .blk-lab .blk-now {
+main .lesson-page-section .blk-lab .blk-now {
   display: inline-block;
   margin-top: 4px;
   color: var(--text-2);
-}
-
-/* ch4 §2: the A(Bx)=(AB)x conclusion stays hidden until the composition has played */
-:is(main, #la) :is(.lesson-page-section, #lb) .s2c-conclusion[hidden] {
-  display: none;
 }
 
 /* ch2 §6: the Leibniz panel takes no space until it is revealed */

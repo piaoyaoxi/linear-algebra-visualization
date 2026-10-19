@@ -15,10 +15,6 @@
 #matrix-operations-formal .s2-module,
 #matrix-operations-interactive .s2-multiplication-lab {
   overflow: hidden;
-  border: 1px solid var(--line);
-  border-radius: calc(var(--radius) + 2px);
-  background: var(--surface-solid);
-  box-shadow: var(--shadow-soft);
 }
 
 #matrix-operations-formal .s2-module-heading {
@@ -35,11 +31,7 @@
   place-items: center;
   width: 36px;
   height: 36px;
-  border-radius: 11px;
-  background: var(--accent-soft);
-  color: var(--accent-strong);
   font-size: 12px;
-  font-weight: 850;
   letter-spacing: 0.05em;
 }
 
@@ -63,14 +55,9 @@
 #matrix-operations-interactive .s2-view-tabs {
   display: inline-flex !important;
   flex-wrap: wrap;
-  gap: 7px;
   width: max-content !important;
   max-width: 100%;
   margin: 0;
-  padding: 5px;
-  border: 1px solid var(--line);
-  border-radius: 13px;
-  background: var(--surface-soft);
   box-sizing: border-box;
 }
 
@@ -80,34 +67,17 @@
   align-self: start;
 }
 
+#matrix-operations-formal .s2-action-button {
+  min-height: 36px;
+}
+
 #matrix-operations-formal .s2-chip-bar button,
-#matrix-operations-interactive .s2-view-tabs button,
 #matrix-operations-formal .s2-action-button {
   flex: 0 0 auto;
-  min-height: 36px;
   padding: 0 13px;
-  border: 0;
-  border-radius: 9px;
-  background: transparent;
-  color: var(--muted);
-  font: inherit;
-  font-size: 13px;
   font-weight: 760;
   cursor: pointer;
   transition: background 150ms ease, color 150ms ease, box-shadow 150ms ease, transform 150ms ease;
-}
-
-#matrix-operations-formal .s2-chip-bar button:hover,
-#matrix-operations-interactive .s2-view-tabs button:hover,
-#matrix-operations-formal .s2-action-button:hover {
-  color: var(--text);
-}
-
-#matrix-operations-formal .s2-chip-bar button.is-active,
-#matrix-operations-interactive .s2-view-tabs button.is-active {
-  background: var(--surface-solid);
-  color: var(--accent-strong);
-  box-shadow: 0 4px 14px rgba(18, 61, 53, 0.08);
 }
 
 #matrix-operations-formal button:focus-visible,
@@ -192,8 +162,6 @@
   min-width: 34px;
   min-height: 36px;
   border: 0;
-  border-radius: 9px;
-  background: var(--surface-soft);
   color: var(--text);
   font: inherit;
   font-size: 14px;
@@ -226,10 +194,6 @@
   gap: 8px 12px;
   align-items: baseline;
   padding: 15px 17px;
-  border-left: 4px solid var(--accent);
-  border-radius: 0 12px 12px 0;
-  background: var(--surface-soft);
-  color: var(--muted);
   line-height: 1.7;
 }
 
@@ -251,12 +215,6 @@
   justify-content: space-between;
 }
 
-#matrix-operations-formal .s2-action-button {
-  border: 1px solid color-mix(in srgb, var(--accent) 26%, var(--line));
-  background: var(--accent-soft);
-  color: var(--accent-strong);
-}
-
 #matrix-operations-formal .s2-transpose-stage {
   position: relative;
   display: grid;
@@ -266,11 +224,6 @@
   min-height: 260px;
   overflow: hidden;
   padding: 24px;
-  border: 1px solid var(--line);
-  border-radius: 17px;
-  background:
-    radial-gradient(circle at 70% 44%, color-mix(in srgb, var(--accent) 8%, transparent), transparent 34%),
-    var(--surface-soft);
 }
 
 #matrix-operations-formal .s2-transpose-copy {
@@ -336,14 +289,10 @@
   width: 46px;
   height: 46px;
   transform: translate(calc(var(--cell-col) * var(--s2-cell-size)), calc(var(--cell-row) * var(--s2-cell-size)));
-  border: 1px solid color-mix(in srgb, var(--accent) 12%, var(--line));
-  border-radius: 12px;
-  background: var(--surface-solid);
   color: var(--text);
   font-size: 15px;
   font-weight: 800;
   font-variant-numeric: tabular-nums;
-  box-shadow: 0 6px 18px rgba(24, 59, 51, 0.07);
   transition: transform 420ms cubic-bezier(.2,.8,.2,1), background 180ms ease, color 180ms ease;
 }
 
@@ -442,9 +391,6 @@
   gap: 12px;
   align-items: center;
   padding: 22px;
-  border: 1px solid var(--line);
-  border-radius: 17px;
-  background: var(--surface-soft);
 }
 
 #matrix-operations-formal .s2-dimension-card {
@@ -453,9 +399,6 @@
   place-items: center;
   min-height: 94px;
   padding: 15px;
-  border: 1px solid var(--line);
-  border-radius: 15px;
-  background: var(--surface-solid);
 }
 
 #matrix-operations-formal .s2-dimension-card > span {
@@ -468,11 +411,6 @@
   color: var(--text);
   font-size: 21px;
   font-variant-numeric: tabular-nums;
-}
-
-#matrix-operations-formal .s2-size-gate.is-open .s2-dimension-card.is-result {
-  border-color: color-mix(in srgb, var(--accent) 30%, var(--line));
-  background: var(--accent-soft);
 }
 
 #matrix-operations-formal .s2-dimension-card.is-blocked {
@@ -512,9 +450,6 @@
 #matrix-operations-formal .s2-gate-message {
   margin: 0;
   padding: 15px 17px;
-  border-radius: 12px;
-  background: var(--surface-soft);
-  color: var(--muted);
   line-height: 1.75;
 }
 
@@ -534,9 +469,6 @@
   gap: 13px;
   min-width: 0;
   padding: 18px;
-  border: 1px solid var(--line);
-  border-radius: 15px;
-  background: var(--surface-soft);
 }
 
 #matrix-operations-formal .s2-card-kicker,
@@ -570,7 +502,6 @@
 #matrix-operations-formal .s2-machine-line > strong,
 #matrix-operations-formal .s2-packaging-line > span {
   padding: 9px 13px;
-  border-radius: 11px;
   background: var(--surface-solid);
   color: var(--accent-strong);
   font-weight: 820;
@@ -594,9 +525,6 @@
   gap: 10px;
   margin: 0 24px 24px;
   padding: 16px;
-  border-left: 4px solid var(--accent);
-  border-radius: 0 14px 14px 0;
-  background: var(--surface-soft);
 }
 
 #matrix-operations-formal .s2-side-preview > div {
@@ -632,9 +560,6 @@
 
 #matrix-operations-formal .s2-extension-grid details {
   min-width: 0;
-  border: 1px solid var(--line);
-  border-radius: 14px;
-  background: var(--surface-soft);
 }
 
 #matrix-operations-formal .s2-extension-grid summary {
@@ -753,30 +678,35 @@
 
 /*
  * Phones (≤720px, as in chapter 1): the module card is the only frame; the transpose
- * stage, the size gate and the law cards inside it lose their own. The extra ids outrank
- * the shared frame rules in design-a-legacy.css.
+ * stage, the size gate and the law cards inside it lose their own. The section id outranks
+ * the shared frame rules in design-a-legacy.css; in dark mode the transpose stage keeps its
+ * canvas frame from there.
  */
 @media (max-width: 720px) {
-  :is(main, #la) #matrix-operations-formal.lesson-page-section :is(.s2-transpose-stage, .s2-gate-stage) {
+  #matrix-operations-formal.lesson-page-section :is(.s2-transpose-stage, .s2-gate-stage) {
     padding: 8px 0;
+  }
+
+  #matrix-operations-formal.lesson-page-section .s2-gate-stage,
+  body:not(.dark) #matrix-operations-formal.lesson-page-section .s2-transpose-stage {
     border: 0;
     border-radius: 0;
     background: none;
   }
 
-  :is(main, #la) #matrix-operations-formal.lesson-page-section .s2-law-grid {
+  #matrix-operations-formal.lesson-page-section .s2-law-grid {
     gap: 0;
     padding-top: 6px;
   }
 
-  :is(main, #la) #matrix-operations-formal.lesson-page-section .s2-law-card {
+  #matrix-operations-formal.lesson-page-section .s2-law-card {
     padding: 16px 0;
     border: 0;
     border-radius: 0;
     background: none;
   }
 
-  :is(main, #la) #matrix-operations-formal.lesson-page-section .s2-law-card + .s2-law-card {
+  #matrix-operations-formal.lesson-page-section .s2-law-card + .s2-law-card {
     border-top: 1px solid var(--line);
   }
 }

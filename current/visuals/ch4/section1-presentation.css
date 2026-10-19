@@ -29,12 +29,7 @@
   place-items: center;
   width: 34px;
   height: 34px;
-  border: 1px solid color-mix(in srgb, var(--accent) 34%, var(--line));
-  border-radius: 50%;
-  color: var(--accent-strong);
-  background: var(--accent-soft);
   font-size: 12px;
-  font-weight: 800;
 }
 
 #matrix-language-formal .module-heading h3 {
@@ -54,23 +49,12 @@
   gap: 14px;
 }
 
-#matrix-language-formal .matrix-source-card,
-#matrix-language-formal .equality-case,
-#matrix-language-formal .matrix-type-card,
-#matrix-language-formal .shape-machine,
-#matrix-language-formal .anatomy-lab {
-  border: 1px solid var(--line);
-  border-radius: var(--radius);
-  background: var(--surface-solid);
-}
-
 #matrix-language-formal .matrix-source-card {
   display: grid;
   align-content: start;
   gap: 14px;
   min-width: 0;
   padding: 20px 18px 18px;
-  box-shadow: var(--shadow-soft);
 }
 
 #matrix-language-formal .matrix-source-kicker {
@@ -141,12 +125,6 @@
 #matrix-language-formal .source-basis-stage {
   padding: 8px 6px;
   overflow: hidden;
-  border: 1px solid color-mix(in srgb, var(--line) 92%, var(--accent) 8%);
-  border-radius: 16px;
-  background:
-    radial-gradient(ellipse 70% 60% at 38% 66%, color-mix(in srgb, var(--accent) 8%, transparent), transparent 74%),
-    radial-gradient(ellipse 50% 46% at 72% 30%, color-mix(in srgb, var(--coral) 7%, transparent), transparent 76%),
-    linear-gradient(168deg, color-mix(in srgb, var(--surface-soft) 58%, #fff) 0%, var(--surface-solid) 100%);
 }
 
 #matrix-language-formal .source-basis-svg {
@@ -158,21 +136,17 @@
 
 #matrix-language-formal .basis-grid path {
   fill: none;
-  stroke: color-mix(in srgb, var(--line-strong) 28%, transparent);
   stroke-width: 1;
   stroke-linecap: round;
 }
 
 #matrix-language-formal .basis-axis path {
   fill: none;
-  stroke: color-mix(in srgb, var(--muted) 32%, var(--line-strong));
   stroke-width: 1.15;
   stroke-linecap: round;
 }
 
 #matrix-language-formal .basis-cell {
-  fill: color-mix(in srgb, var(--accent) 10%, transparent);
-  stroke: color-mix(in srgb, var(--accent) 22%, transparent);
   stroke-width: 1.1;
   stroke-linejoin: round;
 }
@@ -184,14 +158,6 @@
   stroke-width: 0.6;
   stroke-linejoin: round;
   stroke-linecap: round;
-}
-
-#matrix-language-formal .basis-arrow-one {
-  color: var(--accent-strong);
-}
-
-#matrix-language-formal .basis-arrow-two {
-  color: var(--coral);
 }
 
 #matrix-language-formal .basis-label rect {
@@ -206,44 +172,10 @@
   letter-spacing: 0.01em;
 }
 
-#matrix-language-formal .basis-label-one rect {
-  fill: color-mix(in srgb, var(--accent-strong) 12%, var(--surface-solid));
-}
-
-#matrix-language-formal .basis-label-one text {
-  fill: var(--accent-strong);
-}
-
-#matrix-language-formal .basis-label-two rect {
-  fill: color-mix(in srgb, var(--coral) 14%, var(--surface-solid));
-}
-
-#matrix-language-formal .basis-label-two text {
-  fill: var(--coral);
-}
-
 #matrix-language-formal .basis-origin {
   fill: color-mix(in srgb, var(--text) 72%, var(--muted));
   stroke: var(--surface-solid);
   stroke-width: 2;
-}
-
-#matrix-language-formal .source-basis-stage,
-body.dark #matrix-language-formal .source-basis-stage {
-  background:
-    radial-gradient(ellipse 70% 60% at 38% 66%, color-mix(in srgb, var(--accent) 12%, transparent), transparent 74%),
-    radial-gradient(ellipse 50% 46% at 72% 30%, color-mix(in srgb, var(--coral) 10%, transparent), transparent 76%),
-    linear-gradient(168deg, color-mix(in srgb, var(--surface-soft) 78%, var(--bg)), var(--surface-solid));
-}
-
-#matrix-language-formal .basis-label-one rect,
-body.dark #matrix-language-formal .basis-label-one rect {
-  fill: color-mix(in srgb, var(--accent-strong) 16%, var(--surface-solid));
-}
-
-#matrix-language-formal .basis-label-two rect,
-body.dark #matrix-language-formal .basis-label-two rect {
-  fill: color-mix(in srgb, var(--coral) 16%, var(--surface-solid));
 }
 
 #matrix-language-formal .anatomy-toolbar,
@@ -258,30 +190,9 @@ body.dark #matrix-language-formal .basis-label-two rect {
 #matrix-language-formal .equality-actions button {
   min-height: 36px;
   padding: 0 14px;
-  border: 1px solid var(--line);
-  border-radius: 999px;
-  background: var(--surface-solid);
-  color: var(--muted);
-  font: inherit;
-  font-size: 13px;
   font-weight: 700;
   cursor: pointer;
   transition: border-color 150ms ease, background 150ms ease, color 150ms ease, transform 150ms ease;
-}
-
-#matrix-language-formal .anatomy-toolbar button:hover,
-.transform-preset-bar button:hover,
-#matrix-language-formal .equality-actions button:hover {
-  border-color: color-mix(in srgb, var(--accent) 45%, var(--line));
-  color: var(--text);
-}
-
-#matrix-language-formal .anatomy-toolbar button.is-active,
-.transform-preset-bar button.is-active,
-#matrix-language-formal .equality-actions button.is-selected {
-  border-color: color-mix(in srgb, var(--accent) 52%, var(--line));
-  background: var(--accent-soft);
-  color: var(--accent-strong);
 }
 
 #matrix-language-formal .anatomy-toolbar button:focus-visible,
@@ -305,8 +216,6 @@ body.dark #matrix-language-formal .basis-label-two rect {
   place-items: center;
   min-height: 230px;
   padding: 24px 36px;
-  border-radius: calc(var(--radius) - 4px);
-  background: var(--surface-soft);
 }
 
 #matrix-language-formal .anatomy-matrix {
@@ -343,7 +252,8 @@ body.dark #matrix-language-formal .basis-label-two rect {
 
 #matrix-language-formal .anatomy-cell.is-selected {
   border-color: var(--accent);
-  background: color-mix(in srgb, var(--accent-soft) 70%, var(--surface-solid));
+  background: var(--accent-soft);
+  box-shadow: inset 0 0 0 1px var(--accent);
   color: var(--accent-strong);
   transform: translateY(-1px);
 }
@@ -378,7 +288,6 @@ body.dark #matrix-language-formal .basis-label-two rect {
   gap: 12px;
   min-width: 0;
   padding: 18px;
-  border-left: 3px solid var(--accent);
 }
 
 #matrix-language-formal .anatomy-readout .tex-display {
@@ -524,9 +433,6 @@ body.dark #matrix-language-formal .basis-label-two rect {
   gap: 10px;
   min-width: 0;
   padding: 16px;
-  border: 1px solid var(--line);
-  border-radius: calc(var(--radius) - 4px);
-  background: var(--surface-soft);
 }
 
 #matrix-language-formal .shape-port-group strong,
@@ -547,7 +453,6 @@ body.dark #matrix-language-formal .basis-label-two rect {
   place-items: center;
   width: 30px;
   height: 30px;
-  border-radius: 50%;
   background: var(--accent-soft);
   color: var(--accent-strong);
   font-size: 12px;
@@ -589,9 +494,6 @@ body.dark #matrix-language-formal .basis-label-two rect {
   gap: 14px;
   align-items: start;
   padding: 18px 20px;
-  border-left: 4px solid var(--accent);
-  border-radius: 0 var(--radius) var(--radius) 0;
-  background: var(--surface-soft);
 }
 
 #matrix-language-formal .column-reading-note strong {

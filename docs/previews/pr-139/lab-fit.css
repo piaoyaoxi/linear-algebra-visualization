@@ -1,0 +1,1290 @@
+/*
+ * Lab layout fitted to the screen (loaded last on learn.html).
+ * Phones (≤720px), most of the file — canvas and readouts share one screen:
+ *  - the main canvas is shorter (--la-stage-h) and, where mobile-lab.js finds it safe,
+ *    sticks under the top bar while the readouts scroll under it;
+ *  - canvases shown two or three in a column are shortened (--la-pair-h), or set side by side
+ *    where comparing them is the point (ch2 §4/§8, ch4 §2, ch5 §1/§3);
+ *  - after a guess, the prediction box keeps only the picked option (predict-ux.js);
+ *  - one-value readout cards two to a row (data-la-pack), companion panels as tabs (la-tabs),
+ *    and per-chapter re-ordering with display: contents + order (no DOM moves);
+ *  - preset chips, readout cards and the gaps between lab blocks are tighter.
+ * Wider screens, at the end of the file: a few labs taller than a screen on a desktop.
+ * Rules here are prefixed `body` / `html body` (one or two type selectors more than the
+ * `main …` rules of design-a-legacy.css) and use !important for layout.
+ */
+:root {
+  --la-stage-h: clamp(240px, 38svh, 280px);
+  --la-pair-h: 240px;
+  --la-stick-top: calc(var(--safe-top, 0px) + 72px);
+}
+
+/* the fold toggle exists only on phones */
+body .la-opt-more {
+  display: none;
+}
+
+@media (max-width: 720px) {
+  /* ---------- the main canvas: shorter ---------- */
+  body main :is(.ch3l-body, .ch6l-body, .ch7l-body, .ch9l-body) > :is(.ch3l-stage, .ch6l-stage, .ch7l-stage, .ch9l-stage) :is(.ch7p-canvas, .ch9p-canvas, .la3d-canvas),
+  body main .el6-stage .el6-canvas,
+  body main :is(.ch1-two-col > .ch1-stage, .ch1-multivariate-stage, .ch1-complex-canvas-shell) canvas,
+  body main .ch3-lab-grid > .ch3-stage canvas,
+  body main .s2c-canvas-shell .s2c-main-canvas {
+    height: var(--la-stage-h) !important;
+    min-height: 0 !important;
+    /* some stages are flex columns whose canvas grows from a zero basis */
+    flex: 0 0 auto !important;
+  }
+
+  body main :is(.ch1-two-col > .ch1-stage, .ch1-multivariate-stage, .ch1-complex-canvas-shell, .ch3-lab-grid > .ch3-stage, .s2c-canvas-shell) {
+    height: auto !important;
+    min-height: 0 !important;
+  }
+
+  /* ch4 §4: toolbar + plane + caption, kept under half a screen */
+  body main .inverse-workbench > .inverse-plane-card {
+    grid-template-rows: auto 214px auto;
+  }
+
+  body main :is(.ch2-lab-grid, .ch2-cramer-main) > .ch2-stage,
+  body main :is(.ch2-lab-grid, .ch2-cramer-main) > .ch2-stage canvas {
+    height: var(--la-stage-h) !important;
+    min-height: 0 !important;
+  }
+
+  /* ---------- canvases two or three in a column: shorter, not sticky ---------- */
+  body main :is(.ch3l-pair, .ch6l-pair, .ch7l-pair, .ch9l-pair) :is(.ch7p-canvas, .ch9p-canvas, .la3d-canvas),
+  body main .s3-product-grid .s3-canvas-card canvas {
+    height: var(--la-pair-h) !important;
+    min-height: 0 !important;
+  }
+
+  /* ch5: the two surfaces of §1/§3, the main surface of §2/§4 */
+  body main .qv-lab .qv-same .qv-orbit-shell canvas {
+    height: var(--la-pair-h) !important;
+  }
+
+  /* §3: the sign wheel inset on each surface's corner shrinks with it */
+  body main .qv-lab .qv-same > figure > figure.qv-s3-inset {
+    width: 78px !important;
+  }
+
+  body main .qv-lab .qv-same > figure > figure.qv-s3-inset canvas {
+    width: 78px !important;
+    height: 72px !important;
+  }
+
+  body main .qv-lab .qv-main-canvas {
+    height: var(--la-stage-h) !important;
+    min-height: 0 !important;
+  }
+
+  /* §4's surface is not sticky (its readings sit in another column); 300 keeps it usable */
+  body main .qv-lab .qv-hero,
+  body main .qv-lab .qv-hero canvas {
+    height: 300px !important;
+    min-height: 0 !important;
+  }
+
+  /* ch5 readings (det C, the two polynomials …): two to a row instead of one */
+  body main .qv-lab .qv-values {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  }
+
+  body main :is(.ch2-compare-stage, .ch2-stage-row) .ch2-stage,
+  body main :is(.ch2-compare-stage, .ch2-stage-row) .ch2-stage canvas {
+    height: var(--la-pair-h) !important;
+    min-height: 0 !important;
+  }
+
+  /* ---------- the sticky stage (mobile-lab.js) ---------- */
+  /* a box that clips with overflow: hidden would also catch the sticky stage; clip does not */
+  body main #matrix-operations-interactive .s2c-lab {
+    overflow: clip;
+  }
+
+  /* !important: some stages are position: relative under an id selector */
+  body main .la-stick {
+    position: sticky !important;
+    top: var(--la-stick-top) !important;
+    z-index: 4;
+  }
+
+  /* the second shadow, a copy of the box moved up by the top bar's height, fills the gap above
+     the stage too: the ::before strip below is cut off when the stage clips its overflow (ch5) */
+  html body main .la-stick.is-stuck {
+    background: var(--surface-solid);
+    box-shadow: 0 14px 14px -14px rgba(26, 29, 27, 0.32), 0 calc(-1 * var(--la-stick-top)) 0 0 var(--surface-solid) !important;
+  }
+
+  html body.dark main .la-stick.is-stuck {
+    box-shadow: 0 14px 14px -14px rgba(0, 0, 0, 0.7), 0 calc(-1 * var(--la-stick-top)) 0 0 var(--surface-solid) !important;
+  }
+
+  /* the strip below reaches past the card to the screen edges; clip it there, or the page
+     scrolls sideways while a stage is stuck (clip keeps sticky working, hidden would not) */
+  body .app-layout {
+    overflow-x: clip;
+  }
+
+  /* the strip between the stage and the top of the screen, behind the floating controls */
+  body main .la-stick.is-stuck::before {
+    content: "";
+    position: absolute;
+    right: -60px;
+    bottom: 100%;
+    left: -60px;
+    height: calc(var(--la-stick-top) + 2px);
+    background: var(--bg);
+    pointer-events: none;
+  }
+
+  /* the row of buttons that opens the readout column sticks right under the stage */
+  body main .la-stick-tools {
+    position: sticky;
+    top: calc(var(--la-stick-top) + var(--la-tools-top, 0px));
+    z-index: 5;
+  }
+
+  /* !important: some control rows (ch5's slider label) are transparent under an id selector */
+  body main .la-stick-tools.is-stuck {
+    background: var(--surface-solid) !important;
+    box-shadow: 0 14px 14px -14px rgba(26, 29, 27, 0.32);
+  }
+
+  body.dark main .la-stick-tools.is-stuck {
+    box-shadow: 0 14px 14px -14px rgba(0, 0, 0, 0.7);
+  }
+
+  /* the caption under a stuck canvas: one line, closer */
+  body main .la-stick .la-figcaption {
+    margin-top: 6px;
+    padding-bottom: 6px;
+  }
+
+  /* ---------- prediction box: after a guess only the picked option stays ---------- */
+  body main [data-la-fold] > [class$="-predict-options"] > button:not(.is-picked, .is-right, .is-wrong, .is-answer, .is-viewing, .la-opt-more) {
+    display: none;
+  }
+
+  body main :is([data-la-fold], [data-la-open]) > [class$="-predict-options"] > .la-opt-more {
+    display: inline-flex;
+    align-self: flex-start;
+    width: auto !important;
+    min-height: 0;
+    padding: 7px 4px;
+    border: 0 !important;
+    background: none !important;
+    box-shadow: none !important;
+    color: var(--predict-text);
+    font-size: 13px;
+    text-decoration: underline;
+    text-decoration-thickness: 1px;
+    text-underline-offset: 3px;
+  }
+
+  /* “点其他选项……” refers to options that are folded away; the link says it instead */
+  body main [data-la-fold] > .la-option-why:has(> .la-option-hint:only-child) {
+    display: none;
+  }
+
+  /* ---------- tighter chrome ---------- */
+  body main :is(.ch3l-lab, .ch6l-lab, .ch7l-lab, .ch9l-lab) {
+    row-gap: 14px;
+  }
+
+  body main :is(.ch3l-body, .ch6l-body, .ch7l-body, .ch9l-body) {
+    row-gap: 12px;
+  }
+
+  body main :is(.ch3l-chip, .ch6l-chip, .ch7l-chip, .ch9l-chip) {
+    padding: 5px 12px;
+    line-height: 1.5;
+  }
+
+  body main :is(.ch3l-card, .ch6l-card, .ch7l-card, .ch9l-card) {
+    padding: 11px 14px;
+    line-height: 1.62;
+  }
+
+  body main :is(.ch3l-predict, .ch6l-predict, .ch7l-predict, .ch9l-predict) {
+    padding: 12px 14px;
+  }
+}
+
+/* ---------- readout lists packed two to a row (mobile-lab.js: data-la-pack) ---------- */
+@media (max-width: 720px) {
+  html body main [data-la-pack] {
+    display: grid !important;
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    grid-auto-flow: row !important;
+    gap: 8px !important;
+  }
+
+  html body main [data-la-pack] > * {
+    grid-column: auto !important;
+  }
+
+  html body main [data-la-pack] > [data-la-wide] {
+    grid-column: 1 / -1 !important;
+  }
+
+  /* while measuring: every card at its natural width */
+  html body main [data-la-pack][data-la-measure] {
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: flex-start !important;
+  }
+
+  html body main [data-la-pack][data-la-measure] > * {
+    flex: none !important;
+    width: max-content !important;
+    min-width: 0 !important;
+    max-width: none !important;
+  }
+}
+
+/* ---------- chapter 1 ---------- */
+@media (max-width: 720px) {
+  html body main .ch1-lab :is(.ch1-metric, .ch1-equation-grid > div, .ch1-ld-summary > div, .ch1-bezout-coeff) {
+    min-height: 0 !important;
+    padding: 8px 11px !important;
+    row-gap: 1px !important;
+  }
+
+  html body main .ch1-lab :is(.ch1-metric, .ch1-equation-grid > div, .ch1-ld-summary > div, .ch1-bezout-coeff) > span:first-child {
+    font-size: 12px !important;
+    line-height: 1.5 !important;
+  }
+}
+
+/* ch1 §4 gcd: the step ledger with a narrow number column; gcd, s(x), t(x) on one row */
+@media (max-width: 720px) {
+  html body main .ch1-section-gcd-polynomials .ch1-ledger > div {
+    grid-template-columns: 16px minmax(0, 1fr) !important;
+    gap: 8px !important;
+    padding: 9px 6px !important;
+  }
+
+  html body main .ch1-section-gcd-polynomials .ch1-euclid-step-copy p {
+    font-size: 14.5px;
+    line-height: 1.5;
+  }
+
+  /* a step “A = qB + r” (§4) or the invariant f = qg + r (§3) wider than the phone continues
+     after its = (typeset.js groups the pieces); the chapter's labs otherwise keep every
+     formula on one unbreakable line */
+  html body main :is(.ch1-section-gcd-polynomials .ch1-euclid-step-copy p, .ch1-section-polynomial-divisibility .ch1-ld-invariant strong) > .tex {
+    display: inline !important;
+    overflow: visible !important;
+    white-space: normal !important;
+  }
+
+  html body main :is(.ch1-section-gcd-polynomials .ch1-euclid-step-copy p, .ch1-section-polynomial-divisibility .ch1-ld-invariant strong) > .tex > .katex {
+    white-space: normal !important;
+  }
+
+  html body main .ch1-section-gcd-polynomials :is(.ch1-euclid-panel, .ch1-bezout-panel) {
+    padding: 12px !important;
+  }
+
+  html body main .ch1-bezout-panel {
+    display: grid !important;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    column-gap: 10px;
+  }
+
+  html body main .ch1-bezout-panel > :is(h4, .ch1-bezout-verify) {
+    grid-column: 1 / -1;
+  }
+
+  html body main .ch1-bezout-panel > .ch1-bezout-coefficients {
+    display: contents !important;
+  }
+
+  html body main .ch1-bezout-panel :is(.ch1-bezout-main, .ch1-bezout-coeff) {
+    align-content: start;
+    gap: 2px !important;
+    padding: 8px 0 10px !important;
+    border-bottom: 1px solid var(--line) !important;
+  }
+
+  html body main .ch1-bezout-panel .ch1-bezout-main > strong,
+  html body main .ch1-bezout-panel .ch1-bezout-coeff strong {
+    font-size: 19px !important;
+  }
+
+  html body main .ch1-bezout-panel .ch1-bezout-verify {
+    padding-top: 10px !important;
+  }
+
+  html body main .ch1-bezout-panel .ch1-bezout-verify [data-verify] {
+    overflow-x: auto;
+    font-size: 15px !important;
+  }
+}
+
+/* ch1 §3, §4: step buttons on one row, the examples on the next; the bar sticks (mobile-lab.js).
+   Readout cards put label and value on one line, so the step text starts closer to the buttons. */
+@media (max-width: 720px) {
+  html body main :is(.ch1-section-polynomial-divisibility, .ch1-section-gcd-polynomials) > .ch1-controls {
+    gap: 6px !important;
+    padding: 6px 0;
+  }
+
+  html body main :is(.ch1-section-polynomial-divisibility, .ch1-section-gcd-polynomials) > .ch1-controls > :is([data-prev], [data-play], [data-next], [data-reset]) {
+    flex: 1 1 0;
+    order: -2;
+    padding-inline: 4px !important;
+  }
+
+  html body main :is(.ch1-section-polynomial-divisibility, .ch1-section-gcd-polynomials) > .ch1-controls > .ch1-control-separator {
+    display: block !important;
+    flex: 0 0 100%;
+    order: -1;
+    width: auto !important;
+    height: 0 !important;
+    margin: -3px 0 !important;
+    border: 0 !important;
+  }
+
+  html body main :is(.ch1-section-polynomial-divisibility, .ch1-section-gcd-polynomials) > .ch1-controls > [data-preset] {
+    flex: 1 1 auto;
+    min-height: 30px !important;
+    padding: 3px 8px !important;
+    font-size: 13px !important;
+  }
+
+  html body main :is(.ch1-section-gcd-polynomials > :is(.ch1-metrics, .ch1-equation-grid), .ch1-section-polynomial-divisibility .ch1-ld-summary) > * {
+    display: flex !important;
+    flex-wrap: wrap;
+    align-items: baseline;
+    column-gap: 10px !important;
+    padding: 6px 11px !important;
+  }
+
+  html body main :is(.ch1-section-gcd-polynomials > :is(.ch1-metrics, .ch1-equation-grid), .ch1-section-polynomial-divisibility .ch1-ld-summary) > * > strong {
+    min-width: 0;
+    font-size: 15.5px !important;
+  }
+
+  html body main :is(.ch1-section-gcd-polynomials > :is(.ch1-metrics, .ch1-equation-grid), .ch1-section-polynomial-divisibility .ch1-ld-summary) {
+    gap: 8px !important;
+  }
+
+  /* §4: example and step count on one row, the verdict under them */
+  html body main .ch1-section-gcd-polynomials > .ch1-metrics {
+    display: grid !important;
+    grid-template-columns: minmax(0, 1fr) auto !important;
+  }
+
+  html body main .ch1-section-gcd-polynomials > .ch1-metrics > :nth-child(3) {
+    grid-column: 1 / -1;
+  }
+
+  /* §3: what this step does comes first under the sheet, then the status and the readouts;
+     the degree chart sits on the same tab place (it was above the tab bar) */
+  html body main .ch1-section-polynomial-divisibility .ch1-ld-side > .la-tabs {
+    order: 1;
+  }
+
+  html body main .ch1-section-polynomial-divisibility .ch1-ld-side > :is(.ch1-ld-focus, .ch1-stairs-card) {
+    order: 2;
+  }
+
+  html body main .ch1-section-polynomial-divisibility .ch1-ld-side > .ch1-status {
+    order: 3;
+  }
+
+  html body main .ch1-section-polynomial-divisibility .ch1-ld-side > .ch1-ld-summary {
+    order: 4;
+  }
+
+  html body main .ch1-section-polynomial-divisibility .ch1-ld-side > .ch1-ld-invariant {
+    order: 5;
+  }
+}
+
+/* ch1 buttons and presets: smaller pills, so a row holds more of them */
+@media (max-width: 720px) {
+  html body main .ch1-lab .ch1-controls {
+    gap: 6px !important;
+  }
+
+  html body main .ch1-lab .ch1-controls > button {
+    min-height: 32px !important;
+    padding: 4px 10px !important;
+    font-size: 13.5px !important;
+  }
+}
+
+/* ch1 §7 lattice: the three axis notes side by side; layer cards compact */
+@media (max-width: 720px) {
+  html body main .ch1-multivariate-axis-key .ch1-axis-key-grid {
+    display: grid !important;
+    grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+    gap: 6px !important;
+  }
+
+  html body main .ch1-multivariate-axis-key .ch1-axis-key-grid > div {
+    display: grid;
+    align-content: start;
+    gap: 2px;
+    min-width: 0;
+    padding: 6px 8px !important;
+  }
+
+  html body main .ch1-multivariate-axis-key .ch1-axis-key-grid strong {
+    font-size: 13px;
+  }
+
+  html body main .ch1-multivariate-axis-key .ch1-axis-key-grid small {
+    font-size: 12px;
+  }
+
+  html body main .ch1-multivariate-layer-card {
+    min-height: 0 !important;
+    padding: 8px 11px !important;
+    gap: 2px !important;
+  }
+
+  /* ch1 §5: the graph of f and the graph of f′, shorter */
+  html body main .ch1-section-multiple-factors .ch1-merge-stages > .ch1-stage:not(.is-short),
+  html body main .ch1-section-multiple-factors .ch1-merge-stages > .ch1-stage:not(.is-short) canvas {
+    height: 230px !important;
+    min-height: 0 !important;
+  }
+
+  html body main .ch1-section-multiple-factors .ch1-merge-stages > .ch1-stage.is-short,
+  html body main .ch1-section-multiple-factors .ch1-merge-stages > .ch1-stage.is-short canvas {
+    height: 150px !important;
+    min-height: 0 !important;
+  }
+}
+
+/* ---------- companion panels as one segmented bar (mobile-lab.js: TABS) ---------- */
+@media (max-width: 720px) {
+  html body main [data-la-tab-hidden] {
+    display: none !important;
+  }
+
+  html body main .la-tabs {
+    display: flex;
+    gap: 2px;
+    padding: 3px;
+    border-radius: 999px;
+    background: var(--surface-soft);
+    box-shadow: inset 0 0 0 1px var(--line);
+  }
+
+  html body main .la-tabs > button {
+    flex: 1 1 0;
+    min-width: 0;
+    min-height: 32px;
+    padding: 4px 8px;
+    border: 1px solid transparent;
+    border-radius: 999px;
+    background: none;
+    color: var(--muted);
+    font: inherit;
+    font-size: 13.5px;
+    white-space: nowrap;
+  }
+
+  html body main .la-tabs > button.is-active {
+    border-color: var(--line);
+    background: var(--surface-solid);
+    color: var(--text);
+    box-shadow: 0 1px 2px rgba(26, 29, 27, 0.08);
+  }
+}
+
+@media (max-width: 720px) {
+  /* a wrapper whose panels are all on other tabs takes no room */
+  html body main .ch1-euclid-layout:not(:has(> :not([data-la-tab-hidden]))) {
+    display: none !important;
+  }
+}
+
+/* ch4 §1: the ±1 stepper beside the matrix; the data table and the equations side by side,
+   the plane under them, so the matrix and all three readings share one screen */
+@media (max-width: 720px) {
+  html body main .ml1-lab .ml1-control {
+    flex-wrap: nowrap !important;
+    align-items: center !important;
+    gap: 14px !important;
+  }
+
+  html body main .ml1-lab .ml1-stepper {
+    display: grid !important;
+    flex: 1 1 auto;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 8px !important;
+    min-width: 0;
+  }
+
+  html body main .ml1-lab .ml1-stepper > b {
+    grid-column: 1 / -1;
+  }
+
+  html body main .ml1-lab .ml1-views {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    gap: 8px !important;
+  }
+
+  html body main .ml1-lab .ml1-plane {
+    grid-column: 1 / -1 !important;
+  }
+
+  html body main .ml1-lab .ml1-view {
+    gap: 8px !important;
+    padding: 10px !important;
+  }
+
+  html body main .ml1-lab .ml1-view > figcaption {
+    font-size: 12px !important;
+    line-height: 1.45 !important;
+  }
+
+  html body main .ml1-lab .ml1-table :is(th, td) {
+    padding: 5px 2px !important;
+  }
+
+  html body main .ml1-lab .ml1-table td {
+    font-size: 16px !important;
+  }
+
+  html body main .ml1-lab .ml1-eqs > p {
+    font-size: 15px !important;
+  }
+
+  html body main .ml1-lab .ml1-plane canvas {
+    max-width: 240px !important;
+  }
+}
+
+/* ch4 §3: AB over BA, each shorter, so the play button and both results share one screen
+   (side by side they were 156px wide; the drawing scales with the short side and its labels
+   ran into each other) */
+@media (max-width: 720px) {
+  html body main #matrix-product-determinant-rank-interactive .s3-product-grid {
+    gap: 8px !important;
+  }
+
+  html body main #matrix-product-determinant-rank-interactive .s3-product-grid .s3-canvas-card canvas {
+    height: 190px !important;
+  }
+
+  html body main #matrix-product-determinant-rank-interactive .s3-product-grid .s3-stage-top {
+    padding: 7px 12px !important;
+  }
+}
+
+/* ch8 §2: the board, then the “下一步” card with its buttons, then the degree trail and the
+   list of steps; the trail used to sit between the board and the buttons that change it */
+@media (max-width: 720px) {
+  html body main #smith-form-interactive .ch7l-body > :is(.ch7l-stage, .ch7l-side) {
+    display: contents !important;
+  }
+
+  html body main #smith-form-interactive .ch7l-body .ch8l-board {
+    order: 1;
+  }
+
+  html body main #smith-form-interactive .ch7l-body .ch7l-side > .ch7l-card:first-child {
+    order: 2;
+  }
+
+  html body main #smith-form-interactive .ch7l-body .ch8l-trail {
+    order: 3;
+  }
+
+  html body main #smith-form-interactive .ch7l-body .ch7l-side > .ch7l-card:not(:first-child) {
+    order: 4;
+  }
+}
+
+/* ch8 §3: the λ-matrix sticks (mobile-lab.js); under it the “初等变换” card, the determinant
+   and invariant factors it changes, then the wall of minors (the button was 870px below the
+   matrix and the factors) */
+@media (max-width: 720px) {
+  html body main #invariant-factors-interactive .ch7l-body > :is(.ch7l-stage, .ch7l-side),
+  html body main #invariant-factors-interactive .ch7l-stage > .ch8l-stagebox {
+    display: contents !important;
+  }
+
+  html body main #invariant-factors-interactive .ch8l-mat {
+    order: 1;
+    justify-self: stretch !important;
+    justify-content: center !important;
+    padding-block: 6px;
+  }
+
+  html body main #invariant-factors-interactive .ch7l-side > .ch7l-card:last-child {
+    order: 2;
+  }
+
+  html body main #invariant-factors-interactive .ch7l-side > .ch7l-card:first-child {
+    order: 3;
+  }
+
+  html body main #invariant-factors-interactive .ch8l-wall-head {
+    order: 4;
+  }
+
+  html body main #invariant-factors-interactive .ch8l-wall {
+    order: 5;
+  }
+}
+
+/* ch2 §2: the presets above the permutation; the step buttons right under the wire diagram,
+   at the top of the readouts */
+@media (max-width: 720px) {
+  html body main .ch2-lab:has(> .ch2-permutation-layout) > .ch2-presets {
+    order: 1;
+  }
+
+  html body main .ch2-lab:has(> .ch2-permutation-layout) > .ch2-permutation-layout {
+    order: 2;
+  }
+
+  html body main .ch2-permutation-layout > .ch2-side:not(.ch2-permutation-scene) > .ch2-toolbar {
+    order: -1;
+  }
+}
+
+/* ---------- chapter 2 ---------- */
+@media (max-width: 720px) {
+  /* readout cards: label above value, tighter; three short values share a row */
+  html body main .ch2-lab .ch2-meter-card {
+    gap: 1px !important;
+    padding: 5px 9px !important;
+  }
+
+  html body main .ch2-lab .ch2-meter:not(.is-2):not(.is-4) {
+    grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+  }
+
+  html body main .ch2-lab .ch2-note {
+    padding: 8px 11px !important;
+  }
+
+  html body main .ch2-lab :is(.ch2-presets, .ch2-toolbar) {
+    gap: 6px !important;
+  }
+
+  html body main .ch2-lab :is(.ch2-presets, .ch2-toolbar) > button {
+    min-height: 32px !important;
+    padding: 4px 10px !important;
+    font-size: 13.5px !important;
+  }
+
+  /* §1: the six presets three to a row */
+  html body main .ch2-side-presets > .ch2-presets {
+    grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+    gap: 6px !important;
+  }
+
+  html body main .ch2-side-presets > .ch2-presets > button {
+    padding-inline: 4px !important;
+  }
+
+  /* §2: wiring and permutation matrix side by side; the τ steps on one row */
+  html body main .ch2-wire-pair {
+    grid-template-columns: minmax(0, 1fr) auto !important;
+    gap: 8px !important;
+  }
+
+  html body main .ch2-perm-matrix td {
+    width: 1.35rem;
+    height: 1.35rem;
+    font-size: 13px;
+  }
+
+  html body main .ch2-tau-strip {
+    flex-wrap: nowrap !important;
+    gap: 4px !important;
+  }
+
+  html body main .ch2-tau-strip > i {
+    display: none !important;
+  }
+
+  html body main .ch2-tau-cell {
+    flex: 1 1 0;
+    min-width: 0;
+    padding: 4px 2px !important;
+  }
+
+  html body main .ch2-tau-cell > small {
+    font-size: 11.5px !important;
+    white-space: nowrap;
+  }
+
+  /* §4: before and after side by side */
+  html body main .ch2-compare-stage {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    gap: 8px !important;
+  }
+
+  html body main .ch2-compare-stage > b {
+    display: none !important;
+  }
+
+  html body main .ch2-compare-stage > div > span {
+    font-size: 12px !important;
+  }
+
+  html body main .ch2-compare-stage .ch2-stage,
+  html body main .ch2-compare-stage .ch2-stage canvas {
+    height: 190px !important;
+  }
+
+  /* §8: E and B side by side, AB below across the width */
+  html body main .ch2-stage-row {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    gap: 8px !important;
+  }
+
+  html body main .ch2-stage-row > .ch2-stage-panel:nth-child(3) {
+    grid-column: 1 / -1;
+  }
+
+  html body main .ch2-stage-row > .ch2-stage-panel:not(:nth-child(3)) .ch2-stage,
+  html body main .ch2-stage-row > .ch2-stage-panel:not(:nth-child(3)) .ch2-stage canvas {
+    height: 170px !important;
+  }
+
+  html body main .ch2-stage-row .ch2-stage-caption {
+    font-size: 12px !important;
+  }
+}
+
+/* ch2 §6: the minor and the sign board side by side under the cut matrix */
+@media (max-width: 720px) {
+  html body main .ch2-cofactor-visual {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    gap: 8px !important;
+  }
+
+  html body main .ch2-cofactor-visual > :is(.ch2-cut-matrix, .ch2-cofactor-arrow, .ch2-cut-label) {
+    grid-column: 1 / -1 !important;
+  }
+
+  html body main .ch2-cofactor-visual > .ch2-cut-label {
+    order: 3;
+  }
+
+  html body main .ch2-cofactor-visual > .ch2-sign-board {
+    grid-column: auto !important;
+    flex-direction: column;
+    gap: 6px;
+    padding-top: 0;
+    border-top: 0;
+  }
+}
+
+/* ---------- chapter 3 §7 (resultant) ---------- */
+@media (max-width: 720px) {
+  html body main .ch3-lab .ch3-meter.is-3 {
+    grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+    gap: 6px !important;
+  }
+
+  html body main .ch3-lab .ch3-meter.is-3 > * {
+    grid-column: auto !important;
+  }
+
+  html body main .ch3-lab .ch3-meter-card {
+    gap: 1px !important;
+    min-height: 0 !important;
+    padding: 6px 9px !important;
+  }
+
+  html body main .ch3-lab .ch3-meter-card > span {
+    font-size: 17px !important;
+  }
+
+  html body main .ch3-lab :is(.ch3-panel, .ch3-resultant-steps > section) {
+    padding: 10px 12px !important;
+  }
+}
+
+/* ---------- chapter 4 ---------- */
+@media (max-width: 720px) {
+  /* §2: AB and BA on one row; the two tabs on one row; play / direct / reset on one row */
+  html body #matrix-operations-interactive .s2c-header {
+    gap: 10px !important;
+  }
+
+  html body #matrix-operations-interactive .s2c-data-strip {
+    display: flex !important;
+    flex-wrap: wrap;
+    gap: 6px 14px !important;
+    padding: 8px 12px !important;
+  }
+
+  html body #matrix-operations-interactive .s2c-tabs {
+    display: flex !important;
+    flex-wrap: nowrap !important;
+  }
+
+  html body #matrix-operations-interactive .s2c-tabs button {
+    flex: 1 1 0 !important;
+    min-width: 0;
+  }
+
+  html body #matrix-operations-interactive .s2c-controls {
+    display: flex !important;
+    flex-wrap: nowrap !important;
+    gap: 6px !important;
+    margin-top: 10px !important;
+  }
+
+  html body #matrix-operations-interactive .s2c-controls button {
+    flex: 1 1 auto !important;
+    width: auto !important;
+    min-width: 0;
+    padding-inline: 8px !important;
+  }
+
+  html body #matrix-operations-interactive .s2c-controls button.is-primary {
+    flex-grow: 1.4 !important;
+  }
+
+  /* x → Bx → A(Bx): a flowing row that wraps whole steps, “经过 B →” between them */
+  html body #matrix-operations-interactive .s2c-process-track {
+    display: flex !important;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 6px !important;
+    margin-top: 12px !important;
+  }
+
+  html body #matrix-operations-interactive .s2c-process-track > span {
+    min-height: 38px !important;
+    padding: 5px 9px !important;
+    border-radius: 10px !important;
+  }
+
+  html body #matrix-operations-interactive .s2c-process-track i {
+    padding: 0 !important;
+    font-size: 12px !important;
+    white-space: nowrap;
+  }
+
+  html body #matrix-operations-interactive .s2c-process-track i::after {
+    display: inline !important;
+    width: auto !important;
+    height: auto !important;
+    margin: 0 0 0 3px !important;
+    background: none !important;
+    content: "→" !important;
+  }
+
+  /* §1: the plane under the table and the equations, shorter */
+  html body main .ml1-plane > canvas {
+    height: 230px !important;
+  }
+
+  /* §4: the five matrices in tighter cards */
+  html body main .inverse-preset-grid {
+    gap: 6px !important;
+  }
+
+  html body main .inverse-preset-grid > .inverse-preset {
+    min-height: 0 !important;
+    padding: 6px 9px !important;
+  }
+}
+
+/* ---------- chapter 5 ---------- */
+@media (max-width: 720px) {
+  /* the numbered task: the number beside the title instead of on a row of its own */
+  html body main .qv-lab :is(.ch5-task, .qv-task) {
+    grid-template-columns: auto minmax(0, 1fr) !important;
+    align-items: baseline !important;
+    gap: 2px 10px !important;
+    padding: 10px 12px !important;
+  }
+
+  html body main .qv-lab :is(.ch5-task, .qv-task) > span:first-child {
+    justify-self: start !important;
+    font-size: 15px !important;
+  }
+
+  html body main .qv-lab :is(.ch5-task, .qv-task) p {
+    margin-top: 2px !important;
+    font-size: 13.5px !important;
+    line-height: 1.6 !important;
+  }
+
+  /* presets and step buttons: lower pills */
+  html body main .qv-lab :is(.ch5-toolbar, .qv-stepbar, .qv-actions) {
+    gap: 6px !important;
+  }
+
+  html body main .qv-lab :is(.ch5-toolbar, .qv-stepbar, .qv-actions) button {
+    min-height: 32px !important;
+    padding: 4px 8px !important;
+    font-size: 13.5px !important;
+  }
+
+  html body main .qv-lab .qv-stepbar > span {
+    font-size: 13px !important;
+  }
+
+  /* up to three presets share one row (they were half-width pills on two rows) */
+  html body main .qv-lab .ch5-toolbar:not(:has(> :nth-child(4))) {
+    flex-wrap: nowrap !important;
+  }
+
+  html body main .qv-lab .ch5-toolbar:not(:has(> :nth-child(4))) > button {
+    flex: 1 1 auto !important;
+    min-width: 0 !important;
+    white-space: nowrap;
+  }
+
+  /* §3: the wheels moved under their surfaces; the empty row kept two gaps */
+  html body main .qv-lab > .qv-s3-wheels:empty {
+    display: none !important;
+  }
+
+  /* “drag the surface” hint and the reset button on one row */
+  html body main .qv-lab .qv-orbit-tools {
+    display: flex !important;
+    flex-wrap: nowrap !important;
+    align-items: center !important;
+    gap: 8px !important;
+    padding: 0 !important;
+  }
+
+  html body main .qv-lab .qv-orbit-tools > span {
+    flex: 1 1 auto !important;
+    font-size: 12.5px !important;
+    line-height: 1.45 !important;
+  }
+
+  html body main .qv-lab .qv-orbit-tools > button {
+    flex: none !important;
+    width: auto !important;
+    min-height: 30px !important;
+    padding: 3px 10px !important;
+    font-size: 13px !important;
+  }
+
+  /* a slider: label, track and value on one row */
+  html body main .qv-lab .ch5-range {
+    grid-template-columns: auto minmax(0, 1fr) auto !important;
+    gap: 10px !important;
+    padding: 2px 0 !important;
+  }
+
+  html body main .qv-lab .ch5-range output {
+    justify-self: end !important;
+  }
+
+  /* readouts, results and captions: tighter boxes */
+  html body main .qv-lab .qv-values > span {
+    gap: 2px !important;
+    padding: 6px 9px !important;
+  }
+
+  html body main .qv-lab :is(.qv-result, .qv-orbit-caption, .qv-step) {
+    gap: 6px 10px !important;
+    padding: 10px 12px !important;
+  }
+
+  html body main .qv-lab .qv-result {
+    grid-template-columns: auto minmax(0, 1fr) !important;
+    align-items: start !important;
+  }
+
+  html body main .qv-lab :is(.qv-result, .qv-orbit-caption) p {
+    font-size: 13.5px !important;
+    line-height: 1.6 !important;
+  }
+
+  /* §4: the direction wheel smaller */
+  html body main .qv-s4-wheel > canvas {
+    height: 180px !important;
+  }
+}
+
+/* ch5 structure on phones */
+@media (max-width: 720px) {
+  /* §1 / §3: the two surfaces side by side; the comparison in between goes under both */
+  html body main .qv-lab .qv-same {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    gap: 8px !important;
+  }
+
+  html body main .qv-lab .qv-same > figure {
+    min-width: 0;
+    margin: 0 !important;
+  }
+
+  html body main .qv-lab .qv-same > .qv-equals {
+    order: 1;
+    grid-column: 1 / -1 !important;
+    margin: 0 !important;
+    padding: 4px 0 !important;
+  }
+
+  html body main .qv-lab .qv-same .qv-orbit-shell canvas {
+    height: 190px !important;
+  }
+
+  /* overlays sized for a full-width surface: the title smaller, the drag hint dropped
+     (the row above the surfaces says the same) */
+  html body main .qv-lab .qv-same .qv-orbit-title {
+    top: 6px !important;
+    left: 6px !important;
+    max-width: calc(100% - 12px) !important;
+    padding: 3px 7px !important;
+    font-size: 11px !important;
+  }
+
+  html body main .qv-lab .qv-same .qv-orbit-hint {
+    display: none !important;
+  }
+
+  html body main .qv-lab .qv-same figcaption {
+    padding: 6px 2px 0 !important;
+    font-size: 12px !important;
+    line-height: 1.5 !important;
+  }
+
+  html body main .qv-lab .qv-same .qv-counts {
+    gap: 4px !important;
+  }
+
+  html body main .qv-lab .qv-same .qv-counts > span {
+    min-width: 0;
+    padding: 3px 6px !important;
+    font-size: 11.5px !important;
+  }
+
+  /* §3: each sign wheel under its own surface instead of over its corner */
+  html body main .qv-lab .qv-same > figure > figure.qv-s3-inset {
+    position: static !important;
+    width: 100% !important;
+    margin: 6px 0 0 !important;
+  }
+
+  html body main .qv-lab .qv-same > figure > figure.qv-s3-inset canvas {
+    width: 100% !important;
+    height: 84px !important;
+  }
+
+  /* §2: surface, then the step buttons, then the step itself, then the details */
+  html body main .qv-lab:has(.qv-two) :is(.qv-two, .qv-two > section, .qv-s2-stage, .qv-two > aside) {
+    display: contents !important;
+  }
+
+  html body main .qv-lab:has(.qv-two) :is(.qv-s2-stage > .qv-orbit-tools, .qv-s2-stage > .qv-orbit-shell) {
+    order: 1;
+  }
+
+  html body main .qv-lab:has(.qv-two) > :is(.qv-stepbar, .qv-progress) {
+    order: 2;
+  }
+
+  html body main .qv-lab:has(.qv-two) .qv-two > aside > .qv-step {
+    order: 3;
+  }
+
+  html body main .qv-lab:has(.qv-two) :is(.qv-s2-inset, .qv-two > section > p, .qv-two > aside > :not(.qv-step)) {
+    order: 4;
+  }
+
+  /* §4: the t slider right under the surface, then what the surface means */
+  html body main .qv-s4:has(.qv-s4-grid) :is(.qv-s4-grid, .qv-s4-main, .qv-s4-side) {
+    display: contents !important;
+  }
+
+  html body main .qv-s4:has(.qv-s4-grid) :is(.qv-s4-main > .qv-orbit-tools, .qv-s4-main > .qv-hero) {
+    order: 1;
+  }
+
+  html body main .qv-s4:has(.qv-s4-grid) > .ch5-range {
+    order: 2;
+  }
+
+  html body main .qv-s4:has(.qv-s4-grid) :is(.qv-s4-main > .qv-orbit-caption, .qv-s4-side > *) {
+    order: 3;
+  }
+}
+
+/* ---------- shared kits (chapters 3, 6–10) ---------- */
+@media (max-width: 720px) {
+  html body main .la-tabs > button > span {
+    display: block;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  html body main .la-tabs .katex {
+    font-size: 1em;
+  }
+
+  /* ch7 §5: the iterate table scrolls inside its card */
+  html body main table.ch7l-iter {
+    display: block;
+    max-height: 172px;
+    overflow-y: auto;
+  }
+
+  html body main table.ch7l-iter thead th {
+    position: sticky;
+    top: 0;
+    z-index: 1;
+    background: var(--surface-solid) !important;
+    box-shadow: inset 0 -1px 0 var(--line);
+  }
+}
+
+@media (max-width: 720px) {
+  /* two canvases one under another (chapter 7): 210 each; chapter 9 keeps 240 */
+  html body main .ch7l-pair :is(.ch7p-canvas, .ch9p-canvas, .la3d-canvas) {
+    height: 210px !important;
+  }
+
+  /* presets that came before the prediction box move under it, right above the views they
+     change (ch7 §3: presets → views was 830px); the guess still comes first */
+  html body main :is(.ch3l-lab, .ch6l-lab, .ch7l-lab, .ch9l-lab) > :is(.ch3l-toolbar, .ch6l-toolbar, .ch7l-toolbar, .ch9l-toolbar) {
+    order: 1;
+  }
+
+  html body main :is(.ch3l-lab, .ch6l-lab, .ch7l-lab, .ch9l-lab) > :is(.ch3l-toolbar, .ch6l-toolbar, .ch7l-toolbar, .ch9l-toolbar) ~ :not(:has(> :is(.ch3l-predict, .ch6l-predict, .ch7l-predict, .ch9l-predict))) {
+    order: 2;
+  }
+
+  /* chapters 7 and 9 keep their two views stacked (their checks want canvases ≥ 200/240 wide);
+     sliders and buttons that came after the pair move above it, so with them at the top of the
+     screen both views stay in sight while the student drags or presses (ch9 §7) */
+  html body main :is(.ch7l-lab, .ch9l-lab):has(> :is(.ch7l-pair, .ch9l-pair) + :is(.ch7l-controls, .ch9l-controls)) > :is(.ch7l-pair, .ch9l-pair),
+  html body main :is(.ch7l-lab, .ch9l-lab):has(> :is(.ch7l-pair, .ch9l-pair) + :is(.ch7l-controls, .ch9l-controls)) > :is(.ch7l-pair, .ch9l-pair) ~ :not(.ch7l-controls, .ch9l-controls) {
+    order: 4 !important;
+  }
+
+  html body main :is(.ch7l-lab, .ch9l-lab) > :is(.ch7l-pair, .ch9l-pair) + :is(.ch7l-controls, .ch9l-controls) {
+    order: 3 !important;
+  }
+
+  /* chapters 3 and 6: the two views side by side, so both views, the matrix and the step
+     button share one screen (stacked, pressing “下一步” scrolled the views away) */
+  html body main :is(.ch3l-pair, .ch6l-pair):has(> :nth-child(2):last-child) {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    gap: 8px !important;
+  }
+
+  html body main :is(.ch3l-pair, .ch6l-pair):has(> :nth-child(2):last-child) .la3d-canvas {
+    height: 180px !important;
+  }
+
+  html body main :is(.ch3l-pair, .ch6l-pair):has(> :nth-child(2):last-child) :is(.ch3l-view-title, .ch6l-view-title, .la-figcaption) {
+    font-size: 12px !important;
+    line-height: 1.4;
+  }
+
+  html body main .ch6l-pair:has(> :nth-child(2):last-child) .ch6l-legend {
+    gap: 4px 8px !important;
+    font-size: 12px !important;
+  }
+
+  html body main :is(.ch3l-pair, .ch6l-pair):has(> :nth-child(2):last-child) .la-figcaption {
+    margin-top: 2px !important;
+  }
+}
+
+/* ======================= wider screens ======================= */
+@media (min-width: 721px) {
+  /* ch1 §2: the long division drawn at a reading size, not stretched to the card */
+  html body main .ch1-long-division-stage svg {
+    display: block;
+    width: 100%;
+    max-width: 680px;
+    height: auto;
+    margin-inline: auto;
+  }
+}
+
+@media (min-width: 1051px) {
+  /* ch5 §3: the sign wheels need less height than the surfaces above them */
+  html body main .qv-s3-wheels canvas {
+    height: 130px;
+  }
+}
+
+@media (min-width: 1081px) {
+  /* ch1 §4: the degree chart beside the readouts instead of a full-width row of its own */
+  html body main .ch1-lab.ch1-section-gcd-polynomials {
+    grid-template-columns: minmax(0, 1.15fr) minmax(0, 1fr);
+    grid-auto-flow: row dense;
+    column-gap: 16px;
+  }
+
+  html body main .ch1-lab.ch1-section-gcd-polynomials > * {
+    grid-column: 1 / -1;
+  }
+
+  html body main .ch1-lab.ch1-section-gcd-polynomials > :is(.ch1-metrics, .ch1-equation-grid) {
+    grid-column: 1;
+  }
+
+  html body main .ch1-lab.ch1-section-gcd-polynomials > :is(.ch1-metrics, .ch1-equation-grid) {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  html body main .ch1-lab.ch1-section-gcd-polynomials > .ch1-metrics > :first-child {
+    grid-column: 1 / -1;
+  }
+
+  html body main .ch1-lab.ch1-section-gcd-polynomials > .ch1-stairs-card {
+    grid-column: 2;
+    grid-row: span 2;
+    align-self: stretch;
+  }
+}
+
+@media (min-width: 721px) {
+  /* ch1 §4: the check line s f + t g = gcd scrolls instead of running past its card */
+  html body main .ch1-bezout-verify [data-verify] {
+    overflow-x: auto;
+    overflow-y: hidden;
+    font-size: 17px;
+  }
+}
+
+/* ch4 §2, second tab: AB and BA side by side, as the text above them says */
+@media (max-width: 720px) {
+  html body #matrix-operations-interactive .s2c-order-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    gap: 8px !important;
+  }
+
+  html body #matrix-operations-interactive .s2c-order-grid > article {
+    min-width: 0;
+  }
+
+  html body #matrix-operations-interactive .s2c-order-grid .s2c-canvas-shell {
+    height: auto !important;
+    min-height: 0 !important;
+  }
+
+  html body #matrix-operations-interactive .s2c-order-grid .s2c-canvas-shell canvas {
+    height: 190px !important;
+    min-height: 0 !important;
+  }
+
+  html body #matrix-operations-interactive .s2c-order-grid header > span {
+    font-size: 11.5px !important;
+  }
+
+  html body #matrix-operations-interactive .s2c-order-grid .tex-display {
+    overflow-x: auto;
+    font-size: 0.92em;
+  }
+}

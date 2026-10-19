@@ -568,3 +568,9 @@ _dev/research/3b1b_eola_chapter10.py
 - 单元测试 `tests/exact-math.test.mjs`（`node --test tests/*.test.mjs`），已加进 site-audit 工作流。期望值都是手算的。
 - 判定改用精确计算：第四章 §3 秩瓶颈的 rank(AB)、§4 是否可逆，第五章 §1 det C。第五章 §3/§4 的 h、t 是连续滑杆，惯性与正定判定继续用带容差的浮点（把 CᵀAC 的每个元素各自贴成分数，奇异矩阵反而可能被判成可逆）；这是“禁止浮点阈值”规则唯一保留的例外。
 - 第五章曲面不再从页面文字里用正则读回向量：`[data-s1-x]` 把向量存在 `data-v`，矩阵格子原来就有 `data-v`。读数、画布上的数字改用真正的负号 “−”；第四章 §1 矩阵格子、§2 运算与转置格子同样改了（TODO 第七轮第 3 类最后一条）。
+
+## 第五章曲面只画一次（2026-10-19，`ui/ch5-surfaces`，Claude）
+
+- 原来同一张曲面画三遍：`geometry-upgrade.js` 先画一张“预览”，`geometry-orbit.js` 用自己的相机和渲染器重画，`geometry-orbit-fit.js` 再从画布的 data-camera-* 读相机、用最终的渲染器盖上去。方向键旋转只有 orbit 处理，所以按方向键时画面会切回旧渲染器（瘦高的碗、没有 xᵀAx 标注），下一次重绘又跳回来。
+- 现在 `geometry-orbit.js` 一个文件：相机交互（拖动、方向键、Home、双击复位、“复位视角”）+ 最终渲染器 + 各节的重绘。`geometry-orbit-fit.js` 删除；`geometry-upgrade.js` 不再画预览；`quadratic-engine.js` 删掉没人调用的 drawContours / drawUnitCircleScan / drawSurface 和 15 个没人用的导出（764 → 417 行）。画布上仍写 data-camera-yaw / pitch（ch5-orbit-check 读它）。
+- 四节在 1440 / 390、初始与选完预测下与改动前逐像素一致；ch5-browser-check、ch5-orbit-check 通过。

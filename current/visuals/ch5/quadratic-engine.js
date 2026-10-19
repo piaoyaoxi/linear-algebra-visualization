@@ -131,15 +131,6 @@
     return matMul(transpose(C), matMul(A, C));
   }
 
-  function leadingMinors(A) {
-    const deltas = [];
-    for (let k = 1; k <= A.length; k++) {
-      const block = A.slice(0, k).map((row) => row.slice(0, k));
-      deltas.push(det(block));
-    }
-    return deltas;
-  }
-
   function matrixRank(A, tol = 1e-8) {
     const M = cloneMat(A);
     const n = M.length;
@@ -197,22 +188,6 @@
       else z += 1;
     });
     return { p, q, zero: z, rank: p + q, signature: p - q, eigenvalues: eigs };
-  }
-
-  function classify2(A) {
-    const inn = inertiaSymmetric(A);
-    if (inn.rank === 0) return { key: "zero", label: "零二次型", cls: "is-muted", inn };
-    if (inn.p === 2 && inn.q === 0) return { key: "pd", label: "正定", cls: "is-ok", inn };
-    if (inn.p === 0 && inn.q === 2) return { key: "nd", label: "负定", cls: "is-bad", inn };
-    if (inn.p === 1 && inn.q === 1) return { key: "indef", label: "不定", cls: "is-warn", inn };
-    if (inn.p >= 1 && inn.q === 0) return { key: "psd", label: "半正定", cls: "is-warn", inn };
-    if (inn.q >= 1 && inn.p === 0) return { key: "nsd", label: "半负定", cls: "is-warn", inn };
-    return { key: "other", label: "退化", cls: "is-muted", inn };
-  }
-
-  function sylvesterPositive(A) {
-    const deltas = leadingMinors(A);
-    return { deltas, ok: deltas.every((d) => d > 1e-8) };
   }
 
   /**
@@ -356,32 +331,6 @@
     };
   }
 
-  function cholesky2(A) {
-    const { a, b, c } = abcFromMat2(A);
-    if (a <= 1e-10) return { ok: false, step: 1, reason: "第一个主元 a ≤ 0，不能开平方。" };
-    const r11 = Math.sqrt(a);
-    const r12 = b / r11;
-    const rem = c - r12 * r12;
-    if (rem <= 1e-10) {
-      return {
-        ok: false,
-        step: 2,
-        reason: "第二个主元 ≤ 0，标准 Cholesky 在这一步中断。",
-        Rpartial: [
-          [r11, r12],
-          [0, 0],
-        ],
-      };
-    }
-    return {
-      ok: true,
-      R: [
-        [r11, r12],
-        [0, Math.sqrt(rem)],
-      ],
-    };
-  }
-
   function getPalette() {
     const style = getComputedStyle(document.body);
     const g = (name, fb) => style.getPropertyValue(name).trim() || fb;
@@ -420,275 +369,8 @@
     return { ctx, width, height };
   }
 
-  function pulseClass(el, cls = "is-pulse") {
-    if (!el) return;
-    el.classList.remove(cls);
-    void el.offsetWidth;
-    el.classList.add(cls);
-  }
-
   /** Level sets via polar sampling: r² = L / q(uθ). Cleaner than marching squares. */
-  function drawContours(canvas, A, options = {}) {
-    const { ctx, width, height } = setupCanvas(canvas);
-    if (!ctx) return;
-    const palette = getPalette();
-    const half = options.half ?? 2.6;
-    const origin = { x: width / 2, y: height / 2 };
-    const scale = Math.min(width, height) / (2 * half);
-
-    // soft background
-    ctx.fillStyle = palette.soft;
-    ctx.globalAlpha = 1;
-    ctx.fillRect(0, 0, width, height);
-    ctx.globalAlpha = 1;
-
-    // sign field (coarse)
-    const step = 6;
-    for (let py = 0; py < height; py += step) {
-      for (let px = 0; px < width; px += step) {
-        const x = (px + step / 2 - origin.x) / scale;
-        const y = (origin.y - (py + step / 2)) / scale;
-        const v = qForm(A, [x, y]);
-        if (v > 0.03) {
-          ctx.fillStyle = palette.pos;
-          ctx.globalAlpha = 0.08;
-          ctx.fillRect(px, py, step, step);
-        } else if (v < -0.03) {
-          ctx.fillStyle = palette.neg;
-          ctx.globalAlpha = 0.1;
-          ctx.fillRect(px, py, step, step);
-        }
-      }
-    }
-    ctx.globalAlpha = 1;
-
-    // axes
-    ctx.strokeStyle = palette.line;
-    ctx.lineWidth = 1;
-    ctx.beginPath();
-    ctx.moveTo(12, origin.y);
-    ctx.lineTo(width - 12, origin.y);
-    ctx.moveTo(origin.x, 12);
-    ctx.lineTo(origin.x, height - 12);
-    ctx.stroke();
-    ctx.fillStyle = palette.muted;
-    ctx.font = "11px 'LA Serif Latin', 'LA Serif SC', 'Songti SC', serif";
-    ctx.fillText("x₁", width - 22, origin.y - 8);
-    ctx.fillText("x₂", origin.x + 8, 18);
-
-    const levels = options.levels || [-2, -1, -0.5, 0.5, 1, 2];
-    levels.forEach((level) => {
-      if (nearZero(level)) return;
-      ctx.strokeStyle = level > 0 ? palette.pos : palette.neg;
-      ctx.lineWidth = 1.6;
-      ctx.globalAlpha = 0.92;
-      ctx.beginPath();
-      let penDown = false;
-      const N = 240;
-      for (let i = 0; i <= N; i++) {
-        const th = (2 * Math.PI * i) / N;
-        const ux = Math.cos(th);
-        const uy = Math.sin(th);
-        const q = qForm(A, [ux, uy]);
-        if (q * level <= 1e-12 || Math.abs(q) < 1e-12) {
-          penDown = false;
-          continue;
-        }
-        const r = Math.sqrt(level / q);
-        if (!Number.isFinite(r) || r > half * 1.35) {
-          penDown = false;
-          continue;
-        }
-        const px = origin.x + r * ux * scale;
-        const py = origin.y - r * uy * scale;
-        if (!penDown) {
-          ctx.moveTo(px, py);
-          penDown = true;
-        } else ctx.lineTo(px, py);
-      }
-      ctx.stroke();
-    });
-    ctx.globalAlpha = 1;
-
-    // zero set: directions with q=0 (asymptotes for indefinite)
-    const inn = inertiaSymmetric(A);
-    if (inn.p > 0 && inn.q > 0) {
-      ctx.strokeStyle = palette.zero;
-      ctx.setLineDash([5, 4]);
-      ctx.lineWidth = 1.2;
-      for (let i = 0; i < 180; i++) {
-        const th = (Math.PI * i) / 180;
-        const q = qForm(A, [Math.cos(th), Math.sin(th)]);
-        if (Math.abs(q) < 0.02) {
-          const ux = Math.cos(th);
-          const uy = Math.sin(th);
-          ctx.beginPath();
-          ctx.moveTo(origin.x - half * ux * scale, origin.y + half * uy * scale);
-          ctx.lineTo(origin.x + half * ux * scale, origin.y - half * uy * scale);
-          ctx.stroke();
-        }
-      }
-      ctx.setLineDash([]);
-    }
-
-    if (options.caption) {
-      ctx.fillStyle = palette.muted;
-      ctx.font = "12px 'LA Serif Latin', 'LA Serif SC', 'Songti SC', serif";
-      ctx.fillText(options.caption, 12, height - 12);
-    }
-  }
-
-  function drawUnitCircleScan(canvas, A, options = {}) {
-    const { ctx, width, height } = setupCanvas(canvas);
-    if (!ctx) return;
-    const palette = getPalette();
-    const padL = 36;
-    const padR = 16;
-    const padT = 22;
-    const padB = 28;
-    const samples = 200;
-    const values = [];
-    for (let i = 0; i <= samples; i++) {
-      const th = (2 * Math.PI * i) / samples;
-      values.push(qForm(A, [Math.cos(th), Math.sin(th)]));
-    }
-    let minV = Math.min(...values, 0);
-    let maxV = Math.max(...values, 0);
-    if (Math.abs(maxV - minV) < 1e-8) {
-      minV -= 1;
-      maxV += 1;
-    }
-    // pad vertical range
-    const span = maxV - minV;
-    minV -= span * 0.08;
-    maxV += span * 0.08;
-
-    const xAt = (i) => padL + ((width - padL - padR) * i) / samples;
-    const yAt = (v) => padT + (1 - (v - minV) / (maxV - minV)) * (height - padT - padB);
-
-    ctx.fillStyle = palette.soft;
-    ctx.globalAlpha = 0.4;
-    ctx.fillRect(0, 0, width, height);
-    ctx.globalAlpha = 1;
-
-    // zero line
-    ctx.strokeStyle = palette.line;
-    ctx.setLineDash([4, 4]);
-    ctx.beginPath();
-    ctx.moveTo(padL, yAt(0));
-    ctx.lineTo(width - padR, yAt(0));
-    ctx.stroke();
-    ctx.setLineDash([]);
-
-    // fill above zero
-    ctx.beginPath();
-    ctx.moveTo(xAt(0), yAt(0));
-    values.forEach((v, i) => ctx.lineTo(xAt(i), yAt(Math.max(v, 0))));
-    ctx.lineTo(xAt(samples), yAt(0));
-    ctx.closePath();
-    ctx.fillStyle = palette.pos;
-    ctx.globalAlpha = 0.12;
-    ctx.fill();
-    ctx.globalAlpha = 1;
-
-    // fill below zero
-    ctx.beginPath();
-    ctx.moveTo(xAt(0), yAt(0));
-    values.forEach((v, i) => ctx.lineTo(xAt(i), yAt(Math.min(v, 0))));
-    ctx.lineTo(xAt(samples), yAt(0));
-    ctx.closePath();
-    ctx.fillStyle = palette.neg;
-    ctx.globalAlpha = 0.12;
-    ctx.fill();
-    ctx.globalAlpha = 1;
-
-    ctx.strokeStyle = palette.accentStrong;
-    ctx.lineWidth = 2.4;
-    ctx.beginPath();
-    values.forEach((v, i) => {
-      const x = xAt(i);
-      const y = yAt(v);
-      if (i === 0) ctx.moveTo(x, y);
-      else ctx.lineTo(x, y);
-    });
-    ctx.stroke();
-
-    ctx.fillStyle = palette.muted;
-    ctx.font = "12px 'LA Serif Latin', 'LA Serif SC', 'Songti SC', serif";
-    ctx.fillText(options.caption || "单位圆方向值 q(θ) = x(θ)ᵀ A x(θ)", 12, 16);
-    const shown = (v) => formatNum(v, 3).replace(/^-/, "−");
-    ctx.fillText(`min ${shown(Math.min(...values))} · max ${shown(Math.max(...values))}`, 12, height - 10);
-    ctx.fillText("0", 8, yAt(0) + 4);
-  }
-
   /** Cleaner wire surface with z-clipping by depth order (painter). */
-  function drawSurface(canvas, A, options = {}) {
-    const { ctx, width, height } = setupCanvas(canvas);
-    if (!ctx) return;
-    const palette = getPalette();
-    const half = options.half ?? 1.5;
-    const res = options.res ?? 16;
-    const origin = { x: width * 0.5, y: height * 0.58 };
-    const scale = Math.min(width, height) * 0.2;
-
-    ctx.fillStyle = palette.soft;
-    ctx.globalAlpha = 1;
-    ctx.fillRect(0, 0, width, height);
-    ctx.globalAlpha = 1;
-
-    const project = (x, y, z) => {
-      const zz = clamp(z, -3.5, 3.5);
-      const isoX = (x - y) * scale * 0.95;
-      const isoY = (x + y) * scale * 0.32 - zz * scale * 0.5;
-      return { x: origin.x + isoX, y: origin.y + isoY, depth: x + y + zz * 0.2 };
-    };
-
-    const quads = [];
-    for (let i = 0; i < res; i++) {
-      for (let j = 0; j < res; j++) {
-        const x0 = -half + (2 * half * i) / res;
-        const y0 = -half + (2 * half * j) / res;
-        const x1 = -half + (2 * half * (i + 1)) / res;
-        const y1 = -half + (2 * half * (j + 1)) / res;
-        const pts = [
-          [x0, y0],
-          [x1, y0],
-          [x1, y1],
-          [x0, y1],
-        ].map(([x, y]) => {
-          const z = qForm(A, [x, y]);
-          return { ...project(x, y, z), z };
-        });
-        const zMid = pts.reduce((s, p) => s + p.z, 0) / 4;
-        const depth = pts.reduce((s, p) => s + p.depth, 0) / 4;
-        quads.push({ pts, zMid, depth });
-      }
-    }
-    quads.sort((a, b) => a.depth - b.depth);
-    quads.forEach((q) => {
-      ctx.beginPath();
-      q.pts.forEach((p, idx) => {
-        if (idx === 0) ctx.moveTo(p.x, p.y);
-        else ctx.lineTo(p.x, p.y);
-      });
-      ctx.closePath();
-      ctx.fillStyle = q.zMid >= 0 ? palette.pos : palette.neg;
-      ctx.globalAlpha = 0.14;
-      ctx.fill();
-      ctx.globalAlpha = 0.55;
-      ctx.strokeStyle = q.zMid >= 0 ? palette.pos : palette.neg;
-      ctx.lineWidth = 0.9;
-      ctx.stroke();
-    });
-    ctx.globalAlpha = 1;
-
-    if (options.caption) {
-      ctx.fillStyle = palette.muted;
-      ctx.font = "12px 'LA Serif Latin', 'LA Serif SC', 'Songti SC', serif";
-      ctx.fillText(options.caption, 12, height - 12);
-    }
-  }
-
   function matrixHtml(A, options = {}) {
     const digits = options.digits ?? 2;
     const highlight = options.highlight || null;
@@ -711,55 +393,25 @@
   }
 
   /** Random unit vector test: verify x^T A x equals polynomial evaluation. */
-  function randomChecks(A, count = 4) {
-    const results = [];
-    for (let k = 0; k < count; k++) {
-      const th = (Math.PI * 2 * k) / count + 0.3;
-      const x = [Math.cos(th) * (0.7 + 0.3 * k), Math.sin(th) * (0.8 - 0.1 * k)];
-      results.push({
-        x,
-        value: qForm(A, x),
-      });
-    }
-    return results;
-  }
 
   window.Ch5Math = {
     clamp,
     reducedMotion,
     formatNum,
-    nearZero,
-    cloneMat,
-    zeros,
     identity,
-    transpose,
-    matMul,
     matVec,
     det2,
-    det,
     symmetrize,
     qForm,
     mat2FromAbc,
-    abcFromMat2,
-    polyTex2,
     polyPlain2,
     congruence,
-    leadingMinors,
     matrixRank,
     eigenvalues2,
     inertiaSymmetric,
-    classify2,
-    sylvesterPositive,
     completeSquareSteps2,
-    sumDiffThenSquare,
-    cholesky2,
     getPalette,
     setupCanvas,
-    pulseClass,
-    drawContours,
-    drawUnitCircleScan,
-    drawSurface,
     matrixHtml,
-    randomChecks,
   };
 })();

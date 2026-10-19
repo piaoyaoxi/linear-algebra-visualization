@@ -1,10 +1,6 @@
 #matrix-operations-interactive .s2c-lab {
   overflow: hidden;
   margin-top: 14px;
-  border: 1px solid var(--line);
-  border-radius: calc(var(--radius) + 4px);
-  background: var(--surface-solid);
-  box-shadow: var(--shadow-soft);
 }
 
 #matrix-operations-interactive .s2c-header {
@@ -12,7 +8,6 @@
   grid-template-columns: minmax(0, 1fr) auto;
   gap: 22px;
   align-items: center;
-  padding: 26px 28px 22px;
   border-bottom: 1px solid var(--line);
 }
 
@@ -24,15 +19,11 @@
 
 #matrix-operations-interactive .s2c-header h3 {
   margin-bottom: 7px;
-  font-size: clamp(21px, 2.4vw, 28px);
 }
 
 #matrix-operations-interactive .s2c-header p,
 #matrix-operations-interactive .s2c-stage-copy p {
   margin: 0;
-  color: var(--muted);
-  font-size: 14px;
-  line-height: 1.75;
 }
 
 #matrix-operations-interactive .s2c-data-strip {
@@ -40,10 +31,6 @@
   gap: 8px;
   min-width: 228px;
   padding: 13px 15px;
-  border: 1px solid var(--line);
-  border-radius: 14px;
-  background: var(--surface-soft);
-  color: var(--muted);
   font-size: .85rem;
 }
 
@@ -54,39 +41,19 @@
 #matrix-operations-interactive .s2c-tabs {
   display: inline-flex;
   flex-wrap: wrap;
-  gap: 7px;
   margin: 18px 28px 0;
-  padding: 5px;
-  border: 1px solid var(--line);
-  border-radius: 14px;
-  background: var(--surface-soft);
+}
+
+#matrix-operations-interactive .s2c-controls button {
+  min-height: 38px;
 }
 
 #matrix-operations-interactive .s2c-tabs button,
 #matrix-operations-interactive .s2c-controls button {
-  min-height: 38px;
   padding: 0 14px;
-  border: 0;
-  border-radius: 10px;
-  background: transparent;
-  color: var(--muted);
-  font: inherit;
-  font-size: 13px;
   font-weight: 780;
   cursor: pointer;
   transition: background 160ms ease, color 160ms ease, transform 160ms ease, box-shadow 160ms ease;
-}
-
-#matrix-operations-interactive .s2c-tabs button:hover,
-#matrix-operations-interactive .s2c-controls button:hover {
-  color: var(--text);
-  transform: translateY(-1px);
-}
-
-#matrix-operations-interactive .s2c-tabs button.is-active {
-  background: var(--surface-solid);
-  color: var(--accent-strong);
-  box-shadow: 0 5px 16px rgba(18, 61, 53, .08);
 }
 
 #matrix-operations-interactive .s2c-tabs button:focus-visible,
@@ -183,11 +150,6 @@
 #matrix-operations-interactive .s2c-canvas-shell {
   position: relative;
   overflow: hidden;
-  border: 1px solid color-mix(in srgb, var(--line) 92%, var(--accent) 8%);
-  border-radius: 18px;
-  background:
-    radial-gradient(ellipse 72% 58% at 50% 46%, var(--canvas-paper-glow), transparent 72%),
-    linear-gradient(180deg, var(--canvas-paper-top) 0%, var(--canvas-paper-bottom) 100%);
 }
 
 #matrix-operations-interactive canvas {
@@ -206,13 +168,7 @@
   left: 14px;
   max-width: calc(100% - 28px);
   padding: 8px 11px;
-  border: 1px solid color-mix(in srgb, var(--accent) 22%, var(--line));
-  border-radius: 999px;
-  background: color-mix(in srgb, var(--surface-solid) 88%, transparent);
-  color: var(--accent-strong);
   font-size: 12px;
-  font-weight: 800;
-  backdrop-filter: blur(8px);
 }
 
 #matrix-operations-interactive .s2c-controls {
@@ -220,17 +176,6 @@
   flex-wrap: wrap;
   gap: 9px;
   margin-top: 14px;
-}
-
-#matrix-operations-interactive .s2c-controls button {
-  border: 1px solid var(--line);
-  background: var(--surface-soft);
-}
-
-#matrix-operations-interactive .s2c-controls button.is-primary {
-  border-color: color-mix(in srgb, var(--accent) 34%, var(--line));
-  background: var(--accent-soft);
-  color: var(--accent-strong);
 }
 
 #matrix-operations-interactive .s2c-process-track {
@@ -246,18 +191,11 @@
   place-items: center;
   min-height: 48px;
   padding: 9px 14px;
-  border: 1px solid var(--line);
-  border-radius: 13px;
-  background: var(--surface-soft);
-  color: var(--muted);
   font-weight: 820;
   transition: background 180ms ease, color 180ms ease, border-color 180ms ease, transform 180ms ease;
 }
 
 #matrix-operations-interactive .s2c-process-track > span.is-active {
-  border-color: color-mix(in srgb, var(--accent) 34%, var(--line));
-  background: var(--accent-soft);
-  color: var(--accent-strong);
   transform: translateY(-2px);
 }
 
@@ -286,9 +224,11 @@
   align-items: center;
   margin-top: 18px;
   padding: 17px 19px;
-  border-left: 4px solid var(--accent);
-  border-radius: 0 14px 14px 0;
-  background: var(--surface-soft);
+}
+
+/* the A(Bx)=(AB)x conclusion stays hidden until the composition has played */
+#matrix-operations-interactive .s2c-conclusion[hidden] {
+  display: none;
 }
 
 #matrix-operations-interactive .s2c-conclusion strong {
@@ -379,9 +319,6 @@
 }
 
 @media (max-width: 760px) {
-  #matrix-operations-interactive .s2c-header {
-    padding: 21px 18px 18px;
-  }
 
   #matrix-operations-interactive .s2c-tabs {
     width: calc(100% - 36px);

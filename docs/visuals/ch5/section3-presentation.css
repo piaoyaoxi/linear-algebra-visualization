@@ -22,7 +22,6 @@
 
 #quadratic-uniqueness-formal .ch5s3-form-pair article > div:last-child {
   display: flex;
-  justify-content: center;
   flex-wrap: wrap;
   gap: 7px;
 }
@@ -58,8 +57,6 @@
   grid-template-columns: auto minmax(0, 1fr);
   gap: 14px;
   align-items: start;
-  border-color: color-mix(in srgb, var(--accent) 35%, var(--line));
-  background: color-mix(in srgb, var(--accent) 6%, var(--surface-solid));
 }
 
 #quadratic-uniqueness-formal .ch5s3-theorem > strong {

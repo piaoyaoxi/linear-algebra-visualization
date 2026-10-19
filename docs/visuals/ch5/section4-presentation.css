@@ -37,9 +37,6 @@
   gap: 8px;
   min-height: 160px;
   padding: 15px;
-  border: 1px solid var(--line);
-  border-radius: 14px;
-  background: var(--surface-solid);
 }
 
 #positive-definite-formal .ch5s4-type-grid article > span {
@@ -112,9 +109,6 @@
   min-width: 64px;
   min-height: 56px;
   padding: 8px 12px;
-  border: 1px solid var(--line);
-  border-radius: 12px;
-  background: var(--surface-soft);
 }
 
 #positive-definite-formal .ch5s4-minor-chain > span {

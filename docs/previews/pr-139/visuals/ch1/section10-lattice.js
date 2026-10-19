@@ -1,4 +1,4 @@
-/* Chapter 1 layout rebalance: a focused multivariate workspace with no dead column. */
+/* Chapter 1 §10 lab: the exponent lattice of a polynomial in x, y — support, homogeneous layers, products. */
 (() => {
   "use strict";
 
@@ -249,6 +249,7 @@
     gate = window.LAPredictGate?.mount(root.querySelector("[data-lattice-gate]"), {
       root,
       manual: true,
+      // the shuffle key keeps the old file name so the options stay in the same order
       key: "visuals/ch1/layout-rebalance.js#exponent-add",
       question: `${tex("x^2y")} 在格点 ${tex("(2,1)")}，${tex("x")} 在格点 ${tex("(1,0)")}。乘积 ${tex("x^2y\\cdot x")} 落在哪个格点，总次数是多少？`,
       options: [

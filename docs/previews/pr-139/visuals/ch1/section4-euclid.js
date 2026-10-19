@@ -1,79 +1,18 @@
-/* Chapter 1 repair pass: standard polynomial long division and readable Euclid formulas. */
+/* Chapter 1 §4 lab: the Euclidean algorithm, its degree staircase and the Bézout identity sf+tg=gcd(f,g). */
 (() => {
   "use strict";
 
   const M = () => window.Ch1Math;
   const U = () => window.Ch1UI;
   const tex = (value) => U().tex(String(value));
-  const svgEsc = (value) => String(value).replace(/[&<>"']/g, (char) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&apos;" })[char]);
   const superscripts = ["", "", "²", "³", "⁴", "⁵", "⁶", "⁷", "⁸", "⁹"];
 
-  /*
-   * Degree staircase shared by §3 (long division) and §4 (Euclid).
-   * bars: [{ label, deg (null for the zero polynomial), role: "f" | "g" | "r" }]
-   * line: { deg, label } draws a dashed level (deg g in §3); highlight: index of the glowing bar.
-   * Only bars already reached are passed in, so earlier steps stay as the staircase.
-   */
-  function degreeStairs(bars, { maxDeg, line = null, highlight = -1, highlightLabel = "", topLabel = "" } = {}) {
-    const unit = 24;
-    const top = 26;
-    const left = 46;
-    const step = 54;
-    const barW = 28;
-    const levels = Math.max(1, maxDeg);
-    const y = (d) => top + (levels - d) * unit;
-    const base = y(0) + 14;
-    // the zero polynomial has no degree: it is an empty slot below the axis
-    const hasZero = bars.some((bar) => bar.deg == null);
-    const nameY = base + (hasZero ? 36 : 20);
-    const width = Math.max(280, left + bars.length * step + 100);
-    const height = nameY + (highlightLabel ? 32 : 10);
-    const out = [`<svg class="ch1-stairs-svg" width="${width}" height="${height}" viewBox="0 0 ${width} ${height}" role="img" aria-label="余式次数逐步下降">`];
-    for (let d = 0; d <= levels; d += 1) {
-      out.push(`<line class="ch1-stairs-grid" x1="${left - 8}" x2="${width - 8}" y1="${y(d)}" y2="${y(d)}"></line>`);
-      out.push(`<text class="ch1-stairs-tick" x="${left - 14}" y="${y(d) + 4}" text-anchor="end">${d}</text>`);
-    }
-    out.push(`<text class="ch1-stairs-axis" x="6" y="${top - 12}">次数</text>`);
-    if (line) {
-      out.push(`<line class="ch1-stairs-level" x1="${left - 8}" x2="${width - 8}" y1="${y(line.deg)}" y2="${y(line.deg)}"></line>`);
-      out.push(`<text class="ch1-stairs-level-label" x="${width - 10}" y="${y(line.deg) - 6}" text-anchor="end">${svgEsc(line.label)}</text>`);
-    }
-    bars.forEach((bar, i) => {
-      const x = left + 10 + i * step;
-      const cx = x + barW / 2;
-      const role = `is-${bar.role}`;
-      if (bar.deg == null) {
-        out.push(`<rect class="ch1-stairs-zero ${role}" x="${x}" y="${base + 3}" width="${barW}" height="14" rx="2"></rect>`);
-        out.push(`<text class="ch1-stairs-zero-label ${role}" x="${cx}" y="${base - 6}" text-anchor="middle">0 多项式</text>`);
-      } else {
-        const h = base - y(bar.deg);
-        if (i === highlight) out.push(`<rect class="ch1-stairs-glow ${role}" x="${x - 4}" y="${y(bar.deg) - 4}" width="${barW + 8}" height="${h + 4}" rx="5"></rect>`);
-        out.push(`<rect class="ch1-stairs-bar ${role}" x="${x}" y="${y(bar.deg)}" width="${barW}" height="${h}" rx="3"></rect>`);
-        out.push(`<text class="ch1-stairs-value ${role}" x="${cx}" y="${y(bar.deg) - 7}" text-anchor="middle">${bar.deg}</text>`);
-        if (i === highlight && topLabel) out.push(`<text class="ch1-stairs-top ${role}" x="${cx}" y="${Math.max(12, y(bar.deg) - 24)}" text-anchor="middle">${svgEsc(topLabel)}</text>`);
-      }
-      out.push(`<text class="ch1-stairs-name ${role}" x="${cx}" y="${nameY}" text-anchor="middle">${svgEsc(bar.label)}</text>`);
-      if (i > 0) {
-        const prev = bars[i - 1];
-        const from = prev.deg == null ? base + 17 : y(prev.deg);
-        const to = bar.deg == null ? base + 3 : y(bar.deg);
-        out.push(`<path class="ch1-stairs-step" d="M${x - step + barW} ${from} H${x}${to !== from ? ` V${to}` : ""}"></path>`);
-      }
-      if (i === highlight && highlightLabel) {
-        out.push(`<text class="ch1-stairs-callout ${role}" x="${x - 6}" y="${nameY + 22}">↑ ${svgEsc(highlightLabel)}</text>`);
-      }
-    });
-    out.push("</svg>");
-    return out.join("");
-  }
   // x^{2} - \frac{1}{2} → x² − 1/2, for SVG text
   const polyText = (p) => M().formatPolyTex(p)
     .replace(/\\frac\{(\d+)\}\{(\d+)\}/g, "$1/$2")
     .replace(/\^\{(\d)\}/g, (_, d) => superscripts[Number(d)] || `^${d}`)
     .replace(/ /g, "")
     .replace(/-/g, "−");
-  const sub = (k) => String(k).split("").map((c) => "₀₁₂₃₄₅₆₇₈₉"[Number(c)]).join("");
-  window.Ch1Stairs = { degreeStairs, sub };
 
   function selectButtons(root, selector, selected) {
     root.querySelectorAll(selector).forEach((button) => {
@@ -83,7 +22,7 @@
     });
   }
 
-  function mountEuclidRepair(root) {
+  function mountEuclid(root) {
     const presets = {
       default: { f: M().poly([-1, 0, 0, 0, 1]), g: M().poly([-1, 0, 0, 1]), name: tex("\\gcd(x^4-1,x^3-1)") },
       coprime: { f: M().poly([1, 0, 1]), g: M().poly([1, 1]), name: tex("\\gcd(x^2+1,x+1)") },
@@ -194,6 +133,7 @@
     gate = window.LAPredictGate?.mount(root.querySelector("[data-gcd-gate]"), {
       root,
       manual: true,
+      // the shuffle key keeps the old file name so the options stay in the same order
       key: "visuals/ch1/repair-pass.js#euclid",
       question: `对 ${tex("f=x^4-1")}、${tex("g=x^3-1")} 反复做带余除法，余式次数一路下降。最大公因式在哪里读出？`,
       options: [
@@ -207,7 +147,7 @@
     paint();
   }
 
-  function interactiveEuclidRepair(el, section) {
+  function interactiveEuclid(el, section) {
     el.innerHTML = `<h2>交互实验</h2>
       <div class="ch1-lab">
         <div class="ch1-lab-head"><h3>辗转相除：余式次数降到哪里停</h3><p>${section.interactive.description}</p></div>
@@ -254,8 +194,8 @@
           </section>
         </div>
       </div>`;
-    mountEuclidRepair(el);
+    mountEuclid(el);
   }
 
-  defineLessonRenderer("ch1", "gcd-polynomials", { interactive: interactiveEuclidRepair });
+  defineLessonRenderer("ch1", "gcd-polynomials", { interactive: interactiveEuclid });
 })();

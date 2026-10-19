@@ -552,3 +552,12 @@ _dev/research/3b1b_eola_chapter10.py
 - 例题挑战原来只因为第四章的 mount 对每一章都跑 enhancer 才在全站生效，现在是 `afterLessonRender`。
 - 本地和 CI 的静态服务器改用 `.github/scripts/serve.py`：`python3 -m http.server` 的连接队列只有 5，学习页一次请求两百多个文件，macOS 上会漏加载脚本（冒烟测试 7 次失败 1 次，整章静默坏掉）。
 - 验证方法：主干与分支各拍 336 张整页截图（73 节 + 导览，1440/390，初始/选完预测），逐像素比较并比对报错、KaTeX 错误、溢出、“停一下”与小图数量。脚本在会话 scratchpad（`shots.mjs`、`diff.py`），需要时可以放进仓库。
+
+## 加载提速第 2 层：按章加载实验脚本（2026-10-19，`ui/lazy-labs`，Claude）
+
+- 各章实验脚本（`visuals/chN/*.js`，约 400 KB gzip，占学习页脚本的大半）移进 learn.html 里的 `<template data-chapter-labs="chN">`：打开某章的一节时才加载这一章；页面空闲后再在后台依次加载其余各章。内容、外壳、共用脚本（预测门、3D 场景、排版、例题、搜索）和全部 CSS 照旧一开始就加载，层叠顺序不变。
+- 一章依赖的共用实验文件写在它自己的 template 里（第六至十章都列了 `ch3/shared-math.js`，第八、十章列了 `ch7/kit.js` 和 `figures.js`，第九章列了 `ch6/kit.js`），同一个文件只加载一次。新增实验文件时放进对应章节的 template，别放到 head 里。
+- 还没加载完时，小节页先显示标题和“正在载入这一节……”；某个文件下载失败时提示并给“重新载入”按钮（以前会整章静默空白）。
+- 第一章原来在运行时往 head 里插三张样式表（repair-pass-final、refinement、learning-design），改为 learn.html 里固定的 `<link>`，位置不变（最后）。
+- 明暗切换的两张大图不再在学习页一开始高优先级预加载（手机上还会多下一套用不到的桌面版），改为页面空闲后低优先级加载；切换时还没下完就立即高优先级去取。
+- 首页预下载（home-prefetch.js）多下载“上次学到的那一章”（没有记录时是第一章）的实验脚本。

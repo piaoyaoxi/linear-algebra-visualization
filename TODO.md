@@ -580,3 +580,10 @@ _dev/research/3b1b_eola_chapter10.py
 - 约 600 条规则（约 2900 行）删除：规则要求的类名在所有脚本、页面（含 KaTeX）里都不会出现，也不符合任何按模板拼出的类名。:is()/:where() 里只要有一项可能出现就保留，:not() 里的类不算。多数是 #132 删掉的旧渲染器留下的。
 - 删除前的运行时核对：两种宽度下打开全部 73 节，选完预测并依次点实验里最多 14 个按钮，514 个待删选择器一次都没匹配到元素。截图对比只有 4 张有零星像素差（已知的计时噪声）。
 - 工具在会话 scratchpad（`deadcss.py`、`selector-probe.mjs`），以后要再清一次可以照这个办法：先列出、再逐页探测、最后截图对比。
+
+## 第一章实验文件按内容命名（2026-10-19，`ui/ch1-lab-files`，Claude）
+
+- 只改名、合并文件，页面不变。第一章实验脚本（learn.html 的 `<template data-chapter-labs="ch1">`，按这个顺序加载）：`registry.js`（`ch1Listen` 等清理工具）、`poly-math.js`（`Ch1Math`：精确多项式运算与画布工具，`rCmp`、格点的 `hitTest` 也在这里）、`degree-stairs.js`（§3、§4 共用的余式次数阶梯 `Ch1Stairs`）、`section1-4-presentation.js`（`Ch1UI`、§1–§4 定理带、§2 实验）、`section3-division.js`、`section4-euclid.js`、`section5-8-presentation.js`（§5–§8 定理带、§6/§7 实验）、`section8-conjugate.js`、`section9-11-presentation.js`、`section10-lattice.js`、`mount.js`（§9–§11 定理带、各实验的任务说明与结论、§2 工作台的模块布局）。
+- 原来的 repair-pass、repair-pass-v2、motion-upgrade、layout-rebalance 改成上面的节名；`mount.js` 开头给 `Ch1Math` 打的补丁（`polyFrom`、`rCmp`、`drawLattice` 的 hitTest）并入 `poly-math.js`（`polyFrom` 就是 `poly`，调用处改用 `poly`）；motion-upgrade-init 里给 §8 标题加 `ch1-lab-head` 的增强改为直接写在 §8 的标记里，它对 `.ch1-division-canvas-shell` 的延迟重画没有任何元素用到，删掉。
+- 样式：九个文件按层叠位置合成两个：`visuals/ch1/labs.css`（原 core-presentation、final-polish、motion-upgrade、repair-pass、layout-rebalance、layout-rebalance-final，位置不变，在第五章样式之前）和 `visuals/ch1/lab-layout.css`（原 repair-pass-final、refinement、learning-design，仍在 learn.html 最后、lab-fit.css 之后）。合并前后逐条比较过 CSSOM 规则，完全相同。改第一章外观仍改 `design-a-legacy.css`（见“2026-10 内容重做”）；只有必须压过共用样式的布局才放 `lab-layout.css`。
+- 预测框的 `key` 仍写旧文件名（如 `visuals/ch1/repair-pass.js#euclid`）：它是选项乱序的种子，改了选项顺序就会变。

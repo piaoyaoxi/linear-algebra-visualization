@@ -20,6 +20,7 @@
   const rIsZero = X.isZero;
   const rToNum = X.toNumber;
   const formatR = X.formatF;
+  const rCmp = (a, b) => rToNum(a) - rToNum(b);
 
   // the same exact value for reading on the page: −3/2 with a true minus sign
   function formatRText(a) {
@@ -253,7 +254,7 @@
         }
       }
     }
-    return [...set.values()].sort((a, b) => rToNum(a) - rToNum(b));
+    return [...set.values()].sort(rCmp);
   }
 
   function formatPolyTex(p, variable = "x") {
@@ -511,7 +512,13 @@
     ctx.fillStyle = palette.muted;
     ctx.fillText("x 指数", width - 62, height - 12);
     ctx.fillText("y 指数", 8, 16);
-    return { pad, sx, sy, width, height, toIndex(px, py) { return { i: Math.round((px - pad) / sx), j: Math.round((height - pad - py) / sy) }; } };
+    const toIndex = (px, py) => ({ i: Math.round((px - pad) / sx), j: Math.round((height - pad - py) / sy) });
+    // the lattice point nearest to (px, py), or null outside the drawn grid
+    const hitTest = (px, py) => {
+      const point = toIndex(px, py);
+      return point.i < 0 || point.j < 0 || point.i > maxI || point.j > maxJ ? null : point;
+    };
+    return { pad, sx, sy, width, height, toIndex, hitTest };
   }
 
   function observeCanvas(root, draw) {
@@ -538,7 +545,7 @@
   }
 
   window.Ch1Math = {
-    gcdInt, lcmInt, R, parseR, rAdd, rSub, rMul, rDiv, rNeg, rAbs, rEq, rIsZero, rToNum,
+    gcdInt, lcmInt, R, parseR, rAdd, rSub, rMul, rDiv, rNeg, rAbs, rEq, rIsZero, rToNum, rCmp,
     formatR, formatRText, formatRTex, poly, normalizePoly, zeroPoly, onePoly, isZeroPoly, deg, leading, polyEq,
     polyAdd, polySub, polyScale, polyShift, polyMul, polyPow, polyDiv, polyMod, makeMonic, polyGcd,
     polyDerivative, evalPoly, evalPolyNum, divisionSteps, extendedEuclidSteps, hornerSteps,

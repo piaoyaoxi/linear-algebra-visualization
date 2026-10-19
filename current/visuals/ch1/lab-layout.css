@@ -273,7 +273,8 @@
 }
 
 .ch1-table tr:last-child td {
-  border-bottom: 0;
+  border-bottom-width: 0;
+  border-bottom-style: none;
 }
 
 .ch1-candidate {
@@ -405,7 +406,6 @@
 .ch1-guided-lab .ch1-btn {
   min-height: 38px;
   padding: 8px 14px;
-  font-size: 13px;
   font-weight: 650;
 }
 
@@ -446,7 +446,7 @@
   gap: 7px;
 }
 
-.ch1-guided-lab .ch1-result-band strong {
+.ch1-guided-lab .ch1-result-band strong:not(.ch1-status) {
   font-size: clamp(16px, 1.7vw, 20px);
 }
 
@@ -681,11 +681,6 @@
 .ch1-section-polynomial-divisibility .ch1-two-col,
 .ch1-section-gcd-polynomials .ch1-two-col {
   align-items: start;
-}
-
-.ch1-section-multiple-factors .ch1-two-col > div:first-child {
-  display: grid;
-  gap: 12px;
 }
 
 .ch1-section-polynomial-functions .ch1-two-col {

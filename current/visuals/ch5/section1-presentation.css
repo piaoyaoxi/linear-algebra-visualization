@@ -29,10 +29,6 @@
   gap: 16px;
   align-items: center;
   padding: 22px;
-  border: 1px solid var(--line);
-  border-radius: var(--radius);
-  background: var(--surface-solid);
-  box-shadow: var(--shadow-soft);
 }
 
 #quadratic-matrix-formal .ch5s1-term-list {
@@ -42,9 +38,6 @@
 
 #quadratic-matrix-formal .ch5s1-term-list button,
 #quadratic-matrix-formal .ch5s1-matrix-map button {
-  border: 1px solid transparent;
-  border-radius: 11px;
-  background: var(--surface-soft);
   color: var(--text);
   cursor: pointer;
   transition: border-color 150ms ease, background 150ms ease, color 150ms ease, transform 150ms ease, opacity 150ms ease;
@@ -59,9 +52,9 @@
 
 #quadratic-matrix-formal .ch5s1-term-list button.is-active,
 #quadratic-matrix-formal .ch5s1-matrix-map button.is-active {
-  border-color: color-mix(in srgb, var(--coral) 52%, var(--line));
-  background: color-mix(in srgb, var(--coral) 12%, var(--surface-solid));
-  color: var(--coral);
+  border-color: color-mix(in srgb, var(--cv-v2) 55%, var(--line));
+  background: color-mix(in srgb, var(--cv-v2) 10%, var(--surface-solid));
+  color: var(--cv-v2);
   transform: translateY(-1px);
 }
 
@@ -133,22 +126,22 @@
 
 #quadratic-matrix-formal .ch5s1-derivation {
   display: grid;
-  grid-template-columns: minmax(130px, 0.7fr) auto minmax(210px, 1fr) auto minmax(160px, 0.8fr) auto minmax(220px, 1fr);
   gap: 8px;
   align-items: center;
   overflow-x: auto;
   padding: 18px;
-  border: 1px solid var(--line);
-  border-radius: var(--radius);
-  background: var(--surface-solid);
 }
 
 #quadratic-matrix-formal .ch5s1-derivation > div {
-  min-width: 128px;
   padding: 12px;
-  border-radius: 12px;
-  background: var(--surface-soft);
   text-align: center;
+}
+
+/* wider screens give the formula boxes up to the row (design-a-legacy.css) */
+@media (max-width: 800px) {
+  #quadratic-matrix-formal .ch5s1-derivation > div {
+    min-width: 128px;
+  }
 }
 
 #quadratic-matrix-formal .ch5s1-derivation > span {

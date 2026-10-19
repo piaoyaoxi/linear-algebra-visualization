@@ -2299,31 +2299,31 @@ main .lesson-page-section .basis-label-two text {
    5  Chapter 5 二次型
    ====================================================================== */
 
-:is(main, #la) .qv-lab {
+main .qv-lab {
   gap: 20px;
 }
 
-:is(main, #la) .qv-head > h3 {
+main .qv-head > h3 {
   font-size: 21px;
   font-weight: 600;
   letter-spacing: 0;
 }
 
-:is(main, #la) .qv-head > p {
+main .qv-head > p {
   color: var(--text-2);
   font-size: 15.5px;
   line-height: 1.8;
 }
 
 /* the numbered task: quiet paper, the step number in the accent */
-:is(main, #la) :is(.ch5-task, .qv-task) {
+main :is(.ch5-task, .qv-task) {
   border: 0;
   border-radius: 10px;
   background: var(--surface-soft);
   box-shadow: none;
 }
 
-:is(main, #la) :is(.ch5-task, .qv-task) > span:first-child {
+main :is(.ch5-task, .qv-task) > span:first-child {
   width: auto;
   height: auto;
   min-width: 0;
@@ -2336,17 +2336,17 @@ main .lesson-page-section .basis-label-two text {
   letter-spacing: 0.08em;
 }
 
-:is(main, #la) :is(.ch5-task, .qv-task) strong {
+main :is(.ch5-task, .qv-task) strong {
   color: var(--text);
   font-weight: 600;
 }
 
-:is(main, #la) :is(.ch5-task, .qv-task) p {
+main :is(.ch5-task, .qv-task) p {
   color: var(--text-2);
 }
 
 /* buttons */
-:is(main, #la) :is(.ch5-toolbar, .qv-stepbar, .qv-actions, .qv-orbit-tools) button {
+main :is(.ch5-toolbar, .qv-stepbar, .qv-actions, .qv-orbit-tools) button {
   border: 1px solid var(--line-strong);
   border-radius: 8px;
   background: var(--surface-solid);
@@ -2356,12 +2356,12 @@ main .lesson-page-section .basis-label-two text {
   box-shadow: none;
 }
 
-:is(main, #la) :is(.ch5-toolbar, .qv-stepbar, .qv-actions, .qv-orbit-tools) button:hover:not(:disabled) {
+main :is(.ch5-toolbar, .qv-stepbar, .qv-actions, .qv-orbit-tools) button:hover:not(:disabled) {
   border-color: var(--accent);
   color: var(--text);
 }
 
-:is(main, #la) :is(.ch5-toolbar, .qv-stepbar, .qv-actions) button.is-active {
+main :is(.ch5-toolbar, .qv-stepbar, .qv-actions) button.is-active {
   border-color: var(--accent);
   background: var(--accent-soft);
   color: var(--accent-strong);
@@ -2369,40 +2369,40 @@ main .lesson-page-section .basis-label-two text {
   box-shadow: inset 0 0 0 1px var(--accent);
 }
 
-:is(main, #la) :is(.ch5-toolbar, .qv-stepbar, .qv-actions) button:disabled {
+main :is(.ch5-toolbar, .qv-stepbar, .qv-actions) button:disabled {
   opacity: 0.4;
 }
 
-:is(main, #la) .qv-stepbar > span {
+main .qv-stepbar > span {
   color: var(--muted);
   font-weight: 400;
 }
 
-:is(main, #la) :is(.qv-progress, .ch5-progress) > span {
+main :is(.qv-progress, .ch5-progress) > span {
   background: var(--line);
 }
 
-:is(main, #la) :is(.qv-progress, .ch5-progress) > span:is(.is-done, .is-current) {
+main :is(.qv-progress, .ch5-progress) > span:is(.is-done, .is-current) {
   background: var(--accent);
 }
 
 /* control rows: plain, no tinted box */
-:is(main, #la) :is(.qv-orbit-tools, .ch5-range) {
+main :is(.qv-orbit-tools, .ch5-range) {
   padding: 4px 0;
   border: 0;
   border-radius: 0;
   background: none;
 }
 
-:is(main, #la) .qv-orbit-tools > span,
-:is(main, #la) .ch5-range > span {
+main .qv-orbit-tools > span,
+main .ch5-range > span {
   color: var(--muted);
   font-size: 13px;
 }
 
 /* canvas frames */
-:is(main, #la) .qv-orbit-shell,
-:is(main, #la) .qv-hero.qv-orbit-shell {
+main .qv-orbit-shell,
+main .qv-hero.qv-orbit-shell {
   border: 1px solid var(--line);
   border-radius: 8px;
   background: var(--cv-paper);
@@ -2410,20 +2410,20 @@ main .lesson-page-section .basis-label-two text {
   box-shadow: none;
 }
 
-:is(main, #la) .qv-orbit-shell canvas {
+main .qv-orbit-shell canvas {
   border: 0;
   border-radius: 0;
   background: transparent;
 }
 
-:is(main, #la) :is(.qv-same, .qv-three) > figure {
+main :is(.qv-same, .qv-three) > figure {
   border: 0;
   border-radius: 0;
   background: none;
   box-shadow: none;
 }
 
-:is(main, #la) :is(.qv-same, .qv-three) > figure > figcaption {
+main :is(.qv-same, .qv-three) > figure > figcaption {
   border: 0;
   background: none;
   color: var(--muted);
@@ -2431,21 +2431,21 @@ main .lesson-page-section .basis-label-two text {
 }
 
 /* §3 sign wheels, one under each surface */
-:is(main, #la) .qv-s3-wheels {
+main .qv-s3-wheels {
   display: grid;
   grid-template-columns: minmax(0, 1fr) 92px minmax(0, 1fr);
   gap: 14px;
 }
 
-:is(main, #la) .qv-s3-wheels > figure {
+main .qv-s3-wheels > figure {
   margin: 0;
 }
 
-:is(main, #la) .qv-s3-wheels > figure:last-child {
+main .qv-s3-wheels > figure:last-child {
   grid-column: 3;
 }
 
-:is(main, #la) .qv-s3-wheels canvas {
+main .qv-s3-wheels canvas {
   display: block;
   width: 100%;
   height: 190px;
@@ -2455,46 +2455,46 @@ main .lesson-page-section .basis-label-two text {
 }
 
 @media (max-width: 1050px) {
-  :is(main, #la) .qv-s3-wheels {
+  main .qv-s3-wheels {
     grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
   }
 
-  :is(main, #la) .qv-s3-wheels > figure:last-child {
+  main .qv-s3-wheels > figure:last-child {
     grid-column: auto;
   }
 }
 
 @media (max-width: 480px) {
-  :is(main, #la) .qv-s3-wheels canvas {
+  main .qv-s3-wheels canvas {
     height: 160px;
   }
 }
 
 /* §4: one surface (level curves on its floor) beside the direction wheel and the readouts */
-:is(main, #la) .qv-s4-grid {
+main .qv-s4-grid {
   display: grid;
   grid-template-columns: minmax(0, 1fr) minmax(250px, 290px);
   gap: 22px;
   align-items: start;
 }
 
-:is(main, #la) :is(.qv-s4-main, .qv-s4-side) {
+main :is(.qv-s4-main, .qv-s4-side) {
   display: grid;
   gap: 14px;
   min-width: 0;
 }
 
-:is(main, #la) .qv-s4-main > .qv-hero,
-:is(main, #la) .qv-s4-main > .qv-hero > canvas {
+main .qv-s4-main > .qv-hero,
+main .qv-s4-main > .qv-hero > canvas {
   height: 500px;
   min-height: 0;
 }
 
-:is(main, #la) .qv-s4-wheel {
+main .qv-s4-wheel {
   margin: 0;
 }
 
-:is(main, #la) .qv-s4-wheel > canvas {
+main .qv-s4-wheel > canvas {
   display: block;
   width: 100%;
   height: 230px;
@@ -2503,45 +2503,45 @@ main .lesson-page-section .basis-label-two text {
   background: var(--cv-paper);
 }
 
-:is(main, #la) .qv-s4-wheel > figcaption {
+main .qv-s4-wheel > figcaption {
   margin-top: 6px;
   color: var(--muted);
   font-size: 13px;
   line-height: 1.6;
 }
 
-:is(main, #la) .qv-s4-read {
+main .qv-s4-read {
   display: grid;
   gap: 10px;
   padding: 12px;
 }
 
-:is(main, #la) .qv-s4-read > .ch5-matrix-wrap {
+main .qv-s4-read > .ch5-matrix-wrap {
   justify-self: start;
 }
 
-:is(main, #la) .qv-s4-read > .qv-values > .qv-s4-wide {
+main .qv-s4-read > .qv-values > .qv-s4-wide {
   grid-column: 1 / -1;
 }
 
 @media (max-width: 900px) {
-  :is(main, #la) .qv-s4-grid {
+  main .qv-s4-grid {
     grid-template-columns: minmax(0, 1fr);
   }
 }
 
 @media (max-width: 680px) {
-  :is(main, #la) .qv-s4-main > .qv-hero,
-  :is(main, #la) .qv-s4-main > .qv-hero > canvas {
+  main .qv-s4-main > .qv-hero,
+  main .qv-s4-main > .qv-hero > canvas {
     height: 380px;
   }
 
-  :is(main, #la) .qv-s4-wheel > canvas {
+  main .qv-s4-wheel > canvas {
     height: 240px;
   }
 }
 
-:is(main, #la) :is(.qv-orbit-title, .qv-orbit-hint) {
+main :is(.qv-orbit-title, .qv-orbit-hint) {
   border: 1px solid var(--line);
   border-radius: 6px;
   background: var(--cv-paper);
@@ -2550,73 +2550,73 @@ main .lesson-page-section .basis-label-two text {
   backdrop-filter: none;
 }
 
-:is(main, #la) .qv-orbit-hint {
+main .qv-orbit-hint {
   color: var(--muted);
 }
 
 /* readouts */
-:is(main, #la) .qv-orbit-caption {
+main .qv-orbit-caption {
   border: 1px solid var(--line) !important;
   border-radius: 10px !important;
   background: var(--surface-solid) !important;
 }
 
-:is(main, #la) :is(.qv-result, .qv-step, .qv-values),
-:is(main, #la) .qv-data > div,
-:is(main, #la) .qv-three > aside,
-:is(main, #la) .qv-s4-read,
-:is(main, #la) .qv-two > aside > div,
-:is(main, #la) .ch5s4-minor-chain > div {
+main :is(.qv-result, .qv-step, .qv-values),
+main .qv-data > div,
+main .qv-three > aside,
+main .qv-s4-read,
+main .qv-two > aside > div,
+main .ch5s4-minor-chain > div {
   border: 1px solid var(--line);
   border-radius: 10px;
   background: var(--surface-solid);
   box-shadow: none;
 }
 
-:is(main, #la) .qv-data > .qv-values,
-:is(main, #la) .qv-two > aside > .qv-values,
-:is(main, #la) .qv-three > aside > .qv-values,
-:is(main, #la) .qv-s4-read > .qv-values {
+main .qv-data > .qv-values,
+main .qv-two > aside > .qv-values,
+main .qv-three > aside > .qv-values,
+main .qv-s4-read > .qv-values {
   border: 0;
   background: none;
   padding: 0;
 }
 
-:is(main, #la) .qv-values > span,
-:is(main, #la) .qv-counts > span {
+main .qv-values > span,
+main .qv-counts > span {
   border: 1px solid var(--line);
   border-radius: 8px;
   background: var(--surface-solid);
   color: var(--muted);
 }
 
-:is(main, #la) .qv-step > div {
+main .qv-step > div {
   border-radius: 6px;
   background: var(--surface-soft);
 }
 
-:is(main, #la) :is(.ch5-matrix, .ch5-matrix-wrap) {
+main :is(.ch5-matrix, .ch5-matrix-wrap) {
   border-radius: 8px;
 }
 
-:is(main, #la) .ch5-matrix {
+main .ch5-matrix {
   border: 1px solid var(--line);
   background: var(--cv-paper);
 }
 
-:is(main, #la) .ch5-cell {
+main .ch5-cell {
   border-radius: 6px;
   background: var(--surface-soft);
 }
 
-:is(main, #la) .ch5-cell:is(.is-hot, .is-twin) {
+main .ch5-cell:is(.is-hot, .is-twin) {
   border-color: color-mix(in srgb, var(--cv-v2) 50%, var(--line));
   background: color-mix(in srgb, var(--cv-v2) 10%, var(--surface-solid));
   color: var(--cv-v2);
 }
 
 /* status pills */
-:is(main, #la) .ch5-status {
+main .ch5-status {
   border: 1px solid var(--line);
   border-radius: 999px;
   background: var(--surface-soft);
@@ -2624,49 +2624,49 @@ main .lesson-page-section .basis-label-two text {
   font-weight: 600;
 }
 
-:is(main, #la) .ch5-status.is-ok {
+main .ch5-status.is-ok {
   border-color: var(--ok-line);
   background: var(--ok-bg);
   color: var(--ok-text);
 }
 
-:is(main, #la) .ch5-status:is(.is-bad, .is-danger) {
+main .ch5-status:is(.is-bad, .is-danger) {
   border-color: var(--bad-line);
   background: var(--bad-bg);
   color: var(--bad-text);
 }
 
-:is(main, #la) .ch5-status.is-warn {
+main .ch5-status.is-warn {
   border-color: var(--predict-line);
   background: var(--predict-bg);
   color: var(--predict-text);
 }
 
-:is(main, #la) .ch5-status.is-neutral {
+main .ch5-status.is-neutral {
   color: var(--text);
 }
 
 /* sign chips in the readouts */
-:is(main, #la) .qv-counts > span.is-positive,
-:is(main, #la) .qv-values .is-positive {
+main .qv-counts > span.is-positive,
+main .qv-values .is-positive {
   color: var(--cv-subspace);
 }
 
 /* formal block */
-:is(main, #la) .ch5-module-heading > span:first-child {
+main .ch5-module-heading > span:first-child {
   border: 1px solid var(--line);
   background: transparent;
   color: var(--faint);
   font-weight: 400;
 }
 
-:is(main, #la) .ch5-module-heading h3 {
+main .ch5-module-heading h3 {
   font-size: 21px;
   font-weight: 600;
 }
 
-:is(main, #la) :is(.ch5-card, .ch5s1-derivation, .ch5s1-map-demo, .ch5s2-paired-operation, .ch5s2-square-identity),
-:is(main, #la) .ch5s4-type-grid > article {
+main :is(.ch5-card, .ch5s1-derivation, .ch5s1-map-demo, .ch5s2-paired-operation, .ch5s2-square-identity),
+main .ch5s4-type-grid > article {
   border: 1px solid var(--line);
   border-radius: 10px;
   background: var(--surface-solid);
@@ -2676,63 +2676,56 @@ main .lesson-page-section .basis-label-two text {
 /* a card that is a centred formula with a short note under it (ch5 §3 “合同分类只比较惯性”,
    §3 term counts, §4 BᵀB): the note is centred under the formula, its lines balanced, and
    the formula block loses the top margin that left the card empty above it */
-:is(main, #la) .ch5-card:not(.ch5s1-example):has(> .tex-display, > div > .tex-display) > :is(p, div:not(:has(.tex-display))) {
+main .ch5-card:not(.ch5s1-example):has(> .tex-display, > div > .tex-display) > :is(p, div:not(:has(.tex-display))) {
   text-align: center;
   text-wrap: balance;
   justify-content: center;
 }
 
-:is(main, #la) .ch5-card:not(.ch5s1-example):has(> .tex-display, > div > .tex-display) .tex-display {
+main .ch5-card:not(.ch5s1-example):has(> .tex-display, > div > .tex-display) .tex-display {
   margin-top: 0;
   padding-top: 0;
 }
 
-:is(main, #la) .ch5-card.ch5s3-theorem,
-:is(main, #la) .ch5-equation {
+main .ch5-card.ch5s3-theorem,
+main .ch5-equation {
   border: 0;
   border-radius: 10px;
   background: var(--surface-soft);
 }
 
-:is(main, #la) :is(.ch5s1-derivation, .ch5s2-paired-operation, .ch5s2-square-identity) > div {
+main :is(.ch5s1-derivation, .ch5s2-paired-operation, .ch5s2-square-identity) > div {
   border-radius: 8px;
   background: var(--surface-soft);
 }
 
 /* ch5 §1: the step names (代入, 转置, 合并) keep one line; the formula boxes give up the room */
-:is(main, #la) .ch5s1-derivation > span {
+main .ch5s1-derivation > span {
   white-space: nowrap;
 }
 
 @media (min-width: 801px) {
-  :is(main, #la) .ch5s1-derivation {
+  main .ch5s1-derivation {
     grid-template-columns: minmax(96px, 0.7fr) auto minmax(150px, 1fr) auto minmax(120px, 0.8fr) auto minmax(160px, 1fr);
   }
 
-  :is(main, #la) .ch5s1-derivation > div {
+  main .ch5s1-derivation > div {
     min-width: 0;
   }
 }
 
-:is(main, #la) :is(.ch5s1-matrix-map, .ch5s1-term-list) > button {
+main :is(.ch5s1-matrix-map, .ch5s1-term-list) > button {
   border: 1px solid var(--line);
   border-radius: 8px;
   background: var(--surface-solid);
 }
 
-:is(main, #la) :is(.ch5s1-matrix-map, .ch5s1-term-list) > button.is-active {
-  border-color: color-mix(in srgb, var(--cv-v2) 55%, var(--line));
-  background: color-mix(in srgb, var(--cv-v2) 10%, var(--surface-solid));
-  color: var(--cv-v2);
-}
-
-:is(main, #la) :is(.ch5s2-straight-axes, .ch5s2-tilted-axes) {
+main :is(.ch5s2-straight-axes, .ch5s2-tilted-axes) {
   border: 1px solid var(--line);
   border-radius: 8px;
-  background-color: var(--cv-paper);
 }
 
-:is(main, #la) .ch5-next-note {
+main .ch5-next-note {
   border: 0;
   border-radius: 10px;
   background: var(--surface-soft);
@@ -2805,12 +2798,12 @@ main .lesson-page-section .inverse-kernel-text {
 }
 
 /* ch5 §2: the top-view contours sit below the surface, with their caption beside them */
-:is(main, #la) .qv-s2-stage {
+main .qv-s2-stage {
   position: relative;
   min-width: 0;
 }
 
-:is(main, #la) .qv-s2-inset {
+main .qv-s2-inset {
   display: grid;
   grid-template-columns: 168px minmax(0, 1fr);
   gap: 12px;
@@ -2822,24 +2815,24 @@ main .lesson-page-section .inverse-kernel-text {
   background: var(--cv-paper);
 }
 
-:is(main, #la) .qv-s2-inset > canvas {
+main .qv-s2-inset > canvas {
   display: block;
   width: 100%;
   height: 150px;
 }
 
-:is(main, #la) .qv-s2-inset > figcaption {
+main .qv-s2-inset > figcaption {
   color: var(--muted);
   font-size: 13px;
   line-height: 1.6;
 }
 
 @media (max-width: 420px) {
-  :is(main, #la) .qv-s2-inset {
+  main .qv-s2-inset {
     grid-template-columns: 150px minmax(0, 1fr);
   }
 
-  :is(main, #la) .qv-s2-inset > canvas {
+  main .qv-s2-inset > canvas {
     height: 136px;
   }
 }
@@ -2998,7 +2991,7 @@ main .ch2-cof-op {
 }
 
 /* ch5 §4: value labels, the formulas in t appear with the verdict */
-:is(main, #la) .qv-values > span > .qv-s4-label {
+main .qv-values > span > .qv-s4-label {
   justify-self: start;
   max-width: 100%;
   font-weight: inherit;
@@ -3388,11 +3381,11 @@ main .lesson-page-section .blk-mat.is-void > span {
 }
 
 /* ch5 §3 on phones: the sign wheel sits on the upper-right corner of its surface */
-:is(main, #la) .qv-same > figure:has(> .qv-s3-inset) {
+main .qv-same > figure:has(> .qv-s3-inset) {
   position: relative;
 }
 
-:is(main, #la) .qv-same > figure > figure.qv-s3-inset {
+main .qv-same > figure > figure.qv-s3-inset {
   position: absolute;
   top: 6px;
   right: 6px;
@@ -3401,7 +3394,7 @@ main .lesson-page-section .blk-mat.is-void > span {
   margin: 0;
 }
 
-:is(main, #la) .qv-same > figure > figure.qv-s3-inset canvas {
+main .qv-same > figure > figure.qv-s3-inset canvas {
   display: block;
   width: 96px;
   height: 88px;
@@ -3498,31 +3491,31 @@ main .ch2-leibniz[hidden] {
 
 /* ch5 §3 on phones: C, A and B side by side in one row */
 @media (max-width: 680px) {
-  :is(main, #la) .qv-data:has([data-s3-c]) {
+  main .qv-data:has([data-s3-c]) {
     grid-template-columns: repeat(3, minmax(0, 1fr));
     gap: 8px;
   }
 
-  :is(main, #la) .qv-data:has([data-s3-c]) > .qv-values {
+  main .qv-data:has([data-s3-c]) > .qv-values {
     grid-column: 1 / -1;
   }
 
-  :is(main, #la) .qv-data:has([data-s3-c]) > div:not(.qv-values) {
+  main .qv-data:has([data-s3-c]) > div:not(.qv-values) {
     gap: 6px;
     padding: 8px;
   }
 
-  :is(main, #la) .qv-data:has([data-s3-c]) .ch5-matrix {
+  main .qv-data:has([data-s3-c]) .ch5-matrix {
     gap: 4px;
     padding: 5px;
   }
 
-  :is(main, #la) .qv-data:has([data-s3-c]) .ch5-matrix-row {
+  main .qv-data:has([data-s3-c]) .ch5-matrix-row {
     grid-auto-columns: minmax(2.2rem, auto);
     gap: 4px;
   }
 
-  :is(main, #la) .qv-data:has([data-s3-c]) .ch5-cell {
+  main .qv-data:has([data-s3-c]) .ch5-cell {
     min-height: 1.9rem;
     padding: 0 3px;
     font-size: 12.5px;

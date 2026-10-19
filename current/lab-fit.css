@@ -10,8 +10,8 @@
  *    and per-chapter re-ordering with display: contents + order (no DOM moves);
  *  - preset chips, readout cards and the gaps between lab blocks are tighter.
  * Wider screens, at the end of the file: a few labs taller than a screen on a desktop.
- * The legacy chapter styles carry an id in their selectors (:is(main, #la)), so rules here
- * use the same prefix and, for layout, !important.
+ * The chapter 1 rules of design-a-legacy.css carry an id in their selectors (:is(main, #la)),
+ * so rules here use the same prefix and, for layout, !important.
  */
 :root {
   --la-stage-h: clamp(240px, 38svh, 280px);

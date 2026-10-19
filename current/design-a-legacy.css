@@ -6,10 +6,14 @@
  * accent only on primary actions and the current item, ok / bad tokens for
  * right / wrong, and canvas frames in var(--cv-paper).
  *
- * Several chapter stylesheets are injected at runtime (after this file) or use
- * id selectors, so every rule is scoped with `:is(main, #la)`: the `#la` arm
- * never matches but lifts the rule to id specificity. State classes
- * (.is-active, .is-current, .is-ok …) are therefore restated here.
+ * Rules are scoped with `main` and carry no specificity boost: the chapter
+ * stylesheets (chapters 4 and 5 scope by section id) no longer hold the
+ * declarations these rules replace. When both would style the same property,
+ * change it here and delete the chapter's declaration.
+ * Chapter 1 rules still use `:is(main, #la)`: the `#la` arm never matches but
+ * lifts them to id specificity over the chapter 1 sheets (three load after this
+ * file); lab-fit.css uses the same prefix to stay above them.
+ * State classes (.is-active, .is-current, .is-ok …) are restated here.
  * No descendant `span` selectors: they would reach into KaTeX.
  */
 

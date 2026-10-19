@@ -304,7 +304,7 @@ _dev/research/3b1b_eola_chapter10.py
 - CI：`.github/workflows/site-audit.yml` 逐节检查报错、横向滚动、KaTeX 错误、裸 `<`、内部用语、“不是……而是”、页面样式渗进公式。新增内容必须通过。
 - 写 CSS 时不要用 `.xxx span {…}` 这类后代选择器：会命中 KaTeX 内部 span。用 `> span` 或类名。
 - 视觉改版（方向 A「松烟」，#84–#87，规范见 `docs/design-spec.md`）之前的版本打了标签 `before-design-a`（= #83）。要整体退回，按 #87→#84 的顺序撤销这四个 PR；只想退回部分时，#84 是全局质感，#85 是实验区布局，#86/#87 是画布配色。
-- 第一、二、四、五章仍用各自的旧实验标记（ch1-*、ch2-*、s2c-*/s3-*/inverse-*、qv-*/ch5-* 等），它们的「松烟」外观统一写在 `current/design-a-legacy.css`（紧跟 `design-a.css` 加载）。规则都带 `:is(main, #la)` 前缀（第四章再加 `:is(.lesson-page-section, #lb)`），借 id 权重压过旧样式和第一章运行时注入的样式；改这几章外观时改这个文件，不要回到旧的章节 CSS 里改。
+- 第一、二、四、五章仍用各自的旧实验标记（ch1-*、ch2-*、s2c-*/s3-*/inverse-*、qv-*/ch5-* 等），它们的「松烟」外观统一写在 `current/design-a-legacy.css`（紧跟 `design-a.css` 加载）。第二、四、五章和共用规则以 `main` 开头，不借 id 加权（2026-10-19 去掉 `:is(main, #la)` / `#lb`，被盖住的旧章节声明已删）：改外观时改这个文件；旧章节 CSS（第四、五章按节 id 限定）里如果有同一属性，删掉章节里那条，不要再加权重。第一章规则和 `lab-fit.css` 暂时仍带 `:is(main, #la)`，等第一章样式合并（#138）后照同样办法去掉。
 - 字体：正文与标题用自带的衬线字体（`current/fonts.css`：Noto Serif 负责西文与希腊字母，思源宋体负责中文，均为 OFL 开源授权），全站（包括按钮、输入框和画布上的文字）都用这套衬线字体，不再用黑体或等宽字体；画布字体写 `'LA Serif Latin', 'LA Serif SC', 'Songti SC', serif`，矩阵和读数的数字用 `font-variant-numeric: tabular-nums` 对齐。字体是裁剪过的子集；新增内容用到字体里没有的汉字时，CI 的 `check-font-coverage.py` 会失败，用 `.github/scripts/build-font-subset.py` 重新生成。纯文字里的下标用 Unicode（εₖ），不要写 ε_k。
 - 预测门不能被画面泄底：学生选择预测之前，隐藏会直接给出答案的等值线、读数或计数（见 `visuals/ch10/labs.js` 中的 `open = Boolean(flow?.predicted)`）。测试“操作会改变读数”要放在预测之后。
 
@@ -587,3 +587,12 @@ _dev/research/3b1b_eola_chapter10.py
 - 原来的 repair-pass、repair-pass-v2、motion-upgrade、layout-rebalance 改成上面的节名；`mount.js` 开头给 `Ch1Math` 打的补丁（`polyFrom`、`rCmp`、`drawLattice` 的 hitTest）并入 `poly-math.js`（`polyFrom` 就是 `poly`，调用处改用 `poly`）；motion-upgrade-init 里给 §8 标题加 `ch1-lab-head` 的增强改为直接写在 §8 的标记里，它对 `.ch1-division-canvas-shell` 的延迟重画没有任何元素用到，删掉。
 - 样式：九个文件按层叠位置合成两个：`visuals/ch1/labs.css`（原 core-presentation、final-polish、motion-upgrade、repair-pass、layout-rebalance、layout-rebalance-final，位置不变，在第五章样式之前）和 `visuals/ch1/lab-layout.css`（原 repair-pass-final、refinement、learning-design，仍在 learn.html 最后、lab-fit.css 之后）。合并前后逐条比较过 CSSOM 规则，完全相同。改第一章外观仍改 `design-a-legacy.css`（见“2026-10 内容重做”）；只有必须压过共用样式的布局才放 `lab-layout.css`。
 - 预测框的 `key` 仍写旧文件名（如 `visuals/ch1/repair-pass.js#euclid`）：它是选项乱序的种子，改了选项顺序就会变。
+
+## 去掉 `#la` / `#lb` 权重：第二、四、五章（2026-10-19，`ui/remove-id-boost`，Claude）
+
+- design-a-legacy.css 中第二、四、五章与共用规则的 493 处 `:is(main, #la)` 和全部 233 处 `:is(.lesson-page-section, #lb)`、第二、四、五章样式里 15 条规则的 `:is(main, #la)` 去掉（design-a-legacy.css 改成 `main`，章节样式里直接去掉，节 id 已足够）。`#lb` 已全部去掉。
+- 做法：先在浏览器里按层叠规则算出每个元素每条属性（逐个媒体查询断点、浅/深色、初始/选完预测/依次点按钮、模拟悬停聚焦）由哪条声明胜出，再假设去掉权重重算。会翻转的分两类：旧章节里从未生效、去掉权重后反而会胜出的声明（约 1700 个长属性，第四章最多）直接删；仍在别处生效的（约 15 处）按元素拆开选择器列表，或把 design-a-legacy.css 的规则并进对应章节样式。
+- 验证：每章改完把新样式表解析进旧页面，逐元素比较层叠胜出的声明（0 处不同，只剩写法不同、计算样式一致的 1 处），再拍 672 张整页截图逐像素比较，差异单独重截。
+- 第一章与 `lab-fit.css` 还没做：第一章样式正在合并成 labs.css / lab-layout.css（#138），合并后在新文件上重跑分析。上次在旧文件上的结果：第一章只需删 6 条规则里约 100 个长属性，另有两处冲突（结果带 `strong` 字号避开 `.ch1-status`；“令 v=u”按钮写成 `.ch1-merge-exact.ch3l-btn`）；`lab-fit.css` 去掉权重没有冲突，但要和第一章一起改（它压的是第一章规则）。
+- 截图噪声：390 宽的个别两端对齐行会因 `typeset.js` 的断字时机（同一版本两次加载也会多一个或少一个 `<la-sp>`）有 1 px 左右的字距差；第一章 §10、第四章 §2 画布在并行负载下也会有差。判断前单独重截。
+- 工具在会话 scratchpad（`harness/cascade-lib.js`、`cascade-run.mjs`、`diff-lib.js`、`cdiff-run.mjs`、`tools/apply-removals.mjs`）。

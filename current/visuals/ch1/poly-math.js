@@ -4,83 +4,29 @@
 
   const observers = new WeakMap();
 
-  function gcdInt(a, b) {
-    let x = Math.abs(Number(a));
-    let y = Math.abs(Number(b));
-    if (!Number.isSafeInteger(x) || !Number.isSafeInteger(y)) throw new RangeError("integer expected");
-    while (y !== 0) [x, y] = [y, x % y];
-    return x || 1;
-  }
-
-  function lcmInt(a, b) {
-    if (a === 0 || b === 0) return 0;
-    return Math.abs((a / gcdInt(a, b)) * b);
-  }
-
-  function R(n, d = 1) {
-    const nn = Number(n);
-    const dd = Number(d);
-    if (!Number.isSafeInteger(nn) || !Number.isSafeInteger(dd)) throw new RangeError("rational parts must be safe integers");
-    if (dd === 0) throw new RangeError("zero denominator");
-    const sign = dd < 0 ? -1 : 1;
-    const g = gcdInt(nn, dd);
-    return Object.freeze({ n: (sign * nn) / g, d: Math.abs(dd) / g });
-  }
-
-  function parseR(value) {
-    if (value && typeof value === "object" && Number.isSafeInteger(value.n) && Number.isSafeInteger(value.d)) {
-      return R(value.n, value.d);
-    }
-    if (typeof value === "number") {
-      if (!Number.isFinite(value)) throw new TypeError("finite number expected");
-      if (Number.isSafeInteger(value)) return R(value);
-      return parseR(String(value));
-    }
-    const raw = String(value ?? "").trim().replace(/−/g, "-");
-    if (!raw) return R(0);
-    if (/^[+-]?\d+\s*\/\s*[+-]?\d+$/.test(raw)) {
-      const [a, b] = raw.split("/").map((part) => Number(part.trim()));
-      return R(a, b);
-    }
-    if (/^[+-]?\d+(?:\.\d+)?$/.test(raw)) {
-      const sign = raw.startsWith("-") ? -1 : 1;
-      const unsigned = raw.replace(/^[+-]/, "");
-      if (!unsigned.includes(".")) return R(sign * Number(unsigned));
-      const [whole, frac] = unsigned.split(".");
-      const den = 10 ** frac.length;
-      if (!Number.isSafeInteger(den)) throw new RangeError("too many decimal places");
-      return R(sign * (Number(whole) * den + Number(frac)), den);
-    }
-    throw new TypeError(`invalid rational: ${raw}`);
-  }
-
-  const rAdd = (a, b) => R(a.n * b.d + b.n * a.d, a.d * b.d);
-  const rSub = (a, b) => R(a.n * b.d - b.n * a.d, a.d * b.d);
-  const rMul = (a, b) => R(a.n * b.n, a.d * b.d);
-  const rDiv = (a, b) => {
-    if (b.n === 0) throw new RangeError("division by zero rational");
-    return R(a.n * b.d, a.d * b.n);
-  };
-  const rNeg = (a) => R(-a.n, a.d);
-  const rAbs = (a) => R(Math.abs(a.n), a.d);
-  const rEq = (a, b) => a.n === b.n && a.d === b.d;
-  const rIsZero = (a) => a.n === 0;
-  const rToNum = (a) => a.n / a.d;
-
-  function formatR(a) {
-    return a.d === 1 ? String(a.n) : `${a.n}/${a.d}`;
-  }
+  // Rationals come from the shared exact module (shared/exact.js).
+  const X = window.LAExact;
+  const gcdInt = X.gcd;
+  const lcmInt = X.lcm;
+  const R = X.F;
+  const parseR = X.parseExact;
+  const rAdd = X.add;
+  const rSub = X.sub;
+  const rMul = X.mul;
+  const rDiv = X.div;
+  const rNeg = X.neg;
+  const rAbs = X.absF;
+  const rEq = X.eq;
+  const rIsZero = X.isZero;
+  const rToNum = X.toNumber;
+  const formatR = X.formatF;
 
   // the same exact value for reading on the page: −3/2 with a true minus sign
   function formatRText(a) {
     return formatR(a).replace("-", "−");
   }
 
-  function formatRTex(a) {
-    if (a.d === 1) return String(a.n);
-    const sign = a.n < 0 ? "-" : "";
-    return `${sign}\\frac{${Math.abs(a.n)}}{${a.d}}`;
-  }
+  const formatRTex = X.latexF;
 
   function poly(values) {
     return normalizePoly((values || []).map(parseR));

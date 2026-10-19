@@ -10,14 +10,19 @@
   const HOME_S4 = Object.freeze({ yaw: 0.3, pitch: 0.56 });
 
   const matrixFrom = (root, selector) => {
-    const cells = $$(root, `${selector} .ch5-cell`).map((cell) => Number(cell.dataset.v ?? cell.textContent));
+    const cells = $$(root, `${selector} .ch5-cell`).map((cell) => Number(cell.dataset.v));
     if (cells.length !== 4 || cells.some((value) => !Number.isFinite(value))) return null;
     return [[cells[0], cells[1]], [cells[2], cells[3]]];
   };
 
-  const vectorFromText = (text) => {
-    const values = String(text || "").match(/-?\d+(?:\.\d+)?/g)?.map(Number) || [];
-    return values.length >= 2 ? values.slice(0, 2) : null;
+  // geometry-upgrade.js keeps the vector in data-v; the visible text is for reading only
+  const vectorFrom = (el) => {
+    try {
+      const values = JSON.parse(el?.dataset.v || "null");
+      return Array.isArray(values) && values.length >= 2 && values.every(Number.isFinite) ? values.slice(0, 2) : null;
+    } catch {
+      return null;
+    }
   };
 
   function projectUnit(x, y, z, camera) {
@@ -351,7 +356,7 @@
       redraw = () => {
         const A = [[2, 1], [1, 1]];
         const B = matrixFrom(root, "[data-s1-b]") || A;
-        const x = vectorFromText($(root, "[data-s1-x]")?.textContent) || [1, 0];
+        const x = vectorFrom($(root, "[data-s1-x]")) || [1, 0];
         const active = $(root, "[data-s1-y].is-active")?.dataset.s1Y;
         const y = active === "e2" ? [0, 1] : active === "sum" ? [1, 1] : [1, 0];
         const half = Math.max(1.65, ...x.map((value) => Math.abs(value) * 1.12));

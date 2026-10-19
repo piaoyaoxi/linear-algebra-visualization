@@ -7,14 +7,19 @@
   const EPS = 1e-5;
 
   function matrixFrom(root, selector) {
-    const values = $$(root, `${selector} .ch5-cell`).map((cell) => Number(cell.dataset.v ?? cell.textContent));
+    const values = $$(root, `${selector} .ch5-cell`).map((cell) => Number(cell.dataset.v));
     if (values.length !== 4 || values.some((value) => !Number.isFinite(value))) return null;
     return [[values[0], values[1]], [values[2], values[3]]];
   }
 
-  function vectorFromText(text) {
-    const values = String(text || "").match(/-?\d+(?:\.\d+)?/g)?.map(Number) || [];
-    return values.length >= 2 ? values.slice(0, 2) : null;
+  // geometry-upgrade.js keeps the vector in data-v; the visible text is for reading only
+  function vectorFrom(el) {
+    try {
+      const values = JSON.parse(el?.dataset.v || "null");
+      return Array.isArray(values) && values.length >= 2 && values.every(Number.isFinite) ? values.slice(0, 2) : null;
+    } catch {
+      return null;
+    }
   }
 
   function cameraFrom(canvas) {
@@ -394,7 +399,7 @@
       ctx.fillStyle = image;
       ctx.font = "600 13px 'LA Serif Latin', 'LA Serif SC', 'Songti SC', serif";
       ctx.textAlign = "right";
-      ctx.fillText(M().formatNum(h, 4), axisPoint.x - 9, axisPoint.y + 4);
+      ctx.fillText(M().formatNum(h, 4).replace(/^-/, "−"), axisPoint.x - 9, axisPoint.y + 4);
       ctx.restore();
     }
 
@@ -466,7 +471,7 @@
       redraw = () => {
         const A = [[2, 1], [1, 1]];
         const B = matrixFrom(root, "[data-s1-b]") || A;
-        const x = vectorFromText($(root, "[data-s1-x]")?.textContent) || [1, 0];
+        const x = vectorFrom($(root, "[data-s1-x]")) || [1, 0];
         const active = $(root, "[data-s1-y].is-active")?.dataset.s1Y;
         const y = active === "e2" ? [0, 1] : active === "sum" ? [1, 1] : [1, 0];
         const half = Math.max(1.65, ...x.map((value) => Math.abs(value) * 1.12));

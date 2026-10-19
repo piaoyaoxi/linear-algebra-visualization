@@ -309,14 +309,13 @@
       let text;
       if (zeroFn) text = `现在 ${tex(String.raw`f(\varepsilon_1)=f(\varepsilon_2)=0`)}：${tex("f")} 是零函数，整个平面都是 ${tex(String.raw`\ker f`)}。`;
       else {
-        const g = gcdInt(Math.abs(a1), Math.abs(a2)) || 1;
+        const g = window.LAExact.gcd(a1, a2) || 1;
         let d = [-a2 / g, a1 / g];
         if (d[0] < 0 || (d[0] === 0 && d[1] < 0)) d = [-d[0], -d[1]];
         text = `现在 ${tex(`f(\\varepsilon_1)=${a1}`)}、${tex(`f(\\varepsilon_2)=${a2}`)}：${tex(`f(x)=${formTex(a, ["x_1", "x_2"])}`)}，${tex("\\ker f")} 是过原点、方向为 ${tex(`(${d.join(",")})`)} 的直线，其余等值线都与它平行。`;
       }
       result.insertAdjacentHTML("beforeend", `<p data-lf-now>${text}</p>`);
     }
-    const gcdInt = (p, q) => (q ? gcdInt(q, p % q) : p);
 
     plane.setHandles([
       {

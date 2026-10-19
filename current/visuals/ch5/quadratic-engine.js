@@ -616,7 +616,8 @@
     ctx.fillStyle = palette.muted;
     ctx.font = "12px 'LA Serif Latin', 'LA Serif SC', 'Songti SC', serif";
     ctx.fillText(options.caption || "单位圆方向值 q(θ) = x(θ)ᵀ A x(θ)", 12, 16);
-    ctx.fillText(`min ${formatNum(Math.min(...values), 3)} · max ${formatNum(Math.max(...values), 3)}`, 12, height - 10);
+    const shown = (v) => formatNum(v, 3).replace(/^-/, "−");
+    ctx.fillText(`min ${shown(Math.min(...values))} · max ${shown(Math.max(...values))}`, 12, height - 10);
     ctx.fillText("0", 8, yAt(0) + 4);
   }
 

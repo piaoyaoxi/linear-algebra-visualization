@@ -11,6 +11,7 @@ on:
       - ".github/workflows/site-audit.yml"
       - ".github/scripts/check-font-coverage.py"
       - ".github/scripts/serve.py"
+      - "tests/*.test.mjs"
   workflow_dispatch:
 
 permissions:
@@ -26,6 +27,9 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 20
+
+      - name: Exact math unit tests
+        run: node --test tests/*.test.mjs
 
       - name: Check serif font coverage
         run: |

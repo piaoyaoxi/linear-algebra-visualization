@@ -6,12 +6,14 @@
  * accent only on primary actions and the current item, ok / bad tokens for
  * right / wrong, and canvas frames in var(--cv-paper).
  *
- * Rules are scoped with `main` and carry no specificity boost. The chapter
- * stylesheets (chapters 4 and 5 scope by section id; three chapter 1 sheets load
- * after this file) no longer hold the declarations these rules replace, so a
- * look changed here is not overridden there. When both would style the same
- * property, change it here and delete the chapter's declaration. State classes
- * (.is-active, .is-current, .is-ok …) are restated here.
+ * Rules are scoped with `main` and carry no specificity boost: the chapter
+ * stylesheets (chapters 4 and 5 scope by section id) no longer hold the
+ * declarations these rules replace. When both would style the same property,
+ * change it here and delete the chapter's declaration.
+ * Chapter 1 rules still use `:is(main, #la)`: the `#la` arm never matches but
+ * lifts them to id specificity over the chapter 1 sheets (three load after this
+ * file); lab-fit.css uses the same prefix to stay above them.
+ * State classes (.is-active, .is-current, .is-ok …) are restated here.
  * No descendant `span` selectors: they would reach into KaTeX.
  */
 
@@ -54,26 +56,26 @@ main :is(.ch1-stage, .ch1-complex-canvas-shell, .ch1-long-division-stage) canvas
    1  Chapter 1 多项式
    ====================================================================== */
 
-main .ch1-lab {
+:is(main, #la) .ch1-lab {
   gap: 20px;
 }
 
-main .ch1-lab-head > h3,
-main .ch1-guided-lab > .ch1-lab-head h3 {
+:is(main, #la) .ch1-lab-head > h3,
+:is(main, #la) .ch1-guided-lab > .ch1-lab-head h3 {
   font-size: 21px;
   font-weight: 600;
   letter-spacing: 0;
 }
 
-main .ch1-lab-head > p,
-main .ch1-guided-lab > .ch1-lab-head > .ch1-lab-task {
+:is(main, #la) .ch1-lab-head > p,
+:is(main, #la) .ch1-guided-lab > .ch1-lab-head > .ch1-lab-task {
   color: var(--text-2);
   font-size: 15.5px;
   line-height: 1.8;
 }
 
 /* buttons: 8px boxes; the chosen mode reads as 1px border + 1px inner line */
-main :is(.ch1-controls button, .ch1-btn) {
+:is(main, #la) :is(.ch1-controls button, .ch1-btn) {
   border: 1px solid var(--line-strong);
   border-radius: 8px;
   background: var(--surface-solid);
@@ -83,11 +85,11 @@ main :is(.ch1-controls button, .ch1-btn) {
   box-shadow: none;
 }
 
-main :is(.ch1-controls button, .ch1-btn):hover:not(:disabled) {
+:is(main, #la) :is(.ch1-controls button, .ch1-btn):hover:not(:disabled) {
   border-color: var(--accent);
 }
 
-main :is(.ch1-controls button, .ch1-btn).is-active {
+:is(main, #la) :is(.ch1-controls button, .ch1-btn).is-active {
   border-color: var(--accent);
   background: var(--accent-soft);
   color: var(--accent-strong);
@@ -95,24 +97,25 @@ main :is(.ch1-controls button, .ch1-btn).is-active {
   box-shadow: inset 0 0 0 1px var(--accent);
 }
 
-main :is(.ch1-controls button, .ch1-btn):disabled {
+:is(main, #la) :is(.ch1-controls button, .ch1-btn):disabled {
   opacity: 0.4;
 }
 
-main .ch1-section-multiple-factors .ch1-merge-exact.ch3l-btn {
+:is(main, #la) .ch1-btn.ch1-merge-exact,
+:is(main, #la) .ch1-section-multiple-factors .ch1-merge-exact {
   border-color: var(--accent);
   background: var(--accent);
   color: var(--on-accent);
   font-weight: 600;
 }
 
-main .ch1-control-separator {
+:is(main, #la) .ch1-control-separator {
   background: var(--line);
 }
 
 /* module groups: hairline-separated, no box */
-main .ch1-learning-module,
-main .ch1-coeff-workflow .ch1-learning-module {
+:is(main, #la) .ch1-learning-module,
+:is(main, #la) .ch1-coeff-workflow .ch1-learning-module {
   padding: 20px 0 0 !important;
   border: 0 !important;
   border-top: 1px solid var(--line) !important;
@@ -121,72 +124,72 @@ main .ch1-coeff-workflow .ch1-learning-module {
   box-shadow: none;
 }
 
-main .ch1-module-heading > span:first-child {
+:is(main, #la) .ch1-module-heading > span:first-child {
   border: 1px solid var(--line);
   background: transparent;
   color: var(--faint);
   font-weight: 400;
 }
 
-main .ch1-module-heading h4 {
+:is(main, #la) .ch1-module-heading h4 {
   font-size: 17px;
   font-weight: 600;
 }
 
 /* readout cards */
-main :is(.ch1-coeff-card, .ch1-metric, .ch1-euclid-panel, .ch1-bezout-panel, .ch1-multivariate-inspector,
+:is(main, #la) :is(.ch1-coeff-card, .ch1-metric, .ch1-euclid-panel, .ch1-bezout-panel, .ch1-multivariate-inspector,
   .ch1-multivariate-module, .ch1-multivariate-layer-card, .ch1-callout, .ch1-result-band, .ch1-graph-details,
   .ch1-readout, .ch1-invariant, .ch1-rewrite-stage),
-main .ch1-coeff-parameters > div,
-main .ch1-equation-grid > div,
-main .ch1-axis-key-grid > div,
-main .ch1-ld-summary > div {
+:is(main, #la) .ch1-coeff-parameters > div,
+:is(main, #la) .ch1-equation-grid > div,
+:is(main, #la) .ch1-axis-key-grid > div,
+:is(main, #la) .ch1-ld-summary > div {
   border: 1px solid var(--line);
   border-radius: 10px;
   background: var(--surface-solid);
   box-shadow: none;
 }
 
-main .ch1-coeff-card.is-f,
-main .ch1-coeff-card.is-g {
+:is(main, #la) .ch1-coeff-card.is-f,
+:is(main, #la) .ch1-coeff-card.is-g {
   border-color: var(--line);
   background: var(--surface-solid);
 }
 
-main .ch1-coeff-card.is-f > h4 {
+:is(main, #la) .ch1-coeff-card.is-f > h4 {
   color: var(--cv-v1);
 }
 
-main .ch1-coeff-card.is-g > h4 {
+:is(main, #la) .ch1-coeff-card.is-g > h4 {
   color: var(--cv-v2);
 }
 
 /* the long-division summary is a row of small readouts */
-main .ch1-ld-summary > div {
+:is(main, #la) .ch1-ld-summary > div {
   padding: 10px 12px;
 }
 
 /* inner tiles inside a card sit on the softer paper */
-main :is(.ch1-multivariate-inspector, .ch1-multivariate-module) .ch1-axis-key-grid > div,
-main .ch1-multivariate-module .ch1-multivariate-layer-card {
+:is(main, #la) :is(.ch1-multivariate-inspector, .ch1-multivariate-module) .ch1-axis-key-grid > div,
+:is(main, #la) .ch1-multivariate-module .ch1-multivariate-layer-card {
   background: var(--surface-soft);
   border-color: transparent;
 }
 
-main .ch1-ld-invariant {
+:is(main, #la) .ch1-ld-invariant {
   border-top: 1px solid var(--line);
 }
 
 /* card labels: muted, small */
-main .ch1-metric > span:first-child,
-main .ch1-equation-grid > div > span:first-child,
-main .ch1-ld-summary > div > span:first-child,
-main .ch1-result-band > div > span:first-child,
-main .ch1-ld-invariant > span:first-child,
-main .ch1-multivariate-layer-card > span:first-child,
-main .ch1-bezout-main > span:first-child,
-main .ch1-bezout-coeff > span:first-child,
-main .ch1-eyebrow {
+:is(main, #la) .ch1-metric > span:first-child,
+:is(main, #la) .ch1-equation-grid > div > span:first-child,
+:is(main, #la) .ch1-ld-summary > div > span:first-child,
+:is(main, #la) .ch1-result-band > div > span:first-child,
+:is(main, #la) .ch1-ld-invariant > span:first-child,
+:is(main, #la) .ch1-multivariate-layer-card > span:first-child,
+:is(main, #la) .ch1-bezout-main > span:first-child,
+:is(main, #la) .ch1-bezout-coeff > span:first-child,
+:is(main, #la) .ch1-eyebrow {
   color: var(--muted);
   font-size: 12.5px;
   font-weight: 400;
@@ -194,14 +197,14 @@ main .ch1-eyebrow {
 }
 
 /* the ledger lives inside a card: rows on hairlines, current row on accent-soft */
-main .ch1-ledger,
-main .ch1-section-gcd-polynomials .ch1-ledger {
+:is(main, #la) .ch1-ledger,
+:is(main, #la) .ch1-section-gcd-polynomials .ch1-ledger {
   border: 1px solid var(--line);
   border-radius: 10px;
   background: var(--surface-solid);
 }
 
-main .ch1-euclid-panel .ch1-ledger {
+:is(main, #la) .ch1-euclid-panel .ch1-ledger {
   border: 0;
   border-radius: 0;
   background: none;
@@ -215,7 +218,7 @@ main .ch1-euclid-panel .ch1-ledger {
  * strips and graph, §3/§4 staircase and §10 tiles below.
  */
 @media (max-width: 720px) {
-  main .ch1-lab .ch1-euclid-panel {
+  :is(main, #la) .ch1-lab .ch1-euclid-panel {
     padding: 14px 0 0;
     border: 0;
     border-top: 1px solid var(--line);
@@ -224,8 +227,8 @@ main .ch1-euclid-panel .ch1-ledger {
   }
 }
 
-main .ch1-ledger > div.is-current,
-main .ch1-section-gcd-polynomials .ch1-ledger > div.is-current {
+:is(main, #la) .ch1-ledger > div.is-current,
+:is(main, #la) .ch1-section-gcd-polynomials .ch1-ledger > div.is-current {
   border-radius: 6px;
   background: var(--accent-soft);
   color: var(--accent-strong);
@@ -233,40 +236,40 @@ main .ch1-section-gcd-polynomials .ch1-ledger > div.is-current {
 }
 
 /* coefficient strips */
-main .ch1-strip-cell,
-main .ch1-guided-lab .ch1-strip-cell,
-main .ch1-coeff-card .ch1-strip-cell {
+:is(main, #la) .ch1-strip-cell,
+:is(main, #la) .ch1-guided-lab .ch1-strip-cell,
+:is(main, #la) .ch1-coeff-card .ch1-strip-cell {
   border: 1px solid var(--line);
   border-radius: 8px;
   background: var(--surface-solid);
   box-shadow: none;
 }
 
-main .ch1-strip-cell.is-highlight {
+:is(main, #la) .ch1-strip-cell.is-highlight {
   border-color: var(--accent);
   background: var(--accent-soft);
 }
 
-main .ch1-section-univariate-polynomials[data-coefficient-mode] .ch1-coeff-card.is-f .ch1-strip-cell.is-contributor,
-main .ch1-coeff-card.is-f .ch1-strip-cell.is-contributor {
+:is(main, #la) .ch1-section-univariate-polynomials[data-coefficient-mode] .ch1-coeff-card.is-f .ch1-strip-cell.is-contributor,
+:is(main, #la) .ch1-coeff-card.is-f .ch1-strip-cell.is-contributor {
   border-color: color-mix(in srgb, var(--cv-v1) 55%, var(--line));
   background: color-mix(in srgb, var(--cv-v1) 9%, var(--surface-solid));
   box-shadow: none;
 }
 
-main .ch1-section-univariate-polynomials[data-coefficient-mode] .ch1-coeff-card.is-g .ch1-strip-cell.is-contributor,
-main .ch1-coeff-card.is-g .ch1-strip-cell.is-contributor {
+:is(main, #la) .ch1-section-univariate-polynomials[data-coefficient-mode] .ch1-coeff-card.is-g .ch1-strip-cell.is-contributor,
+:is(main, #la) .ch1-coeff-card.is-g .ch1-strip-cell.is-contributor {
   border-color: color-mix(in srgb, var(--cv-v2) 55%, var(--line));
   background: color-mix(in srgb, var(--cv-v2) 9%, var(--surface-solid));
   box-shadow: none;
 }
 
-main .ch1-result-band .ch1-strip-cell {
+:is(main, #la) .ch1-result-band .ch1-strip-cell {
   background: var(--surface-soft);
   border-color: transparent;
 }
 
-main :is(.ch1-strip-input, .ch1-field input, .ch1-node-row input) {
+:is(main, #la) :is(.ch1-strip-input, .ch1-field input, .ch1-node-row input) {
   border: 1px solid var(--line-strong);
   border-radius: 6px;
   background: var(--surface-solid);
@@ -274,19 +277,19 @@ main :is(.ch1-strip-input, .ch1-field input, .ch1-node-row input) {
   font-variant-numeric: tabular-nums;
 }
 
-main :is(.ch1-strip-input, .ch1-field input, .ch1-node-row input):focus-visible {
+:is(main, #la) :is(.ch1-strip-input, .ch1-field input, .ch1-node-row input):focus-visible {
   outline: 2px solid color-mix(in srgb, var(--accent) 60%, transparent);
   outline-offset: 1px;
 }
 
-main :is(.ch1-strip-input, .ch1-node-row input).is-invalid {
+:is(main, #la) :is(.ch1-strip-input, .ch1-node-row input).is-invalid {
   border-color: var(--bad-line);
   background: var(--bad-bg);
   color: var(--bad-text);
 }
 
 /* slider rows: plain rows */
-main .ch1-slider-row {
+:is(main, #la) .ch1-slider-row {
   padding: 4px 0;
   border: 0;
   border-radius: 0;
@@ -295,13 +298,13 @@ main .ch1-slider-row {
   font-size: 14px;
 }
 
-main .ch1-slider-row > output {
+:is(main, #la) .ch1-slider-row > output {
   color: var(--text);
   font-variant-numeric: tabular-nums;
 }
 
 /* status pills */
-main .ch1-status {
+:is(main, #la) .ch1-status {
   border: 1px solid var(--line);
   border-radius: 999px;
   background: var(--surface-soft);
@@ -310,26 +313,26 @@ main .ch1-status {
   font-weight: 600;
 }
 
-main .ch1-status.is-ok {
+:is(main, #la) .ch1-status.is-ok {
   border-color: var(--ok-line);
   background: var(--ok-bg);
   color: var(--ok-text);
 }
 
-main .ch1-status.is-bad {
+:is(main, #la) .ch1-status.is-bad {
   border-color: var(--bad-line);
   background: var(--bad-bg);
   color: var(--bad-text);
 }
 
-main .ch1-status.is-warn {
+:is(main, #la) .ch1-status.is-warn {
   border-color: var(--predict-line);
   background: var(--predict-bg);
   color: var(--predict-text);
 }
 
 /* the “当前结论” is the lab's answer: give it reading size, not pill size */
-main .ch1-result-band .ch1-status {
+:is(main, #la) .ch1-result-band .ch1-status {
   padding: 8px 12px;
   border-radius: 8px;
   font-size: 15px;
@@ -337,8 +340,8 @@ main .ch1-result-band .ch1-status {
 }
 
 @media (max-width: 720px) {
-  main .ch1-lab .ch1-result-band,
-  main .ch1-more-ops .ch1-coeff-card {
+  :is(main, #la) .ch1-lab .ch1-result-band,
+  :is(main, #la) .ch1-more-ops .ch1-coeff-card {
     padding: 12px 0 0;
     border: 0;
     border-top: 1px solid var(--line);
@@ -348,9 +351,9 @@ main .ch1-result-band .ch1-status {
 }
 
 /* canvas frames */
-main :is(.ch1-stage, .ch1-complex-canvas-shell, .ch1-long-division-stage),
-main .ch1-guided-lab .ch1-stage,
-main .ch1-graph-details .ch1-stage {
+:is(main, #la) :is(.ch1-stage, .ch1-complex-canvas-shell, .ch1-long-division-stage),
+:is(main, #la) .ch1-guided-lab .ch1-stage,
+:is(main, #la) .ch1-graph-details .ch1-stage {
   border: 1px solid var(--line);
   border-radius: 8px;
   background: var(--cv-paper);
@@ -358,26 +361,26 @@ main .ch1-graph-details .ch1-stage {
   box-shadow: none;
 }
 
-main .ch1-graph-details .ch1-stage {
+:is(main, #la) .ch1-graph-details .ch1-stage {
   border-width: 1px 0 0;
   border-radius: 0 0 10px 10px;
 }
 
 @media (max-width: 720px) {
-  main .ch1-lab .ch1-graph-details {
+  :is(main, #la) .ch1-lab .ch1-graph-details {
     border: 0;
     border-top: 1px solid var(--line);
     border-radius: 0;
     background: none;
   }
 
-  main .ch1-lab .ch1-graph-details .ch1-stage {
+  :is(main, #la) .ch1-lab .ch1-graph-details .ch1-stage {
     border-width: 1px;
     border-radius: 8px;
   }
 }
 
-main :is(.ch1-canvas-caption, .ch1-ld-caption) {
+:is(main, #la) :is(.ch1-canvas-caption, .ch1-ld-caption) {
   border-top: 1px solid var(--line);
   background: none;
   color: var(--muted);
@@ -385,22 +388,22 @@ main :is(.ch1-canvas-caption, .ch1-ld-caption) {
   line-height: 1.6;
 }
 
-main .ch1-ld-progress > span {
+:is(main, #la) .ch1-ld-progress > span {
   background: var(--line);
 }
 
 /* long division: a fraction coefficient is set small above and below a bar */
-main .ch1-long-division-stage tspan.ch1-ld-frac {
+:is(main, #la) .ch1-long-division-stage tspan.ch1-ld-frac {
   font-size: 66%;
 }
 
-main .ch1-ld-progress > span.is-current,
-main .ch1-ld-progress > span.is-done {
+:is(main, #la) .ch1-ld-progress > span.is-current,
+:is(main, #la) .ch1-ld-progress > span.is-done {
   background: var(--accent);
 }
 
 /* “当前只看这一件事” style task notes: quiet, label in the accent */
-main :is(.ch1-focus-note, .ch1-ld-focus, .ch1-learning-question) {
+:is(main, #la) :is(.ch1-focus-note, .ch1-ld-focus, .ch1-learning-question) {
   padding: 14px 16px;
   border: 0;
   border-radius: 10px;
@@ -408,7 +411,7 @@ main :is(.ch1-focus-note, .ch1-ld-focus, .ch1-learning-question) {
   box-shadow: none;
 }
 
-main :is(.ch1-focus-note, .ch1-ld-focus, .ch1-learning-question) > span:first-child {
+:is(main, #la) :is(.ch1-focus-note, .ch1-ld-focus, .ch1-learning-question) > span:first-child {
   color: var(--accent);
   font-size: 12.5px;
   font-weight: 600;
@@ -416,7 +419,7 @@ main :is(.ch1-focus-note, .ch1-ld-focus, .ch1-learning-question) > span:first-ch
 }
 
 /* conclusions */
-main .ch1-live-conclusion {
+:is(main, #la) .ch1-live-conclusion {
   padding: 14px 18px;
   border: 1px solid var(--ok-line);
   border-radius: 10px;
@@ -425,7 +428,7 @@ main .ch1-live-conclusion {
   box-shadow: none;
 }
 
-main :is(.ch1-multivariate-summary, .ch1-multivariate-product-result) {
+:is(main, #la) :is(.ch1-multivariate-summary, .ch1-multivariate-product-result) {
   padding: 12px 14px;
   border: 0;
   border-radius: 10px;
@@ -435,9 +438,9 @@ main :is(.ch1-multivariate-summary, .ch1-multivariate-product-result) {
 
 /* phones: the tiles inside the §10 inspector and module become rows on hairlines */
 @media (max-width: 720px) {
-  main :is(.ch1-multivariate-inspector, .ch1-multivariate-module) .ch1-axis-key-grid > div,
-  main .ch1-multivariate-module .ch1-multivariate-layer-card,
-  main :is(.ch1-multivariate-inspector, .ch1-multivariate-module) :is(.ch1-multivariate-summary, .ch1-multivariate-product-result) {
+  :is(main, #la) :is(.ch1-multivariate-inspector, .ch1-multivariate-module) .ch1-axis-key-grid > div,
+  :is(main, #la) .ch1-multivariate-module .ch1-multivariate-layer-card,
+  :is(main, #la) :is(.ch1-multivariate-inspector, .ch1-multivariate-module) :is(.ch1-multivariate-summary, .ch1-multivariate-product-result) {
     padding: 10px 0 0;
     border: 0;
     border-top: 1px solid var(--line);
@@ -447,109 +450,109 @@ main :is(.ch1-multivariate-summary, .ch1-multivariate-product-result) {
 }
 
 /* tables */
-main .ch1-table-wrap {
+:is(main, #la) .ch1-table-wrap {
   border: 1px solid var(--line);
   border-radius: 10px;
   background: var(--surface-solid);
 }
 
-main .ch1-table th {
+:is(main, #la) .ch1-table th {
   background: var(--surface-soft);
   color: var(--muted);
   font-weight: 600;
 }
 
-main .ch1-table td {
+:is(main, #la) .ch1-table td {
   border-color: var(--line);
   font-variant-numeric: tabular-nums;
 }
 
 /* formal block: theorem rows on hairlines */
-main .ch1-formal .ch1-formal-equation {
+:is(main, #la) .ch1-formal .ch1-formal-equation {
   border: 0;
   border-radius: 6px;
   background: var(--surface-soft);
   box-shadow: none;
 }
 
-main .ch1-formal .definition-stack {
+:is(main, #la) .ch1-formal .definition-stack {
   gap: 0;
 }
 
-main .ch1-formal .definition-row > strong {
+:is(main, #la) .ch1-formal .definition-row > strong {
   color: var(--text);
   font-size: 17px;
   font-weight: 600;
 }
 
-main .ch1-formal .definition-row > p {
+:is(main, #la) .ch1-formal .definition-row > p {
   color: var(--text-2);
   font-size: 15.5px;
   line-height: 1.85;
 }
 
-main .ch1-pitfalls,
-main .ch1-misconceptions {
+:is(main, #la) .ch1-pitfalls,
+:is(main, #la) .ch1-misconceptions {
   border: 1px solid var(--bad-line);
   border-radius: 10px;
   background: var(--bad-bg);
   box-shadow: none;
 }
 
-main :is(.ch1-pitfalls, .ch1-misconceptions) > strong {
+:is(main, #la) :is(.ch1-pitfalls, .ch1-misconceptions) > strong {
   color: var(--bad-text);
   font-size: 12.5px;
   letter-spacing: 0.08em;
 }
 
-main .ch1-formal .ch1-next-note > strong {
+:is(main, #la) .ch1-formal .ch1-next-note > strong {
   color: var(--muted);
   font-weight: 600;
 }
 
 /* §2 opener: the middle 0 keeps x² in place */
-main .ch1-zero-module {
+:is(main, #la) .ch1-zero-module {
   display: grid;
   gap: 16px;
 }
 
-main .ch1-zero-body {
+:is(main, #la) .ch1-zero-body {
   display: grid;
   grid-template-columns: minmax(0, 0.85fr) minmax(0, 1.15fr);
   gap: 22px;
   align-items: start;
 }
 
-main .ch1-zero-strips {
+:is(main, #la) .ch1-zero-strips {
   display: grid;
   gap: 14px;
 }
 
-main .ch1-zero-strip {
+:is(main, #la) .ch1-zero-strip {
   display: grid;
   gap: 6px;
 }
 
-main .ch1-zero-strip[hidden],
-main .ch1-zero-readout[hidden],
-main .ch1-coeff-analysis[hidden] {
+:is(main, #la) .ch1-zero-strip[hidden],
+:is(main, #la) .ch1-zero-readout[hidden],
+:is(main, #la) .ch1-coeff-analysis[hidden] {
   display: none;
 }
 
-main .ch1-zero-strip > b {
+:is(main, #la) .ch1-zero-strip > b {
   color: var(--muted);
   font-size: 13px;
   font-weight: 600;
 }
 
 /* fixed columns, so the shorter strip lines up under 1, x, x² */
-main .ch1-zero-strip .ch1-strip {
+:is(main, #la) .ch1-zero-strip .ch1-strip {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 64px));
   gap: 8px;
 }
 
-main .ch1-zero-strip .ch1-strip-cell {
+:is(main, #la) .ch1-zero-strip .ch1-strip-cell {
   display: grid;
   justify-items: center;
   gap: 4px;
@@ -557,74 +560,74 @@ main .ch1-zero-strip .ch1-strip-cell {
   padding: 8px 4px;
 }
 
-main .ch1-zero-strip.is-f .ch1-strip-cell:nth-child(4) {
+:is(main, #la) .ch1-zero-strip.is-f .ch1-strip-cell:nth-child(4) {
   border-color: color-mix(in srgb, var(--cv-v1) 55%, var(--line));
   background: color-mix(in srgb, var(--cv-v1) 10%, var(--surface-solid));
   color: var(--cv-v1);
 }
 
-main .ch1-zero-strip.is-f .ch1-strip-cell:nth-child(3) {
+:is(main, #la) .ch1-zero-strip.is-f .ch1-strip-cell:nth-child(3) {
   border-style: dashed;
 }
 
-main .ch1-zero-strip.is-h .ch1-strip-cell:nth-child(3) {
+:is(main, #la) .ch1-zero-strip.is-h .ch1-strip-cell:nth-child(3) {
   border-color: color-mix(in srgb, var(--cv-v2) 55%, var(--line));
   background: color-mix(in srgb, var(--cv-v2) 10%, var(--surface-solid));
   color: var(--cv-v2);
 }
 
-main .ch1-zero-actions > .ch3l-btn {
+:is(main, #la) .ch1-zero-actions > .ch3l-btn {
   min-width: 160px;
 }
 
-main .ch1-zero-readout {
+:is(main, #la) .ch1-zero-readout {
   margin: 0;
   color: var(--text-2);
   font-size: 15px;
   line-height: 1.8;
 }
 
-main .ch1-zero-stage canvas {
+:is(main, #la) .ch1-zero-stage canvas {
   width: 100%;
   height: 280px;
 }
 
 @media (max-width: 760px) {
-  main .ch1-zero-body {
+  :is(main, #la) .ch1-zero-body {
     grid-template-columns: minmax(0, 1fr);
   }
 
-  main .ch1-zero-stage canvas {
+  :is(main, #la) .ch1-zero-stage canvas {
     height: 240px;
   }
 }
 
 /* conclusions and verdict chips wait for the prediction */
-main .ch1-live-conclusion[hidden],
-main .ch1-lab .ch1-status[hidden] {
+:is(main, #la) .ch1-live-conclusion[hidden],
+:is(main, #la) .ch1-lab .ch1-status[hidden] {
   display: none;
 }
 
 /* the prediction box sits on its own row above the toolbar */
-main .ch1-lab > :is([data-conj-gate], [data-merge-gate], [data-root-gate]) {
+:is(main, #la) .ch1-lab > :is([data-conj-gate], [data-merge-gate], [data-root-gate]) {
   min-width: 0;
 }
 
 /* the primary step button in the chapter 1 toolbars */
-main .ch1-controls button.is-primary {
+:is(main, #la) .ch1-controls button.is-primary {
   border-color: var(--accent);
   background: var(--accent);
   color: var(--on-accent);
   font-weight: 600;
 }
 
-main .ch1-controls button.is-primary:hover:not(:disabled) {
+:is(main, #la) .ch1-controls button.is-primary:hover:not(:disabled) {
   border-color: var(--accent-strong);
   background: var(--accent-strong);
 }
 
 /* §3 / §4: remainder-degree staircase */
-main .ch1-stairs-card {
+:is(main, #la) .ch1-stairs-card {
   grid-column: 1 / -1;
   display: grid;
   gap: 8px;
@@ -635,7 +638,7 @@ main .ch1-stairs-card {
   background: var(--surface-solid);
 }
 
-main .ch1-stairs-card > h4 {
+:is(main, #la) .ch1-stairs-card > h4 {
   margin: 0;
   color: var(--muted);
   font-size: 12.5px;
@@ -643,73 +646,73 @@ main .ch1-stairs-card > h4 {
   letter-spacing: 0.04em;
 }
 
-main .ch1-stairs {
+:is(main, #la) .ch1-stairs {
   min-width: 0;
   border-radius: 8px;
   background: var(--cv-paper);
 }
 
-main .ch1-stairs-svg {
+:is(main, #la) .ch1-stairs-svg {
   display: block;
   max-width: 100%;
   height: auto;
   font-family: var(--font-serif);
 }
 
-main .ch1-stairs-note {
+:is(main, #la) .ch1-stairs-note {
   margin: 0;
   color: var(--text-2);
   font-size: 14px;
   line-height: 1.7;
 }
 
-main .ch1-stairs-svg .ch1-stairs-grid {
+:is(main, #la) .ch1-stairs-svg .ch1-stairs-grid {
   stroke: var(--cv-grid-major);
   stroke-width: 1;
 }
 
-main .ch1-stairs-svg :is(.ch1-stairs-tick, .ch1-stairs-axis) {
+:is(main, #la) .ch1-stairs-svg :is(.ch1-stairs-tick, .ch1-stairs-axis) {
   fill: var(--muted);
   font-size: 12px;
 }
 
-main .ch1-stairs-svg .ch1-stairs-level {
+:is(main, #la) .ch1-stairs-svg .ch1-stairs-level {
   stroke: var(--cv-v2);
   stroke-width: 1.4;
   stroke-dasharray: 5 5;
 }
 
-main .ch1-stairs-svg .ch1-stairs-level-label {
+:is(main, #la) .ch1-stairs-svg .ch1-stairs-level-label {
   fill: var(--cv-v2);
   font-size: 13px;
   font-style: italic;
   font-weight: 600;
 }
 
-main .ch1-stairs-svg .ch1-stairs-step {
+:is(main, #la) .ch1-stairs-svg .ch1-stairs-step {
   fill: none;
   stroke: var(--cv-axis);
   stroke-width: 1;
   stroke-dasharray: 2 3;
 }
 
-main .ch1-stairs-svg .ch1-stairs-bar.is-f { fill: color-mix(in srgb, var(--cv-v1) 22%, transparent); stroke: var(--cv-v1); }
-main .ch1-stairs-svg .ch1-stairs-bar.is-g { fill: color-mix(in srgb, var(--cv-v2) 22%, transparent); stroke: var(--cv-v2); }
-main .ch1-stairs-svg .ch1-stairs-bar.is-r { fill: color-mix(in srgb, var(--cv-image) 22%, transparent); stroke: var(--cv-image); }
-main .ch1-stairs-svg .ch1-stairs-bar { stroke-width: 1.4; }
-main .ch1-stairs-svg .ch1-stairs-glow { fill: color-mix(in srgb, var(--cv-image) 18%, transparent); stroke: none; }
-main .ch1-stairs-svg .ch1-stairs-glow.is-g { fill: color-mix(in srgb, var(--cv-v2) 18%, transparent); }
-main .ch1-stairs-svg .ch1-stairs-zero { fill: none; stroke: var(--cv-image); stroke-width: 1.2; stroke-dasharray: 3 3; }
+:is(main, #la) .ch1-stairs-svg .ch1-stairs-bar.is-f { fill: color-mix(in srgb, var(--cv-v1) 22%, transparent); stroke: var(--cv-v1); }
+:is(main, #la) .ch1-stairs-svg .ch1-stairs-bar.is-g { fill: color-mix(in srgb, var(--cv-v2) 22%, transparent); stroke: var(--cv-v2); }
+:is(main, #la) .ch1-stairs-svg .ch1-stairs-bar.is-r { fill: color-mix(in srgb, var(--cv-image) 22%, transparent); stroke: var(--cv-image); }
+:is(main, #la) .ch1-stairs-svg .ch1-stairs-bar { stroke-width: 1.4; }
+:is(main, #la) .ch1-stairs-svg .ch1-stairs-glow { fill: color-mix(in srgb, var(--cv-image) 18%, transparent); stroke: none; }
+:is(main, #la) .ch1-stairs-svg .ch1-stairs-glow.is-g { fill: color-mix(in srgb, var(--cv-v2) 18%, transparent); }
+:is(main, #la) .ch1-stairs-svg .ch1-stairs-zero { fill: none; stroke: var(--cv-image); stroke-width: 1.2; stroke-dasharray: 3 3; }
 
-main .ch1-stairs-svg :is(.ch1-stairs-value, .ch1-stairs-name, .ch1-stairs-callout) {
+:is(main, #la) .ch1-stairs-svg :is(.ch1-stairs-value, .ch1-stairs-name, .ch1-stairs-callout) {
   font-size: 13px;
   font-weight: 600;
 }
 
-main .ch1-stairs-svg .ch1-stairs-name { font-style: italic; }
-main .ch1-stairs-svg :is(.ch1-stairs-value, .ch1-stairs-name, .ch1-stairs-callout).is-f { fill: var(--cv-v1); }
-main .ch1-stairs-svg :is(.ch1-stairs-value, .ch1-stairs-name, .ch1-stairs-callout).is-g { fill: var(--cv-v2); }
-main .ch1-stairs-svg :is(.ch1-stairs-value, .ch1-stairs-name, .ch1-stairs-callout).is-r { fill: var(--cv-image); }
+:is(main, #la) .ch1-stairs-svg .ch1-stairs-name { font-style: italic; }
+:is(main, #la) .ch1-stairs-svg :is(.ch1-stairs-value, .ch1-stairs-name, .ch1-stairs-callout).is-f { fill: var(--cv-v1); }
+:is(main, #la) .ch1-stairs-svg :is(.ch1-stairs-value, .ch1-stairs-name, .ch1-stairs-callout).is-g { fill: var(--cv-v2); }
+:is(main, #la) .ch1-stairs-svg :is(.ch1-stairs-value, .ch1-stairs-name, .ch1-stairs-callout).is-r { fill: var(--cv-image); }
 
 /* ch3 §7 (结式): later steps stay hidden until they are reached */
 main [data-ch3-lab="resultant"] .ch3-resultant-steps > section[hidden] {
@@ -721,13 +724,13 @@ main [data-ch3-lab="resultant"] .ch3-verification-item.is-rejected {
 }
 
 /* §6: f above, f′ below on the same x-scale */
-main .ch1-section-multiple-factors .ch1-merge-stages {
+:is(main, #la) .ch1-section-multiple-factors .ch1-merge-stages {
   display: grid;
   gap: 10px;
   align-content: start;
 }
 
-main .ch1-merge-legend {
+:is(main, #la) .ch1-merge-legend {
   display: flex;
   flex-wrap: wrap;
   gap: 6px 16px;
@@ -736,38 +739,38 @@ main .ch1-merge-legend {
   line-height: 1.6;
 }
 
-main .ch1-merge-legend > b {
+:is(main, #la) .ch1-merge-legend > b {
   font-weight: 400;
 }
 
-main .ch1-merge-legend > .is-f {
+:is(main, #la) .ch1-merge-legend > .is-f {
   color: var(--cv-v1);
 }
 
-main .ch1-merge-legend > .is-d {
+:is(main, #la) .ch1-merge-legend > .is-d {
   color: var(--cv-v2);
 }
 
-main .ch1-merge-legend > .is-glow {
+:is(main, #la) .ch1-merge-legend > .is-glow {
   color: var(--muted);
 }
 
-main .ch1-section-multiple-factors .ch1-merge-exact.ch3l-btn {
+:is(main, #la) .ch1-section-multiple-factors .ch1-merge-exact.ch3l-btn {
   width: 100%;
   margin-top: 4px;
 }
 
-main .ch1-section-multiple-factors .ch1-equation-grid > .ch1-gcd-cell.is-shared {
+:is(main, #la) .ch1-section-multiple-factors .ch1-equation-grid > .ch1-gcd-cell.is-shared {
   border-color: color-mix(in srgb, var(--cv-image) 45%, var(--line));
   box-shadow: 0 0 0 4px color-mix(in srgb, var(--cv-image) 14%, transparent);
 }
 
-main .ch1-section-multiple-factors .ch1-equation-grid > .ch1-gcd-cell.is-shared > strong {
+:is(main, #la) .ch1-section-multiple-factors .ch1-equation-grid > .ch1-gcd-cell.is-shared > strong {
   color: var(--cv-image);
 }
 
-main .ch1-section-multiple-factors :is(.ch1-slider-row, .ch1-controls button):has(input:disabled),
-main .ch1-section-multiple-factors .ch1-controls button:disabled {
+:is(main, #la) .ch1-section-multiple-factors :is(.ch1-slider-row, .ch1-controls button):has(input:disabled),
+:is(main, #la) .ch1-section-multiple-factors .ch1-controls button:disabled {
   opacity: 0.45;
 }
 
@@ -3130,13 +3133,13 @@ main .ch2-tau-cell.is-current {
 }
 
 /* ch1 §3/§4: the zero polynomial as an empty slot below the axis; the gcd on the last nonzero bar */
-main .ch1-stairs-svg :is(.ch1-stairs-zero-label, .ch1-stairs-top) {
+:is(main, #la) .ch1-stairs-svg :is(.ch1-stairs-zero-label, .ch1-stairs-top) {
   fill: var(--cv-image);
   font-size: 12px;
   font-weight: 600;
 }
 
-main .ch1-stairs-svg .ch1-stairs-top {
+:is(main, #la) .ch1-stairs-svg .ch1-stairs-top {
   font-size: 13px;
   font-style: italic;
 }
@@ -3199,13 +3202,13 @@ main .lesson-page-section .bk7-couple .bk7-link-label.is-zero { fill: var(--cv-s
 }
 
 /* ch1 §2: the operations workbench folded under the opening question */
-main .ch1-more-ops {
+:is(main, #la) .ch1-more-ops {
   border: 1px solid var(--line);
   border-radius: 10px;
   background: var(--surface-solid);
 }
 
-main .ch1-more-ops > summary {
+:is(main, #la) .ch1-more-ops > summary {
   display: flex;
   flex-wrap: wrap;
   align-items: baseline;
@@ -3215,11 +3218,11 @@ main .ch1-more-ops > summary {
   list-style: none;
 }
 
-main .ch1-more-ops > summary::-webkit-details-marker {
+:is(main, #la) .ch1-more-ops > summary::-webkit-details-marker {
   display: none;
 }
 
-main .ch1-more-ops > summary::after {
+:is(main, #la) .ch1-more-ops > summary::after {
   content: "展开";
   margin-left: auto;
   color: var(--accent-strong);
@@ -3227,47 +3230,47 @@ main .ch1-more-ops > summary::after {
   font-weight: 600;
 }
 
-main .ch1-more-ops[open] > summary::after {
+:is(main, #la) .ch1-more-ops[open] > summary::after {
   content: "收起";
 }
 
-main .ch1-more-ops > summary > span {
+:is(main, #la) .ch1-more-ops > summary > span {
   color: var(--text);
   font-size: 17px;
   font-weight: 600;
 }
 
-main .ch1-more-ops > summary > small {
+:is(main, #la) .ch1-more-ops > summary > small {
   color: var(--muted);
   font-size: 14px;
 }
 
-main .ch1-more-ops > .ch1-coeff-workflow {
+:is(main, #la) .ch1-more-ops > .ch1-coeff-workflow {
   padding: 0 18px 18px;
 }
 
 @media (max-width: 720px) {
-  main .ch1-more-ops {
+  :is(main, #la) .ch1-more-ops {
     border: 0;
     border-top: 1px solid var(--line);
     border-radius: 0;
     background: none;
   }
 
-  main .ch1-more-ops > summary,
-  main .ch1-more-ops > .ch1-coeff-workflow {
+  :is(main, #la) .ch1-more-ops > summary,
+  :is(main, #la) .ch1-more-ops > .ch1-coeff-workflow {
     padding-inline: 0;
   }
 }
 
 /* ch1 §3: the finished staircase beside the opposite case (divides / does not divide) */
-main .ch1-stairs-pair {
+:is(main, #la) .ch1-stairs-pair {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 10px;
 }
 
-main .ch1-stairs-pair > figure {
+:is(main, #la) .ch1-stairs-pair > figure {
   display: grid;
   gap: 4px;
   min-width: 0;
@@ -3277,39 +3280,39 @@ main .ch1-stairs-pair > figure {
   background: var(--cv-paper);
 }
 
-main .ch1-stairs-pair > figure.is-compare {
+:is(main, #la) .ch1-stairs-pair > figure.is-compare {
   border: 1px dashed var(--line-strong);
 }
 
-main .ch1-stairs-pair > figure > figcaption {
+:is(main, #la) .ch1-stairs-pair > figure > figcaption {
   padding-left: 6px;
   color: var(--muted);
   font-size: 13px;
 }
 
-main .ch1-stairs-pair > figure > figcaption > b {
+:is(main, #la) .ch1-stairs-pair > figure > figcaption > b {
   color: var(--text);
   font-weight: 600;
 }
 
 @media (max-width: 560px) {
-  main .ch1-stairs-pair {
+  :is(main, #la) .ch1-stairs-pair {
     grid-template-columns: 1fr;
   }
 }
 
 /* phones: the staircase is drawn on the card itself; the compared case sits under a hairline */
 @media (max-width: 720px) {
-  main .ch1-lab .ch1-stairs,
-  main .ch1-stairs-pair > figure {
+  :is(main, #la) .ch1-lab .ch1-stairs,
+  :is(main, #la) .ch1-stairs-pair > figure {
     background: none;
   }
 
-  main .ch1-stairs-pair > figure {
+  :is(main, #la) .ch1-stairs-pair > figure {
     padding: 0;
   }
 
-  main .ch1-stairs-pair > figure.is-compare {
+  :is(main, #la) .ch1-stairs-pair > figure.is-compare {
     padding-top: 10px;
     border: 0;
     border-top: 1px solid var(--line);
@@ -3405,7 +3408,7 @@ main .qv-same > figure > figure.qv-s3-inset canvas {
 }
 
 /* ch1 §4: the gcd marked inside every ledger row once the run ends */
-main .ch1-euclid-step-copy .ch1-common-factor {
+:is(main, #la) .ch1-euclid-step-copy .ch1-common-factor {
   padding: 0 2px;
   border-radius: 4px;
   background: color-mix(in srgb, var(--cv-image) 16%, transparent);
@@ -3413,14 +3416,14 @@ main .ch1-euclid-step-copy .ch1-common-factor {
   font-weight: inherit;
 }
 
-main .ch1-euclid-step-copy .ch1-euclid-common {
+:is(main, #la) .ch1-euclid-step-copy .ch1-euclid-common {
   color: var(--text-2);
   font-size: 14px;
   line-height: 1.7;
 }
 
 /* “B=(x−1)(x²+x+1)，” stays on one line; the line breaks between A=…, B=… and r=… */
-main .ch1-euclid-common > .ch1-keep {
+:is(main, #la) .ch1-euclid-common > .ch1-keep {
   white-space: nowrap;
 }
 
@@ -3525,13 +3528,13 @@ main .ch2-leibniz[hidden] {
 
 /* §6 (two columns): the f graph grows to the bottom of the readouts, so the left column does not end early */
 @media (min-width: 901px) {
-  main .ch1-section-multiple-factors .ch1-two-col > .ch1-merge-stages {
+  :is(main, #la) .ch1-section-multiple-factors .ch1-two-col > .ch1-merge-stages {
     align-self: stretch;
     grid-template-rows: minmax(340px, 1fr) auto auto;
     align-content: stretch;
   }
 
-  main .ch1-section-multiple-factors .ch1-merge-stages > .ch1-stage:not(.is-short) {
+  :is(main, #la) .ch1-section-multiple-factors .ch1-merge-stages > .ch1-stage:not(.is-short) {
     height: auto;
     max-height: none;
   }

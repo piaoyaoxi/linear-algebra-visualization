@@ -71,6 +71,9 @@ body .ch1-lab .tex .katex * {
 .ch1-section-gcd-polynomials .ch1-bezout-panel {
   min-width: 0;
   padding: 18px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: var(--surface-soft);
 }
 
 .ch1-section-gcd-polynomials .ch1-euclid-panel h4,
@@ -190,6 +193,10 @@ body .ch1-lab .tex .katex * {
   gap: 14px;
   min-height: 0;
   padding: 13px 2px;
+  border: 0;
+  border-bottom: 1px solid var(--line);
+  border-radius: 0;
+  background: transparent;
 }
 
 .ch1-section-multiple-factors .ch1-equation-grid > div > span {

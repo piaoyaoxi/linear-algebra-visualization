@@ -209,8 +209,7 @@
 }
 
 .ch1-table tr:last-child td {
-  border-bottom-width: 0;
-  border-bottom-style: none;
+  border-bottom: 0;
 }
 
 .ch1-candidate {

@@ -147,6 +147,13 @@
   overflow-wrap: anywhere;
 }
 
+.ch1-conjugate-motion .ch1-slider-row {
+  padding: 11px 12px;
+  border: 1px solid var(--line);
+  border-radius: 13px;
+  background: var(--surface-soft);
+}
+
 .ch1-conjugate-motion [data-beta-controls] {
   display: grid;
   gap: 10px;

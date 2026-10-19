@@ -2,17 +2,6 @@
 (() => {
   "use strict";
 
-  const addStylesheet = (href) => {
-    if (document.querySelector(`link[href="${href}"]`)) return;
-    const link = document.createElement("link");
-    link.rel = "stylesheet";
-    link.href = href;
-    document.head.append(link);
-  };
-
-  addStylesheet("./visuals/ch1/refinement.css?v=ch1-final2");
-  addStylesheet("./visuals/ch1/learning-design.css?v=lf4");
-
   const math = window.Ch1Math;
   if (math) {
     math.polyFrom ||= math.poly;

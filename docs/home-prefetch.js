@@ -3,7 +3,7 @@
  * 提前下载进浏览器缓存。点进学习页时这些文件直接从缓存读取。
  *
  * 文件清单在运行时从 learn.html 里读，学习页增删文件或改版本号都不用改这里。
- * 省流量模式、2G 网络下不预下载；学习页的预加载图片（明暗切换动画）也不预下载。
+ * 省流量模式、2G 网络下不预下载；明暗切换动画的图片也不预下载。
  */
 (() => {
   const LEARN_URL = "./learn.html";
@@ -25,10 +25,17 @@
     const doc = new DOMParser().parseFromString(html, "text/html");
     const base = new URL(LEARN_URL, location.href);
     const urls = new Set();
-    doc.querySelectorAll('link[rel="stylesheet"][href], link[rel="preload"][as="font"][href], script[src]').forEach((el) => {
+    const add = (el) => {
       const url = new URL(el.getAttribute(el.tagName === "SCRIPT" ? "src" : "href"), base);
       if (url.origin === location.origin) urls.add(url.href);
-    });
+    };
+    doc.querySelectorAll('link[rel="stylesheet"][href], link[rel="preload"][as="font"][href], script[src]').forEach(add);
+    // 各章实验脚本在 <template> 里，学习页按章加载；这里只预下载最可能先打开的那一章
+    // （上次学到的章，没有记录就是第一章）
+    let last = "";
+    try { last = localStorage.getItem("la-visual-last") || ""; } catch { /* 读不到就按第一章 */ }
+    const chapter = /^#(ch\d+)/.exec(last)?.[1] || "ch1";
+    doc.querySelector(`template[data-chapter-labs="${chapter}"]`)?.content.querySelectorAll("script[src]").forEach(add);
     return [...urls];
   }
 

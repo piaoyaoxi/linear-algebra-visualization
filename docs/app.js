@@ -235,6 +235,62 @@ window.defineChapterTeardown = defineChapterTeardown;
 window.afterLessonRender = afterLessonRender;
 window.addEventListener("pagehide", teardownLessonLabs);
 
+/* ---------- Loading chapter labs ---------- */
+
+// learn.html lists each chapter's lab scripts in a <template data-chapter-labs>; they
+// load when a lesson of that chapter first opens, and the remaining chapters load in the
+// background once the page is idle. Scripts run in insertion order (async = false), and
+// a kit listed under several chapters loads once.
+const scriptLoads = new Map();
+const chapterLoads = new Map();
+const loadedChapters = new Set();
+
+function loadScript(src) {
+  if (!scriptLoads.has(src)) {
+    scriptLoads.set(
+      src,
+      new Promise((resolve, reject) => {
+        const script = document.createElement("script");
+        script.src = src;
+        script.async = false;
+        script.onload = resolve;
+        script.onerror = () => reject(new Error(`Failed to load ${src}`));
+        document.head.append(script);
+      }),
+    );
+  }
+  return scriptLoads.get(src);
+}
+
+function labScriptsOf(chapterId) {
+  const template = document.querySelector(`template[data-chapter-labs="${chapterId}"]`);
+  return template ? [...template.content.querySelectorAll("script[src]")].map((script) => script.getAttribute("src")) : [];
+}
+
+function loadChapterLabs(chapterId) {
+  if (!chapterLoads.has(chapterId)) {
+    chapterLoads.set(
+      chapterId,
+      Promise.all(labScriptsOf(chapterId).map(loadScript)).then(() => {
+        loadedChapters.add(chapterId);
+      }),
+    );
+  }
+  return chapterLoads.get(chapterId);
+}
+
+function preloadRemainingLabs() {
+  const connection = navigator.connection;
+  if (connection?.saveData || /(^|-)2g$/.test(connection?.effectiveType || "")) return;
+  const idle = (callback) => (window.requestIdleCallback ? window.requestIdleCallback(callback, { timeout: 4000 }) : window.setTimeout(callback, 1500));
+  const queue = algebraContent.chapters.map((chapter) => chapter.id).filter((id) => !chapterLoads.has(id));
+  const next = () => {
+    const id = queue.shift();
+    if (id) idle(() => loadChapterLabs(id).catch(() => {}).then(next));
+  };
+  next();
+}
+
 /* ---------- Preferences ---------- */
 
 // Storage can be blocked (private browsing, sandboxed embeds) or contain stale data.
@@ -331,6 +387,8 @@ function init() {
   bindChrome();
   renderRoute();
   window.addEventListener("hashchange", renderRoute);
+  if (document.readyState === "complete") preloadRemainingLabs();
+  else window.addEventListener("load", preloadRemainingLabs, { once: true });
 
   // Canvas text is drawn with whatever font is ready at that moment. If the serif web
   // font arrives after the first paint and the student has not touched anything yet,
@@ -452,8 +510,11 @@ function bindChapterToggles() {
 
 /* ---------- Routing ---------- */
 
+let routeToken = 0;
+
 function renderRoute() {
   teardownLessonLabs();
+  const token = ++routeToken;
 
   const raw = decodeURIComponent(window.location.hash.replace(/^#/, "")) || "guide";
   const [requestedRoute, requestedSection] = raw.split("/");
@@ -472,21 +533,40 @@ function renderRoute() {
   document.body.dataset.route = state.route;
   document.body.dataset.view = state.section ? "lesson" : "overview";
 
-  if (chapter.id === "guide") renderGuide();
-  else if (section) renderLessonPage(section, chapter);
-  else renderChapterOverview(chapter);
-
   if (chapter.id !== "guide") {
     writePreference("la-visual-last", `#${state.route}${state.section ? `/${state.section}` : ""}`);
   }
-
   updateDocumentTitle(chapter, section);
   updateNavActive();
-  buildPageToc();
   document.body.classList.remove("sidebar-open");
 
+  if (chapter.id === "guide") renderGuide();
+  else if (!section) renderChapterOverview(chapter);
+  else if (loadedChapters.has(chapter.id)) renderLessonPage(section, chapter);
+  else {
+    renderLessonLoading(section, chapter);
+    const startScroll = window.scrollY;
+    loadChapterLabs(chapter.id).then(
+      () => {
+        if (token !== routeToken) return;
+        // keep the reader's place if they scrolled while the labs were loading
+        const moved = Math.abs(window.scrollY - startScroll) > 4;
+        renderLessonPage(section, chapter);
+        finishRoute({ scroll: !moved });
+      },
+      () => {
+        if (token === routeToken) renderLabLoadError();
+      },
+    );
+  }
+  finishRoute({ scroll: true });
+}
+
+function finishRoute({ scroll }) {
+  buildPageToc();
   window.requestAnimationFrame(() => {
     setupInteractiveBlocks();
+    if (!scroll) return;
     if (state.section) {
       document.querySelector(`#${CSS.escape(state.section)}`)?.scrollIntoView({ block: "start", behavior: "auto" });
     } else {
@@ -595,20 +675,41 @@ function renderLessonCard(chapter, section) {
 
 /* ---------- Lesson page ---------- */
 
+function lessonCoverHtml(section, owner) {
+  return `
+    <section class="lesson-cover" id="${section.id}">
+      <div class="lesson-cover-copy">
+        <div class="breadcrumb">${owner?.title || "课程"} <span>/</span> ${section.title}</div>
+        <h1>${section.title}</h1>
+        <p>${section.goal}</p>
+      </div>
+    </section>
+`;
+}
+
+// Shown for the moment a chapter's labs are still downloading.
+function renderLessonLoading(section, chapter) {
+  els.main.innerHTML = `${lessonCoverHtml(section, chapter)}
+    <section class="section-band lesson-page-section lab-load-state" role="status">
+      <p class="lead">正在载入这一节……</p>
+    </section>`;
+}
+
+function renderLabLoadError() {
+  const box = els.main.querySelector(".lab-load-state");
+  if (!box) return;
+  box.innerHTML = `
+    <p class="lead">这一节的实验没有载入成功，可能是网络断了一下。</p>
+    <button class="button primary" type="button" data-reload-page>重新载入</button>`;
+  box.querySelector("[data-reload-page]").addEventListener("click", () => window.location.reload());
+}
+
 function renderLessonPage(section, chapter) {
   teardownLessonLabs();
   const owner = chapter || findStructuredSection(section.id)?.chapter || null;
   const concepts = getConcepts(section);
   const video = getVideo(section);
-  const breadcrumb = owner?.title || "课程";
-  els.main.innerHTML = `
-    <section class="lesson-cover" id="${section.id}">
-      <div class="lesson-cover-copy">
-        <div class="breadcrumb">${breadcrumb} <span>/</span> ${section.title}</div>
-        <h1>${section.title}</h1>
-        <p>${section.goal}</p>
-      </div>
-    </section>
+  els.main.innerHTML = `${lessonCoverHtml(section, owner)}
 
     <section class="section-band lesson-page-section" id="${section.id}-question">
       <h2>概念问题</h2>

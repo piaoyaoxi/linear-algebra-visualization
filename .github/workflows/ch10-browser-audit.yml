@@ -35,7 +35,7 @@ jobs:
           for file in current/content/ch10*.js current/visuals/ch10/*.js; do
             node --check "$file"
           done
-          node --check current/structured-learning.js
+          node --check current/app.js
           node --check tests/ch10-browser-audit.cjs
           node --check tests/ch10-source-audit.cjs
 

@@ -1,0 +1,1603 @@
+/*
+ * Chapter 1 lab and theorem-band styles, in cascade order. They load with the other
+ * chapters' sheets (before design-a.css); lab-layout.css, loaded last, holds the rules
+ * that must win over the shared sheets.
+ */
+
+/* ---------- Base: labs, theorem band, workbench panels, readouts ---------- */
+.ch1-lab {
+  display: grid;
+  gap: 18px;
+  padding: 20px;
+  border: 1px solid var(--line);
+  border-radius: calc(var(--radius) + 10px);
+  background: var(--surface-solid);
+  box-shadow: var(--shadow-soft);
+}
+
+.ch1-lab-head {
+  display: grid;
+  gap: 6px;
+}
+
+.ch1-lab-head h3,
+.ch1-panel h4,
+.ch1-rewrite-stage h4 {
+  margin: 0;
+}
+
+.ch1-lab-head h3 {
+  font-size: clamp(18px, 2vw, 21px);
+  letter-spacing: -0.015em;
+}
+
+.ch1-lab-head p,
+.ch1-panel p {
+  margin: 0;
+  color: var(--muted);
+  line-height: 1.7;
+}
+
+.ch1-lab-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.15fr) minmax(280px, 0.85fr);
+  gap: 18px;
+  align-items: start;
+}
+
+.ch1-panel,
+.ch1-control-groups {
+  display: grid;
+  gap: 14px;
+  min-width: 0;
+}
+
+.ch1-stage {
+  position: relative;
+  height: 340px;
+  min-height: 340px;
+  max-height: 340px;
+  overflow: hidden;
+  border: 1px solid var(--line);
+  border-radius: calc(var(--radius) + 6px);
+  background: var(--surface-soft);
+}
+
+.ch1-stage.is-short {
+  height: 220px;
+  min-height: 220px;
+  max-height: 220px;
+}
+
+.ch1-stage canvas {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+.ch1-controls {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+
+.ch1-controls button,
+.ch1-btn,
+.ch1-basis-row {
+  appearance: none;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  padding: 8px 13px;
+  background: var(--surface-solid);
+  color: var(--text);
+  font: inherit;
+  font-size: 13px;
+  line-height: 1.2;
+  cursor: pointer;
+  transition: border-color 160ms ease, background 160ms ease, color 160ms ease, transform 160ms ease;
+}
+
+.ch1-controls button:hover:not(:disabled),
+.ch1-btn:hover:not(:disabled),
+.ch1-basis-row:hover:not(:disabled) {
+  border-color: color-mix(in srgb, var(--accent) 48%, var(--line));
+}
+
+.ch1-controls button.is-active,
+.ch1-btn.is-active,
+.ch1-basis-row.is-active {
+  border-color: color-mix(in srgb, var(--accent) 48%, var(--line));
+  background: color-mix(in srgb, var(--accent) 14%, var(--surface-solid));
+  color: var(--accent-strong, #08736e);
+  font-weight: 650;
+}
+
+.ch1-controls button:disabled,
+.ch1-btn:disabled {
+  cursor: default;
+  opacity: 0.45;
+}
+
+.ch1-controls button:focus-visible,
+.ch1-btn:focus-visible,
+.ch1-basis-row:focus-visible,
+.ch1-strip-input:focus-visible,
+.ch1-node-row input:focus-visible {
+  outline: 2px solid color-mix(in srgb, var(--accent) 65%, transparent);
+  outline-offset: 2px;
+}
+
+.ch1-readout,
+.ch1-invariant,
+.ch1-rewrite-stage {
+  display: grid;
+  gap: 8px;
+  min-width: 0;
+  padding: 13px 15px;
+  border: 1px solid var(--line);
+  border-radius: calc(var(--radius) + 4px);
+  background: var(--surface-soft);
+  line-height: 1.6;
+}
+
+.ch1-readout strong,
+.ch1-invariant strong {
+  overflow-wrap: anywhere;
+}
+
+.ch1-muted {
+  color: var(--muted);
+  font-size: 13.5px;
+  line-height: 1.6;
+}
+
+.ch1-status {
+  display: inline-flex;
+  width: fit-content;
+  max-width: 100%;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 10px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: var(--surface-solid);
+  font-size: 12.5px;
+  font-weight: 650;
+  line-height: 1.35;
+}
+
+.ch1-status.is-ok {
+  border-color: color-mix(in srgb, var(--accent) 38%, var(--line));
+  background: color-mix(in srgb, var(--accent) 11%, var(--surface-solid));
+  color: var(--accent-strong, #08736e);
+}
+
+.ch1-status.is-bad {
+  border-color: color-mix(in srgb, var(--coral, #d9835f) 40%, var(--line));
+  background: color-mix(in srgb, var(--coral, #d9835f) 11%, var(--surface-solid));
+  color: var(--coral, #b75c3a);
+}
+
+.ch1-status.is-warn {
+  border-color: color-mix(in srgb, #d69c36 42%, var(--line));
+  background: color-mix(in srgb, #d69c36 12%, var(--surface-solid));
+  color: color-mix(in srgb, #9a6410 88%, var(--text));
+}
+
+.ch1-status.is-neutral {
+  color: var(--muted);
+}
+
+.ch1-compare {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.ch1-compare-card {
+  min-width: 0;
+  padding: 12px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: var(--surface-soft);
+  line-height: 1.55;
+}
+
+.ch1-compare-card strong {
+  display: block;
+  margin-bottom: 8px;
+}
+
+.ch1-compare-card p {
+  margin-top: 8px;
+  font-size: 13px;
+}
+
+.ch1-strip {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 7px;
+}
+
+.ch1-strip-cell {
+  display: grid;
+  gap: 4px;
+  min-width: 66px;
+  padding: 8px 9px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: var(--surface-soft);
+  text-align: center;
+}
+
+.ch1-strip-cell.is-highlight {
+  border-color: color-mix(in srgb, var(--accent) 52%, var(--line));
+  background: color-mix(in srgb, var(--accent) 13%, var(--surface-solid));
+}
+
+.ch1-strip-deg {
+  color: var(--muted);
+  font-size: 11px;
+}
+
+.ch1-strip-val {
+  font-size: 15px;
+  font-variant-numeric: tabular-nums;
+}
+
+.ch1-strip-input {
+  width: 100%;
+  max-width: 78px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 5px 6px;
+  background: var(--surface-solid);
+  color: var(--text);
+  font: inherit;
+  text-align: center;
+}
+
+.ch1-strip-input.is-invalid,
+.ch1-node-row input.is-invalid {
+  border-color: var(--coral, #d9835f);
+  background: color-mix(in srgb, var(--coral, #d9835f) 10%, var(--surface-solid));
+}
+
+.ch1-slider-row {
+  display: grid;
+  grid-template-columns: minmax(92px, auto) 1fr 54px;
+  gap: 9px;
+  align-items: center;
+  min-width: 0;
+  font-size: 13.5px;
+}
+
+.ch1-slider-row input[type="range"] {
+  width: 100%;
+  min-width: 0;
+}
+
+.ch1-ledger {
+  display: grid;
+  gap: 6px;
+  max-height: 290px;
+  overflow: auto;
+  padding: 11px 13px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: var(--surface-soft);
+  font-size: 13px;
+  line-height: 1.55;
+}
+
+.ch1-ledger > div {
+  display: grid;
+  grid-template-columns: 28px minmax(0, 1fr);
+  gap: 8px;
+  padding: 7px 8px;
+  border-radius: 8px;
+}
+
+.ch1-ledger > div > span:first-child {
+  color: var(--muted);
+  font-variant-numeric: tabular-nums;
+}
+
+.ch1-ledger > div.is-current {
+  background: color-mix(in srgb, var(--accent) 12%, var(--surface-solid));
+  color: var(--accent-strong, #08736e);
+  font-weight: 600;
+}
+
+.ch1-node-grid {
+  display: grid;
+  gap: 8px;
+}
+
+.ch1-candidate-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.ch1-candidate {
+  display: grid;
+  gap: 5px;
+  min-width: 0;
+  padding: 10px;
+  border: 1px solid var(--line);
+  border-radius: 11px;
+  background: var(--surface-soft);
+}
+
+.ch1-candidate strong {
+  font-size: 15px;
+}
+
+.ch1-candidate span {
+  overflow-wrap: anywhere;
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.ch1-candidate em {
+  color: var(--muted);
+  font-size: 12px;
+  font-style: normal;
+}
+
+.ch1-candidate.is-root {
+  border-color: color-mix(in srgb, var(--accent) 48%, var(--line));
+  background: color-mix(in srgb, var(--accent) 11%, var(--surface-solid));
+}
+
+.ch1-candidate.is-root em {
+  color: var(--accent-strong, #08736e);
+  font-weight: 650;
+}
+
+.ch1-check-list {
+  display: grid;
+  gap: 8px;
+}
+
+.ch1-check-row {
+  display: grid;
+  grid-template-columns: 24px minmax(0, 1fr);
+  gap: 8px;
+  align-items: center;
+  padding: 9px 10px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: var(--surface-soft);
+}
+
+.ch1-check-row p {
+  color: var(--text);
+  line-height: 1.45;
+}
+
+.ch1-check-row.is-ok {
+  border-color: color-mix(in srgb, var(--accent) 38%, var(--line));
+}
+
+.ch1-check-row.is-ok > span {
+  color: var(--accent-strong, #08736e);
+}
+
+.ch1-check-row.is-bad {
+  border-color: color-mix(in srgb, var(--coral, #d9835f) 38%, var(--line));
+}
+
+.ch1-check-row.is-bad > span {
+  color: var(--coral, #d9835f);
+}
+
+.ch1-orbit {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 7px;
+}
+
+.ch1-orbit span {
+  padding: 7px 9px;
+  border: 1px solid var(--line);
+  border-radius: 9px;
+  background: var(--surface-soft);
+}
+
+.ch1-rewrite-stage {
+  min-height: 146px;
+  align-content: center;
+  text-align: center;
+}
+
+.ch1-rewrite-stage > div {
+  overflow-x: auto;
+  padding: 7px 0;
+  font-size: clamp(16px, 2vw, 20px);
+}
+
+@media (max-width: 900px) {
+  .ch1-lab-grid {
+    grid-template-columns: 1fr;
+  }
+
+
+
+  .ch1-compare {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 560px) {
+  .ch1-lab {
+    gap: 15px;
+    padding: 15px;
+    border-radius: calc(var(--radius) + 5px);
+  }
+
+  .ch1-stage {
+    height: 290px;
+    min-height: 290px;
+    max-height: 290px;
+  }
+
+  .ch1-stage.is-short {
+    height: 190px;
+    min-height: 190px;
+    max-height: 190px;
+  }
+
+  .ch1-gate-grid,
+  .ch1-compare,
+  .ch1-candidate-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .ch1-slider-row {
+    grid-template-columns: 86px minmax(0, 1fr) 44px;
+  }
+
+  .ch1-strip-cell {
+    min-width: 58px;
+    padding: 7px;
+  }
+
+  .ch1-controls button,
+  .ch1-btn {
+    padding: 8px 11px;
+  }
+}
+
+@media (max-width: 380px) {
+  .ch1-gate-grid,
+  .ch1-compare,
+  .ch1-candidate-grid,
+  .ch1-node-row {
+    grid-template-columns: 1fr;
+  }
+
+  .ch1-slider-row {
+    grid-template-columns: 1fr 46px;
+  }
+
+  .ch1-slider-row > :first-child {
+    grid-column: 1 / -1;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ch1-controls button,
+  .ch1-btn,
+  .ch1-basis-row {
+    transition: none;
+  }
+}
+.ch1-result-band .ch1-status {
+  border-radius: 12px;
+}
+
+/* ---------- §2: the workbench result reads as the main line ---------- */
+body #univariate-polynomials-interactive .ch1-result-band [data-out-tex] {
+  color: var(--text) !important;
+  font-size: clamp(18px, 2vw, 22px) !important;
+  font-weight: 650;
+  line-height: 1.5;
+}
+
+body #univariate-polynomials-interactive .ch1-result-band [data-out-tex] .katex,
+body #univariate-polynomials-interactive .ch1-result-band [data-out-tex] .katex span {
+  color: inherit !important;
+  font-size: 1em !important;
+}
+
+body #univariate-polynomials-interactive .ch1-result-band > div:first-child > span:first-child,
+body #univariate-polynomials-interactive .ch1-result-band > div:first-child > small {
+  color: var(--muted);
+  font-size: 12px;
+}
+
+/* ---------- §8 conjugate roots: head, toolbar, canvas and side panel ---------- */
+.ch1-motion-lab {
+  gap: 20px;
+}
+
+.ch1-motion-head {
+  display: grid;
+  gap: 7px;
+  max-width: 88ch;
+}
+
+.ch1-motion-head > span {
+  color: var(--accent-strong);
+  font-size: 11px;
+  font-weight: 850;
+  letter-spacing: 0.12em;
+}
+
+.ch1-motion-head h3 {
+  margin: 0;
+  max-width: 34ch;
+  font-size: clamp(23px, 3vw, 31px);
+  line-height: 1.24;
+  letter-spacing: -0.025em;
+}
+
+.ch1-motion-head p {
+  margin: 0;
+  max-width: 78ch;
+  color: var(--muted);
+  line-height: 1.72;
+}
+
+.ch1-motion-toolbar {
+  padding-bottom: 2px;
+}
+
+.ch1-motion-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.45fr) minmax(300px, 0.72fr);
+  gap: 16px;
+  align-items: stretch;
+}
+
+.ch1-division-canvas-shell,
+.ch1-complex-canvas-shell {
+  display: grid;
+  min-width: 0;
+  overflow: hidden;
+  border: 1px solid var(--line);
+  border-radius: 19px;
+  background: var(--surface-soft);
+}
+
+.ch1-division-canvas-shell canvas,
+.ch1-complex-canvas-shell canvas {
+  display: block;
+  width: 100%;
+  height: 430px;
+  touch-action: none;
+}
+
+.ch1-complex-canvas-shell canvas {
+  height: 520px;
+  cursor: grab;
+}
+
+.ch1-complex-canvas-shell canvas:active {
+  cursor: grabbing;
+}
+
+.ch1-complex-canvas-shell canvas:focus-visible {
+  outline: 3px solid color-mix(in srgb, var(--accent) 28%, transparent);
+  outline-offset: -5px;
+}
+
+.ch1-canvas-caption {
+  margin: 0;
+  padding: 11px 14px;
+  border-top: 1px solid var(--line);
+  color: var(--muted);
+  font-size: 12.5px;
+  line-height: 1.55;
+}
+
+.ch1-motion-aside {
+  display: grid;
+  align-content: start;
+  gap: 13px;
+  min-width: 0;
+}
+
+.ch1-motion-aside > * {
+  min-width: 0;
+}
+
+.ch1-focus-note {
+  display: grid;
+  gap: 7px;
+  padding: 15px 16px;
+  border-left: 3px solid var(--accent);
+  border-radius: 0 14px 14px 0;
+  background: color-mix(in srgb, var(--accent) 6%, var(--surface-soft));
+}
+
+.ch1-focus-note > span {
+  color: var(--accent-strong);
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+}
+
+.ch1-focus-note strong {
+  font-size: 15px;
+  line-height: 1.55;
+}
+
+.ch1-focus-note p {
+  margin: 0;
+  color: var(--muted);
+  font-size: 13px;
+  line-height: 1.62;
+}
+
+.ch1-metrics.is-compact {
+  grid-template-columns: 1fr;
+}
+
+.ch1-equation-grid.is-compact {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.ch1-equation-grid.is-compact > div {
+  min-height: 78px;
+}
+
+.ch1-result-band.is-compact {
+  grid-template-columns: 1fr;
+  padding: 14px 15px;
+}
+
+.ch1-result-band.is-compact > div:first-child {
+  min-width: 0;
+}
+
+.ch1-result-band.is-compact strong {
+  overflow-wrap: anywhere;
+}
+
+.ch1-conjugate-motion .ch1-slider-row {
+  padding: 11px 12px;
+  border: 1px solid var(--line);
+  border-radius: 13px;
+  background: var(--surface-soft);
+}
+
+.ch1-conjugate-motion [data-beta-controls] {
+  display: grid;
+  gap: 10px;
+}
+
+.ch1-conjugate-motion [data-beta-controls][hidden] {
+  display: none;
+}
+
+@media (max-width: 1040px) {
+  .ch1-motion-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .ch1-motion-aside {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .ch1-motion-aside > .ch1-focus-note,
+  .ch1-motion-aside > .ch1-result-band,
+  .ch1-motion-aside > [data-real-status] {
+    grid-column: 1 / -1;
+  }
+
+  .ch1-metrics.is-compact {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    grid-column: 1 / -1;
+  }
+}
+
+@media (max-width: 680px) {
+  .ch1-motion-lab {
+    padding: 15px;
+    gap: 16px;
+  }
+
+  .ch1-motion-head h3 {
+    font-size: 22px;
+  }
+
+  .ch1-motion-toolbar button {
+    flex: 1 1 42%;
+    padding-inline: 8px;
+  }
+
+  .ch1-motion-toolbar .ch1-control-separator {
+    flex-basis: 100%;
+    width: 100%;
+    height: 0;
+    border: 0;
+  }
+
+  .ch1-division-canvas-shell canvas {
+    height: 360px;
+  }
+
+  .ch1-complex-canvas-shell canvas {
+    height: 390px;
+  }
+
+  .ch1-motion-aside,
+  .ch1-metrics.is-compact,
+  .ch1-equation-grid.is-compact {
+    grid-template-columns: 1fr;
+  }
+
+  .ch1-motion-aside > * {
+    grid-column: auto !important;
+  }
+
+  .ch1-conjugate-motion .ch1-slider-row {
+    grid-template-columns: 76px minmax(0, 1fr) 44px;
+  }
+}
+
+/* ---------- Formulas as continuous text (no chips, no coefficient boxes); §4, §6, §7, §3 layouts ---------- */
+
+/* The global .tex-inline component is intentionally chip-like in other parts of the site.
+   Inside Chapter 1 it fragmented arithmetic into dozens of rounded boxes, so reset it here. */
+body .ch1-lab .tex.tex-inline,
+body .ch1-lab .tex.tex-display {
+  display: inline-block !important;
+  width: auto !important;
+  min-width: 0 !important;
+  min-height: 0 !important;
+  max-width: 100%;
+  margin: 0 !important;
+  padding: 0 !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  color: inherit !important;
+  font-size: inherit !important;
+  font-weight: inherit;
+  line-height: inherit !important;
+  vertical-align: baseline;
+  white-space: nowrap;
+  overflow-wrap: normal !important;
+  word-break: normal !important;
+}
+
+body .ch1-lab .tex.tex-display {
+  display: block !important;
+  width: 100% !important;
+  overflow-x: auto;
+  overflow-y: hidden;
+}
+
+body .ch1-lab .tex.tex-inline::before,
+body .ch1-lab .tex.tex-inline::after,
+body .ch1-lab .tex.tex-display::before,
+body .ch1-lab .tex.tex-display::after {
+  content: none !important;
+}
+
+body .ch1-lab .tex .katex,
+body .ch1-lab .tex .katex * {
+  color: inherit !important;
+  font-size: 1em;
+  overflow-wrap: normal !important;
+  word-break: normal !important;
+}
+
+.ch1-lab .ch1-equation-grid strong,
+.ch1-lab .ch1-result-band strong,
+.ch1-lab [data-verify],
+.ch1-lab .ch1-ledger p,
+.ch1-lab .ch1-ledger small {
+  min-width: 0;
+  max-width: 100%;
+  overflow-x: auto;
+  overflow-y: hidden;
+  scrollbar-width: thin;
+}
+
+/* §4: a readable Euclidean ledger and one continuous Bezout identity. */
+.ch1-section-gcd-polynomials .ch1-euclid-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1.08fr) minmax(360px, 0.92fr);
+  gap: 22px;
+  align-items: start;
+}
+
+.ch1-section-gcd-polynomials .ch1-euclid-panel,
+.ch1-section-gcd-polynomials .ch1-bezout-panel {
+  min-width: 0;
+  padding: 18px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: var(--surface-soft);
+}
+
+.ch1-section-gcd-polynomials .ch1-euclid-panel h4,
+.ch1-section-gcd-polynomials .ch1-bezout-panel h4 {
+  margin: 0 0 13px;
+}
+
+.ch1-section-gcd-polynomials .ch1-ledger {
+  max-height: none;
+  overflow: visible;
+  padding: 0;
+  border: 0;
+  background: transparent;
+}
+
+.ch1-section-gcd-polynomials .ch1-ledger > div {
+  grid-template-columns: 32px minmax(0, 1fr);
+  gap: 12px;
+  padding: 12px 10px;
+  border-bottom: 1px solid var(--line);
+  border-radius: 0;
+}
+
+.ch1-section-gcd-polynomials .ch1-ledger > div:last-child {
+  border-bottom: 0;
+}
+
+.ch1-section-gcd-polynomials .ch1-ledger > div.is-current {
+  border-radius: 10px;
+}
+
+.ch1-euclid-step-copy {
+  display: grid;
+  gap: 5px;
+  min-width: 0;
+}
+
+.ch1-euclid-step-copy p,
+.ch1-euclid-step-copy small {
+  margin: 0;
+}
+
+.ch1-euclid-step-copy p {
+  color: var(--text);
+  font-size: 15px;
+  line-height: 1.55;
+}
+
+.ch1-euclid-step-copy small {
+  color: var(--muted);
+  line-height: 1.5;
+}
+
+.ch1-bezout-main {
+  display: grid;
+  gap: 6px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid var(--line);
+}
+
+.ch1-bezout-main > span,
+.ch1-bezout-coeff > span {
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.ch1-bezout-main > strong {
+  font-size: clamp(22px, 2.4vw, 30px);
+}
+
+.ch1-bezout-coefficients {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 18px;
+  padding: 16px 0;
+  border-bottom: 1px solid var(--line);
+}
+
+.ch1-bezout-coeff {
+  display: grid;
+  gap: 4px;
+  min-width: 0;
+}
+
+.ch1-bezout-coeff strong {
+  font-size: 20px;
+}
+
+.ch1-bezout-verify {
+  display: grid;
+  gap: 8px;
+  padding-top: 16px;
+}
+
+.ch1-bezout-verify h4 {
+  margin: 0;
+}
+
+.ch1-bezout-verify [data-verify] {
+  color: var(--accent-strong);
+  font-size: clamp(16px, 1.8vw, 21px);
+  line-height: 1.65;
+  white-space: nowrap;
+}
+
+/* §6: long polynomials need horizontal breathing room, not three narrow cards. */
+.ch1-section-multiple-factors .ch1-equation-grid {
+  grid-template-columns: 1fr;
+  gap: 0;
+  border-top: 1px solid var(--line);
+}
+
+.ch1-section-multiple-factors .ch1-equation-grid > div {
+  display: grid;
+  grid-template-columns: 116px minmax(0, 1fr);
+  align-items: center;
+  gap: 14px;
+  min-height: 0;
+  padding: 13px 2px;
+  border: 0;
+  border-bottom: 1px solid var(--line);
+  border-radius: 0;
+  background: transparent;
+}
+
+.ch1-section-multiple-factors .ch1-equation-grid > div > span {
+  font-size: 13px;
+}
+
+.ch1-section-multiple-factors .ch1-equation-grid strong {
+  font-size: clamp(16px, 1.6vw, 20px);
+  white-space: nowrap;
+}
+
+/* §7: Horner is one arithmetic line per row. */
+.ch1-section-polynomial-functions [data-horner] {
+  max-height: none;
+  overflow: visible;
+}
+
+.ch1-section-polynomial-functions [data-horner] > div {
+  min-height: 54px;
+  align-items: center;
+}
+
+.ch1-section-polynomial-functions [data-horner] p {
+  margin: 0;
+  color: var(--text);
+  font-size: 16px;
+  white-space: nowrap;
+}
+
+/* §3: standard long-division sheet. The polynomial is continuous text; no term is boxed. */
+.ch1-long-division-lab {
+  gap: 20px;
+}
+
+.ch1-ld-progress {
+  display: grid;
+  grid-auto-flow: column;
+  grid-auto-columns: 1fr;
+  gap: 8px;
+}
+
+.ch1-ld-progress span {
+  height: 5px;
+  border-radius: 999px;
+  background: var(--line);
+  transition: background 180ms ease, transform 180ms ease;
+}
+
+.ch1-ld-progress span.is-done {
+  background: color-mix(in srgb, var(--accent) 56%, var(--line));
+}
+
+.ch1-ld-progress span.is-current {
+  background: var(--accent);
+  transform: scaleY(1.55);
+}
+
+.ch1-long-division-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1.55fr) minmax(310px, 0.72fr);
+  gap: 20px;
+  align-items: start;
+}
+
+.ch1-long-division-stage {
+  min-width: 0;
+  overflow: hidden;
+  border: 1px solid var(--line);
+  border-radius: calc(var(--radius) + 6px);
+  background: var(--surface-soft);
+}
+
+.ch1-long-division-scroll {
+  min-width: 0;
+  overflow-x: auto;
+  overflow-y: hidden;
+  padding: 16px 14px 8px;
+  scrollbar-width: thin;
+}
+
+.ch1-long-division-stage svg {
+  display: block;
+  width: 100%;
+  min-width: 820px;
+  height: auto;
+  overflow: visible;
+}
+
+.ch1-ld-caption {
+  margin: 0;
+  padding: 12px 16px;
+  border-top: 1px solid var(--line);
+  color: var(--muted);
+  font-size: 13px;
+  line-height: 1.6;
+}
+
+.ch1-ld-bracket,
+.ch1-ld-subtract-line {
+  fill: none;
+  stroke: color-mix(in srgb, var(--text) 72%, transparent);
+  stroke-width: 2;
+  stroke-linecap: round;
+}
+
+.ch1-ld-subtract-line {
+  stroke: color-mix(in srgb, var(--muted) 72%, transparent);
+  stroke-width: 1.5;
+}
+
+.ch1-ld-label {
+  fill: var(--muted);
+  font: 650 14px var(--font-serif);
+}
+
+.ch1-ld-divisor-text,
+.ch1-ld-term {
+  fill: var(--text);
+  font-family: "STIX Two Math", "Times New Roman", serif;
+  font-size: 25px;
+  font-weight: 500;
+}
+
+.ch1-ld-divisor-text {
+  font-size: 23px;
+}
+
+.ch1-ld-term.is-zero {
+  fill: color-mix(in srgb, var(--muted) 60%, transparent);
+}
+
+.ch1-ld-term.is-focus,
+.ch1-ld-term.is-new-quotient {
+  fill: var(--accent-strong);
+  font-weight: 700;
+}
+
+.ch1-ld-product-label {
+  fill: var(--muted);
+  font: 600 13px var(--font-serif);
+}
+
+.ch1-ld-minus {
+  fill: var(--coral);
+  font: 700 25px var(--font-serif);
+}
+
+.ch1-ld-side {
+  display: grid;
+  align-content: start;
+  gap: 14px;
+  min-width: 0;
+}
+
+.ch1-ld-summary {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.ch1-ld-summary > div {
+  display: grid;
+  gap: 4px;
+  min-width: 0;
+  padding: 13px 14px;
+  border-bottom: 1px solid var(--line);
+}
+
+.ch1-ld-summary span {
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.ch1-ld-summary strong {
+  min-width: 0;
+  overflow-x: auto;
+  overflow-y: hidden;
+  white-space: nowrap;
+  scrollbar-width: thin;
+}
+
+.ch1-ld-focus {
+  display: grid;
+  gap: 7px;
+  padding: 16px 16px 16px 18px;
+  border-left: 3px solid var(--accent);
+  background: color-mix(in srgb, var(--accent) 7%, var(--surface-soft));
+}
+
+.ch1-ld-focus > span {
+  color: var(--accent-strong);
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+}
+
+.ch1-ld-focus strong {
+  font-size: 16px;
+  line-height: 1.55;
+}
+
+.ch1-ld-focus p {
+  margin: 0;
+  color: var(--muted);
+  font-size: 13px;
+  line-height: 1.6;
+}
+
+.ch1-ld-invariant {
+  display: grid;
+  gap: 7px;
+  padding-top: 14px;
+  border-top: 1px solid var(--line);
+}
+
+.ch1-ld-invariant > span {
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.ch1-ld-invariant strong {
+  color: var(--accent-strong);
+  font-size: 16px;
+  white-space: nowrap;
+  overflow-x: auto;
+  overflow-y: hidden;
+  scrollbar-width: thin;
+}
+
+@media (max-width: 1080px) {
+  .ch1-section-gcd-polynomials .ch1-euclid-layout,
+  .ch1-long-division-layout {
+    grid-template-columns: 1fr;
+  }
+
+  .ch1-ld-side {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .ch1-ld-side > .ch1-ld-focus,
+  .ch1-ld-side > .ch1-ld-invariant,
+  .ch1-ld-side > [data-status] {
+    grid-column: 1 / -1;
+  }
+}
+
+@media (max-width: 720px) {
+  .ch1-section-gcd-polynomials .ch1-euclid-panel,
+  .ch1-section-gcd-polynomials .ch1-bezout-panel {
+    padding: 14px;
+  }
+
+  .ch1-bezout-coefficients,
+  .ch1-ld-summary,
+  .ch1-ld-side {
+    grid-template-columns: 1fr;
+  }
+
+  .ch1-ld-side > * {
+    grid-column: auto !important;
+  }
+
+  .ch1-long-division-stage svg {
+    min-width: 760px;
+  }
+
+  .ch1-section-multiple-factors .ch1-equation-grid > div {
+    grid-template-columns: 82px minmax(0, 1fr);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ch1-ld-progress span {
+    transition: none;
+  }
+}
+
+/* ---------- §3 summary width; §10 workspace: one observation row, then two full-width modules ---------- */
+
+/* §3 — the example is the first thing students read. Give it real width. */
+.ch1-section-polynomial-divisibility .ch1-ld-summary {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.ch1-section-polynomial-divisibility .ch1-ld-summary > div:first-child {
+  grid-column: 1 / -1;
+}
+
+.ch1-section-polynomial-divisibility .ch1-ld-summary > div:first-child strong {
+  overflow: visible;
+  white-space: nowrap;
+  font-size: clamp(16px, 1.55vw, 20px);
+}
+
+.ch1-section-polynomial-divisibility .ch1-ld-summary > div:nth-child(2) strong {
+  font-size: clamp(18px, 1.8vw, 23px);
+}
+
+@media (min-width: 1180px) {
+  .ch1-section-polynomial-divisibility .ch1-ld-summary {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+
+  .ch1-section-polynomial-divisibility .ch1-ld-summary > div:first-child {
+    grid-column: 1 / 4;
+  }
+
+  .ch1-section-polynomial-divisibility .ch1-ld-summary > div:nth-child(2) {
+    grid-column: 4;
+  }
+}
+
+/* §10 — one main observation row, then two full-width explanation modules. */
+.ch1-multivariate-workspace {
+  display: grid;
+  gap: 18px;
+  min-width: 0;
+}
+
+.ch1-multivariate-primary {
+  display: grid;
+  grid-template-columns: minmax(0, 1.42fr) minmax(300px, 0.78fr);
+  gap: 18px;
+  align-items: stretch;
+  min-width: 0;
+}
+
+.ch1-multivariate-primary > * {
+  min-width: 0;
+}
+
+.ch1-section-multivariate-polynomials .ch1-multivariate-stage {
+  height: 410px;
+  min-height: 410px;
+  max-height: 410px;
+}
+
+.ch1-multivariate-inspector {
+  display: grid;
+  grid-template-rows: auto auto 1fr;
+  align-content: stretch;
+  gap: 14px;
+  min-height: 410px;
+  padding: 18px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: var(--surface-soft);
+}
+
+.ch1-multivariate-readout {
+  display: grid;
+  align-content: start;
+  gap: 7px;
+  min-width: 0;
+  padding-bottom: 15px;
+  border-bottom: 1px solid var(--line);
+}
+
+.ch1-multivariate-readout > span,
+.ch1-multivariate-axis-key > span,
+.ch1-multivariate-module-head > span {
+  color: var(--accent-strong);
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.07em;
+}
+
+.ch1-multivariate-readout > strong {
+  min-width: 0;
+  font-size: clamp(21px, 2.2vw, 29px);
+  line-height: 1.45;
+}
+
+.ch1-multivariate-readout > p,
+.ch1-multivariate-axis-key p,
+.ch1-multivariate-module-head p,
+.ch1-multivariate-summary {
+  margin: 0;
+  color: var(--muted);
+  line-height: 1.65;
+}
+
+.ch1-multivariate-axis-key {
+  display: grid;
+  gap: 8px;
+  padding-bottom: 14px;
+  border-bottom: 1px solid var(--line);
+}
+
+.ch1-axis-key-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.ch1-axis-key-grid div {
+  display: grid;
+  gap: 3px;
+  padding: 10px;
+  border: 1px solid var(--line);
+  border-radius: 11px;
+  background: var(--surface-solid);
+}
+
+.ch1-axis-key-grid strong {
+  color: var(--text);
+  font-size: 13px;
+}
+
+.ch1-axis-key-grid small {
+  color: var(--muted);
+  line-height: 1.45;
+}
+
+.ch1-multivariate-summary {
+  align-self: end;
+  padding: 13px 14px;
+  border-left: 3px solid var(--accent);
+  background: color-mix(in srgb, var(--accent) 6%, var(--surface-solid));
+}
+
+.ch1-multivariate-module {
+  display: grid;
+  gap: 15px;
+  min-width: 0;
+  padding: 18px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: var(--surface-soft);
+}
+
+.ch1-multivariate-module[hidden] {
+  display: none;
+}
+
+.ch1-multivariate-module-head {
+  display: grid;
+  gap: 5px;
+  max-width: 78ch;
+}
+
+.ch1-multivariate-module-head h4 {
+  margin: 0;
+  font-size: clamp(17px, 1.8vw, 21px);
+}
+
+.ch1-multivariate-layer-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.ch1-multivariate-layer-card {
+  display: grid;
+  align-content: start;
+  gap: 8px;
+  min-width: 0;
+  min-height: 108px;
+  padding: 14px;
+  border: 1px solid var(--line);
+  border-radius: 13px;
+  background: var(--surface-solid);
+}
+
+.ch1-multivariate-layer-card.is-active {
+  border-color: color-mix(in srgb, var(--accent) 55%, var(--line));
+  background: color-mix(in srgb, var(--accent) 8%, var(--surface-solid));
+}
+
+.ch1-multivariate-layer-card > span {
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.ch1-multivariate-layer-card > strong {
+  min-width: 0;
+  overflow-x: auto;
+  overflow-y: hidden;
+  font-size: 16px;
+  line-height: 1.5;
+  scrollbar-width: thin;
+}
+
+.ch1-multivariate-product-grid {
+  display: grid;
+  grid-template-columns: minmax(270px, 0.72fr) minmax(0, 1.28fr);
+  gap: 16px;
+  align-items: stretch;
+}
+
+.ch1-multivariate-product-controls {
+  display: grid;
+  align-content: start;
+  gap: 13px;
+  min-width: 0;
+}
+
+.ch1-exponent-choice {
+  display: grid;
+  gap: 7px;
+}
+
+.ch1-exponent-choice > span {
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.ch1-exponent-choice .ch1-controls {
+  margin: 0;
+}
+
+.ch1-multivariate-product-result {
+  display: grid;
+  align-content: center;
+  gap: 9px;
+  min-width: 0;
+  padding: 18px;
+  border-left: 3px solid var(--accent);
+  background: color-mix(in srgb, var(--accent) 6%, var(--surface-solid));
+}
+
+.ch1-multivariate-product-result > span {
+  color: var(--accent-strong);
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+}
+
+.ch1-multivariate-product-result > strong {
+  min-width: 0;
+  overflow-x: auto;
+  overflow-y: hidden;
+  font-size: clamp(18px, 2vw, 24px);
+  line-height: 1.55;
+  scrollbar-width: thin;
+}
+
+.ch1-multivariate-product-result > p {
+  margin: 0;
+  color: var(--muted);
+  line-height: 1.65;
+}
+
+@media (max-width: 1040px) {
+  .ch1-multivariate-primary,
+  .ch1-multivariate-product-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .ch1-section-multivariate-polynomials .ch1-multivariate-stage {
+    height: 360px;
+    min-height: 360px;
+    max-height: 360px;
+  }
+
+  .ch1-multivariate-inspector {
+    min-height: 0;
+    grid-template-rows: auto;
+  }
+
+  .ch1-multivariate-summary {
+    align-self: auto;
+  }
+}
+
+@media (max-width: 720px) {
+  .ch1-section-polynomial-divisibility .ch1-ld-summary {
+    grid-template-columns: 1fr;
+  }
+
+  .ch1-section-polynomial-divisibility .ch1-ld-summary > div,
+  .ch1-section-polynomial-divisibility .ch1-ld-summary > div:first-child,
+  .ch1-section-polynomial-divisibility .ch1-ld-summary > div:nth-child(2) {
+    grid-column: 1;
+  }
+
+  .ch1-section-polynomial-divisibility .ch1-ld-summary > div:first-child strong {
+    overflow-x: auto;
+    overflow-y: hidden;
+    white-space: nowrap;
+    scrollbar-width: thin;
+  }
+
+  .ch1-multivariate-module,
+  .ch1-multivariate-inspector {
+    padding: 14px;
+  }
+
+  .ch1-section-multivariate-polynomials .ch1-multivariate-stage {
+    height: 300px;
+    min-height: 300px;
+    max-height: 300px;
+  }
+
+  .ch1-axis-key-grid,
+  .ch1-multivariate-layer-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 460px) {
+  .ch1-axis-key-grid,
+  .ch1-multivariate-layer-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* ---------- §10 observation row sizing ---------- */
+@media (min-width: 1041px) {
+  .ch1-section-multivariate-polynomials .ch1-multivariate-primary > .ch1-multivariate-stage {
+    height: auto !important;
+    min-height: 410px !important;
+    max-height: none !important;
+    align-self: stretch;
+  }
+
+  .ch1-section-multivariate-polynomials .ch1-multivariate-layer-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .ch1-section-multivariate-polynomials .ch1-multivariate-layer-card:nth-child(4) {
+    grid-column: 1 / -1;
+    min-height: 0;
+  }
+}
+
+@media (max-width: 1040px) {
+  .ch1-section-multivariate-polynomials .ch1-multivariate-primary > .ch1-multivariate-stage {
+    height: 360px !important;
+    min-height: 360px !important;
+    max-height: 360px !important;
+  }
+
+  .ch1-section-multivariate-polynomials .ch1-multivariate-layer-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 720px) {
+  .ch1-section-multivariate-polynomials .ch1-multivariate-primary > .ch1-multivariate-stage {
+    height: 300px !important;
+    min-height: 300px !important;
+    max-height: 300px !important;
+  }
+}
+
+@media (max-width: 460px) {
+  .ch1-section-multivariate-polynomials .ch1-multivariate-layer-grid {
+    grid-template-columns: 1fr;
+  }
+}

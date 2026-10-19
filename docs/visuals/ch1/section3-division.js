@@ -1,4 +1,4 @@
-/* Final §3 repair: standard polynomial long division without coefficient cards. */
+/* Chapter 1 §3 lab: polynomial long division, animated step by step, and where it stops. */
 (() => {
   "use strict";
 
@@ -448,6 +448,7 @@
     gate = window.LAPredictGate?.mount(root.querySelector("[data-division-gate]"), {
       root,
       manual: true,
+      // the shuffle key keeps the old file name so the options stay in the same order
       key: "visuals/ch1/repair-pass-v2.js#stop",
       question: `用 ${tex("g=x^2+x+1")} 去除 ${tex("f=x^4-1")}，每一步余式次数都下降。长除法做到什么时候停？`,
       options: [

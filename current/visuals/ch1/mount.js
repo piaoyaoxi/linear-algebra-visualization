@@ -1,30 +1,6 @@
-/* Attach Chapter 1 presentation modules, compatibility shims, and guided learning layouts. */
+/* Chapter 1 lesson layer: §9–§11 theorem bands, each lab's task line and conclusion, and the §2 coefficient workbench layout. */
 (() => {
   "use strict";
-
-  const math = window.Ch1Math;
-  if (math) {
-    math.polyFrom ||= math.poly;
-    math.rCmp ||= ((a, b) => math.rToNum(a) - math.rToNum(b));
-    if (math.drawLattice && !math.drawLattice.__ch1Compatibility) {
-      const baseDrawLattice = math.drawLattice;
-      const compatibleDrawLattice = function compatibleDrawLattice(...args) {
-        const grid = baseDrawLattice(...args);
-        if (!grid.hitTest) {
-          grid.hitTest = (px, py) => {
-            const point = grid.toIndex(px, py);
-            const maxI = Math.round((grid.width - 2 * grid.pad) / grid.sx);
-            const maxJ = Math.round((grid.height - 2 * grid.pad) / grid.sy);
-            if (point.i < 0 || point.j < 0 || point.i > maxI || point.j > maxJ) return null;
-            return point;
-          };
-        }
-        return grid;
-      };
-      compatibleDrawLattice.__ch1Compatibility = true;
-      math.drawLattice = compatibleDrawLattice;
-    }
-  }
 
   if (window.Ch1UI?.renderFormal) {
     ["rational-polynomials", "multivariate-polynomials", "symmetric-polynomials"].forEach((sectionId) => {

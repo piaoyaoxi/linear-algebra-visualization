@@ -1,4 +1,4 @@
-/* Chapter 1 motion upgrade: continuous polynomial division and conjugate roots. */
+/* Chapter 1 §8 lab: where the second root must sit for a real quadratic (conjugate roots). */
 (() => {
   "use strict";
 
@@ -571,6 +571,7 @@
     gate = window.LAPredictGate?.mount(root.querySelector("[data-conj-gate]"), {
       root,
       manual: true,
+      // the shuffle key keeps the old file name so the options stay in the same order
       key: "visuals/ch1/motion-upgrade.js#conjugate",
       question: `实系数二次多项式 ${tex("x^2+px+q")} 有一个根 ${tex("\\alpha=1+\\tfrac32 i")}。另一个根 ${tex("\\beta")} 在哪里？`,
       options: [
@@ -605,7 +606,7 @@
   function interactiveConjugate(el, section) {
     el.innerHTML = `<h2>交互实验</h2>
       <div class="ch1-lab ch1-motion-lab ch1-conjugate-motion">
-        <header class="ch1-motion-head">
+        <header class="ch1-motion-head ch1-lab-head">
           <h3>另一个根放在哪里，系数才是实数</h3>
           <p>${section.interactive.description}</p>
         </header>

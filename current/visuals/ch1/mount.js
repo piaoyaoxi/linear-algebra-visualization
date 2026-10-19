@@ -37,9 +37,9 @@
     }
   }
 
-  if (window.Ch1UI?.renderFormal && window.defineChapter1Renderer) {
+  if (window.Ch1UI?.renderFormal) {
     ["rational-polynomials", "multivariate-polynomials", "symmetric-polynomials"].forEach((sectionId) => {
-      window.defineChapter1Renderer(sectionId, { formal: window.Ch1UI.renderFormal });
+      defineLessonRenderer("ch1", sectionId, { formal: window.Ch1UI.renderFormal });
     });
   }
 
@@ -226,16 +226,8 @@
     if (event.target?.matches?.("[data-k]")) syncCoefficientDegreeLabels(document);
   });
 
-  const baseRenderLessonPage = window.renderLessonPage;
-  if (typeof baseRenderLessonPage !== "function") return;
-
-  window.addEventListener("hashchange", () => window.teardownChapter1Lesson?.());
-
-  window.renderLessonPage = function renderLessonPageWithChapter1Extensions(section, chapter) {
-    baseRenderLessonPage(section, chapter);
-    const root = document.querySelector("#mainContent");
-    window.mountChapter1Lesson?.(section, root);
+  defineChapterEnhancer("ch1", (section, root) => {
     syncCoefficientDegreeLabels(root);
     enhanceLesson(section, root);
-  };
+  });
 })();

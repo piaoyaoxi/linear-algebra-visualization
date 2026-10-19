@@ -28,14 +28,8 @@
     math.observeCanvas.__ch1MotionDeferred = true;
   }
 
-  if (typeof window.mountChapter1Lesson === "function" && !window.mountChapter1Lesson.__ch1MotionHeadCompatible) {
-    const baseMountChapter1Lesson = window.mountChapter1Lesson;
-    const compatibleMount = function mountChapter1LessonWithMotionHead(section, root) {
-      baseMountChapter1Lesson(section, root);
-      if (!section?.id || !root) return;
-      root.querySelector(`#${CSS.escape(section.id)}-interactive .ch1-motion-head`)?.classList.add("ch1-lab-head");
-    };
-    compatibleMount.__ch1MotionHeadCompatible = true;
-    window.mountChapter1Lesson = compatibleMount;
-  }
+  defineChapterEnhancer("ch1", (section, root) => {
+    if (!section?.id || !root) return;
+    root.querySelector(`#${CSS.escape(section.id)}-interactive .ch1-motion-head`)?.classList.add("ch1-lab-head");
+  });
 })();

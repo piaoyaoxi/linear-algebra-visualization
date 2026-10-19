@@ -345,12 +345,11 @@
 
   // Multiplication interactive is owned by section2-continuous.js (single continuous lab).
   function renderInteractive(interactive) {
-    if (!interactive) return;
-    // Continuous module mounts the live lab; avoid building a second, discarded UI.
     window.mountSection2ContinuousLab?.(interactive);
+    return () => window.teardownSection2ContinuousLab?.();
   }
 
-  window.defineChapter4Renderer?.("matrix-operations", {
+  defineLessonRenderer("ch4", "matrix-operations", {
     formal: renderFormal,
     interactive: renderInteractive,
   });

@@ -51,5 +51,5 @@
       </div>`;
   }
 
-  window.defineChapter5Renderer("quadratic-standard-form", { formal: renderFormal });
+  defineLessonRenderer("ch5", "quadratic-standard-form", { formal: renderFormal });
 })();

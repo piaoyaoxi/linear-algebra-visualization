@@ -5,46 +5,6 @@
   const definition = (title, text) => `<article class="block-definition"><strong>${title}</strong><p>${text}</p></article>`;
   const formalShell = (title, intro, main, meta, definitions, noteTitle, noteText) => `<h2>${title}</h2><div class="block-formal"><p class="block-intro">${intro}</p><div class="block-map"><div class="block-map-main">${main}</div><dl class="block-meta">${meta}</dl></div><div class="block-definition-stack">${definitions}</div><div class="block-note"><strong>${noteTitle}</strong><p>${noteText}</p></div></div>`;
 
-  function renderSection5Formal(formal) {
-    if (!formal) return;
-    formal.innerHTML = formalShell(
-      "先定分组，再谈分块运算",
-      "把一个大矩阵切成块之前，先要知道每一组行和列代表什么。只要分组一致，块可以像较大的元素那样参与加法、数乘和乘法；但尺寸不匹配时，块运算同样没有定义。",
-      display("\\begin{pmatrix}A_{11}&A_{12}\\\\A_{21}&A_{22}\\end{pmatrix}\\begin{pmatrix}B_{11}&B_{12}\\\\B_{21}&B_{22}\\end{pmatrix}"),
-      [metaRow("先看尺寸", "每个块本身都是矩阵；要相加或相乘，内部尺寸仍必须匹配。"), metaRow("块行乘块列", `${inline("(AB)_{ij}")} 来自 A 的第 i 个块行和 B 的第 j 个块列。`), metaRow("块对角", "非对角块为 0 时，不同部分互不影响，可以分别处理。")].join(""),
-      [definition("分块来自结构", "一个合理的分块往往来自变量分组、方程组分组或子空间分解；它应该反映原问题的结构。"), definition("块乘法", `与普通行列乘法完全同构。例如 ${inline("(AB)_{12}=A_{11}B_{12}+A_{12}B_{22}")}。`), definition("块对角结构", "当非对角块为 0，前一组变量不影响后一组，反之也一样；求解与求逆都可以按块分开。")].join(""),
-      "阅读顺序",
-      "先找输出块的位置，再选 A 的对应块行和 B 的对应块列。不要一上来试图同时看四个块。",
-    );
-  }
-
-  const blockTargets = {
-    "11": { title: "输出块 C₁₁", formula: "C_{11}=A_{11}B_{11}+A_{12}B_{21}", row: ["A_{11}", "A_{12}"], col: ["B_{11}", "B_{21}"], result: "C_{11}", note: "取 A 的第一块行，再取 B 的第一块列；两段配对相乘后相加。" },
-    "12": { title: "输出块 C₁₂", formula: "C_{12}=A_{11}B_{12}+A_{12}B_{22}", row: ["A_{11}", "A_{12}"], col: ["B_{12}", "B_{22}"], result: "C_{12}", note: "右上块只用 A 的第一块行和 B 的第二块列；参与配对的块由输出位置决定。" },
-    "21": { title: "输出块 C₂₁", formula: "C_{21}=A_{21}B_{11}+A_{22}B_{21}", row: ["A_{21}", "A_{22}"], col: ["B_{11}", "B_{21}"], result: "C_{21}", note: "下左块对应 A 的第二块行与 B 的第一块列。" },
-    "22": { title: "输出块 C₂₂", formula: "C_{22}=A_{21}B_{12}+A_{22}B_{22}", row: ["A_{21}", "A_{22}"], col: ["B_{12}", "B_{22}"], result: "C_{22}", note: "下右块对应 A 的第二块行与 B 的第二块列。" },
-  };
-
-  function grid(label, cells, sourceSet, result) {
-    return `<div><div class="block-grid-label">${label}</div><div class="block-grid">${cells.map((cell) => `<span class="block-cell${sourceSet?.includes(cell) ? " is-source" : ""}${result === cell ? " is-result" : ""}">${inline(cell)}</span>`).join("")}</div></div>`;
-  }
-
-  function blockProductView(targetKey) {
-    const target = blockTargets[targetKey];
-    return `<h4>${target.title}</h4><p>${target.note}</p><div class="block-grid-wrap">${grid("矩阵 A", ["A_{11}", "A_{12}", "A_{21}", "A_{22}"], target.row)}<span class="block-grid-symbol">×</span>${grid("矩阵 B", ["B_{11}", "B_{12}", "B_{21}", "B_{22}"], target.col)}<span class="block-grid-symbol">→</span>${grid("结果 C=AB", ["C_{11}", "C_{12}", "C_{21}", "C_{22}"], [], target.result)}</div><div class="block-math">${display(target.formula)}</div><div class="block-explanation"><ul class="block-points"><li>高亮的两个 A 块来自同一块行。</li><li>高亮的两个 B 块来自同一块列。</li><li>这就是“块行乘块列”；普通矩阵的行列乘法并没有变。</li></ul></div>`;
-  }
-
-  function renderSection5Interactive(section) {
-    if (!section) return;
-    section.innerHTML = `<h2>块配对实验</h2><div class="block-lab"><div class="block-lab-head"><h3>一个输出块到底由谁算出来</h3><p>选择 C 的不同位置。页面会只高亮参与该输出块计算的那一块行和那一块列。</p></div><div class="block-choice-row"><button type="button" class="block-choice is-active" data-block-target="11">C₁₁</button><button type="button" class="block-choice" data-block-target="12">C₁₂</button><button type="button" class="block-choice" data-block-target="21">C₂₁</button><button type="button" class="block-choice" data-block-target="22">C₂₂</button></div><div class="block-lab-panel" data-block-product-panel>${blockProductView("11")}</div></div>`;
-    section.querySelectorAll("[data-block-target]").forEach((button) => button.addEventListener("click", () => {
-      const target = button.dataset.blockTarget;
-      section.querySelectorAll("[data-block-target]").forEach((item) => item.classList.toggle("is-active", item === button));
-      const panel = section.querySelector("[data-block-product-panel]");
-      if (panel) panel.innerHTML = blockProductView(target);
-    }));
-  }
-
   function renderSection7Formal(formal) {
     if (!formal) return;
     formal.innerHTML = formalShell(
@@ -204,6 +164,5 @@
     paint();
   }
 
-  defineChapter4Renderer("block-matrices", { formal: renderSection5Formal, interactive: renderSection5Interactive });
-  defineChapter4Renderer("block-elementary-applications", { formal: renderSection7Formal, interactive: renderSection7Interactive });
+  defineLessonRenderer("ch4", "block-elementary-applications", { formal: renderSection7Formal, interactive: renderSection7Interactive });
 })();

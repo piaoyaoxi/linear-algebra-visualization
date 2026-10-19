@@ -197,7 +197,7 @@
     return () => controller.abort();
   }
 
-  defineChapter2Renderer("cofactor-expansion", {
+  defineLessonRenderer("ch2", "cofactor-expansion", {
     formal(formal) {
       if (!formal) return;
       formal.innerHTML = formalShell(

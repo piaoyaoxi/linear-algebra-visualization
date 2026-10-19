@@ -214,7 +214,7 @@
     };
   }
 
-  defineChapter2Renderer("determinant-intro", {
+  defineLessonRenderer("ch2", "determinant-intro", {
     formal(formal) {
       if (!formal) return;
       formal.innerHTML = formalShell(

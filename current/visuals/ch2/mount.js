@@ -1,8 +1,5 @@
-/* Attach Chapter 2 presentation modules after the generic lesson shell renders. */
+/* Chapter 2: the bridge to the next section sits above the mark button. */
 (() => {
-  const baseRenderLessonPage = window.renderLessonPage;
-  if (typeof baseRenderLessonPage !== "function") return;
-
   function enhanceChapter2Lesson(section, root) {
     const summary = root.querySelector(`#${CSS.escape(section.id)}-summary`);
     if (summary && section.bridge) {
@@ -15,13 +12,5 @@
     }
   }
 
-  window.defineChapter2LessonEnhancer?.(enhanceChapter2Lesson);
-
-  window.renderLessonPage = function renderLessonPageWithChapter2Extensions(section, chapter) {
-    baseRenderLessonPage(section, chapter);
-    window.mountChapter2Lesson?.(section, document.querySelector("#mainContent"));
-  };
-
-  window.addEventListener("hashchange", () => window.teardownChapter2Lesson?.());
-  window.addEventListener("pagehide", () => window.teardownChapter2Lesson?.());
+  defineChapterEnhancer("ch2", enhanceChapter2Lesson);
 })();

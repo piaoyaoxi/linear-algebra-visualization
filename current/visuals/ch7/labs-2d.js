@@ -16,7 +16,6 @@
     const r = Math.round(x * 10 ** d) / 10 ** d;
     return Object.is(r, -0) || Math.abs(r) < 10 ** -(d + 1) ? "0" : String(r);
   };
-  const vecText = (v, d = 2) => `(${v.map((x) => fmt(x, d)).join(", ")})`;
   /*
    * An exact fraction while it stays readable (denominator at most 999), otherwise
    * ≈ with three digits: powers like (4/5)⁴ = 256/625 are exact, (4/5)¹⁰ is not shown so.

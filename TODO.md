@@ -53,21 +53,22 @@
 
 短片是可选的。`current/app.js` 里的 `getVideo(section)` 只在 `section.video.src` 或 `section.video.embed` 存在时返回视频。真实可播放内容继续放在 `video` 字段；未来短片脚本、镜头草案等内部计划放在 `videoPlan` 字段或文档里，不进入前台视频模块。
 
-交互也是可选的。`getInteractive(section)` 先检查小节是否显式声明 `interactive`：有则按该字段渲染，`interactive: false` 可明确关闭；没有时再兼容读取 `visual`。自动识别的真实交互类型包括 `transform`、`multiply`、`rank`、`block`。`slot` 不自动出现，只用于显式 `interactive` 或后续增强脚本需要稳定容器的情况。
+交互也是可选的。`getInteractive(section)` 先看小节是否声明 `interactive`（`interactive: false` 关闭）；第四章旧数据还靠 `visual.type` 兼容。实验带只是挂载点，内容全部由各章实验脚本渲染。
 
-当前渲染顺序在 `renderLessonPage()` 中已经符合项目方向：
+页面外壳只有 `current/app.js` 一个文件（2026-10-19 起）：内容注册、路由、导学、侧栏、章节导览、小节页面都在这里。渲染顺序：
 
 ```text
-概念问题 -> 视频 -> 交互 -> 定理概念 -> 代表例题 -> 自测 -> 小结
+概念问题 -> 视频 -> 定理概念 -> 交互 -> 代表例题 -> 自测 -> 小结
 ```
 
-现有第四章关键资源：
+各章实验怎样挂进页面（不要再包装 `renderLessonPage`，也不要重新赋值 app.js 的函数）：
 
-- `transform`：矩阵改变网格，归入 §1。
-- `multiply`：矩阵乘法三视角，归入 §2，是黄金样板核心交互。
-- `rank`：秩与独立方向，归入 §3。
-- `block`：已可通过 `interactive` 或 `visual.type = "block"` 渲染，归入 §5。
-- `slot`：只作为显式增强容器，不自动视为真实交互动画。
+- `defineLessonRenderer("chN", sectionId, { formal, interactive })`：`formal(el, section, root)` 填定理带，`interactive(el, section, root)` 填实验带，可返回清理函数（或数组）。同一节的同一个槽只能定义一次，重复定义会直接报错——旧版靠“后加载的文件覆盖前面的”叠了好几层，这条规则防止再叠。
+- `defineChapterEnhancer("chN", fn)`：本章每一节渲染后都跑（第一章的任务说明、第二章的“下一步”、第五章的曲面和任务卡）。
+- `defineChapterTeardown("chN", fn)`：本章自己收集的清理（第一章的 `ch1Listen` / `ch1ObserveResize`）。
+- `afterLessonRender(fn)`：所有章都跑（例题挑战、停一下与定理小图）。
+- 每次换路由先跑全部清理；单个实验出错只在控制台报错，不会让整页停住。
+- 章节导览页读章节数据里的 `overviewCards`（三张卡）、`structureTitle`；没有卡就不显示“本章结构”。
 
 ## 5. 已看资料：线性代数不难
 
@@ -543,3 +544,11 @@ _dev/research/3b1b_eola_chapter10.py
   - 第二章 §2：预设移到排列上方，“扫描下一对/相邻交换一步”移到连线图正下方。
 - 吸顶的细节：吸顶画布一直有底色（行尾被推上去时，后面的读数不再透过图注）；画布顶上的纸色条在画布 `overflow: hidden` 时会被裁掉，改为再加一层向上平移的 `box-shadow`（卡片底色）；吸顶按钮行的底色加 `!important`（第五章的滑杆行原来透明）。
 - 剩下仍“超出”的只有预设到页面下方小图的距离（第五章 §2/§4、第八章 §2），常用的“下一步”、滑杆与图同屏，没再改。第二章 §6（矩阵到展开结果 767px）、第四章 §5/§7 看过不用改。
+
+## 代码整理：外壳合并、实验注册统一（2026-10-19，`ui/app-shell`，Claude）
+
+- 原来的入口层是 app.js → learn-entry.js → learn-placeholder.js → structured-learning.js → guide-nav.js 依次重新赋值全局函数，`renderRoute` 有三份；`renderLessonPage` 被 10 个章节的 mount.js 和 lesson-extras 包了 11 层。现在合成一个 app.js，用上面的注册接口；10 份几乎一样的 `visuals/chN/registry.js` 删掉。
+- 删掉的死代码：首页旧版 `renderHome`（含“轻玻璃”“先做第四章”等内部用语）、`renderPlaceholder`、第四章旧的 transform/multiply/rank 渲染器和网格画布（约 500 行，页面上早已被新实验替换）、`lesson-presentation.js`、`ch4/core-presentation.js`（三个渲染器都被后加载的文件覆盖）、`block-presentation.js` 的 §5（改名 `section7-block-elementary.js`）、第一章被覆盖的 §3/§4/§8/§10 旧实验和 §9–§11 旧定理带（约 1000 行）。
+- 例题挑战原来只因为第四章的 mount 对每一章都跑 enhancer 才在全站生效，现在是 `afterLessonRender`。
+- 本地和 CI 的静态服务器改用 `.github/scripts/serve.py`：`python3 -m http.server` 的连接队列只有 5，学习页一次请求两百多个文件，macOS 上会漏加载脚本（冒烟测试 7 次失败 1 次，整章静默坏掉）。
+- 验证方法：主干与分支各拍 336 张整页截图（73 节 + 导览，1440/390，初始/选完预测），逐像素比较并比对报错、KaTeX 错误、溢出、“停一下”与小图数量。脚本在会话 scratchpad（`shots.mjs`、`diff.py`），需要时可以放进仓库。

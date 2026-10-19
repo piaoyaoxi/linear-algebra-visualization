@@ -659,7 +659,7 @@
     window.addEventListener("resize", schedule, { passive: true, once: false });
   }
 
-  window.defineChapter4Renderer?.(SECTION_ID, {
+  defineLessonRenderer("ch4", SECTION_ID, {
     formal: renderFormal,
     interactive: renderInteractive,
   });

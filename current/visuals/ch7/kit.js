@@ -907,7 +907,7 @@
    * The lab section is moved above the theorem blocks (picture first).
    */
   function register(id, lab) {
-    window.defineChapter7Renderer?.(id, {
+    defineLessonRenderer("ch7", id, {
       formal: (root, section) => renderFormal(root, section),
       interactive: lab
         ? (root, section, page) => {

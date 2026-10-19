@@ -58,5 +58,5 @@
       </div>`;
   }
 
-  window.defineChapter5Renderer("quadratic-uniqueness", { formal: renderFormal });
+  defineLessonRenderer("ch5", "quadratic-uniqueness", { formal: renderFormal });
 })();

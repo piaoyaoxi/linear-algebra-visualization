@@ -3,7 +3,6 @@
   const M = () => window.Ch1Math;
   const U = () => window.Ch1UI;
   const tex = (value) => U().tex(value);
-  const display = (value) => U().display(value);
   const renderFormal = (el, section) => U().renderFormal(el, section);
   const lab = (...args) => U().lab(...args);
   const selectButtons = (...args) => U().selectButtons(...args);
@@ -425,79 +424,9 @@
   }
 
   // §8 — draggable complex roots
-  function mountConjugate(root) {
-    const state = { mode: "R", alpha: { re: 1, im: 1.5 }, beta: { re: -1, im: 0.75 }, dragging: null };
-    const bounds = { xMin: -3, xMax: 3, yMin: -3, yMax: 3 };
-    let cam = null;
-    const formatComplex = (z) => `${z.re.toFixed(2)}${z.im < 0 ? "−" : "+"}${Math.abs(z.im).toFixed(2)}i`;
-    function coefficients() {
-      const b = state.mode === "R" ? { re: state.alpha.re, im: -state.alpha.im } : state.beta;
-      const sum = { re: state.alpha.re + b.re, im: state.alpha.im + b.im };
-      const product = { re: state.alpha.re * b.re - state.alpha.im * b.im, im: state.alpha.re * b.im + state.alpha.im * b.re };
-      return { beta: b, sum, product };
-    }
-    function paint() {
-      const c = coefficients();
-      cam = M().drawComplexPlane(root.querySelector("canvas"), [
-        { ...state.alpha, label: "α", color: M().getPalette().drag },
-        { ...c.beta, label: state.mode === "R" ? "ᾱ" : "β", color: M().getPalette().accent },
-      ], { bounds });
-      root.querySelector("[data-alpha]").textContent = formatComplex(state.alpha);
-      root.querySelector("[data-beta]").textContent = formatComplex(c.beta);
-      root.querySelector("[data-sum]").textContent = `${c.sum.re.toFixed(2)}${c.sum.im < 0 ? "−" : "+"}${Math.abs(c.sum.im).toFixed(2)}i`;
-      root.querySelector("[data-product]").textContent = `${c.product.re.toFixed(2)}${c.product.im < 0 ? "−" : "+"}${Math.abs(c.product.im).toFixed(2)}i`;
-      root.querySelector("[data-factor]").innerHTML = state.mode === "R" ? tex(`x^2-${(2 * state.alpha.re).toFixed(2)}x+${(state.alpha.re ** 2 + state.alpha.im ** 2).toFixed(2)}`) : tex(`(x-(${formatComplex(state.alpha)}))(x-(${formatComplex(c.beta)}))`);
-      const real = Math.abs(c.sum.im) < 1e-9 && Math.abs(c.product.im) < 1e-9;
-      const st = root.querySelector("[data-real-status]"); st.className = `ch1-status ${real ? "is-ok" : "is-bad"}`; st.textContent = real ? "二次系数全部为实数" : "解锁后系数出现虚部";
-      root.querySelector("[data-beta-controls]").hidden = state.mode === "R";
-      root.querySelector("[data-re]").value = state.alpha.re; root.querySelector("[data-im]").value = state.alpha.im;
-      root.querySelector("[data-bre]").value = state.beta.re; root.querySelector("[data-bim]").value = state.beta.im;
-      root.querySelector("[data-re-value]").textContent = state.alpha.re.toFixed(2); root.querySelector("[data-im-value]").textContent = state.alpha.im.toFixed(2);
-      root.querySelector("[data-bre-value]").textContent = state.beta.re.toFixed(2); root.querySelector("[data-bim-value]").textContent = state.beta.im.toFixed(2);
-    }
-    const canvas = root.querySelector("canvas");
-    function pointFromEvent(event) {
-      const rect = canvas.getBoundingClientRect();
-      return cam.toWorld(event.clientX - rect.left, event.clientY - rect.top);
-    }
-    canvas.addEventListener("pointerdown", (event) => {
-      const point = pointFromEvent(event);
-      const c = coefficients();
-      const da = Math.hypot(point.x - state.alpha.re, point.y - state.alpha.im);
-      const db = Math.hypot(point.x - c.beta.re, point.y - c.beta.im);
-      state.dragging = da <= db ? "alpha" : state.mode === "C" ? "beta" : "alpha";
-      canvas.setPointerCapture(event.pointerId);
-    });
-    canvas.addEventListener("pointermove", (event) => {
-      if (!state.dragging) return;
-      const point = pointFromEvent(event);
-      const target = state.dragging === "alpha" ? state.alpha : state.beta;
-      target.re = Math.max(-2.5, Math.min(2.5, Math.round(point.x * 20) / 20));
-      target.im = Math.max(-2.5, Math.min(2.5, Math.round(point.y * 20) / 20));
-      paint();
-    });
-    canvas.addEventListener("pointerup", () => { state.dragging = null; });
-    root.querySelectorAll("[data-mode]").forEach((button) => button.addEventListener("click", () => { state.mode = button.dataset.mode; selectButtons(root, "[data-mode]", button); paint(); }));
-    [["re", "alpha", "re"], ["im", "alpha", "im"], ["bre", "beta", "re"], ["bim", "beta", "im"]].forEach(([key, object, prop]) => root.querySelector(`[data-${key}]`).addEventListener("input", (e) => { state[object][prop] = Number(e.target.value); paint(); }));
-    root.querySelectorAll("[data-preset]").forEach((button) => button.addEventListener("click", () => {
-      if (button.dataset.preset === "real") state.alpha = { re: 1, im: 0 };
-      else if (button.dataset.preset === "imag") state.alpha = { re: 0, im: 2 };
-      else state.alpha = { re: 1, im: 1.5 };
-      paint();
-    }));
-    M().observeCanvas(root.querySelector(".ch1-stage"), paint);
-    paint();
-  }
 
-  function interactive8(el, section) {
-    lab(el, "共轭锁复平面", section.interactive.description,
-      `<button type="button" data-mode="R" class="is-active">实系数模式（共轭锁）</button><button type="button" data-mode="C">复系数模式（解锁）</button><span class="ch1-control-separator"></span><button type="button" data-preset="pair">一般共轭对</button><button type="button" data-preset="imag">纯虚根</button><button type="button" data-preset="real">虚部为 0</button>`,
-      `<div class="ch1-two-col"><div><div class="ch1-stage ch1-draggable"><canvas aria-label="可拖动复根平面"></canvas><span class="ch1-canvas-hint">拖动 α；解锁后可拖动 β</span></div></div><div class="ch1-panel"><label class="ch1-slider-row"><span>Re(α)</span><input data-re type="range" min="-2.5" max="2.5" step="0.05"><output data-re-value></output></label><label class="ch1-slider-row"><span>Im(α)</span><input data-im type="range" min="-2.5" max="2.5" step="0.05"><output data-im-value></output></label><div data-beta-controls hidden><label class="ch1-slider-row"><span>Re(β)</span><input data-bre type="range" min="-2.5" max="2.5" step="0.05"><output data-bre-value></output></label><label class="ch1-slider-row"><span>Im(β)</span><input data-bim type="range" min="-2.5" max="2.5" step="0.05"><output data-bim-value></output></label></div><div class="ch1-equation-grid"><div><span>α</span><strong data-alpha></strong></div><div><span>第二个根</span><strong data-beta></strong></div><div><span>根之和</span><strong data-sum></strong></div><div><span>根之积</span><strong data-product></strong></div></div><div data-real-status class="ch1-status"></div><div class="ch1-result-band"><div><span>对应因式</span><strong data-factor></strong></div></div></div></div>`);
-    mountConjugate(el);
-  }
-
-  window.defineChapter1Renderer("factorization-theorem", { formal: renderFormal });
-  window.defineChapter1Renderer("multiple-factors", { formal: renderFormal, interactive: interactive6 });
-  window.defineChapter1Renderer("polynomial-functions", { formal: renderFormal, interactive: interactive7 });
-  window.defineChapter1Renderer("complex-real-factorization", { formal: renderFormal, interactive: interactive8 });
+  defineLessonRenderer("ch1", "factorization-theorem", { formal: renderFormal });
+  defineLessonRenderer("ch1", "multiple-factors", { formal: renderFormal, interactive: interactive6 });
+  defineLessonRenderer("ch1", "polynomial-functions", { formal: renderFormal, interactive: interactive7 });
+  defineLessonRenderer("ch1", "complex-real-factorization", { formal: renderFormal });
 })();

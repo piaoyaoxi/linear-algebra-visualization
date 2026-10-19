@@ -336,5 +336,5 @@
     mount(el);
   }
 
-  window.defineChapter1Renderer("multivariate-polynomials", { interactive });
+  defineLessonRenderer("ch1", "multivariate-polynomials", { interactive });
 })();

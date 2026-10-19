@@ -168,7 +168,7 @@
     };
   }
 
-  defineChapter2Renderer("determinant-properties", {
+  defineLessonRenderer("ch2", "determinant-properties", {
     formal(formal) {
       if (!formal) return;
       formal.innerHTML = formalShell(

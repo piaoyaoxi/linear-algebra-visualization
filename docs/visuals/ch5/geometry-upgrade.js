@@ -447,5 +447,5 @@
   }
 
   const mounts={"quadratic-matrix":mountS1,"quadratic-standard-form":mountS2,"quadratic-uniqueness":mountS3,"positive-definite":mountS4};
-  window.defineChapter5LessonEnhancer?.((section, root) => { const fn=mounts[section?.id]; if(!fn)return; const target=root.querySelector(`#${CSS.escape(section.id)}-interactive`); return fn(target); });
+  defineChapterEnhancer("ch5", (section, root) => { const fn=mounts[section?.id]; if(!fn)return; const target=root.querySelector(`#${CSS.escape(section.id)}-interactive`); return fn(target); });
 })();

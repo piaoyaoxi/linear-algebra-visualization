@@ -1,10 +1,6 @@
 (() => {
   const { M, tex, display, formalShell, module, proofSteps, misconception } = window.Ch2PresentationUtils;
 
-  function matrixTex(matrix) {
-    return tex(`\\begin{bmatrix}${matrix.map((row) => row.map((value) => M().formatNum(value, 3)).join("&")).join("\\\\")}\\end{bmatrix}`);
-  }
-
   /*
    * Worked example (static): fix rows 1, 2 of a 4×4 matrix; the six column pairs
    * give six signed products of a minor and its complementary minor. Sum = det = 6.
@@ -222,7 +218,7 @@
     };
   }
 
-  defineChapter2Renderer("laplace-and-product", {
+  defineLessonRenderer("ch2", "laplace-and-product", {
     formal(formal) {
       if (!formal) return;
       formal.innerHTML = formalShell(

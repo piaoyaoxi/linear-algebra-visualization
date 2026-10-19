@@ -94,5 +94,5 @@
     return () => controller.abort();
   }
 
-  window.defineChapter5Renderer("quadratic-matrix", { formal: renderFormal });
+  defineLessonRenderer("ch5", "quadratic-matrix", { formal: renderFormal });
 })();

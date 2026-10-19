@@ -1021,7 +1021,7 @@
 
   ["sets-maps", "vector-space-definition", "basis-coordinates", "change-of-basis", "subspaces", "intersection-sum", "direct-sum", "isomorphism"].forEach((id) => {
     const lab = LABS[id];
-    window.defineChapter6Renderer?.(id, {
+    defineLessonRenderer("ch6", id, {
       formal: (root, section) => K().renderFormal(root, section),
       interactive: lab
         ? (root, section, page) => {

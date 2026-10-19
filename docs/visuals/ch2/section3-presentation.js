@@ -193,7 +193,7 @@
     };
   }
 
-  defineChapter2Renderer("n-order-determinant", {
+  defineLessonRenderer("ch2", "n-order-determinant", {
     formal(formal) {
       if (!formal) return;
       formal.innerHTML = formalShell(

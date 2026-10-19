@@ -5,6 +5,13 @@ registerAlgebraChapter({
   subtitle: "运算 · 逆 · 分块 · 初等变换",
   summary:
     "先建立矩阵概念与运算，再讨论矩阵乘积的行列式与秩、逆矩阵、分块、初等矩阵，以及分块乘法的初等变换与应用。",
+  overviewTitle: "从数字表格走向线性结构",
+  structureTitle: "一条主线串起七个小节",
+  overviewCards: [
+    { title: "变换视角", text: "先把矩阵看成基向量去向的记录，避免一上来陷入计算规则。" },
+    { title: "运算视角", text: "加法、数乘、乘法都解释成记录之间的组合，矩阵乘法就是两次变换的复合。" },
+    { title: "结构视角", text: "通过初等矩阵、可逆、秩和分块，把矩阵从工具推进到结构对象。" },
+  ],
   sections: [
     {
       id: "matrix-language",

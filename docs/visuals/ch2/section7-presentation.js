@@ -688,7 +688,7 @@
     };
   }
 
-  defineChapter2Renderer("cramer-rule", {
+  defineLessonRenderer("ch2", "cramer-rule", {
     formal(formal) {
       if (!formal) return;
       formal.innerHTML = formalShell(

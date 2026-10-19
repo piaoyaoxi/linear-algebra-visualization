@@ -2298,7 +2298,7 @@
 
   /* Theorem blocks always; a lab when given, moved above the theorem blocks. */
   function register(id, lab) {
-    window.defineChapter8Renderer?.(id, {
+    defineLessonRenderer("ch8", id, {
       formal: (root, section) => renderFormal(root, section),
       interactive: lab
         ? (root, section, page) => {

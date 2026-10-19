@@ -624,7 +624,7 @@
     return () => { ro.disconnect(); mo.disconnect(); };
   }
 
-  window.defineChapter4Renderer?.("matrix-language", {
+  defineLessonRenderer("ch4", "matrix-language", {
     formal: renderFormal,
     interactive: renderThreeReadings,
   });

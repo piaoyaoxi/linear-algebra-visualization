@@ -755,7 +755,7 @@
     render();
   }
 
-  defineChapter4Renderer("matrix-inverse", {
+  defineLessonRenderer("ch4", "matrix-inverse", {
     formal: renderSection4Formal,
     interactive: renderSection4Interactive,
   });

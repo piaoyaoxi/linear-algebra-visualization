@@ -1,3 +1,8 @@
+/*
+ * Learning page shell: content registry, routing, navigation, the lesson page
+ * and the hooks chapter labs use to mount into it.
+ */
+
 function texInline(source) {
   return renderTexShell(source, false);
 }
@@ -42,13 +47,10 @@ function escapeAttribute(value) {
   return escapeHtml(value).replace(/\x60/g, "&#96;");
 }
 
-const HOME_CHAPTER = {
-  id: "home",
-  icon: "0",
-  title: "导学",
-  subtitle: "如何使用",
-  sections: ["定位与形式", "视觉原则", "制作流程"],
-};
+window.texInline = texInline;
+window.texDisplay = texDisplay;
+
+/* ---------- Content registry ---------- */
 
 const algebraContent = {
   chapters: [],
@@ -63,17 +65,183 @@ function registerAlgebraChapter(chapter) {
   if (index >= 0) algebraContent.chapters[index] = normalized;
   else algebraContent.chapters.push(normalized);
   // Content scripts load in any order; keep textbook chapter order.
-  algebraContent.chapters.sort((a, b) => chapterOrder(a) - chapterOrder(b));
+  algebraContent.chapters.sort((a, b) => chapterNumber(a) - chapterNumber(b));
 }
 
-function chapterOrder(chapter) {
+function chapterNumber(chapter) {
   const match = /^ch(\d+)$/.exec(chapter.id || "");
   return match ? Number(match[1]) : Number.MAX_SAFE_INTEGER;
 }
 
 window.registerAlgebraChapter = registerAlgebraChapter;
-window.texInline = texInline;
-window.texDisplay = texDisplay;
+
+const GUIDE_CHAPTER = {
+  id: "guide",
+  icon: "0",
+  title: "导学",
+  subtitle: "如何使用",
+  sections: [],
+};
+
+function getChapters() {
+  return [GUIDE_CHAPTER, ...algebraContent.chapters];
+}
+
+function getChapterById(id) {
+  return getChapters().find((chapter) => chapter.id === id) || GUIDE_CHAPTER;
+}
+
+function getStructuredSections(chapter) {
+  return (chapter?.sections || []).filter((section) => section && typeof section === "object" && section.id);
+}
+
+function findSection(chapter, sectionId) {
+  if (!sectionId) return null;
+  return getStructuredSections(chapter).find((section) => section.id === sectionId) || null;
+}
+
+function findStructuredSection(sectionId) {
+  if (!sectionId) return null;
+  for (const chapter of algebraContent.chapters) {
+    const section = findSection(chapter, sectionId);
+    if (section) return { chapter, section };
+  }
+  return null;
+}
+
+window.getStructuredSections = getStructuredSections;
+window.findStructuredSection = findStructuredSection;
+
+function chapterShortTitle(chapter) {
+  const trimmed = String(chapter?.title || "")
+    .replace(/^第[0-9一二三四五六七八九十百]+章/, "")
+    .replace(/^[\s·:：\-—]+/, "")
+    .trim();
+  return trimmed || chapter?.title || "";
+}
+
+function getSectionLabel(section) {
+  return typeof section === "string" ? section : section.navTitle || section.title;
+}
+
+function getSectionSearchText(section) {
+  if (typeof section === "string") return section;
+  return `${section.number || ""} ${section.title || ""} ${section.navTitle || ""}`;
+}
+
+function getChapterSectionText(chapter) {
+  return chapter.sections.map(getSectionSearchText).join(" ");
+}
+
+function getConcepts(section) {
+  return (section.concepts || []).map((concept) =>
+    Array.isArray(concept) ? { label: concept[0], text: concept[1] } : concept,
+  );
+}
+
+function getVideo(section) {
+  const video = section.video;
+  if (!video) return null;
+  return video.src || video.embed ? video : null;
+}
+
+// `interactive: false` closes the band; older chapter 4 data still declares its
+// lab through `visual`.
+function getInteractive(section) {
+  if (Object.prototype.hasOwnProperty.call(section, "interactive")) {
+    return section.interactive || null;
+  }
+  const visual = section.visual;
+  if (!visual) return null;
+  return ["transform", "multiply", "rank", "block"].includes(visual.type) ? visual : null;
+}
+
+function getSelfTestItems(section) {
+  if (section.quiz?.length) return section.quiz;
+  return (section.exercises || []).map((question) => ({ question }));
+}
+
+/* ---------- Lesson labs ---------- */
+
+// A section's labs mount into its rendered lesson: `formal(el, section, root)` fills the
+// theorem band, `interactive(el, section, root)` the lab band. Each may return a cleanup
+// function (or an array of them), run before the next route renders. A slot is defined
+// once: a second definition throws, so later files cannot silently replace earlier ones.
+const chapterLabs = new Map();
+const lessonEnhancers = [];
+let lessonCleanups = [];
+
+function labsOf(chapterId) {
+  if (!chapterLabs.has(chapterId)) chapterLabs.set(chapterId, { renderers: new Map(), enhancers: [], teardowns: [] });
+  return chapterLabs.get(chapterId);
+}
+
+function defineLessonRenderer(chapterId, sectionId, renderer) {
+  if (!chapterId || !sectionId || !renderer || typeof renderer !== "object") {
+    throw new TypeError("Lesson renderers need a chapter id, a section id and an object.");
+  }
+  const renderers = labsOf(chapterId).renderers;
+  const current = renderers.get(sectionId) || {};
+  Object.keys(renderer).forEach((slot) => {
+    if (current[slot]) throw new Error(`${chapterId}/${sectionId}: "${slot}" is already defined`);
+  });
+  renderers.set(sectionId, { ...current, ...renderer });
+}
+
+// Runs after the section renderers on every lesson of one chapter.
+function defineChapterEnhancer(chapterId, enhance) {
+  if (typeof enhance === "function") labsOf(chapterId).enhancers.push(enhance);
+}
+
+// Extra cleanup for chapter-wide state that labs register outside their return value.
+function defineChapterTeardown(chapterId, teardown) {
+  if (typeof teardown === "function") labsOf(chapterId).teardowns.push(teardown);
+}
+
+// Runs on every lesson, after the chapter's own labs.
+function afterLessonRender(enhance) {
+  if (typeof enhance === "function") lessonEnhancers.push(enhance);
+}
+
+function keepCleanup(value) {
+  if (typeof value === "function") lessonCleanups.push(value);
+  else if (Array.isArray(value)) value.forEach(keepCleanup);
+}
+
+function runSafely(label, task) {
+  try {
+    return task();
+  } catch (error) {
+    console.error(`${label} failed:`, error);
+    return null;
+  }
+}
+
+function mountLessonLabs(chapterId, section, root) {
+  const labs = chapterLabs.get(chapterId);
+  const renderer = labs?.renderers.get(section.id);
+  if (renderer) {
+    ["formal", "interactive"].forEach((slot) => {
+      const el = root.querySelector(`#${CSS.escape(section.id)}-${slot}`);
+      if (el && renderer[slot]) keepCleanup(runSafely(`${section.id} ${slot}`, () => renderer[slot](el, section, root)));
+    });
+  }
+  labs?.enhancers.forEach((enhance) => keepCleanup(runSafely(`${chapterId} enhancer`, () => enhance(section, root))));
+  lessonEnhancers.forEach((enhance) => keepCleanup(runSafely("lesson enhancer", () => enhance(section, root))));
+}
+
+function teardownLessonLabs() {
+  lessonCleanups.splice(0).reverse().forEach((cleanup) => runSafely("lesson cleanup", cleanup));
+  chapterLabs.forEach((labs) => labs.teardowns.forEach((teardown) => runSafely("chapter teardown", teardown)));
+}
+
+window.defineLessonRenderer = defineLessonRenderer;
+window.defineChapterEnhancer = defineChapterEnhancer;
+window.defineChapterTeardown = defineChapterTeardown;
+window.afterLessonRender = afterLessonRender;
+window.addEventListener("pagehide", teardownLessonLabs);
+
+/* ---------- Preferences ---------- */
 
 // Storage can be blocked (private browsing, sandboxed embeds) or contain stale data.
 // Keep the learning UI usable even when a preference cannot be read or saved.
@@ -94,8 +262,29 @@ function readCompletedSections() {
   }
 }
 
+function lastVisitedTarget() {
+  const last = readPreference("la-visual-last");
+  if (!last || !last.startsWith("#")) return null;
+
+  const [route, sectionId] = last.slice(1).split("/");
+  const chapter = algebraContent.chapters.find((item) => item.id === route);
+  if (!chapter) return null;
+  if (sectionId && !findSection(chapter, sectionId)) return null;
+  return last;
+}
+
+function firstLessonTarget() {
+  for (const chapter of algebraContent.chapters) {
+    const first = getStructuredSections(chapter)[0];
+    if (first) return `#${chapter.id}/${first.id}`;
+  }
+  return "#guide";
+}
+
+/* ---------- State and chrome ---------- */
+
 const state = {
-  route: "home",
+  route: "guide",
   section: "",
   completed: readCompletedSections(),
   openChapters: new Set(),
@@ -136,100 +325,6 @@ if (document.readyState === "complete") {
   window.addEventListener("DOMContentLoaded", init, { once: true });
 }
 
-function getChapters() {
-  return [HOME_CHAPTER, ...algebraContent.chapters];
-}
-
-function getChapterById(id) {
-  return getChapters().find((chapter) => chapter.id === id) || HOME_CHAPTER;
-}
-
-function getStructuredSections(chapter) {
-  if (!chapter) return [];
-  return (chapter.sections || []).filter((section) => typeof section === "object" && section.id);
-}
-
-function getChapter4Sections() {
-  return getStructuredSections(getChapterById("ch4"));
-}
-
-function chapterHasStructuredLessons(chapter) {
-  return getStructuredSections(chapter).length > 0;
-}
-
-function findStructuredSection(sectionId) {
-  if (!sectionId) return null;
-  for (const chapter of algebraContent.chapters) {
-    const section = getStructuredSections(chapter).find((item) => item.id === sectionId);
-    if (section) return { chapter, section };
-  }
-  return null;
-}
-
-function getAllTrackableSections() {
-  return algebraContent.chapters.flatMap((chapter) => getStructuredSections(chapter));
-}
-
-window.getStructuredSections = getStructuredSections;
-window.chapterHasStructuredLessons = chapterHasStructuredLessons;
-window.findStructuredSection = findStructuredSection;
-
-
-function getSectionLabel(section) {
-  return typeof section === "string" ? section : section.navTitle || section.title;
-}
-
-function getSectionSearchText(section) {
-  if (typeof section === "string") return section;
-  return `${section.number || ""} ${section.title || ""} ${section.navTitle || ""}`;
-}
-
-function getChapterSectionText(chapter) {
-  return chapter.sections.map(getSectionSearchText).join(" ");
-}
-
-function getConcepts(section) {
-  return (section.concepts || []).map((concept) =>
-    Array.isArray(concept) ? { label: concept[0], text: concept[1] } : concept,
-  );
-}
-
-function getVisual(section) {
-  return section.visual || { type: section.visualType || "slot" };
-}
-
-function getVisualPrompts(section) {
-  return getVisual(section).prompts || section.script || [];
-}
-
-function getVideo(section) {
-  const video = section.video;
-  if (!video) return null;
-  return video.src || video.embed ? video : null;
-}
-
-function getInteractive(section) {
-  if (Object.prototype.hasOwnProperty.call(section, "interactive")) {
-    return section.interactive || null;
-  }
-  const visual = section.visual;
-  if (!visual) return null;
-  return ["transform", "multiply", "rank", "block"].includes(visual.type) ? visual : null;
-}
-
-function getSelfTestItems(section) {
-  if (section.quiz?.length) return section.quiz;
-  return (section.exercises || []).map((question) => ({ question }));
-}
-
-function getProgress() {
-  const trackable = getAllTrackableSections();
-  return {
-    done: trackable.filter((section) => state.completed.has(section.id)).length,
-    total: trackable.length,
-  };
-}
-
 function init() {
   const savedTheme = readPreference("la-visual-theme");
   if (savedTheme === "dark") document.body.classList.add("dark");
@@ -263,8 +358,6 @@ function init() {
 }
 
 function bindChrome() {
-  window.addEventListener("resize", () => drawTransformCanvas(), { passive: true });
-
   els.sidebarToggle.addEventListener("click", () => {
     if (window.matchMedia("(max-width: 920px)").matches) {
       document.body.classList.toggle("sidebar-open");
@@ -285,64 +378,55 @@ function bindChrome() {
     document.body.classList.toggle("dark");
     writePreference("la-visual-theme", document.body.classList.contains("dark") ? "dark" : "light");
     updateThemeIcon();
-    drawTransformCanvas();
   });
-
 }
 
 function updateThemeIcon() {
   els.themeToggle.innerHTML = document.body.classList.contains("dark") ? MOON_ICON : SUN_ICON;
 }
 
+window.updateThemeIcon = updateThemeIcon;
+
+/* ---------- Sidebar ---------- */
+
 function renderNav() {
   els.nav.innerHTML = getChapters()
     .map((chapter) => {
-      const chapterHref = chapter.id === "home" ? "#home" : `#${chapter.id}`;
-      const structured = getStructuredSections(chapter);
-      const sectionLinks = structured.length
-          ? structured
-              .map(
-                (section) => `
-                  <a class="nav-section" href="#${chapter.id}/${section.id}" data-section-link="${section.id}" data-search-text="${normalizeSearchText(
-                    getSectionSearchText(section),
-                  )}">
-                    <span class="status-dot"></span>
-                    <span>${section.number} ${section.navTitle}</span>
-                    <span class="section-status">未掌握</span>
-                  </a>
-                `,
-              )
-              .join("")
-          : chapter.sections
-              .map(
-                (section) => `
-                  <a class="nav-section" href="${chapterHref}" data-search-text="${normalizeSearchText(getSectionSearchText(section))}">
-                    <span class="status-dot"></span>
-                    <span>${getSectionLabel(section)}</span>
-                  </a>
-                `,
-              )
-              .join("");
+      const searchText = normalizeSearchText(`${chapter.title} ${getChapterSectionText(chapter)}`);
+      // The guide is a single page: a direct link, not an expandable chapter.
+      if (chapter.id === "guide") {
+        return `
+          <div class="chapter-group is-direct" data-chapter="guide" data-search-text="${searchText}">
+      <a class="nav-chapter is-direct" href="#guide" data-search-text="${searchText}" aria-label="进入导学页">
+        <span class="chapter-icon">${chapter.icon}</span>
+        <span class="chapter-label"><strong>${chapter.title}</strong><small>${chapter.subtitle}</small></span>
+      </a></div>`;
+      }
+
+      const sectionLinks = getStructuredSections(chapter)
+        .map(
+          (section) => `
+                      <a class="nav-section" href="#${chapter.id}/${section.id}" data-section-link="${section.id}" data-search-text="${normalizeSearchText(
+                        getSectionSearchText(section),
+                      )}">
+                        <span class="status-dot"></span>
+                        <span>${section.number} ${section.navTitle || section.title}</span>
+                        <span class="section-status">未掌握</span>
+                      </a>`,
+        )
+        .join("");
 
       return `
-        <div class="chapter-group" data-chapter="${chapter.id}" data-search-text="${normalizeSearchText(
-          `${chapter.title} ${getChapterSectionText(chapter)}`,
-        )}">
-          <button class="nav-chapter" type="button" aria-expanded="false">
-            <span class="chapter-icon">${chapter.icon}</span>
-            <span class="chapter-label">
-              <strong>${chapter.title}</strong>
-              <small>${getChapterSubtitle(chapter.id)}</small>
-            </span>
-            <span class="chapter-arrow">›</span>
-          </button>
-          <div class="section-list">
-            <div class="section-list-clip">
-              <div class="section-list-inner">${sectionLinks}</div>
+          <div class="chapter-group" data-chapter="${chapter.id}" data-search-text="${searchText}">
+            <button class="nav-chapter" type="button" aria-expanded="false">
+              <span class="chapter-icon">${chapter.icon}</span>
+              <span class="chapter-label"><strong>${chapter.title}</strong><small>${chapter.subtitle || "章节导览"}</small></span>
+              <span class="chapter-arrow">›</span>
+            </button>
+            <div class="section-list">
+              <div class="section-list-clip"><div class="section-list-inner">${sectionLinks}</div></div>
             </div>
-          </div>
-        </div>
-      `;
+          </div>`;
     })
     .join("");
 
@@ -351,7 +435,7 @@ function renderNav() {
 }
 
 function bindChapterToggles() {
-  els.nav.querySelectorAll(".nav-chapter").forEach((button) => {
+  els.nav.querySelectorAll("button.nav-chapter").forEach((button) => {
     button.addEventListener("click", () => {
       const group = button.closest(".chapter-group");
       if (!group) return;
@@ -372,39 +456,37 @@ function bindChapterToggles() {
   });
 }
 
-function getChapterSubtitle(id) {
-  return getChapterById(id).subtitle || "章节导览";
-}
+/* ---------- Routing ---------- */
 
 function renderRoute() {
-  cancelTransformAnimation();
-  window.teardownSection2ContinuousLab?.();
+  teardownLessonLabs();
 
-  const raw = decodeURIComponent(window.location.hash.replace(/^#/, "")) || "home";
-  const [route, section] = raw.split("/");
-  state.route = route || "home";
-  state.section = section || "";
+  const raw = decodeURIComponent(window.location.hash.replace(/^#/, "")) || "guide";
+  const [requestedRoute, requestedSection] = raw.split("/");
 
-  const chapter = getChapterById(state.route);
+  if (requestedRoute === "home") {
+    window.location.replace("./index.html");
+    return;
+  }
+
+  const chapter = getChapterById(requestedRoute);
+  const section = findSection(chapter, requestedSection);
+
   state.route = chapter.id;
+  state.section = section?.id || "";
   state.openChapters.add(state.route);
   document.body.dataset.route = state.route;
   document.body.dataset.view = state.section ? "lesson" : "overview";
 
-  if (chapter.id === "home") {
-    renderHome();
-  } else if (chapterHasStructuredLessons(chapter)) {
-    // Only accept section ids that belong to this chapter.
-    if (state.section && !getStructuredSections(chapter).some((item) => item.id === state.section)) {
-      state.section = "";
-      document.body.dataset.view = "overview";
-    }
-    renderStructuredChapter(chapter);
-  } else {
-    renderPlaceholder(chapter);
+  if (chapter.id === "guide") renderGuide();
+  else if (section) renderLessonPage(section, chapter);
+  else renderChapterOverview(chapter);
+
+  if (chapter.id !== "guide") {
+    writePreference("la-visual-last", `#${state.route}${state.section ? `/${state.section}` : ""}`);
   }
 
-  updateDocumentTitle(chapter);
+  updateDocumentTitle(chapter, section);
   updateNavActive();
   buildPageToc();
   document.body.classList.remove("sidebar-open");
@@ -419,249 +501,111 @@ function renderRoute() {
   });
 }
 
-function updateDocumentTitle(chapter) {
-  const section = state.section
-    ? getStructuredSections(chapter).find((item) => item.id === state.section)
-    : null;
+function updateDocumentTitle(chapter, section) {
   document.title = section
-    ? `${section.number} ${section.navTitle} | 高等代数可视化`
+    ? `${section.number} ${section.navTitle || section.title} | 高等代数可视化`
     : `${chapter.title} | 高等代数可视化`;
 }
 
-function renderHome() {
+/* ---------- Guide ---------- */
+
+function renderGuide() {
+  const visited = Boolean(lastVisitedTarget());
+  const startTarget = lastVisitedTarget() || firstLessonTarget();
+
   els.main.innerHTML = `
-    <section class="home-hero" id="overview">
-      <div class="home-copy">
-        <span class="eyebrow">教材路径 · 可视化 · 交互实验</span>
-        <h1><span>高等代数</span><span class="gradient-word">可视化</span></h1>
-        <div class="latin-title">visual algebra</div>
-        <p>沿着北大版教材，把矩阵、线性空间、线性变换、二次型等抽象概念转化为可观察、可操作、可解释的空间结构。</p>
-        <div class="hero-actions">
-          <a class="button primary" href="#ch4/matrix-language">开始查看第四章</a>
-          <a class="button" href="#ch4">查看第四章目录</a>
-        </div>
-        <div class="feature-cards">
-          <div class="feature-card">
-            <strong>轻玻璃</strong>
-            <p>导航与控制层有质感，正文与公式保持清晰。</p>
-          </div>
-          <div class="feature-card">
-            <strong>可折叠</strong>
-            <p>Apple 文档式侧栏，给动画和实验留出空间。</p>
-          </div>
-          <div class="feature-card">
-            <strong>精选例题</strong>
-            <p>每节只放代表例题，答案默认折叠。</p>
-          </div>
-        </div>
-      </div>
-      <div class="home-stage">${renderHeroVisual()}</div>
-    </section>
-
-    <section class="section-band compact-band" id="position">
-      <div class="section-head">
-        <div>
-          <div class="section-kicker">形式定位</div>
-          <h2>把抽象概念放进可操作的视觉讲义</h2>
-        </div>
-      </div>
-      <p class="lead">页面按照教材路径组织内容，在正文中嵌入概念短讲、交互实验和代表例题。学生可以沿着章节阅读，也可以直接进入重点小节。</p>
-      <div class="overview-grid">
-        <div class="info-panel">
-          <strong>概念优先</strong>
-          <p>例题只保留能解释概念结构的代表题，答案折叠，重点放在思路与图像对应。</p>
-        </div>
-        <div class="info-panel">
-          <strong>清晰阅读</strong>
-          <p>页面以清晰阅读为主，玻璃质感只用于导航和少量信息面板，保证可读性。</p>
-        </div>
-        <div class="info-panel">
-          <strong>先做第四章</strong>
-          <p>矩阵连接变换、乘法、消元、秩、可逆和分块结构，是高等代数的重要枢纽。</p>
-        </div>
+    <section class="section-band guide-hero" id="guide-intro">
+      <div class="section-kicker">导学</div>
+      <h2>先看见，再定义</h2>
+      <p class="lead">这里沿北大版《高等代数》的章节展开。每个小节从一个具体的问题出发，先用图像与交互把画面立起来，再回到教材里的定义、定理与例题。</p>
+      <p>你可以从头按顺序读，也可以在左侧目录里直接跳到正在学的小节。学习进度保存在这台设备上，随时可以接着上次的位置继续。</p>
+      <div class="hero-actions">
+        <a class="button primary" href="${startTarget}">${visited ? "继续学习" : "从第一节开始"}</a>
+        <a class="button ghost" href="#guide-map" data-scroll-to="guide-map">查看学习路线</a>
       </div>
     </section>
 
-    <section class="section-band compact-band" id="map">
-      <div class="section-head">
-        <div>
-          <div class="section-kicker">课程目录</div>
-          <h2>沿着章节建立概念地图</h2>
-        </div>
+    <section class="section-band" id="guide-usage">
+      <div class="section-head"><div><div class="section-kicker">怎么学</div><h2>每个小节的三个动作</h2></div></div>
+      <div class="usage-grid">
+        <div class="usage-card"><span class="usage-step">01</span><strong>先抓住问题</strong><p>先明确这一节在回答什么，再建立必要的图像、结构和阅读方向。</p></div>
+        <div class="usage-card"><span class="usage-step">02</span><strong>动手实验</strong><p>拖动矩阵元素、切换视角，亲手看网格、向量和结构怎样随参数变化。</p></div>
+        <div class="usage-card"><span class="usage-step">03</span><strong>回到教材</strong><p>对照定义与定理，再做一道代表例题——答案默认折叠，先自己算。</p></div>
       </div>
-      <div class="chapter-grid">
-        ${getChapters()
-          .filter((chapter) => chapter.id !== "home")
-          .map(
-            (chapter) => `
-              <a class="chapter-card" href="#${chapter.id}">
-                <strong>${chapter.title}</strong>
-                <p>${chapter.sections.map(getSectionLabel).join(" · ")}</p>
-              </a>
-            `,
-          )
-          .join("")}
-      </div>
+      <div class="usage-tip">读完一节，点底部的「标记掌握」，进度会同步到左侧目录和下面的学习路线。</div>
     </section>
-  `;
+
+    <section class="section-band" id="guide-map">
+      <div class="section-head"><div><div class="section-kicker">学习路线</div><h2>沿教材章节展开</h2></div></div>
+      <div class="route-grid">${algebraContent.chapters.map(renderRouteCard).join("")}</div>
+    </section>`;
 }
 
-function getChapterOverviewConfig(chapter) {
-  if (chapter.id === "ch4") {
-    return {
-      coverId: "chapter4",
-      eyebrow: "第四章 · 矩阵",
-      title: "从数字表格走向线性结构",
-      structureTitle: "一条主线串起七个小节",
-      panels: [
-        { title: "变换视角", text: "先把矩阵看成基向量去向的记录，避免一上来陷入计算规则。" },
-        { title: "运算视角", text: "加法、数乘、乘法都解释成记录之间的组合，矩阵乘法重点做复合动画。" },
-        { title: "结构视角", text: "通过初等矩阵、可逆、秩和分块，把矩阵从工具推进到结构对象。" },
-      ],
-    };
-  }
-  if (chapter.id === "ch2") {
-    return {
-      coverId: "chapter2",
-      eyebrow: "第二章 · 行列式",
-      title: "有向面积、符号与塌缩",
-      structureTitle: "一条主线串起八个小节",
-      panels: [
-        { title: "几何视角", text: "用有向面积与体积理解倍率、方向保持与维度塌缩。" },
-        { title: "符号视角", text: "由排列奇偶性给出每一项的正负号，再写出 n 阶定义。" },
-        { title: "计算视角", text: "用性质、化简、展开和克拉默法则把定义落到可算的结构。" },
-      ],
-    };
-  }
-  if (chapter.id === "ch1") {
-    return {
-      coverId: "chapter1",
-      eyebrow: "第一章 · 多项式",
-      title: "从数域到形式对象与分解结构",
-      structureTitle: "一条主线串起十一个小节",
-      panels: [
-        { title: "对象视角", text: "先指定数域，再把多项式看成有位置的系数序列，而不是仅看函数图像。" },
-        { title: "算法视角", text: "用除法阶梯、欧几里得算法与 Bézout 回代，把整除与最大公因式变成可见过程。" },
-        { title: "结构视角", text: "从因式分解、重因式、实复根到多元与对称，把分解与不变量连成主线。" },
-      ],
-    };
-  }
-  if (chapter.id === "ch5") {
-    return {
-      coverId: "chapter5",
-      eyebrow: "第五章 · 二次型",
-      title: "从二次多项式到合同分类与正定判别",
-      structureTitle: "一条主线串起四个小节",
-      panels: [
-        { title: "表达视角", text: "二次齐次多项式与实对称矩阵互相唯一决定，交叉项系数要在对称位置平分。" },
-        { title: "变换视角", text: "非退化替换 x=Cy 对应合同 CᵀAC；配方法与成对初等变换消去交叉项。" },
-        { title: "分类与判别", text: "惯性锁定正、负、零方向数量；顺序主子式给出正定的代数判据。" },
-      ],
-    };
-  }
-  if (chapter.id === "ch6") {
-    return {
-      coverId: "chapter6",
-      eyebrow: "第六章 · 线性空间",
-      title: "从集合映射到空间结构与同构",
-      structureTitle: "一条主线串起八个小节",
-      panels: [
-        { title: "语言视角", text: "先建立集合与映射，再把加法、数乘抽象成线性空间的共同结构。" },
-        { title: "骨架视角", text: "用基、维数与坐标描述空间；换基时对象不动，变的是表示。" },
-        { title: "分解视角", text: "子空间、交与和、直和与同构，把“空间如何拼装与对应”串成主线。" },
-      ],
-    };
-  }
-  return {
-    coverId: chapter.id,
-    eyebrow: chapter.title,
-    title: chapter.subtitle || chapter.title,
-    structureTitle: "本章目录",
-    panels: [
-      { title: "概念", text: chapter.summary || "沿教材顺序建立本章对象与规则。" },
-      { title: "结构", text: "从定义出发，连接性质、计算与应用。" },
-      { title: "实验", text: "用交互把抽象规则变成可观察的对象。" },
-    ],
-  };
+function renderRouteCard(chapter) {
+  const trackable = getStructuredSections(chapter);
+  const done = trackable.filter((section) => state.completed.has(section.id)).length;
+  const ready = trackable.length > 0;
+  const percent = ready ? Math.round((done / trackable.length) * 100) : 0;
+  const preview = chapter.sections.slice(0, 4).map(getSectionLabel).join(" · ");
+  const status = ready
+    ? `<div class="route-meter" role="img" aria-label="已掌握 ${done} / ${trackable.length}"><span style="width:${percent}%"></span></div><span class="route-count">${done}/${trackable.length} 已掌握</span>`
+    : `<span class="route-count">${chapter.sections.length} 个小节</span>`;
+  const href = ready ? `#${chapter.id}/${trackable[0].id}` : `#${chapter.id}`;
+
+  return `
+    <a class="route-card${ready ? "" : " is-soon"}" href="${href}">
+      <span class="route-num">${String(chapterNumber(chapter)).padStart(2, "0")}</span>
+      <div class="route-body"><strong>${escapeHtml(chapterShortTitle(chapter))}</strong><p>${preview}${chapter.sections.length > 4 ? " …" : ""}</p></div>
+      <div class="route-status">${status}</div>
+    </a>`;
 }
 
-function renderStructuredChapter(chapter) {
+/* ---------- Chapter overview ---------- */
+
+function renderChapterOverview(chapter) {
   const sections = getStructuredSections(chapter);
-  const activeLesson = sections.find((section) => section.id === state.section);
-  const interactiveCount = sections.filter(getInteractive).length;
-  const videoCount = sections.filter(getVideo).length;
-  const exampleCount = sections.filter((section) => section.example).length;
-  const metaTags = [
-    `${sections.length} 个小节`,
-    interactiveCount ? `${interactiveCount} 个交互实验` : "",
-    videoCount ? `${videoCount} 个概念短讲` : "",
-    exampleCount ? `${exampleCount} 个代表例题` : "",
-  ].filter(Boolean);
-  if (activeLesson) {
-    renderLessonPage(activeLesson, chapter);
-    return;
-  }
+  const cards = chapter.overviewCards || [];
 
-  const overview = getChapterOverviewConfig(chapter);
   els.main.innerHTML = `
-    <section class="lesson-cover" id="${overview.coverId}">
-      <div class="lesson-cover-copy">
-        <span class="eyebrow">${overview.eyebrow}</span>
-        <h1>${overview.title}</h1>
-        <p>${chapter.summary || ""}</p>
+      <section class="lesson-cover structured-cover" id="${chapter.id}-overview">
+        <div class="lesson-cover-copy">
+          <span class="eyebrow">${chapter.title}</span>
+          <h1>${chapter.overviewTitle || chapterShortTitle(chapter)}</h1>
+          <p>${chapter.summary || ""}</p>
+          <div class="meta-row"><span class="tag accent">${sections.length} 个小节</span></div>
+        </div>
+      </section>
+      ${cards.length ? `<section class="section-band compact-band" id="${chapter.id}-structure">
+        <div class="section-head"><div><div class="section-kicker">本章结构</div><h2>${chapter.structureTitle || "一条主线连接全部小节"}</h2></div></div>
+        <div class="overview-grid">
+          ${cards.map((card) => `<div class="info-panel"><strong>${card.title}</strong><p>${card.text}</p></div>`).join("")}
+        </div>
+      </section>` : ""}
+      <section class="section-band compact-band" id="${chapter.id}-lessons">
+        <div class="section-head"><div><div class="section-kicker">本章目录</div><h2>进入具体小节</h2></div></div>
+        <div class="lesson-card-grid">${sections.map((section) => renderLessonCard(chapter, section)).join("")}</div>
+      </section>`;
+}
+
+function renderLessonCard(chapter, section) {
+  return `
+      <a class="lesson-card" href="#${chapter.id}/${section.id}">
+        <div class="section-kicker">${section.number} · ${section.textbookSection || section.title}</div>
+        <h3>${section.navTitle || section.title}</h3>
+        <p>${section.question || section.goal || ""}</p>
         <div class="meta-row">
-          ${metaTags.map((tag, index) => `<span class="tag${index === 0 ? " accent" : ""}">${tag}</span>`).join("")}
+          ${(section.tags || []).map((tag) => `<span class="tag">${tag}</span>`).join("")}
         </div>
-      </div>
-    </section>
-
-    <section class="section-band compact-band" id="${chapter.id}-structure">
-      <div class="section-head">
-        <div>
-          <div class="section-kicker">本章结构</div>
-          <h2>${overview.structureTitle}</h2>
-        </div>
-      </div>
-      <div class="overview-grid">
-        ${overview.panels
-          .map(
-            (panel) => `
-          <div class="info-panel">
-            <strong>${panel.title}</strong>
-            <p>${panel.text}</p>
-          </div>`,
-          )
-          .join("")}
-      </div>
-    </section>
-
-    <section class="section-band compact-band" id="${chapter.id}-lessons">
-      <div class="section-head">
-        <div>
-          <div class="section-kicker">本章目录</div>
-          <h2>进入具体小节</h2>
-        </div>
-      </div>
-      <div class="lesson-card-grid">
-        ${sections.map((section) => renderLessonCard(section, chapter)).join("")}
-      </div>
-    </section>
-  `;
+      </a>`;
 }
 
-function renderChapter4() {
-  renderStructuredChapter(getChapterById("ch4"));
-}
+/* ---------- Lesson page ---------- */
 
-window.renderStructuredChapter = renderStructuredChapter;
-window.renderChapter4 = renderChapter4;
-
-
-function renderLessonPage(section, chapter = null) {
-  const owner = chapter || findStructuredSection(section.id)?.chapter || getChapterById(state.route);
+function renderLessonPage(section, chapter) {
+  teardownLessonLabs();
+  const owner = chapter || findStructuredSection(section.id)?.chapter || null;
   const concepts = getConcepts(section);
   const video = getVideo(section);
-  const interactive = getInteractive(section);
   const breadcrumb = owner?.title || "课程";
   els.main.innerHTML = `
     <section class="lesson-cover" id="${section.id}">
@@ -682,7 +626,7 @@ function renderLessonPage(section, chapter = null) {
 
     ${renderFormalSection(section, concepts)}
 
-    ${renderInteractiveSection(section, interactive)}
+    ${renderInteractiveSection(section)}
 
     ${renderExampleSection(section)}
 
@@ -696,42 +640,38 @@ function renderLessonPage(section, chapter = null) {
 
     ${renderLessonNavigation(section, owner)}
   `;
+
+  mountLessonLabs(owner?.id, section, els.main);
 }
-
-window.renderLessonPage = renderLessonPage;
-
 
 function getCourseNavigationNodes() {
-  return getChapters()
-    .filter((chapter) => chapter.id !== "home")
-    .flatMap((chapter) => {
-      const structured = getStructuredSections(chapter);
-      if (structured.length) {
-        return structured.map((section) => ({
-          id: `${chapter.id}/${section.id}`,
-          href: `#${chapter.id}/${section.id}`,
-          title: `${section.number} ${section.navTitle}`,
-          context: chapter.title,
-          type: "section",
-        }));
-      }
+  return getChapters().flatMap((chapter) => {
+    const structured = getStructuredSections(chapter);
+    if (structured.length) {
+      return structured.map((section) => ({
+        id: `${chapter.id}/${section.id}`,
+        href: `#${chapter.id}/${section.id}`,
+        title: `${section.number} ${section.navTitle}`,
+        context: chapter.title,
+        type: "section",
+      }));
+    }
 
-      return [
-        {
-          id: chapter.id,
-          href: `#${chapter.id}`,
-          title: chapter.title,
-          context: chapter.subtitle || "章节导览",
-          type: "chapter",
-        },
-      ];
-    });
+    return [
+      {
+        id: chapter.id,
+        href: `#${chapter.id}`,
+        title: chapter.title,
+        context: chapter.subtitle || "章节导览",
+        type: "chapter",
+      },
+    ];
+  });
 }
 
-function renderLessonNavigation(section, chapter = null) {
-  const owner = chapter || findStructuredSection(section.id)?.chapter;
+function renderLessonNavigation(section, chapter) {
   const nodes = getCourseNavigationNodes();
-  const currentIndex = nodes.findIndex((node) => node.id === `${owner?.id || state.route}/${section.id}`);
+  const currentIndex = nodes.findIndex((node) => node.id === `${chapter?.id || state.route}/${section.id}`);
   if (currentIndex < 0) return "";
 
   const previous = nodes[currentIndex - 1] || null;
@@ -788,9 +728,11 @@ function renderVideoSection(section, video) {
   `;
 }
 
-function renderInteractiveSection(section, interactive) {
+// The band is a mount point: chapter modules render the lab into it.
+function renderInteractiveSection(section) {
+  const interactive = getInteractive(section);
   if (!interactive) return "";
-  const prompts = interactive.prompts || getVisualPrompts(section);
+  const prompts = interactive.prompts || section.visual?.prompts || section.script || [];
   const task = interactive.task || section.task || "";
   const promptBlock =
     task || prompts.length
@@ -804,7 +746,6 @@ function renderInteractiveSection(section, interactive) {
   return `
     <section class="section-band lesson-page-section" id="${section.id}-interactive">
       <h2>交互实验</h2>
-      ${renderVisualPanel(interactive)}
       ${promptBlock}
     </section>
   `;
@@ -899,231 +840,21 @@ function renderExampleSteps(example) {
 }
 
 function renderSummary(section) {
-  const summary = section.summary?.length
-    ? `<ul>${section.summary.map((item) => `<li>${item}</li>`).join("")}</ul>`
-    : `<p class="lead">这一节的核心是把公式、图像和线性结构连成同一个对象。</p>`;
-  return summary;
+  return section.summary?.length ? `<ul>${section.summary.map((item) => `<li>${item}</li>`).join("")}</ul>` : "";
 }
 
-function renderLessonCard(section, chapter = null) {
-  const owner = chapter || findStructuredSection(section.id)?.chapter || getChapterById(state.route);
-  const href = owner ? `#${owner.id}/${section.id}` : `#${section.id}`;
-  return `
-    <a class="lesson-card" href="${href}">
-      <div class="section-kicker">${section.number} · ${section.textbookSection || section.title}</div>
-      <h3>${section.navTitle || section.title}</h3>
-      <p>${section.question || section.goal || ""}</p>
-      <div class="meta-row">
-        ${(section.tags || []).map((tag) => `<span class="tag">${tag}</span>`).join("")}
-      </div>
-    </a>
-  `;
-}
 
-function renderVisualPanel(item) {
-  const visual = item?.type ? item : getVisual(item);
-
-  // Presentation modules own slot labs; keep the shell empty.
-  if (visual.type === "slot") return "";
-
-  if (visual.type === "transform") {
-    return `
-      <div class="visual-panel">
-        <div class="visual-title">
-          <div>
-            <h3>${visual.title || "交互图：矩阵怎样改变网格"}</h3>
-            <p>${visual.description || "拖动矩阵元素，观察基向量和整张网格同步变化。"}</p>
-          </div>
-        </div>
-        <div class="canvas-wrap">
-          <canvas id="transformCanvas" width="720" height="360" aria-label="矩阵变换网格"></canvas>
-          <div class="control-stack">
-            ${["a", "b", "c", "d"]
-              .map(
-                (key, index) => `
-                  <div class="control-row">
-                    <label for="matrix-${key}">
-                      <span>${key}</span>
-                      <span id="matrix-${key}-value">${[1, 0.45, 0.2, 1][index]}</span>
-                    </label>
-                    <input id="matrix-${key}" data-matrix="${key}" type="range" min="-2" max="2" step="0.05" value="${[
-                      1, 0.45, 0.2, 1,
-                    ][index]}" />
-                  </div>
-                `,
-              )
-              .join("")}
-            <div class="matrix-readout" id="matrixReadout"></div>
-          </div>
-        </div>
-      </div>
-    `;
-  }
-
-  if (visual.type === "multiply") {
-    return `
-      <div class="visual-panel">
-        <div class="visual-title">
-          <div>
-            <h3>${visual.title || "交互图：AB 是先 B 后 A"}</h3>
-            <p>${visual.description || "切换视角，比较复合、列向量与行列公式。"}</p>
-          </div>
-        </div>
-        <div class="multiply-demo">
-          <div class="segmented" data-multiply-tabs>
-            <button type="button" class="is-active" data-step="compose">复合</button>
-            <button type="button" data-step="columns">看列</button>
-            <button type="button" data-step="formula">行列公式</button>
-          </div>
-          <div class="matrix-chain" id="multiplyChain"></div>
-          <div class="note-panel" id="multiplyText"></div>
-        </div>
-      </div>
-    `;
-  }
-
-  if (visual.type === "rank") {
-    return `
-      <div class="visual-panel">
-        <div class="visual-title">
-          <div>
-            <h3>${visual.title || "交互图：秩是保留下来的维度"}</h3>
-            <p>${visual.description || "比较列向量张成平面和坍缩成直线时的差别。"}</p>
-          </div>
-        </div>
-        <div class="rank-demo">
-          <div class="segmented" data-rank-tabs>
-            <button type="button" class="is-active" data-rank="2">${texInline("\\operatorname{rank}=2")}</button>
-            <button type="button" data-rank="1">${texInline("\\operatorname{rank}=1")}</button>
-          </div>
-          <div class="rank-visual">
-            <div class="vector-plane" id="rankPlane">
-              <span class="vector v1"></span>
-              <span class="vector v2"></span>
-              <span class="vector v3"></span>
-            </div>
-            <div class="rank-info">
-              <div class="rank-number" id="rankNumber">2</div>
-              <p id="rankText">两列向量提供两个独立方向，输出可以铺开一个平面区域。</p>
-            </div>
-          </div>
-        </div>
-      </div>
-    `;
-  }
-
-  if (visual.type === "block") {
-    return `
-      <div class="visual-panel">
-        <div class="visual-title">
-          <div>
-            <h3>${visual.title || "图示：把大矩阵看成小系统"}</h3>
-            <p>${visual.description || "分块让输入、输出和子结构更清楚。"}</p>
-          </div>
-        </div>
-        <div class="block-demo">
-          <div class="block-grid" aria-label="分块矩阵示意">
-            <span>A11</span>
-            <span>A12</span>
-            <span>A21</span>
-            <span>A22</span>
-          </div>
-          <div class="note-panel">
-            <strong>块乘法的本质</strong>
-            <p>把每个块当作一个“较大的元素”，但前提是块的尺寸必须匹配。它适合解释子空间分解、块对角和进一步的标准形。</p>
-          </div>
-        </div>
-      </div>
-    `;
-  }
-
-  return `
-    <div class="visual-panel">
-      <div class="visual-title">
-        <div>
-          <h3>${visual.title || visual.label || "概念图示"}</h3>
-          <p>${visual.description || "用图示承接核心概念。"}</p>
-        </div>
-      </div>
-      <div class="video-slot">
-        <div class="slot-label">${visual.label || "概念演示"}</div>
-        <div class="slot-text">${visual.text || ""}</div>
-      </div>
-    </div>
-  `;
-}
-
-function renderPlaceholder(chapter) {
-  els.main.innerHTML = `
-    <section class="hero" id="${chapter.id}">
-      <div class="hero-copy">
-        <span class="eyebrow">章节导览</span>
-        <h1>${chapter.title}</h1>
-        <p>这一章围绕下列主题展开，适合配合教材相应章节阅读。</p>
-        <div class="hero-actions">
-          <a class="button primary" href="#ch4/matrix-language">查看第四章矩阵</a>
-          <a class="button ghost" href="#home">返回总览</a>
-        </div>
-      </div>
-      <div class="hero-visual">${renderHeroVisual()}</div>
-    </section>
-    <section class="section-band" id="planned-sections">
-      <div class="section-head">
-        <div>
-          <div class="section-kicker">本章主题</div>
-          <h2>${chapter.title}的可视化入口</h2>
-        </div>
-      </div>
-      <p class="lead">这些主题围绕概念理解和可视化表达组织，帮助学生抓住章节主线。</p>
-      <ul class="placeholder-list">
-        ${chapter.sections.map((item) => `<li>${getSectionLabel(item)}</li>`).join("")}
-      </ul>
-    </section>
-  `;
-}
-
-function renderHeroVisual() {
-  return `
-    <div class="matrix-stage" aria-hidden="true">
-      <svg viewBox="0 0 520 320" role="img">
-        <defs>
-          <linearGradient id="lineGradient" x1="0" x2="1" y1="0" y2="1">
-            <stop offset="0" stop-color="#43c6ba" />
-            <stop offset="0.54" stop-color="#6b8df2" />
-            <stop offset="1" stop-color="#d46b4f" />
-          </linearGradient>
-        </defs>
-        <g opacity="0.26" stroke="#ffffff" stroke-width="1">
-          ${Array.from({ length: 9 }, (_, i) => `<path d="M${50 + i * 52} 32 L${18 + i * 30} 288" />`).join("")}
-          ${Array.from({ length: 6 }, (_, i) => `<path d="M36 ${50 + i * 42} L488 ${30 + i * 34}" />`).join("")}
-        </g>
-        <path d="M88 236 C160 118 246 266 336 118 S452 88 482 178" fill="none" stroke="url(#lineGradient)" stroke-width="5" stroke-linecap="round" />
-        <path d="M118 214 L260 156 L420 96" fill="none" stroke="#43c6ba" stroke-width="4" stroke-linecap="round" />
-        <path d="M118 214 L220 250 L420 96" fill="none" stroke="#d46b4f" stroke-width="4" stroke-linecap="round" opacity="0.82" />
-        <g fill="#f5fbfc">
-          <circle cx="118" cy="214" r="6" />
-          <circle cx="260" cy="156" r="6" />
-          <circle cx="420" cy="96" r="6" />
-          <circle cx="220" cy="250" r="5" />
-        </g>
-        <g font-family="'LA Serif Latin', 'LA Serif SC', serif" font-size="22" fill="#f5fbfc" opacity="0.92">
-          <text x="82" y="82">A · v</text>
-          <text x="336" y="250">rank A</text>
-        </g>
-      </svg>
-      <div class="formula-chip">${texInline("A=\\begin{bmatrix}a&b\\\\c&d\\end{bmatrix}")} · 先看列向量，再看整个空间</div>
-    </div>
-  `;
-}
+/* ---------- After each render ---------- */
 
 function setupInteractiveBlocks() {
   updateProgressUI();
   bindCompleteButtons();
   bindAnimatedDetails(els.main);
-  setupMultiplyDemo();
-  setupRankDemo();
-  setupMatrixControls();
   setupTocObserver();
+}
+
+function prefersReducedMotion() {
+  return window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 }
 
 /**
@@ -1211,552 +942,7 @@ function bindCompleteButtons() {
   });
 }
 
-const TRANSFORM_KEYS = ["a", "b", "c", "d"];
-const TRANSFORM_INPUT_STEP = "0.05";
-let transformAnimRaf = 0;
-let transformAnimResolve = null;
-/** Live matrix while animating (avoids range `step` quantizing mid-lerp). */
-let transformLiveMatrix = null;
-let transformResizeObserver = null;
-
-function prefersReducedMotion() {
-  return Boolean(window.matchMedia?.("(prefers-reduced-motion: reduce)")?.matches);
-}
-
-function formatMatrixEntry(value) {
-  const n = Number(value);
-  if (!Number.isFinite(n)) return "0";
-  return n.toFixed(2).replace(/\.00$/, "");
-}
-
-function finiteNumber(value, fallback = 0) {
-  const n = Number(value);
-  return Number.isFinite(n) ? n : fallback;
-}
-
-/** Ignore Event / non-matrix first args (e.g. residual resize listeners). */
-function coerceTransformMatrixArg(value) {
-  if (value == null) return null;
-  if (typeof Event !== "undefined" && value instanceof Event) return null;
-  if (Array.isArray(value)) return normalizeTransformMatrix(value);
-  if (typeof value === "object" && ("a" in value || "b" in value || "c" in value || "d" in value)) {
-    return normalizeTransformMatrix(value);
-  }
-  return null;
-}
-
-function normalizeTransformMatrix(target) {
-  if (Array.isArray(target)) {
-    return {
-      a: finiteNumber(target[0]),
-      b: finiteNumber(target[1]),
-      c: finiteNumber(target[2]),
-      d: finiteNumber(target[3]),
-    };
-  }
-  return {
-    a: finiteNumber(target?.a),
-    b: finiteNumber(target?.b),
-    c: finiteNumber(target?.c),
-    d: finiteNumber(target?.d),
-  };
-}
-
-function getTransformLab() {
-  const canvas = document.querySelector("#transformCanvas");
-  if (!canvas) return null;
-  const root = canvas.closest(".visual-panel") || canvas.closest("#matrix-language-interactive") || document;
-  const inputs = Object.fromEntries(
-    TRANSFORM_KEYS.map((key) => [key, root.querySelector(`#matrix-${key}`) || document.querySelector(`#matrix-${key}`)]),
-  );
-  if (!inputs.a) return null;
-  return {
-    canvas,
-    root,
-    inputs,
-    labels: Object.fromEntries(
-      TRANSFORM_KEYS.map((key) => [
-        key,
-        root.querySelector(`#matrix-${key}-value`) || document.querySelector(`#matrix-${key}-value`),
-      ]),
-    ),
-    readout: root.querySelector("#matrixReadout") || document.querySelector("#matrixReadout"),
-  };
-}
-
-function readTransformMatrix() {
-  if (transformLiveMatrix) return { ...transformLiveMatrix };
-  const lab = getTransformLab();
-  if (!lab) return { a: 1, b: 0, c: 0, d: 1 };
-  return {
-    a: finiteNumber(lab.inputs.a?.value),
-    b: finiteNumber(lab.inputs.b?.value),
-    c: finiteNumber(lab.inputs.c?.value),
-    d: finiteNumber(lab.inputs.d?.value),
-  };
-}
-
-function clampTransformEntry(input, value) {
-  let next = value;
-  const min = Number(input?.min);
-  const max = Number(input?.max);
-  if (Number.isFinite(min)) next = Math.max(min, next);
-  if (Number.isFinite(max)) next = Math.min(max, next);
-  return next;
-}
-
-function rememberNativeSteps(lab) {
-  TRANSFORM_KEYS.forEach((key) => {
-    const input = lab.inputs[key];
-    if (input && input.dataset.nativeStep == null) {
-      input.dataset.nativeStep = input.getAttribute("step") || TRANSFORM_INPUT_STEP;
-    }
-  });
-}
-
-function setTransformInputStep(step) {
-  const lab = getTransformLab();
-  if (!lab) return;
-  rememberNativeSteps(lab);
-  TRANSFORM_KEYS.forEach((key) => {
-    const input = lab.inputs[key];
-    if (!input) return;
-    if (step === "any") {
-      input.step = "any";
-      return;
-    }
-    input.step = input.dataset.nativeStep || TRANSFORM_INPUT_STEP;
-  });
-}
-
-function writeTransformMatrix(matrix, { syncInputs = true } = {}) {
-  const lab = getTransformLab();
-  const next = normalizeTransformMatrix(matrix);
-  TRANSFORM_KEYS.forEach((key) => {
-    const input = lab?.inputs[key];
-    const value = clampTransformEntry(input, next[key]);
-    next[key] = value;
-    if (syncInputs && input) input.value = String(value);
-    const label = lab?.labels[key];
-    if (label) label.textContent = formatMatrixEntry(value);
-  });
-  return next;
-}
-
-function matricesNearlyEqual(a, b, eps = 1e-5) {
-  return TRANSFORM_KEYS.every((key) => Math.abs(a[key] - b[key]) <= eps);
-}
-
-function lerpTransformMatrix(from, to, t) {
-  return {
-    a: from.a + (to.a - from.a) * t,
-    b: from.b + (to.b - from.b) * t,
-    c: from.c + (to.c - from.c) * t,
-    d: from.d + (to.d - from.d) * t,
-  };
-}
-
-function easeOutCubic(t) {
-  return 1 - (1 - t) ** 3;
-}
-
-function settleTransformAnimation(matrix) {
-  const resolve = transformAnimResolve;
-  transformAnimResolve = null;
-  if (resolve) resolve(matrix);
-}
-
-function cancelTransformAnimation() {
-  if (transformAnimRaf) {
-    cancelAnimationFrame(transformAnimRaf);
-    transformAnimRaf = 0;
-  }
-  const current = transformLiveMatrix ? { ...transformLiveMatrix } : readTransformMatrix();
-  transformLiveMatrix = null;
-  setTransformInputStep("native");
-  settleTransformAnimation(current);
-}
-
-function setTransformMatrix(target) {
-  cancelTransformAnimation();
-  const matrix = writeTransformMatrix(target, { syncInputs: true });
-  drawTransformCanvas(matrix, { richReadout: true });
-  return matrix;
-}
-
-function animateTransformMatrix(target, options = {}) {
-  const to = normalizeTransformMatrix(target);
-  const duration = Number.isFinite(options.duration) ? options.duration : 580;
-  const onUpdate = typeof options.onUpdate === "function" ? options.onUpdate : null;
-
-  cancelTransformAnimation();
-
-  if (!getTransformLab()) {
-    return Promise.resolve(to);
-  }
-
-  const from = readTransformMatrix();
-  if (prefersReducedMotion() || duration <= 0 || matricesNearlyEqual(from, to)) {
-    const matrix = writeTransformMatrix(to, { syncInputs: true });
-    drawTransformCanvas(matrix, { richReadout: true });
-    onUpdate?.(matrix, { final: true });
-    return Promise.resolve(matrix);
-  }
-
-  setTransformInputStep("any");
-  const start = performance.now();
-
-  return new Promise((resolve) => {
-    transformAnimResolve = resolve;
-    const step = (now) => {
-      if (transformAnimResolve !== resolve) return;
-      const t = Math.min(1, (now - start) / duration);
-      const matrix = writeTransformMatrix(lerpTransformMatrix(from, to, easeOutCubic(t)), {
-        syncInputs: true,
-      });
-      transformLiveMatrix = matrix;
-      drawTransformCanvas(matrix, { richReadout: false });
-      onUpdate?.(matrix, { final: t >= 1 });
-      if (t < 1) {
-        transformAnimRaf = requestAnimationFrame(step);
-        return;
-      }
-      transformAnimRaf = 0;
-      transformLiveMatrix = null;
-      setTransformInputStep("native");
-      const finalMatrix = writeTransformMatrix(to, { syncInputs: true });
-      drawTransformCanvas(finalMatrix, { richReadout: true });
-      onUpdate?.(finalMatrix, { final: true });
-      settleTransformAnimation(finalMatrix);
-    };
-    transformAnimRaf = requestAnimationFrame(step);
-  });
-}
-
-function setupMatrixControls() {
-  const lab = getTransformLab();
-  if (!lab) return;
-
-  rememberNativeSteps(lab);
-
-  TRANSFORM_KEYS.forEach((key) => {
-    const input = lab.inputs[key];
-    if (!input || input.dataset.transformBound === "true") return;
-    input.dataset.transformBound = "true";
-    input.addEventListener("input", (event) => {
-      if (event.isTrusted) cancelTransformAnimation();
-      if (event.isTrusted || !transformAnimRaf) drawTransformCanvas();
-    });
-  });
-
-  if (transformResizeObserver) {
-    transformResizeObserver.disconnect();
-    transformResizeObserver = null;
-  }
-  if (typeof ResizeObserver !== "undefined") {
-    transformResizeObserver = new ResizeObserver(() => {
-      drawTransformCanvas();
-    });
-    transformResizeObserver.observe(lab.canvas);
-    if (lab.canvas.parentElement) transformResizeObserver.observe(lab.canvas.parentElement);
-  }
-
-  drawTransformCanvas();
-}
-
-function updateTransformReadout(matrix, { rich = true } = {}) {
-  const lab = getTransformLab();
-  const readout = lab?.readout;
-  if (!readout) return;
-
-  const a = formatMatrixEntry(matrix.a);
-  const b = formatMatrixEntry(matrix.b);
-  const c = formatMatrixEntry(matrix.c);
-  const d = formatMatrixEntry(matrix.d);
-
-  // Live frames: plain text only (no KaTeX thrash). Final frame: KaTeX matrix, no det in §1.
-  if (!rich) {
-    readout.innerHTML = `
-      <div class="matrix-readout-live" aria-hidden="true">
-        <span>A =</span>
-        <span class="matrix-readout-live-grid">
-          <i>${a}</i><i>${b}</i>
-          <i>${c}</i><i>${d}</i>
-        </span>
-      </div>
-    `;
-    return;
-  }
-
-  readout.innerHTML = texDisplay(
-    `A=\\begin{bmatrix}${formatNumber(matrix.a)}&${formatNumber(matrix.b)}\\\\${formatNumber(matrix.c)}&${formatNumber(matrix.d)}\\end{bmatrix}`,
-  );
-}
-
-function ensureTransformCanvasBuffer(canvas, cssW, cssH, dpr) {
-  const metrics = canvas._transformMetrics || { w: 0, h: 0, dpr: 0 };
-  if (metrics.w === cssW && metrics.h === cssH && metrics.dpr === dpr) return;
-  canvas.width = Math.max(1, Math.floor(cssW * dpr));
-  canvas.height = Math.max(1, Math.floor(cssH * dpr));
-  canvas._transformMetrics = { w: cssW, h: cssH, dpr };
-}
-
-function drawTransformCanvas(matrixOverride, options = {}) {
-  const lab = getTransformLab();
-  if (!lab) return;
-
-  const matrix = coerceTransformMatrixArg(matrixOverride) || readTransformMatrix();
-  const richReadout = options.richReadout !== false && options.fullReadout !== false;
-
-  TRANSFORM_KEYS.forEach((key) => {
-    const label = lab.labels[key];
-    if (label) label.textContent = formatMatrixEntry(matrix[key]);
-  });
-  updateTransformReadout(matrix, { rich: richReadout });
-
-  const canvas = lab.canvas;
-  const rect = canvas.getBoundingClientRect();
-  const dpr = window.devicePixelRatio || 1;
-  const cssW = Math.max(1, rect.width);
-  const cssH = Math.max(1, rect.height);
-  ensureTransformCanvasBuffer(canvas, cssW, cssH, dpr);
-
-  const ctx = canvas.getContext("2d");
-  ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-  ctx.clearRect(0, 0, cssW, cssH);
-
-  const styles = getComputedStyle(document.body);
-  const muted = styles.getPropertyValue("--muted").trim() || "#5f6965";
-  const lineStrong = styles.getPropertyValue("--cv-axis").trim() || "#8a8d84";
-  /* the transformed lattice and the unit cell are results (purple) */
-  const accent = styles.getPropertyValue("--cv-image").trim() || "#8c4f86";
-  const accentStrong = styles.getPropertyValue("--cv-image").trim() || "#8c4f86";
-  const coral = styles.getPropertyValue("--cv-v2").trim() || "#c4552f";
-  const text = styles.getPropertyValue("--text").trim() || "#071512";
-  const v1 = styles.getPropertyValue("--cv-v1").trim() || "#2a64a8";
-  const v2 = styles.getPropertyValue("--cv-v2").trim() || "#c4552f";
-
-  const origin = { x: cssW / 2, y: cssH / 2 };
-  /* zoom in on the unit square, but keep both column vectors on screen */
-  const reachCol = Math.max(Math.hypot(matrix.a, matrix.c), Math.hypot(matrix.b, matrix.d), Math.hypot(matrix.a + matrix.b, matrix.c + matrix.d));
-  const scale = Math.min(cssW, cssH) / Math.max(6.4, 2 * reachCol + 1.4);
-  const halfW = cssW / (2 * scale);
-  const halfH = cssH / (2 * scale);
-  const screenReach = Math.hypot(halfW, halfH) + 1.25;
-
-  const col1Len = Math.hypot(matrix.a, matrix.c);
-  const col2Len = Math.hypot(matrix.b, matrix.d);
-  const minCol = Math.max(Math.min(col1Len || 0, col2Len || 0), 0);
-  const maxCol = Math.max(col1Len, col2Len, 0);
-  const allZero = maxCol < 1e-8;
-  // Expand domain so the image of the lattice still covers the viewport when A shrinks.
-  const domainReach = Math.min(56, Math.max(screenReach + 2, screenReach / Math.max(minCol || maxCol, 0.14) + 2));
-
-  function point(x, y, transformed = false) {
-    const px = transformed ? matrix.a * x + matrix.b * y : x;
-    const py = transformed ? matrix.c * x + matrix.d * y : y;
-    return { x: origin.x + px * scale, y: origin.y - py * scale };
-  }
-
-  function drawLine(from, to, color, width = 1, alpha = 1) {
-    if (!Number.isFinite(from.x + from.y + to.x + to.y)) return;
-    const len = Math.hypot(to.x - from.x, to.y - from.y);
-    if (len < 0.4) return;
-    ctx.save();
-    ctx.globalAlpha = alpha;
-    ctx.strokeStyle = color;
-    ctx.lineWidth = width;
-    ctx.lineCap = "round";
-    ctx.beginPath();
-    ctx.moveTo(from.x, from.y);
-    ctx.lineTo(to.x, to.y);
-    ctx.stroke();
-    ctx.restore();
-  }
-
-  // Layer 1 — reference grid filling the full stage (axis-aligned).
-  const refX = halfW + 1.5;
-  const refY = halfH + 1.5;
-  const ix0 = Math.floor(-refX);
-  const ix1 = Math.ceil(refX);
-  const iy0 = Math.floor(-refY);
-  const iy1 = Math.ceil(refY);
-  for (let i = iy0; i <= iy1; i += 1) {
-    const isAxis = i === 0;
-    drawLine(point(-refX, i), point(refX, i), lineStrong, isAxis ? 1.15 : 1, isAxis ? 0.26 : 0.09);
-  }
-  for (let i = ix0; i <= ix1; i += 1) {
-    const isAxis = i === 0;
-    drawLine(point(i, -refY), point(i, refY), lineStrong, isAxis ? 1.15 : 1, isAxis ? 0.26 : 0.09);
-  }
-
-  // Layer 2 — transformed lattice over the whole plane (image of ℤ-grid lines).
-  if (!allZero) {
-    const iMin = Math.floor(-domainReach);
-    const iMax = Math.ceil(domainReach);
-    for (let i = iMin; i <= iMax; i += 1) {
-      const isAxis = i === 0;
-      drawLine(
-        point(-domainReach, i, true),
-        point(domainReach, i, true),
-        isAxis ? accentStrong : accent,
-        isAxis ? 1.25 : 1.05,
-        isAxis ? 0.4 : 0.28,
-      );
-      drawLine(
-        point(i, -domainReach, true),
-        point(i, domainReach, true),
-        isAxis ? accentStrong : accent,
-        isAxis ? 1.25 : 1.05,
-        isAxis ? 0.4 : 0.28,
-      );
-    }
-  }
-
-  // Layer 3 — unit square image as a quiet anchor (not the whole story).
-  const p00 = point(0, 0, true);
-  const p10 = point(1, 0, true);
-  const p11 = point(1, 1, true);
-  const p01 = point(0, 1, true);
-  const cellArea = Math.abs((p10.x - p00.x) * (p01.y - p00.y) - (p01.x - p00.x) * (p10.y - p00.y));
-  if (cellArea > 2) {
-    ctx.save();
-    ctx.beginPath();
-    ctx.moveTo(p00.x, p00.y);
-    ctx.lineTo(p10.x, p10.y);
-    ctx.lineTo(p11.x, p11.y);
-    ctx.lineTo(p01.x, p01.y);
-    ctx.closePath();
-    ctx.fillStyle = accent;
-    ctx.globalAlpha = 0.09;
-    ctx.fill();
-    ctx.globalAlpha = 0.34;
-    ctx.strokeStyle = accent;
-    ctx.lineWidth = 1.4;
-    ctx.stroke();
-    ctx.restore();
-  }
-
-  // Layer 4 — basis before / after.
-  /* the faint e1, e2 labels are dropped while Ae1, Ae2 sit on top of them */
-  const near = (a, b) => Math.hypot(a.x - b.x, a.y - b.y) < 22;
-  drawArrow(ctx, origin, point(1, 0), muted, near(point(1, 0), point(1, 0, true)) ? "" : "e₁", 0.3, 2.2);
-  drawArrow(ctx, origin, point(0, 1), muted, near(point(0, 1), point(0, 1, true)) ? "" : "e₂", 0.3, 2.2);
-  drawArrow(ctx, origin, point(1, 0, true), v1, "Ae₁", 1, 3.05);
-  drawArrow(ctx, origin, point(0, 1, true), v2, "Ae₂", 1, 3.05);
-
-  ctx.save();
-  ctx.fillStyle = text;
-  ctx.globalAlpha = 0.75;
-  ctx.beginPath();
-  ctx.arc(origin.x, origin.y, allZero ? 4.2 : 3.2, 0, Math.PI * 2);
-  ctx.fill();
-  ctx.restore();
-}
-
-function drawArrow(ctx, from, to, color, label, alpha = 1, width = 3) {
-  const dx = to.x - from.x;
-  const dy = to.y - from.y;
-  const len = Math.hypot(dx, dy);
-  if (len < 3.5) return;
-
-  const angle = Math.atan2(dy, dx);
-  const head = Math.min(10, Math.max(6, len * 0.18));
-
-  ctx.save();
-  ctx.globalAlpha = alpha;
-  ctx.strokeStyle = color;
-  ctx.fillStyle = color;
-  ctx.lineWidth = width;
-  ctx.lineCap = "round";
-  ctx.lineJoin = "round";
-  ctx.beginPath();
-  ctx.moveTo(from.x, from.y);
-  ctx.lineTo(to.x, to.y);
-  ctx.stroke();
-  ctx.beginPath();
-  ctx.moveTo(to.x, to.y);
-  ctx.lineTo(to.x - head * Math.cos(angle - Math.PI / 6), to.y - head * Math.sin(angle - Math.PI / 6));
-  ctx.lineTo(to.x - head * Math.cos(angle + Math.PI / 6), to.y - head * Math.sin(angle + Math.PI / 6));
-  ctx.closePath();
-  ctx.fill();
-  if (label) {
-    ctx.font = "700 13px 'LA Serif Latin', 'LA Serif SC', 'Songti SC', serif";
-    ctx.fillText(label, to.x + 8, to.y - 8);
-  }
-  ctx.restore();
-}
-
-window.setTransformMatrix = setTransformMatrix;
-window.animateTransformMatrix = animateTransformMatrix;
-
-function setupMultiplyDemo() {
-  const tabs = document.querySelector("[data-multiply-tabs]");
-  const chain = document.querySelector("#multiplyChain");
-  const text = document.querySelector("#multiplyText");
-  if (!tabs || !chain || !text) return;
-
-  const views = {
-    compose: {
-      chain: [texInline("x"), texInline("B"), texInline("Bx"), texInline("A"), texInline("A(Bx)")],
-      text: `<strong>复合视角</strong><p>${texInline("ABx")} 表示 ${texInline("x")} 先经过 ${texInline("B")}，再把结果交给 ${texInline("A")}。顺序写在右侧先发生。</p>`,
-    },
-    columns: {
-      chain: [`${texInline("B")} 的第 ${texInline("j")} 列`, texInline("A"), texInline("Ab_j"), "=", `${texInline("AB")} 的第 ${texInline("j")} 列`],
-      text: `<strong>列视角</strong><p>${texInline("AB")} 的每一列，都是 ${texInline("A")} 作用到 ${texInline("B")} 的对应列。这个视角比直接背行列公式更贴近线性映射。</p>`,
-    },
-    formula: {
-      chain: [`第 ${texInline("i")} 行`, "·", `第 ${texInline("j")} 列`, "=", texInline("(AB)_{ij}")],
-      text: `<strong>公式视角</strong><p>行乘列是在计算输出第 ${texInline("i")} 个坐标对输入第 ${texInline("j")} 个基向量的响应。公式是复合过程的坐标化结果。</p>`,
-    },
-  };
-
-  function render(step) {
-    tabs.querySelectorAll("button").forEach((button) => {
-      button.classList.toggle("is-active", button.dataset.step === step);
-    });
-    chain.innerHTML = views[step].chain
-      .map((item, index) =>
-        index % 2 === 1
-          ? `<span class="chain-symbol">${item}</span>`
-          : `<span class="matrix-card">${item}</span>`,
-      )
-      .join("");
-    text.innerHTML = views[step].text;
-  }
-
-  tabs.addEventListener("click", (event) => {
-    const button = event.target.closest("button[data-step]");
-    if (button) render(button.dataset.step);
-  });
-
-  render("compose");
-}
-
-function setupRankDemo() {
-  const tabs = document.querySelector("[data-rank-tabs]");
-  const plane = document.querySelector("#rankPlane");
-  const number = document.querySelector("#rankNumber");
-  const text = document.querySelector("#rankText");
-  if (!tabs || !plane || !number || !text) return;
-
-  function render(rank) {
-    tabs.querySelectorAll("button").forEach((button) => {
-      button.classList.toggle("is-active", button.dataset.rank === rank);
-    });
-    plane.classList.toggle("rank-1", rank === "1");
-    number.textContent = rank;
-    text.textContent =
-      rank === "1"
-        ? "所有列向量落在同一条直线上，输出只保留一个独立方向。"
-        : "两列向量提供两个独立方向，输出可以铺开一个平面区域。";
-  }
-
-  tabs.addEventListener("click", (event) => {
-    const button = event.target.closest("button[data-rank]");
-    if (button) render(button.dataset.rank);
-  });
-}
+/* ---------- Page table of contents ---------- */
 
 function buildPageToc() {
   const headings = [...els.main.querySelectorAll(".section-band[id], .lesson-section[id]")];
@@ -1856,6 +1042,8 @@ function setupTocObserver() {
   }
 }
 
+/* ---------- Sidebar state ---------- */
+
 function updateNavActive() {
   document.querySelectorAll(".chapter-group").forEach((group) => {
     const isActive = group.dataset.chapter === state.route;
@@ -1898,39 +1086,8 @@ function updateProgressUI() {
   });
 }
 
-function filterNav(value) {
-  const query = normalizeSearchText(value);
-
-  if (!query) {
-    document.querySelectorAll(".chapter-group, .nav-section").forEach((item) => {
-      item.classList.remove("is-hidden-by-search");
-    });
-    updateNavActive();
-    return;
-  }
-
-  document.querySelectorAll(".chapter-group").forEach((group) => {
-    const chapterMatches = group.dataset.searchText.includes(query);
-    let sectionMatches = false;
-
-    group.querySelectorAll(".nav-section").forEach((link) => {
-      const match = link.dataset.searchText.includes(query);
-      link.classList.toggle("is-hidden-by-search", !match);
-      sectionMatches = sectionMatches || match;
-    });
-
-    group.classList.toggle("is-hidden-by-search", !chapterMatches && !sectionMatches);
-    if (chapterMatches || sectionMatches) group.classList.add("is-open");
-  });
-}
-
 function normalizeSearchText(value) {
   return String(value || "")
     .toLowerCase()
     .replace(/\s+/g, "");
-}
-
-function formatNumber(value) {
-  const rounded = Math.round(value * 100) / 100;
-  return String(rounded).replace(/^-0$/, "0");
 }

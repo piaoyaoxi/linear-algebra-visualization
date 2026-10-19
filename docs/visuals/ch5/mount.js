@@ -1,8 +1,5 @@
-/* Attach Chapter 5 presentation modules after the generic lesson shell renders. */
+/* Chapter 5: a task card under each lab's prediction box. */
 (() => {
-  const baseRenderLessonPage = window.renderLessonPage;
-  if (typeof baseRenderLessonPage !== "function") return;
-
   const tex = (source) => (window.texInline ? window.texInline(source) : source);
   const taskCopy = {
     "quadratic-matrix": ["看两根高度杆", `选一种替换，比较两根杆的顶端是否落在同一个水平面上；再看 ${tex("\\det C")} 判断是不是合同。`],
@@ -11,10 +8,7 @@
     "positive-definite": [`把 ${tex("t")} 从 0 往右拖`, "先看曲面和它底面的等高线，再用方向轮和主子式核对同一个边界。"],
   };
 
-  window.renderLessonPage = function renderLessonPageWithChapter5Extensions(section, chapter) {
-    baseRenderLessonPage(section, chapter);
-    const root = document.querySelector("#mainContent");
-    window.mountChapter5Lesson?.(section, root);
+  defineChapterEnhancer("ch5", (section, root) => {
     const lab = root?.querySelector(".qv-lab");
     if (!lab) return;
     lab.classList.add("ch5-lab");
@@ -28,5 +22,5 @@
         `<div class="ch5-task qv-task"><span>1</span><div><strong>${copy[0]}</strong><p>${copy[1]}</p></div></div>`,
       );
     }
-  };
+  });
 })();

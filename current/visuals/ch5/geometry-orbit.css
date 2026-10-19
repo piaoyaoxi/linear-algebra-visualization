@@ -126,10 +126,6 @@
   margin-bottom: 0;
 }
 
-.qv-same figure > .qv-orbit-shell {
-  border-bottom: 0;
-}
-
 .qv-same canvas,
 .qv-main-canvas,
 .qv-hero canvas {

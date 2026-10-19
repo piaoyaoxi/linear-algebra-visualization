@@ -136,9 +136,6 @@
 
 body.dark .inverse-transform-lab {
   --inverse-vector: #6b8cff;
-  border-color: var(--glass-border);
-  background: var(--surface-solid);
-  box-shadow: none;
 }
 
 .inverse-lab-head {
@@ -431,19 +428,6 @@ body.dark .inverse-transform-lab {
   /* Keep the parallelogram lighter than e₁ so the basis edge stays readable. */
   stroke: color-mix(in srgb, var(--accent-strong) 68%, transparent);
   stroke-width: 2.1;
-}
-
-.inverse-transform-lab.is-singular .inverse-current-line {
-  stroke: color-mix(in srgb, var(--inverse-coral) 38%, transparent);
-}
-
-.inverse-transform-lab.is-singular .inverse-current-line.is-axis,
-.inverse-transform-lab.is-singular .inverse-current-square {
-  stroke: var(--inverse-coral);
-}
-
-.inverse-transform-lab.is-singular .inverse-current-square {
-  fill: color-mix(in srgb, var(--inverse-coral) 7%, transparent);
 }
 
 .inverse-basis,
@@ -1112,7 +1096,7 @@ body.dark .inverse-transform-lab {
  * the readout-card rule in design-a-legacy.css.
  */
 @media (max-width: 720px) {
-  :is(main, #la) #matrix-inverse-interactive.lesson-page-section :is(.inverse-stage-control, .inverse-state-summary) {
+  #matrix-inverse-interactive.lesson-page-section :is(.inverse-stage-control, .inverse-state-summary) {
     padding: 14px 0 0;
     border: 0;
     border-top: 1px solid var(--line);

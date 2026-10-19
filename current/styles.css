@@ -2857,8 +2857,8 @@ body.dark .button.primary {
   box-shadow: none;
 }
 
-.button.primary:hover,
-body.dark .button.primary:hover {
+.button.primary:hover:where(:not(:disabled)),
+body.dark .button.primary:hover:where(:not(:disabled)) {
   background: var(--accent-strong);
 }
 

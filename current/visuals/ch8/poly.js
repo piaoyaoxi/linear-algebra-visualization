@@ -1,13 +1,13 @@
 /*
  * Chapter 8 exact polynomial engine.
  *
- * A polynomial in λ is an array of Ch3Math rationals, lowest degree first,
+ * A polynomial in λ is an array of LAExact rationals, lowest degree first,
  * with no trailing zeros (the zero polynomial is []). A λ-matrix is an array
  * of rows of such polynomials. Every decision (degree, divisibility, rank,
  * gcd) is exact; nothing here uses floating point.
  */
 (() => {
-  const M = () => window.Ch3Math;
+  const M = () => window.LAExact;
   const F = (x) => M().parseF(x);
 
   function trim(p) {

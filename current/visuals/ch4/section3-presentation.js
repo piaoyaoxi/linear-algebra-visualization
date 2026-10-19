@@ -29,6 +29,7 @@
   const easeInOutCubic = (t) => (t < 0.5 ? 4 * t * t * t : 1 - ((-2 * t + 2) ** 3) / 2);
   const reducedMotion = () => Boolean(window.matchMedia?.("(prefers-reduced-motion: reduce)")?.matches);
 
+  // drawing only (the ghost may be mid-animation); verdicts use LAExact
   function rank2(matrix) {
     const eps = 1e-6;
     if (Math.abs(determinant(matrix)) > eps) return 2;
@@ -610,7 +611,7 @@
       const product = multiply(preset.matrix, BOTTLENECK_B);
       lab.querySelector("[data-s3-a-label]").innerHTML = `${mathInline("A")}：${preset.label}`;
       lab.querySelector("[data-s3-a-matrix]").innerHTML = matrixGrid(preset.matrix);
-      const rank = rank2(product);
+      const rank = window.LAExact.rankOf(window.LAExact.matFromNumbers(product));
       lab.querySelector("[data-s3-ab-rank-label]").textContent = rank === 1 ? "直线 → 直线" : "直线 → 一个点";
       lab.querySelector("[data-s3-bottleneck-rank]").innerHTML = mathInline(`AB=${matrixTex(product)},\\ \\operatorname{rank}(AB)=${rank}`);
       lab.querySelector("[data-s3-bottleneck-title]").innerHTML = preset.title;

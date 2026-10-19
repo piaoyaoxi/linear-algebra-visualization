@@ -96,9 +96,10 @@
     return matrix[0] * matrix[3] - matrix[1] * matrix[2];
   }
 
+  // the verdict "invertible or not" is exact; EPSILON only guards drawing
   function matrixRank(matrix) {
-    if (Math.abs(determinant(matrix)) > EPSILON) return 2;
-    return matrix.some((value) => Math.abs(value) > EPSILON) ? 1 : 0;
+    const X = window.LAExact;
+    return X.rankOf(X.matFromNumbers([[matrix[0], matrix[1]], [matrix[2], matrix[3]]]));
   }
 
   function inverse(matrix) {

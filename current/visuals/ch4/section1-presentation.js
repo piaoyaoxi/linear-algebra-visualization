@@ -146,8 +146,8 @@
               data-row="${rowIndex + 1}"
               data-col="${colIndex + 1}"
               data-value="${value}"
-              aria-label="第 ${rowIndex + 1} 行第 ${colIndex + 1} 列，数值 ${value}"
-            >${value}</button>
+              aria-label="第 ${rowIndex + 1} 行第 ${colIndex + 1} 列，数值 ${String(value).replace(/^-/, "−")}"
+            >${String(value).replace(/^-/, "−")}</button>
           `,
         ),
       )

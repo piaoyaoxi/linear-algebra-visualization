@@ -15,12 +15,7 @@
 
   /* every value sits on the 0.1 grid of the sliders, so tenths are exact integers */
   const tenths = (value) => Math.round(Number(value) * 10);
-  const gcd = (a, b) => {
-    let x = Math.abs(a);
-    let y = Math.abs(b);
-    while (y) [x, y] = [y, x % y];
-    return x || 1;
-  };
+  const gcd = (a, b) => window.LAExact.gcd(a, b);
   // the exact fraction n/d (integers) as plain text and as TeX
   function ratio(n, d) {
     const num = d < 0 ? -n : n;

@@ -34,13 +34,16 @@
     return values[0].map((_, col) => values.map((row) => row[col]));
   }
 
+  // numbers read as text: a true minus sign, never a hyphen
+  const shown = (value) => String(value).replace(/^-/, "−");
+
   function matrixGrid(values, className = "") {
     const cols = values[0]?.length || 1;
     return `<div class="s2-matrix-grid ${className}" style="--s2-cols:${cols}">${values
       .flatMap((row, rowIndex) =>
         row.map(
           (value, colIndex) =>
-            `<span data-row="${rowIndex}" data-col="${colIndex}">${value}</span>`,
+            `<span data-row="${rowIndex}" data-col="${colIndex}">${shown(value)}</span>`,
         ),
       )
       .join("")}</div>`;
@@ -263,7 +266,7 @@
         .flatMap((row, rowIndex) =>
           row.map(
             (value, colIndex) =>
-              `<span style="--cell-row:${rowIndex};--cell-col:${colIndex}" data-source-row="${rowIndex}" data-source-col="${colIndex}">${value}</span>`,
+              `<span style="--cell-row:${rowIndex};--cell-col:${colIndex}" data-source-row="${rowIndex}" data-source-col="${colIndex}">${shown(value)}</span>`,
           ),
         )
         .join("");

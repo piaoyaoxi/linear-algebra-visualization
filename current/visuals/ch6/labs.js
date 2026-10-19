@@ -426,12 +426,7 @@
     if (first < 0) ints = ints.map((x) => -x);
     return ints.map((x) => F(x));
   }
-  function gcd(a, b) {
-    a = Math.abs(a);
-    b = Math.abs(b);
-    while (b) [a, b] = [b, a % b];
-    return a;
-  }
+  const gcd = (a, b) => window.LAExact.gcd(a, b);
 
   const spaceName = (d) => [tex("\\{0\\}"), "一条直线", "一个平面", tex("\\mathbb R^3")][d];
   // after a Chinese word: a formula name takes the usual space, a Chinese name none

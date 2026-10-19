@@ -561,3 +561,10 @@ _dev/research/3b1b_eola_chapter10.py
 - 第一章原来在运行时往 head 里插三张样式表（repair-pass-final、refinement、learning-design），改为 learn.html 里固定的 `<link>`，位置不变（最后）。
 - 明暗切换的两张大图不再在学习页一开始高优先级预加载（手机上还会多下一套用不到的桌面版），改为页面空闲后低优先级加载；切换时还没下完就立即高优先级去取。
 - 首页预下载（home-prefetch.js）多下载“上次学到的那一章”（没有记录时是第一章）的实验脚本。
+## 精确计算统一到 `shared/exact.js`，第五章读数改读数据（2026-10-19，`ui/exact-math`，Claude）
+
+- 有理数与矩阵算法只剩一份：`visuals/shared/exact.js`（`window.LAExact`：有理数、行化简、秩、零空间、特解、行列式、关系式、LaTeX）。`Ch3Math` 保留绘图和 HTML 辅助，把 LAExact 的函数原名转出；第一章 `Ch1Math` 的 `R`、`parseR`、`rAdd`… 和第八章 `Ch8Poly` 都改用它。新代码直接用 `window.LAExact`，不要再写 gcd / 有理数。
+- `gcd(0, 0)` 现在是 0（原来返回 1）：对一列数求公因数时，开头是 0 会提前得到 1。主干上 2x³+4x 的容度算成 1（应为 2）。分子、分母超出安全整数范围时抛错，不再悄悄舍入。`parseExact` 精确读入输入文字（"0.0001" 是 1/10000）；`parseF` 仍把小数贴到分母不超过 1000 的分数，供滑杆用。
+- 单元测试 `tests/exact-math.test.mjs`（`node --test tests/*.test.mjs`），已加进 site-audit 工作流。期望值都是手算的。
+- 判定改用精确计算：第四章 §3 秩瓶颈的 rank(AB)、§4 是否可逆，第五章 §1 det C。第五章 §3/§4 的 h、t 是连续滑杆，惯性与正定判定继续用带容差的浮点（把 CᵀAC 的每个元素各自贴成分数，奇异矩阵反而可能被判成可逆）；这是“禁止浮点阈值”规则唯一保留的例外。
+- 第五章曲面不再从页面文字里用正则读回向量：`[data-s1-x]` 把向量存在 `data-v`，矩阵格子原来就有 `data-v`。读数、画布上的数字改用真正的负号 “−”；第四章 §1 矩阵格子、§2 运算与转置格子同样改了（TODO 第七轮第 3 类最后一条）。

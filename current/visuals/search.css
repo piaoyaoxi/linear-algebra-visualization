@@ -489,6 +489,11 @@ body.dark .search-results-panel {
   color: var(--muted);
 }
 
+/* snippet formulas at the site's inline-math size (KaTeX alone sets 1.21em) */
+.search-result-tex .katex {
+  font-size: 1.16em;
+}
+
 .search-result-title mark,
 .search-result-breadcrumb mark,
 .search-result-snippet mark,

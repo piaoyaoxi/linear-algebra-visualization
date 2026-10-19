@@ -53,7 +53,7 @@ jobs:
           cat /tmp/site-static.log
           exit 1
 
-      - name: Regression smoke (prediction locks, storage fallbacks)
+      - name: Regression smoke (prediction locks, search snippets, storage fallbacks)
         run: node .github/scripts/reliability-smoke.mjs
 
       - name: Audit every lesson section

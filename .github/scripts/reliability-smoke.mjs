@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import { chromium } from "playwright";
 
-// Regression gate for prediction locks (no answer before a guess), chapter deep links and browser storage failures.
+// Regression gate for prediction locks (no answer before a guess), chapter deep links, search snippets and browser storage failures.
 const origin = process.env.SITE_ORIGIN || "http://127.0.0.1:4173";
 const browser = await chromium.launch();
 
@@ -107,6 +107,29 @@ try {
     await page.close();
   }
   {
+    // search snippets: formulas are set with KaTeX, never shown as TeX source; no flags or figure keys
+    const { page, errors } = await open("guide");
+    const leaks = await page.evaluate(() => {
+      const found = [];
+      for (const entry of window.AlgebraSearch.search("的", { limit: 999 }).results) {
+        entry.parts.forEach((part) => {
+          if (part.tex == null && /\\[a-zA-Z]+|[_^]\{/.test(part.text)) found.push(`${entry.href}: ${part.text.slice(0, 60)}`);
+        });
+        if (/(^|[^a-z-])(false|true|three-planes|gallery)([^a-z-]|$)/.test(entry.body)) found.push(`${entry.href}: internal value`);
+      }
+      return found;
+    });
+    assert.deepEqual(leaks, [], "indexed text must not carry TeX source or internal values");
+    await page.locator(".search-trigger, [aria-label='搜索课程内容']").first().click();
+    await page.locator("input[type='search']").fill("rank");
+    const snippet = page.locator(".search-result-snippet").first();
+    await snippet.waitFor();
+    assert.ok(await snippet.locator(".search-result-tex .katex").count() > 0, "snippet formulas are rendered with KaTeX");
+    assert.ok(!(await snippet.innerText()).includes("\\"), "snippets show no TeX source");
+    assert.deepEqual(errors, [], "search must not raise page errors");
+    await page.close();
+  }
+  {
     const { page, errors } = await open("guide", () => {
       window.localStorage.setItem("la-visual-progress", "{ invalid json");
     });
@@ -122,7 +145,7 @@ try {
     assert.deepEqual(errors, [], "blocked storage must not crash startup");
     await page.close();
   }
-  console.log("Reliability smoke: deep links, prediction gating and storage fallbacks passed.");
+  console.log("Reliability smoke: deep links, prediction gating, search snippets and storage fallbacks passed.");
 } finally {
   await browser.close();
 }

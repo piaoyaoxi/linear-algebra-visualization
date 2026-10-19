@@ -75,7 +75,7 @@
 .lx-svg-line { stroke: var(--line-strong); fill: none; }
 .lx-svg-cell { fill: var(--surface-soft); stroke: var(--line); }
 .lx-svg-hi { fill: var(--accent-soft); stroke: var(--accent); }
-.lx-svg-hi2 { fill: color-mix(in srgb, var(--coral) 16%, transparent); stroke: var(--coral); }
+
 .lx-svg-dot { fill: var(--accent); }
 .lx-svg-dot2 { fill: var(--coral); }
 

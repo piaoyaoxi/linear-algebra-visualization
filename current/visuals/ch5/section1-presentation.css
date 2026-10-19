@@ -157,57 +157,6 @@
   font-weight: 800;
 }
 
-#quadratic-matrix-interactive .ch5s1-flow {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr) auto minmax(0, 1fr);
-  align-items: center;
-  gap: 9px;
-  padding: 14px;
-  border-radius: 15px;
-  background: var(--surface-soft);
-}
-
-#quadratic-matrix-interactive .ch5s1-flow > div {
-  display: grid;
-  gap: 4px;
-  min-height: 66px;
-  place-content: center;
-  padding: 8px;
-  border: 1px solid var(--line);
-  border-radius: 12px;
-  background: var(--surface-solid);
-  text-align: center;
-}
-
-#quadratic-matrix-interactive .ch5s1-flow > div span {
-  color: var(--muted);
-  font-size: 10px;
-}
-
-#quadratic-matrix-interactive .ch5s1-flow > b {
-  color: var(--accent-strong);
-  font-size: 20px;
-  pointer-events: none;
-}
-
-#quadratic-matrix-interactive .ch5s1-canvas-pair {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 12px;
-}
-
-#quadratic-matrix-interactive .ch5s1-canvas-pair > div {
-  min-width: 0;
-  display: grid;
-  gap: 7px;
-}
-
-#quadratic-matrix-interactive .ch5s1-canvas-pair strong {
-  color: var(--muted);
-  text-align: center;
-  font-size: 12px;
-}
-
 @media (max-width: 800px) {
   #quadratic-matrix-formal .ch5s1-map-demo {
     grid-template-columns: 1fr;
@@ -225,18 +174,8 @@
     text-align: center;
   }
 
-  #quadratic-matrix-interactive .ch5s1-flow {
-    grid-template-columns: 1fr;
-  }
+  
 
-  #quadratic-matrix-interactive .ch5s1-flow > b {
-    transform: rotate(90deg);
-    text-align: center;
-  }
+  
 }
 
-@media (max-width: 560px) {
-  #quadratic-matrix-interactive .ch5s1-canvas-pair {
-    grid-template-columns: 1fr;
-  }
-}

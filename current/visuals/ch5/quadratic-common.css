@@ -147,23 +147,6 @@
   box-shadow: var(--shadow-soft);
 }
 
-.ch5-lab-head {
-  display: grid;
-  gap: 6px;
-  max-width: 78ch;
-}
-
-.ch5-lab-head h3 {
-  margin: 0;
-  font-size: clamp(20px, 2vw, 24px);
-}
-
-.ch5-lab-head p {
-  margin: 0;
-  color: var(--muted);
-  line-height: 1.72;
-}
-
 .ch5-task {
   display: grid;
   grid-template-columns: auto minmax(0, 1fr);
@@ -196,73 +179,6 @@
   margin: 0;
   color: var(--muted);
   line-height: 1.65;
-}
-
-.ch5-lab-grid {
-  display: grid;
-  grid-template-columns: minmax(0, 1.08fr) minmax(280px, 0.92fr);
-  gap: 18px;
-  align-items: start;
-}
-
-.ch5-panel {
-  display: grid;
-  gap: 13px;
-  min-width: 0;
-}
-
-.ch5-stage {
-  position: relative;
-  min-width: 0;
-  min-height: 300px;
-  overflow: hidden;
-  background:
-    radial-gradient(circle at 18% 20%, color-mix(in srgb, var(--accent) 8%, transparent), transparent 42%),
-    radial-gradient(circle at 84% 78%, color-mix(in srgb, var(--coral) 7%, transparent), transparent 42%),
-    var(--surface-soft);
-}
-
-.ch5-stage canvas,
-.ch5-canvas {
-  display: block;
-  width: 100%;
-  height: 300px;
-  min-height: 300px;
-}
-
-.ch5-stage.is-compact,
-.ch5-stage.is-compact canvas {
-  min-height: 230px;
-  height: 230px;
-}
-
-.ch5-reading {
-  display: grid;
-  gap: 10px;
-}
-
-.ch5-reading-row {
-  display: grid;
-  grid-template-columns: minmax(110px, auto) minmax(0, 1fr);
-  gap: 14px;
-  align-items: baseline;
-  padding-bottom: 8px;
-  border-bottom: 1px solid var(--line);
-}
-
-.ch5-reading-row:last-child {
-  padding-bottom: 0;
-  border-bottom: 0;
-}
-
-.ch5-reading-row span {
-  color: var(--muted);
-  font-size: 12px;
-}
-
-.ch5-reading-row strong {
-  min-width: 0;
-  overflow-wrap: anywhere;
 }
 
 /* a one-line pill: inline-block, so the words the typesetter wraps stay one run of text
@@ -353,52 +269,6 @@
   margin: 0;
 }
 
-.ch5-progress {
-  display: grid;
-  grid-template-columns: repeat(var(--ch5-steps, 4), minmax(0, 1fr));
-  gap: 7px;
-}
-
-.ch5-progress span {
-  height: 6px;
-  border-radius: 999px;
-  background: var(--line);
-}
-
-.ch5-progress span.is-done,
-.ch5-progress span.is-current {
-  background: var(--accent);
-}
-
-.ch5-progress span.is-current {
-  box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 14%, transparent);
-}
-
-.ch5-step-card {
-  display: grid;
-  gap: 10px;
-  min-height: 150px;
-}
-
-.ch5-step-kicker {
-  color: var(--accent-strong);
-  font-size: 12px;
-  font-weight: 800;
-  letter-spacing: 0.05em;
-}
-
-.ch5-controls-row {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  justify-content: space-between;
-  gap: 10px;
-}
-
-.ch5-controls-row .ch5-toolbar {
-  margin-left: auto;
-}
-
 .ch5-range {
   display: grid;
   grid-template-columns: minmax(100px, auto) minmax(120px, 1fr) 56px;
@@ -420,21 +290,6 @@
   justify-self: end;
   font-variant-numeric: tabular-nums;
   font-weight: 800;
-}
-
-.ch5-result-card {
-  display: grid;
-  gap: 11px;
-}
-
-.ch5-result-card.is-success {
-  border-color: color-mix(in srgb, var(--accent) 38%, var(--line));
-  background: color-mix(in srgb, var(--accent) 7%, var(--surface-solid));
-}
-
-.ch5-result-card.is-warning {
-  border-color: color-mix(in srgb, var(--coral) 42%, var(--line));
-  background: color-mix(in srgb, var(--coral) 7%, var(--surface-solid));
 }
 
 .ch5-check-list {
@@ -535,10 +390,7 @@
     grid-template-columns: 1fr;
   }
 
-  .ch5-reading-row {
-    grid-template-columns: 1fr;
-    gap: 3px;
-  }
+  
 
   .ch5-range {
     grid-template-columns: 1fr 48px;
@@ -548,21 +400,11 @@
     grid-column: 1 / -1;
   }
 
-  .ch5-stage,
-  .ch5-stage canvas,
-  .ch5-canvas {
-    min-height: 250px;
-    height: 250px;
-  }
+  
 
-  .ch5-controls-row {
-    align-items: stretch;
-  }
+  
 
-  .ch5-controls-row .ch5-toolbar {
-    width: 100%;
-    margin-left: 0;
-  }
+  
 
   .ch5-toolbar button,
   .ch5-action {

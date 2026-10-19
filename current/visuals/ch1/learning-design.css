@@ -20,17 +20,6 @@
   line-height: 1.75;
 }
 
-.ch1-learning-guide {
-  display: grid;
-  grid-template-columns: minmax(230px, 0.82fr) minmax(0, 1.55fr);
-  gap: 18px;
-  align-items: stretch;
-  padding: 18px;
-  border: 1px solid color-mix(in srgb, var(--accent) 30%, var(--line));
-  border-radius: calc(var(--radius) + 2px);
-  background: color-mix(in srgb, var(--accent) 5%, var(--surface-solid));
-}
-
 .ch1-learning-question {
   display: grid;
   align-content: center;
@@ -52,27 +41,6 @@
   line-height: 1.5;
 }
 
-.ch1-learning-steps {
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 10px;
-  margin: 0;
-  padding: 0;
-  list-style: none;
-}
-
-.ch1-learning-steps li {
-  display: grid;
-  grid-template-columns: 28px minmax(0, 1fr);
-  gap: 9px;
-  align-items: start;
-  min-width: 0;
-  padding: 11px;
-  border: 1px solid var(--line);
-  border-radius: 12px;
-  background: var(--surface-solid);
-}
-
 .ch1-learning-steps li > span,
 .ch1-module-heading > span {
   display: grid;
@@ -87,31 +55,12 @@
   font-weight: 800;
 }
 
-.ch1-learning-steps strong {
-  display: block;
-  margin-bottom: 3px;
-  font-size: 14px;
-}
-
-.ch1-learning-steps p {
-  margin: 0;
-  color: var(--muted);
-  font-size: 12.5px;
-  line-height: 1.55;
-}
-
 .ch1-learning-module {
   display: grid;
   gap: 15px;
   min-width: 0;
   padding: 18px;
   border-top: 1px solid var(--line);
-}
-
-.ch1-control-module {
-  border: 1px solid var(--line);
-  border-radius: var(--radius);
-  background: var(--surface-soft);
 }
 
 .ch1-module-heading {
@@ -242,9 +191,6 @@
 }
 
 /* §2 — the coefficient workbench is a sequence, not two unmatched columns. */
-.ch1-section-univariate-polynomials > .ch1-learning-guide + .ch1-coeff-workflow {
-  margin-top: 0;
-}
 
 .ch1-coeff-workflow {
   display: grid;
@@ -469,9 +415,7 @@
 }
 
 @media (max-width: 1040px) {
-  .ch1-learning-guide {
-    grid-template-columns: 1fr;
-  }
+  
 
   .ch1-learning-question {
     padding-right: 0;
@@ -505,13 +449,9 @@
     padding: 16px;
   }
 
-  .ch1-learning-guide {
-    padding: 14px;
-  }
+  
 
-  .ch1-learning-steps {
-    grid-template-columns: 1fr;
-  }
+  
 
   .ch1-control-module,
   .ch1-learning-module {
@@ -576,9 +516,7 @@
     grid-template-columns: 32px minmax(0, 1fr);
   }
 
-  .ch1-learning-steps li {
-    padding: 10px;
-  }
+  
 
   .ch1-coeff-card {
     padding: 11px;

@@ -65,5 +65,5 @@
 
   // The lab itself is built by geometry-upgrade.js (surface with level curves on its floor,
   // direction wheel, Sylvester readouts); this file only renders the formal block.
-  window.defineChapter5Renderer("positive-definite", { formal: renderFormal });
+  defineLessonRenderer("ch5", "positive-definite", { formal: renderFormal });
 })();

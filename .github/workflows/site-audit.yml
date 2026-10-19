@@ -10,6 +10,7 @@ on:
       - ".github/scripts/layout-check.mjs"
       - ".github/workflows/site-audit.yml"
       - ".github/scripts/check-font-coverage.py"
+      - ".github/scripts/serve.py"
   workflow_dispatch:
 
 permissions:
@@ -38,7 +39,7 @@ jobs:
 
       - name: Start static site
         run: |
-          python3 -m http.server 4173 --directory current > /tmp/site-static.log 2>&1 &
+          python3 .github/scripts/serve.py 4173 current > /tmp/site-static.log 2>&1 &
           for attempt in {1..20}; do
             if curl --fail --silent http://127.0.0.1:4173/learn.html > /dev/null; then
               exit 0

@@ -453,7 +453,7 @@
     return () => controller.abort();
   }
 
-  window.defineChapter5LessonEnhancer?.((section, lessonRoot) => {
+  defineChapterEnhancer("ch5", (section, lessonRoot) => {
     if (!["quadratic-matrix", "quadratic-standard-form", "quadratic-uniqueness", "positive-definite"].includes(section?.id)) return undefined;
     const root = lessonRoot.querySelector(`#${CSS.escape(section.id)}-interactive`);
     return enhanceSection(section, root);

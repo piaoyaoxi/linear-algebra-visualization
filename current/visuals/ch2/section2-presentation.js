@@ -237,7 +237,7 @@
     return () => controller.abort();
   }
 
-  defineChapter2Renderer("permutations", {
+  defineLessonRenderer("ch2", "permutations", {
     formal(formal) {
       if (!formal) return;
       formal.innerHTML = formalShell(

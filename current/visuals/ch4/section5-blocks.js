@@ -207,5 +207,5 @@
       </ul></div></div>`;
   }
 
-  window.defineChapter4Renderer?.("block-matrices", { formal: renderFormal, interactive: renderInteractive });
+  defineLessonRenderer("ch4", "block-matrices", { formal: renderFormal, interactive: renderInteractive });
 })();

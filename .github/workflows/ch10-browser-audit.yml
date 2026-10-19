@@ -35,7 +35,7 @@ jobs:
           for file in current/content/ch10*.js current/visuals/ch10/*.js; do
             node --check "$file"
           done
-          node --check current/structured-learning.js
+          node --check current/app.js
           node --check tests/ch10-browser-audit.cjs
           node --check tests/ch10-source-audit.cjs
 
@@ -61,7 +61,7 @@ jobs:
 
       - name: Start local learning site
         run: |
-          python3 -m http.server 4173 --directory current > /tmp/ch10-server.log 2>&1 &
+          python3 .github/scripts/serve.py 4173 current > /tmp/ch10-server.log 2>&1 &
           echo $! > /tmp/ch10-server.pid
           for attempt in {1..30}; do
             if curl --fail --silent http://127.0.0.1:4173/learn.html > /dev/null; then

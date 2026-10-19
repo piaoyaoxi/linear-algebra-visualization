@@ -74,19 +74,6 @@
     return Number.isInteger(rounded) ? String(rounded) : rounded.toFixed(2).replace(/0+$/, "").replace(/\.$/, "");
   }
 
-  function matrixCellGrid(matrix, id, buttons = false) {
-    return `<div class="s2c-matrix" data-s2c-matrix="${id}" style="--s2c-cols:${matrix[0].length}">${matrix
-      .flatMap((row, rowIndex) =>
-        row.map((value, colIndex) => {
-          const attrs = `data-row="${rowIndex}" data-col="${colIndex}"`;
-          return buttons
-            ? `<button type="button" ${attrs} data-s2c-result aria-label="计算第 ${rowIndex + 1} 行第 ${colIndex + 1} 列">${value}</button>`
-            : `<span ${attrs}>${value}</span>`;
-        }),
-      )
-      .join("")}</div>`;
-  }
-
   function getPalette() {
     const styles = getComputedStyle(document.body);
     return {

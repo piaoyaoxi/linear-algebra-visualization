@@ -511,5 +511,5 @@
     mount(el);
   }
 
-  window.defineChapter1Renderer("polynomial-divisibility", { interactive });
+  defineLessonRenderer("ch1", "polynomial-divisibility", { interactive });
 })();

@@ -1288,7 +1288,7 @@
   };
 
   Object.entries(LABS).forEach(([id, lab]) => {
-    window.defineChapter3Renderer?.(id, {
+    defineLessonRenderer("ch3", id, {
       formal: (root, section) => renderFormal(root, section),
       interactive: (root, section, page) => {
         if (!root) return undefined;

@@ -1442,7 +1442,7 @@
   };
 
   [...Object.keys(LABS), "unitary-spaces"].forEach((id) => {
-    window.defineChapter9Renderer?.(id, {
+    defineLessonRenderer("ch9", id, {
       formal: (root, section) => renderFormal(root, section),
       interactive: (root, section, page) => {
         const lab = LABS[id];

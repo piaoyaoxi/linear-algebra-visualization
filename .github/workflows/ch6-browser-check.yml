@@ -38,7 +38,7 @@ jobs:
 
       - name: Start static site
         run: |
-          python3 -m http.server 4173 --directory current > /tmp/ch6-static.log 2>&1 &
+          python3 .github/scripts/serve.py 4173 current > /tmp/ch6-static.log 2>&1 &
           for attempt in {1..20}; do
             if curl --fail --silent http://127.0.0.1:4173/learn.html > /dev/null; then
               exit 0

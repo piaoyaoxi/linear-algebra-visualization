@@ -547,5 +547,5 @@
       </ul></div></div>`;
   }
 
-  window.defineChapter4Renderer?.("elementary-matrices", { formal: renderFormal, interactive: renderInteractive });
+  defineLessonRenderer("ch4", "elementary-matrices", { formal: renderFormal, interactive: renderInteractive });
 })();

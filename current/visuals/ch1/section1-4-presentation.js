@@ -215,108 +215,11 @@
   }
 
   // §3 — division stepper
-  function mountDivision(root) {
-    const presets = {
-      default: { f: M().poly([-1, 0, 0, 0, 1]), g: M().poly([1, 1, 1]), name: "x⁴−1 ÷ (x²+x+1)" },
-      divides: { f: M().poly([-1, 0, 0, 1]), g: M().poly([-1, 1]), name: "x³−1 ÷ (x−1)" },
-      fraction: { f: M().poly(["1/2", "-1/2", 0, 1]), g: M().poly(["1/2", 1]), name: "分数系数示例" },
-    };
-    let current = presets.default;
-    let steps = M().divisionSteps(current.f, current.g);
-    let index = 0;
-    const paint = () => {
-      steps = M().divisionSteps(current.f, current.g);
-      index = Math.min(index, steps.length - 1);
-      const step = steps[index];
-      const done = step.kind === "done";
-      const divides = done && M().isZeroPoly(step.r);
-      root.querySelector("[data-title]").textContent = current.name;
-      root.querySelector("[data-step]").textContent = `${index + 1}/${steps.length}`;
-      root.querySelector("[data-note]").textContent = step.note;
-      root.querySelector("[data-f]").innerHTML = tex(M().formatPolyTex(current.f));
-      root.querySelector("[data-g]").innerHTML = tex(M().formatPolyTex(current.g));
-      root.querySelector("[data-q]").innerHTML = tex(M().formatPolyTex(step.q));
-      root.querySelector("[data-r]").innerHTML = tex(M().formatPolyTex(step.r));
-      root.querySelector("[data-invariant]").innerHTML = `${tex(M().formatPolyTex(current.f))} = (${tex(M().formatPolyTex(step.q))})(${tex(M().formatPolyTex(current.g))}) + (${tex(M().formatPolyTex(step.r))})`;
-      root.querySelector("[data-q-strip]").innerHTML = M().coefficientStrip(step.q);
-      root.querySelector("[data-r-strip]").innerHTML = M().coefficientStrip(step.r);
-      const status = root.querySelector("[data-status]");
-      status.className = `ch1-status ${done ? (divides ? "is-ok" : "is-bad") : "is-warn"}`;
-      status.textContent = done ? (divides ? "整除成立" : "不整除") : "首项消去中";
-      root.querySelector("[data-degree]").textContent = M().isZeroPoly(step.r) ? "余式为 0" : `deg r=${M().deg(step.r)}，deg g=${M().deg(current.g)}`;
-      root.querySelector("[data-current-operation]").innerHTML = step.kind === "eliminate" ? `${tex(M().formatPolyTex(step.before))} − (${tex(M().formatPolyTex(step.term))})(${tex(M().formatPolyTex(current.g))}) = ${tex(M().formatPolyTex(step.r))}` : done ? "次数条件已经满足，算法停止。" : "从被除式开始。";
-      root.querySelector("[data-ledger]").innerHTML = steps.map((s, i) => `<div class="${i === index ? "is-current" : ""}"><span>${i + 1}</span><p>${s.kind === "eliminate" ? `${tex(M().formatPolyTex(s.before))} → ${tex(M().formatPolyTex(s.r))}` : s.note}</p></div>`).join("");
-      root.querySelector("[data-prev]").disabled = index === 0;
-      root.querySelector("[data-next]").disabled = index === steps.length - 1;
-    };
-    root.querySelector("[data-prev]").addEventListener("click", () => { index = Math.max(0, index - 1); paint(); });
-    root.querySelector("[data-next]").addEventListener("click", () => { index = Math.min(steps.length - 1, index + 1); paint(); });
-    root.querySelector("[data-reset]").addEventListener("click", () => { index = 0; paint(); });
-    root.querySelectorAll("[data-preset]").forEach((button) => button.addEventListener("click", () => { current = presets[button.dataset.preset]; index = 0; selectButtons(root, "[data-preset]", button); paint(); }));
-    paint();
-  }
-
-  function interactive3(el, section) {
-    lab(el, "除法阶梯", section.interactive.description,
-      `<button type="button" data-prev>上一步</button><button type="button" data-next>下一步</button><button type="button" data-reset>重置</button><span class="ch1-control-separator"></span><button type="button" data-preset="default" class="is-active">非整除</button><button type="button" data-preset="divides">整除</button><button type="button" data-preset="fraction">分数系数</button>`,
-      `<div class="ch1-metrics"><div class="ch1-metric"><span>示例</span><strong data-title></strong></div><div class="ch1-metric"><span>步骤</span><strong data-step></strong></div><div class="ch1-metric"><span>状态</span><strong data-status class="ch1-status"></strong></div></div>
-       <div class="ch1-equation-grid"><div><span>f</span><strong data-f></strong></div><div><span>g</span><strong data-g></strong></div><div><span>q</span><strong data-q></strong></div><div><span>r</span><strong data-r></strong></div></div>
-       <div class="ch1-callout"><strong>不变量 f=qg+r</strong><p data-invariant></p><p class="ch1-muted" data-degree></p><p data-current-operation></p></div>
-       <div class="ch1-two-col"><div><h4>商的系数带</h4><div data-q-strip></div><h4>当前余式</h4><div data-r-strip></div><p class="ch1-muted" data-note></p></div><div><h4>步骤账本</h4><div class="ch1-ledger" data-ledger></div></div></div>`);
-    mountDivision(el);
-  }
 
   // §4 — extended Euclid and Bezout
-  function mountEuclid(root) {
-    const presets = {
-      default: { f: M().poly([-1, 0, 0, 0, 1]), g: M().poly([-1, 0, 0, 1]), name: "gcd(x⁴−1,x³−1)" },
-      coprime: { f: M().poly([1, 0, 1]), g: M().poly([1, 1]), name: "gcd(x²+1,x+1)" },
-      shared: { f: M().poly([-2, 1, 2, -1]), g: M().poly([-1, 0, 1]), name: "含公共二次因式" },
-    };
-    let current = presets.default;
-    let steps = M().extendedEuclidSteps(current.f, current.g);
-    let index = 0;
-    const doneStep = () => steps.at(-1);
-    function paint() {
-      steps = M().extendedEuclidSteps(current.f, current.g);
-      index = Math.min(index, steps.length - 1);
-      const step = steps[index];
-      const final = doneStep();
-      root.querySelector("[data-name]").textContent = current.name;
-      root.querySelector("[data-step]").textContent = `${index + 1}/${steps.length}`;
-      root.querySelector("[data-a]").innerHTML = tex(M().formatPolyTex(step.a || M().zeroPoly()));
-      root.querySelector("[data-b]").innerHTML = tex(M().formatPolyTex(step.b || M().zeroPoly()));
-      root.querySelector("[data-q]").innerHTML = step.q ? tex(M().formatPolyTex(step.q)) : "—";
-      root.querySelector("[data-r]").innerHTML = step.remainder ? tex(M().formatPolyTex(step.remainder)) : "—";
-      root.querySelector("[data-note]").textContent = step.note;
-      root.querySelector("[data-gcd]").innerHTML = tex(M().formatPolyTex(final.d || final.a));
-      root.querySelector("[data-s]").innerHTML = tex(M().formatPolyTex(final.s || M().zeroPoly()));
-      root.querySelector("[data-t]").innerHTML = tex(M().formatPolyTex(final.t || M().zeroPoly()));
-      const verify = M().polyAdd(M().polyMul(final.s, current.f), M().polyMul(final.t, current.g));
-      root.querySelector("[data-verify]").innerHTML = `${tex(M().formatPolyTex(final.s))}·(${tex(M().formatPolyTex(current.f))}) + ${tex(M().formatPolyTex(final.t))}·(${tex(M().formatPolyTex(current.g))}) = ${tex(M().formatPolyTex(verify))}`;
-      const coprime = M().polyEq(final.d, M().onePoly());
-      const status = root.querySelector("[data-coprime]"); status.className = `ch1-status ${coprime ? "is-ok" : "is-warn"}`; status.textContent = coprime ? "互素" : "有非常数公共因式";
-      root.querySelector("[data-ledger]").innerHTML = steps.map((s, i) => `<div class="${i === index ? "is-current" : ""}"><span>${i + 1}</span><p>${s.note}</p>${s.q ? `<small>q=${tex(M().formatPolyTex(s.q))}，r=${tex(M().formatPolyTex(s.remainder))}</small>` : ""}</div>`).join("");
-      root.querySelector("[data-prev]").disabled = index === 0; root.querySelector("[data-next]").disabled = index === steps.length - 1;
-    }
-    root.querySelector("[data-prev]").addEventListener("click", () => { index = Math.max(0, index - 1); paint(); });
-    root.querySelector("[data-next]").addEventListener("click", () => { index = Math.min(steps.length - 1, index + 1); paint(); });
-    root.querySelector("[data-reset]").addEventListener("click", () => { index = 0; paint(); });
-    root.querySelectorAll("[data-preset]").forEach((button) => button.addEventListener("click", () => { current = presets[button.dataset.preset]; index = 0; selectButtons(root, "[data-preset]", button); paint(); }));
-    paint();
-  }
 
-  function interactive4(el, section) {
-    lab(el, "辗转相除与倒着代回", section.interactive.description,
-      `<button type="button" data-prev>上一步</button><button type="button" data-next>下一步</button><button type="button" data-reset>重置</button><span class="ch1-control-separator"></span><button type="button" data-preset="default" class="is-active">x⁴−1 与 x³−1</button><button type="button" data-preset="coprime">互素示例</button><button type="button" data-preset="shared">公共因式示例</button>`,
-      `<div class="ch1-metrics"><div class="ch1-metric"><span>当前示例</span><strong data-name></strong></div><div class="ch1-metric"><span>步骤</span><strong data-step></strong></div><div class="ch1-metric"><span>结论</span><strong data-coprime class="ch1-status"></strong></div></div>
-       <div class="ch1-equation-grid"><div><span>A</span><strong data-a></strong></div><div><span>B</span><strong data-b></strong></div><div><span>商 q</span><strong data-q></strong></div><div><span>余式 r</span><strong data-r></strong></div></div>
-       <div class="ch1-two-col"><div><h4>辗转相除的每一步</h4><div class="ch1-ledger" data-ledger></div><p class="ch1-muted" data-note></p></div><div><h4>倒着代回</h4><div class="ch1-result-band"><div><span>首一 gcd</span><strong data-gcd></strong></div></div><div class="ch1-equation-grid"><div><span>s</span><strong data-s></strong></div><div><span>t</span><strong data-t></strong></div></div><div class="ch1-callout"><strong>代回验证</strong><p data-verify></p></div></div></div>`);
-    mountEuclid(el);
-  }
-
-  window.defineChapter1Renderer("number-fields", { formal: renderFormal });
-  window.defineChapter1Renderer("univariate-polynomials", { formal: renderFormal, interactive: interactive2 });
-  window.defineChapter1Renderer("polynomial-divisibility", { formal: renderFormal, interactive: interactive3 });
-  window.defineChapter1Renderer("gcd-polynomials", { formal: renderFormal, interactive: interactive4 });
+  defineLessonRenderer("ch1", "number-fields", { formal: renderFormal });
+  defineLessonRenderer("ch1", "univariate-polynomials", { formal: renderFormal, interactive: interactive2 });
+  defineLessonRenderer("ch1", "polynomial-divisibility", { formal: renderFormal });
+  defineLessonRenderer("ch1", "gcd-polynomials", { formal: renderFormal });
 })();

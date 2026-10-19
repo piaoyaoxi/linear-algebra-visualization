@@ -389,5 +389,5 @@
     return scope.cleanup;
   }
 
-  window.defineChapter3Renderer?.("binary-higher-degree", { formal: formalHigherDegree, interactive: interactiveHigherDegree });
+  defineLessonRenderer("ch3", "binary-higher-degree", { formal: formalHigherDegree, interactive: interactiveHigherDegree });
 })();

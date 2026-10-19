@@ -19,10 +19,9 @@
     return `<figure class="lx-figure">${make()}${spec.caption ? `<figcaption>${spec.caption}</figcaption>` : ""}</figure>`;
   }
 
-  function enhance(section) {
+  function enhance(section, root) {
     const extras = window.LESSON_EXTRAS?.[section?.id];
     if (!extras) return;
-    const root = document.querySelector("#mainContent");
     const formal = root?.querySelector(`#${CSS.escape(section.id)}-formal`);
     if (!formal || formal.querySelector(".lx-extras")) return;
     const box = document.createElement("div");
@@ -31,10 +30,5 @@
     if (box.innerHTML) formal.append(box);
   }
 
-  const base = window.renderLessonPage;
-  if (typeof base !== "function") return;
-  window.renderLessonPage = function renderLessonPageWithExtras(section, chapter) {
-    base(section, chapter);
-    enhance(section);
-  };
+  afterLessonRender(enhance);
 })();

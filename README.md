@@ -125,10 +125,10 @@ git clone https://github.com/piaoyaoxi/linear-algebra-visualization.git
 ```
 
 ```bash
-cd linear-algebra-visualization && python3 -m http.server 8765 --directory current
+cd linear-algebra-visualization && python3 .github/scripts/serve.py 8765 current
 ```
 
-然后打开 <http://localhost:8765/>（首页）或 <http://localhost:8765/learn.html>（课程页）。任何能起静态服务器的工具都行。直接双击 HTML 文件也能打开，但浏览器会拦下本地字体，排版会走样。
+然后打开 <http://localhost:8765/>（首页）或 <http://localhost:8765/learn.html>（课程页）。也可以用别的静态服务器，但不要用 `python3 -m http.server`：它同时只排队 5 个连接，课程页一次请求两百多个文件，在 macOS 上会偶尔漏掉脚本，某一章就打不开。直接双击 HTML 文件也能打开，但浏览器会拦下本地字体，排版会走样。
 
 ## 仓库里有什么
 

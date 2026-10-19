@@ -240,7 +240,7 @@
     return () => controller.abort();
   }
 
-  defineChapter2Renderer("determinant-computation", {
+  defineLessonRenderer("ch2", "determinant-computation", {
     formal(formal) {
       if (!formal) return;
       formal.innerHTML = formalShell(

@@ -15,6 +15,18 @@
     return Number.isInteger(rounded) ? String(rounded) : String(rounded);
   }
 
+  /** TeX for a coefficient in the step formulas: halves and quarters as fractions, never 0.5 */
+  function fracTex(value) {
+    const f = window.LAExact.fromNumber(value, 16);
+    if (Math.abs(f.n / f.d - value) > 1e-9) return formatNum(value);
+    return f.d === 1 ? String(f.n) : `${f.n < 0 ? "-" : ""}\\tfrac{${Math.abs(f.n)}}{${f.d}}`;
+  }
+
+  /** " + 3 x₂²" / " - 3 x₂²": one signed term of a step formula */
+  function plusTerm(coef, mono) {
+    return ` ${coef < 0 ? "-" : "+"} ${fracTex(Math.abs(coef))} ${mono}`;
+  }
+
   function nearZero(v, tol = 1e-9) {
     return Math.abs(v) < tol;
   }
@@ -111,7 +123,7 @@
     if (!terms.length) return "0";
     return terms
       .map((t, i) => {
-        const abs = formatNum(Math.abs(t.coef), 3);
+        const abs = fracTex(Math.abs(t.coef));
         const unit = abs === "1" ? t.mono : `${abs}${t.mono}`;
         if (i === 0) return t.coef < 0 ? `-${unit}` : unit;
         return t.coef < 0 ? `-${unit}` : `+${unit}`;
@@ -119,10 +131,11 @@
       .join("");
   }
 
-  function polyPlain2(A) {
+  /** the form of A in the variables v₁, v₂ (x by default; y once x = Cy is set up) */
+  function polyPlain2(A, v = "x") {
     return polyTex2(A)
-      .replace(/x_\{1\}/g, "x₁")
-      .replace(/x_\{2\}/g, "x₂")
+      .replace(/x_\{1\}/g, `${v}₁`)
+      .replace(/x_\{2\}/g, `${v}₂`)
       .replace(/\^\{2\}/g, "²")
       .replace(/\^2/g, "²");
   }
@@ -253,21 +266,21 @@
       },
       {
         title: "选取主平方项",
-        poly: `${formatNum(a)} x₁² + ${formatNum(2 * b)} x₁x₂ + ${formatNum(c)} x₂²`,
+        poly: `${fracTex(a)} x₁²${plusTerm(2 * b, "x₁x₂")}${plusTerm(c, "x₂²")}`,
         note: `以系数非零的 ${tex("x_1^2")} 为主项，把所有含 ${tex("x_1")} 的项归到一起。`,
         kind: "pick",
         matrix: cloneMat(A),
       },
       {
         title: "完成平方",
-        poly: `${formatNum(a)}(x₁ + ${formatNum(r)} x₂)² + ${formatNum(d2)} x₂²`,
+        poly: `${fracTex(a)} (x₁${plusTerm(r, "x₂")})²${plusTerm(d2, "x₂²")}`,
         note: `配方恒等式：${tex("ax_1^2+2bx_1x_2=a\\left(x_1+\\frac ba x_2\\right)^2-\\frac{b^2}{a}x_2^2")}。`,
         kind: "square",
         matrix: cloneMat(A),
       },
       {
         title: "变量替换",
-        poly: `${formatNum(a)} y₁² + ${formatNum(d2)} y₂²`,
+        poly: `${fracTex(a)} y₁²${plusTerm(d2, "y₂²")}`,
         note: `令 ${tex(`y_1=x_1${signedTerm(r, "x_2")}`)}，${tex("y_2=x_2")}。反解得 ${tex(`x_1=y_1${signedTerm(-r, "y_2")}`)}，${tex("x_2=y_2")}，即 ${tex("x=Cy")}。`,
         kind: "sub",
         C: cloneMat(C),
@@ -275,7 +288,7 @@
       },
       {
         title: "合同验证",
-        poly: polyPlain2(D),
+        poly: polyPlain2(D, "y"),
         note: `新矩阵 ${tex("B=C^TAC")} 应为对角矩阵 ${tex(`\\operatorname{diag}(${formatNum(a)},${formatNum(d2)})`)}。交叉项已消失。`,
         kind: "check",
         C: cloneMat(C),
@@ -300,22 +313,22 @@
       {
         title: "无平方项",
         poly: polyPlain2(A),
-        note: `主对角接近 0 时，直接对 ${tex("x_1")} 配方会失败。先做和差替换，让平方项出现。`,
+        note: `${tex("x_1^2")} 的系数为 0，没法以它为主项配方。先做和差替换，让平方项出现。`,
         kind: "start",
         matrix: cloneMat(A),
       },
       {
         title: "和差替换",
-        poly: "x₁ = (y₁+y₂)/2,\\quad x₂ = (y₁−y₂)/2",
-        note: `这是可逆替换（${tex("\\det C=-1/2\\ne0")}）。交叉项会变成平方差。`,
+        poly: "x₁ = \\tfrac{y₁+y₂}{2},\\quad x₂ = \\tfrac{y₁-y₂}{2}",
+        note: `这是可逆替换（${tex("\\det C=-\\tfrac12\\ne0")}）。交叉项会变成平方差。`,
         kind: "sub",
         C: cloneMat(C),
         matrix: cloneMat(A),
       },
       {
         title: "得到对角形",
-        poly: polyPlain2(D),
-        note: `${tex("B=C^TAC")} 已无交叉项（数值上接近对角）。`,
+        poly: polyPlain2(D, "y"),
+        note: `交叉项已消失：${tex(`B=C^TAC=\\operatorname{diag}(${fracTex(D[0][0])},${fracTex(D[1][1])})`)}。`,
         kind: "check",
         C: cloneMat(C),
         matrix: cloneMat(D),

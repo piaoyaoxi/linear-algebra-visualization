@@ -25,7 +25,7 @@ defineChapter2Section("permutations", {
     `从第 1 行到第 ${texInline("n")} 行依次选取元素时，被选中的列指标组成一个排列。排列中的“交叉程度”由逆序数计量，奇偶性决定乘积项前面的符号 ${texInline("\\operatorname{sgn}(\\sigma)")}。`,
   concepts: [
     { label: "排列", text: `${texInline("1,2,\\ldots,n")} 的一个全排列可写成 ${texInline("\\sigma=(\\sigma(1),\\ldots,\\sigma(n))")}。` },
-    { label: "逆序对", text: `当 ${texInline("i<j")} 但 ${texInline("\\sigma(i)>\\sigma(j)")} 时，位置 ${texInline("(i,j)")} 构成逆序。` },
+    { label: "逆序对", text: `排列中一对数前面的大于后面的，就称为一个逆序：位置 ${texInline("i<j")} 而 ${texInline("\\sigma(i)>\\sigma(j)")} 时，逆序记为数对 ${texInline("(\\sigma(i),\\sigma(j))")}。` },
     { label: "逆序数", text: `${texInline("\\tau(\\sigma)")} 是全部逆序对的个数。` },
     { label: "奇偶性", text: "逆序数为偶数时称偶排列，为奇数时称奇排列。" },
     { label: "排列符号", text: `${texInline("\\operatorname{sgn}(\\sigma)=(-1)^{\\tau(\\sigma)}")}。` },

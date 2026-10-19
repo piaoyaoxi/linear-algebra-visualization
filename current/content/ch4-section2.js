@@ -44,7 +44,7 @@ defineChapter4Section("matrix-operations", {
       "矩阵乘法通常不满足交换律",
     ],
   },
-  visual: {
+  interactive: {
     type: "multiply",
     title: "同一个乘积，两个视角",
     description: "同一组矩阵贯穿复合与顺序比较。",

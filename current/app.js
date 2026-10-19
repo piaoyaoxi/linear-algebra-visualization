@@ -145,15 +145,9 @@ function getVideo(section) {
   return video.src || video.embed ? video : null;
 }
 
-// `interactive: false` closes the band; older chapter 4 data still declares its
-// lab through `visual`.
+// A section shows the lab band when it declares `interactive`.
 function getInteractive(section) {
-  if (Object.prototype.hasOwnProperty.call(section, "interactive")) {
-    return section.interactive || null;
-  }
-  const visual = section.visual;
-  if (!visual) return null;
-  return ["transform", "multiply", "rank", "block"].includes(visual.type) ? visual : null;
+  return section.interactive || null;
 }
 
 function getSelfTestItems(section) {
@@ -732,7 +726,7 @@ function renderVideoSection(section, video) {
 function renderInteractiveSection(section) {
   const interactive = getInteractive(section);
   if (!interactive) return "";
-  const prompts = interactive.prompts || section.visual?.prompts || section.script || [];
+  const prompts = interactive.prompts || [];
   const task = interactive.task || section.task || "";
   const promptBlock =
     task || prompts.length

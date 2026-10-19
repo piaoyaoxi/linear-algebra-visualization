@@ -141,25 +141,6 @@
   font-size: 22px;
 }
 
-#quadratic-standard-form-interactive .ch5s2-step-count {
-  color: var(--muted);
-  font-size: 13px;
-  font-weight: 800;
-}
-
-#quadratic-standard-form-interactive .ch5-step-card .ch5-equation {
-  text-align: left;
-  font-weight: 700;
-}
-
-#quadratic-standard-form-interactive .ch5-step-card > p {
-  min-height: 47px;
-}
-
-#quadratic-standard-form-interactive .ch5-result-card {
-  min-height: 145px;
-}
-
 @media (max-width: 760px) {
   #quadratic-standard-form-formal .ch5s2-square-identity,
   #quadratic-standard-form-formal .ch5s2-paired-operation {

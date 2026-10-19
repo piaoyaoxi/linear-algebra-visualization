@@ -16,16 +16,6 @@
   border-bottom: 1px solid var(--line);
 }
 
-#matrix-operations-interactive .s2c-kicker,
-#matrix-operations-interactive .s2c-stage-kicker {
-  display: block;
-  margin-bottom: 7px;
-  color: var(--accent-strong);
-  font-size: 12px;
-  font-weight: 830;
-  letter-spacing: 0.045em;
-}
-
 #matrix-operations-interactive .s2c-header h3,
 #matrix-operations-interactive .s2c-stage-copy h4 {
   margin: 0;
@@ -157,13 +147,6 @@
   white-space: normal;
 }
 
-#matrix-operations-interactive .s2c-stage-copy .s2c-math-plain {
-  font-family: "Times New Roman", "STIX Two Math", "Cambria Math", Georgia, serif;
-  font-weight: 700;
-  color: var(--accent-strong);
-  white-space: nowrap;
-}
-
 /* Never let chip styles / old span rules affect stage prose */
 #matrix-operations-interactive .s2c-stage-copy .tex,
 #matrix-operations-interactive .s2c-stage-copy .tex-inline,
@@ -205,10 +188,6 @@
   background:
     radial-gradient(ellipse 72% 58% at 50% 46%, var(--canvas-paper-glow), transparent 72%),
     linear-gradient(180deg, var(--canvas-paper-top) 0%, var(--canvas-paper-bottom) 100%);
-}
-
-#matrix-operations-interactive .s2c-task-panel {
-  margin-top: 18px;
 }
 
 #matrix-operations-interactive canvas {
@@ -324,56 +303,6 @@
   line-height: 1.72;
 }
 
-#matrix-operations-interactive .s2c-columns-layout {
-  display: grid;
-  grid-template-columns: minmax(0, 1.45fr) minmax(240px, 0.55fr);
-  gap: 16px;
-  align-items: stretch;
-}
-
-#matrix-operations-interactive .s2c-columns-layout .s2c-canvas-shell {
-  min-height: 360px;
-}
-
-#matrix-operations-interactive .s2c-column-canvas {
-  display: block;
-  width: 100%;
-  min-height: 360px;
-  height: 360px;
-}
-
-#matrix-operations-interactive .s2c-column-readout {
-  display: grid;
-  gap: 12px;
-  align-content: start;
-  min-width: 0;
-  padding: 18px;
-  border: 1px solid var(--line);
-  border-radius: 18px;
-  background: var(--surface-soft);
-}
-
-#matrix-operations-interactive .s2c-column-readout > div {
-  display: grid;
-  grid-template-columns: 4.5rem minmax(0, 1fr);
-  gap: 12px;
-  align-items: center;
-  padding-bottom: 12px;
-  border-bottom: 1px solid var(--line);
-}
-
-#matrix-operations-interactive .s2c-column-readout > div:last-of-type {
-  border-bottom: 0;
-  padding-bottom: 0;
-}
-
-#matrix-operations-interactive .s2c-column-readout > span.label,
-#matrix-operations-interactive .s2c-column-readout > div > span {
-  color: var(--faint);
-  font-size: 12px;
-  font-weight: 800;
-}
-
 #matrix-operations-interactive .s2c-column-readout strong,
 #matrix-operations-interactive .s2c-plain-vec {
   justify-self: start;
@@ -393,155 +322,9 @@
   max-width: 100%;
 }
 
-#matrix-operations-interactive .s2c-column-readout p {
-  margin: 4px 0 0;
-  color: var(--muted);
-  font-size: 13px;
-  line-height: 1.7;
-}
-
 #matrix-operations-interactive .s2c-column-readout p .katex {
   display: inline-block;
   vertical-align: middle;
-}
-
-#matrix-operations-interactive .s2c-formula-stage {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 16px;
-  overflow-x: auto;
-  padding: 28px 8px;
-  border: 1px solid var(--line);
-  border-radius: 18px;
-  background: var(--surface-soft);
-}
-
-#matrix-operations-interactive .s2c-formula-stage > b {
-  color: var(--faint);
-  font-size: 23px;
-}
-
-#matrix-operations-interactive .s2c-matrix-block {
-  display: grid;
-  gap: 9px;
-  min-width: 132px;
-}
-
-#matrix-operations-interactive .s2c-matrix-block > span {
-  color: var(--faint);
-  font-size: 12px;
-  font-weight: 820;
-  text-align: center;
-}
-
-#matrix-operations-interactive .s2c-matrix {
-  position: relative;
-  display: grid;
-  grid-template-columns: repeat(var(--s2c-cols), minmax(42px, 1fr));
-  gap: 7px;
-  padding: 10px 14px;
-}
-
-#matrix-operations-interactive .s2c-matrix::before,
-#matrix-operations-interactive .s2c-matrix::after {
-  position: absolute;
-  top: 3px;
-  bottom: 3px;
-  width: 9px;
-  content: "";
-}
-
-#matrix-operations-interactive .s2c-matrix::before {
-  left: 0;
-  border-top: 2px solid var(--line-strong);
-  border-bottom: 2px solid var(--line-strong);
-  border-left: 2px solid var(--line-strong);
-  border-radius: 7px 0 0 7px;
-}
-
-#matrix-operations-interactive .s2c-matrix::after {
-  right: 0;
-  border-top: 2px solid var(--line-strong);
-  border-right: 2px solid var(--line-strong);
-  border-bottom: 2px solid var(--line-strong);
-  border-radius: 0 7px 7px 0;
-}
-
-#matrix-operations-interactive .s2c-matrix span,
-#matrix-operations-interactive .s2c-matrix button {
-  display: grid;
-  place-items: center;
-  min-width: 42px;
-  min-height: 42px;
-  border: 0;
-  border-radius: 11px;
-  background: var(--surface-solid);
-  color: var(--text);
-  font: inherit;
-  font-size: 14px;
-  font-weight: 800;
-  font-variant-numeric: tabular-nums;
-  transition: background 170ms ease, color 170ms ease, transform 170ms ease, box-shadow 170ms ease;
-}
-
-#matrix-operations-interactive .s2c-matrix button {
-  cursor: pointer;
-}
-
-#matrix-operations-interactive .s2c-matrix button:hover {
-  transform: translateY(-1px);
-}
-
-#matrix-operations-interactive .s2c-matrix button.is-active {
-  background: var(--accent);
-  color: white;
-  box-shadow: 0 8px 20px color-mix(in srgb, var(--accent) 22%, transparent);
-}
-
-#matrix-operations-interactive .s2c-matrix .is-row-source {
-  background: color-mix(in srgb, var(--accent-soft) 80%, var(--surface-solid));
-  color: var(--accent-strong);
-}
-
-#matrix-operations-interactive .s2c-matrix .is-column-source {
-  background: color-mix(in srgb, var(--coral) 14%, var(--surface-solid));
-  color: color-mix(in srgb, var(--coral) 78%, var(--text));
-}
-
-#matrix-operations-interactive .s2c-matrix .is-pair-active {
-  transform: translateY(-3px) scale(1.04);
-  box-shadow: 0 8px 20px color-mix(in srgb, var(--accent) 20%, transparent);
-}
-
-#matrix-operations-interactive .s2c-dot-work {
-  display: grid;
-  grid-template-columns: auto minmax(0, 1fr);
-  gap: 9px 16px;
-  align-items: center;
-  margin-top: 14px;
-  padding: 18px;
-  border: 1px solid color-mix(in srgb, var(--accent) 24%, var(--line));
-  border-radius: 15px;
-  background: var(--accent-soft);
-}
-
-#matrix-operations-interactive .s2c-dot-work > span {
-  color: var(--faint);
-  font-size: 12px;
-  font-weight: 820;
-}
-
-#matrix-operations-interactive .s2c-dot-work strong {
-  color: var(--accent-strong);
-}
-
-#matrix-operations-interactive .s2c-dot-work p {
-  grid-column: 1 / -1;
-  margin: 2px 0 0;
-  color: var(--muted);
-  font-size: 13px;
-  line-height: 1.7;
 }
 
 #matrix-operations-interactive .s2c-order-grid {
@@ -592,11 +375,7 @@
     min-width: 0;
   }
 
-  #matrix-operations-interactive .s2c-column-canvas,
-  #matrix-operations-interactive .s2c-columns-layout .s2c-canvas-shell {
-    min-height: 300px;
-    height: 300px;
-  }
+  
 }
 
 @media (max-width: 760px) {
@@ -648,9 +427,7 @@
     grid-template-columns: 1fr;
   }
 
-  #matrix-operations-interactive .s2c-formula-stage {
-    justify-content: flex-start;
-  }
+  
 
   #matrix-operations-interactive .s2c-order-grid canvas {
     min-height: 280px;

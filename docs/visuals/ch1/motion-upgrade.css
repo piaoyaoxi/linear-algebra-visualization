@@ -147,40 +147,6 @@
   overflow-wrap: anywhere;
 }
 
-.ch1-step-track {
-  display: grid;
-  grid-auto-flow: column;
-  grid-auto-columns: 1fr;
-  gap: 7px;
-  align-items: center;
-}
-
-.ch1-step-track span {
-  height: 6px;
-  border-radius: 999px;
-  background: var(--line);
-  transition: background 180ms ease, transform 180ms ease;
-}
-
-.ch1-step-track span.is-done {
-  background: color-mix(in srgb, var(--accent) 58%, var(--line));
-}
-
-.ch1-step-track span.is-current {
-  background: var(--accent);
-  transform: scaleY(1.55);
-}
-
-.ch1-division-invariant {
-  display: grid;
-  gap: 7px;
-}
-
-.ch1-division-invariant p {
-  margin: 0;
-  overflow-wrap: anywhere;
-}
-
 .ch1-conjugate-motion .ch1-slider-row {
   padding: 11px 12px;
   border: 1px solid var(--line);
@@ -263,8 +229,3 @@
   }
 }
 
-@media (prefers-reduced-motion: reduce) {
-  .ch1-step-track span {
-    transition: none;
-  }
-}

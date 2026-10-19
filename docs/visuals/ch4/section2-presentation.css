@@ -653,376 +653,9 @@
   line-height: 1.72;
 }
 
-#matrix-operations-interactive .s2-multiplication-lab {
-  gap: 0;
-  margin-top: 14px;
-}
-
-#matrix-operations-interactive .s2-lab-heading {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) auto;
-  gap: 20px;
-  align-items: center;
-  padding: 24px 26px 20px;
-  border-bottom: 1px solid var(--line);
-}
-
-#matrix-operations-interactive .s2-lab-kicker {
-  display: block;
-  margin-bottom: 7px;
-}
-
-#matrix-operations-interactive .s2-dataset-strip {
-  display: grid;
-  gap: 7px;
-  min-width: 220px;
-  padding: 12px 14px;
-  border: 1px solid var(--line);
-  border-radius: 14px;
-  background: var(--surface-soft);
-  color: var(--muted);
-  font-size: 0.84rem;
-}
-
-#matrix-operations-interactive .s2-dataset-strip > span {
-  white-space: nowrap;
-}
-
-#matrix-operations-interactive .s2-view-tabs {
-  margin: 16px 26px 0;
-  justify-self: start;
-}
-
-#matrix-operations-interactive .s2-view-stack {
-  padding: 18px 26px 26px;
-}
-
-#matrix-operations-interactive .s2-view-panel {
-  animation: s2-panel-enter 180ms ease both;
-}
-
-#matrix-operations-interactive .s2-view-panel[hidden] {
-  display: none !important;
-}
-
 @keyframes s2-panel-enter {
   from { opacity: 0; transform: translateY(4px); }
   to { opacity: 1; transform: translateY(0); }
-}
-
-#matrix-operations-interactive .s2-compose-flow {
-  display: grid;
-  grid-template-columns: minmax(150px, 1fr) auto minmax(150px, 1fr) auto minmax(150px, 1fr);
-  gap: 12px;
-  align-items: center;
-}
-
-#matrix-operations-interactive .s2-vector-stage {
-  display: grid;
-  gap: 8px;
-  min-width: 0;
-  padding: 14px;
-  border: 1px solid var(--line);
-  border-radius: 16px;
-  background: var(--surface-soft);
-  text-align: center;
-}
-
-#matrix-operations-interactive .s2-vector-stage > span {
-  color: var(--faint);
-  font-size: 12px;
-  font-weight: 780;
-}
-
-#matrix-operations-interactive .s2-vector-stage svg {
-  display: block;
-  width: 100%;
-  height: auto;
-  color: var(--accent);
-}
-
-#matrix-operations-interactive .s2-vector-stage.is-coral svg { color: var(--coral); }
-#matrix-operations-interactive .s2-vector-stage.is-blue svg { color: var(--blue); }
-
-#matrix-operations-interactive .s2-mini-grid,
-#matrix-operations-interactive .s2-mini-axis,
-#matrix-operations-interactive .s2-mini-vector {
-  fill: none;
-  stroke-linecap: round;
-  stroke-linejoin: round;
-}
-
-#matrix-operations-interactive .s2-mini-grid {
-  stroke: color-mix(in srgb, var(--line-strong) 42%, transparent);
-  stroke-width: 1;
-}
-
-#matrix-operations-interactive .s2-mini-axis {
-  stroke: color-mix(in srgb, var(--muted) 48%, var(--line-strong));
-  stroke-width: 1.15;
-}
-
-#matrix-operations-interactive .s2-mini-vector {
-  stroke: currentColor;
-  stroke-width: 3.5;
-}
-
-#matrix-operations-interactive .s2-mini-tip {
-  fill: currentColor;
-}
-
-#matrix-operations-interactive .s2-vector-stage text {
-  fill: currentColor;
-  font-family: var(--font-serif);
-  font-size: 12px;
-  font-weight: 800;
-}
-
-#matrix-operations-interactive .s2-vector-stage > strong {
-  color: var(--text);
-  font-size: 0.88rem;
-}
-
-#matrix-operations-interactive .s2-process-arrow,
-#matrix-operations-interactive .s2-column-operator {
-  display: grid;
-  gap: 4px;
-  place-items: center;
-  color: var(--faint);
-  text-align: center;
-}
-
-#matrix-operations-interactive .s2-process-arrow strong,
-#matrix-operations-interactive .s2-column-operator strong {
-  display: grid;
-  place-items: center;
-  width: 42px;
-  height: 42px;
-  border-radius: 13px;
-  background: var(--accent-soft);
-  color: var(--accent-strong);
-  font-family: Georgia, "Times New Roman", serif;
-  font-size: 21px;
-}
-
-#matrix-operations-interactive .s2-process-arrow span,
-#matrix-operations-interactive .s2-column-operator span {
-  max-width: 72px;
-  font-size: 11px;
-  font-weight: 760;
-}
-
-#matrix-operations-interactive .s2-view-conclusion {
-  display: grid;
-  grid-template-columns: auto minmax(0, 1fr);
-  gap: 14px;
-  align-items: center;
-  margin-top: 16px;
-  padding: 16px 18px;
-  border-left: 4px solid var(--accent);
-  border-radius: 0 13px 13px 0;
-  background: var(--surface-soft);
-}
-
-#matrix-operations-interactive .s2-view-conclusion strong {
-  color: var(--accent-strong);
-  white-space: nowrap;
-}
-
-#matrix-operations-interactive .s2-view-conclusion p {
-  margin: 0;
-  color: var(--muted);
-  font-size: 14px;
-  line-height: 1.72;
-}
-
-#matrix-operations-interactive .s2-column-flow {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
-  gap: 18px;
-  align-items: center;
-}
-
-#matrix-operations-interactive .s2-column-group {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 12px;
-}
-
-#matrix-operations-interactive .s2-column-group > span {
-  grid-column: 1 / -1;
-  color: var(--faint);
-  font-size: 12px;
-  font-weight: 800;
-  text-align: center;
-}
-
-#matrix-operations-interactive .s2-column-card {
-  display: grid;
-  gap: 8px;
-  place-items: center;
-  min-height: 148px;
-  padding: 16px;
-  border: 1px solid var(--line);
-  border-radius: 16px;
-  background: var(--surface-soft);
-}
-
-#matrix-operations-interactive .s2-column-card.is-teal { border-top: 3px solid var(--accent); }
-#matrix-operations-interactive .s2-column-card.is-coral { border-top: 3px solid var(--coral); }
-
-#matrix-operations-interactive .s2-column-card > span {
-  color: var(--muted);
-  font-weight: 780;
-}
-
-#matrix-operations-interactive .s2-column-card .tex-display {
-  margin: 0;
-  font-size: 1.05rem;
-}
-
-#matrix-operations-interactive .s2-row-column-lens {
-  display: grid;
-  gap: 18px;
-}
-
-#matrix-operations-interactive .s2-lens-matrices {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 14px;
-  overflow-x: auto;
-  padding: 14px 4px;
-}
-
-#matrix-operations-interactive .s2-lens-block {
-  display: grid;
-  gap: 9px;
-  min-width: 120px;
-}
-
-#matrix-operations-interactive .s2-lens-block > span {
-  color: var(--faint);
-  font-size: 12px;
-  font-weight: 800;
-  text-align: center;
-}
-
-#matrix-operations-interactive .s2-lens-symbol {
-  color: var(--faint);
-  font-size: 24px;
-  font-weight: 800;
-}
-
-#matrix-operations-interactive .s2-lens-matrix span,
-#matrix-operations-interactive .s2-lens-matrix button {
-  transition: background 160ms ease, color 160ms ease, transform 160ms ease, box-shadow 160ms ease;
-}
-
-#matrix-operations-interactive .s2-lens-matrix span.is-highlighted {
-  background: var(--accent-soft);
-  color: var(--accent-strong);
-  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--accent) 20%, transparent);
-}
-
-#matrix-operations-interactive .s2-lens-matrix button {
-  cursor: pointer;
-}
-
-#matrix-operations-interactive .s2-lens-matrix button:hover {
-  transform: translateY(-1px);
-}
-
-#matrix-operations-interactive .s2-lens-matrix button.is-active {
-  background: var(--accent);
-  color: white;
-  box-shadow: 0 8px 20px color-mix(in srgb, var(--accent) 22%, transparent);
-}
-
-#matrix-operations-interactive .s2-dot-product {
-  display: grid;
-  grid-template-columns: auto minmax(0, 1fr);
-  gap: 8px 16px;
-  align-items: center;
-  padding: 18px;
-  border: 1px solid color-mix(in srgb, var(--accent) 22%, var(--line));
-  border-radius: 15px;
-  background: var(--accent-soft);
-}
-
-#matrix-operations-interactive .s2-dot-product > span {
-  color: var(--faint);
-  font-size: 12px;
-  font-weight: 800;
-}
-
-#matrix-operations-interactive .s2-dot-product strong {
-  color: var(--accent-strong);
-}
-
-#matrix-operations-interactive .s2-dot-product p {
-  grid-column: 1 / -1;
-  margin: 2px 0 0;
-  color: var(--muted);
-  font-size: 13px;
-  line-height: 1.7;
-}
-
-#matrix-operations-interactive .s2-order-compare {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 14px;
-}
-
-#matrix-operations-interactive .s2-order-compare article {
-  display: grid;
-  gap: 14px;
-  min-width: 0;
-  padding: 19px;
-  border: 1px solid var(--line);
-  border-radius: 16px;
-  background: var(--surface-soft);
-}
-
-#matrix-operations-interactive .s2-order-steps {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 7px;
-  align-items: center;
-  color: var(--muted);
-  font-size: 12px;
-}
-
-#matrix-operations-interactive .s2-order-steps b {
-  padding: 7px 9px;
-  border-radius: 9px;
-  background: var(--surface-solid);
-  color: var(--text);
-}
-
-#matrix-operations-interactive .s2-order-steps i {
-  color: var(--faint);
-  font-style: normal;
-}
-
-#matrix-operations-interactive .s2-order-compare .tex-display {
-  margin: 0;
-  font-size: 1rem;
-}
-
-#matrix-operations-interactive .s2-order-compare article > p {
-  margin: 0;
-  color: var(--muted);
-  font-size: 14px;
-  line-height: 1.72;
-}
-
-#matrix-operations-interactive .s2-task-panel {
-  margin-top: 18px;
-}
-
-#matrix-operations-interactive .s2-task-panel ol {
-  margin-bottom: 0;
 }
 
 @media (max-width: 980px) {
@@ -1036,36 +669,19 @@
     grid-template-columns: 1fr;
   }
 
-  #matrix-operations-interactive .s2-lab-heading {
-    grid-template-columns: 1fr;
-  }
+  
 
-  #matrix-operations-interactive .s2-dataset-strip {
-    min-width: 0;
-  }
+  
 
-  #matrix-operations-interactive .s2-compose-flow {
-    grid-template-columns: 1fr;
-  }
+  
 
-  #matrix-operations-interactive .s2-process-arrow {
-    grid-template-columns: auto auto;
-    justify-content: center;
-  }
+  
 
-  #matrix-operations-interactive .s2-process-arrow strong {
-    width: 38px;
-    height: 38px;
-  }
+  
 
-  #matrix-operations-interactive .s2-column-flow {
-    grid-template-columns: 1fr;
-  }
+  
 
-  #matrix-operations-interactive .s2-column-operator {
-    grid-template-columns: auto auto;
-    justify-content: center;
-  }
+  
 }
 
 @media (max-width: 720px) {
@@ -1122,31 +738,17 @@
     margin-left: 18px;
   }
 
-  #matrix-operations-interactive .s2-view-tabs {
-    margin-right: 18px;
-    margin-left: 18px;
-  }
+  
 
-  #matrix-operations-interactive .s2-view-stack {
-    padding: 16px 18px 20px;
-  }
+  
 
-  #matrix-operations-interactive .s2-view-conclusion,
-  #matrix-operations-interactive .s2-dot-product {
-    grid-template-columns: 1fr;
-  }
+  
 
-  #matrix-operations-interactive .s2-view-conclusion strong {
-    white-space: normal;
-  }
+  
 
-  #matrix-operations-interactive .s2-column-group {
-    grid-template-columns: 1fr;
-  }
+  
 
-  #matrix-operations-interactive .s2-lens-matrices {
-    justify-content: flex-start;
-  }
+  
 }
 
 /*

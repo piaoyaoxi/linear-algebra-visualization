@@ -56,16 +56,9 @@
     display: none;
   }
 
-  .has-fractions .ch1-ld-term,
-  .has-fractions .ch1-ld-minus {
-    font-size: 29px;
-  }
+  
 
-  .has-fractions .ch1-ld-divisor-text {
-    font-size: 27px;
-  }
+  
 
-  .has-fractions .ch1-ld-product-label {
-    font-size: 24px;
-  }
+  
 }

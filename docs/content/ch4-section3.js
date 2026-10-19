@@ -45,7 +45,7 @@ defineChapter4Section("matrix-product-determinant-rank", {
       "可逆矩阵乘法对秩的保持",
     ],
   },
-  visual: {
+  interactive: {
     type: "rank",
     title: "连续作用两个矩阵",
     description: "同步播放 AB 与 BA，比较形状与面积倍率；再让 A 作用在 B 压出的直线上，看丢掉的方向能否找回。",

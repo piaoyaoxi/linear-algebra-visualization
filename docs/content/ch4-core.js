@@ -1,86 +1,4 @@
-defineChapter4Section("matrix-product-determinant-rank", {
-  number: "§3",
-  textbookSection: "矩阵乘积的行列式与秩",
-  title: "矩阵乘积的行列式与秩",
-  navTitle: "乘积的行列式与秩",
-  question: "连续施加两个矩阵后，面积缩放和有效方向会怎样变化？秩到底在数什么？",
-  goal: "把行列式理解为缩放因子，把秩理解为输出中仍然保留的独立方向数；再理解乘积为什么不会凭空增加秩。",
-  tags: ["行列式", "秩", "有效维度"],
-  intro: "矩阵乘积对应连续变换。连续缩放时，缩放因子相乘；一旦某一步已经把平面压到一条线，后面的变换只能继续处理这条线，不能重新制造第二个独立方向。",
-  concepts: [
-    { label: "行列式", text: `${texInline("\\det(A)")} 记录二维面积或高维体积的有向缩放因子。` },
-    { label: "乘积行列式", text: `${texInline("\\det(AB)=\\det(A)\\det(B)")}；连续变换的缩放因子连续相乘。` },
-    { label: "秩", text: "秩是矩阵列向量中独立方向的数量，也是输出空间的维数。" },
-    { label: "乘积与秩", text: `${texInline("\\operatorname{rank}(AB)\\leq\\min\\{\\operatorname{rank}(A),\\operatorname{rank}(B)\\}")}；复合不会凭空恢复已经丢掉的方向。` },
-  ],
-  textbook: { reference: "北大版《高等代数》第四章", page: "", items: ["矩阵乘积的行列式", "矩阵的秩", "乘积与秩的关系"] },
-  visual: { type: "rank", title: "交互图：秩是保留下来的方向数", description: "比较两列独立与两列共线的情况，再观察一个秩 1 变换被复合后为什么仍不能恢复成秩 2。" },
-  example: {
-    title: "例题：从列关系判断乘积的秩上界",
-    question: `设 ${texInline("B")} 的两列相同，且 ${texInline("A")} 是任意可相乘的矩阵。说明 ${texInline("AB")} 的两列有什么关系，并给出 ${texInline("\\operatorname{rank}(AB)")} 的上界。`,
-    choices: [
-      { correct: true, text: `${texInline("AB")} 的两列仍然相同，因此 ${texInline("\\operatorname{rank}(AB)\\leq1")}。` },
-      { text: `A 可以把相同的两列变成两个独立方向，因此 ${texInline("\\operatorname{rank}(AB)=2")}。` },
-      { text: `${texInline("AB")} 的两列互为相反数，因此 ${texInline("\\operatorname{rank}(AB)=1")}。` },
-      { text: `仅知道 B 的两列相同，无法判断 ${texInline("AB")} 的列关系。` },
-    ],
-    steps: [
-      `设 ${texInline("B")} 的两列都等于 ${texInline("b")}。那么 ${texInline("AB")} 的两列分别是 ${texInline("Ab")} 与 ${texInline("Ab")}。`,
-      "所以 AB 的两列仍然相同，至多提供一个独立方向。",
-      `因此 ${texInline("\\operatorname{rank}(AB)\\leq1")}。左乘 A 可以改变方向，但不能把同一列变成两条独立方向。`,
-    ],
-  },
-  quiz: [
-    { question: `若 ${texInline("\\det(A)\\ne0")}，n 阶矩阵 ${texInline("A")} 的秩是多少？`, answer: `秩为 ${texInline("n")}。非零行列式表示变换没有把空间压到低维对象。` },
-    { question: `若 ${texInline("\\operatorname{rank}(B)=1")}，是否可能有 ${texInline("\\operatorname{rank}(AB)=2")}？`, answer: "不可能。AB 的输出先受 B 的一维输出空间限制，后面的 A 不能创造第二条独立方向。" },
-    { question: `若 ${texInline("\\det(A)=0")}，A 在二维中的几何信号是什么？`, answer: "面积被缩放到 0；网格会坍缩到一条线或一个点，因此 A 不可逆。" },
-  ],
-  summary: ["行列式描述连续变换的缩放，乘积时缩放因子相乘。", "秩描述输出中真正保留下来的独立方向数。", "秩一旦在某一步下降，后续复合不能凭空把丢失的方向造回来。"],
-  exercises: ["构造两个 2 阶矩阵 A、B，使 B 的两列相同，并直接算出 AB 的两列。"],
-});
-
-defineChapter4Section("matrix-inverse", {
-  number: "§4",
-  textbookSection: "矩阵的逆",
-  title: "矩阵的逆",
-  navTitle: "矩阵的逆",
-  question: "什么时候一个矩阵能把输出唯一地还原回输入？这种“信息没有丢失”在公式、几何和方程组里分别长什么样？",
-  goal: "掌握逆矩阵的定义，并把可逆与非零行列式、满秩、唯一解和不坍缩的直觉连接起来。",
-  tags: ["逆矩阵", "满秩", "唯一解"],
-  intro: "判断矩阵可逆，核心是看信息能否完整保留。可逆变换把平面仍送到整个平面；不可逆变换会让不同输入挤到同一个输出上，于是无法倒推。",
-  concepts: [
-    { label: "逆矩阵的定义", text: `${texInline("A^{-1}A=AA^{-1}=E")}。先做 A，再做 ${texInline("A^{-1}")}，会回到原来的输入。` },
-    { label: "方阵限制", text: "只有方阵才可能有双侧逆矩阵，因为输入与输出的维数必须一致。" },
-    { label: "二维判定", text: `对 2 阶矩阵，${texInline("\\det(A)\\ne0")} 时可逆；${texInline("\\det(A)=0")} 时发生坍缩。` },
-    { label: "核心等价", text: "对 n 阶矩阵：可逆、行列式非零、秩为 n、列向量线性无关、方程 Ax=b 对每个 b 有唯一解，是同一件结构事实的不同说法。" },
-  ],
-  textbook: { reference: "北大版《高等代数》第四章", page: "", items: ["逆矩阵的定义", "可逆矩阵的判定", "2 阶矩阵求逆", "可逆与线性方程组"] },
-  visual: { type: "slot", label: "可逆性对照", title: "对照：不坍缩与坍缩", description: "用两组 2 阶矩阵比较可逆和不可逆；重点观察两个独立方向能否继续保持独立。" },
-  interactive: { type: "slot", label: "可逆性对照", title: "对照：不坍缩与坍缩", description: "用两组 2 阶矩阵比较可逆和不可逆；重点观察两个独立方向能否继续保持独立。" },
-  example: {
-    title: "例题：求一个 2 阶逆矩阵并解释它为什么存在",
-    question: `设 ${texInline("A=\\begin{pmatrix}2&1\\\\1&1\\end{pmatrix}")}。求 ${texInline("A^{-1}")}，并说明为什么这个逆矩阵存在。`,
-    choices: [
-      { correct: true, text: `${texInline("A^{-1}=\\begin{pmatrix}1&-1\\\\-1&2\\end{pmatrix}")}；因为 ${texInline("\\det(A)=1\\ne0")}。` },
-      { text: `${texInline("A^{-1}=\\begin{pmatrix}2&-1\\\\-1&1\\end{pmatrix}")}；把非对角元素变号即可。` },
-      { text: `${texInline("A^{-1}=\\frac12\\begin{pmatrix}1&-1\\\\-1&2\\end{pmatrix}")}；分母取主对角线元素之和。` },
-      { text: `A 没有逆矩阵，因为它的两个非对角元素相同。` },
-    ],
-    steps: [
-      `先算 ${texInline("\\det(A)=2\\cdot1-1\\cdot1=1\\ne0")}，所以 A 可逆。`,
-      `对 ${texInline("\\begin{pmatrix}a&b\\\\c&d\\end{pmatrix}")}，逆矩阵为 ${texInline("\\frac1{ad-bc}\\begin{pmatrix}d&-b\\\\-c&a\\end{pmatrix}")}。`,
-      `代入得到 ${texInline("A^{-1}=\\begin{pmatrix}1&-1\\\\-1&2\\end{pmatrix}")}。最后检查 ${texInline("AA^{-1}=E")}，说明它确实把输出还原回输入。`,
-    ],
-  },
-  quiz: [
-    { question: "一个 2 阶矩阵的两列共线，它可能可逆吗？", answer: "不可能。两列共线说明秩小于 2，平面被压到一条线，无法唯一还原输入。" },
-    { question: `若 ${texInline("Ax=b")} 对每个 ${texInline("b")} 都有唯一解，这说明什么？`, answer: "说明 A 可逆；它既不会漏掉某些输出，也不会让不同输入得到同一个输出。" },
-    { question: `为什么 ${texInline("\\det(A)=0")} 会阻止逆矩阵存在？`, answer: "因为面积缩放到 0 意味着至少丢掉一个方向。不同输入会重合到同一个输出，无法倒推。" },
-  ],
-  summary: ["可逆意味着输入信息没有丢失，输出可以唯一倒推。", "对方阵，可逆、满秩、非零行列式和唯一解彼此对应。", "求逆公式只是计算工具；不坍缩才是可逆的结构本质。"],
-  exercises: [`判断 ${texInline("\\begin{pmatrix}1&2\\\\2&4\\end{pmatrix}")} 是否可逆，并用列关系和行列式各说明一次。`],
-});
-
+// §3 and §4 have their own files (ch4-section3.js, ch4-section4.js).
 defineChapter4Section("elementary-matrices", {
   number: "§6",
   textbookSection: "初等矩阵",
@@ -97,7 +15,6 @@ defineChapter4Section("elementary-matrices", {
     { label: "左乘与右乘", text: "左乘初等矩阵作用于行；右乘初等矩阵作用于列。" },
   ],
   textbook: { reference: "北大版《高等代数》第四章", page: "", items: ["三类初等行变换", "由单位矩阵构造初等矩阵", "左乘对应行变换", "初等矩阵的逆"] },
-  visual: { type: "slot", label: "逐步演示", title: "实验：同一行变换如何同时作用于 E 和 A", description: "按步骤看 R₂ ← R₂ − 3R₁：先作用于单位矩阵得到 P，再左乘到 A。" },
   interactive: { type: "slot", label: "逐步演示", title: "实验：同一行变换如何同时作用于 E 和 A", description: "按步骤看 R₂ ← R₂ − 3R₁：先作用于单位矩阵得到 P，再左乘到 A。" },
   example: {
     title: "例题：从一次行变换写出初等矩阵",

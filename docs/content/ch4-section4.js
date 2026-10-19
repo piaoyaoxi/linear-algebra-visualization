@@ -59,7 +59,6 @@ defineChapter4Section("matrix-inverse", {
       `在降秩例子中观察 ${texInline("x_1")} 不等于 ${texInline("x_2")} 但 ${texInline("Ax_1=Ax_2")}，说明信息丢失后为什么不能唯一恢复。`,
     ],
   },
-  visual: false,
   example: {
     title: "例题：求逆、解方程并完成验证",
     question: `设 ${texInline("A=\\begin{bmatrix}3&1\\\\1&1\\end{bmatrix}")}，${texInline("b=\\begin{bmatrix}7\\\\3\\end{bmatrix}")}。求 ${texInline("A^{-1}")}，并解 ${texInline("Ax=b")}。`,

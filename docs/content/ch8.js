@@ -5,6 +5,12 @@ registerAlgebraChapter({
   subtitle: "相似的完整判别",
   summary:
     `把矩阵 ${texInline("A")} 换成 ${texInline(String.raw`\lambda`)}-矩阵 ${texInline(String.raw`\lambda E-A`)}，就能对所有 ${texInline(String.raw`\lambda`)} 一起做初等变换。${texInline(String.raw`\lambda`)}-矩阵经初等变换化成对角的标准形，对角线上的不变因子由行列式因子唯一确定。两个矩阵相似，当且仅当它们的特征矩阵有相同的不变因子。把不变因子分解成初等因子，就读出若尔当标准形；直接用不变因子的系数，就写出有理标准形。`,
+  structureTitle: "一条主线串起七个小节",
+  overviewCards: [
+    { title: "标准形（§1–§3）", text: `对 ${texInline(String.raw`\lambda E-A`)} 做初等变换，化成对角的标准形；对角线上的不变因子由行列式因子唯一确定。` },
+    { title: "相似的判别（§4–§5）", text: "两个数字矩阵相似，当且仅当它们的特征矩阵有相同的不变因子；把不变因子分解，就得到初等因子。" },
+    { title: "两种标准形（§6–§7）", text: `每个初等因子 ${texInline(String.raw`(\lambda-a)^k`)} 对应一个若尔当块；直接用不变因子的系数，写出有理标准形。` },
+  ],
   sections: [
     { id: "lambda-matrix", number: "§1", title: "λ-矩阵", navTitle: "λ-矩阵" },
     { id: "smith-form", number: "§2", title: "λ-矩阵在初等变换下的标准形", navTitle: "λ-矩阵的标准形" },

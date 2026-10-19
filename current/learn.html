@@ -9,8 +9,6 @@
     </script>
     <title>高等代数可视化</title>
     <link rel="icon" href="data:," />
-    <link rel="preload" as="image" href="./assets/theme/luna-alpha.webp?v=21h" />
-    <link rel="preload" as="image" href="./assets/theme/sol-alpha.webp?v=21h" />
     <link rel="stylesheet" href="./vendor/katex/katex.min.css" />
     <link rel="preload" href="./vendor/fonts/noto-serif-sc/NotoSerifSC-subset.woff2?v=w400" as="font" type="font/woff2" crossorigin />
     <link rel="stylesheet" href="./fonts.css?v=w400" />
@@ -61,9 +59,13 @@
     <link rel="stylesheet" href="./design-a-legacy.css?v=r7d2" />
     <link rel="stylesheet" href="./material.css?v=mm6" />
     <link rel="stylesheet" href="./lab-fit.css?v=lf13" />
+    <!-- chapter 1 sheets that its scripts used to inject at runtime; same order, still last -->
+    <link rel="stylesheet" href="./visuals/ch1/repair-pass-final.css?v=ch1-repair-final6" />
+    <link rel="stylesheet" href="./visuals/ch1/refinement.css?v=ch1-final2" />
+    <link rel="stylesheet" href="./visuals/ch1/learning-design.css?v=lf4" />
     <script defer src="./vendor/katex/katex.min.js"></script>
-    <script defer src="./app.js?v=oc1"></script>
-    <script defer src="./visuals/theme-transition.js?v=t4c"></script>
+    <script defer src="./app.js?v=ll2"></script>
+    <script defer src="./visuals/theme-transition.js?v=ll2"></script>
     <script defer src="./visuals/liquid-glass.js?v=mm1"></script>
     <script defer src="./content/ch1-registry.js"></script>
     <script defer src="./content/ch1-section1.js?v=r6b2"></script>
@@ -120,43 +122,10 @@
     <script defer src="./content/ch6-section8.js?v=r6b2"></script>
     <script defer src="./content/ch6.js?v=oc1"></script>
     <script defer src="./content/ch6-assemble.js"></script>
-    <script defer src="./visuals/ch1/registry.js?v=sh2"></script>
     <script defer src="./visuals/example-challenge.js?v=sh2"></script>
-    <script defer src="./visuals/ch4/section1-presentation.js?v=sh2"></script>
-    <script defer src="./visuals/ch4/section2-presentation.js?v=sh2"></script>
-    <script defer src="./visuals/ch4/section2-continuous.js?v=sh2"></script>
-    <script defer src="./visuals/ch4/section6-elementary.js?v=sh2"></script>
-    <script defer src="./visuals/ch4/section3-presentation.js?v=sh2"></script>
-    <script defer src="./visuals/ch4/section4-presentation.js?v=sh2"></script>
-    <script defer src="./visuals/ch4/section7-block-elementary.js?v=sh2"></script>
-    <script defer src="./visuals/ch4/section5-blocks.js?v=sh2"></script>
-    <script defer src="./visuals/ch2/labs-math.js?v=lf1"></script>
-    <script defer src="./visuals/ch2/presentation-utils.js?v=ch2m"></script>
-    <script defer src="./visuals/ch2/section1-presentation.js?v=sh2"></script>
-    <script defer src="./visuals/ch2/section2-presentation.js?v=sh2"></script>
-    <script defer src="./visuals/ch2/section3-presentation.js?v=sh2"></script>
-    <script defer src="./visuals/ch2/section4-presentation.js?v=sh2"></script>
-    <script defer src="./visuals/ch2/section5-presentation.js?v=sh2"></script>
-    <script defer src="./visuals/ch2/section6-presentation.js?v=sh2"></script>
-    <script defer src="./visuals/ch2/section7-presentation.js?v=sh2"></script>
-    <script defer src="./visuals/ch2/section8-presentation.js?v=sh2"></script>
-    <script defer src="./visuals/ch2/mount.js?v=sh2"></script>
-    <script defer src="./visuals/ch3/shared-math.js?v=r6b2"></script>
     <script defer src="./visuals/shared/stable-shuffle.js?v=ss1"></script>
     <script defer src="./visuals/shared/predict-gate.js?v=pg1"></script>
     <script defer src="./visuals/shared/scene3d.js?v=sh1"></script>
-    <script defer src="./visuals/ch3/labs3d.js?v=sh2"></script>
-    <script defer src="./visuals/ch3/section7-presentation.js?v=sh2"></script>
-    <script defer src="./visuals/ch1/poly-math.js?v=r6b3"></script>
-    <script defer src="./visuals/ch1/section1-4-presentation.js?v=sh2"></script>
-    <script defer src="./visuals/ch1/section5-8-presentation.js?v=sh2"></script>
-    <script defer src="./visuals/ch1/section9-11-presentation.js?v=sh2"></script>
-    <script defer src="./visuals/ch1/layout-rebalance.js?v=sh2"></script>
-    <script defer src="./visuals/ch1/motion-upgrade.js?v=sh2"></script>
-    <script defer src="./visuals/ch1/repair-pass.js?v=sh2"></script>
-    <script defer src="./visuals/ch1/repair-pass-v2.js?v=sh2"></script>
-    <script defer src="./visuals/ch1/motion-upgrade-init.js?v=sh2"></script>
-    <script defer src="./visuals/ch1/mount.js?v=sh2"></script>
     <script defer src="./content/ch5-registry.js"></script>
     <script defer src="./content/ch5-section1.js?v=r6b2"></script>
     <script defer src="./content/ch5-section2.js?v=r6b2"></script>
@@ -164,18 +133,6 @@
     <script defer src="./content/ch5-section4.js?v=r6b2"></script>
     <script defer src="./content/ch5.js?v=oc1"></script>
     <script defer src="./content/ch5-assemble.js"></script>
-    <script defer src="./visuals/ch5/quadratic-engine.js?v=r6b2"></script>
-    <script defer src="./visuals/ch5/section1-presentation.js?v=sh2"></script>
-    <script defer src="./visuals/ch5/section2-presentation.js?v=sh2"></script>
-    <script defer src="./visuals/ch5/section3-presentation.js?v=sh2"></script>
-    <script defer src="./visuals/ch5/section4-presentation.js?v=sh2"></script>
-    <script defer src="./visuals/ch5/geometry-upgrade.js?v=sh2"></script>
-    <script defer src="./visuals/ch5/geometry-orbit.js?v=sh2"></script>
-    <script defer src="./visuals/ch5/geometry-orbit-fit.js?v=sh2"></script>
-    <script defer src="./visuals/ch5/mount.js?v=sh2"></script>
-    <script defer src="./visuals/ch6/kit.js?v=r5f1"></script>
-    <script defer src="./visuals/ch6/figures.js?v=r6b2"></script>
-    <script defer src="./visuals/ch6/labs.js?v=sh2"></script>
     <script defer src="./content/ch7-registry.js?v=ch7r1"></script>
     <script defer src="./content/ch7-section1.js?v=r6b2"></script>
     <script defer src="./content/ch7-section2.js?v=r6b2"></script>
@@ -188,10 +145,6 @@
     <script defer src="./content/ch7-section9.js?v=r6b2"></script>
     <script defer src="./content/ch7.js?v=oc1"></script>
     <script defer src="./content/ch7-assemble.js?v=ch7r1"></script>
-    <script defer src="./visuals/ch7/kit.js?v=sh2"></script>
-    <script defer src="./visuals/ch7/figures.js?v=r7c6"></script>
-    <script defer src="./visuals/ch7/labs-2d.js?v=sh2"></script>
-    <script defer src="./visuals/ch7/labs-3d.js?v=r6b2"></script>
     <script defer src="./content/ch8-registry.js?v=ch8r1"></script>
     <script defer src="./content/ch8-section1.js?v=j1"></script>
     <script defer src="./content/ch8-section2.js?v=r6b2"></script>
@@ -203,8 +156,6 @@
     <script defer src="./content/ch8.js?v=oc1"></script>
     <script defer src="./content/ch8-assemble.js?v=ch8r1"></script>
     <script defer src="./content/ch9.js?v=oc1"></script>
-    <script defer src="./visuals/ch9/plane2d.js?v=r5g1"></script>
-    <script defer src="./visuals/ch9/labs.js?v=sh2"></script>
     <script defer src="./content/ch10-registry.js?v=ch10r1"></script>
     <script defer src="./content/ch10-section1.js?v=r6b2"></script>
     <script defer src="./content/ch10-section2.js?v=r6b2"></script>
@@ -212,20 +163,107 @@
     <script defer src="./content/ch10-section4.js?v=r6b2"></script>
     <script defer src="./content/ch10.js?v=oc1"></script>
     <script defer src="./content/ch10-assemble.js?v=ch10r1"></script>
-    <script defer src="./visuals/ch10/labs.js?v=sh2"></script>
-    <script defer src="./visuals/ch8/poly.js?v=ch8r1"></script>
-    <script defer src="./visuals/ch8/labs.js?v=sh2"></script>
     <script defer src="./content/lesson-extras.js?v=r6b2"></script>
     <script defer src="./visuals/shared/lesson-extras.js?v=sh2"></script>
     <script defer src="./visuals/shared/lab-layout.js?v=r7e1"></script>
     <script defer src="./visuals/shared/predict-ux.js?v=ml1"></script>
     <script defer src="./visuals/shared/mobile-lab.js?v=lf6"></script>
-    <script defer src="./visuals/shared/typeset.js?v=r7e5"></script>
+    <script defer src="./visuals/shared/typeset.js?v=ll2"></script>
     <script defer src="./visuals/shared/lesson-figures.js?v=lx1"></script>
     <script defer src="./visuals/page-toc-rail.js?v=21i"></script>
     <script defer src="./visuals/search-index.js?v=se1"></script>
     <script defer src="./visuals/search.js?v=mm1"></script>
     <script defer src="./material.js?v=mm8"></script>
+    <!--
+      Chapter lab scripts load when a lesson of that chapter first opens, then the
+      rest load in the background once the page is idle (app.js, loadChapterLabs).
+      A template's scripts run in the listed order; a file listed under several
+      chapters (shared kits) loads once.
+    -->
+    <template data-chapter-labs="ch1">
+      <script src="./visuals/ch1/registry.js?v=sh2"></script>
+      <script src="./visuals/ch1/poly-math.js?v=r6b3"></script>
+      <script src="./visuals/ch1/section1-4-presentation.js?v=sh2"></script>
+      <script src="./visuals/ch1/section5-8-presentation.js?v=sh2"></script>
+      <script src="./visuals/ch1/section9-11-presentation.js?v=sh2"></script>
+      <script src="./visuals/ch1/layout-rebalance.js?v=sh2"></script>
+      <script src="./visuals/ch1/motion-upgrade.js?v=sh2"></script>
+      <script src="./visuals/ch1/repair-pass.js?v=sh2"></script>
+      <script src="./visuals/ch1/repair-pass-v2.js?v=sh2"></script>
+      <script src="./visuals/ch1/motion-upgrade-init.js?v=ll2"></script>
+      <script src="./visuals/ch1/mount.js?v=ll2"></script>
+    </template>
+    <template data-chapter-labs="ch2">
+      <script src="./visuals/ch2/labs-math.js?v=lf1"></script>
+      <script src="./visuals/ch2/presentation-utils.js?v=ch2m"></script>
+      <script src="./visuals/ch2/section1-presentation.js?v=sh2"></script>
+      <script src="./visuals/ch2/section2-presentation.js?v=sh2"></script>
+      <script src="./visuals/ch2/section3-presentation.js?v=sh2"></script>
+      <script src="./visuals/ch2/section4-presentation.js?v=sh2"></script>
+      <script src="./visuals/ch2/section5-presentation.js?v=sh2"></script>
+      <script src="./visuals/ch2/section6-presentation.js?v=sh2"></script>
+      <script src="./visuals/ch2/section7-presentation.js?v=sh2"></script>
+      <script src="./visuals/ch2/section8-presentation.js?v=sh2"></script>
+      <script src="./visuals/ch2/mount.js?v=sh2"></script>
+    </template>
+    <template data-chapter-labs="ch3">
+      <script src="./visuals/ch3/shared-math.js?v=r6b2"></script>
+      <script src="./visuals/ch3/labs3d.js?v=sh2"></script>
+      <script src="./visuals/ch3/section7-presentation.js?v=sh2"></script>
+    </template>
+    <template data-chapter-labs="ch4">
+      <script src="./visuals/ch4/section1-presentation.js?v=sh2"></script>
+      <script src="./visuals/ch4/section2-presentation.js?v=sh2"></script>
+      <script src="./visuals/ch4/section2-continuous.js?v=sh2"></script>
+      <script src="./visuals/ch4/section6-elementary.js?v=sh2"></script>
+      <script src="./visuals/ch4/section3-presentation.js?v=sh2"></script>
+      <script src="./visuals/ch4/section4-presentation.js?v=sh2"></script>
+      <script src="./visuals/ch4/section7-block-elementary.js?v=sh2"></script>
+      <script src="./visuals/ch4/section5-blocks.js?v=sh2"></script>
+    </template>
+    <template data-chapter-labs="ch5">
+      <script src="./visuals/ch5/quadratic-engine.js?v=r6b2"></script>
+      <script src="./visuals/ch5/section1-presentation.js?v=sh2"></script>
+      <script src="./visuals/ch5/section2-presentation.js?v=sh2"></script>
+      <script src="./visuals/ch5/section3-presentation.js?v=sh2"></script>
+      <script src="./visuals/ch5/section4-presentation.js?v=sh2"></script>
+      <script src="./visuals/ch5/geometry-upgrade.js?v=sh2"></script>
+      <script src="./visuals/ch5/geometry-orbit.js?v=sh2"></script>
+      <script src="./visuals/ch5/geometry-orbit-fit.js?v=sh2"></script>
+      <script src="./visuals/ch5/mount.js?v=sh2"></script>
+    </template>
+    <template data-chapter-labs="ch6">
+      <script src="./visuals/ch3/shared-math.js?v=r6b2"></script>
+      <script src="./visuals/ch6/kit.js?v=r5f1"></script>
+      <script src="./visuals/ch6/figures.js?v=r6b2"></script>
+      <script src="./visuals/ch6/labs.js?v=sh2"></script>
+    </template>
+    <template data-chapter-labs="ch7">
+      <script src="./visuals/ch3/shared-math.js?v=r6b2"></script>
+      <script src="./visuals/ch7/kit.js?v=sh2"></script>
+      <script src="./visuals/ch7/figures.js?v=r7c6"></script>
+      <script src="./visuals/ch7/labs-2d.js?v=sh2"></script>
+      <script src="./visuals/ch7/labs-3d.js?v=r6b2"></script>
+    </template>
+    <template data-chapter-labs="ch8">
+      <script src="./visuals/ch3/shared-math.js?v=r6b2"></script>
+      <script src="./visuals/ch7/kit.js?v=sh2"></script>
+      <script src="./visuals/ch7/figures.js?v=r7c6"></script>
+      <script src="./visuals/ch8/poly.js?v=ch8r1"></script>
+      <script src="./visuals/ch8/labs.js?v=sh2"></script>
+    </template>
+    <template data-chapter-labs="ch9">
+      <script src="./visuals/ch3/shared-math.js?v=r6b2"></script>
+      <script src="./visuals/ch6/kit.js?v=r5f1"></script>
+      <script src="./visuals/ch9/plane2d.js?v=r5g1"></script>
+      <script src="./visuals/ch9/labs.js?v=sh2"></script>
+    </template>
+    <template data-chapter-labs="ch10">
+      <script src="./visuals/ch3/shared-math.js?v=r6b2"></script>
+      <script src="./visuals/ch7/kit.js?v=sh2"></script>
+      <script src="./visuals/ch7/figures.js?v=r7c6"></script>
+      <script src="./visuals/ch10/labs.js?v=sh2"></script>
+    </template>
   </head>
   <body>
     <header class="topbar">

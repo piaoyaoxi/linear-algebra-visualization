@@ -175,11 +175,11 @@
     return `rgba(${r}, ${g}, ${b}, ${Number(a.toFixed(4))})`;
   }
 
-  function loadImage(src) {
+  function loadImage(src, priority) {
     return new Promise((resolve, reject) => {
       const img = new Image();
       img.decoding = "async";
-      img.fetchPriority = "high";
+      img.fetchPriority = priority;
       img.onload = () => {
         if (typeof img.decode !== "function") {
           resolve(img);
@@ -193,17 +193,24 @@
     });
   }
 
-  const preparations = {
-    luna: loadImage(ASSETS.luna),
-    sol: loadImage(ASSETS.sol),
-  };
+  // The art (~0.5–0.9 MB) is only needed when the theme switches: fetch it once the page
+  // has loaded and is idle, or right away if the switch comes first.
+  const preparations = {};
+  const prepare = (mode, priority = "low") => (preparations[mode] ||= loadImage(ASSETS[mode], priority));
 
-  Promise.all([preparations.luna, preparations.sol])
-    .then(([luna, sol]) => {
-      images.luna = luna;
-      images.sol = sol;
-    })
-    .catch((error) => console.warn("Theme art preload failed.", error));
+  const preloadArt = () => {
+    const idle = window.requestIdleCallback || ((callback) => window.setTimeout(callback, 2000));
+    idle(() => {
+      Promise.all([prepare("luna"), prepare("sol")])
+        .then(([luna, sol]) => {
+          images.luna = luna;
+          images.sol = sol;
+        })
+        .catch((error) => console.warn("Theme art preload failed.", error));
+    });
+  };
+  if (document.readyState === "complete") preloadArt();
+  else window.addEventListener("load", preloadArt, { once: true });
 
   function ensureOverlay() {
     if (overlay) return overlay;
@@ -447,7 +454,7 @@
 
     const ready = images[mode]
       ? Promise.resolve(images[mode])
-      : preparations[mode].then((img) => {
+      : prepare(mode, "high").then((img) => {
           images[mode] = img;
           return img;
         });

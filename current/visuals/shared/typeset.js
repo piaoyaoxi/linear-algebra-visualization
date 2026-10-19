@@ -536,10 +536,15 @@
 
   const start = () => {
     measureGap();
-    document.fonts?.ready.then(() => {
+    // Line measurements depend on the web fonts. A lesson can render after
+    // document.fonts.ready (its chapter's labs load first) and pull in fonts of its own
+    // (KaTeX), so measure again whenever a batch of fonts finishes loading.
+    const remeasure = () => {
       measureGap();
       settleJustify([...document.querySelectorAll("main *")].filter(isBlock));
-    });
+    };
+    document.fonts?.ready.then(remeasure);
+    document.fonts?.addEventListener?.("loadingdone", remeasure);
     const main = document.querySelector("main") || document.body;
     observer = new MutationObserver((records) => {
       records.forEach((record) => {

@@ -240,32 +240,6 @@ body.dark .topbar-search:hover {
     var(--shadow-soft);
 }
 
-.lang-button {
-  position: relative;
-  font-size: 11px;
-  font-weight: 800;
-  letter-spacing: -0.02em;
-}
-
-.lang-button-mark {
-  display: grid;
-  grid-template-columns: auto auto;
-  gap: 1px 2px;
-  align-items: end;
-  line-height: 1;
-}
-
-.lang-button-mark .lang-zh {
-  font-size: 13px;
-  font-weight: 800;
-}
-
-.lang-button-mark .lang-en {
-  font-family: Georgia, "Times New Roman", serif;
-  font-size: 12px;
-  font-weight: 700;
-}
-
 /* Global search shell */
 .search-modal {
   position: fixed;
@@ -305,48 +279,6 @@ body.dark .topbar-search:hover {
     0 28px 60px rgba(42, 57, 49, 0.18);
   backdrop-filter: blur(22px) saturate(170%);
   -webkit-backdrop-filter: blur(22px) saturate(170%);
-}
-
-.search-modal-bar {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  min-height: 54px;
-  padding: 0 16px;
-  border-bottom: 1px solid color-mix(in srgb, var(--line) 70%, transparent);
-  color: var(--muted);
-}
-
-.search-modal-bar svg {
-  width: 18px;
-  height: 18px;
-  flex: 0 0 auto;
-}
-
-.search-modal-bar path,
-.search-modal-bar circle {
-  fill: none;
-  stroke: currentColor;
-  stroke-width: 1.75;
-  stroke-linecap: round;
-  stroke-linejoin: round;
-}
-
-.search-modal-bar input {
-  width: 100%;
-  min-width: 0;
-  border: 0;
-  outline: 0;
-  background: transparent;
-  color: var(--text);
-  font: inherit;
-  font-size: 16px;
-  font-weight: 600;
-}
-
-.search-modal-bar input::placeholder {
-  color: var(--faint);
-  font-weight: 560;
 }
 
 .search-modal-body {

@@ -105,11 +105,6 @@
   font-weight: 600;
 }
 
-:is(main, #la) .ch1-btn.ch1-merge-exact:hover:not(:disabled) {
-  border-color: var(--accent-strong);
-  background: var(--accent-strong);
-}
-
 :is(main, #la) .ch1-control-separator {
   background: var(--line);
 }
@@ -804,20 +799,6 @@
 }
 
 /* “观察任务”: quiet paper, label in the accent */
-:is(main, #la) .ch2-task {
-  border: 0;
-  border-radius: 10px;
-  background: var(--surface-soft);
-  color: var(--text);
-  box-shadow: none;
-}
-
-:is(main, #la) .ch2-task > strong {
-  color: var(--accent);
-  font-size: 12.5px;
-  font-weight: 600;
-  letter-spacing: 0.08em;
-}
 
 /* buttons */
 :is(main, #la) :is(.ch2-presets button, .ch2-toolbar button, .ch2-pair) {
@@ -1419,35 +1400,6 @@ body.dark :is(main, #la) .ch2-card {
 }
 
 /* §1 transform lab: title, presets, then canvas | controls */
-:is(main, #la) :is(.lesson-page-section, #lb) .visual-title {
-  border-bottom: 0;
-}
-
-:is(main, #la) :is(.lesson-page-section, #lb) .transform-preset-bar {
-  padding: 0 28px;
-  border: 0;
-  background: none;
-}
-
-:is(main, #la) :is(.lesson-page-section, #lb) .canvas-wrap {
-  gap: 22px;
-  padding: 20px 28px 28px;
-  background: none;
-}
-
-:is(main, #la) :is(.lesson-page-section, #lb) .canvas-wrap canvas,
-body.dark :is(main, #la) :is(.lesson-page-section, #lb) .canvas-wrap canvas {
-  border: 1px solid var(--line);
-  border-radius: 8px;
-  background: var(--cv-paper);
-}
-
-:is(main, #la) :is(.lesson-page-section, #lb) .control-stack,
-body.dark :is(main, #la) :is(.lesson-page-section, #lb) .control-stack {
-  padding: 0;
-  border: 0;
-  background: none;
-}
 
 :is(main, #la) :is(.lesson-page-section, #lb) :is(.matrix-readout, .section-one-transform-status) {
   border: 1px solid var(--line);
@@ -1461,13 +1413,9 @@ body.dark :is(main, #la) :is(.lesson-page-section, #lb) .control-stack {
     padding: 16px 16px 12px;
   }
 
-  :is(main, #la) :is(.lesson-page-section, #lb) .transform-preset-bar {
-    padding: 0 16px;
-  }
+  
 
-  :is(main, #la) :is(.lesson-page-section, #lb) .canvas-wrap {
-    padding: 16px;
-  }
+  
 }
 
 /* “操作任务”: quiet paper, label in the accent */
@@ -1918,9 +1866,6 @@ body.dark :is(main, #la) :is(.lesson-page-section, #lb) .inverse-control-panel {
 }
 
 /* §7 block elimination */
-:is(main, #la) :is(.lesson-page-section, #lb) .block-lab {
-  gap: 20px;
-}
 
 :is(main, #la) :is(.lesson-page-section, #lb) :is(.block-lab-panel, .block-map-main) {
   border: 0;
@@ -1995,15 +1940,6 @@ body.dark :is(main, #la) :is(.lesson-page-section, #lb) .inverse-control-panel {
 }
 
 /* the previous value stays as a faint ghost in the corner */
-:is(main, #la) :is(.lesson-page-section, #lb) .bk7-grid td > s.bk7-was {
-  position: absolute;
-  top: 1px;
-  right: 3px;
-  color: currentColor;
-  font-size: 12px;
-  line-height: 1;
-  opacity: 0.45;
-}
 
 :is(main, #la) :is(.lesson-page-section, #lb) .bk7-grid td.is-new > b {
   animation: bk7-arrive 520ms ease-out both;
@@ -2261,11 +2197,7 @@ body.dark :is(main, #la) :is(.lesson-page-section, #lb) .inverse-control-panel {
     font-size: 13px;
   }
 
-  :is(main, #la) :is(.lesson-page-section, #lb) .bk7-grid td > s.bk7-was {
-    font-size: 12px;
-    top: 0;
-    right: 1px;
-  }
+  
 }
 
 /* formal blocks: quiet module numbers, paper cards, radii 10 */

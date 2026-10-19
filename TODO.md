@@ -574,3 +574,9 @@ _dev/research/3b1b_eola_chapter10.py
 - 原来同一张曲面画三遍：`geometry-upgrade.js` 先画一张“预览”，`geometry-orbit.js` 用自己的相机和渲染器重画，`geometry-orbit-fit.js` 再从画布的 data-camera-* 读相机、用最终的渲染器盖上去。方向键旋转只有 orbit 处理，所以按方向键时画面会切回旧渲染器（瘦高的碗、没有 xᵀAx 标注），下一次重绘又跳回来。
 - 现在 `geometry-orbit.js` 一个文件：相机交互（拖动、方向键、Home、双击复位、“复位视角”）+ 最终渲染器 + 各节的重绘。`geometry-orbit-fit.js` 删除；`geometry-upgrade.js` 不再画预览；`quadratic-engine.js` 删掉没人调用的 drawContours / drawUnitCircleScan / drawSurface 和 15 个没人用的导出（764 → 417 行）。画布上仍写 data-camera-yaw / pitch（ch5-orbit-check 读它）。
 - 四节在 1440 / 390、初始与选完预测下与改动前逐像素一致；ch5-browser-check、ch5-orbit-check 通过。
+
+## 删除匹配不到任何元素的样式规则（2026-10-19，`ui/dead-css`，Claude）
+
+- 约 600 条规则（约 2900 行）删除：规则要求的类名在所有脚本、页面（含 KaTeX）里都不会出现，也不符合任何按模板拼出的类名。:is()/:where() 里只要有一项可能出现就保留，:not() 里的类不算。多数是 #132 删掉的旧渲染器留下的。
+- 删除前的运行时核对：两种宽度下打开全部 73 节，选完预测并依次点实验里最多 14 个按钮，514 个待删选择器一次都没匹配到元素。截图对比只有 4 张有零星像素差（已知的计时噪声）。
+- 工具在会话 scratchpad（`deadcss.py`、`selector-probe.mjs`），以后要再清一次可以照这个办法：先列出、再逐页探测、最后截图对比。

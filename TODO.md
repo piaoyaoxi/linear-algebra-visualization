@@ -305,7 +305,7 @@ _dev/research/3b1b_eola_chapter10.py
 - 写 CSS 时不要用 `.xxx span {…}` 这类后代选择器：会命中 KaTeX 内部 span。用 `> span` 或类名。
 - 视觉改版（方向 A「松烟」，#84–#87，规范见 `docs/design-spec.md`）之前的版本打了标签 `before-design-a`（= #83）。要整体退回，按 #87→#84 的顺序撤销这四个 PR；只想退回部分时，#84 是全局质感，#85 是实验区布局，#86/#87 是画布配色。
 - 第一、二、四、五章仍用各自的旧实验标记（ch1-*、ch2-*、s2c-*/s3-*/inverse-*、qv-*/ch5-* 等），它们的「松烟」外观统一写在 `current/design-a-legacy.css`（紧跟 `design-a.css` 加载）。规则以 `main` 开头，不借 id 加权（2026-10-19 去掉 `:is(main, #la)` / `#lb`，被盖住的旧章节声明已删）：改外观时改这个文件；旧章节 CSS（第四、五章按节 id 限定，第一章 `lab-layout.css` 在它之后加载）里如果有同一属性，删掉章节里那条，不要再加权重。`lab-fit.css` 用 `body` / `html body` 前缀压过它。
-- 字体：正文与标题用自带的衬线字体（`current/fonts.css`：Noto Serif 负责西文与希腊字母，思源宋体负责中文，均为 OFL 开源授权），全站（包括按钮、输入框和画布上的文字）都用这套衬线字体，不再用黑体或等宽字体；画布字体写 `'LA Serif Latin', 'LA Serif SC', 'Songti SC', serif`，矩阵和读数的数字用 `font-variant-numeric: tabular-nums` 对齐。字体是裁剪过的子集；新增内容用到字体里没有的汉字时，CI 的 `check-font-coverage.py` 会失败，用 `.github/scripts/build-font-subset.py` 重新生成。纯文字里的下标用 Unicode（εₖ），不要写 ε_k。
+- 字体：正文与标题用自带的衬线字体（`current/fonts.css`：Noto Serif 负责西文与希腊字母，思源宋体负责中文，均为 OFL 开源授权），全站（包括按钮、输入框和画布上的文字）都用这套衬线字体，不再用黑体或等宽字体；画布字体写 `'LA Serif Latin', 'LA Serif SC', 'Songti SC', serif`，矩阵和读数的数字用 `font-variant-numeric: tabular-nums` 对齐。字体是裁剪过的子集，中文按 unicode-range 切成多片（见“加载提速：中文字体切片”）；新增内容用到字体里没有的汉字时，CI 的 `check-font-coverage.py` 会失败，用 `.github/scripts/build-font-subset.py` 重新生成（它同时改写 `fonts.css` 的切片规则和 learn.html 的预加载，不要手改）。纯文字里的下标用 Unicode（εₖ），不要写 ε_k。
 - 预测门不能被画面泄底：学生选择预测之前，隐藏会直接给出答案的等值线、读数或计数（见 `visuals/ch10/labs.js` 中的 `open = Boolean(flow?.predicted)`）。测试“操作会改变读数”要放在预测之后。
 
 待办：
@@ -597,6 +597,20 @@ _dev/research/3b1b_eola_chapter10.py
 - 截图噪声：390 宽的个别两端对齐行会因 `typeset.js` 的断字时机（同一版本两次加载也会多一个或少一个 `<la-sp>`）有 1 px 左右的字距差；第一章 §10、第四章 §2 画布在并行负载下也会有差。判断前单独重截。
 - 工具在会话 scratchpad（`harness/cascade-lib.js`、`cascade-run.mjs`、`diff-lib.js`、`cdiff-run.mjs`、`tools/apply-removals.mjs`）。
 
+## 加载提速：中文字体切片（2026-10-20，`ui/font-slices`，Claude）
+
+- 原来中文字体是一个 1.4 MB 的文件，学习页预加载它。Chrome 给预加载字体的优先级（`u=1`）高于 app.js、KaTeX 和各章实验脚本（默认 `u=3`），按优先级发送的服务器会先把整个字体发完，慢网下实验区要等 12 秒以上。
+- 现在 `build-font-subset.py` 把同一套字形（逐字比对过轮廓、字宽、可变数据，完全相同）按 unicode-range 切成 18 片，`fonts.css` 里同一个 `LA Serif SC` 写 18 条 `@font-face`，浏览器只下载页面上真正出现的字所在的片：
+  - `NotoSerifSC-0`（573 字，181 KB）：标点符号、页面外壳（app.js、learn.html、index.html、cover.js，去掉注释）和内容里每个章、节的 `title`/`navTitle`/`subtitle`/`goal` 那一行的字，也就是一节在实验脚本到达前显示的全部文字（侧栏、封面、“正在载入这一节……”）。learn.html 只预加载这一片。
+  - `NotoSerifSC-1…5`：站内用到的其余字，按出现在多少个文件里排序，每片 100 字（约 40 KB）。
+  - `NotoSerifSC-spare-1…12`：GB2312 一级字里站内还没用到的，按码位每片 250 字。平时不下载。
+  - 拉丁字体也有的字（ASCII、希腊字母等）不进中文字体：拉丁字体排在前面，最终总是它画；留着的话 WebKit 会在拉丁字体还没到时把这片也下载下来。只有空格 U+0020 留在 0 号片：CSS 按“覆盖空格的那个字体”取一个字体族的行高度量，KaTeX 的 `.cjk_fallback` 把中文字体排在第一，去掉空格会让公式里含中文的行下移 1px。
+- 爬了全部 85 页（1440/390，含选完预测、依次点实验按钮之后）：每页出现的中文 207–372 个，全站约 930 个；实验到达前的画面每页都只需要 0 号片；一节完整显示中位数 302 KB（4 个文件，原来 1408 KB）；没有一页用到 spare 片。
+- `fonts.css` 里两行注释之间的切片规则、learn.html 的预加载地址、两个页面的 `fonts.css?v=` 都由脚本写，不要手改。脚本输出逐字节可复现（保留源字体的时间戳），没变的片地址不变、缓存不失效。重建不必下载上游字体：`git show fbd417d:current/vendor/fonts/noto-serif-sc/NotoSerifSC-subset.woff2` 就是切片前的完整子集，可直接传给脚本；只有新字不在 GB2312 一级字里时才需要上游 TTF。
+- `check-font-coverage.py`：每片的字必须和 `fonts.css` 里写的 unicode-range 完全一致；目录里没有多余的片；learn.html 只预加载 0 号片且地址一致；站内用到的字只在 spare 片里时出 CI 警告（不算失败，但那一页会多下载一片，应重建）。fontTools 默认会把镜像字符（› 带上 ‹）加进 cmap，切片时关掉了（`bidi_closure`）。
+- app.js：字体到达后，只要学生还没在这一页按过鼠标或键盘，就原地重画（`renderRoute({ keepScroll: true })`，保持滚动位置），画布标签才会用上衬线字体。原来用 `document.fonts.load('16px "LA Serif SC"')` 判断，它默认拿空格当样例；现在给每个 `LA Serif` 字体的 `loaded` promise 挂回调（WebKit 不触发 FontFaceSet 的 `loadingdone` 事件），同时到达的几片只重画一次。画布上的字也会触发对应切片下载（Chromium、WebKit 都试过）。慢网冷启动后各实验画布与快网逐像素一致；去掉这段重画，第二章 Cramer、Laplace 的画布字会停在系统字体（对照实验）。
+- 顺带：主干首次加载时，旧的重画只等中文字体，常在拉丁字体到达前就排完版，`typeset.js` 少换一个 `<la-sp>`（如第三章导览 390 宽“大于 3”）；现在等所有字体，结果与主干“字体全到后再重画”一致。字体切片边界落在一行中间时，后一段从取整的亚像素位置开始，个别字的抗锯齿略有不同（第四章 §3 1440 宽“剩”字，形状、位置不变）。
+- 实测见 `ui/font-slices` 的 PR 描述（冷缓存，390×844，三种慢网模型）。按优先级发送的共享 1.6 Mbps 链路下实验出现 12.8 s → 5.5 s；公平分享和 Chrome 自带限速下实验时间不变（约 5 s），全部中文换成衬线字体的时间 9.3–12.8 s → 6.2–6.4 s。量法脚本在会话 scratchpad（`harness/measure.mjs`、`shaped-server.mjs`、`chars.mjs`、`canvas-slow.mjs`）。
 ## 预测门泄漏与搜索摘要（2026-10-20，`ui/predict-gates-search`，Claude）
 
 - 第七轮第 1 类剩下的四处都是真泄漏，已修，每处在 `reliability-smoke.mjs` 有回归检查（在 main 上逐条确认会失败）：

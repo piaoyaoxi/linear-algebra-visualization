@@ -5,7 +5,8 @@
     const controller = new AbortController();
     const { signal } = controller;
     const matrix = [[1, 2, 0], [0, 3, 0], [4, 5, 6]];
-    let active = { row: 1, col: 1 };
+    // start outside row 2: a₂₂ is the one entry the question is about, so selecting it would point at the answer
+    let active = { row: 0, col: 0 };
     let route = { type: "row", index: 1 };
     const gate = window.LAPredictGate?.mount(root.querySelector("[data-cof-gate]"), {
       root: root.querySelector(".ch2-lab"),

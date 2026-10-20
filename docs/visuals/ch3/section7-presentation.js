@@ -42,6 +42,8 @@
       label: "圆与割线",
       equations: ["x^2+y^2-1=0", "x-y=0"],
       describe: `单位圆与直线 ${tex("x=y")} 有两个横截交点。`,
+      // the question asks how many solutions this system has: before a guess, no count and no line
+      cover: `第一条是单位圆，第二条是直线 ${tex("x=y")}。`,
       modes: {
         x: {
           variable: "x",
@@ -184,6 +186,8 @@
       const preset = PRESETS[state.key];
       return { preset, mode: preset.modes[state.mode] };
     }
+    // the example the question is about stays covered until a prediction is picked
+    const covered = () => Boolean(gate && !gate.picked && PRESETS[state.key].cover);
 
     function drawCurve(ctx, frame, fn, color, width = 2.4) {
       ctx.save();
@@ -230,6 +234,8 @@
      * glowing) and crosses out the rest. A double root of the resultant is a point of tangency.
      */
     function draw() {
+      // marks whether the second equation's curve is on the canvas (read by the regression smoke)
+      canvas.toggleAttribute("data-second-curve", !covered());
       const sized = M().sizeCanvas(canvas);
       if (!sized) return;
       const { ctx } = sized;
@@ -244,6 +250,15 @@
         ctx.arc(frame.cx, frame.cy, frame.scale, 0, Math.PI * 2);
         ctx.stroke();
         ctx.restore();
+        if (covered()) {
+          ctx.save();
+          ctx.font = `600 13px ${FONT}`;
+          ctx.lineWidth = 4; ctx.strokeStyle = c.paper; ctx.strokeText("先在上方猜一猜，再画出直线 x=y", 16, 28);
+          ctx.fillStyle = frame.p.muted;
+          ctx.fillText("先在上方猜一猜，再画出直线 x=y", 16, 28);
+          ctx.restore();
+          return;
+        }
         drawCurve(ctx, frame, (x) => x, c.v2);
       } else if (preset.curve === "parabola-tangent") {
         drawCurve(ctx, frame, (x) => x * x, c.v1);
@@ -315,7 +330,7 @@
       root.querySelector("[data-candidate-count]").textContent = state.step >= 4 ? String((mode.lines || []).length) : "—";
       root.querySelector("[data-verified-count]").textContent = state.step >= 5 ? String(preset.candidates.length) : "0";
       root.querySelector("[data-equations]").innerHTML = preset.equations.map((eq) => `<div>${tex(eq)}</div>`).join("");
-      root.querySelector("[data-description]").innerHTML = preset.describe;
+      root.querySelector("[data-description]").innerHTML = covered() ? preset.cover : preset.describe;
       const explanations = [
         `先观察两条曲线，并决定消去 ${tex(mode.variable)}、保留 ${tex(mode.kept)}。`,
         `把两个方程都看成关于 ${tex(mode.variable)} 的多项式，其系数只含 ${tex(mode.kept)}。`,
@@ -341,6 +356,8 @@
       });
       root.querySelector("[data-prev]").disabled = state.step === 0;
       root.querySelector("[data-next]").disabled = state.step === 5;
+      // stepping on to the verification answers the question: “下一步” stays locked until a prediction
+      gate?.relock();
       root.querySelector("[data-conclusion]").innerHTML = state.step < 5
         ? "结式结果目前仍是候选信息；完成回代前，不把候选点标记为最终解。"
         : preset.candidates.length
@@ -376,6 +393,7 @@
       root,
       manual: true,
       key: "visuals/ch3/section7-presentation.js#candidates",
+      onPick: () => render(),
       question: `圆 ${tex("x^2+y^2=1")} 与直线 ${tex("x=y")}：消去 ${tex("x")}，结式 ${tex("2y^2-1")} 给出 ${tex("y=\\pm\\tfrac{\\sqrt2}{2}")}。两条水平线 ${tex("y=\\pm\\tfrac{\\sqrt2}{2}")} 与圆共有 4 个交点。方程组有几个实数解？`,
       options: [
         [`2 个：只有同时在直线 ${tex("x=y")} 上的交点`, true, ""],

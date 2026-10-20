@@ -71,7 +71,7 @@ defineChapter8Section("rational-canonical-form", {
     },
   ],
   summary: [
-    `${texInline(String.raw`d(\lambda)`)} 的伴随矩阵：次对角线上是 1，最后一列是 ${texInline(String.raw`-a_0,\dots,-a_{n-1}`)}；它的不变因子是 ${texInline(String.raw`1,\dots,1,d(\lambda)`)}。`,
+    `${texInline(String.raw`d(\lambda)`)} 的伴随矩阵：主对角线正下方的一条斜线上全是 1，最后一列是 ${texInline(String.raw`-a_0,\dots,-a_{n-1}`)}；它的不变因子是 ${texInline(String.raw`1,\dots,1,d(\lambda)`)}。`,
     `数域 ${texInline("P")} 上的矩阵相似于由它的非常数不变因子的伴随矩阵拼成的有理标准形，且唯一。`,
     "有理标准形不必分解因式，在任何数域上都能写出。",
   ],

@@ -579,7 +579,7 @@
         const level = open ? M().qForm(A, x) : null;
         const shown = open ? M().formatNum(level, 4).replace(/^-/, "−") : "";
         drawSurface(left, A, camera, { point: x, half, frameMatrices: [A, B], level, stemLabel: open ? `xᵀAx = ${shown}` : "xᵀAx", pointLabel: "x" });
-        drawSurface(right, B, camera, { point: y, half, frameMatrices: [A, B], level, stemLabel: open ? `yᵀBy = ${shown}` : "yᵀBy", pointLabel: "y" });
+        drawSurface(right, B, camera, { point: y, half, frameMatrices: [A, B], level, stemLabel: open ? `yᵀBy = ${shown}` : "yᵀBy", pointLabel: "y", axisLabels: ["y₁", "y₂"] });
       };
       const captions = $$(root, ".qv-same figcaption");
       if (captions[0]) captions[0].innerHTML = `先算 ${inline("x=Cy")}，再看 ${inline("x^TAx")}`;
@@ -619,7 +619,7 @@
         const B = matrixFrom(root, "[data-s3-b]");
         if (!A || !B) return;
         drawSurface(left, A, camera, { frameMatrices: [A, B], signedAxes: true });
-        drawSurface(right, B, camera, { frameMatrices: [A, B], signedAxes: true });
+        drawSurface(right, B, camera, { frameMatrices: [A, B], signedAxes: true, axisLabels: ["y₁", "y₂"] });
       };
       const middle = $(root, ".qv-equals strong");
       if (middle) middle.innerHTML = inline("C^TAC");

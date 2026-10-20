@@ -22,7 +22,7 @@
         "01",
         "Sylvester 矩阵与结式",
         "公共根问题被编码为一个行列式",
-        `<div class="ch3-theorem-row"><div>${texD(String.raw`\operatorname{Res}_x(f,g)=\det S_x(f,g)`)}</div><p>把 ${tex("f")}、${tex("g")} 按 ${tex("x")} 的次数排列系数并错位堆叠，得到Sylvester 矩阵。次数正常时，行列式为零恰好表示两多项式关于 ${tex("x")} 有公共根。</p></div>`,
+        `<div class="ch3-theorem-row"><div>${texD(String.raw`\operatorname{Res}_x(f,g)=\det S_x(f,g)`)}</div><p>把 ${tex("f")}、${tex("g")} 按 ${tex("x")} 的次数排列系数并错位堆叠，得到 Sylvester 矩阵。次数正常时，行列式为零恰好表示两多项式关于 ${tex("x")} 有公共根。</p></div>`,
       ) +
         module(
           "02",
@@ -137,7 +137,7 @@
     root.innerHTML = `
       <h2>交互实验</h2>
       <div class="ch3-lab" data-ch3-lab="resultant">
-        <div class="ch3-lab-head"><h3>从曲线交点到一元方程</h3><p>每点一次“下一步”只做一个代数动作：整理、写Sylvester 矩阵、求结式、解候选根、回代。第 4 步把候选值画成直线，第 5 步只留下两条曲线的公共点；选“抛物线与切线”，看二重根怎样对应相切。</p></div>
+        <div class="ch3-lab-head"><h3>从曲线交点到一元方程</h3><p>每点一次“下一步”只做一个代数动作：整理、写 Sylvester 矩阵、求结式、解候选根、回代。第 4 步把候选值画成直线，第 5 步只留下两条曲线的公共点；选“抛物线与切线”，看二重根怎样对应相切。</p></div>
         <div data-resultant-gate></div>
         <div class="ch3-presets">
           <button type="button" class="is-active" data-preset="crossing">圆与割线</button>
@@ -320,7 +320,7 @@
         `先观察两条曲线，并决定消去 ${tex(mode.variable)}、保留 ${tex(mode.kept)}。`,
         `把两个方程都看成关于 ${tex(mode.variable)} 的多项式，其系数只含 ${tex(mode.kept)}。`,
         "按次数错位排列系数；矩阵大小由两个多项式的次数决定。",
-        `取Sylvester 矩阵的行列式，得到只含 ${tex(mode.kept)} 的结式。`,
+        `取 Sylvester 矩阵的行列式，得到只含 ${tex(mode.kept)} 的结式。`,
         `解结式，得到 ${tex(mode.kept)} 的候选值；重数记录在候选中。`,
         "把候选值代回原方程，求另一坐标并逐点验证。",
       ];

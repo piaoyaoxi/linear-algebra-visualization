@@ -34,10 +34,13 @@
         ["要看平行四边形面积多大", false, "面积给出 |det|，符号只由转向决定。"],
       ],
       right: `✓ 逆时针为正，顺时针为负，${tex("|\\det|")} 是面积。两列共线时转角消失，${tex("\\det=0")}；拖着第 2 列穿过第 1 列所在的直线，转向弧随之翻转。`,
+      onPick: () => { if (!state.animating) draw(state.matrix); },
       onReveal: () => { if (!state.animating) draw(state.matrix); },
     });
     // the turning arc names the sign rule, so it waits for a prediction and a first move
     const open = () => !gate || gate.revealed;
+    // the sign of det answers the question: until a prediction, the readouts give only |det|
+    const signed = () => !gate || gate.picked;
     const presets = {
       identity: [[1, 0], [0, 1]],
       scale2: [[2, 0], [0, 1]],
@@ -67,9 +70,11 @@
 
     function syncReadout(matrix) {
       const det = M().det2(matrix);
-      const status = M().detStatus(det);
+      const detStatus = M().detStatus(det);
+      // a zero det has no sign, so the collapse status stays visible before the prediction
+      const status = signed() || detStatus.key === "zero" ? detStatus : { label: "—", cls: "" };
       const detElement = root.querySelector("[data-det]");
-      detElement.textContent = M().formatFrac(det);
+      detElement.textContent = signed() ? M().formatFrac(det) : "?";
       detElement.className = status.cls;
       root.querySelector("[data-abs]").textContent = M().formatFrac(Math.abs(det));
       const statusElement = root.querySelector("[data-status]");
@@ -87,10 +92,11 @@
     }
 
     function paint(matrix) {
+      const det = M().det2(state.target || matrix);
       state.view = M().drawTransformScene(canvas, matrix, {
         firstLabel: "第 1 列",
         secondLabel: "第 2 列",
-        caption: `det = ${M().formatFrac(M().det2(state.target || matrix))} · 一格面积为 1`,
+        caption: `${signed() ? `det = ${M().formatFrac(det)}` : `|det| = ${M().formatFrac(Math.abs(det))}`} · 一格面积为 1`,
         orientation: open(),
         minorGrid: true,
         // keep labels clear of the zoom control in the top-right corner
@@ -235,7 +241,7 @@
         ]) + misconception([
           `${tex("\\det(A)=1")} 只说明有向面积倍率为 1，并不要求 ${tex("A=E")}。`,
           `${tex("\\det<0")} 表示定向翻转；普通面积仍为 ${tex("|\\det|")}。`,
-        ]) + taskBox("阅读线索", `在交互中让 ${tex("\\det")} 连续穿过 0。零点前后面积绝对值连续，方向状态在零点两侧发生改变。`)),
+        ]) + taskBox("试一试", `在下面的实验里拖动一列，让 ${tex("\\det")} 连续穿过 0：${tex("|\\det|")} 连续地缩到 0 再变大，定向在 0 的两侧相反。`)),
       );
     },
     interactive(root) {
@@ -267,7 +273,7 @@
                   <button type="button" data-preset="shear">剪切 ${tex("\\det=1")}</button>
                   <button type="button" data-preset="mirror">镜像</button>
                   <button type="button" data-preset="collinear">共线</button>
-                  <button type="button" data-preset="negative2">${tex("\\det=-2")}</button>
+                  <button type="button" data-preset="negative2">镜像 ${tex("\\times2")}</button>
                 </div>
               </div>
             </div>

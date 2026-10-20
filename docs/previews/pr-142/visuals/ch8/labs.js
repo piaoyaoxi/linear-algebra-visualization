@@ -1527,7 +1527,7 @@
       label: tex("A_1"),
       A: [[3, -1, 1, -2], [1, 2, 0, -1], [0, 1, 1, 1], [0, 0, 0, 2]],
       predict: {
-        question: `${tex("|\\lambda E-A_1|=(\\lambda-2)^4")}，${tex("N=A_1-2E")} 的秩是 2，所以 ${tex("N")} 的核是 ${tex("4-2=2")} 维。每个若尔当块恰好给这个核贡献一个方向。${tex("A_1")} 的若尔当形中有几个若尔当块？`,
+        question: `${tex("|\\lambda E-A_1|=(\\lambda-2)^4")}，${tex("N=A_1-2E")} 的秩是 2。${tex("A_1")} 的若尔当形中有几个若尔当块？`,
         options: [
           { text: "2 个", correct: true },
           { text: "1 个", why: "块数等于 dim ker N=4−rank N=2。" },

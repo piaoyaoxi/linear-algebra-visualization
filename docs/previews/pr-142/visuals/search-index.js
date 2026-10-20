@@ -1,6 +1,11 @@
 /*
  * Course-wide search index (ported from the Liquid Glass draft, PR #30).
- * Indexes student-facing text only; answers, video plans and TTS drafts are skipped.
+ * Indexes student-facing text only: answers (also the 停一下 answers), video plans,
+ * TTS drafts, figure keys, flags and authoring fields the lesson page never shows are skipped.
+ *
+ * Text is kept as parts: { text } or { tex, text }, a formula's TeX source plus what it reads as
+ * ("\operatorname{rank}A" reads "rankA"). Matching uses the readings; the result list renders
+ * the formulas with KaTeX (visuals/search.js).
  */
 (() => {
   "use strict";
@@ -32,29 +37,107 @@
     "explanation",
     "solution",
     "analysis",
+    // figure keys and layout flags
+    "figure",
+    "figureLast",
+    // authoring notes no lesson page renders
+    "checkpoints",
+    "objectives",
+    "prerequisites",
   ]);
 
-  const cleanText = (value) => {
-    if (value == null) return "";
-    if (Array.isArray(value)) return value.map(cleanText).filter(Boolean).join(" ");
-    if (typeof value === "object") {
-      return Object.entries(value)
-        .filter(([key]) => !nonStudentTextKeys.has(key))
-        .map(([, item]) => cleanText(item))
-        .filter(Boolean)
-        .join(" ");
-    }
-
-    const source = String(value);
-    if (!source.includes("<")) return source.replace(/\s+/g, " ").trim();
-
-    const template = document.createElement("template");
-    template.innerHTML = source;
-    template.content.querySelectorAll(".tex[data-tex]").forEach((node) => {
-      node.replaceWith(document.createTextNode(node.getAttribute("data-tex") || ""));
-    });
-    return (template.content.textContent || "").replace(/\s+/g, " ").trim();
+  // keys skipped only under one parent: the 停一下 answer, and lab notes the chapter labs replace
+  const nonStudentChildKeys = {
+    ponder: new Set(["a"]),
+    interactive: new Set(["prompts", "description", "label"]),
   };
+
+  // fields whose value is a bare TeX source (theorem formulas)
+  const texKeys = new Set(["tex", "equation"]);
+
+  // what a formula reads as: KaTeX's MathML without the TeX annotation, minus invisible operators
+  const readMath = (math) => {
+    if (!math) return "";
+    const copy = math.cloneNode(true);
+    copy.querySelectorAll("annotation").forEach((node) => node.remove());
+    return (copy.textContent || "").replace(/[\u2061-\u2064\u200b]/g, "");
+  };
+
+  const readTex = (source) => {
+    if (!window.katex?.renderToString) return source;
+    const template = document.createElement("template");
+    template.innerHTML = window.katex.renderToString(source, { output: "mathml", throwOnError: false, strict: "ignore" });
+    return readMath(template.content.querySelector("math")) || source;
+  };
+
+  const pushText = (parts, text) => {
+    if (text) parts.push({ text });
+  };
+
+  const pushFormula = (parts, tex, text) => {
+    if (tex) parts.push({ tex, text: text || tex });
+  };
+
+  const collectNodes = (node, parts) => {
+    node.childNodes.forEach((child) => {
+      if (child.nodeType === Node.TEXT_NODE) pushText(parts, child.textContent);
+      else if (child.nodeType !== Node.ELEMENT_NODE) return;
+      else if (child.matches(".tex[data-tex]")) pushFormula(parts, child.getAttribute("data-tex"), readMath(child.querySelector("math")));
+      else collectNodes(child, parts);
+    });
+  };
+
+  // key: the field this value sits in (array items keep their array's key)
+  const collect = (value, parts, key = "") => {
+    if (value == null || typeof value === "boolean") return;
+    if (Array.isArray(value)) {
+      value.forEach((item) => collect(item, parts, key));
+      return;
+    }
+    if (typeof value === "object") {
+      Object.entries(value).forEach(([childKey, item]) => {
+        if (nonStudentTextKeys.has(childKey) || nonStudentChildKeys[key]?.has(childKey)) return;
+        collect(item, parts, childKey);
+      });
+      return;
+    }
+    // separate fields with a space, as they are separate lines on the page
+    pushText(parts, " ");
+    const source = String(value);
+    if (texKeys.has(key)) pushFormula(parts, source.trim(), readTex(source));
+    else if (!source.includes("<")) pushText(parts, source);
+    else {
+      const template = document.createElement("template");
+      template.innerHTML = source;
+      collectNodes(template.content, parts);
+    }
+  };
+
+  // collapse whitespace, merge neighbouring text, trim the ends
+  const tidy = (parts) => {
+    const out = [];
+    parts.forEach((part) => {
+      const text = part.text.replace(/\s+/g, " ");
+      const last = out[out.length - 1];
+      if (part.tex == null && last && last.tex == null) last.text = `${last.text}${text}`.replace(/ {2,}/g, " ");
+      else if (part.tex == null) out.push({ text });
+      else out.push({ tex: part.tex, text: text.trim() || part.tex });
+    });
+    if (out[0]?.tex == null && out[0]) out[0].text = out[0].text.trimStart();
+    const end = out[out.length - 1];
+    if (end?.tex == null && end) end.text = end.text.trimEnd();
+    return out.filter((part) => part.tex != null || part.text);
+  };
+
+  const toParts = (value) => {
+    const parts = [];
+    collect(value, parts);
+    return tidy(parts);
+  };
+
+  const plainText = (parts) => parts.map((part) => part.text).join("");
+
+  const cleanText = (value) => plainText(toParts(value));
 
   const shortTitle = (value, limit = 54) => {
     const text = cleanText(value);
@@ -71,14 +154,38 @@
     return count;
   };
 
-  const makeSnippet = (text, rawQuery, limit = 92) => {
-    const clean = cleanText(text);
-    if (!clean) return "";
-    const query = String(rawQuery || "").trim();
-    const matchAt = clean.toLocaleLowerCase("zh-CN").indexOf(query.toLocaleLowerCase("zh-CN"));
-    const start = matchAt > 28 ? Math.max(0, matchAt - 24) : 0;
-    const excerpt = clean.slice(start, start + limit).trim();
-    return `${start ? "…" : ""}${excerpt}${start + limit < clean.length ? "…" : ""}`;
+  /*
+   * About `limit` characters of readable text around the first match, as parts. A formula is
+   * never cut: the excerpt starts at the start of a formula it would cut, and a formula that
+   * runs past the end is left out unless it holds the match.
+   */
+  const makeSnippet = (parts, rawQuery, limit = 92) => {
+    let offset = 0;
+    const spans = parts.map((part) => {
+      const span = { ...part, from: offset, to: offset + part.text.length };
+      offset = span.to;
+      return span;
+    });
+    const plain = plainText(parts);
+    if (!plain) return [];
+    const query = String(rawQuery || "").trim().toLocaleLowerCase("zh-CN");
+    const matchAt = query ? plain.toLocaleLowerCase("zh-CN").indexOf(query) : -1;
+    // a short lead-in: the snippet is one line, about 20 characters on a phone
+    let start = matchAt > 14 ? matchAt - 10 : 0;
+    start = spans.find((span) => span.tex != null && span.from < start && span.to > start)?.from ?? start;
+    const end = start + limit;
+    const out = [];
+    spans.forEach((span) => {
+      if (span.to <= start || span.from >= end) return;
+      if (span.tex == null) out.push({ text: span.text.slice(Math.max(0, start - span.from), end - span.from) });
+      else if (span.to <= end || (matchAt >= span.from && matchAt < span.to)) out.push({ tex: span.tex, text: span.text });
+    });
+    if (out[0]?.tex == null && out[0]) out[0].text = out[0].text.trimStart();
+    const last = out[out.length - 1];
+    if (last?.tex == null && last) last.text = last.text.trimEnd();
+    if (start) out.unshift({ text: "…" });
+    if (end < plain.length) out.push({ text: "…" });
+    return tidy(out);
   };
 
   // Course chapters only; the guide gets one direct entry below.
@@ -97,13 +204,15 @@
 
     const pushEntry = ({ chapter, chapterIndex, section, sectionIndex, subIndex = 0, kind, title, text, href }) => {
       const cleanTitle = shortTitle(title);
-      const cleanBody = cleanText(text);
+      const parts = toParts(text);
+      const cleanBody = plainText(parts);
       if (!cleanTitle && !cleanBody) return;
       entries.push({
         id: `${chapter.id}-${sectionIndex}-${subIndex}-${kind}`,
         kind,
         title: cleanTitle || chapter.title,
         body: cleanBody,
+        parts,
         href,
         chapterId: chapter.id,
         chapterTitle: cleanText(chapter.title),
@@ -158,6 +267,11 @@
 
         if (!section || typeof section !== "object") return;
         const sectionTitle = section.navTitle || section.title || section.textbookSection || `第 ${sectionIndex + 1} 节`;
+        // the result title already shows the number and the navigation title; other names still match
+        const { number, navTitle, title, textbookSection, ...content } = section;
+        const names = [...new Set([title, textbookSection])].filter((name) => name && name !== sectionTitle);
+        // exercises stand in for the self-test only when a section has no quiz
+        if (content.quiz?.length) delete content.exercises;
         pushEntry({
           chapter,
           chapterIndex,
@@ -168,7 +282,7 @@
           // One searchable destination per real route. Nested concepts,
           // examples and self-tests still participate in the full-text match,
           // but do not create dozens of duplicate links to the same section.
-          text: section,
+          text: [names, content],
           href,
         });
       });
@@ -208,10 +322,12 @@
         if (entry.kind === "section") score += 28;
         else if (entry.kind === "chapter") score += 18;
 
+        const snippetParts = makeSnippet(entry.parts.length ? entry.parts : toParts(entry.title), rawQuery);
         return {
           ...entry,
           score,
-          snippet: makeSnippet(entry.body || entry.title, rawQuery),
+          snippet: plainText(snippetParts),
+          snippetParts,
         };
       })
       .filter(Boolean)

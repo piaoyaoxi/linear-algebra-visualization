@@ -355,7 +355,7 @@
         status.className = "ch1-status is-bad";
         status.textContent = `${m} 个不同的根，次数 ${n}：只有零多项式`;
         title.textContent = `次数为 ${n} 的尝试`;
-        out.innerHTML = `${tex(`q(x)=${roots.slice(0, n).map((r) => factorTex(r)).join("")}`)} 已经用掉 ${n} 个一次因式，在 ${missed.map(({ r, value }) => tex(`q(${r})=${M().formatRTex(value)}`)).join("，")}，不为 0。<br><span class="ch1-muted">要在 ${m} 个点都为 0，就要含 ${m} 个不同的一次因式，次数至少是 ${m}。所以次数不超过 ${n} 的多项式只能是 0。</span>`;
+        out.innerHTML = `${tex(`q(x)=${roots.slice(0, n).map((r) => factorTex(r)).join("")}`)} 已经用掉 ${n} 个一次因式，但在剩下的点上 ${missed.map(({ r, value }) => tex(`q(${r})=${M().formatRTex(value)}`)).join("，")}，${missed.length > 1 ? "都" : ""}不为 0。<br><span class="ch1-muted">要在 ${m} 个点都为 0，就要含 ${m} 个不同的一次因式，次数至少是 ${m}。所以次数不超过 ${n} 的多项式只能是 0。</span>`;
         drawRootBound(root.querySelector("[data-canvas]"), { possible, q, missed, roots, n, m });
         gate?.acted();
       }

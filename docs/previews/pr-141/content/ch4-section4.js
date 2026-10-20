@@ -74,7 +74,7 @@ defineChapter4Section("matrix-inverse", {
         text: `${texInline("A^{-1}=\\frac14\\begin{bmatrix}1&-1\\\\-1&3\\end{bmatrix}")}，${texInline("x=\\begin{bmatrix}1\\\\1/2\\end{bmatrix}")}。`,
       },
       {
-        text: `${texInline("A^{-1}=\\frac12\\begin{bmatrix}3&-1\\\\-1&1\\end{bmatrix}")}，${texInline("x=\\begin{bmatrix}9\\\\-1\\end{bmatrix}")}。`,
+        text: `${texInline("A^{-1}=\\frac12\\begin{bmatrix}3&-1\\\\-1&1\\end{bmatrix}")}，${texInline("x=\\begin{bmatrix}9\\\\-2\\end{bmatrix}")}。`,
       },
     ],
     steps: [

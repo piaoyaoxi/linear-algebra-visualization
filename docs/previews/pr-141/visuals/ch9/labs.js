@@ -687,11 +687,11 @@
   /* ================= §4 正交变换：单位圆是否保持 ================= */
 
   const ORTHO_PRESETS = {
-    rot: { label: "旋转", Q: [["3/5", "-4/5"], ["4/5", "3/5"]] },
-    refl: { label: "反射", Q: [["3/5", "-4/5"], ["-4/5", "-3/5"]] },
-    swap: { label: "交换坐标", Q: [[0, 1], [1, 0]] },
-    squeeze: { label: tex("\\operatorname{diag}(2,\\tfrac12)"), Q: [[2, 0], [0, "1/2"]] },
-    shear: { label: "剪切", Q: [[1, 1], [0, 1]] },
+    rot: { label: "旋转", A: [["3/5", "-4/5"], ["4/5", "3/5"]] },
+    refl: { label: "反射", A: [["3/5", "-4/5"], ["-4/5", "-3/5"]] },
+    swap: { label: "交换坐标", A: [[0, 1], [1, 0]] },
+    squeeze: { label: tex("\\operatorname{diag}(2,\\tfrac12)"), A: [[2, 0], [0, "1/2"]] },
+    shear: { label: "剪切", A: [[1, 1], [0, 1]] },
   };
   const FLAG = [[0, 0], [0, 1.2], [0.7, 1.2], [0.7, 0.85], [0.25, 0.85], [0.25, 0]];
 
@@ -710,23 +710,23 @@
     info.dataset.ch9Readout = "ortho";
     const gateHost = el("div");
     const result = resultBox(
-      `<p>保持内积 ${tex(String.raw`\Leftrightarrow`)} 保持长度 ${tex(String.raw`\Leftrightarrow`)} 把标准正交基变成标准正交基 ${tex(String.raw`\Leftrightarrow`)} 矩阵满足 ${tex("Q^TQ=E")}。${tex("\\det Q=\\pm1")} 只是必要条件：${tex("\\operatorname{diag}(2,\\tfrac12)")} 保持面积，却把 ${tex("\\varepsilon_1")} 拉长一倍。${tex("\\det Q=1")} 的是旋转（第一类），${tex("\\det Q=-1")} 的是反射（第二类）。</p>`,
+      `<p>保持内积 ${tex(String.raw`\Leftrightarrow`)} 保持长度 ${tex(String.raw`\Leftrightarrow`)} 把标准正交基变成标准正交基 ${tex(String.raw`\Leftrightarrow`)} 矩阵满足 ${tex("A^TA=E")}。${tex("\\det A=\\pm1")} 只是必要条件：${tex("\\operatorname{diag}(2,\\tfrac12)")} 保持面积，却把 ${tex("\\varepsilon_1")} 拉长一倍。正交矩阵 ${tex("Q")} 中，${tex("\\det Q=1")} 的是旋转（第一类），${tex("\\det Q=-1")} 的是反射（第二类）。</p>`,
     );
     side.append(info, gateHost, result);
     // the lab opens on the matrix the question asks about
     const state = { key: "squeeze", x: [1.5, 0.5], y: [0, 1], revealed: false };
 
     /*
-     * Equal-length ticks and matching angle arcs: x and Qx carry one tick, y and
-     * Qy two, the image carrying them only when the length is kept exactly; the
-     * arc of ∠(Qx,Qy) is solid when it equals ∠(x,y) and dashed otherwise.
+     * Equal-length ticks and matching angle arcs: x and Ax carry one tick, y and
+     * Ay two, the image carrying them only when the length is kept exactly; the
+     * arc of ∠(Ax,Ay) is solid when it equals ∠(x,y) and dashed otherwise.
      */
-    function marks(Q, ap) {
+    function marks(A, ap) {
       const x = toF(state.x);
       const y = toF(state.y);
-      const Qx = M().matVec(Q, x);
-      const Qy = M().matVec(Q, y);
-      const [nx, ny, mx, my] = [dotF(x, x), dotF(y, y), dotF(Qx, Qx), dotF(Qy, Qy)];
+      const Ax = M().matVec(A, x);
+      const Ay = M().matVec(A, y);
+      const [nx, ny, mx, my] = [dotF(x, x), dotF(y, y), dotF(Ax, Ax), dotF(Ay, Ay)];
       const keepX = M().eq(nx, mx);
       const keepY = M().eq(ny, my);
       const objs = [];
@@ -742,8 +742,8 @@
       const hasAngle = [nx, ny, mx, my].every((v) => !M().isZero(v));
       if (hasAngle) {
         const a = dotF(x, y);
-        const b = dotF(Qx, Qy);
-        // cos∠(x,y) = cos∠(Qx,Qy) exactly: same sign and a²·|Qx|²|Qy|² = b²·|x|²|y|²
+        const b = dotF(Ax, Ay);
+        // cos∠(x,y) = cos∠(Ax,Ay) exactly: same sign and a²·|Ax|²|Ay|² = b²·|x|²|y|²
         sameAngle = Math.sign(a.n) === Math.sign(b.n) && M().eq(M().mul(M().mul(a, a), M().mul(mx, my)), M().mul(M().mul(b, b), M().mul(nx, ny)));
         objs.push({ type: "arc", from: state.x, to: state.y, r: 22, color: "axis", width: 1.5 });
         objs.push({ type: "arc", from: ap(state.x), to: ap(state.y), r: 34, color: "image", width: 1.8, dash: sameAngle ? undefined : [3, 4] });
@@ -752,16 +752,16 @@
     }
 
     function redraw() {
-      const Q = matF(ORTHO_PRESETS[state.key].Q);
-      const Qn = matN(Q);
-      const ap = (p) => [Qn[0][0] * p[0] + Qn[0][1] * p[1], Qn[1][0] * p[0] + Qn[1][1] * p[1]];
-      const QtQ = matMulF(transposeF(Q), Q);
-      const orth = isIdentity(QtQ);
-      const det = det2(Q);
+      const A = matF(ORTHO_PRESETS[state.key].A);
+      const An = matN(A);
+      const ap = (p) => [An[0][0] * p[0] + An[0][1] * p[1], An[1][0] * p[0] + An[1][1] * p[1]];
+      const AtA = matMulF(transposeF(A), A);
+      const orth = isIdentity(AtA);
+      const det = det2(A);
       const circle = P().conic([[1, 0], [0, 1]]);
       let mirror = null;
       if (orth && det.n < 0) {
-        const ns = M().nullspaceBasis([[M().sub(Q[0][0], F(1)), Q[0][1]], [Q[1][0], M().sub(Q[1][1], F(1))]]).basis;
+        const ns = M().nullspaceBasis([[M().sub(A[0][0], F(1)), A[0][1]], [A[1][0], M().sub(A[1][1], F(1))]]).basis;
         if (ns.length) mirror = toN(ns[0]);
       }
       plane.setObjects(() => {
@@ -774,44 +774,44 @@
           { type: "polygon", pts: FLAG.map(ap), color: "image", fillAlpha: 0.16, width: 1.6 },
         ];
         if (mirror) objs.push({ type: "line", dir: mirror, color: "subspace", dash: [7, 5], width: 1.6, label: "反射轴" });
-        const mk = state.revealed ? marks(Q, ap) : null;
+        const mk = state.revealed ? marks(A, ap) : null;
         if (mk) objs.push(...mk.objs.filter((o) => o.type === "arc"));
         objs.push({ type: "arrow", to: state.x, color: "v1", width: 1.8, alpha: 0.7, label: "x" });
         objs.push({ type: "arrow", to: state.y, color: "v2", width: 1.8, alpha: 0.7, label: "y" });
-        objs.push({ type: "arrow", to: ap(state.x), color: "image", width: 3, label: "Qx" });
-        objs.push({ type: "arrow", to: ap(state.y), color: "image", width: 3, label: "Qy" });
+        objs.push({ type: "arrow", to: ap(state.x), color: "image", width: 3, label: "Ax" });
+        objs.push({ type: "arrow", to: ap(state.y), color: "image", width: 3, label: "Ay" });
         if (mk) objs.push(...mk.objs.filter((o) => o.type === "ticks"));
         return objs;
       });
       const x = toF(state.x);
       const y = toF(state.y);
-      const Qx = M().matVec(Q, x);
-      const Qy = M().matVec(Q, y);
+      const Ax = M().matVec(A, x);
+      const Ay = M().matVec(A, y);
       const cmp = (a, b) => (M().eq(a, b) ? "=" : "\\ne");
       let verdict;
-      if (orth) verdict = `<p class="ch9l-ok" data-ortho-status>${tex("Q^TQ=E")}，正交变换，${det.n > 0 ? "第一类（旋转）" : "第二类（关于绿色虚线的反射）"}。</p>`;
+      if (orth) verdict = `<p class="ch9l-ok" data-ortho-status>${tex("A^TA=E")}，正交变换，${det.n > 0 ? "第一类（旋转）" : "第二类（关于绿色虚线的反射）"}。</p>`;
       else {
-        const c1 = [Q[0][0], Q[1][0]];
-        const c2 = [Q[0][1], Q[1][1]];
-        verdict = `<p class="ch9l-bad" data-ortho-status>${tex("Q^TQ\\ne E")}：列向量 ${tex(`|q_1|^2=${lf(dotF(c1, c1))},\\ |q_2|^2=${lf(dotF(c2, c2))},\\ (q_1,q_2)=${lf(dotF(c1, c2))}`)}，不是正交变换。</p>`;
+        const c1 = [A[0][0], A[1][0]];
+        const c2 = [A[0][1], A[1][1]];
+        verdict = `<p class="ch9l-bad" data-ortho-status>${tex("A^TA\\ne E")}：列向量 ${tex(`|a_1|^2=${lf(dotF(c1, c1))},\\ |a_2|^2=${lf(dotF(c2, c2))},\\ (a_1,a_2)=${lf(dotF(c1, c2))}`)}，不是正交变换。</p>`;
       }
-      // before the reveal the asked matrix shows only Q and det Q: the comparisons would answer the question
+      // before the reveal the asked matrix shows only A and det A: the comparisons would answer the question
       if (state.key === "squeeze" && !state.revealed) {
         info.innerHTML = `<h4>当前读数</h4>
-        <p>${tex(`Q=${M().latexMatrix(Q)},\\ \\det Q=${lf(det)}`)}</p>
+        <p>${tex(`A=${M().latexMatrix(A)},\\ \\det A=${lf(det)}`)}</p>
         <p class="ch9l-muted" data-ortho-wait>先猜一猜，再看长度与内积的比较。</p>`;
         return;
       }
       info.innerHTML = `<h4>当前读数</h4>
-        <p>${tex(`Q=${M().latexMatrix(Q)},\\ \\det Q=${lf(det)}`)}</p>
-        <p>${tex(`Q^TQ=${M().latexMatrix(QtQ)}`)}</p>
-        <p>${tex(`|x|^2=${lf(dotF(x, x))}\\ ${cmp(dotF(x, x), dotF(Qx, Qx))}\\ |Qx|^2=${lf(dotF(Qx, Qx))}`)}</p>
-        <p>${tex(`(x,y)=${lf(dotF(x, y))}\\ ${cmp(dotF(x, y), dotF(Qx, Qy))}\\ (Qx,Qy)=${lf(dotF(Qx, Qy))}`)}</p>
-        ${verdict}${state.revealed ? marksNote(marks(Q, () => [0, 0])) : ""}`;
+        <p>${tex(`A=${M().latexMatrix(A)},\\ \\det A=${lf(det)}`)}</p>
+        <p>${tex(`A^TA=${M().latexMatrix(AtA)}`)}</p>
+        <p>${tex(`|x|^2=${lf(dotF(x, x))}\\ ${cmp(dotF(x, x), dotF(Ax, Ax))}\\ |Ax|^2=${lf(dotF(Ax, Ax))}`)}</p>
+        <p>${tex(`(x,y)=${lf(dotF(x, y))}\\ ${cmp(dotF(x, y), dotF(Ax, Ay))}\\ (Ax,Ay)=${lf(dotF(Ax, Ay))}`)}</p>
+        ${verdict}${state.revealed ? marksNote(marks(A, () => [0, 0])) : ""}`;
     }
 
     function marksNote(mk) {
-      const len = mk.keepX && mk.keepY ? `${tex("Qx")}、${tex("Qy")} 带着与 ${tex("x")}、${tex("y")} 相同的刻痕：长度不变` : "像上缺了刻痕：有长度被改变";
+      const len = mk.keepX && mk.keepY ? `${tex("Ax")}、${tex("Ay")} 带着与 ${tex("x")}、${tex("y")} 相同的刻痕：长度不变` : "像上缺了刻痕：有长度被改变";
       const ang = !mk.hasAngle ? "零向量没有夹角" : mk.sameAngle ? "两段弧都是实线：夹角不变" : "紫色弧是虚线：夹角变了";
       return `<p class="ch9l-muted" data-ortho-marks>${len}；${ang}。</p>`;
     }
@@ -843,7 +843,7 @@
           { text: "是：单位圆的像面积不变", why: "面积不变，形状却变了：长度和夹角都可能改变。" },
           { text: `要看 ${tex("x")} 取在哪里`, why: "正交变换要求对所有 x 保持长度；只要有一个 x 被拉长就不是。" },
         ],
-        right: `单位圆变成半轴为 2 和 ${tex("\\tfrac12")} 的椭圆；${tex("Q^TQ=\\operatorname{diag}(4,\\tfrac14)\\ne E")}，长度被改变：缺了刻痕的像，长度与原来不同。`,
+        right: `单位圆变成半轴为 2 和 ${tex("\\tfrac12")} 的椭圆；${tex("A^TA=\\operatorname{diag}(4,\\tfrac14)\\ne E")}，长度被改变：缺了刻痕的像，长度与原来不同。`,
         manual: true,
         actHint: "记下了你的猜测。在这个矩阵下拖动 x 或 y，结论随后出现。",
       },

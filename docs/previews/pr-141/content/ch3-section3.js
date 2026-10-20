@@ -66,8 +66,8 @@ defineChapter3Section("linear-dependence", {
       answer: "一定相关：4 个向量由 3 个向量线性表出。",
     },
     {
-      question: `实验里把 ${texInline("v_3")} 拖到 ${texInline("(1,1,\\tfrac32)")}，体积为 ${texInline("-\\tfrac12")}。这三个向量相关吗？`,
-      answer: `不相关。体积不为 0，${texInline("v_3")} 不在平面里；看起来“几乎共面”不等于共面。`,
+      question: `实验里把 ${texInline("v_3")} 拖到 ${texInline("(1,1,\\tfrac32)")}，体积为 ${texInline("-\\tfrac12")}。这三个向量线性相关吗？`,
+      answer: `线性无关。体积不为 0，${texInline("v_3")} 不在平面里；看起来“几乎共面”不等于共面。`,
     },
   ],
   summary: [

@@ -89,7 +89,7 @@
       const tick=(now)=>{const t=dur?Math.min(1,(now-t0)/dur):1,e=t<.5?2*t*t:1-(-2*t+2)**2/2,C=[[1,r*e],[0,1]];topView(c,t<1?M().symmetrize(M().congruence(A,C)):D,A,t<1?'x':'y');if(t<1)raf=requestAnimationFrame(tick);else raf=0;};
       raf=requestAnimationFrame(tick);
     }
-    function paint(){const A=presets[state.p],pk=pack(),steps=pk.steps||[];state.step=M().clamp(state.step,0,Math.max(0,steps.length-1));const st=steps[state.step]||{title:'起点',poly:M().polyPlain2(A),note:'',kind:'start',matrix:A},C=st.C||M().identity(2),D=st.matrix||A,final=state.step===steps.length-1,det=M().det2(C),cross=2*D[0][1],ra=M().matrixRank(A),rd=M().matrixRank(D);$(root,'[data-s2-step-count]').textContent=`第 ${state.step+1} 步 / ${steps.length}`;$(root,'[data-s2-progress]').style.setProperty('--p',`${100*(state.step+1)/steps.length}%`);$(root,'[data-s2-kicker]').textContent=st.kind==='done'?'标准形':'当前步骤';$(root,'[data-s2-title]').textContent=st.title;$(root,'[data-s2-poly]').innerHTML=inline(st.poly.replace(/(^|[+−=(-]\s*)1\s+(?=[xy(])/g,'$1').replace(/²/g,'^2').replace(/x₁/g,'x_1').replace(/x₂/g,'x_2').replace(/y₁/g,'y_1').replace(/y₂/g,'y_2'));$(root,'[data-s2-note]').innerHTML=st.note;$(root,'[data-s2-look]').innerHTML=final?`在新变量 ${inline('y')} 的坐标里，等高线不再倾斜，交叉项为 0。把 ${inline('y')} 轴画回原来的 ${inline('x')} 平面，它们一般是斜的，并不是曲面的主轴。`:'继续配方，观察当前坐标里的倾斜怎样消失。';$(root,'[data-s2-c]').innerHTML=M().matrixHtml(C);$(root,'[data-s2-d]').innerHTML=M().matrixHtml(D);$(root,'[data-s2-substitution]').innerHTML=st.C?(pk.method==='sumdiff'?`和差替换：${inline('x_1=(y_1+y_2)/2')}，${inline('x_2=(y_1-y_2)/2')}。`:`已经写出 ${inline('x=Cy')}，新旧变量可互相恢复。`):`尚未定义新变量，${inline('C')} 为单位矩阵。`;const vars=st.C?'y':'x';lab.dataset.s2Vars=vars;if(!raf)topView($(root,'[data-s2-top]'),D,st.C?A:null,vars);$(root,'[data-s2-top-caption]').innerHTML=st.C?`俯视 · 新坐标 ${inline('y')} 中的等高线（虚线是起点）`:`俯视 · 原坐标 ${inline('x')} 中的等高线`;if(final&&gate?.picked&&state.p==='regular')gate.acted();$(root,'[data-s2-det]').textContent=num(det,4);$(root,'[data-s2-cross]').textContent=num(cross,6);$(root,'[data-s2-rank-a]').textContent=ra;$(root,'[data-s2-rank-d]').textContent=rd;const s=$(root,'[data-s2-status]');if(final){const ok=Math.abs(det)>1e-8&&Math.abs(cross)<1e-7&&ra===rd;s.className=`ch5-status ${ok?'is-ok':'is-warn'}`;s.textContent=ok?'标准形完成':'还需检查';$(root,'[data-s2-result-title]').textContent=ok?'可逆、无交叉项、秩保持':'尚未闭环';$(root,'[data-s2-result-copy]').textContent=ok?'三项同时成立，说明这一步确实是合同化标准形。':'检查变量替换和最终矩阵。';}else{s.className='ch5-status';s.textContent='处理中';$(root,'[data-s2-result-title]').textContent='还没有到终点';$(root,'[data-s2-result-copy]').textContent='不要只看公式；同时看当前坐标里的等高线是否仍然倾斜。';}if(gate?.picked&&!gate.revealed&&state.p!=='regular'){$(root,'[data-s2-result-copy]').textContent+='你的猜测针对“含交叉项”：回到这个例子走到最后一步，再核对猜测。';}}
+    function paint(){const A=presets[state.p],pk=pack(),steps=pk.steps||[];state.step=M().clamp(state.step,0,Math.max(0,steps.length-1));const st=steps[state.step]||{title:'起点',poly:M().polyPlain2(A),note:'',kind:'start',matrix:A},C=st.C||M().identity(2),D=st.matrix||A,final=state.step===steps.length-1,det=M().det2(C),cross=2*D[0][1],ra=M().matrixRank(A),rd=M().matrixRank(D);$(root,'[data-s2-step-count]').textContent=`第 ${state.step+1} 步 / ${steps.length}`;$(root,'[data-s2-progress]').style.setProperty('--p',`${100*(state.step+1)/steps.length}%`);$(root,'[data-s2-kicker]').textContent=st.kind==='done'?'标准形':'当前步骤';$(root,'[data-s2-title]').textContent=st.title;$(root,'[data-s2-poly]').innerHTML=inline(st.poly.replace(/(^|[+−=(-]\s*)1\s+(?=[xy(])/g,'$1').replace(/²/g,'^2').replace(/x₁/g,'x_1').replace(/x₂/g,'x_2').replace(/y₁/g,'y_1').replace(/y₂/g,'y_2'));$(root,'[data-s2-note]').innerHTML=st.note;$(root,'[data-s2-look]').innerHTML=final?`在新变量 ${inline('y')} 的坐标里，等高线不再倾斜，交叉项为 0。把 ${inline('y')} 轴画回原来的 ${inline('x')} 平面，它们一般是斜的，并不是曲面的主轴。`:'继续配方，观察当前坐标里的倾斜怎样消失。';$(root,'[data-s2-c]').innerHTML=fracMatrix(C);$(root,'[data-s2-d]').innerHTML=fracMatrix(D);$(root,'[data-s2-substitution]').innerHTML=st.C?(pk.method==='sumdiff'?`和差替换：${inline('x_1=\\tfrac{y_1+y_2}{2}')}，${inline('x_2=\\tfrac{y_1-y_2}{2}')}。`:`已经写出 ${inline('x=Cy')}，新旧变量可互相恢复。`):`尚未定义新变量，${inline('C')} 为单位矩阵。`;const vars=st.C?'y':'x';lab.dataset.s2Vars=vars;if(!raf)topView($(root,'[data-s2-top]'),D,st.C?A:null,vars);$(root,'[data-s2-top-caption]').innerHTML=st.C?`俯视 · 新坐标 ${inline('y')} 中的等高线（虚线是起点）`:`俯视 · 原坐标 ${inline('x')} 中的等高线`;if(final&&gate?.picked&&state.p==='regular')gate.acted();$(root,'[data-s2-det]').textContent=fracStr(det);$(root,'[data-s2-cross]').textContent=fracStr(cross);$(root,'[data-s2-rank-a]').textContent=ra;$(root,'[data-s2-rank-d]').textContent=rd;const s=$(root,'[data-s2-status]');if(final){const ok=Math.abs(det)>1e-8&&Math.abs(cross)<1e-7&&ra===rd;s.className=`ch5-status ${ok?'is-ok':'is-warn'}`;s.textContent=ok?'标准形完成':'还需检查';$(root,'[data-s2-result-title]').textContent=ok?'可逆、无交叉项、秩保持':'尚未闭环';$(root,'[data-s2-result-copy]').textContent=ok?'三项同时成立，说明这一步确实是合同化标准形。':'检查变量替换和最终矩阵。';}else{s.className='ch5-status';s.textContent='处理中';$(root,'[data-s2-result-title]').textContent='还没有到终点';$(root,'[data-s2-result-copy]').textContent='不要只看公式；同时看当前坐标里的等高线是否仍然倾斜。';}if(gate?.picked&&!gate.revealed&&state.p!=='regular'){$(root,'[data-s2-result-copy]').textContent+='你的猜测针对“含交叉项”：回到这个例子走到最后一步，再核对猜测。';}}
     $$(root,'[data-s2-preset]').forEach(b=>b.addEventListener('click',()=>{state.p=b.dataset.s2Preset;state.step=0;$$(root,'[data-s2-preset]').forEach(x=>x.classList.toggle('is-active',x===b));paint();},{signal:ctl.signal}));$$(root,'[data-s2-nav]').forEach(b=>b.addEventListener('click',()=>{const before=(pack().steps||[])[state.step];if(b.dataset.s2Nav==='next')state.step+=1;if(b.dataset.s2Nav==='prev')state.step-=1;if(b.dataset.s2Nav==='reset')state.step=0;cancelAnimationFrame(raf);raf=0;paint();const steps=pack().steps||[],now=steps[Math.min(state.step,steps.length-1)],A=presets[state.p];if(before&&!before.C&&now?.C&&now.C[1][0]===0&&Math.abs(A[0][0])>1e-9){animateTop(A,now.matrix);}},{signal:ctl.signal}));ctl.signal.addEventListener('abort',()=>cancelAnimationFrame(raf));window.addEventListener('resize',paint,{signal:ctl.signal,passive:true});paint();return()=>ctl.abort();
   }
 
@@ -154,8 +154,9 @@
     return tex ? `${sign}${fmt(x, 2)}` : `≈${sign}${fmt(x, 2)}`;
   }
   const fracMatrix = (A) => `<div class="ch5-matrix" role="table" aria-label="矩阵">${A.map((row, i) => `<div class="ch5-matrix-row">${row.map((v, j) => `<span class="ch5-cell" data-i="${i}" data-j="${j}" data-v="${v}">${fracStr(v)}</span>`).join("")}</div>`).join("")}</div>`;
-  function polyFracTex(A) {
-    const terms = [[A[0][0], "x_1^2"], [2 * A[0][1], "x_1x_2"], [A[1][1], "x_2^2"]].filter(([c]) => Math.abs(c) > 1e-12);
+  // the form of A in the variables v₁, v₂ (B = CᵀAC is read in y)
+  function polyFracTex(A, v = "x") {
+    const terms = [[A[0][0], `${v}_1^2`], [2 * A[0][1], `${v}_1${v}_2`], [A[1][1], `${v}_2^2`]].filter(([c]) => Math.abs(c) > 1e-12);
     if (!terms.length) return "0";
     return terms.map(([c, m], i) => {
       const mag = Math.abs(c);
@@ -235,7 +236,7 @@
       $(root,'[data-s3-a-counts]').innerHTML=counts(ia);
       // B's counts are the answer: they appear once the prediction is checked
       $(root,'[data-s3-b-counts]').innerHTML=open?counts(ib):'<div class="qv-counts"><span>正<strong>?</strong></span><span>负<strong>?</strong></span><span>零<strong>?</strong></span></div>';
-      $(root,'[data-s3-poly-a]').innerHTML=inline(polyFracTex(A));$(root,'[data-s3-poly-b]').innerHTML=inline(polyFracTex(B));
+      $(root,'[data-s3-poly-a]').innerHTML=inline(polyFracTex(A));$(root,'[data-s3-poly-b]').innerHTML=inline(polyFracTex(B,'y'));
       
       signWheel($(root,'[data-s3-a-wheel]'),A,'A 的符号轮');signWheel($(root,'[data-s3-b-wheel]'),B,'B 的符号轮');
       $(root,'[data-s3-singular]').disabled=!open;
@@ -365,8 +366,8 @@
     const S4_LABELS={
       min:['\\min_{\\lVert x\\rVert=1}q_t(x)','\\min_{\\lVert x\\rVert=1}q_t(x)=1-|t|'],
       d2:['\\Delta_2','\\Delta_2=1-t^2'],
-      lp:['\\lambda_1','\\lambda_1=1+t'],
-      lm:['\\lambda_2','\\lambda_2=1-t'],
+      lp:['q_t(1,1)','q_t(1,1)=2+2t'],
+      lm:['q_t(1,-1)','q_t(1,-1)=2-2t'],
     };
     let labelsShown=null;
     const nameOf=(k)=>(S4_PRESETS.find(([t])=>t*4===k)||[])[1];
@@ -387,8 +388,8 @@
       $(root,'[data-s4-poly]').innerHTML=inline(polyFracTex(A));
       $(root,'[data-s4-d1]').textContent='1 > 0';
       $(root,'[data-s4-d2]').textContent=!open?'?':ak===4?'= 0':`${fracStr((16-k*k)/16)} ${ak<4?'> 0':'< 0'}`;
-      $(root,'[data-s4-lp]').textContent=open?fracStr(1+t):'?';
-      $(root,'[data-s4-lm]').textContent=open?fracStr(1-t):'?';
+      $(root,'[data-s4-lp]').textContent=open?fracStr(2+2*t):'?';
+      $(root,'[data-s4-lm]').textContent=open?fracStr(2-2*t):'?';
       $(root,'[data-s4-min]').textContent=open?fracStr(1-ak/4):'?';
       s4Wheel($(root,'[data-s4-scan]'),k,open);
       lab.dispatchEvent(new Event('la-redraw',{bubbles:true}));

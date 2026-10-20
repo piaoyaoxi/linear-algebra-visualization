@@ -390,14 +390,25 @@ function init() {
   if (document.readyState === "complete") preloadRemainingLabs();
   else window.addEventListener("load", preloadRemainingLabs, { once: true });
 
-  // Canvas text is drawn with whatever font is ready at that moment. If the serif web
-  // font arrives after the first paint and the student has not touched anything yet,
-  // draw the page again so canvas labels match the text.
-  if (document.fonts && !document.fonts.check('16px "LA Serif SC"')) {
+  // Canvas text is drawn with whatever font is ready at that moment, and the serif fonts
+  // arrive in slices (fonts.css) the first time a page uses their characters. When a slice
+  // finishes loading after a page was drawn and the student has not touched that page yet,
+  // draw it again in place so canvas labels match the text. Each face's `loaded` promise is
+  // used because WebKit does not fire the FontFaceSet loadingdone event.
+  if (document.fonts) {
     let touched = false;
-    ["pointerdown", "keydown"].forEach((type) => window.addEventListener(type, () => { touched = true; }, { once: true, capture: true }));
-    document.fonts.load('16px "LA Serif SC"').then(() => {
-      if (!touched) renderRoute();
+    let redraw = null;
+    ["pointerdown", "keydown"].forEach((type) => window.addEventListener(type, () => { touched = true; }, { capture: true }));
+    window.addEventListener("hashchange", () => { touched = false; });
+    document.fonts.forEach((face) => {
+      if (!face.family.includes("LA Serif") || face.status === "loaded") return;
+      face.loaded.then(() => {
+        // slices that arrive together are drawn once
+        redraw ??= document.fonts.ready.then(() => {
+          redraw = null;
+          if (!touched) renderRoute({ keepScroll: true });
+        });
+      }, () => {});
     });
   }
 
@@ -512,7 +523,9 @@ function bindChapterToggles() {
 
 let routeToken = 0;
 
-function renderRoute() {
+// keepScroll: draw the same page again in place (fonts arrived) instead of opening it at the top
+function renderRoute({ keepScroll = false } = {}) {
+  const keepY = keepScroll ? window.scrollY : null;
   teardownLessonLabs();
   const token = ++routeToken;
 
@@ -559,14 +572,16 @@ function renderRoute() {
       },
     );
   }
-  finishRoute({ scroll: true });
+  finishRoute({ scroll: true, keepY });
 }
 
-function finishRoute({ scroll }) {
+function finishRoute({ scroll, keepY = null }) {
   buildPageToc();
+  if (keepY !== null) window.scrollTo(0, keepY);
   window.requestAnimationFrame(() => {
     setupInteractiveBlocks();
-    if (!scroll) return;
+    if (keepY !== null) window.scrollTo(0, keepY);
+    if (!scroll || keepY !== null) return;
     if (state.section) {
       document.querySelector(`#${CSS.escape(state.section)}`)?.scrollIntoView({ block: "start", behavior: "auto" });
     } else {

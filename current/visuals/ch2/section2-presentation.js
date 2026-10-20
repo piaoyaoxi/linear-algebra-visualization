@@ -25,12 +25,12 @@
       root: root.querySelector(".ch2-lab"),
       manual: true,
       key: "visuals/ch2/section2-presentation.js#adjacent",
-      question: `从 ${tex("3142")} 出发，每次交换一对相邻的逆序数，直到变成 ${tex("1234")}。置换矩阵的 ${tex("\\det P")} 一路怎样变？${tex("\\operatorname{sgn}(3142)")} 是多少？`,
+      question: `从 ${tex("3142")} 出发，每次对换相邻且前大后小的两个数，直到变成 ${tex("1234")}。置换矩阵的 ${tex("\\det P")} 一路怎样变？${tex("\\operatorname{sgn}(3142)")} 是多少？`,
       options: [
         [`每换一次翻一次号，${tex("\\operatorname{sgn}(3142)=-1")}`, true, ""],
         [`每换一次翻一次号，${tex("\\operatorname{sgn}(3142)=(-1)^4")}，由排列长度决定`, false, "翻号次数等于交换次数 τ，与长度 4 无关：τ 从 3 减到 0，翻了 3 次。"],
         [`相邻交换不改变 ${tex("\\det P")}，${tex("\\operatorname{sgn}(3142)=+1")}`, false, "每一次相邻交换 τ 恰好减 1，det P 翻一次号。"],
-        [`翻号次数取决于先换哪一对，${tex("\\operatorname{sgn}")} 不确定`, false, "无论先换哪一对相邻逆序数，τ 都恰好减 1，所以总共翻号 τ 次。"],
+        [`翻号次数取决于先换哪一对，${tex("\\operatorname{sgn}")} 不确定`, false, "无论先换哪一对，每次相邻对换都让 τ 恰好减 1，所以总共翻号 τ 次。"],
       ],
       // a (new) guess waits for the next action before the readouts appear
       onPick: () => {

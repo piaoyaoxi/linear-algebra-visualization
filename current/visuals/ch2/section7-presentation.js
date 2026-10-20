@@ -564,7 +564,7 @@
         }
         residual.innerHTML = `重构：${tex(`x_1a_1+x_2a_2=\\left(${ratio(t.b1, 10).tex},\\,${ratio(t.b2, 10).tex}\\right)^T`)}，正好回到 ${tex("b")}。`;
         residual.className = "ch2-note is-positive";
-        proof.innerHTML = `${tex("D_1=\\det(b,a_2)=\\det(x_1a_1,a_2)=x_1D")}：把 ${tex("b")} 沿 ${tex("a_2")} 方向滑到 ${tex("x_1a_1")}，底边改变但有向面积不变。`;
+        proof.innerHTML = `${tex("D_1=\\det(b,a_2)=\\det(x_1a_1,a_2)=x_1D")}：把 ${tex("b")} 沿 ${tex("a_2")} 方向滑到 ${tex("x_1a_1")}，底边 ${tex("a_2")} 不动，高也不变，所以有向面积不变。`;
       } else {
         const infinite = ex.kind === "infinite";
         solution.innerHTML = infinite

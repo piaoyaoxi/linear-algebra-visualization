@@ -33,6 +33,8 @@ test.describe("Chapter 2 normal-motion interactions", () => {
   test("§1 accepts a new preset after each geometry transition", async ({ page }) => {
     const errors = browserErrors(page);
     await openLesson(page, "determinant-intro");
+    // the signed readouts wait for a prediction
+    await page.locator("#determinant-intro-interactive .ch3l-predict-options > button").first().click();
     await page.locator('[data-preset="shear"]').click();
     await expect(page.locator("[data-det]")).toHaveText("1", { timeout: 3000 });
     await page.locator('[data-preset="collinear"]').click();

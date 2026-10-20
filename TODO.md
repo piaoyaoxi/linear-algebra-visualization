@@ -390,7 +390,7 @@ _dev/research/3b1b_eola_chapter10.py
 
 来源：三路内容审阅（第一至三章、第四至六章、第七至十章），都用 sympy 重算过全部数值，没有发现算错；1440/390 宽度下无报错、无 katex-error、无溢出。复核阶段没跑；UI/首页（#123）和代码健康两路没跑完，以后补。标 ✓ 的已用 grep 或读代码确认，其余是审阅者报的，改之前先复核。
 
-1. 预测门泄漏（UI 线，优先，和 #124 的第二章 §2 同一类）
+1. 预测门泄漏（UI 线，优先，和 #124 的第二章 §2 同一类）——已全部修复（第六章两处见 reliability-smoke，其余四处见文末“预测门泄漏与搜索摘要”）
    - 第六章 §3（`visuals/ch6/labs.js` 约 240 行）：猜之前就能点“沿平面看”，一点就看到三点共面。
    - 第六章 §7：猜之前就能点“把 u 压低”（约 791 行）。
    - 第二章 §1：“镜像”预设在猜之前就显示行列式的符号。
@@ -420,7 +420,7 @@ _dev/research/3b1b_eola_chapter10.py
    - 第七、八、十章实验外壳里画布上下留白偏大。
    - 标签重叠：第五章 §3、第四章 §4、第六章 §2/§3、第九章 §2/§7。
    - 第四章 §1/§2 网格和第五章的 det C 用 ASCII 连字符当负号。
-4. 搜索（UI 线）
+4. 搜索（UI 线）——已修复，见文末“预测门泄漏与搜索摘要”
    - ✓ `visuals/search-index.js` 第 53–54 行把公式换回 `data-tex` 源码，搜索摘要里会出现 `\operatorname{rank}` 这类 LaTeX；#120 之后变多。另报内部字段进了摘要（待复核）。
 5. 维护
    - ✓ 第四章旧数据层里还留着被覆盖的数据，例如 `content/ch4.js:198` 的“行最简形为 I”（应为 E）和内部措辞；学生看不到，但会误导后来的人。
@@ -611,3 +611,15 @@ _dev/research/3b1b_eola_chapter10.py
 - app.js：字体到达后，只要学生还没在这一页按过鼠标或键盘，就原地重画（`renderRoute({ keepScroll: true })`，保持滚动位置），画布标签才会用上衬线字体。原来用 `document.fonts.load('16px "LA Serif SC"')` 判断，它默认拿空格当样例；现在给每个 `LA Serif` 字体的 `loaded` promise 挂回调（WebKit 不触发 FontFaceSet 的 `loadingdone` 事件），同时到达的几片只重画一次。画布上的字也会触发对应切片下载（Chromium、WebKit 都试过）。慢网冷启动后各实验画布与快网逐像素一致；去掉这段重画，第二章 Cramer、Laplace 的画布字会停在系统字体（对照实验）。
 - 顺带：主干首次加载时，旧的重画只等中文字体，常在拉丁字体到达前就排完版，`typeset.js` 少换一个 `<la-sp>`（如第三章导览 390 宽“大于 3”）；现在等所有字体，结果与主干“字体全到后再重画”一致。字体切片边界落在一行中间时，后一段从取整的亚像素位置开始，个别字的抗锯齿略有不同（第四章 §3 1440 宽“剩”字，形状、位置不变）。
 - 实测见 `ui/font-slices` 的 PR 描述（冷缓存，390×844，三种慢网模型）。按优先级发送的共享 1.6 Mbps 链路下实验出现 12.8 s → 5.5 s；公平分享和 Chrome 自带限速下实验时间不变（约 5 s），全部中文换成衬线字体的时间 9.3–12.8 s → 6.2–6.4 s。量法脚本在会话 scratchpad（`harness/measure.mjs`、`shaped-server.mjs`、`chars.mjs`、`canvas-slow.mjs`）。
+## 预测门泄漏与搜索摘要（2026-10-20，`ui/predict-gates-search`，Claude）
+
+- 第七轮第 1 类剩下的四处都是真泄漏，已修，每处在 `reliability-smoke.mjs` 有回归检查（在 main 上逐条确认会失败）：
+  - 第二章 §1：猜之前 det 读数写“?”，状态写“—”（det=0 的“维度塌缩”没有符号，照常显示），画布图注只写 |det|；预设“det=−2”改名“镜像 ×2”（标签本身给出了一个顺时针构型的符号）。选完预测立即显示带符号的读数；转向弧仍等揭晓。
+  - 第三章 §7：猜之前“圆与割线”只画圆（画布上写“先在上方猜一猜，再画出直线 x=y”），原方程卡片不数交点（预设的 `cover` 文字）；画布有 `data-second-curve` 标记第二条曲线是否画出。另修：`render()` 每次把“下一步”设回可用，覆盖了预测门的锁，猜之前就能走到第 5 步看到“2 个实点通过”；现在 render 后调用 `gate.relock()`。
+  - 第二章 §6：默认选中 a₁₁（原来是 a₂₂，正好是题目答案里唯一的非零元）。
+  - 第八章 §6：A₁ 的题干去掉“核是 4−2=2 维、每个块贡献一个方向”，只给 rank N=2。
+- 搜索（`visuals/search-index.js` + `search.js`）：
+  - 文字按“段”存：纯文字或公式（TeX 源 + 读法，读法取 KaTeX 的 MathML 文字，如 rankA、λ）。匹配用读法，所以搜“λ”“rank”“det”能命中公式；结果摘要里的公式用 KaTeX 排（矩阵改 smallmatrix、\dfrac 改 \tfrac，保持一行高），不再出现 TeX 源码。摘要不会切断公式。
+  - 不再进索引：布尔值（`interactive: false` 原来以 “false” 出现）、`figure`/`figureLast`（图的键名）、“停一下”的答案 `ponder.a`、页面从不显示的 `checkpoints`/`objectives`/`prerequisites`、`interactive` 的 `prompts`/`description`/`label`（被各章实验覆盖，逐节核对过 0 处显示）、有自测时的 `exercises`。`tex`/`equation` 字段（定理块公式）按公式处理。小节的 number/title/navTitle 不再重复出现在摘要开头（仍参与匹配）。
+  - 摘要只留约 10 个字的前文（手机上一行约 20 字，原来 24 个字会把命中挤出可见范围）；面包屑在只有章名命中时不再被节名覆盖（`appendHighlightedText` 原来用 textContent 重写）。
+

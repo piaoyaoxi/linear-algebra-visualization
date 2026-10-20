@@ -164,8 +164,9 @@
     const haystack = text.toLocaleLowerCase("zh-CN");
     const needle = query.toLocaleLowerCase("zh-CN");
     let matchAt = query ? haystack.indexOf(needle) : -1;
+    // append: the breadcrumb is built from two calls
     if (matchAt < 0) {
-      element.textContent = text;
+      element.append(document.createTextNode(text));
       return;
     }
     let cursor = 0;
@@ -178,6 +179,35 @@
       matchAt = haystack.indexOf(needle, cursor);
     }
     if (cursor < text.length) element.append(document.createTextNode(text.slice(cursor)));
+  };
+
+  /*
+   * Snippet formulas are set with KaTeX on the snippet's single line: matrices become small
+   * matrices and display fractions text fractions, so a formula stays about one line high.
+   */
+  const MATRIX_FENCES = { p: ["(", ")"], b: ["[", "]"], v: ["|", "|"], V: ["\\|", "\\|"], B: ["\\{", "\\}"], "": [".", "."] };
+  const inlineTex = (source) =>
+    source
+      .replace(/\\begin\{([pbvVB]?)matrix\}/g, (_, kind) => `\\left${MATRIX_FENCES[kind][0]}\\begin{smallmatrix}`)
+      .replace(/\\end\{([pbvVB]?)matrix\}/g, (_, kind) => `\\end{smallmatrix}\\right${MATRIX_FENCES[kind][1]}`)
+      .replace(/\\dfrac\b/g, "\\tfrac")
+      .replace(/\\displaystyle\b/g, "");
+
+  const appendFormula = (element, part, rawQuery) => {
+    const query = String(rawQuery || "").trim().toLocaleLowerCase("zh-CN");
+    const hit = query && part.text.toLocaleLowerCase("zh-CN").includes(query);
+    const box = document.createElement(hit ? "mark" : "span");
+    box.className = "search-result-tex";
+    if (window.katex?.renderToString) {
+      box.innerHTML = window.katex.renderToString(inlineTex(part.tex), { throwOnError: false, strict: "ignore", trust: false });
+    } else {
+      box.textContent = part.text;
+    }
+    element.append(box);
+  };
+
+  const appendSnippet = (element, parts, rawQuery) => {
+    parts.forEach((part) => (part.tex == null ? appendHighlightedText(element, part.text, rawQuery) : appendFormula(element, part, rawQuery)));
   };
 
   class CourseSearch {
@@ -664,7 +694,7 @@
           if (result.snippet && normalize(result.snippet) !== normalize(result.title)) {
             const snippet = document.createElement("span");
             snippet.className = "search-result-snippet";
-            appendHighlightedText(snippet, result.snippet, value);
+            appendSnippet(snippet, result.snippetParts || [{ text: result.snippet }], value);
             copy.append(snippet);
           }
 

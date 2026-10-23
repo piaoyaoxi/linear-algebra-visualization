@@ -63,7 +63,7 @@ defineChapter3Section("solvability", {
     },
     {
       question: `${texInline("A")} 是 ${texInline("3\\times4")} 矩阵，${texInline("\\operatorname{rank}A=3")}。${texInline("Ax=b")} 对每个 ${texInline("b")} 都有解吗？解有几个？`,
-      answer: `都有解，因为列空间是整个 ${texInline("F^3")}；有 ${texInline("4-3=1")} 个自由未知量，所以有无穷多解。`,
+      answer: `都有解，因为列空间是整个 ${texInline("P^3")}；有 ${texInline("4-3=1")} 个自由未知量，所以有无穷多解。`,
     },
     {
       question: `${texInline(String.raw`\operatorname{rank}[A\mid b]`)} 可能等于 ${texInline("\\operatorname{rank}A+2")} 吗？`,

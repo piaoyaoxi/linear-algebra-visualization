@@ -15,11 +15,11 @@
       question: `第 2 行是 ${tex("(0,3,0)")}。按第 2 行展开时，真正要算几个 2 阶余子式？`,
       options: [
         [`1 个：只有 ${tex("a_{22}")} 不为 0`, true, ""],
-        ["3 个：每个元素一个", false, "零元素那一项是 0×C=0，它的余子式不必算。"],
-        [`0 个：这一行有 0，${tex("\\det")} 就是 0`, false, "一行里有 0 只消去对应的项；a₂₂C₂₂=3×6=18 仍要算。"],
+        ["3 个：每个元素一个", false, "零元素那一项是 0×A₂ⱼ=0，它的余子式不必算。"],
+        [`0 个：这一行有 0，${tex("\\det")} 就是 0`, false, "一行里有 0 只消去对应的项；a₂₂A₂₂=3×6=18 仍要算。"],
         ["2 个：两个 0 各算一个", false, "要算的是非零元素的余子式；两个 0 的项直接为 0。"],
       ],
-      right: `✓ 两个零块直接为 0，只剩一块：${tex("\\det A=a_{22}C_{22}=3\\times6=18")}。展开时挑零最多的行或列。`,
+      right: `✓ 两个零块直接为 0，只剩一块：${tex("\\det A=a_{22}A_{22}=3\\times6=18")}。展开时挑零最多的行或列。`,
       onPick: () => render(),
       onReveal: () => render(),
     });
@@ -91,11 +91,11 @@
       });
     }
 
-    // one tile a_ij × C_ij per entry of the route; tiles of zero entries are greyed
+    // one tile a_ij × A_ij per entry of the route; tiles of zero entries are greyed
     function renderExpansionTiles(result) {
       const tiles = result.allItems.map((item) => {
         const zero = Math.abs(item.element) <= M().EPS;
-        const c = `C_{${item.row + 1}${item.col + 1}}`;
+        const c = `A_{${item.row + 1}${item.col + 1}}`;
         return `<figure class="ch2-cof-tile${zero ? " is-zero" : ""}">
           <span>${aEntry(item.row + 1, item.col + 1)}${tex(`\\times`)}${tex(c)}</span>
           <strong>${zero ? tex(`0\\times ${c}=0`) : tex(`${M().formatNum(item.element, 3)}\\times${item.value < 0 ? `(${M().formatNum(item.value, 3)})` : M().formatNum(item.value, 3)}=${M().formatNum(item.contribution, 3)}`)}</strong>
@@ -107,7 +107,7 @@
 
     /*
      * The six terms of the 3-order determinant, sgn(p)·a₁ₚ₁a₂ₚ₂a₃ₚ₃ in lexicographic order. The two
-     * terms that contain the selected a_ij share that factor; what is left is (−1)^{i+j}M_ij = C_ij.
+     * terms that contain the selected a_ij share that factor; what is left is (−1)^{i+j}M_ij = A_ij.
      */
     const PERMS = [[0, 1, 2], [0, 2, 1], [1, 0, 2], [1, 2, 0], [2, 0, 1], [2, 1, 0]];
     const permSign = (p) => {
@@ -145,7 +145,7 @@
       root.querySelector("[data-leibniz]").innerHTML = `
         <p class="ch2-leib-title">${tex("\\det A")} 的 6 项中，含 ${tex(sub(i, j))} 的恰好 2 项</p>
         <div class="ch2-leib-terms">${tiles}</div>
-        <p class="ch2-leib-factor">${tex(`${sub(i, j)}\\bigl(${inner}\\bigr)=(-1)^{${i + 1}+${j + 1}}\\,${sub(i, j)}\\bigl(${minor}\\bigr)=${sub(i, j)}\\,C_{${ij}}`)}</p>
+        <p class="ch2-leib-factor">${tex(`${sub(i, j)}\\bigl(${inner}\\bigr)=(-1)^{${i + 1}+${j + 1}}\\,${sub(i, j)}\\bigl(${minor}\\bigr)=${sub(i, j)}\\,A_{${ij}}`)}</p>
         <p class="ch2-leib-value">括号里正是 ${tex(`M_{${ij}}`)} 的两项，符号为 ${tex(`(-1)^{${i + 1}+${j + 1}}=${selected.sign > 0 ? "+1" : "-1"}`)}；这两项之和为 ${tex(`${M().formatNum(matrix[i][j], 3)}\\times${selected.value < 0 ? `(${M().formatNum(selected.value, 3)})` : M().formatNum(selected.value, 3)}=${M().formatNum(sum, 3)}`)}。</p>`;
     }
 
@@ -208,17 +208,17 @@
           <div class="ch2-def-stack">
             <article class="ch2-def"><span class="kicker">余子矩阵</span><strong>删去第 ${tex("i")} 行与第 ${tex("j")} 列</strong><p>得到一个 ${tex("(n-1)")} 阶矩阵。</p></article>
             <article class="ch2-def"><span class="kicker">余子式</span><strong>${tex("M_{ij}")}</strong><p>对余子矩阵取行列式，结果是标量。</p></article>
-            <article class="ch2-def"><span class="kicker">代数余子式</span><strong>${tex("C_{ij}=(-1)^{i+j}M_{ij}")}</strong><p>棋盘符号由 ${tex("i+j")} 的奇偶决定。</p></article>
+            <article class="ch2-def"><span class="kicker">代数余子式</span><strong>${tex("A_{ij}=(-1)^{i+j}M_{ij}")}</strong><p>棋盘符号由 ${tex("i+j")} 的奇偶决定。</p></article>
           </div>
         `) + module("02", "展开公式与路线选择", "结果固定，计算量由所选方向决定。", `
           <div class="ch2-def-stack">
-            <article class="ch2-def"><span class="kicker">按第 ${tex("i")} 行</span><strong>${display("\\det(A)=\\sum_{j=1}^{n}a_{ij}C_{ij}")}</strong><p>第 ${tex("i")} 行中的每个元素与对应代数余子式配对。</p></article>
-            <article class="ch2-def"><span class="kicker">按第 ${tex("j")} 列</span><strong>${display("\\det(A)=\\sum_{i=1}^{n}a_{ij}C_{ij}")}</strong><p>优先选择零多的方向，减少需要计算的低阶行列式。</p></article>
+            <article class="ch2-def"><span class="kicker">按第 ${tex("i")} 行</span><strong>${display("\\det(A)=\\sum_{j=1}^{n}a_{ij}A_{ij}")}</strong><p>第 ${tex("i")} 行中的每个元素与对应代数余子式配对。</p></article>
+            <article class="ch2-def"><span class="kicker">按第 ${tex("j")} 列</span><strong>${display("\\det(A)=\\sum_{i=1}^{n}a_{ij}A_{ij}")}</strong><p>优先选择零多的方向，减少需要计算的低阶行列式。</p></article>
           </div>
         `) + module("03", "交叉恒等式为什么等于零", "把一行复制到另一行，再沿被替换行展开。", proofSteps([
-          `固定两行 ${tex("r\\ne s")}，考虑和 ${tex("\\sum_j a_{rj}C_{sj}")}。`,
+          `固定两行 ${tex("r\\ne s")}，考虑和 ${tex("\\sum_j a_{rj}A_{sj}")}。`,
           `构造一个新行列式：把原矩阵第 ${tex("s")} 行替换成第 ${tex("r")} 行，其余行保持不变。`,
-          `沿新矩阵第 ${tex("s")} 行展开，得到的正是 ${tex("\\sum_j a_{rj}C_{sj}")}。`,
+          `沿新矩阵第 ${tex("s")} 行展开，得到的正是 ${tex("\\sum_j a_{rj}A_{sj}")}。`,
           `新矩阵的第 ${tex("r")}、${tex("s")} 行相同，所以其行列式为 0，交叉和也等于 0。`,
         ]) + misconception([
           `棋盘符号帮助记忆，定义仍是 ${tex("(-1)^{i+j}")}。`,
@@ -255,7 +255,7 @@
                 <div class="ch2-meter-card"><strong>选中</strong><span data-pos></span></div>
                 <div class="ch2-meter-card"><strong>${tex("M_{ij}")}</strong><span data-mij></span></div>
                 <div class="ch2-meter-card"><strong>位置符号</strong><span data-sign></span></div>
-                <div class="ch2-meter-card" data-cij-card><strong>${tex("C_{ij}")}</strong><span data-cij></span></div>
+                <div class="ch2-meter-card" data-cij-card><strong>${tex("A_{ij}")}</strong><span data-cij></span></div>
               </div>
               <div class="ch2-note">先在左侧任选元素，读取“余子矩阵 → 余子式 → 代数余子式”的对应关系。</div>
             </div>

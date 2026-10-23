@@ -11,24 +11,24 @@ defineChapter2Section("cofactor-expansion", {
     "知道一个行列式可以沿不同路线计算而结果不变。",
   ],
   objectives: [
-    "从 aᵢⱼ 正确构造余子矩阵、余子式 Mᵢⱼ 与代数余子式 Cᵢⱼ。",
+    "从 aᵢⱼ 正确构造余子矩阵、余子式 Mᵢⱼ 与代数余子式 Aᵢⱼ。",
     "沿任意指定行或列写出完整展开式。",
     "利用零元素比较不同展开路线的计算成本。",
     "解释同一行展开得到 det(A)，而一行与另一行的代数余子式交叉配对得到 0。",
   ],
   checkpoints: [
-    { label: "先分清三个对象", text: "删行删列得到矩阵；对它取行列式得到 Mᵢⱼ；再乘位置符号得到 Cᵢⱼ。" },
+    { label: "先分清三个对象", text: "删行删列得到矩阵；对它取行列式得到 Mᵢⱼ；再乘位置符号得到 Aᵢⱼ。" },
     { label: "再看符号棋盘", text: "位置符号由 (−1)ⁱ⁺ʲ 决定，不能仅凭余子式本身判断正负。" },
     { label: "最后选择路线", text: "所有行列都能展开，但零越多，需要计算的低阶行列式越少。" },
   ],
   intro:
-    `选中 ${texInline("a_{ij}")} 后删去第 ${texInline("i")} 行与第 ${texInline("j")} 列，剩余矩阵的行列式记为 ${texInline("M_{ij}")}；再乘位置符号 ${texInline("(-1)^{i+j}")} 得到代数余子式 ${texInline("C_{ij}")}。一行或一列中的元素与对应代数余子式配对求和，就得到原行列式。这里最容易混淆的是三个对象的类型与符号。`,
+    `选中 ${texInline("a_{ij}")} 后删去第 ${texInline("i")} 行与第 ${texInline("j")} 列，剩余矩阵的行列式记为 ${texInline("M_{ij}")}；再乘位置符号 ${texInline("(-1)^{i+j}")} 得到代数余子式 ${texInline("A_{ij}")}。一行或一列中的元素与对应代数余子式配对求和，就得到原行列式。这里最容易混淆的是三个对象的类型与符号。`,
   concepts: [
     { label: "余子矩阵", text: "删去第 i 行、第 j 列后得到的 (n−1) 阶矩阵。" },
     { label: "余子式", text: `${texInline("M_{ij}")} 是余子矩阵的行列式，是标量。` },
-    { label: "代数余子式", text: `${texInline("C_{ij}=(-1)^{i+j}M_{ij}")}。` },
-    { label: "按行展开", text: `${texInline("\\det(A)=\\sum_{j=1}^{n}a_{ij}C_{ij}")}。` },
-    { label: "按列展开", text: `${texInline("\\det(A)=\\sum_{i=1}^{n}a_{ij}C_{ij}")}。` },
+    { label: "代数余子式", text: `${texInline("A_{ij}=(-1)^{i+j}M_{ij}")}。` },
+    { label: "按行展开", text: `${texInline("\\det(A)=\\sum_{j=1}^{n}a_{ij}A_{ij}")}。` },
+    { label: "按列展开", text: `${texInline("\\det(A)=\\sum_{i=1}^{n}a_{ij}A_{ij}")}。` },
     { label: "交叉恒等式", text: `当 ${texInline("r\\ne s")} 时，第 r 行元素与第 s 行对应代数余子式的乘积之和为 0。` },
     { label: "递归结构", text: "n 阶行列式被拆成若干 (n−1) 阶行列式，因此展开可以递归进行。" },
   ],
@@ -44,7 +44,7 @@ defineChapter2Section("cofactor-expansion", {
     task: "找出示例矩阵中展开成本最低的行或列，并完成全部非零项。",
     prompts: [
       "点击任意元素，区分余子矩阵、余子式和代数余子式。",
-      "对照棋盘符号，解释 C₂₃ 为什么带负号。",
+      "对照棋盘符号，解释 A₂₃ 为什么带负号。",
       "切换按行与按列路线，比较需要计算的非零项数量。",
       "选择最短路线后核对展开和与直接行列式值。",
       "观察界面如何省略零项，同时保持展开式的符号清晰。",
@@ -68,7 +68,7 @@ defineChapter2Section("cofactor-expansion", {
     ],
   },
   quiz: [
-    { question: `${texInline("C_{23}")} 的位置符号是多少？`, answer: `${texInline("(-1)^{2+3}=-1")}。` },
+    { question: `${texInline("A_{23}")} 的位置符号是多少？`, answer: `${texInline("(-1)^{2+3}=-1")}。` },
     { question: "为什么通常选择零最多的行或列展开？", answer: "零项无需计算对应余子式，子问题数量更少。" },
     { question: "一行中有一个零，能否推出整个行列式为零？", answer: "不能；只会消去该元素对应的一个展开项。" },
     { question: "一行元素与另一行对应的代数余子式配对为什么为零？", answer: "可把前一行复制到后一行，展开得到一个含两行相同的行列式，因此为零。" },

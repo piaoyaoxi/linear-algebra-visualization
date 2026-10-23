@@ -4,11 +4,11 @@ defineChapter3Section("n-vector-space", {
   title: "n维向量空间",
   navTitle: "n维向量空间",
   question: `怎样把一个方程组读成“${texInline("n")} 维向量的线性组合”？${texInline("n")} 大于 3、画不出来时，为什么仍能精确运算？`,
-  goal: `掌握 ${texInline("F^n")} 中向量的加法、数乘与线性组合；能把 ${texInline("Ax=b")} 同时读成“三个方程”和“列向量的组合”。`,
-  tags: [texInline("F^n"), "线性组合", "列图景", "行图景"],
+  goal: `掌握 ${texInline("P^n")} 中向量的加法、数乘与线性组合；能把 ${texInline("Ax=b")} 同时读成“三个方程”和“列向量的组合”。`,
+  tags: [texInline("P^n"), "线性组合", "列图景", "行图景"],
   intro: `把未知量排成一列 ${texInline("x=(x_1,\\dots,x_n)")}，方程组就能写成 ${texInline("x_1a_1+\\cdots+x_na_n=b")}：求解就是找 ${texInline("A")} 的各列的权重，让组合正好等于 ${texInline("b")}。`,
   concepts: [
-    { label: texInline("F^n"), text: `数域 ${texInline("F")} 上的 ${texInline("n")} 元有序数组全体，按分量相加、数乘。` },
+    { label: texInline("P^n"), text: `数域 ${texInline("P")} 上的 ${texInline("n")} 元有序数组全体，按分量相加、数乘。` },
     { label: "线性组合", text: `${texInline("k_1a_1+\\cdots+k_na_n")}。` },
   ],
   textbook: { reference: "北大版《高等代数》第三章 §2", items: ["n 维向量及其运算", "线性组合"] },
@@ -27,7 +27,7 @@ defineChapter3Section("n-vector-space", {
           a: `行图景：三个方程是 ${texInline("\\mathbb R^2")} 中的三条直线，解是它们的公共点。列图景：两个列向量在 ${texInline("\\mathbb R^3")} 中组合出 ${texInline("b")}。`,
         },
         tex: String.raw`\underbrace{\begin{cases}a_{11}x_1+\cdots+a_{1n}x_n=b_1\\ \quad\vdots\\ a_{m1}x_1+\cdots+a_{mn}x_n=b_m\end{cases}}_{\text{按行读是 }m\text{ 个方程}}\iff \underbrace{x_1a_1+\cdots+x_na_n=b}_{\text{按列读是一个向量等式}}`,
-        text: `按行读，每个方程是输入空间 ${texInline("F^n")} 里的一个约束，解是所有约束的公共点；按列读，${texInline("x")} 是列向量的权重，${texInline("Ax")} 落在输出空间 ${texInline("F^m")} 里。同一个 ${texInline("x")} 让两种读法同时成立。`,
+        text: `按行读，每个方程是输入空间 ${texInline("P^n")} 里的一个约束，解是所有约束的公共点；按列读，${texInline("x")} 是列向量的权重，${texInline("Ax")} 落在输出空间 ${texInline("P^m")} 里。同一个 ${texInline("x")} 让两种读法同时成立。`,
       },
     ],
     pitfalls: [
@@ -63,11 +63,11 @@ defineChapter3Section("n-vector-space", {
     },
     {
       question: `${texInline("A")} 是 ${texInline("3\\times2")} 矩阵。${texInline("Ax=b")} 中的 ${texInline("x")} 与 ${texInline("b")} 分别属于哪个空间？`,
-      answer: `${texInline("x\\in F^2")}，${texInline("b\\in F^3")}。`,
+      answer: `${texInline("x\\in P^2")}，${texInline("b\\in P^3")}。`,
     },
   ],
   summary: [
-    `${texInline("F^n")} 中的向量按分量相加、数乘；画不出来也能精确运算。`,
+    `${texInline("P^n")} 中的向量按分量相加、数乘；画不出来也能精确运算。`,
     `${texInline("Ax=b")} 按行读是 ${texInline("m")} 个方程的公共解，按列读是列向量组合出 ${texInline("b")}。`,
     "下一节研究：一组向量里，哪些真正带来了新方向。",
   ],

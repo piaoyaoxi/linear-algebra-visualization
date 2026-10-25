@@ -541,7 +541,11 @@
     const onThemeMix = () => { if (root.isConnected) draw(); else window.removeEventListener("la-thememix", onThemeMix); };
     window.addEventListener("la-thememix", onThemeMix);
     draw();
-    return () => { observer.disconnect(); window.removeEventListener("la-thememix", onThemeMix); };
+    const cleanup = () => { observer.disconnect(); window.removeEventListener("la-thememix", onThemeMix); };
+    // released with the page (registry.js), so a caller that drops the return value
+    // no longer leaves the listener, and the page it holds, on window
+    window.ch1UseCleanup?.(cleanup);
+    return cleanup;
   }
 
   window.Ch1Math = {

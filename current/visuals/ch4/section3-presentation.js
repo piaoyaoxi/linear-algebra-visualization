@@ -14,10 +14,6 @@
   const canvasMatrices = new WeakMap();
   const canvasFrames = new WeakMap();
   const canvasOptions = new WeakMap();
-  let activeRoot = null;
-  let activeResizeObserver = null;
-  let activeThemeObserver = null;
-  let redrawFrame = 0;
 
   const cloneMatrix = (matrix) => matrix.map((row) => [...row]);
   const determinant = (matrix) => matrix[0][0] * matrix[1][1] - matrix[0][1] * matrix[1][0];
@@ -287,7 +283,7 @@
     const start = performance.now();
     return new Promise((resolve) => {
       const frame = (now) => {
-        if (!activeRoot?.isConnected) {
+        if (!canvas.isConnected) {
           canvasFrames.delete(canvas);
           resolve(canvasMatrices.get(canvas) || target);
           return;
@@ -472,11 +468,10 @@
       </div>
     `;
 
-    activeRoot = interactive;
     bindTabs(interactive);
     bindProductLab(interactive);
     bindBottleneckLab(interactive);
-    bindResponsiveRedraw(interactive);
+    return bindResponsiveRedraw(interactive);
   }
 
   function bindTabs(root) {
@@ -636,28 +631,32 @@
     });
   }
 
+  // Redraw on resize and on light/dark changes. The observers and the listener belong to
+  // this rendering only; the returned cleanup (run by app.js when the page is left or
+  // drawn again) removes them, so an old rendering can never outlive its page or cancel
+  // the observers of the rendering that replaced it.
   function bindResponsiveRedraw(root) {
-    activeResizeObserver?.disconnect();
-    activeThemeObserver?.disconnect();
+    let frame = 0;
     const schedule = () => {
-      if (redrawFrame) return;
-      redrawFrame = requestAnimationFrame(() => {
-        redrawFrame = 0;
-        if (!root.isConnected) {
-          activeResizeObserver?.disconnect();
-          activeThemeObserver?.disconnect();
-          return;
-        }
+      if (frame) return;
+      frame = requestAnimationFrame(() => {
+        frame = 0;
         redrawAll(root);
       });
     };
-    if (typeof ResizeObserver !== "undefined") {
-      activeResizeObserver = new ResizeObserver(schedule);
-      root.querySelectorAll("canvas").forEach((canvas) => activeResizeObserver.observe(canvas));
-    }
-    activeThemeObserver = new MutationObserver(schedule);
-    activeThemeObserver.observe(document.body, { attributes: true, attributeFilter: ["class", "style"] });
-    window.addEventListener("resize", schedule, { passive: true, once: false });
+    const resizeObserver = typeof ResizeObserver !== "undefined" ? new ResizeObserver(schedule) : null;
+    root.querySelectorAll("canvas").forEach((canvas) => resizeObserver?.observe(canvas));
+    const themeObserver = new MutationObserver(schedule);
+    themeObserver.observe(document.body, { attributes: true, attributeFilter: ["class", "style"] });
+    const listening = new AbortController();
+    window.addEventListener("resize", schedule, { passive: true, signal: listening.signal });
+    return () => {
+      cancelAnimationFrame(frame);
+      resizeObserver?.disconnect();
+      themeObserver.disconnect();
+      listening.abort();
+      root.querySelectorAll("canvas").forEach(cancelCanvasAnimation);
+    };
   }
 
   defineLessonRenderer("ch4", SECTION_ID, {

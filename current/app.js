@@ -369,6 +369,8 @@ const MOON_ICON = `
   </svg>
 `;
 
+const systemDark = window.matchMedia?.("(prefers-color-scheme: dark)") || null;
+
 if (document.readyState === "complete") {
   init();
 } else {
@@ -376,8 +378,11 @@ if (document.readyState === "complete") {
 }
 
 function init() {
-  const savedTheme = readPreference("la-visual-theme");
-  if (savedTheme === "dark") document.body.classList.add("dark");
+  applyTheme(preferredTheme());
+  // Without a saved choice the page follows the system setting, also while it is open.
+  systemDark?.addEventListener?.("change", () => {
+    if (!savedTheme()) applyTheme(preferredTheme(), { announce: true });
+  });
 
   const collapsed = readPreference("la-visual-sidebar") === "collapsed";
   if (collapsed) document.body.classList.add("sidebar-collapsed");
@@ -446,6 +451,32 @@ function bindChrome() {
 
 function updateThemeIcon() {
   els.themeToggle.innerHTML = document.body.classList.contains("dark") ? MOON_ICON : SUN_ICON;
+}
+
+/* ---------- Light and dark ---------- */
+
+// The saved choice wins (theme-transition.js saves it when the student switches); without
+// one, the system setting decides (systemDark). learn.html applies the same rule before
+// the first paint.
+function savedTheme() {
+  const saved = readPreference("la-visual-theme");
+  return saved === "dark" || saved === "light" ? saved : null;
+}
+
+function preferredTheme() {
+  return savedTheme() || (systemDark?.matches ? "dark" : "light");
+}
+
+// announce: tell the labs, as a switch by the button does (canvases redraw on these events)
+function applyTheme(theme, { announce = false } = {}) {
+  const dark = theme === "dark";
+  const changed = document.body.classList.contains("dark") !== dark;
+  document.body.classList.toggle("dark", dark);
+  if (dark || document.documentElement.style.colorScheme) document.documentElement.style.colorScheme = theme;
+  updateThemeIcon();
+  if (!announce || !changed) return;
+  window.dispatchEvent(new CustomEvent("la-themechange", { detail: { theme } }));
+  window.requestAnimationFrame(() => window.dispatchEvent(new Event("resize")));
 }
 
 window.updateThemeIcon = updateThemeIcon;

@@ -6,6 +6,18 @@
     <script>
       // iPhone / iPad: Safari draws its own top scroll-edge effect (see design-a.css)
       if (/iPhone|iPad|iPod/.test(navigator.userAgent) || (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1)) document.documentElement.classList.add("la-ios");
+      // Light or dark before the first paint: the saved choice, else the system setting
+      // (app.js applies the same rule and follows system changes until a choice is saved).
+      // Until <body> exists, a dark page is painted by <html>; the script after <body> takes over.
+      (function () {
+        var saved = null;
+        try { saved = localStorage.getItem("la-visual-theme"); } catch (error) {}
+        window.laStartDark = saved === "dark" || saved === "light" ? saved === "dark" : Boolean(window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches);
+        if (window.laStartDark) {
+          document.documentElement.style.colorScheme = "dark";
+          document.documentElement.style.backgroundColor = "#131614";
+        }
+      })();
     </script>
     <title>高等代数可视化</title>
     <link rel="icon" href="data:," />
@@ -57,7 +69,7 @@
     <!-- chapter 1 lab layout: after lab-fit.css, so it stays last -->
     <link rel="stylesheet" href="./visuals/ch1/lab-layout.css?v=nb1" />
     <script defer src="./vendor/katex/katex.min.js"></script>
-    <script defer src="./app.js?v=ll2"></script>
+    <script defer src="./app.js?v=gr1"></script>
     <script defer src="./visuals/shared/exact.js?v=ex1"></script>
     <script defer src="./visuals/theme-transition.js?v=ll2"></script>
     <script defer src="./visuals/liquid-glass.js?v=mm1"></script>
@@ -259,6 +271,11 @@
     </template>
   </head>
   <body>
+    <script>
+      // the theme chosen in <head>: body.dark carries the page colours from here on
+      if (window.laStartDark) document.body.classList.add("dark");
+      document.documentElement.style.backgroundColor = "";
+    </script>
     <header class="topbar">
       <button class="icon-button" id="sidebarToggle" type="button" aria-label="切换目录" title="切换目录">
         <svg viewBox="0 0 24 24" aria-hidden="true">

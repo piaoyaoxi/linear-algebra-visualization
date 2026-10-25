@@ -56,8 +56,16 @@
       counter.n += 1;
       const fig = document.createElement("p");
       fig.className = "la-figcaption";
-      const label = prefix ? `图 ${prefix}-${counter.n}` : "";
-      fig.innerHTML = `${label ? `<b>${label}</b>` : ""}<span>${hint.textContent}</span>`;
+      if (prefix) {
+        const label = document.createElement("b");
+        label.textContent = `图 ${prefix}-${counter.n}`;
+        fig.append(label);
+      }
+      // the hint's words as written: typeset.js may already have put its fixed gaps (U+2005) in
+      // the hint, and the caption gets its own spacing
+      const text = document.createElement("span");
+      text.textContent = hint.textContent.replace(/\u2005/g, " ");
+      fig.append(text);
       hint.hidden = true;
       frame.after(fig);
     });

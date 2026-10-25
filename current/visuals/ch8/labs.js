@@ -945,16 +945,8 @@
 
   /* ================= §5 初等因子 ================= */
 
-  /* Irreducible factors over the reals; "q" splits over the complex numbers. */
-  const PRIMES = {
-    a: { tex: "\\lambda-1", text: "λ−1", deg: 1, color: "v1" },
-    b: { tex: "\\lambda+2", text: "λ+2", deg: 1, color: "v2" },
-    c: { tex: "\\lambda+1", text: "λ+1", deg: 1, color: "v2" },
-    q: { tex: "\\lambda^2+1", text: "λ²+1", deg: 2, color: "subspace", split: ["ip", "im"] },
-    ip: { tex: "\\lambda-\\mathrm{i}", text: "λ−i", deg: 1, color: "subspace" },
-    im: { tex: "\\lambda+\\mathrm{i}", text: "λ+i", deg: 1, color: "image" },
-  };
-  const SUPS = ["", "", "²", "³", "⁴"];
+  /* the lab's model (blocks over a field, the two views, the invariant factors): divisor-blocks.js */
+  const { PRIMES, SUPS, ROW_GAP } = window.Ch8Blocks;
 
   const DIVISOR_PRESETS = {
     split: {
@@ -1066,83 +1058,15 @@
     ui.stage.classList.add("ch8l-blocks");
     const plane = K.plane2d(ui.stage, { extent: 3, hint: "", label: "不变因子与初等因子的积木" });
 
-    /* Blocks of the current preset over a field: one per (row, prime). */
-    function blocks(field = state.field) {
-      const { rows } = DIVISOR_PRESETS[state.key];
-      const out = [];
-      rows.forEach((row, r) =>
-        Object.entries(row).forEach(([p, e]) => {
-          const prime = PRIMES[p];
-          if (field === "C" && prime.split) prime.split.forEach((s) => out.push({ id: `${r}-${s}`, parent: `${r}-${p}`, r, p: s, e }));
-          else out.push({ id: `${r}-${p}`, r, p, e });
-        }),
-      );
-      return out;
-    }
-    const hasSplit = () => blocks("R").some((b) => PRIMES[b.p].split);
-
-    /* Elementary-divisor view: one line per prime, powers in increasing order. */
-    function edLines(list) {
-      const groups = new Map();
-      list.forEach((b) => groups.set(b.p, [...(groups.get(b.p) || []), b]));
-      return [...groups.values()].map((g) => g.sort((p, q) => p.e - q.e));
-    }
-
-    const label = (b) => (b.e > 1 ? `(${PRIMES[b.p].text})${SUPS[b.e]}` : PRIMES[b.p].text);
-    const btex = (b) => (b.e > 1 ? `(${PRIMES[b.p].tex})^{${b.e}}` : PRIMES[b.p].tex);
-
-    const ROW_GAP = 18;
-    function layout(d, field = state.field) {
-      const [w, h] = size(d);
-      const { rows } = DIVISOR_PRESETS[state.key];
-      const firstRow = rows.findIndex((row) => Object.keys(row).length);
-      const shown = rows.length - firstRow;
-      const left = w < 520 ? 74 : 110;
-      const room = w - left - 40;
-      const units = (list) => list.reduce((s, b) => s + PRIMES[b.p].deg * b.e, 0);
-      /* One width per degree in both views and both fields, so a block keeps its size while it moves. */
-      const unit = Math.min(
-        112,
-        ...rows.map((row, r) => room / Math.max(units(blocks("R").filter((b) => b.r === r)), 3)),
-        ...["R", "C"].flatMap((f) => edLines(blocks(f)).map((g) => (room - 10 * (g.length - 1)) / Math.max(units(g), 3))),
-      );
-      /*
-       * One block height for both views and both fields (a block keeps its size while it
-       * moves), as tall as the most lines any of them needs allows: the row label above
-       * the stack takes 24px at the top, the λ²+1 note 34px at the bottom.
-       */
-      const most = Math.max(2, shown, ...["R", "C"].map((f) => edLines(blocks(f)).length));
-      const bh = Math.max(34, Math.min(76, (h - 64) / most - ROW_GAP));
-      const stackTop = (n) => 30 + (h - 64 - n * (bh + ROW_GAP) + ROW_GAP) / 2;
-      const pos = new Map();
-      if (state.view === "inv") {
-        const top = stackTop(shown);
-        rows.forEach((row, r) => {
-          let x = left;
-          const y = top + (r - firstRow) * (bh + ROW_GAP);
-          Object.entries(row).forEach(([p, e]) => {
-            const parts = field === "C" && PRIMES[p].split ? PRIMES[p].split : [p];
-            parts.forEach((s) => {
-              const bw = PRIMES[s].deg * e * unit;
-              pos.set(`${r}-${s}`, { x, y, w: bw - 6, h: bh });
-              x += bw;
-            });
-          });
-        });
-        return { pos, top, firstRow, left, bh };
-      }
-      const lines = edLines(blocks(field));
-      const top = stackTop(lines.length);
-      lines.forEach((g, li) => {
-        let x = left;
-        g.forEach((b) => {
-          const bw = PRIMES[b.p].deg * b.e * unit;
-          pos.set(b.id, { x, y: top + li * (bh + ROW_GAP), w: bw - 6, h: bh });
-          x += bw + 10;
-        });
-      });
-      return { pos, top, firstRow, left, bh };
-    }
+    /* the current preset's blocks over a field (one per row and prime power), and their places */
+    const rows = () => DIVISOR_PRESETS[state.key].rows;
+    const blocks = (field = state.field) => window.Ch8Blocks.blocks(rows(), field);
+    const hasSplit = () => window.Ch8Blocks.hasSplit(rows());
+    const { label, tex: btex } = window.Ch8Blocks;
+    const layout = (d, field = state.field) => {
+      const [width, height] = size(d);
+      return window.Ch8Blocks.layout(rows(), { view: state.view, field, width, height });
+    };
 
     /* Opacity of the factorisation label λ²+1=(λ−i)(λ+i) shown with each field switch. */
     function noteAlpha(now) {
@@ -1426,12 +1350,7 @@
       const later = (what) => `<p class="ch7l-muted">切换排法或数域之后，${what}在这里出现。</p>`;
       plane.setDraw((d) => draw(d, open && (shown || !givenInv), preset));
 
-      const rowsTex = preset.rows.map((row) => {
-        const list = Object.entries(row).flatMap(([p, e]) =>
-          state.field === "C" && PRIMES[p].split ? PRIMES[p].split.map((s) => ({ p: s, e })) : [{ p, e }],
-        );
-        return list.length ? list.map((b) => (list.length > 1 && b.e === 1 ? `(${PRIMES[b.p].tex})` : btex(b))).join("") : "1";
-      });
+      const rowsTex = window.Ch8Blocks.invariantTex(preset.rows, state.field);
       const eds = blocks().map(btex);
       invCard.innerHTML = `<h4>不变因子</h4>${
         givenInv || shown ? `<ul class="ch8l-list">${rowsTex.map((x, i) => `<li>${tex(`d_${i + 1}=${x}`)}</li>`).join("")}</ul>` : open ? later("不变因子") : waitNote("不变因子")

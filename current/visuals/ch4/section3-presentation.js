@@ -32,11 +32,7 @@
     return matrix.flat().some((value) => Math.abs(value) > eps) ? 1 : 0;
   }
 
-  function formatNumber(value) {
-    const safe = Math.abs(value) < 5e-4 ? 0 : value;
-    const rounded = Math.round(safe * 100) / 100;
-    return Number.isInteger(rounded) ? String(rounded) : rounded.toFixed(2).replace(/0+$/, "").replace(/\.$/, "");
-  }
+  const formatNumber = (value) => window.LANumber.decimal(value, 2);
 
   function matrixTex(matrix) {
     return `\\begin{bmatrix}${matrix.map((row) => row.map(formatNumber).join("&")).join("\\\\")}\\end{bmatrix}`;
@@ -68,22 +64,7 @@
     };
   }
 
-  function setupCanvas(canvas) {
-    const rect = canvas.getBoundingClientRect();
-    const width = Math.max(1, rect.width);
-    const height = Math.max(1, rect.height);
-    const dpr = window.devicePixelRatio || 1;
-    const pixelWidth = Math.max(1, Math.round(width * dpr));
-    const pixelHeight = Math.max(1, Math.round(height * dpr));
-    if (canvas.width !== pixelWidth || canvas.height !== pixelHeight) {
-      canvas.width = pixelWidth;
-      canvas.height = pixelHeight;
-    }
-    const ctx = canvas.getContext("2d");
-    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-    ctx.clearRect(0, 0, width, height);
-    return { ctx, width, height };
-  }
+  const setupCanvas = (canvas) => window.LACanvas.setup(canvas);
 
   function drawLine(ctx, from, to, color, width = 1, alpha = 1) {
     if (![from.x, from.y, to.x, to.y].every(Number.isFinite)) return;

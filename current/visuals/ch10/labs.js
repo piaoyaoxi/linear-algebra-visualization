@@ -767,7 +767,7 @@
       const c = (u[0] * v[0] + u[1] * v[1]) / (len(u) * len(v) || 1);
       return (Math.acos(Math.max(-1, Math.min(1, c))) * 180) / Math.PI;
     };
-    const fmt = (v) => (Math.round(v * 100) / 100).toString();
+    const fmt = (v) => window.LANumber.decimal(v, 2);
     // exact when the value is a simple fraction (a length like 3/2, an angle like 90°), otherwise ≈
     const shown = (v) => {
       const f = M().fromNumber(v, 64);

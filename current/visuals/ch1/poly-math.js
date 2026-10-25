@@ -315,22 +315,7 @@
     };
   }
 
-  function setupCanvas(canvas) {
-    const box = canvas.getBoundingClientRect();
-    const width = Math.max(1, box.width || canvas.clientWidth || 520);
-    const height = Math.max(1, box.height || canvas.clientHeight || 300);
-    const dpr = Math.min(2, window.devicePixelRatio || 1);
-    const pixelWidth = Math.round(width * dpr);
-    const pixelHeight = Math.round(height * dpr);
-    if (canvas.width !== pixelWidth || canvas.height !== pixelHeight) {
-      canvas.width = pixelWidth;
-      canvas.height = pixelHeight;
-    }
-    const ctx = canvas.getContext("2d");
-    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-    ctx.clearRect(0, 0, width, height);
-    return { ctx, width, height };
-  }
+  const setupCanvas = (canvas) => window.LACanvas.setup(canvas, { fallback: [520, 300], maxDpr: 2 });
 
   /*
    * stretch: x and y get their own scale so a function graph fills the canvas;

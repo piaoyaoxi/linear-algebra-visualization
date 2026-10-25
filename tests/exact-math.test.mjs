@@ -1,7 +1,7 @@
 // Unit tests for the exact arithmetic behind every rank / solvability / dependence
 // verdict, the polynomial engine of chapter 1 and the λ-matrix engine of chapter 8.
 // Expected values are worked out by hand, independent of the code under test.
-// Run: node --test tests/
+// Run: node --test tests/*.test.mjs
 import assert from "node:assert/strict";
 import fs from "node:fs";
 import path from "node:path";

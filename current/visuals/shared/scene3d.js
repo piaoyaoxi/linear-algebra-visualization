@@ -80,19 +80,7 @@
     return pal[color] || color;
   }
 
-  function withAlpha(color, alpha) {
-    if (color.startsWith("#")) {
-      const hex = color.length === 4 ? color.replace(/#(.)(.)(.)/, "#$1$1$2$2$3$3") : color;
-      const n = parseInt(hex.slice(1, 7), 16);
-      return `rgba(${(n >> 16) & 255},${(n >> 8) & 255},${n & 255},${alpha})`;
-    }
-    const m = color.match(/rgba?\(([^)]+)\)/);
-    if (m) {
-      const [r, g, b] = m[1].split(",").map((x) => parseFloat(x));
-      return `rgba(${r},${g},${b},${alpha})`;
-    }
-    return color;
-  }
+  const { withAlpha } = window.LACanvas;
 
   /* Polygon of the plane n·x = d inside the cube [-L, L]^3 (may be empty). */
   function clipPlane(n, d, L) {

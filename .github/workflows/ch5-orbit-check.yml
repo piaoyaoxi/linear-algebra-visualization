@@ -6,6 +6,10 @@ on:
       - "current/**"
       - ".github/scripts/ch5-orbit-check.mjs"
       - ".github/workflows/ch5-orbit-check.yml"
+      - "package.json"
+      - "package-lock.json"
+      - ".nvmrc"
+      - ".github/actions/setup-playwright/**"
 
 permissions:
   contents: read
@@ -17,14 +21,8 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - uses: actions/setup-node@v4
-        with:
-          node-version: 24
-
-      - name: Install Playwright
-        run: |
-          npm install --no-save playwright@1.52.0
-          npx playwright install --with-deps chromium
+      - name: Node and the pinned Playwright
+        uses: ./.github/actions/setup-playwright
 
       - name: Start static site
         run: |

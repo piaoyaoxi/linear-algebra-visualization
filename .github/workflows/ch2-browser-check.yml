@@ -11,6 +11,10 @@ on:
       - "current/learn.html"
       - "tests/ch2*.spec.js"
       - ".github/workflows/ch2-browser-check.yml"
+      - "package.json"
+      - "package-lock.json"
+      - ".nvmrc"
+      - ".github/actions/setup-playwright/**"
   pull_request:
     types: [opened, synchronize, reopened, ready_for_review]
     paths:
@@ -19,6 +23,10 @@ on:
       - "current/learn.html"
       - "tests/ch2*.spec.js"
       - ".github/workflows/ch2-browser-check.yml"
+      - "package.json"
+      - "package-lock.json"
+      - ".nvmrc"
+      - ".github/actions/setup-playwright/**"
 
 permissions:
   contents: read
@@ -90,15 +98,8 @@ jobs:
       - name: Check out Chapter 2 source
         uses: actions/checkout@v4
 
-      - name: Set up Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: 24
-
-      - name: Install Playwright
-        run: |
-          npm install --no-save @playwright/test@1.55.0
-          npx playwright install --with-deps chromium
+      - name: Node and the pinned Playwright
+        uses: ./.github/actions/setup-playwright
 
       - name: Run Chapter 2 in Chromium
         env:

@@ -9,10 +9,15 @@ on:
       - ".github/scripts/theme-transition-check.mjs"
       - ".github/scripts/layout-check.mjs"
       - ".github/scripts/selector-check.mjs"
+      - ".github/scripts/perf-budget.mjs"
       - ".github/workflows/site-audit.yml"
       - ".github/scripts/check-font-coverage.py"
       - ".github/scripts/serve.py"
       - "tests/*.test.mjs"
+      - "package.json"
+      - "package-lock.json"
+      - ".nvmrc"
+      - ".github/actions/setup-playwright/**"
   workflow_dispatch:
 
 permissions:
@@ -25,9 +30,8 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - uses: actions/setup-node@v4
-        with:
-          node-version: 20
+      - name: Node and the pinned Playwright
+        uses: ./.github/actions/setup-playwright
 
       - name: Exact math unit tests
         run: node --test tests/*.test.mjs
@@ -36,11 +40,6 @@ jobs:
         run: |
           pip install --quiet fonttools brotli
           python3 .github/scripts/check-font-coverage.py
-
-      - name: Install Playwright
-        run: |
-          npm install --no-save playwright@1.52.0
-          npx playwright install --with-deps chromium
 
       - name: Start static site
         run: |
@@ -68,6 +67,9 @@ jobs:
 
       - name: Shared layout selectors still match the labs (phone)
         run: node .github/scripts/selector-check.mjs
+
+      - name: Performance budget (phone, 4× slower CPU, moving between lessons)
+        run: node .github/scripts/perf-budget.mjs
 
       - name: Upload report
         if: always()

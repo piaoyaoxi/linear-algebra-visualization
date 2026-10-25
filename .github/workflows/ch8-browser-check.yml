@@ -6,6 +6,10 @@ on:
       - "current/**"
       - ".github/scripts/ch8-browser-check.mjs"
       - ".github/workflows/ch8-browser-check.yml"
+      - "package.json"
+      - "package-lock.json"
+      - ".nvmrc"
+      - ".github/actions/setup-playwright/**"
 
 permissions:
   contents: read
@@ -18,10 +22,8 @@ jobs:
       - name: Check out branch
         uses: actions/checkout@v4
 
-      - name: Set up Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: 22
+      - name: Node and the pinned Playwright
+        uses: ./.github/actions/setup-playwright
 
       - name: Validate Chapter 8 source
         run: |
@@ -31,11 +33,6 @@ jobs:
           done
           node --check .github/scripts/ch8-browser-check.mjs
           git diff --check
-
-      - name: Install Playwright and Chromium
-        run: |
-          npm install --no-save playwright@1.55.0 >/tmp/ch8-npm-install.log 2>&1 || { cat /tmp/ch8-npm-install.log; exit 1; }
-          npx playwright install --with-deps chromium >/tmp/ch8-playwright-install.log 2>&1 || { cat /tmp/ch8-playwright-install.log; exit 1; }
 
       - name: Start static server
         run: |

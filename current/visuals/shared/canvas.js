@@ -10,6 +10,8 @@
  *       whole:    whole CSS pixels (the box size rounded)
  *   LACanvas.withAlpha(color, alpha)
  *     the colour (#rgb, #rrggbb, rgb(), rgba()) at the given opacity; anything else unchanged.
+ *   LACanvas.keyHandles(canvas, { handles, move, where, show, rotate, help })
+ *     the drag handles of a canvas from the keyboard (below).
  */
 (() => {
   function setup(canvas, { fallback = null, maxDpr = Infinity, whole = false } = {}) {
@@ -49,5 +51,76 @@
     return color;
   }
 
-  window.LACanvas = { setup, withAlpha };
+  /*
+   * Keyboard use of a canvas's drag handles. With the canvas focused, the arrow keys move the
+   * chosen handle one step (Shift: four steps) and Enter or Space chooses the next handle; the
+   * handle's name and new position are read out (aria-live). The chosen handle is highlighted
+   * while the canvas has focus. With `rotate` (a 3D scene) the arrow keys turn the camera
+   * until Enter or Space chooses a handle, and Escape gives them back to the camera.
+   *   handles()          the handles that can be moved now (visible ones), in order
+   *   move(h, dx, dy)    one step right (dx 1) / up (dy 1) on the screen, under the engine's
+   *                      own constraints, as a finished drag (change and end); true if it moved
+   *   where(h)           the position to read out, e.g. "(1, −0.5)"
+   *   show(h | null)     highlight the chosen handle (null: none); called on keyboard focus,
+   *                      on every key and on blur
+   *   help               how to use the keys, added to the canvas's aria-label
+   * A handle may carry a `name` ("v₁"); otherwise it is read as “圆点 1”, “圆点 2” …
+   * Returns { refresh() } (after the handles change) and holding() (a handle is chosen).
+   */
+  const ARROWS = { ArrowLeft: [-1, 0], ArrowRight: [1, 0], ArrowUp: [0, 1], ArrowDown: [0, -1] };
+  function keyHandles(canvas, { handles, move, where, show, rotate = false, help }) {
+    const live = document.createElement("p");
+    live.className = "visually-hidden";
+    live.setAttribute("aria-live", "polite");
+    canvas.after(live);
+    const base = canvas.getAttribute("aria-label") || "";
+    let index = 0;
+    let chosen = !rotate;
+    const current = () => {
+      const list = handles();
+      if (!list.length) return null;
+      index = Math.min(index, list.length - 1);
+      return list[index];
+    };
+    const say = (h) => {
+      live.textContent = `${h.name || `圆点 ${index + 1}`}：${where(h)}`;
+    };
+    canvas.addEventListener("keydown", (event) => {
+      const list = handles();
+      if (!list.length || event.altKey || event.ctrlKey || event.metaKey) return;
+      if (event.key === "Enter" || event.key === " ") {
+        event.preventDefault();
+        if (chosen) index = (index + 1) % list.length;
+        chosen = true;
+        const h = current();
+        show(h);
+        say(h);
+        return;
+      }
+      if (event.key === "Escape" && rotate && chosen) {
+        chosen = false;
+        show(null);
+        live.textContent = "方向键旋转视角";
+        return;
+      }
+      const dir = ARROWS[event.key];
+      if (!dir || !chosen) return;
+      event.preventDefault();
+      // a lab may hand over new handle objects after each move: the same place in the list
+      for (let i = 0; i < (event.shiftKey ? 4 : 1); i += 1) move(current(), dir[0], dir[1]);
+      const h = current();
+      show(h);
+      say(h);
+    });
+    // focus from the keyboard shows the handle at once; a click shows it with the first key
+    canvas.addEventListener("focus", () => {
+      if (chosen && canvas.matches(":focus-visible")) show(current());
+    });
+    canvas.addEventListener("blur", () => show(null));
+    const refresh = () => canvas.setAttribute("aria-label", handles().length ? `${base}。${help}` : base);
+    refresh();
+    return { refresh, holding: () => chosen && Boolean(handles().length) };
+  }
+
+  window.LACanvas = { setup, withAlpha, keyHandles };
 })();

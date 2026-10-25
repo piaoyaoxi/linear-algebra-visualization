@@ -590,6 +590,7 @@
       });
       scene.setHandles(
         state.v.slice(0, state.stage).map((_, i) => ({
+          name: `v${"₁₂₃"[i]}`,
           color: "drag",
           snap: 0.5,
           ...(state.free ? {} : { mode: "line", dir: [0, 0, 1] }),
@@ -915,6 +916,7 @@
       ]);
       colScene.setHandles([
         {
+          name: "b",
           color: "drag",
           snap: 0.5,
           get: () => state.b,

@@ -263,6 +263,7 @@
 
     plane.setHandles([
       {
+        name: "λ",
         color: "drag",
         snap: 0.25,
         limit: 3,

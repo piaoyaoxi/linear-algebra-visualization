@@ -363,6 +363,9 @@
     let handles = [];
     let hover = null;
     let drag = null;
+    // the handle the keyboard moves (its place among the visible ones: labs pass new handle
+    // objects on every redraw), shown while the canvas has focus; -1 for none
+    let keyed = -1;
     let destroyed = false;
     const listeners = { change: [], end: [] };
 
@@ -667,10 +670,12 @@
       shafts = [];
       arrowCount = 0;
       drawFn(api(pal));
+      let visible = -1;
       handles.forEach((h) => {
         if (h.hidden?.()) return;
+        visible += 1;
         const [x, y] = P(h.get());
-        const active = drag?.handle === h || hover === h;
+        const active = drag?.handle === h || hover === h || keyed === visible;
         ctx.save();
         ctx.beginPath();
         ctx.arc(x, y, active ? 9 : 7.5, 0, Math.PI * 2);
@@ -679,6 +684,14 @@
         ctx.lineWidth = active ? 3 : 2.4;
         ctx.strokeStyle = pal[h.color] || h.color || pal.accent;
         ctx.stroke();
+        if (keyed === visible) {
+          // the handle the keyboard moves: a ring around it while the canvas has focus
+          ctx.beginPath();
+          ctx.arc(x, y, 13.5, 0, Math.PI * 2);
+          ctx.lineWidth = 2;
+          ctx.globalAlpha = 0.6;
+          ctx.stroke();
+        }
         ctx.restore();
       });
       if (options.spreadLabels) placeLabels(pal);
@@ -813,6 +826,32 @@
         render();
       }
     });
+
+    /* One keyboard step: a step of the handle's grid (a quarter unit without one), as a whole drag. */
+    function nudge(h, dx, dy) {
+      const step = h.snap || 0.25;
+      const cur = h.get();
+      const lim = h.limit ?? extent;
+      let p = [cur[0] + dx * step, cur[1] + dy * step].map((x) => Math.max(-lim, Math.min(lim, x)));
+      if (h.snap) p = p.map((x) => Math.round(x / h.snap) * h.snap);
+      if (p[0] === cur[0] && p[1] === cur[1]) return false;
+      h.set(p);
+      listeners.change.forEach((f) => f(h));
+      h.end?.();
+      listeners.end.forEach((f) => f(h));
+      render();
+      return true;
+    }
+    const keys = window.LACanvas.keyHandles(canvas, {
+      handles: () => handles.filter((h) => !h.hidden?.()),
+      move: nudge,
+      where: (h) => `(${h.get().map((v) => window.LANumber.text(v)).join(", ")})`,
+      show: (h) => {
+        keyed = h ? handles.filter((x) => !x.hidden?.()).indexOf(h) : -1;
+        render();
+      },
+      help: "方向键移动圆点，Enter 键换下一个圆点",
+    });
     const ro = new ResizeObserver(resize);
     ro.observe(canvas);
     const themeObserver = new MutationObserver(() => render());
@@ -838,6 +877,7 @@
       },
       setHandles(list) {
         handles = list || [];
+        keys.refresh();
         render();
       },
       on(event, fn) {

@@ -319,6 +319,7 @@
 
     plane.setHandles([
       {
+        name: "x",
         color: "drag",
         snap: 0.25,
         limit: 3,
@@ -473,6 +474,7 @@
     }
 
     const etaHandle = (i, color) => ({
+      name: `η${"₁₂"[i]}`,
       color,
       snap: 0.5,
       limit: 2.5,
@@ -488,6 +490,7 @@
       etaHandle(0, "drag"),
       etaHandle(1, "drag"),
       {
+        name: "x",
         color: "drag",
         snap: 0.25,
         limit: 3,
@@ -661,6 +664,7 @@
     }
 
     const handle = (key, color) => ({
+      name: key,
       color,
       snap: 0.25,
       limit: 2.75,
@@ -871,6 +875,7 @@
     }
 
     const handle = (key, color) => ({
+      name: key,
       color,
       snap: 0.25,
       limit: 2.5,

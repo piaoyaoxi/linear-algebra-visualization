@@ -195,6 +195,7 @@
     }
 
     const handle = (i, color) => ({
+      name: `η${"₁₂"[i]}`,
       color,
       limit: 2.5,
       get: () => state.eta[i],
@@ -898,6 +899,7 @@
 
     plane.setHandles([
       {
+        name: "x₀",
         color: "drag",
         snap: 0.5,
         limit: 3,

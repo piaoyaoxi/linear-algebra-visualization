@@ -282,8 +282,8 @@
       redraw();
     }, state.key);
     plane.setHandles([
-      { color: "drag", snap: 0.5, get: () => state.u, set: (p) => ((state.u = p), redraw()) },
-      { color: "drag", snap: 0.5, get: () => state.v, set: (p) => ((state.v = p), redraw()) },
+      { name: "u", color: "drag", snap: 0.5, get: () => state.u, set: (p) => ((state.u = p), redraw()) },
+      { name: "v", color: "drag", snap: 0.5, get: () => state.v, set: (p) => ((state.v = p), redraw()) },
     ]);
     predictGate(
       gateHost,
@@ -391,6 +391,7 @@
       });
       scene.setHandles([
         {
+          name: "α₃",
           color: "drag",
           snap: 0.5,
           get: () => state.a[2],
@@ -592,9 +593,9 @@
       redraw();
     }, "std");
     lp.setHandles([
-      { color: "drag", snap: 0.5, get: () => state.f[0], set: (p) => ((state.f[0] = p), redraw()) },
-      { color: "drag", snap: 0.5, get: () => state.f[1], set: (p) => ((state.f[1] = p), redraw()) },
-      { color: "drag", snap: 0.5, get: () => state.alpha, set: (p) => ((state.alpha = p), redraw()) },
+      { name: "f₁", color: "drag", snap: 0.5, get: () => state.f[0], set: (p) => ((state.f[0] = p), redraw()) },
+      { name: "f₂", color: "drag", snap: 0.5, get: () => state.f[1], set: (p) => ((state.f[1] = p), redraw()) },
+      { name: "α", color: "drag", snap: 0.5, get: () => state.alpha, set: (p) => ((state.alpha = p), redraw()) },
     ]);
     predictGate(
       gateHost,
@@ -769,8 +770,8 @@
       actedOnAsked();
     }, state.key);
     plane.setHandles([
-      { color: "drag", snap: 0.5, clampX: [-2, 2], clampY: [-2, 2], get: () => state.x, set: (p) => ((state.x = p), redraw(), actedOnAsked()) },
-      { color: "drag", snap: 0.5, clampX: [-2, 2], clampY: [-2, 2], get: () => state.y, set: (p) => ((state.y = p), redraw(), actedOnAsked()) },
+      { name: "x", color: "drag", snap: 0.5, clampX: [-2, 2], clampY: [-2, 2], get: () => state.x, set: (p) => ((state.x = p), redraw(), actedOnAsked()) },
+      { name: "y", color: "drag", snap: 0.5, clampX: [-2, 2], clampY: [-2, 2], get: () => state.y, set: (p) => ((state.y = p), redraw(), actedOnAsked()) },
     ]);
     const gate = predictGate(
       gateHost,
@@ -899,8 +900,8 @@
         return window.Ch6Kit?.placeLabels ? window.Ch6Kit.placeLabels(scene, objs, { handles }) : objs;
       });
       scene.setHandles([
-        { color: "drag", snap: 0.5, get: () => state.alpha, set: (p) => ((state.alpha = p), redraw(), actedOnAsked()) },
-        ...state.w.map((_, i) => ({ color: "drag", snap: 0.5, hidden: () => !state.w[i], get: () => state.w[i] || [0, 0, 0], set: (p) => ((state.w[i] = p), redraw()) })),
+        { name: "α", color: "drag", snap: 0.5, get: () => state.alpha, set: (p) => ((state.alpha = p), redraw(), actedOnAsked()) },
+        ...state.w.map((_, i) => ({ name: `w${"₁₂₃"[i]}`, color: "drag", snap: 0.5, hidden: () => !state.w[i], get: () => state.w[i] || [0, 0, 0], set: (p) => ((state.w[i] = p), redraw()) })),
       ]);
 
       // one relation per line; a mark after a formula stays outside it and on its line
@@ -1234,7 +1235,7 @@
         }
         return objs;
       });
-      scene.setHandles([{ color: "drag", snap: 0.5, get: () => state.b, set: (q) => ((state.b = q), redraw()) }]);
+      scene.setHandles([{ name: "b", color: "drag", snap: 0.5, get: () => state.b, set: (q) => ((state.b = q), redraw()) }]);
       const xh = toN(s.xh);
       fit.setObjects(() => {
         const objs = [{ type: "line", p: [0, state.C], dir: [1, state.D], color: "image", dash: [6, 5], width: 1.8, label: "试的直线" }];
@@ -1247,6 +1248,7 @@
         return objs;
       });
       fit.setHandles([0, 1, 2].map((t) => ({
+        name: `b${"₁₂₃"[t]}`,
         color: "drag",
         snap: 0.5,
         axis: "y",

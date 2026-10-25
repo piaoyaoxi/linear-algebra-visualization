@@ -548,7 +548,7 @@
     const lab = labShell(root, {
       kind: "isometry",
       title: `坐标映射把 ${tex("V")} 的单位圆送到哪里`,
-      task: `${tex("V")} 是 ${tex("\\mathbb R^2")} 配上度量矩阵 ${tex("G=\\left[\\begin{smallmatrix}2&1\\\\1&1\\end{smallmatrix}\\right]")} 的欧氏空间。选一组基 ${tex("f_1,f_2")}（可拖动），${tex(String.raw`\sigma`)} 把 ${tex("\\alpha=x_1f_1+x_2f_2")} 送到坐标 ${tex("(x_1,x_2)\\in\\mathbb R^2")}，右边用普通点积。`,
+      task: `${tex("V")} 是 ${tex("\\mathbb R^2")} 配上度量矩阵 ${tex("G=\\left[\\begin{smallmatrix}2&1\\\\1&1\\end{smallmatrix}\\right]")} 的欧氏空间。选一组基 ${tex("f_1,f_2")}（可拖动），${tex(String.raw`\sigma`)} 把 ${tex("\\alpha=x_1f_1+x_2f_2")} 送到坐标 ${tex("(x_1,x_2)\\in\\mathbb R^2")}，${tex("\\mathbb R^2")} 里用普通点积。`,
     });
     const toolbar = el("div", "ch9l-toolbar");
     lab.append(toolbar);
@@ -660,14 +660,14 @@
     predictGate(
       gateHost,
       {
-        question: `${tex(String.raw`\sigma`)} 把 ${tex("f_1,f_2")} 送到 ${tex("e_1,e_2")}，右边按普通点积计算。${tex("f_1,f_2")} 满足什么条件时，${tex(String.raw`\sigma`)} 保持内积？`,
+        question: `${tex(String.raw`\sigma`)} 把 ${tex("f_1,f_2")} 送到 ${tex("e_1,e_2")}，${tex("\\mathbb R^2")} 里按普通点积计算。${tex("f_1,f_2")} 满足什么条件时，${tex(String.raw`\sigma`)} 保持内积？`,
         options: [
           { text: `${tex("f_1,f_2")} 按 ${tex("V")} 的内积（${tex("G")}）是标准正交基`, correct: true },
           { text: `${tex("f_1,f_2")} 按普通点积互相垂直、长度为 1`, why: "V 里的长度和角度要用 G 计算。试试 (1,1)、(1,−1)。" },
-          { text: "任意一组基都可以", why: "看右图：标准基的像是一个椭圆，长度被改变了。" },
+          { text: "任意一组基都可以", why: "看 ℝ² 那张图：标准基的像是一个椭圆，长度被改变了。" },
           { text: `只有 ${tex("f_1=\\varepsilon_1,\\ f_2=\\varepsilon_2")}`, why: `${tex("(\\varepsilon_1,\\varepsilon_1)=2")}，标准基在 V 里不是单位向量。` },
         ],
-        right: `例如 ${tex("f_1=(\\tfrac35,\\tfrac15),\\ f_2=(-\\tfrac45,\\tfrac75)")}：两个端点都在单位椭圆上，${tex("f_2")} 平行于 ${tex("f_1")} 处的切线；${tex("B=E")}，右边的紫色曲线与虚线单位圆重合。`,
+        right: `例如 ${tex("f_1=(\\tfrac35,\\tfrac15),\\ f_2=(-\\tfrac45,\\tfrac75)")}：两个端点都在单位椭圆上，${tex("f_2")} 平行于 ${tex("f_1")} 处的切线；${tex("B=E")}，${tex("\\mathbb R^2")} 图里的紫色曲线与虚线单位圆重合。`,
         defer: lab,
         actHint: "记下了你的猜测。换一组基或拖动 f₁、f₂，结论随后出现。",
       },
@@ -1224,7 +1224,7 @@
     const lab = labShell(root, {
       kind: "least-squares",
       title: `离 ${tex("b")} 最近的 ${tex("Ax")}：投影与拟合直线是同一件事`,
-      task: `用直线 ${tex("y=C+Dt")} 拟合 ${tex("t=0,1,2")} 处的三个数据 ${tex("b_1,b_2,b_3")}。左图：${tex("b\\in\\mathbb R^3")} 与 ${tex("A")} 的列空间（平面）。右图：数据点与直线。两图联动，可以拖动 ${tex("b")} 或数据点，也可以调 ${tex("C")}、${tex("D")} 试一条直线。`,
+      task: `用直线 ${tex("y=C+Dt")} 拟合 ${tex("t=0,1,2")} 处的三个数据 ${tex("b_1,b_2,b_3")}。一张图画 ${tex("b\\in\\mathbb R^3")} 与 ${tex("A")} 的列空间（平面），另一张画数据点与直线，两图联动：可以拖动 ${tex("b")} 或数据点，也可以调 ${tex("C")}、${tex("D")} 试一条直线。`,
     });
     const pair = el("div", "ch9l-pair");
     const left = el("div", "ch9l-view", `<div class="ch9l-view-title">${tex("\\mathbb R^3")}：${tex("b")} 与列空间 ${tex("W")}</div>`);
@@ -1242,7 +1242,7 @@
     status.dataset.ch9Readout = "ls";
     const gateHost = el("div");
     const result = resultBox(
-      `<p>${tex("Ax")} 走遍平面 ${tex("W")}。离 ${tex("b")} 最近的点 ${tex("p=A\\hat x")} 是 ${tex("b")} 在 ${tex("W")} 上的内射影，误差 ${tex("e=b-A\\hat x")} 垂直于 ${tex("W")}，也就垂直于 ${tex("A")} 的两列：${tex("A^Te=0")}，即 ${tex("A^TA\\hat x=A^Tb")}。对任何一条直线都有 ${tex("|b-Ax|^2=|e|^2+|p-Ax|^2")}，所以投影给出的直线残差平方和最小。在右图里，${tex("e\\perp(1,1,1)")} 说明残差之和为 0，${tex("e\\perp(0,1,2)")} 说明 ${tex("\\sum t_ie_i=0")}。</p>`,
+      `<p>${tex("Ax")} 走遍平面 ${tex("W")}。离 ${tex("b")} 最近的点 ${tex("p=A\\hat x")} 是 ${tex("b")} 在 ${tex("W")} 上的内射影，误差 ${tex("e=b-A\\hat x")} 垂直于 ${tex("W")}，也就垂直于 ${tex("A")} 的两列：${tex("A^Te=0")}，即 ${tex("A^TA\\hat x=A^Tb")}。对任何一条直线都有 ${tex("|b-Ax|^2=|e|^2+|p-Ax|^2")}，所以投影给出的直线残差平方和最小。在数据点那张图里，${tex("e\\perp(1,1,1)")} 说明残差之和为 0，${tex("e\\perp(0,1,2)")} 说明 ${tex("\\sum t_ie_i=0")}。</p>`,
     );
     lab.append(controls, status, gateHost, result);
     const A = matF(LS_A);

@@ -57,7 +57,7 @@
   function basisLab(root) {
     const lab = K.labShell(root, {
       title: `同一个 ${tex("\\sigma")}，换一组基记录`,
-      task: `左图用标准基 ${tex("\\varepsilon_1,\\varepsilon_2")} 记录 ${tex("\\sigma")}，右图用你拖动的 ${tex("\\eta_1,\\eta_2")} 记录同一个 ${tex("\\sigma")}。紫色箭头是基向量的像，它在网格里的坐标就是矩阵的一列。`,
+      task: `下面两张图记录同一个 ${tex("\\sigma")}：“标准基”一张用 ${tex("\\varepsilon_1,\\varepsilon_2")}，“新基”一张用你拖动的 ${tex("\\eta_1,\\eta_2")}。紫色箭头是基向量的像，它在网格里的坐标就是矩阵的一列。`,
     });
     const state = { key: "stretch", eta: [[1, 0.5], [-0.5, 1]] };
     const toolbar = el("div", "ch7l-toolbar");
@@ -192,7 +192,7 @@
           ? `<p class="ch7l-ok">${tex("B")} 是对角矩阵：每个 ${tex("\\sigma\\eta_j")} 都是 ${tex("\\eta_j")} 的倍数。</p>`
           : flow?.revealed && named.length
             ? `<p class="ch7l-muted">${named.join("、")} 在 ${tex("\\sigma")} 的不动直线上，${tex("B")} 中对应的非对角元为 ${tex("0")}。</p>`
-            : `<p class="ch7l-muted">${tex("B")} 的第 ${tex("j")} 列 ${tex("=\\sigma\\eta_j")} 在 ${tex("\\eta_1,\\eta_2")} 下的坐标（右图虚线）。</p>`;
+            : `<p class="ch7l-muted">${tex("B")} 的第 ${tex("j")} 列 ${tex("=\\sigma\\eta_j")} 在 ${tex("\\eta_1,\\eta_2")} 下的坐标（新基图中的虚线）。</p>`;
       }
       strip.innerHTML = html;
     }

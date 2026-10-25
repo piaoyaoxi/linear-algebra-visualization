@@ -14,7 +14,7 @@ defineChapter8Section("rational-canonical-form", {
   ],
   textbook: { reference: "北大版《高等代数》第八章 §7", items: ["多项式的伴随矩阵", "伴随矩阵的不变因子", "有理标准形的存在与唯一"] },
   interactive: { type: "slot", title: "伴随矩阵：平移加反馈" },
-  lesson3d: {
+  theory: {
     blocks: [
       {
         title: "伴随矩阵",

@@ -14,7 +14,7 @@ defineChapter6Section("basis-coordinates", {
   ],
   textbook: { reference: "北大版《高等代数》第六章 §3", items: ["线性无关与线性表出", "基与维数", "坐标", "有限维与无限维"] },
   interactive: { type: "slot", title: "多项式与它的坐标点" },
-  lesson: {
+  theory: {
     blocks: [
       {
         title: "基与维数",

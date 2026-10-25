@@ -14,7 +14,7 @@ defineChapter6Section("isomorphism", {
   ],
   textbook: { reference: "北大版《高等代数》第六章 §8", items: ["同构映射的定义", "坐标映射是同构", "同构的基本性质", "同构当且仅当维数相同"] },
   interactive: { type: "slot", title: "两张“坐标”，同一套运算" },
-  lesson: {
+  theory: {
     blocks: [
       {
         title: "同构映射",

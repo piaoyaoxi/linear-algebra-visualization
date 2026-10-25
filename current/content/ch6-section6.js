@@ -14,7 +14,7 @@ defineChapter6Section("intersection-sum", {
   ],
   textbook: { reference: "北大版《高等代数》第六章 §6", items: ["子空间的交与和", "生成子空间的和", "维数公式", `维数之和大于 ${texInline("n")} 时交非零`] },
   interactive: { type: "slot", title: "两个子空间合起来有多大" },
-  lesson: {
+  theory: {
     figure: "intersection-curves",
     figureLast: true,
     blocks: [

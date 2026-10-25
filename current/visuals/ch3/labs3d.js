@@ -1256,7 +1256,7 @@
   };
 
   function renderFormal(root, section) {
-    const f = section.lesson3d;
+    const f = section.theory;
     if (!root || !f) return undefined;
     const mounts = [];
     const figureHtml = (key, i) => {

@@ -14,7 +14,7 @@ defineChapter10Section("bilinear-form", {
   ],
   textbook: { reference: "北大版《高等代数》第十章 §3", items: ["双线性函数与度量矩阵", "换基与合同", "非退化双线性函数", "对称与反对称双线性函数"] },
   interactive: { type: "slot", title: "固定一个变量，得到一个线性函数" },
-  lesson3d: {
+  theory: {
     blocks: [
       {
         title: "度量矩阵",

@@ -14,7 +14,7 @@ defineChapter7Section("linear-map-operations", {
   ],
   textbook: { reference: "北大版《高等代数》第七章 §2", items: ["线性变换的乘法、加法与数量乘法", "逆变换", "线性变换的多项式"] },
   interactive: false,
-  lesson3d: {
+  theory: {
     blocks: [
       {
         title: "加法、数量乘法与乘法",

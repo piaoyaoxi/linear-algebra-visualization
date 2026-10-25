@@ -14,7 +14,7 @@ defineChapter6Section("direct-sum", {
   ],
   textbook: { reference: "北大版《高等代数》第六章 §7", items: ["直和的定义", "直和的等价条件", "补子空间", "多个子空间的直和"] },
   interactive: { type: "slot", title: "分解什么时候唯一" },
-  lesson: {
+  theory: {
     figure: "even-odd",
     figureLast: true,
     blocks: [

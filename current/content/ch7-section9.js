@@ -14,7 +14,7 @@ defineChapter7Section("minimal-polynomial", {
   ],
   textbook: { reference: "北大版《高等代数》第七章 §9", items: ["最小多项式的定义与唯一性", "最小多项式整除零化多项式", "可对角化的最小多项式判据"] },
   interactive: { type: "slot", title: "v, Av, A²v, … 第几步落回" },
-  lesson3d: {
+  theory: {
     blocks: [
       {
         title: "定义与整除性",

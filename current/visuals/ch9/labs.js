@@ -1424,7 +1424,7 @@
   };
 
   function renderFormal(root, section) {
-    const f = section.lesson9;
+    const f = section.theory;
     if (!root || !f) return;
     root.innerHTML = `<h2>定理与方法</h2><div class="ch9l-formal">${f.figure ? FIGURES[f.figure] || "" : ""}${f.blocks
       .map((b) => `<article class="ch9l-theorem"><h3>${b.title}</h3>${b.tex ? `<div class="ch9l-theorem-math">${texD(b.tex)}</div>` : ""}${b.text ? `<p>${b.text}</p>` : ""}</article>`)

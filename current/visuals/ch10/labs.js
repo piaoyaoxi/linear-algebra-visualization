@@ -931,7 +931,7 @@
   /* ---------- theorem blocks ---------- */
 
   function renderFormal(root, section) {
-    const f = section.lesson3d;
+    const f = section.theory;
     if (!root || !f) return;
     const ponder = (p) =>
       p ? `<details class="ch3l-ponder"><summary><span>停一下</span>${p.q}</summary><p>${p.a}</p></details>` : "";

@@ -450,7 +450,7 @@
   }
 
   function renderFormal(root, section) {
-    const f = section.lesson;
+    const f = section.theory;
     if (!root || !f) return;
     const figure = f.figure && figures.get(f.figure);
     const fig = figure ? `<figure class="ch6l-figure">${figure()}</figure>` : "";

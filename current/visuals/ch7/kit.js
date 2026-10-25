@@ -889,7 +889,7 @@
   /* ---------- theorem blocks from content data ---------- */
 
   function renderFormal(root, section) {
-    const f = section.lesson3d;
+    const f = section.theory;
     if (!root || !f) return;
     const figure = (key) => {
       const make = window.Ch7Figures?.[key];

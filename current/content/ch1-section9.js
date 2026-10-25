@@ -11,7 +11,7 @@ defineChapter1Section("rational-polynomials", {
     reference: "北大版《高等代数》第一章 §9",
     items: ["本原多项式与高斯引理", "有理根", "艾森斯坦判别法"],
   },
-  formal: {
+  theory: {
     title: "有理根与不可约判别",
     equation: "\\begin{gathered}\\tfrac rs\\ \\text{是}\\ a_nx^n+\\cdots+a_0\\ \\text{的根},\\quad\\gcd(r,s)=1\\\\ \\Longrightarrow\\quad s\\mid a_n,\\quad r\\mid a_0\\end{gathered}",
     definitions: [

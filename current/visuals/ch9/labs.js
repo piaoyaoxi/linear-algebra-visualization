@@ -114,94 +114,33 @@
   }
 
   /*
-   * Predict -> act -> reveal. Picking an option only records the prediction
-   * (spec.onPick); the verdict and onAnswered wait for the first action in the
-   * lab after the pick: a drag on the picture, a slider, a preset or a button
-   * outside the gate. With spec.manual the lab decides itself and calls
-   * box.act() (§2 waits until the third step has run).
+   * Predict -> act -> reveal (visuals/shared/predict-gate.js). Picking an option only
+   * records the prediction (spec.onPick, on the first pick); the verdict and onAnswered wait
+   * for the first action in the lab after the pick: a drag on the picture, a slider, a preset
+   * or a button outside the gate. With spec.manual the lab decides itself and calls box.act()
+   * (§2 waits until the third step has run); spec.defer names another root to watch.
    */
   function predictGate(host, spec, onAnswered) {
-    spec = { ...spec, options: window.LAStableShuffle ? window.LAStableShuffle(spec.options, spec.question) : spec.options };
-    const box = el("div", "ch9l-predict");
-    box.dataset.ch9Predict = "";
-    box.innerHTML = `<div class="ch9l-predict-q"><span>先猜一猜</span><p>${spec.question}</p></div>
-      <div class="ch9l-predict-options">${spec.options.map((o, i) => `<button type="button" data-i="${i}" data-ok="${o.correct ? "true" : "false"}" data-why="${String(o.why || "").replace(/&/g, "&amp;").replace(/"/g, "&quot;")}">${o.text}</button>`).join("")}</div>
-      <p class="ch9l-predict-feedback" hidden></p>`;
-    host.append(box);
-    const feedback = box.querySelector(".ch9l-predict-feedback");
-    let answered = false;
-    let picked = null;
-
-    function verdict(b) {
-      const o = spec.options[Number(b.dataset.i)];
-      box.querySelectorAll("[data-i]").forEach((x) => x.classList.remove("is-right", "is-wrong", "is-picked"));
-      b.classList.add(o.correct ? "is-right" : "is-wrong");
-      feedback.hidden = false;
-      feedback.innerHTML = o.correct ? `✓ ${spec.right}` : `再看看图：${o.why || "动手操作后看看发生了什么。"}`;
-      if (!answered) {
-        answered = true;
-        box.dataset.answered = "true";
-        box.classList.add("is-done");
-        onAnswered?.();
-      }
-    }
-
-    box.querySelectorAll("[data-i]").forEach((b) =>
-      b.addEventListener("click", () => {
-        if (answered) return verdict(b);
-        const first = !picked;
-        picked = b;
-        box.dataset.picked = "true";
-        box.querySelectorAll("[data-i]").forEach((x) => x.classList.toggle("is-picked", x === b));
-        feedback.hidden = false;
-        feedback.textContent = spec.actHint || "记下了你的猜测。现在动手操作一次，结论随后出现。";
+    const gate = window.LAPredictGate.create({
+      prefix: "ch9l",
+      question: spec.question,
+      options: spec.options,
+      actHint: spec.actHint,
+      right: spec.right,
+      onPick: ({ first }) => {
         if (first) spec.onPick?.();
-      }),
-    );
-
-    box.act = () => {
-      if (picked && !answered) verdict(picked);
-    };
+      },
+      onReveal: () => onAnswered?.(),
+    });
+    const box = gate.element;
+    box.dataset.ch9Predict = "";
+    host.append(box);
+    box.act = () => gate.reveal();
     const actRoot = spec.manual ? null : spec.defer || host.closest("[data-ch9-lab]");
     if (actRoot) {
-      /*
-       * Acting means changing what the lab reports: rotating the camera, a view
-       * button or an empty click leaves the readouts as they were and does not count.
-       */
-      const state = () => {
-        const parts = [];
-        const walk = document.createTreeWalker(actRoot, NodeFilter.SHOW_TEXT);
-        while (walk.nextNode()) {
-          const node = walk.currentNode;
-          if (node.parentElement?.closest("[data-ch9-predict], button, .ch9l-head, .la-figcaption, .ch9p-hint, .la3d-hint, .katex-mathml, [data-ch9-result]")) continue;
-          parts.push(node.textContent.trim());
-        }
-        actRoot.querySelectorAll("input").forEach((input) => parts.push(input.value));
-        return parts.join("|");
-      };
-      // the readouts at the moment of the pick; refreshed once after the lab's own redraw,
-      // unless the student has already acted by then
-      let before = null;
-      let touched = false;
-      box.querySelectorAll("[data-i]").forEach((b) => b.addEventListener("click", () => {
-        if (before != null) return;
-        before = state();
-        requestAnimationFrame(() => { if (!touched && !answered) before = state(); });
-      }));
-      const check = () => {
-        if (!picked || answered || before == null) return;
-        if (state() !== before) verdict(picked);
-      };
-      const act = (e) => {
-        if (!picked || answered || box.contains(e.target)) return;
-        touched = true;
-        setTimeout(check, 60);
-        setTimeout(check, 400);
-      setTimeout(check, 1100);
-      };
-      ["input", "change", "pointerup", "click", "keyup"].forEach((t) => actRoot.addEventListener(t, act));
-      // dragging a handle on the canvas is acting even when the readouts are still hidden
-      actRoot.addEventListener("la-handle-move", () => { if (picked && !answered && before != null) verdict(picked); });
+      gate.watch(actRoot, {
+        ignore: "[data-ch9-predict], button, .ch9l-head, .la-figcaption, .ch9p-hint, .la3d-hint, .katex-mathml, [data-ch9-result]",
+      });
     }
     return box;
   }

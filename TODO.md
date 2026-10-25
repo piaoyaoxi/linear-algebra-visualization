@@ -79,7 +79,8 @@
 - typeset.js 的处理顺序是硬规则：等字体到齐才排版；一批改动先全部改写，最后才量行宽；一批里每个元素的样式只读一次（styleOf 缓存，joinRuns 移动过的元素当场作废）。新加的排版步骤写成“先全部读、再全部改”两段，不要在循环里读一次改一次（那正是原来手机上卡 6–11 秒的原因）。
 - 公式按需渲染：内容加载期间 `renderTex` 只放占位壳，内容字符串第一次被读取时才换成 KaTeX（`deferContentTex`）。页面上若留下占位壳，`fillStrayPendingTex` 会补渲染并在控制台报错；见到这条报错，说明有代码绕过了内容对象直接拿了字符串。
 - 画布共用 `visuals/shared/canvas.js`：`LACanvas.setup`（按像素密度设定画布并清空）、`withAlpha`、`keyHandles`（圆点的键盘操作与读屏，三维场景、第七章平面、第九章平面已接上；新引擎接同一个助手，圆点可带 `name`）。实验读数一律用 `visuals/shared/number.js` 的 `LANumber.decimal / text`。
-- 工具：根目录 `package.json` + `package-lock.json` 锁定 Playwright 1.63.0，`.nvmrc` 锁定 Node 22，所有工作流经 `.github/actions/setup-playwright` 安装。本地 `npm ci` 之后可用 `npm test`、`npm run audit`、`npm run smoke`、`npm run selectors`、`npm run perf`。`perf-budget.mjs` 量手机上切换课程的主线程长任务，预算按机器速度校准。
+- 工具：根目录 `package.json` + `package-lock.json` 锁定 Playwright 1.63.0，`.nvmrc` 锁定 Node 22，所有工作流经 `.github/actions/setup-playwright` 安装。本地 `npm ci` 之后可用 `npm test`、`npm run audit`、`npm run smoke`、`npm run selectors`、`npm run perf`；第二章的 spec 用 `npx playwright test tests/ch2*.spec.js`。`perf-budget.mjs` 量手机上切换课程的主线程长任务，预算按机器速度校准。
+- spec 里的 `test.use({ reducedMotion: "reduce" })` 从 Playwright 1.63 起才真的生效（1.55 不认这个选项，静默忽略）。第二章桌面和手机两组 spec 现在确实在减少动效下跑：动画直接跳到终点，断言要按终点写，要看动画过程的放进 `ch2-motion.spec.js`。
 
 ## 5. 已看资料：线性代数不难
 
@@ -514,7 +515,7 @@ _dev/research/3b1b_eola_chapter10.py
 - 结果（390×844，选过预测并按几次主按钮）：第一章 §4 2759→1526、§2 1998→1537、§10 2095→1348；第二章 §2 1906→1484、§4 1692→1284、§8 1932→1524；第三章 §7 2121→1650；第四章 §2 1542→1121；第五章 §1 2285→1692、§3 2440→1889。第六到十章大多 1000–1600，剩下超过 1700 的（第五章 §2/§4、第六章 §1、第八章 §3/§6、第九章 §2/§6）主要是推导和结论文字本身多，没有再藏内容。
 - 电脑端（≥721 / ≥1081）：长除法竖式限宽 680px；第一章 §4 余式次数图放到读数右边（1578→1452），代回验证公式不再被截断；第五章 §3 符号轮 190→130。第八章 §3 子式墙电脑上两列是脚本按因式宽度自动选的（`tooWide`），没改。
 - 检查要求的下限（改高度前先看）：ch7 画布 ≥200、ch8 主画布 ≥260（<1000 宽）、ch9 画布 ≥240、ch5 §4 曲面 ≥300、ch2 余子式读数 2 列 / Cramer 3 列。第一章审计的 §10 布局检查在手机上先点开“按次数分层”页再量（`tests/ch1-browser-audit-v3.mjs`）。
-- 本地跑第二章 Playwright spec：`npm install --no-save @playwright/test@1.56.1`（与全局 playwright 同版本），用它自带的 `cli.js test` 跑，避免两份 @playwright/test。
+- 本地跑第二章 Playwright spec：`npm install --no-save @playwright/test@1.56.1`（与全局 playwright 同版本），用它自带的 `cli.js test` 跑，避免两份 @playwright/test。（已过时：现在 `npm ci` 后直接跑，见 §4“工具”。）
 
 ### 第三轮：例题溢出、步进实验吸顶（同一 PR #131，2026-10-16）
 
@@ -640,7 +641,7 @@ _dev/research/3b1b_eola_chapter10.py
 7. 预测题合成 `predict-gate.js` 一份；“不确定”成为正式状态；第四章 §5 选“不确定”后再拖滑块，反馈会变回带 ✓ 的判定——已修。`selector-check.mjs` 接入 site-audit。
 8. 共用 `LACanvas` / `LANumber`；第八章初等因子积木的模型抽到 `divisor-blocks.js`；第五章 `geometry-upgrade.js` 解压缩（prettier，语法树不变）；单元测试 16 → 31 个。
 9. 可拖动的圆点可用键盘移动并读出位置（见 §4）。
-10. 工具与 CI：`package.json` + 锁文件（Playwright 1.63.0）、`.nvmrc`（Node 22）、`.github/actions/setup-playwright`，十个检查工作流原来混用 Node 20/22/24 和 Playwright 1.52/1.53/1.55；`perf-budget.mjs` 接入 site-audit；删掉 8 张没有任何地方引用的图片（1.6 MB：首页旧 hero 三张、明暗切换旧图两张、品牌旧图三张）；补上 `vendor/katex/LICENSE`（KaTeX 0.16.11 原版 MIT 许可）。
+10. 工具与 CI：`package.json` + 锁文件（Playwright 1.63.0）、`.nvmrc`（Node 22）、`.github/actions/setup-playwright`，十个检查工作流原来混用 Node 20/22/24 和 Playwright 1.52/1.53/1.55；`perf-budget.mjs` 接入 site-audit；删掉 8 张没有任何地方引用的图片（1.6 MB：首页旧 hero 三张、明暗切换旧图两张、品牌旧图三张）；补上 `vendor/katex/LICENSE`（KaTeX 0.16.11 原版 MIT 许可）。升级后第二章 spec 第一次真的在减少动效下跑（见 §4），§3“播放 231”那条在“依次走六条路径”（#106）加入之前写成：切到上三角后断言“贡献为 0”。以前能过，是因为动画恰好停在第一条路径 132；减少动效下会直接走到主对角线 123。断言已按终点改写，再点“播放排列 231”验证零贡献。
 11. `lab-fit.css` 的 280 条 `!important` 删掉 200 条，留 80 条：34 条去掉后页面会变，20 条在测试里从没生效过（不知道去掉的后果，留着），26 条是画布尺寸（见下面“核对方法”里的盲区，一律留着）。文件头的规则改成“只有必须压过另一条 !important 或内联样式时才用”。
 
 核对方法（脚本在会话 scratchpad，不在仓库里）：

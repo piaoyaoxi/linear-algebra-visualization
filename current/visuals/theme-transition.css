@@ -262,3 +262,8 @@ body.theme-transitioning::before {
     display: none;
   }
 }
+
+/* the short switch that runs when the art has not arrived yet (theme-transition.js) */
+.theme-transition[data-art="none"] .theme-transition__art {
+  display: none;
+}

@@ -14,7 +14,7 @@ defineChapter3Section("solution-structure", {
   ],
   textbook: { reference: "北大版《高等代数》第三章 §6", items: ["齐次方程组的基础解系", "非齐次方程组解的结构"] },
   interactive: { type: "slot", title: "解集是零空间平移过去的样子" },
-  lesson3d: {
+  theory: {
     blocks: [
       {
         title: "齐次方程组：解构成子空间",

@@ -114,94 +114,33 @@
   }
 
   /*
-   * Predict -> act -> reveal. Picking an option only records the prediction
-   * (spec.onPick); the verdict and onAnswered wait for the first action in the
-   * lab after the pick: a drag on the picture, a slider, a preset or a button
-   * outside the gate. With spec.manual the lab decides itself and calls
-   * box.act() (§2 waits until the third step has run).
+   * Predict -> act -> reveal (visuals/shared/predict-gate.js). Picking an option only
+   * records the prediction (spec.onPick, on the first pick); the verdict and onAnswered wait
+   * for the first action in the lab after the pick: a drag on the picture, a slider, a preset
+   * or a button outside the gate. With spec.manual the lab decides itself and calls box.act()
+   * (§2 waits until the third step has run); spec.defer names another root to watch.
    */
   function predictGate(host, spec, onAnswered) {
-    spec = { ...spec, options: window.LAStableShuffle ? window.LAStableShuffle(spec.options, spec.question) : spec.options };
-    const box = el("div", "ch9l-predict");
-    box.dataset.ch9Predict = "";
-    box.innerHTML = `<div class="ch9l-predict-q"><span>先猜一猜</span><p>${spec.question}</p></div>
-      <div class="ch9l-predict-options">${spec.options.map((o, i) => `<button type="button" data-i="${i}" data-ok="${o.correct ? "true" : "false"}" data-why="${String(o.why || "").replace(/&/g, "&amp;").replace(/"/g, "&quot;")}">${o.text}</button>`).join("")}</div>
-      <p class="ch9l-predict-feedback" hidden></p>`;
-    host.append(box);
-    const feedback = box.querySelector(".ch9l-predict-feedback");
-    let answered = false;
-    let picked = null;
-
-    function verdict(b) {
-      const o = spec.options[Number(b.dataset.i)];
-      box.querySelectorAll("[data-i]").forEach((x) => x.classList.remove("is-right", "is-wrong", "is-picked"));
-      b.classList.add(o.correct ? "is-right" : "is-wrong");
-      feedback.hidden = false;
-      feedback.innerHTML = o.correct ? `✓ ${spec.right}` : `再看看图：${o.why || "动手操作后看看发生了什么。"}`;
-      if (!answered) {
-        answered = true;
-        box.dataset.answered = "true";
-        box.classList.add("is-done");
-        onAnswered?.();
-      }
-    }
-
-    box.querySelectorAll("[data-i]").forEach((b) =>
-      b.addEventListener("click", () => {
-        if (answered) return verdict(b);
-        const first = !picked;
-        picked = b;
-        box.dataset.picked = "true";
-        box.querySelectorAll("[data-i]").forEach((x) => x.classList.toggle("is-picked", x === b));
-        feedback.hidden = false;
-        feedback.textContent = spec.actHint || "记下了你的猜测。现在动手操作一次，结论随后出现。";
+    const gate = window.LAPredictGate.create({
+      prefix: "ch9l",
+      question: spec.question,
+      options: spec.options,
+      actHint: spec.actHint,
+      right: spec.right,
+      onPick: ({ first }) => {
         if (first) spec.onPick?.();
-      }),
-    );
-
-    box.act = () => {
-      if (picked && !answered) verdict(picked);
-    };
+      },
+      onReveal: () => onAnswered?.(),
+    });
+    const box = gate.element;
+    box.dataset.ch9Predict = "";
+    host.append(box);
+    box.act = () => gate.reveal();
     const actRoot = spec.manual ? null : spec.defer || host.closest("[data-ch9-lab]");
     if (actRoot) {
-      /*
-       * Acting means changing what the lab reports: rotating the camera, a view
-       * button or an empty click leaves the readouts as they were and does not count.
-       */
-      const state = () => {
-        const parts = [];
-        const walk = document.createTreeWalker(actRoot, NodeFilter.SHOW_TEXT);
-        while (walk.nextNode()) {
-          const node = walk.currentNode;
-          if (node.parentElement?.closest("[data-ch9-predict], button, .ch9l-head, .la-figcaption, .ch9p-hint, .la3d-hint, .katex-mathml, [data-ch9-result]")) continue;
-          parts.push(node.textContent.trim());
-        }
-        actRoot.querySelectorAll("input").forEach((input) => parts.push(input.value));
-        return parts.join("|");
-      };
-      // the readouts at the moment of the pick; refreshed once after the lab's own redraw,
-      // unless the student has already acted by then
-      let before = null;
-      let touched = false;
-      box.querySelectorAll("[data-i]").forEach((b) => b.addEventListener("click", () => {
-        if (before != null) return;
-        before = state();
-        requestAnimationFrame(() => { if (!touched && !answered) before = state(); });
-      }));
-      const check = () => {
-        if (!picked || answered || before == null) return;
-        if (state() !== before) verdict(picked);
-      };
-      const act = (e) => {
-        if (!picked || answered || box.contains(e.target)) return;
-        touched = true;
-        setTimeout(check, 60);
-        setTimeout(check, 400);
-      setTimeout(check, 1100);
-      };
-      ["input", "change", "pointerup", "click", "keyup"].forEach((t) => actRoot.addEventListener(t, act));
-      // dragging a handle on the canvas is acting even when the readouts are still hidden
-      actRoot.addEventListener("la-handle-move", () => { if (picked && !answered && before != null) verdict(picked); });
+      gate.watch(actRoot, {
+        ignore: "[data-ch9-predict], button, .ch9l-head, .la-figcaption, .ch9p-hint, .la3d-hint, .katex-mathml, [data-ch9-result]",
+      });
     }
     return box;
   }
@@ -343,8 +282,8 @@
       redraw();
     }, state.key);
     plane.setHandles([
-      { color: "drag", snap: 0.5, get: () => state.u, set: (p) => ((state.u = p), redraw()) },
-      { color: "drag", snap: 0.5, get: () => state.v, set: (p) => ((state.v = p), redraw()) },
+      { name: "u", color: "drag", snap: 0.5, get: () => state.u, set: (p) => ((state.u = p), redraw()) },
+      { name: "v", color: "drag", snap: 0.5, get: () => state.v, set: (p) => ((state.v = p), redraw()) },
     ]);
     predictGate(
       gateHost,
@@ -452,6 +391,7 @@
       });
       scene.setHandles([
         {
+          name: "α₃",
           color: "drag",
           snap: 0.5,
           get: () => state.a[2],
@@ -548,7 +488,7 @@
     const lab = labShell(root, {
       kind: "isometry",
       title: `坐标映射把 ${tex("V")} 的单位圆送到哪里`,
-      task: `${tex("V")} 是 ${tex("\\mathbb R^2")} 配上度量矩阵 ${tex("G=\\left[\\begin{smallmatrix}2&1\\\\1&1\\end{smallmatrix}\\right]")} 的欧氏空间。选一组基 ${tex("f_1,f_2")}（可拖动），${tex(String.raw`\sigma`)} 把 ${tex("\\alpha=x_1f_1+x_2f_2")} 送到坐标 ${tex("(x_1,x_2)\\in\\mathbb R^2")}，右边用普通点积。`,
+      task: `${tex("V")} 是 ${tex("\\mathbb R^2")} 配上度量矩阵 ${tex("G=\\left[\\begin{smallmatrix}2&1\\\\1&1\\end{smallmatrix}\\right]")} 的欧氏空间。选一组基 ${tex("f_1,f_2")}（可拖动），${tex(String.raw`\sigma`)} 把 ${tex("\\alpha=x_1f_1+x_2f_2")} 送到坐标 ${tex("(x_1,x_2)\\in\\mathbb R^2")}，${tex("\\mathbb R^2")} 里用普通点积。`,
     });
     const toolbar = el("div", "ch9l-toolbar");
     lab.append(toolbar);
@@ -653,21 +593,21 @@
       redraw();
     }, "std");
     lp.setHandles([
-      { color: "drag", snap: 0.5, get: () => state.f[0], set: (p) => ((state.f[0] = p), redraw()) },
-      { color: "drag", snap: 0.5, get: () => state.f[1], set: (p) => ((state.f[1] = p), redraw()) },
-      { color: "drag", snap: 0.5, get: () => state.alpha, set: (p) => ((state.alpha = p), redraw()) },
+      { name: "f₁", color: "drag", snap: 0.5, get: () => state.f[0], set: (p) => ((state.f[0] = p), redraw()) },
+      { name: "f₂", color: "drag", snap: 0.5, get: () => state.f[1], set: (p) => ((state.f[1] = p), redraw()) },
+      { name: "α", color: "drag", snap: 0.5, get: () => state.alpha, set: (p) => ((state.alpha = p), redraw()) },
     ]);
     predictGate(
       gateHost,
       {
-        question: `${tex(String.raw`\sigma`)} 把 ${tex("f_1,f_2")} 送到 ${tex("e_1,e_2")}，右边按普通点积计算。${tex("f_1,f_2")} 满足什么条件时，${tex(String.raw`\sigma`)} 保持内积？`,
+        question: `${tex(String.raw`\sigma`)} 把 ${tex("f_1,f_2")} 送到 ${tex("e_1,e_2")}，${tex("\\mathbb R^2")} 里按普通点积计算。${tex("f_1,f_2")} 满足什么条件时，${tex(String.raw`\sigma`)} 保持内积？`,
         options: [
           { text: `${tex("f_1,f_2")} 按 ${tex("V")} 的内积（${tex("G")}）是标准正交基`, correct: true },
           { text: `${tex("f_1,f_2")} 按普通点积互相垂直、长度为 1`, why: "V 里的长度和角度要用 G 计算。试试 (1,1)、(1,−1)。" },
-          { text: "任意一组基都可以", why: "看右图：标准基的像是一个椭圆，长度被改变了。" },
+          { text: "任意一组基都可以", why: "看 ℝ² 那张图：标准基的像是一个椭圆，长度被改变了。" },
           { text: `只有 ${tex("f_1=\\varepsilon_1,\\ f_2=\\varepsilon_2")}`, why: `${tex("(\\varepsilon_1,\\varepsilon_1)=2")}，标准基在 V 里不是单位向量。` },
         ],
-        right: `例如 ${tex("f_1=(\\tfrac35,\\tfrac15),\\ f_2=(-\\tfrac45,\\tfrac75)")}：两个端点都在单位椭圆上，${tex("f_2")} 平行于 ${tex("f_1")} 处的切线；${tex("B=E")}，右边的紫色曲线与虚线单位圆重合。`,
+        right: `例如 ${tex("f_1=(\\tfrac35,\\tfrac15),\\ f_2=(-\\tfrac45,\\tfrac75)")}：两个端点都在单位椭圆上，${tex("f_2")} 平行于 ${tex("f_1")} 处的切线；${tex("B=E")}，${tex("\\mathbb R^2")} 图里的紫色曲线与虚线单位圆重合。`,
         defer: lab,
         actHint: "记下了你的猜测。换一组基或拖动 f₁、f₂，结论随后出现。",
       },
@@ -830,8 +770,8 @@
       actedOnAsked();
     }, state.key);
     plane.setHandles([
-      { color: "drag", snap: 0.5, clampX: [-2, 2], clampY: [-2, 2], get: () => state.x, set: (p) => ((state.x = p), redraw(), actedOnAsked()) },
-      { color: "drag", snap: 0.5, clampX: [-2, 2], clampY: [-2, 2], get: () => state.y, set: (p) => ((state.y = p), redraw(), actedOnAsked()) },
+      { name: "x", color: "drag", snap: 0.5, clampX: [-2, 2], clampY: [-2, 2], get: () => state.x, set: (p) => ((state.x = p), redraw(), actedOnAsked()) },
+      { name: "y", color: "drag", snap: 0.5, clampX: [-2, 2], clampY: [-2, 2], get: () => state.y, set: (p) => ((state.y = p), redraw(), actedOnAsked()) },
     ]);
     const gate = predictGate(
       gateHost,
@@ -960,8 +900,8 @@
         return window.Ch6Kit?.placeLabels ? window.Ch6Kit.placeLabels(scene, objs, { handles }) : objs;
       });
       scene.setHandles([
-        { color: "drag", snap: 0.5, get: () => state.alpha, set: (p) => ((state.alpha = p), redraw(), actedOnAsked()) },
-        ...state.w.map((_, i) => ({ color: "drag", snap: 0.5, hidden: () => !state.w[i], get: () => state.w[i] || [0, 0, 0], set: (p) => ((state.w[i] = p), redraw()) })),
+        { name: "α", color: "drag", snap: 0.5, get: () => state.alpha, set: (p) => ((state.alpha = p), redraw(), actedOnAsked()) },
+        ...state.w.map((_, i) => ({ name: `w${"₁₂₃"[i]}`, color: "drag", snap: 0.5, hidden: () => !state.w[i], get: () => state.w[i] || [0, 0, 0], set: (p) => ((state.w[i] = p), redraw()) })),
       ]);
 
       // one relation per line; a mark after a formula stays outside it and on its line
@@ -1224,7 +1164,7 @@
     const lab = labShell(root, {
       kind: "least-squares",
       title: `离 ${tex("b")} 最近的 ${tex("Ax")}：投影与拟合直线是同一件事`,
-      task: `用直线 ${tex("y=C+Dt")} 拟合 ${tex("t=0,1,2")} 处的三个数据 ${tex("b_1,b_2,b_3")}。左图：${tex("b\\in\\mathbb R^3")} 与 ${tex("A")} 的列空间（平面）。右图：数据点与直线。两图联动，可以拖动 ${tex("b")} 或数据点，也可以调 ${tex("C")}、${tex("D")} 试一条直线。`,
+      task: `用直线 ${tex("y=C+Dt")} 拟合 ${tex("t=0,1,2")} 处的三个数据 ${tex("b_1,b_2,b_3")}。一张图画 ${tex("b\\in\\mathbb R^3")} 与 ${tex("A")} 的列空间（平面），另一张画数据点与直线，两图联动：可以拖动 ${tex("b")} 或数据点，也可以调 ${tex("C")}、${tex("D")} 试一条直线。`,
     });
     const pair = el("div", "ch9l-pair");
     const left = el("div", "ch9l-view", `<div class="ch9l-view-title">${tex("\\mathbb R^3")}：${tex("b")} 与列空间 ${tex("W")}</div>`);
@@ -1242,7 +1182,7 @@
     status.dataset.ch9Readout = "ls";
     const gateHost = el("div");
     const result = resultBox(
-      `<p>${tex("Ax")} 走遍平面 ${tex("W")}。离 ${tex("b")} 最近的点 ${tex("p=A\\hat x")} 是 ${tex("b")} 在 ${tex("W")} 上的内射影，误差 ${tex("e=b-A\\hat x")} 垂直于 ${tex("W")}，也就垂直于 ${tex("A")} 的两列：${tex("A^Te=0")}，即 ${tex("A^TA\\hat x=A^Tb")}。对任何一条直线都有 ${tex("|b-Ax|^2=|e|^2+|p-Ax|^2")}，所以投影给出的直线残差平方和最小。在右图里，${tex("e\\perp(1,1,1)")} 说明残差之和为 0，${tex("e\\perp(0,1,2)")} 说明 ${tex("\\sum t_ie_i=0")}。</p>`,
+      `<p>${tex("Ax")} 走遍平面 ${tex("W")}。离 ${tex("b")} 最近的点 ${tex("p=A\\hat x")} 是 ${tex("b")} 在 ${tex("W")} 上的内射影，误差 ${tex("e=b-A\\hat x")} 垂直于 ${tex("W")}，也就垂直于 ${tex("A")} 的两列：${tex("A^Te=0")}，即 ${tex("A^TA\\hat x=A^Tb")}。对任何一条直线都有 ${tex("|b-Ax|^2=|e|^2+|p-Ax|^2")}，所以投影给出的直线残差平方和最小。在数据点那张图里，${tex("e\\perp(1,1,1)")} 说明残差之和为 0，${tex("e\\perp(0,1,2)")} 说明 ${tex("\\sum t_ie_i=0")}。</p>`,
     );
     lab.append(controls, status, gateHost, result);
     const A = matF(LS_A);
@@ -1295,7 +1235,7 @@
         }
         return objs;
       });
-      scene.setHandles([{ color: "drag", snap: 0.5, get: () => state.b, set: (q) => ((state.b = q), redraw()) }]);
+      scene.setHandles([{ name: "b", color: "drag", snap: 0.5, get: () => state.b, set: (q) => ((state.b = q), redraw()) }]);
       const xh = toN(s.xh);
       fit.setObjects(() => {
         const objs = [{ type: "line", p: [0, state.C], dir: [1, state.D], color: "image", dash: [6, 5], width: 1.8, label: "试的直线" }];
@@ -1308,6 +1248,7 @@
         return objs;
       });
       fit.setHandles([0, 1, 2].map((t) => ({
+        name: `b${"₁₂₃"[t]}`,
         color: "drag",
         snap: 0.5,
         axis: "y",
@@ -1424,7 +1365,7 @@
   };
 
   function renderFormal(root, section) {
-    const f = section.lesson9;
+    const f = section.theory;
     if (!root || !f) return;
     root.innerHTML = `<h2>定理与方法</h2><div class="ch9l-formal">${f.figure ? FIGURES[f.figure] || "" : ""}${f.blocks
       .map((b) => `<article class="ch9l-theorem"><h3>${b.title}</h3>${b.tex ? `<div class="ch9l-theorem-math">${texD(b.tex)}</div>` : ""}${b.text ? `<p>${b.text}</p>` : ""}</article>`)

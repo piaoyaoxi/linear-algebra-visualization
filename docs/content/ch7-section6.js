@@ -14,7 +14,7 @@ defineChapter7Section("image-and-kernel", {
   ],
   textbook: { reference: "北大版《高等代数》第七章 §6", items: ["值域与核", "秩与零度", "维数公式"] },
   interactive: { type: "slot", title: "沿核滑动，像不动" },
-  lesson3d: {
+  theory: {
     blocks: [
       {
         title: "值域由基的像张成，维数等于矩阵的秩",

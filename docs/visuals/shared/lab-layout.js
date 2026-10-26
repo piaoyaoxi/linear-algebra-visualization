@@ -14,6 +14,8 @@
   const HINT = ".ch7p-hint, .ch9p-hint, .la3d-hint";
   const SIDE = ".ch3l-side, .ch6l-side, .ch7l-side, .ch9l-side";
   const CARD = ".ch3l-card, .ch6l-card, .ch7l-card, .ch9l-card";
+  // read by .github/scripts/selector-check.mjs, which fails when a kit no longer matches
+  window.LALayoutHooks = { ...window.LALayoutHooks, labLayout: { lab: LAB, predict: PREDICT, frame: FRAME, hint: HINT, side: SIDE, card: CARD } };
 
   function figurePrefix() {
     const [chapterId, sectionId] = (location.hash.slice(1) || "").split("/");
@@ -56,8 +58,16 @@
       counter.n += 1;
       const fig = document.createElement("p");
       fig.className = "la-figcaption";
-      const label = prefix ? `图 ${prefix}-${counter.n}` : "";
-      fig.innerHTML = `${label ? `<b>${label}</b>` : ""}<span>${hint.textContent}</span>`;
+      if (prefix) {
+        const label = document.createElement("b");
+        label.textContent = `图 ${prefix}-${counter.n}`;
+        fig.append(label);
+      }
+      // the hint's words as written: typeset.js may already have put its fixed gaps (U+2005) in
+      // the hint, and the caption gets its own spacing
+      const text = document.createElement("span");
+      text.textContent = hint.textContent.replace(/\u2005/g, " ");
+      fig.append(text);
       hint.hidden = true;
       frame.after(fig);
     });

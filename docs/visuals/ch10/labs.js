@@ -319,6 +319,7 @@
 
     plane.setHandles([
       {
+        name: "x",
         color: "drag",
         snap: 0.25,
         limit: 3,
@@ -473,6 +474,7 @@
     }
 
     const etaHandle = (i, color) => ({
+      name: `η${"₁₂"[i]}`,
       color,
       snap: 0.5,
       limit: 2.5,
@@ -488,6 +490,7 @@
       etaHandle(0, "drag"),
       etaHandle(1, "drag"),
       {
+        name: "x",
         color: "drag",
         snap: 0.25,
         limit: 3,
@@ -661,6 +664,7 @@
     }
 
     const handle = (key, color) => ({
+      name: key,
       color,
       snap: 0.25,
       limit: 2.75,
@@ -767,7 +771,7 @@
       const c = (u[0] * v[0] + u[1] * v[1]) / (len(u) * len(v) || 1);
       return (Math.acos(Math.max(-1, Math.min(1, c))) * 180) / Math.PI;
     };
-    const fmt = (v) => (Math.round(v * 100) / 100).toString();
+    const fmt = (v) => window.LANumber.decimal(v, 2);
     // exact when the value is a simple fraction (a length like 3/2, an angle like 90°), otherwise ≈
     const shown = (v) => {
       const f = M().fromNumber(v, 64);
@@ -871,6 +875,7 @@
     }
 
     const handle = (key, color) => ({
+      name: key,
       color,
       snap: 0.25,
       limit: 2.5,
@@ -931,7 +936,7 @@
   /* ---------- theorem blocks ---------- */
 
   function renderFormal(root, section) {
-    const f = section.lesson3d;
+    const f = section.theory;
     if (!root || !f) return;
     const ponder = (p) =>
       p ? `<details class="ch3l-ponder"><summary><span>停一下</span>${p.q}</summary><p>${p.a}</p></details>` : "";

@@ -7,12 +7,7 @@
 
   function formatNum(value, digits = 2) {
     const n = Number(value);
-    if (!Number.isFinite(n)) return "0";
-    const thr = 5 * 10 ** -(digits + 1);
-    const safe = Math.abs(n) < thr ? 0 : n;
-    const rounded = Math.round(safe * 10 ** digits) / 10 ** digits;
-    if (Object.is(rounded, -0) || rounded === 0) return "0";
-    return Number.isInteger(rounded) ? String(rounded) : String(rounded);
+    return Number.isFinite(n) ? window.LANumber.decimal(n, digits) : "0";
   }
 
   /** TeX for a coefficient in the step formulas: halves and quarters as fractions, never 0.5 */
@@ -364,23 +359,7 @@
     };
   }
 
-  function setupCanvas(canvas) {
-    if (!canvas) return { ctx: null, width: 0, height: 0 };
-    const rect = canvas.getBoundingClientRect();
-    const width = Math.max(1, rect.width || canvas.clientWidth || 520);
-    const height = Math.max(1, rect.height || canvas.clientHeight || 300);
-    const dpr = window.devicePixelRatio || 1;
-    const pw = Math.max(1, Math.round(width * dpr));
-    const ph = Math.max(1, Math.round(height * dpr));
-    if (canvas.width !== pw || canvas.height !== ph) {
-      canvas.width = pw;
-      canvas.height = ph;
-    }
-    const ctx = canvas.getContext("2d");
-    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-    ctx.clearRect(0, 0, width, height);
-    return { ctx, width, height };
-  }
+  const setupCanvas = (canvas) => (canvas ? window.LACanvas.setup(canvas, { fallback: [520, 300] }) : { ctx: null, width: 0, height: 0 });
 
   /** Level sets via polar sampling: r² = L / q(uθ). Cleaner than marching squares. */
   /** Cleaner wire surface with z-clipping by depth order (painter). */

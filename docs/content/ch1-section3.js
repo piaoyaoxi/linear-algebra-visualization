@@ -11,7 +11,7 @@ defineChapter1Section("polynomial-divisibility", {
     reference: "北大版《高等代数》第一章 §3",
     items: ["带余除法", "整除的定义与性质"],
   },
-  formal: {
+  theory: {
     title: "带余除法与整除",
     equation: "\\begin{gathered}f(x)=q(x)g(x)+r(x)\\\\ r(x)=0\\ \\ \\text{或}\\ \\ \\deg r<\\deg g\\end{gathered}",
     definitions: [

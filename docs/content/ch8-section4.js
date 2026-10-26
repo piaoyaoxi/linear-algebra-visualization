@@ -13,7 +13,7 @@ defineChapter8Section("similarity-criterion", {
     { label: "不变因子", text: `${texInline(String.raw`\lambda E-A`)} 的不变因子也称为 ${texInline("A")} 的不变因子` },
   ],
   textbook: { reference: "北大版《高等代数》第八章 §4", items: ["数字矩阵相似与特征矩阵等价", "矩阵的不变因子", "相似的充分必要条件"] },
-  lesson3d: {
+  theory: {
     blocks: [
       {
         title: "相似与特征矩阵的等价",

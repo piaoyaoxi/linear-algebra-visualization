@@ -14,7 +14,7 @@ defineChapter8Section("invariant-factors", {
   ],
   textbook: { reference: "北大版《高等代数》第八章 §3", items: ["行列式因子", "等价 λ-矩阵有相同的行列式因子", "标准形的唯一性", "不变因子", "可逆 λ-矩阵是初等矩阵之积"] },
   interactive: { type: "slot", title: "子式墙" },
-  lesson3d: {
+  theory: {
     blocks: [
       {
         title: "行列式因子",

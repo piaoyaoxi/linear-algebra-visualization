@@ -11,7 +11,7 @@ defineChapter1Section("complex-real-factorization", {
     reference: "北大版《高等代数》第一章 §8",
     items: ["代数基本定理", "复系数多项式的分解", "实系数多项式的分解"],
   },
-  formal: {
+  theory: {
     title: "共轭根与实二次因式",
     equation: "\\begin{aligned}&\\bigl(x-(a+bi)\\bigr)\\bigl(x-(a-bi)\\bigr)\\\\ &\\quad=x^2-2ax+a^2+b^2\\end{aligned}",
     definitions: [

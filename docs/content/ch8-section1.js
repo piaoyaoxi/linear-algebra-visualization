@@ -14,7 +14,7 @@ defineChapter8Section("lambda-matrix", {
   ],
   textbook: { reference: "北大版《高等代数》第八章 §1", items: ["λ-矩阵", "λ-矩阵的秩", "可逆的 λ-矩阵"] },
   interactive: { type: "slot", title: "沿数轴扫描 λ" },
-  lesson3d: {
+  theory: {
     blocks: [
       {
         title: "λ-矩阵与它的秩",

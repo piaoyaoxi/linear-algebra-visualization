@@ -35,61 +35,30 @@
   }
 
   /*
-   * Predict -> act -> reveal. Picking an option only records the prediction;
-   * the verdict and onReveal wait until the lab reports a real action
-   * (gate.acted(): a drag, a slider, a preset or a button) after the pick.
+   * Predict -> act -> reveal (visuals/shared/predict-gate.js). Picking an option only
+   * records the prediction; the verdict and onReveal wait until the lab reports a real
+   * action (gate.acted(): a drag, a slider, a preset or a button) after the pick.
    */
   function predictGate(host, spec, onReveal) {
-    spec = { ...spec, options: window.LAStableShuffle ? window.LAStableShuffle(spec.options, spec.question) : spec.options };
-    const box = el("div", "ch6l-predict");
-    box.innerHTML = `<div class="ch6l-predict-q"><span>先猜一猜</span><p>${spec.question}</p></div>
-      <div class="ch6l-predict-options">${spec.options.map((o, i) => `<button type="button" data-i="${i}" data-ok="${o.correct ? "true" : "false"}" data-why="${String(o.why || "").replace(/&/g, "&amp;").replace(/"/g, "&quot;")}">${o.text}</button>`).join("")}</div>
-      <p class="ch6l-predict-feedback" hidden></p>`;
-    host.append(box);
-    const feedback = box.querySelector(".ch6l-predict-feedback");
-    const buttons = [...box.querySelectorAll("[data-i]")];
-    const state = { choice: null, acted: false, revealed: false };
-
-    function grade() {
-      const o = spec.options[state.choice];
-      buttons.forEach((x, i) => {
-        x.classList.remove("is-picked", "is-right", "is-wrong");
-        if (i === state.choice) x.classList.add(o.correct ? "is-right" : "is-wrong");
-      });
-      feedback.hidden = false;
-      feedback.innerHTML = o.correct ? `✓ ${spec.right}` : `再看看图：${o.why || "动手操作后看看发生了什么。"}`;
-    }
-
-    function reveal() {
-      if (state.revealed || state.choice == null || !state.acted) return;
-      state.revealed = true;
-      box.classList.add("is-done");
-      grade();
-      onReveal?.();
-    }
-
-    buttons.forEach((b, i) =>
-      b.addEventListener("click", () => {
-        state.choice = i;
-        if (state.revealed) return grade();
-        buttons.forEach((x) => x.classList.toggle("is-picked", x === b));
-        feedback.hidden = false;
-        feedback.textContent = spec.actHint || "记下了你的猜测。现在动手操作一次，结论随后出现。";
-      }),
-    );
-
+    const gate = window.LAPredictGate.create({
+      prefix: "ch6l",
+      question: spec.question,
+      options: spec.options,
+      actHint: spec.actHint,
+      right: spec.right,
+      onReveal: () => onReveal?.(),
+    });
+    host.append(gate.element);
     return {
-      element: box,
+      element: gate.element,
       acted() {
-        if (state.choice == null) return;
-        state.acted = true;
-        reveal();
+        gate.reveal();
       },
       get predicted() {
-        return state.choice != null;
+        return gate.picked;
       },
       get revealed() {
-        return state.revealed;
+        return gate.revealed;
       },
     };
   }
@@ -450,7 +419,7 @@
   }
 
   function renderFormal(root, section) {
-    const f = section.lesson;
+    const f = section.theory;
     if (!root || !f) return;
     const figure = f.figure && figures.get(f.figure);
     const fig = figure ? `<figure class="ch6l-figure">${figure()}</figure>` : "";

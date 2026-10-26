@@ -193,24 +193,24 @@
     });
   }
 
-  // The art (~0.5–0.9 MB) is only needed when the theme switches: fetch it once the page
-  // has loaded and is idle, or right away if the switch comes first.
+  // The art (~0.5–0.9 MB) is only needed when the theme switches: fetch it when the student
+  // reaches for the switch (pointer over it, a touch, keyboard focus), so a student who never
+  // switches never downloads it. A switch that comes before the art plays without it (ART_WAIT_MS).
+  const ART_WAIT_MS = 700;
   const preparations = {};
   const prepare = (mode, priority = "low") => (preparations[mode] ||= loadImage(ASSETS[mode], priority));
 
   const preloadArt = () => {
-    const idle = window.requestIdleCallback || ((callback) => window.setTimeout(callback, 2000));
-    idle(() => {
-      Promise.all([prepare("luna"), prepare("sol")])
-        .then(([luna, sol]) => {
-          images.luna = luna;
-          images.sol = sol;
-        })
-        .catch((error) => console.warn("Theme art preload failed.", error));
-    });
+    Promise.all([prepare("luna", "high"), prepare("sol")])
+      .then(([luna, sol]) => {
+        images.luna = luna;
+        images.sol = sol;
+      })
+      .catch((error) => console.warn("Theme art preload failed.", error));
   };
-  if (document.readyState === "complete") preloadArt();
-  else window.addEventListener("load", preloadArt, { once: true });
+  ["pointerenter", "pointerdown", "touchstart", "focus"].forEach((type) =>
+    document.querySelector("#themeToggle")?.addEventListener(type, preloadArt, { once: true, passive: true }),
+  );
 
   function ensureOverlay() {
     if (overlay) return overlay;
@@ -409,7 +409,6 @@
     }
     const mode = goingDark ? "luna" : "sol";
     const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-    const timing = reduced ? REDUCED : NORMAL;
     const root = ensureOverlay();
     const from = goingDark ? LIGHT : DARK;
     const to = goingDark ? DARK : LIGHT;
@@ -420,10 +419,13 @@
     document.body.classList.add("theme-transitioning");
     window.dispatchEvent(new Event("la-themestart"));
     root.dataset.mode = mode;
-    root.style.setProperty("--theme-tx-duration", `${timing.duration}ms`);
     setPageVeil(1);
 
-    const run = () => {
+    // withArt false: the short switch, without the sun or moon (theme-transition.css)
+    const run = (timing, withArt) => {
+      root.style.setProperty("--theme-tx-duration", `${timing.duration}ms`);
+      if (withArt) delete root.dataset.art;
+      else root.dataset.art = "none";
       root.classList.remove("is-active");
       void root.offsetWidth;
       root.classList.add("is-active");
@@ -448,10 +450,20 @@
     };
 
     if (reduced) {
-      run();
+      run(REDUCED, false);
       return;
     }
 
+    // the art usually arrives while the pointer travels to the switch; if it is still on its
+    // way shortly after the click, switch without it rather than keep the student waiting
+    let started = false;
+    const start = (timing, withArt) => {
+      if (started) return;
+      started = true;
+      window.clearTimeout(withoutArt);
+      run(timing, withArt);
+    };
+    const withoutArt = window.setTimeout(() => start(REDUCED, false), ART_WAIT_MS);
     const ready = images[mode]
       ? Promise.resolve(images[mode])
       : prepare(mode, "high").then((img) => {
@@ -461,6 +473,7 @@
 
     ready
       .then((img) => {
+        if (started) return null;
         // a fresh element per switch: reusing one <img> and swapping luna → sol made
         // Safari's decode() reject, which dropped the sun animation
         const fresh = art.cloneNode(false);
@@ -469,13 +482,10 @@
         art = fresh;
         return Promise.resolve(fresh.decode?.()).catch(() => {});
       })
-      .then(run)
+      .then(() => start(NORMAL, true))
       .catch((error) => {
         console.warn("Theme transition art failed.", error);
-        finalizeTheme(targetTheme, button);
-        setPageVeil(1);
-        teardownOverlay(button);
-        clearTimers();
+        start(REDUCED, false);
       });
   }
 

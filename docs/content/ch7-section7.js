@@ -14,7 +14,7 @@ defineChapter7Section("invariant-subspaces", {
   ],
   textbook: { reference: "北大版《高等代数》第七章 §7", items: ["不变子空间的定义与例", "不变子空间与矩阵化简", "按特征值分解为不变子空间的直和"] },
   interactive: { type: "slot", title: "σW 有没有离开 W" },
-  lesson3d: {
+  theory: {
     blocks: [
       {
         title: "定义与常见的不变子空间",

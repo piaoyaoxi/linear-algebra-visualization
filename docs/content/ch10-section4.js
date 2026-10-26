@@ -14,7 +14,7 @@ defineChapter10Section("symplectic-space", {
   ],
   textbook: { reference: "北大版《高等代数》第十章 ＊§4", items: ["辛空间与辛内积", "辛基", "辛变换"] },
   interactive: { type: "slot", title: "保持有向面积的变换" },
-  lesson3d: {
+  theory: {
     blocks: [
       {
         title: "辛空间",

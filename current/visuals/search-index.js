@@ -199,12 +199,15 @@
     return `#${chapter.id}`;
   };
 
-  const buildEntries = () => {
-    const entries = [];
+  // The index as a list of small jobs (the guide, each chapter, each field of each section),
+  // so it can be built a little at a time; see warmIndex.
+  const entryJobs = (entries) => {
+    const jobs = [];
 
-    const pushEntry = ({ chapter, chapterIndex, section, sectionIndex, subIndex = 0, kind, title, text, href }) => {
+    // collected: parts gathered by earlier jobs (a section's fields), used instead of text
+    const pushEntry = ({ chapter, chapterIndex, section, sectionIndex, subIndex = 0, kind, title, text, collected, href }) => {
       const cleanTitle = shortTitle(title);
-      const parts = toParts(text);
+      const parts = collected ? tidy(collected) : toParts(text);
       const cleanBody = plainText(parts);
       if (!cleanTitle && !cleanBody) return;
       entries.push({
@@ -225,7 +228,7 @@
     };
 
     const guide = { id: "guide", title: "导学" };
-    pushEntry({
+    jobs.push(() => pushEntry({
       chapter: guide,
       chapterIndex: -1,
       section: null,
@@ -234,11 +237,11 @@
       title: "导学",
       text: "如何使用 学习路线 从第一节开始",
       href: "#guide",
-    });
+    }));
 
     getChapters().forEach((chapter, chapterIndex) => {
       const sections = Array.isArray(chapter.sections) ? chapter.sections : [];
-      pushEntry({
+      jobs.push(() => pushEntry({
         chapter,
         chapterIndex,
         section: null,
@@ -247,12 +250,12 @@
         title: chapter.title,
         text: [chapter.subtitle, chapter.summary],
         href: `#${chapter.id}`,
-      });
+      }));
 
       sections.forEach((section, sectionIndex) => {
         const href = getSectionHref(chapter, section);
         if (typeof section === "string") {
-          pushEntry({
+          jobs.push(() => pushEntry({
             chapter,
             chapterIndex,
             section,
@@ -261,40 +264,63 @@
             title: section,
             text: [chapter.subtitle, section],
             href,
-          });
+          }));
           return;
         }
 
         if (!section || typeof section !== "object") return;
         const sectionTitle = section.navTitle || section.title || section.textbookSection || `第 ${sectionIndex + 1} 节`;
-        // the result title already shows the number and the navigation title; other names still match
-        const { number, navTitle, title, textbookSection, ...content } = section;
-        const names = [...new Set([title, textbookSection])].filter((name) => name && name !== sectionTitle);
-        // exercises stand in for the self-test only when a section has no quiz
-        if (content.quiz?.length) delete content.exercises;
-        pushEntry({
+        // One searchable destination per real route. Nested concepts, examples and self-tests
+        // still participate in the full-text match, but do not create dozens of duplicate links
+        // to the same section. Each field is read by a job of its own: reading it renders its
+        // formulas. Keys are listed without reading the values (they may be getters).
+        const parts = [];
+        jobs.push(() => {
+          // the result title already shows the number and the navigation title; other names still match
+          const names = [...new Set([section.title, section.textbookSection])].filter((name) => name && name !== sectionTitle);
+          collect(names, parts);
+        });
+        Object.keys(section)
+          .filter((key) => !["number", "navTitle", "title", "textbookSection"].includes(key) && !nonStudentTextKeys.has(key))
+          .forEach((key) =>
+            jobs.push(() => {
+              // exercises stand in for the self-test only when a section has no quiz
+              if (key === "exercises" && section.quiz?.length) return;
+              collect(section[key], parts, key);
+            }),
+          );
+        jobs.push(() => pushEntry({
           chapter,
           chapterIndex,
           section,
           sectionIndex,
           kind: "section",
           title: `${section.number || ""} ${sectionTitle}`,
-          // One searchable destination per real route. Nested concepts,
-          // examples and self-tests still participate in the full-text match,
-          // but do not create dozens of duplicate links to the same section.
-          text: [names, content],
+          collected: parts,
           href,
-        });
+        }));
       });
     });
 
-    return entries;
+    return jobs;
   };
 
-  let entryCache = null;
+  /*
+   * Reading a section's text renders its formulas (app.js, deferContentTex), so building
+   * the whole index at once took seconds on a slow phone. It is built while the page is
+   * idle, a few entries per idle period; a search that comes first finishes it at once.
+   */
+  let entries = null;
+  let queue = [];
+  const startIndex = () => {
+    if (entries) return;
+    entries = [];
+    queue = entryJobs(entries);
+  };
   const getEntries = () => {
-    if (!entryCache) entryCache = buildEntries();
-    return entryCache;
+    startIndex();
+    while (queue.length) queue.shift()();
+    return entries;
   };
 
   const search = (rawQuery, { limit = 120 } = {}) => {
@@ -345,11 +371,26 @@
   window.AlgebraSearch = {
     search,
     invalidate() {
-      entryCache = null;
+      entries = null;
+      queue = [];
     },
   };
 
-  const warmIndex = () => getEntries();
-  if ("requestIdleCallback" in window) window.requestIdleCallback(warmIndex, { timeout: 1400 });
-  else window.setTimeout(warmIndex, 0);
+  // Safari has no requestIdleCallback: a short slice after a pause stands in for an idle period.
+  const whenIdle = (task) =>
+    window.requestIdleCallback
+      ? window.requestIdleCallback(task)
+      : window.setTimeout(() => {
+          const start = performance.now();
+          task({ timeRemaining: () => Math.max(0, 10 - (performance.now() - start)) });
+        }, 80);
+  const warmIndex = (deadline) => {
+    startIndex();
+    while (queue.length && deadline.timeRemaining() > 4) queue.shift()();
+    if (queue.length) whenIdle(warmIndex);
+  };
+  // after the page's own start (app.js renders the first page on DOMContentLoaded)
+  const begin = () => whenIdle(warmIndex);
+  if (document.readyState === "complete") begin();
+  else window.addEventListener("load", begin, { once: true });
 })();

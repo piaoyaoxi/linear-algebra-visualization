@@ -14,7 +14,7 @@ defineChapter8Section("elementary-divisors", {
   ],
   textbook: { reference: "北大版《高等代数》第八章 §5", items: ["初等因子的定义", "由初等因子还原不变因子", "初等因子与相似", "用对角形求初等因子"] },
   interactive: { type: "slot", title: "初等因子积木" },
-  lesson3d: {
+  theory: {
     blocks: [
       {
         title: "初等因子",

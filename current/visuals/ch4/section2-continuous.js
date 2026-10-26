@@ -69,10 +69,7 @@
     return `\\begin{bmatrix}${vector.join("\\\\")}\\end{bmatrix}`;
   }
 
-  function formatNumber(value) {
-    const rounded = Math.round(value * 100) / 100;
-    return Number.isInteger(rounded) ? String(rounded) : rounded.toFixed(2).replace(/0+$/, "").replace(/\.$/, "");
-  }
+  const formatNumber = (value) => window.LANumber.decimal(value, 2);
 
   function getPalette() {
     const styles = getComputedStyle(document.body);
@@ -89,22 +86,7 @@
     };
   }
 
-  function setupCanvas(canvas) {
-    const rect = canvas.getBoundingClientRect();
-    const dpr = window.devicePixelRatio || 1;
-    const width = Math.max(1, rect.width);
-    const height = Math.max(1, rect.height);
-    const metrics = canvas._s2cMetrics || { w: 0, h: 0, dpr: 0 };
-    if (metrics.w !== width || metrics.h !== height || metrics.dpr !== dpr) {
-      canvas.width = Math.max(1, Math.round(width * dpr));
-      canvas.height = Math.max(1, Math.round(height * dpr));
-      canvas._s2cMetrics = { w: width, h: height, dpr };
-    }
-    const ctx = canvas.getContext("2d");
-    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-    ctx.clearRect(0, 0, width, height);
-    return { ctx, width, height };
-  }
+  const setupCanvas = (canvas) => window.LACanvas.setup(canvas);
 
   function pointFor(matrix, x, y, origin, scale) {
     const tx = matrix[0][0] * x + matrix[0][1] * y;
@@ -624,12 +606,7 @@
       });
       // Double rAF: wait until the panel is visible before measuring canvas size.
       requestAnimationFrame(() => {
-        requestAnimationFrame(() => {
-          root.querySelectorAll("canvas").forEach((canvas) => {
-            canvas._s2cMetrics = null;
-          });
-          redrawVisible(root);
-        });
+        requestAnimationFrame(() => redrawVisible(root));
       });
     };
     tabs.forEach((tab, index) => {

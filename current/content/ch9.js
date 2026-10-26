@@ -21,7 +21,7 @@
       ],
       textbook: { reference, items: ["欧几里得空间的定义", "长度、夹角与正交", "度量矩阵"] },
       interactive: lab("度量矩阵 G 决定什么叫“垂直”"),
-      lesson9: {
+      theory: {
         blocks: [
           {
             title: "欧氏空间与度量矩阵",
@@ -101,7 +101,7 @@
       ],
       textbook: { reference, items: ["正交向量组", "标准正交基与坐标", "施密特正交化", "正交矩阵"] },
       interactive: lab("施密特正交化的第三步：减去平面上的投影"),
-      lesson9: {
+      theory: {
         blocks: [
           {
             title: "标准正交基下的坐标与内积",
@@ -176,7 +176,7 @@
       ],
       textbook: { reference, items: ["欧氏空间同构的定义", "同构与维数"] },
       interactive: lab("坐标映射把 V 的单位圆送到哪里"),
-      lesson9: {
+      theory: {
         blocks: [
           {
             title: "坐标映射何时保持内积",
@@ -249,7 +249,7 @@
       ],
       textbook: { reference, items: ["正交变换的定义与等价条件", "第一类与第二类正交变换", "镜面反射"] },
       interactive: lab("保持全部长度与夹角的线性变换"),
-      lesson9: {
+      theory: {
         blocks: [
           {
             title: "四个等价条件",
@@ -319,7 +319,7 @@
       ],
       textbook: { reference, items: ["子空间的正交", "正交补", "正交分解与内射影"] },
       interactive: lab("W 与它的正交补 W⊥"),
-      lesson9: {
+      theory: {
         blocks: [
           {
             title: "正交补是一个解空间",
@@ -394,7 +394,7 @@
       ],
       textbook: { reference, items: ["实对称矩阵的特征值", "对称变换", "正交矩阵化实对称矩阵为对角形", "主轴问题"] },
       interactive: lab("A = TΛTᵀ：转过去、伸缩、转回来"),
-      lesson9: {
+      theory: {
         blocks: [
           {
             title: "不同特征值的特征向量正交",
@@ -466,7 +466,7 @@
       ],
       textbook: { reference, items: ["向量到子空间的距离", "最小二乘法与正规方程"] },
       interactive: lab("离 b 最近的 Ax：投影与拟合直线是同一件事"),
-      lesson9: {
+      theory: {
         blocks: [
           {
             title: "垂线最短",
@@ -545,7 +545,7 @@
         { label: "酉矩阵", text: `${t("\\bar A^TA=E")}。` },
       ],
       textbook: { reference, items: ["酉空间的内积", "酉矩阵与埃尔米特矩阵"] },
-      lesson9: {
+      theory: {
         figure: "conjugate",
         blocks: [
           {

@@ -2,13 +2,13 @@ const fs = require("node:fs");
 const path = require("node:path");
 
 const roots = [
-  "current/content/ch10-registry.js",
+  "current/content/registry.js",
   "current/content/ch10-section1.js",
   "current/content/ch10-section2.js",
   "current/content/ch10-section3.js",
   "current/content/ch10-section4.js",
   "current/content/ch10.js",
-  "current/content/ch10-assemble.js",
+  "current/content/assemble.js",
   "current/visuals/ch10",
   "current/app.js",
 ];
@@ -86,7 +86,7 @@ for (const file of collectFiles("current/visuals/ch10")) {
 
 const learnSource = fs.readFileSync("current/learn.html", "utf8");
 if (/cinematic\.css|cinematic\.js/.test(learnSource)) visualFindings.push({ file: "current/learn.html", rule: "cinematic-resource" });
-for (const resource of ["visuals/ch10/labs.css", "visuals/ch10/labs.js", "content/ch10-assemble.js"]) {
+for (const resource of ["visuals/ch10/labs.css", "visuals/ch10/labs.js", "content/assemble.js"]) {
   if (!learnSource.includes(resource)) visualFindings.push({ file: "current/learn.html", rule: "missing-resource", value: resource });
 }
 if (/visuals\/ch10\/(base|section\d-presentation|shared)\./.test(learnSource)) visualFindings.push({ file: "current/learn.html", rule: "retired-ch10-resource" });

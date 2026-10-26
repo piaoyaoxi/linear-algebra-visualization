@@ -14,7 +14,7 @@ defineChapter10Section("linear-functional", {
   ],
   textbook: { reference: "北大版《高等代数》第十章 §1", items: ["线性函数的定义与例", "线性函数由基上的值唯一决定"] },
   interactive: { type: "slot", title: "等值线读出 f(x)" },
-  lesson3d: {
+  theory: {
     blocks: [
       {
         title: "线性函数的定义",

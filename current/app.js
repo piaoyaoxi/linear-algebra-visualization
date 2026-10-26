@@ -11,27 +11,91 @@ function texDisplay(source) {
   return renderTexShell(source, true);
 }
 
+/*
+ * The content files of all ten chapters run before the page starts and hold about 4800
+ * formulas, while one lesson shows about a hundred. While they load (contentLoading), a
+ * formula is written as an empty, marked shell; when the page starts, every content
+ * string holding one gets a getter that fills in the KaTeX output the first time the
+ * string is read (deferContentTex). The filled string is exactly what an immediate
+ * render gives. Labs render later, after the start, and get their formulas at once.
+ */
+let contentLoading = true;
+const PENDING_TEX = /<span class="tex (tex-inline|tex-display)" data-tex="([^"]*)" data-tex-pending=""><\/span>/g;
+
 function renderTexShell(source, displayMode) {
   const tex = String(source || "");
   const className = displayMode ? "tex tex-display" : "tex tex-inline";
-  return '<span class="' + className + '" data-tex="' + escapeAttribute(tex) + '">' + renderTex(tex, displayMode) + '</span>';
+  const attribute = escapeAttribute(tex);
+  if (contentLoading) return '<span class="' + className + '" data-tex="' + attribute + '" data-tex-pending=""></span>';
+  return '<span class="' + className + '" data-tex="' + attribute + '">' + renderTex(tex, displayMode) + '</span>';
 }
 
+function fillPendingTex(html) {
+  return html.replace(PENDING_TEX, (_, kind, attribute) =>
+    '<span class="tex ' + kind + '" data-tex="' + attribute + '">' + renderTex(unescapeAttribute(attribute), kind === "tex-display") + '</span>',
+  );
+}
+
+function deferContentTex(value, seen = new WeakSet()) {
+  if (!value || typeof value !== "object" || seen.has(value)) return;
+  seen.add(value);
+  Object.keys(value).forEach((key) => {
+    const item = value[key];
+    if (typeof item === "string") {
+      if (!item.includes("data-tex-pending")) return;
+      Object.defineProperty(value, key, {
+        configurable: true,
+        enumerable: true,
+        get() {
+          const filled = fillPendingTex(item);
+          Object.defineProperty(value, key, { value: filled, writable: true, configurable: true, enumerable: true });
+          return filled;
+        },
+        set(next) {
+          Object.defineProperty(value, key, { value: next, writable: true, configurable: true, enumerable: true });
+        },
+      });
+    } else {
+      deferContentTex(item, seen);
+    }
+  });
+}
+
+// The same symbols (A, n, σ …) recur hundreds of times: render each source once.
+const texCache = new Map();
+
 function renderTex(source, displayMode) {
+  const key = (displayMode ? "D" : "I") + source;
+  const cached = texCache.get(key);
+  if (cached !== undefined) return cached;
   if (window.katex?.renderToString) {
     try {
-      return window.katex.renderToString(source, {
+      const html = window.katex.renderToString(source, {
         displayMode,
         throwOnError: false,
         strict: "ignore",
         trust: false,
       });
+      // labs render readouts that change with every drag: keep the cache bounded
+      if (texCache.size > 6000) texCache.clear();
+      texCache.set(key, html);
+      return html;
     } catch (error) {
       console.warn("KaTeX render failed:", source, error);
     }
   }
 
   return escapeHtml(source);
+}
+
+function unescapeAttribute(value) {
+  return String(value)
+    .replace(/&#96;/g, "\x60")
+    .replace(/&#39;/g, "'")
+    .replace(/&quot;/g, '"')
+    .replace(/&gt;/g, ">")
+    .replace(/&lt;/g, "<")
+    .replace(/&amp;/g, "&");
 }
 
 function escapeHtml(value) {
@@ -369,6 +433,8 @@ const MOON_ICON = `
   </svg>
 `;
 
+const systemDark = window.matchMedia?.("(prefers-color-scheme: dark)") || null;
+
 if (document.readyState === "complete") {
   init();
 } else {
@@ -376,8 +442,17 @@ if (document.readyState === "complete") {
 }
 
 function init() {
-  const savedTheme = readPreference("la-visual-theme");
-  if (savedTheme === "dark") document.body.classList.add("dark");
+  // All content files have run: formulas render at once from here on, and the shells the
+  // content files wrote fill in when a page first reads their text.
+  contentLoading = false;
+  deferContentTex(algebraContent);
+  deferContentTex(window.LESSON_EXTRAS);
+
+  applyTheme(preferredTheme());
+  // Without a saved choice the page follows the system setting, also while it is open.
+  systemDark?.addEventListener?.("change", () => {
+    if (!savedTheme()) applyTheme(preferredTheme(), { announce: true });
+  });
 
   const collapsed = readPreference("la-visual-sidebar") === "collapsed";
   if (collapsed) document.body.classList.add("sidebar-collapsed");
@@ -446,6 +521,32 @@ function bindChrome() {
 
 function updateThemeIcon() {
   els.themeToggle.innerHTML = document.body.classList.contains("dark") ? MOON_ICON : SUN_ICON;
+}
+
+/* ---------- Light and dark ---------- */
+
+// The saved choice wins (theme-transition.js saves it when the student switches); without
+// one, the system setting decides (systemDark). learn.html applies the same rule before
+// the first paint.
+function savedTheme() {
+  const saved = readPreference("la-visual-theme");
+  return saved === "dark" || saved === "light" ? saved : null;
+}
+
+function preferredTheme() {
+  return savedTheme() || (systemDark?.matches ? "dark" : "light");
+}
+
+// announce: tell the labs, as a switch by the button does (canvases redraw on these events)
+function applyTheme(theme, { announce = false } = {}) {
+  const dark = theme === "dark";
+  const changed = document.body.classList.contains("dark") !== dark;
+  document.body.classList.toggle("dark", dark);
+  if (dark || document.documentElement.style.colorScheme) document.documentElement.style.colorScheme = theme;
+  updateThemeIcon();
+  if (!announce || !changed) return;
+  window.dispatchEvent(new CustomEvent("la-themechange", { detail: { theme } }));
+  window.requestAnimationFrame(() => window.dispatchEvent(new Event("resize")));
 }
 
 window.updateThemeIcon = updateThemeIcon;
@@ -957,10 +1058,21 @@ function renderSummary(section) {
 /* ---------- After each render ---------- */
 
 function setupInteractiveBlocks() {
+  fillStrayPendingTex(els.main);
   updateProgressUI();
   bindCompleteButtons();
   bindAnimatedDetails(els.main);
   setupTocObserver();
+}
+
+// A content string copied before the page started (deferContentTex) would still hold an
+// empty formula shell: render it in place, and report it so the browser checks catch it.
+function fillStrayPendingTex(root) {
+  root?.querySelectorAll("[data-tex-pending]").forEach((shell) => {
+    console.error("Formula shell reached the page unrendered:", shell.dataset.tex);
+    shell.innerHTML = renderTex(shell.dataset.tex || "", shell.classList.contains("tex-display"));
+    shell.removeAttribute("data-tex-pending");
+  });
 }
 
 function prefersReducedMotion() {

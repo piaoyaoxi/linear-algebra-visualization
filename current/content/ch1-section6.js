@@ -11,7 +11,7 @@ defineChapter1Section("multiple-factors", {
     reference: "北大版《高等代数》第一章 §6",
     items: ["重因式与重数", "重因式的判别"],
   },
-  formal: {
+  theory: {
     title: "导数与重因式",
     equation: "\\begin{gathered}f=(x-a)^m h,\\quad h(a)\\ne0\\\\ f'=(x-a)^{m-1}\\bigl[m\\,h+(x-a)h'\\bigr]\\end{gathered}",
     definitions: [

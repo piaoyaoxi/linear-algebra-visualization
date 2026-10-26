@@ -64,109 +64,43 @@
   }
 
   /*
-   * Prediction gate: the student picks an answer before the conclusion panel
-   * opens. Wrong picks stay visible so the student can compare with the picture.
+   * Prediction gate (visuals/shared/predict-gate.js): the student picks an answer before the
+   * conclusion panel opens, then acts on the picture; the verdict follows the action.
+   * Optional spec.inExample(): the question is about one case of the lab. An action in
+   * another case keeps the guess and shows spec.elsewhere (a hint) instead of the verdict.
    */
   function predictGate(host, spec, onAnswered) {
-    spec = { ...spec, options: window.LAStableShuffle ? window.LAStableShuffle(spec.options, spec.question) : spec.options };
-    const box = el("div", "ch3l-predict");
-    box.innerHTML = `<div class="ch3l-predict-q"><span>先猜一猜</span><p>${spec.question}</p></div>
-      <div class="ch3l-predict-options">${spec.options.map((o, i) => `<button type="button" data-i="${i}" data-ok="${o.correct ? "true" : "false"}" data-why="${String(o.why || "").replace(/&/g, "&amp;").replace(/"/g, "&quot;")}">${o.text}</button>`).join("")}</div>
-      <p class="ch3l-predict-feedback" hidden></p>`;
-    host.append(box);
-    const feedback = box.querySelector(".ch3l-predict-feedback");
-    /*
-     * Predict -> act -> reveal, as in the other chapters: the verdict and the
-     * conclusion open only after the student has also acted on the picture.
-     */
-    let choice = null;
-    let revealed = false;
-    function reveal() {
-      if (revealed || choice == null) return;
-      revealed = true;
-      const o = spec.options[choice];
-      feedback.innerHTML = o.correct ? `✓ ${spec.right}` : `再看看图：${o.why || spec.hint || "再看看图。"}`;
-      box.querySelectorAll("[data-i]").forEach((x, i) => {
-        x.classList.remove("is-picked");
-        x.classList.toggle(spec.options[i].correct ? "is-right" : "is-wrong", i === choice);
-      });
-      box.classList.add("is-done");
-      onAnswered?.();
-    }
-    box.querySelectorAll("[data-i]").forEach((b) =>
-      b.addEventListener("click", () => {
-        if (revealed) return;
-        choice = Number(b.dataset.i);
-        box.querySelectorAll("[data-i]").forEach((x) => x.classList.toggle("is-picked", x === b));
-        feedback.hidden = false;
-        feedback.textContent = "记下了你的猜测。现在在图上动手操作一次，结论随后出现。";
-        spec.onPick?.();
-      }),
-    );
-    const lab = host.closest(".ch3l-lab") || host.parentElement;
-    /*
-     * Acting means changing what the lab reports. Rotating the camera, a view-only
-     * button or a click on the text leaves the readouts as they were, so it does
-     * not count; moving b, v₃, c or running a step changes them.
-     */
-    const state = () => {
-      const parts = [];
-      const walk = document.createTreeWalker(lab, NodeFilter.SHOW_TEXT);
-      while (walk.nextNode()) {
-        const node = walk.currentNode;
-        if (node.parentElement?.closest(".ch3l-predict, button, .ch3l-head, .la-figcaption, .la3d-hint, .katex-mathml")) continue;
-        parts.push(node.textContent.trim());
-      }
-      lab.querySelectorAll("input").forEach((input) => parts.push(input.value));
-      return parts.join("|");
-    };
-    // the readouts at the moment of the pick; refreshed once after the lab's own redraw,
-    // unless the student has already acted by then
-    let before = null;
-    let touched = false;
-    box.querySelectorAll("[data-i]").forEach((b) => b.addEventListener("click", () => {
-      if (before != null) return;
-      before = state();
-      requestAnimationFrame(() => { if (!touched && !revealed) before = state(); });
-    }));
-    /*
-     * Optional spec.inExample(): the question is about one case of the lab. An action in
-     * another case keeps the guess and shows spec.elsewhere (a hint) instead of the verdict.
-     */
-    let changed = false;
+    const gate = window.LAPredictGate.create({
+      prefix: "ch3l",
+      question: spec.question,
+      options: spec.options,
+      actHint: "记下了你的猜测。现在在图上动手操作一次，结论随后出现。",
+      right: spec.right,
+      fallbackWhy: spec.hint || "再看看图。",
+      onPick: () => spec.onPick?.(),
+      onReveal: () => onAnswered?.(),
+    });
+    host.append(gate.element);
     const judge = () => {
       if (spec.inExample && !spec.inExample()) {
         const hint = typeof spec.elsewhere === "function" ? spec.elsewhere() : spec.elsewhere;
-        if (hint) {
-          feedback.hidden = false;
-          feedback.innerHTML = hint;
-        }
+        if (hint) gate.note(hint);
         return;
       }
-      reveal();
+      gate.reveal();
     };
-    const check = () => {
-      if (choice == null || revealed || before == null) return;
-      if (state() !== before) changed = true;
-      if (changed) judge();
-    };
-    const acted = (event) => {
-      if (choice == null || revealed || box.contains(event.target)) return;
-      touched = true;
-      // the lab redraws its readouts after its own handlers, and animations finish later
-      setTimeout(check, 60);
-      setTimeout(check, 400);
-      setTimeout(check, 1100);
-    };
-    ["pointerup", "input", "change", "keyup", "click"].forEach((type) => lab?.addEventListener(type, acted));
-    // dragging a handle on the canvas is acting even when the readouts are still hidden
-    lab?.addEventListener("la-handle-move", () => {
-      if (choice == null || before == null || revealed) return;
-      changed = true;
-      // with inExample the verdict waits for the release, so the box does not grow mid-drag
-      if (!spec.inExample) judge();
-    });
-    return box;
+    const lab = host.closest(".ch3l-lab") || host.parentElement;
+    if (lab) {
+      gate.watch(lab, {
+        ignore: ".ch3l-predict, button, .ch3l-head, .la-figcaption, .la3d-hint, .katex-mathml",
+        judge,
+        // with inExample the verdict waits for the release, so the box does not grow mid-drag
+        drag: () => {
+          if (!spec.inExample) judge();
+        },
+      });
+    }
+    return gate.element;
   }
 
   /*
@@ -656,6 +590,7 @@
       });
       scene.setHandles(
         state.v.slice(0, state.stage).map((_, i) => ({
+          name: `v${"₁₂₃"[i]}`,
           color: "drag",
           snap: 0.5,
           ...(state.free ? {} : { mode: "line", dir: [0, 0, 1] }),
@@ -981,6 +916,7 @@
       ]);
       colScene.setHandles([
         {
+          name: "b",
           color: "drag",
           snap: 0.5,
           get: () => state.b,
@@ -1256,7 +1192,7 @@
   };
 
   function renderFormal(root, section) {
-    const f = section.lesson3d;
+    const f = section.theory;
     if (!root || !f) return undefined;
     const mounts = [];
     const figureHtml = (key, i) => {

@@ -1,0 +1,18 @@
+{
+  "name": "linear-algebra-visualization",
+  "private": true,
+  "description": "The site in current/ is plain HTML, CSS and JavaScript with no build step; this file pins the tools the checks run with.",
+  "scripts": {
+    "serve": "python3 .github/scripts/serve.py 4173 current",
+    "test": "node --test tests/*.test.mjs",
+    "audit": "node .github/scripts/site-audit.mjs",
+    "smoke": "node .github/scripts/reliability-smoke.mjs",
+    "layout": "node .github/scripts/layout-check.mjs",
+    "selectors": "node .github/scripts/selector-check.mjs",
+    "perf": "node .github/scripts/perf-budget.mjs"
+  },
+  "devDependencies": {
+    "@playwright/test": "1.63.0",
+    "playwright": "1.63.0"
+  }
+}

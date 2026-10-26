@@ -6,7 +6,7 @@
 
 > 内部项目文档，给 Codex / 后续新会话 / 上下文压缩后续接使用。
 > 本文不是学生页面内容，不要直接展示在网站前台。
-> 最后更新：2026-10-20
+> 最后更新：2026-10-25
 
 ## 1. 项目定位
 
@@ -69,6 +69,18 @@
 - `afterLessonRender(fn)`：所有章都跑（例题挑战、停一下与定理小图）。
 - 每次换路由先跑全部清理；单个实验出错只在控制台报错，不会让整页停住。
 - 章节导览页读章节数据里的 `overviewCards`（三张卡）、`structureTitle`；没有卡就不显示“本章结构”。
+
+2026-10-25 起的约定（来由见文末同日记录）：
+
+- 章节数据：`content/registry.js` 提供 `defineChapter1Section` … `defineChapter10Section(id, data)`，同一小节注册两次直接报错；`content/assemble.js` 在所有章节文件之后运行，按 `chN.js` 的小节列表合并数据。这个列表是小节顺序的唯一来源，缺数据、多出数据都会在控制台提示。新章节不要再写自己的 registry / assemble。
+- 定理带的数据字段统一叫 `theory`（原来有 formal / lesson / lesson3d / lesson9 四种叫法）。`defineLessonRenderer` 的槽名仍叫 `formal`，对应页面上的 `#…-formal` 定理带。
+- 预测框只由 `visuals/shared/predict-gate.js` 生成：`LAPredictGate.create` 管标记、猜测、“不确定”、揭晓、选项解释、手机上的折叠与逐行排选项，`gate.watch` 管“读数变了才算动手”；各章套件的 `predictGate` / `predictFlow` 只是外壳，没有套件的实验用 `LAPredictGate.mount`。不要再手写 `.chNl-predict` 标记，也不要再按类名给预测框打补丁（predict-ux.js 已删除）。
+- 全局布局脚本（mobile-lab.js、lab-layout.js）伸进各章实验的选择器公布在 `window.LALayoutHooks`；`.github/scripts/selector-check.mjs`（site-audit 里跑）在手机宽度打开每一节，任何一条在全站都匹配不到就失败。改实验的类名之前先跑它。
+- typeset.js 的处理顺序是硬规则：等字体到齐才排版；一批改动先全部改写，最后才量行宽；一批里每个元素的样式只读一次（styleOf 缓存，joinRuns 移动过的元素当场作废）。新加的排版步骤写成“先全部读、再全部改”两段，不要在循环里读一次改一次（那正是原来手机上卡 6–11 秒的原因）。
+- 公式按需渲染：内容加载期间 `renderTex` 只放占位壳，内容字符串第一次被读取时才换成 KaTeX（`deferContentTex`）。页面上若留下占位壳，`fillStrayPendingTex` 会补渲染并在控制台报错；见到这条报错，说明有代码绕过了内容对象直接拿了字符串。
+- 画布共用 `visuals/shared/canvas.js`：`LACanvas.setup`（按像素密度设定画布并清空）、`withAlpha`、`keyHandles`（圆点的键盘操作与读屏，三维场景、第七章平面、第九章平面已接上；新引擎接同一个助手，圆点可带 `name`）。实验读数一律用 `visuals/shared/number.js` 的 `LANumber.decimal / text`。
+- 工具：根目录 `package.json` + `package-lock.json` 锁定 Playwright 1.63.0，`.nvmrc` 锁定 Node 22，所有工作流经 `.github/actions/setup-playwright` 安装。本地 `npm ci` 之后可用 `npm test`、`npm run audit`、`npm run smoke`、`npm run selectors`、`npm run perf`；第二章的 spec 用 `npx playwright test tests/ch2*.spec.js`。`perf-budget.mjs` 量手机上切换课程的主线程长任务，预算按机器速度校准。
+- spec 里的 `test.use({ reducedMotion: "reduce" })` 从 Playwright 1.63 起才真的生效（1.55 不认这个选项，静默忽略）。第二章桌面和手机两组 spec 现在确实在减少动效下跑：动画直接跳到终点，断言要按终点写，要看动画过程的放进 `ch2-motion.spec.js`。
 
 ## 5. 已看资料：线性代数不难
 
@@ -217,19 +229,11 @@ _dev/research/3b1b_eola_chapter10.py
 - 二者可以共用同一套数学对象和视觉语言。
 - 没有操作问题的“交互”不要做；没有叙事必要的“短片”不要做。
 
-## 10. 当前制作状态与下一步建议
+## 10. 当前状态与下一步（2026-10-25）
 
-已经完成：
-
-1. `docs/ch4-production-matrix.md` 已建立，第四章 §1-§7 的短片、交互、例题、自测、参考来源和完成度已经列入制作表。
-2. §2“矩阵的运算 / 矩阵乘法与复合”已完成第一版样板：短片脚本放在 `videoPlan`，前台有三视角交互、定理概念、步进例题、自测和小结。
-
-接下来优先做这些：
-
-1. 核对 §2 与北大版教材正文、页码和术语的一致性。
-2. 用 §2 样板推进 §3：补齐乘积行列式、秩与复合变换的连接。
-3. 从《线性代数不难》继续按完整小节拆读。每读一节，把可借鉴的视觉主线追加到本文“资料观察记录”部分。
-4. 需要真实短片时，先写 `videoPlan` 和 Manim 场景脚本，等 mp4/webm 或 iframe 地址存在后再填写 `video`。
+- 十章都已按“以可视化为核心”的标准完成，之后的工作以打磨为主。
+- 2026-10-25 的深度检查和随后的整体修复见文末同日记录（PR #144）；那一节的“留下的事”就是下一步。
+- 第四章样板阶段的制作表仍在 `docs/ch4-production-matrix.md`；当时的状态记录见下文“第四章样板阶段的状态”和 `docs/project-memory.md`。
 
 ## 11. 未来追加记录格式
 
@@ -258,7 +262,7 @@ _dev/research/3b1b_eola_chapter10.py
 - `current/learn.html`、`current/app.js` 和共享 registry/mount 文件是集成热点，不让两个 Agent 同时无协调修改。
 - `gh-pages` 只负责公开 Pages，不作为开发基线，也不直接编辑。`main` 每次更新后，部署工作流会把 `current/` 同步到 Pages 固定根地址；每个 PR 仍发布到独立的 `previews/pr-<编号>/` 地址。两个工作流都会在并发推送冲突时自动 fetch、rebase 并重试，首页同步会保留所有 PR 预览目录。
 
-## 当前状态
+## 第四章样板阶段的状态（2026-07，历史记录）
 
 - 主应用在 `current/`。
 - 第四章目录已按北大版教材原顺序重排为 §1—§7。
@@ -511,7 +515,7 @@ _dev/research/3b1b_eola_chapter10.py
 - 结果（390×844，选过预测并按几次主按钮）：第一章 §4 2759→1526、§2 1998→1537、§10 2095→1348；第二章 §2 1906→1484、§4 1692→1284、§8 1932→1524；第三章 §7 2121→1650；第四章 §2 1542→1121；第五章 §1 2285→1692、§3 2440→1889。第六到十章大多 1000–1600，剩下超过 1700 的（第五章 §2/§4、第六章 §1、第八章 §3/§6、第九章 §2/§6）主要是推导和结论文字本身多，没有再藏内容。
 - 电脑端（≥721 / ≥1081）：长除法竖式限宽 680px；第一章 §4 余式次数图放到读数右边（1578→1452），代回验证公式不再被截断；第五章 §3 符号轮 190→130。第八章 §3 子式墙电脑上两列是脚本按因式宽度自动选的（`tooWide`），没改。
 - 检查要求的下限（改高度前先看）：ch7 画布 ≥200、ch8 主画布 ≥260（<1000 宽）、ch9 画布 ≥240、ch5 §4 曲面 ≥300、ch2 余子式读数 2 列 / Cramer 3 列。第一章审计的 §10 布局检查在手机上先点开“按次数分层”页再量（`tests/ch1-browser-audit-v3.mjs`）。
-- 本地跑第二章 Playwright spec：`npm install --no-save @playwright/test@1.56.1`（与全局 playwright 同版本），用它自带的 `cli.js test` 跑，避免两份 @playwright/test。
+- 本地跑第二章 Playwright spec：`npm install --no-save @playwright/test@1.56.1`（与全局 playwright 同版本），用它自带的 `cli.js test` 跑，避免两份 @playwright/test。（已过时：现在 `npm ci` 后直接跑，见 §4“工具”。）
 
 ### 第三轮：例题溢出、步进实验吸顶（同一 PR #131，2026-10-16）
 
@@ -623,3 +627,34 @@ _dev/research/3b1b_eola_chapter10.py
   - 不再进索引：布尔值（`interactive: false` 原来以 “false” 出现）、`figure`/`figureLast`（图的键名）、“停一下”的答案 `ponder.a`、页面从不显示的 `checkpoints`/`objectives`/`prerequisites`、`interactive` 的 `prompts`/`description`/`label`（被各章实验覆盖，逐节核对过 0 处显示）、有自测时的 `exercises`。`tex`/`equation` 字段（定理块公式）按公式处理。小节的 number/title/navTitle 不再重复出现在摘要开头（仍参与匹配）。
   - 摘要只留约 10 个字的前文（手机上一行约 20 字，原来 24 个字会把命中挤出可见范围）；面包屑在只有章名命中时不再被节名覆盖（`appendHighlightedText` 原来用 textContent 重写）。
 
+
+## 深度检查后的整体修复（2026-10-25，`claude/gifted-ride-788jlf`，PR #144，Claude）
+
+用户先要求“深度分析代码”，看完分析后要求把列出的问题全部直接改好。按提交：
+
+1. 第四章 §3：每次渲染都留下旧的 resize / 主题监听，改过窗口尺寸后画布不再跟随深色；现在每个实验自带清理。第一章 `observeCanvas` 的清理函数原来丢了，现在交给 `ch1UseCleanup`。
+2. 深色首帧：learn.html 的 `<head>` 里先读保存的选择或系统明暗，首帧就是深色（以前慢网下先白屏约 6 秒）；没保存过选择时跟随系统，系统切换也跟着变（index.html 同样）。
+3. 手机上两张图是上下排的，“左图 / 右图”改成按图名称呼（第七章 §2、第九章 §1/§7、第二章 §6）；两图在手机上仍并排的实验保留原说法。
+4. 启动：公式用到才渲染（见上文 §4 的约定），搜索索引在空闲时分片建，明暗切换的大图在指针移到按钮上时才下载（700 ms 内没到就不带图切换）。冷启动 DOMContentLoaded 约 3.4 s → 1.6 s，首屏图片 0.6–0.9 MB → 82 KB。
+5. typeset.js 成批读样式、先改后量（见 §4）。手机（CPU 4 倍降速）切换课程：7 节合计 57.2 s → 18.2 s，单节 6.3–11.4 s → 1.9–3.4 s，单个任务最长 9.0 s → 1.6 s。图注从隐藏提示复制纯文本。
+6. 章节数据只注册一处、小节顺序只写一次，定理带字段统一叫 `theory`；组装出的课程数据与原来逐字节相同。
+7. 预测题合成 `predict-gate.js` 一份；“不确定”成为正式状态；第四章 §5 选“不确定”后再拖滑块，反馈会变回带 ✓ 的判定——已修。`selector-check.mjs` 接入 site-audit。
+8. 共用 `LACanvas` / `LANumber`；第八章初等因子积木的模型抽到 `divisor-blocks.js`；第五章 `geometry-upgrade.js` 解压缩（prettier，语法树不变）；单元测试 16 → 31 个。
+9. 可拖动的圆点可用键盘移动并读出位置（见 §4）。
+10. 工具与 CI：`package.json` + 锁文件（Playwright 1.63.0）、`.nvmrc`（Node 22）、`.github/actions/setup-playwright`，十个检查工作流原来混用 Node 20/22/24 和 Playwright 1.52/1.53/1.55；`perf-budget.mjs` 接入 site-audit；删掉 8 张没有任何地方引用的图片（1.6 MB：首页旧 hero 三张、明暗切换旧图两张、品牌旧图三张）；补上 `vendor/katex/LICENSE`（KaTeX 0.16.11 原版 MIT 许可）。升级后第二章 spec 第一次真的在减少动效下跑（见 §4），§3“播放 231”那条在“依次走六条路径”（#106）加入之前写成：切到上三角后断言“贡献为 0”。以前能过，是因为动画恰好停在第一条路径 132；减少动效下会直接走到主对角线 123。断言已按终点改写，再点“播放排列 231”验证零贡献。
+11. `lab-fit.css` 的 280 条 `!important` 删掉 200 条，留 80 条：34 条去掉后页面会变，20 条在测试里从没生效过（不知道去掉的后果，留着），26 条是画布尺寸（见下面“核对方法”里的盲区，一律留着）。文件头的规则改成“只有必须压过另一条 !important 或内联样式时才用”。
+
+核对方法（脚本在会话 scratchpad，不在仓库里）：
+- 全站 290 个页面状态（73 节 + 导学 + 十章导览，1440 / 390 宽，初始与选完预测）每一步前后做截图像素对比和 DOM 对比（去掉排版包装后比较）。
+- 预测题行为探针：每个预测框走“猜错 / 猜对 / 不确定 → 动手 → 揭晓 → 点其他选项”，记录框、反馈、结论区和主按钮状态，新旧实现逐项比较（1440 全站 183 次 + 390 抽样 27 次）。
+- `!important` 探针：在浏览器 CSSOM 里逐条把声明改成普通优先级，比较全部元素的盒子和该属性的计算值，再改回去。
+- 手机性能：Playwright + CDP 4 倍 CPU 降速，长任务统计（读取前等仍在运行的任务结束，否则超过窗口的长任务会被漏算）。
+- `!important` 的盲区：画布的 CSS 高度变成 auto 时会按位图比例显示，而位图已经按旧高度画好，所以在已经打开的页面里逐条切换测不出变化；新开页面时位图是默认的 300×150，第四章 §2 的画布就从 280px 变成 159px。最终以新开页面的全站截图为准，画布尺寸类声明一律保留 `!important`。
+
+留下的事：
+- 各章的箭头画法（`drawArrow`）各有一套，箭头形状本身不同；统一需要先在设计上定一种，这次没有合并。
+- 机器很忙时，个别公式后的“末尾不拆行”包装偶尔与空闲时不同（热缓存、多进程并发时出现过，加日志后再现不了），影响很小，原来的代码也有。
+- 远程分支 `claude/hello-kxtgj2`、`ui/homepage-redesign`、`ui/liquid-glass-motion`：上文第七轮记录说它们已 squash 合并，但 GitHub 上 #53、#30 是“关闭未合并”，`claude/hello-kxtgj2` 没有对应的 PR，无法证实内容已进 main，所以没有删，请作者确认后再删。其余 `content/ch*-textbook-rebuild` 等分支按作者先前的决定保留。
+- 仓库没有项目许可证（LICENSE）。是否开源、代码和教学内容是否分开授权，需要作者决定，这次没有代加。
+- 其余样式表还有约 140 条 `!important`（第一章 labs.css 36、第四章 §2 17、search-modal-a11y.css 10 等，后者是隐藏工具类，应当保留），这次没有处理；可以用同样的方法（逐条切换 + 新开页面截图）逐章做。断点（`@media`）约 70 处，也没有合并。
+- 手机数据都来自 Chromium 的 CPU 降速模拟，没有真机测试。

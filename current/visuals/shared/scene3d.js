@@ -80,19 +80,7 @@
     return pal[color] || color;
   }
 
-  function withAlpha(color, alpha) {
-    if (color.startsWith("#")) {
-      const hex = color.length === 4 ? color.replace(/#(.)(.)(.)/, "#$1$1$2$2$3$3") : color;
-      const n = parseInt(hex.slice(1, 7), 16);
-      return `rgba(${(n >> 16) & 255},${(n >> 8) & 255},${n & 255},${alpha})`;
-    }
-    const m = color.match(/rgba?\(([^)]+)\)/);
-    if (m) {
-      const [r, g, b] = m[1].split(",").map((x) => parseFloat(x));
-      return `rgba(${r},${g},${b},${alpha})`;
-    }
-    return color;
-  }
+  const { withAlpha } = window.LACanvas;
 
   /* Polygon of the plane n·x = d inside the cube [-L, L]^3 (may be empty). */
   function clipPlane(n, d, L) {
@@ -185,6 +173,9 @@
     let destroyed = false;
     let hover = null;
     let drag = null;
+    // the handle the keyboard moves (its place among the visible ones: labs pass new handle
+    // objects on every redraw), shown while the canvas has focus; -1 for none
+    let keyed = -1;
     const listeners = { change: [], camera: [] };
 
     const wrap = document.createElement("div");
@@ -421,10 +412,12 @@
       }
 
       // Handles on top.
+      let visible = -1;
       handles.forEach((h) => {
         if (h.hidden?.()) return;
+        visible += 1;
         const q = project(h.get(), b);
-        const active = drag?.handle === h || hover === h;
+        const active = drag?.handle === h || hover === h || keyed === visible;
         ctx.save();
         ctx.beginPath();
         ctx.arc(q.x, q.y, active ? 9 : 7.5, 0, Math.PI * 2);
@@ -433,6 +426,14 @@
         ctx.lineWidth = active ? 3 : 2.4;
         ctx.strokeStyle = resolve(pal, h.color);
         ctx.stroke();
+        if (keyed === visible) {
+          // the handle the keyboard moves: a ring around it while the canvas has focus
+          ctx.beginPath();
+          ctx.arc(q.x, q.y, 13.5, 0, Math.PI * 2);
+          ctx.lineWidth = 2;
+          ctx.globalAlpha = 0.6;
+          ctx.stroke();
+        }
         ctx.restore();
       });
 
@@ -760,6 +761,8 @@
 
     function onKey(event) {
       const k = event.key;
+      // with a handle chosen (Enter), the arrow keys move it instead (keys below)
+      if (keys.holding()) return;
       if (!["ArrowLeft", "ArrowRight", "ArrowUp", "ArrowDown"].includes(k)) return;
       event.preventDefault();
       if (k === "ArrowLeft") camera.yaw += 0.12;
@@ -781,6 +784,52 @@
     });
     canvas.addEventListener("dblclick", () => resetView());
     canvas.addEventListener("keydown", onKey);
+
+    /*
+     * One keyboard step of a handle, a step of its grid (a quarter unit without one), as a
+     * whole drag: right / up on the screen, kept on the handle's line (→ ↑ forward along it)
+     * or plane (the screen direction laid into the plane), else in the screen plane.
+     */
+    function nudge(h, dx, dy) {
+      const b = basis();
+      const step = h.snap || 0.25;
+      const cur = h.get();
+      let dir;
+      if (h.mode === "line") dir = V.mul(V.norm(h.dir), dx + dy > 0 ? 1 : -1);
+      else {
+        dir = V.add(V.mul(b.right, dx), V.mul(b.up, dy));
+        if (h.mode === "plane") {
+          const n = V.norm(h.plane.n);
+          dir = V.sub(dir, V.mul(n, V.dot(dir, n)));
+          // the plane seen edge-on along this direction: no step that way
+          if (V.len(dir) < 0.2) return false;
+          dir = V.norm(dir);
+        }
+      }
+      // a step that rounds back to the same grid point is taken longer
+      for (let k = 1; k <= 3; k += 1) {
+        const p = clampCube(V.add(cur, V.mul(dir, step * k)).map((x) => snapValue(x, h.snap)));
+        if (!p.some((x, i) => Math.abs(x - cur[i]) > 1e-12)) continue;
+        h.set(p);
+        listeners.change.forEach((f) => f(h));
+        canvas.dispatchEvent(new CustomEvent("la-handle-move", { bubbles: true }));
+        render();
+        h.end?.();
+        return true;
+      }
+      return false;
+    }
+    const keys = window.LACanvas.keyHandles(canvas, {
+      handles: () => handles.filter((h) => !h.hidden?.()),
+      move: nudge,
+      where: (h) => `(${h.get().map((v) => window.LANumber.text(v)).join(", ")})`,
+      show: (h) => {
+        keyed = h ? handles.filter((x) => !x.hidden?.()).indexOf(h) : -1;
+        render();
+      },
+      rotate: true,
+      help: "方向键旋转视角；按 Enter 键选中圆点后，方向键移动它，Esc 键回到旋转",
+    });
     const ro = new ResizeObserver(resize);
     ro.observe(canvas);
     const themeObserver = new MutationObserver(() => render());
@@ -810,6 +859,7 @@
       },
       setHandles(list) {
         handles = list || [];
+        keys.refresh();
         render();
       },
       setCamera,

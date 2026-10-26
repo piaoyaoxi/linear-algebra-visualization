@@ -39,19 +39,7 @@
 
   const resolve = (pal, color) => (color ? pal[color] || color : pal.accent);
 
-  function withAlpha(color, alpha) {
-    if (color.startsWith("#")) {
-      const hex = color.length === 4 ? color.replace(/#(.)(.)(.)/, "#$1$1$2$2$3$3") : color;
-      const n = parseInt(hex.slice(1, 7), 16);
-      return `rgba(${(n >> 16) & 255},${(n >> 8) & 255},${n & 255},${alpha})`;
-    }
-    const m = color.match(/rgba?\(([^)]+)\)/);
-    if (m) {
-      const [r, g, b] = m[1].split(",").map((x) => parseFloat(x));
-      return `rgba(${r},${g},${b},${alpha})`;
-    }
-    return color;
-  }
+  const { withAlpha } = window.LACanvas;
 
   function create(host, options = {}) {
     const bounds = options.bounds || { x: [-(options.range || 3), options.range || 3], y: [-(options.range || 3), options.range || 3] };
@@ -60,6 +48,9 @@
     let handles = [];
     let drag = null;
     let hover = null;
+    // the handle the keyboard moves (its place among the visible ones: labs pass new handle
+    // objects on every redraw), shown while the canvas has focus; -1 for none
+    let keyed = -1;
     let destroyed = false;
     const listeners = { change: [] };
 
@@ -482,11 +473,13 @@
         ctx.restore();
       }
 
+      let visible = -1;
       handles.forEach((h) => {
         if (h.hidden?.()) return;
+        visible += 1;
         const q = f.toScreen(h.get());
         dots.push({ x: q.x, y: q.y, r: 12 });
-        const active = drag?.handle === h || hover === h;
+        const active = drag?.handle === h || hover === h || keyed === visible;
         ctx.save();
         ctx.beginPath();
         ctx.arc(q.x, q.y, active ? 9 : 7.5, 0, Math.PI * 2);
@@ -495,6 +488,14 @@
         ctx.lineWidth = active ? 3 : 2.4;
         ctx.strokeStyle = resolve(pal, h.color);
         ctx.stroke();
+        if (keyed === visible) {
+          // the handle the keyboard moves: a ring around it while the canvas has focus
+          ctx.beginPath();
+          ctx.arc(q.x, q.y, 13.5, 0, Math.PI * 2);
+          ctx.lineWidth = 2;
+          ctx.globalAlpha = 0.6;
+          ctx.stroke();
+        }
         ctx.restore();
       });
 
@@ -527,8 +528,11 @@
 
     function moveHandle(pt) {
       const h = drag.handle;
-      const f = frame();
-      const w = f.toWorld(pt);
+      placeHandle(h, frame().toWorld(pt));
+    }
+
+    /* Put h at world point w under its grid, axis and clamps; false when it stays where it was. */
+    function placeHandle(h, w) {
       const snap = h.snap || 0;
       const clampX = h.clampX || bounds.x;
       const clampY = h.clampY || bounds.y;
@@ -539,12 +543,13 @@
       if (h.axis === "x") p[1] = cur[1];
       p = [Math.max(clampX[0], Math.min(clampX[1], p[0])), Math.max(clampY[0], Math.min(clampY[1], p[1]))];
       p = p.map((x) => (Object.is(x, -0) ? 0 : x));
-      if (p[0] === cur[0] && p[1] === cur[1]) return;
+      if (p[0] === cur[0] && p[1] === cur[1]) return false;
       h.set(p);
       listeners.change.forEach((fn) => fn(h));
       // a handle really moved: prediction gates count it as acting
       canvas.dispatchEvent(new CustomEvent("la-handle-move", { bubbles: true }));
       render();
+      return true;
     }
 
     function down(event) {
@@ -588,6 +593,23 @@
         render();
       }
     });
+    // the keyboard: one step of the handle's grid (a quarter unit without one), as a whole drag
+    const keys = window.LACanvas.keyHandles(canvas, {
+      handles: () => handles.filter((h) => !h.hidden?.()),
+      move: (h, dx, dy) => {
+        const step = h.snap || 0.25;
+        const cur = h.get();
+        const moved = placeHandle(h, [cur[0] + dx * step, cur[1] + dy * step]);
+        if (moved) h.end?.();
+        return moved;
+      },
+      where: (h) => `(${h.get().map((v) => window.LANumber.text(v)).join(", ")})`,
+      show: (h) => {
+        keyed = h ? handles.filter((x) => !x.hidden?.()).indexOf(h) : -1;
+        render();
+      },
+      help: "方向键移动圆点，Enter 键换下一个圆点",
+    });
     const ro = new ResizeObserver(resize);
     ro.observe(canvas);
     const themeObserver = new MutationObserver(() => render());
@@ -608,6 +630,7 @@
       },
       setHandles(list) {
         handles = list || [];
+        keys.refresh();
         render();
       },
       on(event, fn) {

@@ -95,7 +95,7 @@
     }
     function syncFeedback() {
       if (!revealedText) return;
-      fb.innerHTML = `${revealedText}<br><span class="blk-now">${nowLine()}</span>`;
+      gate.feedback.innerHTML = `${revealedText}<br><span class="blk-now">${nowLine()}</span>`;
     }
 
     function paint() {
@@ -155,42 +155,27 @@
       });
     });
 
-    const gate = root.querySelector("[data-gate]");
-    gate.innerHTML = `<div class="ch3l-predict"><div class="ch3l-predict-q"><span>先猜一猜</span><p>把 ${tex("A")} 的列切成 2+2。${tex("B")} 的行要怎样切，${tex("AB")} 才能按块相乘？${tex("B")} 的列切口有没有限制？</p></div>
-      <div class="ch3l-predict-options">${(window.LAStableShuffle || ((a) => a))([
+    // predict → act → reveal: the verdict opens only after the student also acts on the lab
+    const gate = window.LAPredictGate.mount(root.querySelector("[data-gate]"), {
+      question: `把 ${tex("A")} 的列切成 2+2。${tex("B")} 的行要怎样切，${tex("AB")} 才能按块相乘？${tex("B")} 的列切口有没有限制？`,
+      options: [
         [`${tex("B")} 的行切成 2+2；${tex("B")} 的列可以任意切`, true, ""],
         [`${tex("B")} 的行切成 2+2，${tex("B")} 的列也必须切成 2+2`, false, "B 的列切口决定 C 的列怎样分块，与能否相乘无关。"],
         [`${tex("B")} 的行怎么切都可以`, false, "试着把 B 的行切成 1+3，看看块乘积还有没有定义。"],
         [`${tex("B")} 的行切法要和 ${tex("A")} 的行切法一样`, false, "相乘时配对的是 A 的列和 B 的行。"],
-      ], "visuals/ch4/section5-blocks.js").map(([t, okk, why], k) => `<button type="button" data-i="${k}" data-ok="${okk}" data-why="${why}">${t}</button>`).join("")}</div><p class="ch3l-predict-feedback" hidden></p></div>`;
-    // predict → act → reveal: the verdict opens only after the student also acts on the lab
-    let picked = null;
-    let revealed = false;
-    const fb = gate.querySelector(".ch3l-predict-feedback");
-    const reveal = () => {
-      if (revealed || !picked) return;
-      revealed = true;
-      const okk = picked.dataset.ok === "true";
-      gate.querySelectorAll("[data-i]").forEach((x) => x.classList.remove("is-picked"));
-      picked.classList.add(okk ? "is-right" : "is-wrong");
-      gate.querySelector(".ch3l-predict").classList.add("is-done");
-      revealedText = okk
-        ? `✓ 块乘法只要求 ${tex("A")} 的列分法与 ${tex("B")} 的行分法一致。${tex("A")} 的行切口和 ${tex("B")} 的列切口可以自由选择，它们只决定结果 ${tex("C")} 怎样分块。`
-        : `再看看图：${picked.dataset.why}`;
-      syncFeedback();
-    };
-    gate.querySelectorAll("[data-i]").forEach((b) => b.addEventListener("click", () => {
-      if (revealed) return;
-      picked = b;
-      predicted = true;
-      paint();
-      gate.querySelectorAll("[data-i]").forEach((x) => x.classList.toggle("is-picked", x === b));
-      fb.hidden = false;
-      fb.textContent = "记下了你的猜测。现在动手操作一次，结论随后出现。";
-    }));
-    const acted = (e) => { if (!gate.contains(e.target)) reveal(); };
-    ["input", "change", "pointerup"].forEach((t) => root.addEventListener(t, acted));
-    root.addEventListener("click", (e) => { if (e.target.closest("button") && !gate.contains(e.target)) reveal(); });
+      ],
+      key: "visuals/ch4/section5-blocks.js",
+      right: `✓ 块乘法只要求 ${tex("A")} 的列分法与 ${tex("B")} 的行分法一致。${tex("A")} 的行切口和 ${tex("B")} 的列切口可以自由选择，它们只决定结果 ${tex("C")} 怎样分块。`,
+      root,
+      onPick: () => {
+        predicted = true;
+        paint();
+      },
+      onReveal: () => {
+        revealedText = gate.verdict;
+        syncFeedback();
+      },
+    });
     paint();
   }
 

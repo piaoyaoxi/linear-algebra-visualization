@@ -440,7 +440,7 @@ body :is(.ch3l-predict-options, .ch6l-predict-options, .ch7l-predict-options, .c
   text-align: left;
 }
 
-/* predict-ux.js: an option's single-line width is measured with wrapping off for a moment;
+/* predict-gate.js: an option's single-line width is measured with wrapping off for a moment;
    on a phone, a box where one option needs two lines lists every option on its own row */
 body :is(.ch3l-predict-options, .ch6l-predict-options, .ch7l-predict-options, .ch9l-predict-options)[data-la-opt-measure] > button {
   flex: 0 0 auto !important;
@@ -1449,7 +1449,7 @@ body li > .tex-inline:first-child {
   vertical-align: top;
 }
 
-/* ---------- predict-ux.js: the same prediction box everywhere ---------- */
+/* ---------- predict-gate.js: the same prediction box everywhere ---------- */
 
 /* “不确定，直接看”: a quiet extra option */
 body :is(.ch3l-predict-options, .ch6l-predict-options, .ch7l-predict-options, .ch9l-predict-options) > .la-unsure {

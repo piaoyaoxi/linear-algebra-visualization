@@ -623,3 +623,9 @@ _dev/research/3b1b_eola_chapter10.py
   - 不再进索引：布尔值（`interactive: false` 原来以 “false” 出现）、`figure`/`figureLast`（图的键名）、“停一下”的答案 `ponder.a`、页面从不显示的 `checkpoints`/`objectives`/`prerequisites`、`interactive` 的 `prompts`/`description`/`label`（被各章实验覆盖，逐节核对过 0 处显示）、有自测时的 `exercises`。`tex`/`equation` 字段（定理块公式）按公式处理。小节的 number/title/navTitle 不再重复出现在摘要开头（仍参与匹配）。
   - 摘要只留约 10 个字的前文（手机上一行约 20 字，原来 24 个字会把命中挤出可见范围）；面包屑在只有章名命中时不再被节名覆盖（`appendHighlightedText` 原来用 textContent 重写）。
 
+
+## 首页 Start 按钮重做（2026-11-16，`ui/home-start-button`，Claude）
+
+- 原来的“双层边”：1px 白色描边（40%）紧贴着一条 `inset 0 1px 0` 白色高光（45%），上沿成了一深一浅两条线，圆角处 inset 高光随圆角变细，看起来像第二圈环；再加 22% overlay 噪点，像砂纸。
+- 现在（`cover.css`，`?v=g10`）：和“上次学到”同一种胶囊形、同一种深色磨砂（`rgba(var(--shade), 0.28)`，blur 24px、saturate 140%），没有描边、没有 inset 高光；边缘只靠色调差、柔影和 `::after` 一道 1px 上沿光环（上沿最亮、到一半高度消失，同学习页浮层）；噪点 7%。按下 90ms 缩到 0.96、松手按 `--spring-release` 回弹（变量从 material.css 抄到 cover.css 的 :root，首页仍不加载 material.css/js）。手机 46px 高。“上次学到”没改。
+- 无头 WebKit 不渲染 backdrop 模糊，Safari 真机效果要在 PR 预览页上看。

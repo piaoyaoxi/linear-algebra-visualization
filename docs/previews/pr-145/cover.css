@@ -26,8 +26,7 @@
   --glass-tint: rgba(var(--shade), 0.24);
   --glass-tint-hover: rgba(var(--shade), 0.32);
   --glass-filter: blur(8px) saturate(125%) brightness(0.86);
-  /* 唯一的一道边：1px 光环，上沿最亮，到一半高度消失（没有描边，也没有 inset 高光） */
-  --glass-rim: linear-gradient(180deg, rgba(255, 255, 255, 0.6), rgba(255, 255, 255, 0.1) 34%, transparent 52%);
+  /* 没有任何描边或高光线：iOS 上磨砂区域本身已有一道边，再加 1px 光会叠成两层；边缘只靠色调差和柔影 */
   --glass-shadow: 0 1px 2px rgba(var(--shade), 0.1), 0 14px 30px -14px rgba(var(--shade), 0.45);
   --glass-text-shadow: 0 1px 4px rgba(var(--shade), 0.4);
   --bar-h: 64px;
@@ -266,20 +265,6 @@ a:focus-visible { outline: 2px solid currentColor; outline-offset: 4px; border-r
     background-color 220ms ease,
     box-shadow 220ms ease;
   animation-delay: 360ms;
-}
-.home-card::after,
-.home-cta::after,
-.home-resume::after {
-  content: "";
-  position: absolute;
-  inset: 0;
-  padding: 1px;
-  border-radius: inherit;
-  background: var(--glass-rim);
-  -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
-  -webkit-mask-composite: xor;
-  mask-composite: exclude;
-  pointer-events: none;
 }
 .home-cta:hover {
   background-color: var(--glass-tint-hover);

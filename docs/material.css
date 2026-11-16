@@ -5,7 +5,7 @@
  * Lesson content stays solid paper. The home page keeps its own look for now.
  *
  * Recipe: thin tint + wide blur so brighter or more saturated things behind
- * glow through softly; a 1px rim lit from above; fine noise; a soft light at
+ * glow through softly; no outline or rim; fine noise; a soft light at
  * the top-left that follows the pointer on hover.
  */
 
@@ -16,8 +16,7 @@
   --acr-tint-regular: rgba(250, 247, 240, 0.74);
   --acr-filter: blur(30px) saturate(185%) brightness(1.03);
   --acr-filter-regular: blur(30px) saturate(160%);
-  /* no outline: the edge comes from a rim lit only from above, the tone, and the shadow */
-  --acr-rim-top: rgba(255, 255, 255, 0.9);
+  /* no outline and no rim: the edge comes from the tone and the shadow */
   --acr-glow: rgba(255, 255, 255, 0.5);
   --acr-shadow: 0 1px 2px rgba(50, 42, 20, 0.09), 0 10px 26px -10px rgba(50, 42, 20, 0.32);
   --acr-noise: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.8' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='1 0 0 0 0 1 0 0 0 0 1 0 0 0 0 0 0 0 0 .07'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
@@ -37,7 +36,6 @@ body.dark {
   --acr-tint-regular: rgba(28, 31, 29, 0.78);
   --acr-filter: blur(30px) saturate(170%);
   --acr-filter-regular: blur(30px) saturate(150%);
-  --acr-rim-top: rgba(255, 255, 255, 0.26);
   --acr-glow: rgba(255, 255, 255, 0.1);
   --acr-shadow: 0 1px 1px rgba(0, 0, 0, 0.2), 0 12px 28px -10px rgba(0, 0, 0, 0.6);
 }
@@ -60,20 +58,13 @@ html :is(body.dark, body) .topbar .icon-button {
   position: relative;
 }
 
-/* the rim: a 1px ring, bright at the top and gone by half height — light catching the top edge */
+/* No rim. A 1px ring lit from above used to sit here; on iOS Safari it stacks against the
+   frosted area's own edge and reads as a double outline, so every floating layer now draws
+   its edge from the tone and the shadow alone (same as the home page). `content: none` also
+   keeps liquid-glass.css's older ::after glare from coming back. */
 html :is(body.dark, body) .topbar .icon-button::after,
 html :is(body.dark, body) .topbar .search-capsule-stage .topbar-search::after {
-  content: "";
-  position: absolute;
-  inset: 0;
-  padding: 1px;
-  border-radius: inherit;
-  background: linear-gradient(180deg, var(--acr-rim-top), transparent 50%);
-  -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
-  -webkit-mask-composite: xor;
-  mask-composite: exclude;
-  opacity: 1;
-  pointer-events: none;
+  content: none;
 }
 
 /* the capsule thickens into the regular material while it travels to the search position */
@@ -110,7 +101,6 @@ html body.dark.search-modal-open .topbar .search-capsule-stage .topbar-search {
 html :is(body.dark, body) .search-results-panel {
   border: 0;
   box-shadow:
-    inset 0 1px 0 var(--acr-rim-top),
     0 28px 64px rgb(20 28 40 / calc(0.16 * (1 - var(--search-surface-merge, 0)))),
     0 5px 16px rgb(20 28 40 / calc(0.08 * (1 - var(--search-surface-merge, 0))));
   background:
@@ -126,12 +116,15 @@ html :is(body.dark, body) .search-results-panel {
       var(--acr-noise) 0 0 / 160px 160px,
       var(--acr-tint-regular);
     border: 0;
-    box-shadow:
-      inset 0 1px 0 var(--acr-rim-top),
-      var(--acr-shadow);
+    box-shadow: var(--acr-shadow);
     -webkit-backdrop-filter: var(--acr-filter-regular);
     backdrop-filter: var(--acr-filter-regular);
   }
+}
+
+/* the section rail label: liquid-glass.css gives it a hairline ring and an inset sheen; drop both */
+html :is(body.dark, body) .toc-rail-label {
+  box-shadow: var(--lg-shadow);
 }
 
 /* ---------- press light (primary buttons only, see material.js) ---------- */

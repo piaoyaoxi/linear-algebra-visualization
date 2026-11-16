@@ -663,6 +663,6 @@ _dev/research/3b1b_eola_chapter10.py
 
 - 原来的“双层边”：问题卡和 Start 都是 1px 白色描边紧贴一条 `inset 0 1px 0` 白色高光，上沿成了一深一浅两条线，圆角处 inset 高光随圆角变细，像第二圈环。三处材质也各不相同：问题卡是乳白毛玻璃 + 黑字，Start 是深色磨砂圆角矩形 + 22% overlay 噪点，“上次学到”是深色胶囊。
 - Chromium 里问题卡其实一直没有模糊：`.home-cards` 的淡入动画写的是 `both`，动画结束后仍挂着，这一层就成了背景根（backdrop root），卡片只能模糊到空白，看到的只是半透明白片。改成 `backwards`（只填充延迟期）后正常；Start、“上次学到”的 `homeRise` 也改成 `backwards`。以后给装着 backdrop-filter 元素的父级加透明度动画时，不要用 `forwards`/`both`。无头 Chromium 截图同样受这个影响，所以以前截图里卡片也是清晰的。
-- 现在（`cover.css` 的 `--glass-*`，`?v=g11`）：三处同一种透明玻璃，薄深色 `rgba(var(--shade), 0.24)`、`blur(8px) saturate(125%) brightness(0.86)`，白字加字影；没有描边、没有 inset 高光，边缘只有一道 1px 上沿光环（上沿最亮，到一半高度消失）+ 柔影。Start、“上次学到”是胶囊形；卡片圆角 16px。Start 按下 90ms 缩到 0.96、松手按 `--spring-release` 回弹（变量从 material.css 抄到 cover.css，首页仍不加载 material.css/js）。
+- 现在（`cover.css` 的 `--glass-*`，`?v=g12`）：三处同一种透明玻璃，薄深色 `rgba(var(--shade), 0.24)`、`blur(8px) saturate(125%) brightness(0.86)`，白字加字影；没有描边、没有 inset 高光，也没有上沿光环，边缘只靠色调差和柔影。上沿光环（学习页浮层的做法）在 iOS Safari 上和磨砂区域本身的边叠成两层，用户在真机上看过后决定去掉。Start、“上次学到”是胶囊形；卡片圆角 16px。Start 按下 90ms 缩到 0.96、松手按 `--spring-release` 回弹（变量从 material.css 抄到 cover.css，首页仍不加载 material.css/js）。
 - 试过浅色透明 + 黑字：卡片压在深色柏树上时字看不清，饱和度高时整片偏橙，所以用深色。白字在橙色天空上约 3.7:1（加字影），比原来乳白底黑字低，换来的是背景透得出来；以后想更透，先看这个对比度。
 - Safari 真机效果要在 PR 预览页上看。

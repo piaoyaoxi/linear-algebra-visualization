@@ -666,3 +666,4 @@ _dev/research/3b1b_eola_chapter10.py
 - 现在（`cover.css` 的 `--glass-*`，`?v=g12`）：三处同一种透明玻璃，薄深色 `rgba(var(--shade), 0.24)`、`blur(8px) saturate(125%) brightness(0.86)`，白字加字影；没有描边、没有 inset 高光，也没有上沿光环，边缘只靠色调差和柔影。上沿光环（学习页浮层的做法）在 iOS Safari 上和磨砂区域本身的边叠成两层，用户在真机上看过后决定去掉。Start、“上次学到”是胶囊形；卡片圆角 16px。Start 按下 90ms 缩到 0.96、松手按 `--spring-release` 回弹（变量从 material.css 抄到 cover.css，首页仍不加载 material.css/js）。
 - 试过浅色透明 + 黑字：卡片压在深色柏树上时字看不清，饱和度高时整片偏橙，所以用深色。白字在橙色天空上约 3.7:1（加字影），比原来乳白底黑字低，换来的是背景透得出来；以后想更透，先看这个对比度。
 - Safari 真机效果要在 PR 预览页上看。
+- 学习页浮层同样去掉高光线（`material.css?v=mm7`）：顶栏按钮与搜索胶囊的 `::after` 光环改为 `content: none`（同时挡住 liquid-glass.css 更早的 `::after` 指针光，那条效果由 material.css 的背景径向光代替）；搜索结果面板、手机侧栏去掉 `inset 0 1px 0` 白线；右侧页码标签 `.toc-rail-label` 去掉 liquid-glass.css 的 0.5px 细边和内侧高光，只留 `--lg-shadow`。`--acr-rim-top` 已删除。`docs/design-spec.md` §5 同步改了。

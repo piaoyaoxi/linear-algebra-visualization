@@ -18,6 +18,17 @@
   --cv-v2: #c4552f;
   --serif: "LA Serif Latin", "LA Serif SC", "Songti SC", "STSong", "Source Han Serif SC", "Noto Serif SC", "Noto Serif CJK SC", "SimSun", serif;
   --ease-out: cubic-bezier(0.2, 0.7, 0.2, 1);
+  /* 与 material.css 相同的按下回弹（约 5% 过冲） */
+  --spring-release: linear(0, 0.026, 0.094, 0.189, 0.297, 0.41, 0.521, 0.625, 0.718, 0.799, 0.868, 0.923, 0.967, 1, 1.024, 1.04, 1.049, 1.054, 1.054, 1.052, 1.047, 1.042, 1.036, 1.03, 1.024, 1.018, 1.013, 1.009, 1.006, 1.003, 1.001, 0.999, 0.998, 0.998, 0.997, 0.997, 1);
+  --spring-release-ms: 650ms;
+  /* 首页浮层统一的透明玻璃：问题卡、Start、“上次学到”三处同一套。
+     薄薄一层深色 + 轻模糊，背景的形状和颜色都还看得见；白字靠色调和字影保证可读 */
+  --glass-tint: rgba(var(--shade), 0.24);
+  --glass-tint-hover: rgba(var(--shade), 0.32);
+  --glass-filter: blur(8px) saturate(125%) brightness(0.86);
+  /* 没有任何描边或高光线：iOS 上磨砂区域本身已有一道边，再加 1px 光会叠成两层；边缘只靠色调差和柔影 */
+  --glass-shadow: 0 1px 2px rgba(var(--shade), 0.1), 0 14px 30px -14px rgba(var(--shade), 0.45);
+  --glass-text-shadow: 0 1px 4px rgba(var(--shade), 0.4);
   --bar-h: 64px;
   color-scheme: light;
 }
@@ -152,7 +163,8 @@ a:focus-visible { outline: 2px solid currentColor; outline-offset: 4px; border-r
   left: clamp(24px, 4.6vw, 72px);
   width: clamp(260px, 22vw, 316px);
   height: calc(var(--card-h) * 3 + var(--card-gap) * 2);
-  animation: homeFade 900ms ease 400ms both;
+  /* 只填充延迟期：动画一直挂着（both）会让这一层成为背景根，卡片的模糊在 Chromium 里失效 */
+  animation: homeFade 900ms ease 400ms backwards;
 }
 .home-card {
   position: absolute;
@@ -163,24 +175,24 @@ a:focus-visible { outline: 2px solid currentColor; outline-offset: 4px; border-r
   width: 100%;
   height: var(--card-h);
   padding: 13px 16px 12px;
-  border: 1px solid rgba(255, 255, 255, 0.6);
-  border-radius: 14px;
-  background: linear-gradient(180deg, rgba(255, 252, 246, 0.62), rgba(255, 252, 246, 0.5));
-  -webkit-backdrop-filter: blur(20px) saturate(115%);
-  backdrop-filter: blur(20px) saturate(115%);
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.7), 0 10px 30px rgba(var(--shade), 0.12);
-  color: #1d211e;
+  border-radius: 16px;
+  background: var(--glass-tint);
+  -webkit-backdrop-filter: var(--glass-filter);
+  backdrop-filter: var(--glass-filter);
+  box-shadow: var(--glass-shadow);
+  color: var(--on-image);
+  text-shadow: var(--glass-text-shadow);
   opacity: 0;
-  transition: transform 700ms cubic-bezier(0.16, 1, 0.3, 1), opacity 450ms ease, border-color 200ms ease, background-color 200ms ease;
+  transition: transform 700ms cubic-bezier(0.16, 1, 0.3, 1), opacity 450ms ease, background-color 200ms ease;
 }
 .home-card.is-shown { opacity: 1; }
-.home-card:hover { border-color: rgba(255, 255, 255, 0.9); background: rgba(255, 252, 246, 0.7); }
-.home-card-num { color: #5d625c; font-size: 12.5px; letter-spacing: 0.1em; font-variant-numeric: tabular-nums; }
+.home-card:hover { background-color: var(--glass-tint-hover); }
+.home-card-num { color: rgba(255, 253, 248, 0.82); font-size: 12.5px; letter-spacing: 0.1em; font-variant-numeric: tabular-nums; }
 .home-card-q { flex: 1; margin-top: 8px; font-size: 14.5px; line-height: 1.7; letter-spacing: 0.02em; }
 .home-card-q .katex { font-size: 1.04em; }
 .home-ch { opacity: 0; transition: opacity 240ms ease; }
 .home-ch.is-on { opacity: 1; }
-.home-card-tag { align-self: flex-end; color: #5d625c; font-size: 12px; letter-spacing: 0.08em; }
+.home-card-tag { align-self: flex-end; color: rgba(255, 253, 248, 0.82); font-size: 12px; letter-spacing: 0.08em; }
 
 /* 首屏右侧：线性 + 轮换词 */
 .home-headline {
@@ -214,7 +226,7 @@ a:focus-visible { outline: 2px solid currentColor; outline-offset: 4px; border-r
 .home-word.is-pre { filter: blur(14px); opacity: 0; transition: none; }
 .home-word-en { margin-top: 12px; color: rgba(255, 253, 248, 0.92); font-size: clamp(12px, 1vw, 15px); font-weight: 500; letter-spacing: 0.3em; }
 
-/* 入口：磨砂玻璃 */
+/* 入口：透明玻璃胶囊（与问题卡、“上次学到”同一种材质，见 :root 的 --glass-*） */
 .home-start {
   position: absolute;
   top: 78%;
@@ -227,7 +239,7 @@ a:focus-visible { outline: 2px solid currentColor; outline-offset: 4px; border-r
   transform: translateY(-50%);
 }
 .home-cta,
-.home-resume { animation: homeRise 900ms var(--ease-out) both; }
+.home-resume { animation: homeRise 900ms var(--ease-out) backwards; }
 .home-cta {
   position: relative;
   isolation: isolate;
@@ -236,54 +248,48 @@ a:focus-visible { outline: 2px solid currentColor; outline-offset: 4px; border-r
   justify-content: center;
   gap: 12px;
   max-width: 100%;
-  min-width: 176px;
-  height: 58px;
-  padding: 0 34px;
-  overflow: hidden;
-  border: 1px solid rgba(255, 255, 255, 0.4);
-  border-radius: 18px;
-  background: rgba(var(--shade), 0.22);
-  -webkit-backdrop-filter: blur(28px) saturate(115%) brightness(1.06);
-  backdrop-filter: blur(28px) saturate(115%) brightness(1.06);
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.45), 0 10px 32px rgba(var(--shade), 0.16);
+  min-width: 172px;
+  height: 56px;
+  padding: 0 32px 0 36px;
+  border: 0;
+  /* 和“上次学到”同一种胶囊形、同一种玻璃，只是更大 */
+  border-radius: 999px;
+  background: var(--glass-tint);
+  -webkit-backdrop-filter: var(--glass-filter);
+  backdrop-filter: var(--glass-filter);
+  box-shadow: var(--glass-shadow);
   color: var(--on-image);
-  text-shadow: 0 1px 6px rgba(var(--shade), 0.28);
-  transition: transform 220ms var(--ease-out), background-color 220ms ease, border-color 220ms ease, box-shadow 220ms ease;
+  text-shadow: var(--glass-text-shadow);
+  transition:
+    transform var(--spring-release-ms) var(--spring-release),
+    background-color 220ms ease,
+    box-shadow 220ms ease;
   animation-delay: 360ms;
 }
-.home-cta::before {
-  content: "";
-  position: absolute;
-  inset: 0;
-  z-index: -1;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 .55 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
-  opacity: 0.22;
-  mix-blend-mode: overlay;
-  pointer-events: none;
-}
 .home-cta:hover {
-  border-color: rgba(255, 255, 255, 0.58);
-  background: rgba(var(--shade), 0.3);
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.55), 0 14px 40px rgba(var(--shade), 0.2);
-  transform: translateY(-1px);
+  background-color: var(--glass-tint-hover);
+  box-shadow: 0 1px 2px rgba(var(--shade), 0.12), 0 18px 36px -14px rgba(var(--shade), 0.52);
 }
-.home-cta:active { transform: translateY(0); }
+/* 按下：90ms 缩到 0.96，松手按学习页同一条弹簧回弹 */
+.home-cta:active { transform: scale(0.96); transition-duration: 90ms, 220ms, 220ms; transition-timing-function: ease-out, ease, ease; }
 .home-cta:focus-visible { outline: 2px solid var(--on-image); outline-offset: 4px; }
 .home-cta-label { padding-left: 0.18em; font-size: 17px; font-weight: 500; letter-spacing: 0.18em; white-space: nowrap; }
 .home-cta-arrow { display: inline-flex; flex: none; transition: transform 260ms var(--ease-out); }
 .home-cta-arrow svg { width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-width: 1.6; stroke-linecap: round; stroke-linejoin: round; filter: drop-shadow(0 1px 4px rgba(var(--shade), 0.3)); }
 .home-cta:hover .home-cta-arrow { transform: translateX(4px); }
 .home-resume {
+  position: relative;
   margin: 18px 0 0;
   padding: 6px 14px;
   border-radius: 999px;
-  background: rgba(var(--shade), 0.28);
-  -webkit-backdrop-filter: blur(12px);
-  backdrop-filter: blur(12px);
+  background: var(--glass-tint);
+  -webkit-backdrop-filter: var(--glass-filter);
+  backdrop-filter: var(--glass-filter);
+  box-shadow: var(--glass-shadow);
   color: rgba(255, 253, 248, 0.94);
   font-size: 13.5px;
   letter-spacing: 0.08em;
-  text-shadow: 0 1px 2px rgba(var(--shade), 0.35);
+  text-shadow: var(--glass-text-shadow);
   animation-delay: 460ms;
 }
 .home-resume a {
@@ -585,7 +591,7 @@ a:focus-visible { outline: 2px solid currentColor; outline-offset: 4px; border-r
 
 @media (max-width: 600px) {
   .home-headline { top: 22%; left: 0; right: 0; align-items: center; text-align: center; }
-  .home-cta { gap: 10px; min-width: 0; height: 44px; padding: 0 22px; border-radius: 13px; }
+  .home-cta { gap: 10px; min-width: 0; height: 46px; padding: 0 24px 0 27px; }
   .home-cta-label { font-size: 14.5px; }
   .home-cta-arrow svg { width: 16px; height: 16px; }
   .home-resume { margin-top: 14px; font-size: 12px; }

@@ -8,6 +8,10 @@ on:
       - ".github/scripts/ch7-browser-check.mjs"
       - ".github/scripts/ch7-browser-check-runner.mjs"
       - ".github/workflows/ch7-browser-check.yml"
+      - "package.json"
+      - "package-lock.json"
+      - ".nvmrc"
+      - ".github/actions/setup-playwright/**"
   push:
     branches:
       - context/ch7-linear-transformations
@@ -23,10 +27,8 @@ jobs:
       - name: Check out branch
         uses: actions/checkout@v4
 
-      - name: Set up Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: 22
+      - name: Node and the pinned Playwright
+        uses: ./.github/actions/setup-playwright
 
       - name: Validate Chapter 7 source
         run: |
@@ -38,11 +40,6 @@ jobs:
           node .github/scripts/ch7-source-lint.mjs
           git diff --check
           grep -Eq 'visuals/ch7/labs-3d\.js' current/learn.html
-
-      - name: Install Playwright and Chromium
-        run: |
-          npm install --no-save playwright@1.55.0 >/tmp/ch7-npm-install.log 2>&1 || { cat /tmp/ch7-npm-install.log; exit 1; }
-          npx playwright install --with-deps chromium >/tmp/ch7-playwright-install.log 2>&1 || { cat /tmp/ch7-playwright-install.log; exit 1; }
 
       - name: Start static server
         run: |

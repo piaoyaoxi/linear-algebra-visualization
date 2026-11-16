@@ -130,6 +130,15 @@ cd linear-algebra-visualization && python3 .github/scripts/serve.py 8765 current
 
 然后打开 <http://localhost:8765/>（首页）或 <http://localhost:8765/learn.html>（课程页）。也可以用别的静态服务器，但不要用 `python3 -m http.server`：它同时只排队 5 个连接，课程页一次请求两百多个文件，在 macOS 上会偶尔漏掉脚本，某一章就打不开。直接双击 HTML 文件也能打开，但浏览器会拦下本地字体，排版会走样。
 
+想在本地跑和 CI 一样的检查（需要 Node 22，版本写在 `.nvmrc`）：
+
+```bash
+npm ci && npx playwright install chromium
+npm run serve          # 在 4173 端口起站点，另开一个终端跑下面的检查
+npm test               # 精确计算与各章数学引擎的单元测试
+npm run audit          # 逐节检查；另有 smoke、layout、selectors、perf
+```
+
 ## 仓库里有什么
 
 ```text
@@ -139,11 +148,12 @@ current/                 网站本体（部署的就是这个目录）
 ├── app.js               路由、目录、搜索、进度
 ├── content/             十章的文字、例题和自测，一节一个文件
 ├── visuals/             各章的实验和画布
-│   └── shared/          共用的 3D 场景、预测门、中文排版脚本
+│   └── shared/          共用的 3D 场景、预测题、画布工具、中文排版脚本
 ├── vendor/katex/        本地 KaTeX
 └── vendor/fonts/        裁剪过的衬线字体子集
-tests/                   各章的浏览器测试
+tests/                   单元测试和各章的浏览器测试
 .github/                 部署、PR 预览和逐节检查的工作流
+package.json             只用来锁定检查用的 Playwright 版本（网站本身不需要）
 docs/                    设计规范和各章制作记录
 ```
 

@@ -14,7 +14,7 @@ defineChapter7Section("jordan-form-introduction", {
   ],
   textbook: { reference: "北大版《高等代数》第七章 §8", items: ["若尔当块与若尔当形矩阵", "复矩阵相似于若尔当形"] },
   interactive: false,
-  lesson3d: {
+  theory: {
     blocks: [
       {
         title: "若尔当块就是一条链",

@@ -14,7 +14,7 @@ defineChapter6Section("subspaces", {
   ],
   textbook: { reference: "北大版《高等代数》第六章 §5", items: ["子空间的判别", "齐次方程组的解空间", "生成子空间", "基的扩充定理"] },
   interactive: false,
-  lesson: {
+  theory: {
     figure: "curve-families",
     blocks: [
       {

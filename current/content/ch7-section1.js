@@ -14,7 +14,7 @@ defineChapter7Section("linear-map-definition", {
   ],
   textbook: { reference: "北大版《高等代数》第七章 §1", items: ["线性变换的定义", "线性变换的简单性质"] },
   interactive: false,
-  lesson3d: {
+  theory: {
     blocks: [
       {
         title: "定义：保持加法与数乘",

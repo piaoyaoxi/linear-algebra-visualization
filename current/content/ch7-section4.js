@@ -14,7 +14,7 @@ defineChapter7Section("eigenvalues-eigenvectors", {
   ],
   textbook: { reference: "北大版《高等代数》第七章 §4", items: ["特征值与特征向量", "特征多项式", "特征子空间", "哈密顿–凯莱定理"] },
   interactive: { type: "slot", title: "哪些方向只被伸缩" },
-  lesson3d: {
+  theory: {
     blocks: [
       {
         title: "定义与求法",

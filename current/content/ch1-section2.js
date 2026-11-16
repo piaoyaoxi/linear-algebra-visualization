@@ -11,7 +11,7 @@ defineChapter1Section("univariate-polynomials", {
     reference: "北大版《高等代数》第一章 §2",
     items: ["一元多项式及其相等", "加法与乘法", "次数"],
   },
-  formal: {
+  theory: {
     title: "运算与次数",
     equation: "f(x)g(x)=\\sum_{k=0}^{n+m}\\Bigl(\\sum_{i+j=k}a_ib_j\\Bigr)x^k",
     definitions: [

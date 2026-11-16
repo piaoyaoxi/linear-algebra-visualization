@@ -14,7 +14,7 @@ defineChapter7Section("matrix-of-linear-map", {
   ],
   textbook: { reference: "北大版《高等代数》第七章 §3", items: ["线性变换在一组基下的矩阵", "坐标公式", "相似矩阵"] },
   interactive: { type: "slot", title: "同一个 σ，换一组基记录" },
-  lesson3d: {
+  theory: {
     blocks: [
       {
         title: "矩阵的列是基向量的像的坐标",

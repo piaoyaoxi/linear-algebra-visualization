@@ -42,7 +42,7 @@
  */
 (() => {
   const PHONE = window.matchMedia?.("(max-width: 720px)");
-  const STAGES = [
+  const STAGE_LIST = [
     ":is(.ch3l-body, .ch6l-body, .ch7l-body, .ch9l-body) > :is(.ch3l-stage, .ch6l-stage, .ch7l-stage, .ch9l-stage, .el6-stage)",
     ".ch1-two-col > .ch1-stage",
     ".ch1-motion-grid > .ch1-complex-canvas-shell",
@@ -60,7 +60,8 @@
     ".qv-s4-main > .qv-orbit-hero",
     // ch8 §3: the λ-matrix over the wall of minors (lab-fit.css re-orders the cards under it)
     "#invariant-factors-interactive .ch8l-stagebox > .ch8l-mat",
-  ].join(", ");
+  ];
+  const STAGES = STAGE_LIST.join(", ");
   // a stage whose control row is not the first child of its next sibling: the row is named
   const PAIRED_TOOLS = [
     { stage: ".qv-s2-stage > .qv-orbit-shell", tools: ".qv-lab > .qv-stepbar" },
@@ -71,13 +72,13 @@
   const MAX_SHARE_WITH_TOOLS = 0.58;
   const MAX_TOOLS_H = 52;
   const MIN_BELOW = 120;
-  const PACK = [
-    // ch1 §4 lays its three status cards out itself (lab-fit.css)
-    ".ch1-metrics:not(.ch1-section-gcd-polynomials > *)",
+  // (.ch1-metrics now only appears in ch1 §4, which lays its three status cards out itself in lab-fit.css)
+  const PACK_LIST = [
     ".ch1-equation-grid",
     ".ch1-ld-summary",
     ".ch1-multivariate-layer-grid",
-  ].join(", ");
+  ];
+  const PACK = PACK_LIST.join(", ");
 
   const clips = (el) => {
     for (let node = el.parentElement; node && node !== document.body; node = node.parentElement) {
@@ -218,6 +219,11 @@
       follow: ".is-current",
     },
   ];
+
+  // These lists name parts of each chapter's labs. A lab whose markup changes would drop out of
+  // them without a sound; .github/scripts/selector-check.mjs reads them here and fails when a
+  // selector no longer matches anything on any lesson.
+  window.LALayoutHooks = { ...window.LALayoutHooks, mobileLab: { stages: STAGE_LIST, pairedTools: PAIRED_TOOLS, tools: TOOLS, pack: PACK_LIST, tabs: TABS } };
 
   function tabs() {
     const phone = Boolean(PHONE?.matches);

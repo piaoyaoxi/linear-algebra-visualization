@@ -14,7 +14,7 @@ defineChapter6Section("change-of-basis", {
   ],
   textbook: { reference: "北大版《高等代数》第六章 §4", items: ["基变换与过渡矩阵", "过渡矩阵可逆", `坐标变换公式 ${texInline("X=AY")}`] },
   interactive: { type: "slot", title: "同一条曲线，换一组基" },
-  lesson: {
+  theory: {
     blocks: [
       {
         title: "过渡矩阵",

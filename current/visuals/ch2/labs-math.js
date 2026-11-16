@@ -51,10 +51,7 @@
 
   function formatNum(value, digits = 3) {
     const number = Number(value);
-    if (!Number.isFinite(number)) return "—";
-    const safe = Math.abs(number) < 5 * 10 ** -(digits + 1) ? 0 : number;
-    const rounded = Math.round(safe * 10 ** digits) / 10 ** digits;
-    return Number.isInteger(rounded) ? String(rounded) : String(rounded);
+    return Number.isFinite(number) ? window.LANumber.decimal(number, digits) : "—";
   }
 
   /* exact text of a rational number with a small denominator: "7/8", "−2" */
@@ -124,22 +121,7 @@
     });
   }
 
-  function setupCanvas(canvas) {
-    const rect = canvas.getBoundingClientRect();
-    const width = Math.max(1, rect.width || canvas.clientWidth || 520);
-    const height = Math.max(1, rect.height || canvas.clientHeight || 320);
-    const dpr = window.devicePixelRatio || 1;
-    const pixelWidth = Math.max(1, Math.round(width * dpr));
-    const pixelHeight = Math.max(1, Math.round(height * dpr));
-    if (canvas.width !== pixelWidth || canvas.height !== pixelHeight) {
-      canvas.width = pixelWidth;
-      canvas.height = pixelHeight;
-    }
-    const ctx = canvas.getContext("2d");
-    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-    ctx.clearRect(0, 0, width, height);
-    return { ctx, width, height, dpr };
-  }
+  const setupCanvas = (canvas) => window.LACanvas.setup(canvas, { fallback: [520, 320] });
 
   /*
    * The tip lands exactly on `to`: the shaft stops inside the head (butt end) so no stroke

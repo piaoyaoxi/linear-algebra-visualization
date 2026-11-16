@@ -158,8 +158,12 @@ test.describe("Chapter 2 desktop visual system", () => {
     await expect(page.locator("[data-repeat-view]")).toHaveCount(0);
     await page.locator("#n-order-determinant-interactive .ch3l-predict-options > button").first().click();
     await page.locator("[data-triangle-toggle]").click();
-    await expect(page.locator("[data-zero-out]")).toContainText("贡献为 0");
     await expect(page.locator("[data-six-terms] .is-zero-path")).toHaveCount(5);
+    // with reduced motion the walk through the six paths ends at once, on the main diagonal
+    await expect(page.locator("[data-perm-out]")).toHaveText("123");
+    await expect(page.locator("[data-zero-out]")).toContainText("可能非零");
+    await page.locator("[data-select-231]").click();
+    await expect(page.locator("[data-zero-out]")).toContainText("贡献为 0");
     await expect(page.locator("[data-select-msg]")).toContainText("路径满足每行每列各一次");
   });
 

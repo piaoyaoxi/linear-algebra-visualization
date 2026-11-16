@@ -7,7 +7,7 @@
 
   function renderFormal(el, section) {
     if (!el) return;
-    const f = section.formal || {};
+    const f = section.theory || {};
     const definitions = (f.definitions || []).slice(0, 3).map((item) => `<article class="definition-row"><strong>${item.title}</strong><p>${item.text}</p></article>`).join("");
     const pitfalls = (f.pitfalls || []).length ? `<div class="ch1-pitfalls"><strong>常见误区</strong><ul>${f.pitfalls.slice(0, 3).map((item) => `<li>${item}</li>`).join("")}</ul></div>` : "";
     el.innerHTML = `<h2>${f.title || "定理与概念"}</h2>

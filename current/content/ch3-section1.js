@@ -14,7 +14,7 @@ defineChapter3Section("elimination", {
   ],
   textbook: { reference: "北大版《高等代数》第三章 §1", items: ["初等变换与同解方程组", "阶梯形与回代"] },
   interactive: { type: "slot", title: "消元：平面绕交线转动，解点不动" },
-  lesson3d: {
+  theory: {
     blocks: [
       {
         title: "三类变换都可逆，所以解集不变",

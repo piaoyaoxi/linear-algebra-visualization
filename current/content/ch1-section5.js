@@ -11,7 +11,7 @@ defineChapter1Section("factorization-theorem", {
     reference: "北大版《高等代数》第一章 §5",
     items: ["不可约多项式", "因式分解及唯一性定理", "标准分解式"],
   },
-  formal: {
+  theory: {
     title: "因式分解及唯一性",
     equation: "f(x)=c\\,p_1(x)^{r_1}p_2(x)^{r_2}\\cdots p_s(x)^{r_s}",
     definitions: [

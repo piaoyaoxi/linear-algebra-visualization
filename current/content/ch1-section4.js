@@ -11,7 +11,7 @@ defineChapter1Section("gcd-polynomials", {
     reference: "北大版《高等代数》第一章 §4",
     items: ["最大公因式", "辗转相除法", "互素"],
   },
-  formal: {
+  theory: {
     title: "辗转相除法",
     equation: "f=qg+r\\ \\Longrightarrow\\ \\gcd(f,g)=\\gcd(g,r)",
     definitions: [

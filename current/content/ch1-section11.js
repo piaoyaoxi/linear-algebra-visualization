@@ -11,7 +11,7 @@ defineChapter1Section("symmetric-polynomials", {
     reference: "北大版《高等代数》第一章 §11",
     items: ["对称多项式", "初等对称多项式", "对称多项式基本定理"],
   },
-  formal: {
+  theory: {
     title: "初等对称多项式",
     equation: "\\sigma_k=\\sum_{1\\le i_1<\\cdots<i_k\\le n}x_{i_1}x_{i_2}\\cdots x_{i_k}",
     definitions: [

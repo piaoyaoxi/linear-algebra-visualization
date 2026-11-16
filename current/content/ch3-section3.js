@@ -14,7 +14,7 @@ defineChapter3Section("linear-dependence", {
   ],
   textbook: { reference: "北大版《高等代数》第三章 §3", items: ["线性相关与线性无关", "向量组的线性表出", "极大线性无关组与向量组的秩"] },
   interactive: { type: "slot", title: "第三个向量有没有带来新方向" },
-  lesson3d: {
+  theory: {
     blocks: [
       {
         title: "相关 ⇔ 某个向量可由前面的向量表出",

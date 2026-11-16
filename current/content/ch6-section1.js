@@ -14,7 +14,7 @@ defineChapter6Section("sets-maps", {
   ],
   textbook: { reference: "北大版《高等代数》第六章 §1", items: ["集合及其运算", "映射、像与原像", "单射、满射、双射", "映射的乘积与逆映射"] },
   interactive: false,
-  lesson: {
+  theory: {
     figure: "maps",
     blocks: [
       {

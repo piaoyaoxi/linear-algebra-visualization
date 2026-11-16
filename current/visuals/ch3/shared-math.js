@@ -6,9 +6,7 @@
 
   function formatNumber(value, digits = 2) {
     const n = Number(value);
-    if (!Number.isFinite(n)) return "0";
-    const rounded = Math.round(n * 10 ** digits) / 10 ** digits;
-    return Math.abs(rounded) < 10 ** (-(digits + 1)) ? "0" : String(rounded);
+    return Number.isFinite(n) ? window.LANumber.decimal(n, digits) : "0";
   }
 
   const tex = (source) => (window.texInline ? window.texInline(source) : escapeHtml(source));
@@ -51,21 +49,7 @@
     };
   }
 
-  function sizeCanvas(canvas) {
-    if (!canvas) return null;
-    const rect = canvas.getBoundingClientRect();
-    const width = Math.max(1, Math.round(rect.width));
-    const height = Math.max(1, Math.round(rect.height));
-    const dpr = Math.min(2, window.devicePixelRatio || 1);
-    if (canvas.width !== Math.round(width * dpr) || canvas.height !== Math.round(height * dpr)) {
-      canvas.width = Math.round(width * dpr);
-      canvas.height = Math.round(height * dpr);
-    }
-    const ctx = canvas.getContext("2d");
-    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-    ctx.clearRect(0, 0, width, height);
-    return { ctx, width, height, dpr };
-  }
+  const sizeCanvas = (canvas) => (canvas ? window.LACanvas.setup(canvas, { maxDpr: 2, whole: true }) : null);
 
   function drawAxes(ctx, width, height, scale = 44) {
     const p = palette();

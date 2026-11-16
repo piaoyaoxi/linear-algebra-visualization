@@ -14,7 +14,7 @@ defineChapter7Section("diagonal-matrices", {
   ],
   textbook: { reference: "北大版《高等代数》第七章 §5", items: ["线性变换可对角化的条件", "属于不同特征值的特征向量线性无关", "矩阵的对角化"] },
   interactive: { type: "slot", title: "反复作用 A，点跑向哪里" },
-  lesson3d: {
+  theory: {
     blocks: [
       {
         title: "可对角化的判别",

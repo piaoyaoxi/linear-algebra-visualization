@@ -14,7 +14,7 @@ defineChapter8Section("jordan-derivation", {
   ],
   textbook: { reference: "北大版《高等代数》第八章 §6", items: ["若尔当块的初等因子", "若尔当形矩阵的初等因子", "复矩阵相似于若尔当形矩阵"] },
   interactive: { type: "slot", title: "核空间一层一层长高" },
-  lesson3d: {
+  theory: {
     blocks: [
       {
         title: "若尔当块的初等因子",

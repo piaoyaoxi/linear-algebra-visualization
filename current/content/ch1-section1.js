@@ -11,7 +11,7 @@ defineChapter1Section("number-fields", {
     reference: "北大版《高等代数》第一章 §1",
     items: ["数域的定义", "常见数域与反例"],
   },
-  formal: {
+  theory: {
     title: "数域的定义",
     equation: "\\mathbb{Q}\\subseteq P\\subseteq\\mathbb{C}\\qquad(P\\ \\text{为任意数域})",
     definitions: [

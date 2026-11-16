@@ -11,7 +11,16 @@
     <script>
       (function () {
         var root = document.documentElement;
-        try { if (localStorage.getItem("la-visual-theme") === "dark") root.dataset.theme = "dark"; } catch (error) {}
+        // the saved choice (made on the learning page), else the system setting
+        var saved = null;
+        try { saved = localStorage.getItem("la-visual-theme"); } catch (error) {}
+        var system = window.matchMedia ? window.matchMedia("(prefers-color-scheme: dark)") : null;
+        var follow = function () {
+          if (saved === "dark" || saved === "light" ? saved === "dark" : Boolean(system && system.matches)) root.dataset.theme = "dark";
+          else delete root.dataset.theme;
+        };
+        follow();
+        if (saved !== "dark" && saved !== "light" && system && system.addEventListener) system.addEventListener("change", follow);
         var played = false;
         try { played = sessionStorage.getItem("la-home-intro") === "1"; } catch (error) {}
         if (!played && !window.matchMedia("(prefers-reduced-motion: reduce)").matches) root.classList.add("home-entering");

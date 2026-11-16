@@ -11,7 +11,7 @@ defineChapter1Section("polynomial-functions", {
     reference: "北大版《高等代数》第一章 §7",
     items: ["余数定理", "根的个数", "多项式函数的相等"],
   },
-  formal: {
+  theory: {
     title: "余数定理与根",
     equation: "f(x)=(x-a)\\,q(x)+f(a)",
     definitions: [

@@ -353,7 +353,7 @@
       const e = elementary(state.op);
       // waiting at E: the effect of P stays hidden until it is applied
       const effect = waiting()
-        ? `<div class="ch3l-actions"><button type="button" class="ch3l-btn is-primary" data-apply data-la-free${picked ? "" : ' disabled title="先在上方猜一猜"'}>作用 ${tex("P")}</button></div>`
+        ? `<div class="ch3l-actions"><button type="button" class="ch3l-btn is-primary" data-apply data-la-free${single?.picked ? "" : ' disabled title="先在上方猜一猜"'}>作用 ${tex("P")}</button></div>`
         : `<p>${e.geo}</p><p>${tex(`\\det P=${fmt(e.det)}`)}：${Math.abs(e.det) === 1 ? "单位正方形的面积不变" : `单位正方形的面积变为原来的 ${tex(fmt(Math.abs(e.det)))} 倍`}${e.det < 0 ? "，定向翻转" : ""}。</p><p class="ch3l-muted">逆变换 ${tex(e.inv)}，所以 ${tex("P")} 可逆。</p>`;
       card.innerHTML = `<h4>对 ${tex("E")} 做 ${tex(e.label)}</h4>${texD(`E=${texM(I)}\\ \\longrightarrow\\ P=${texM(e.E)}`)}${effect}`;
       card.querySelector("[data-apply]")?.addEventListener("click", () => {
@@ -451,51 +451,34 @@
     task.innerHTML = TASKS.single;
 
     // Prediction before the first exploration result is explained.
-    const gate = root.querySelector('[data-el-gate="single"]');
-    gate.innerHTML = `<div class="ch3l-predict"><div class="ch3l-predict-q"><span>先猜一猜</span><p>${tex("R_2\\leftarrow R_2+2R_1")} 对应的 ${tex("P(2,1(2))=\\begin{pmatrix}1&0\\\\2&1\\end{pmatrix}")} 会把单位正方形变成什么？</p></div>
-      <div class="ch3l-predict-options">${(window.LAStableShuffle || ((a) => a))([
+    const single = window.LAPredictGate.mount(root.querySelector('[data-el-gate="single"]'), {
+      question: `${tex("R_2\\leftarrow R_2+2R_1")} 对应的 ${tex("P(2,1(2))=\\begin{pmatrix}1&0\\\\2&1\\end{pmatrix}")} 会把单位正方形变成什么？`,
+      options: [
         ["沿竖直方向剪切，面积不变", true, ""],
         ["沿水平方向剪切，面积不变", false, "P 改变的是第 2 个坐标：(x,y) 变成 (x, 2x+y)。"],
         ["竖直方向拉长 2 倍，面积变为 2 倍", false, "det P=1，面积不变。"],
         ["绕原点旋转", false, "e₁ 被送到 (1,2)，e₂ 保持不动，长度变了，所以不是旋转。"],
-      ], "visuals/ch4/section6-elementary.js").map(([t, ok, why], i) => `<button type="button" data-i="${i}" data-ok="${ok}" data-why="${why}">${t}</button>`).join("")}</div><p class="ch3l-predict-feedback" hidden></p></div>`;
-    // predict → act → reveal: the verdict opens only after the student also acts on the lab
-    let picked = null;
-    let revealed = false;
-    const fb = gate.querySelector(".ch3l-predict-feedback");
-    const reveal = () => {
-      if (revealed || !picked) return;
-      revealed = true;
-      const ok = picked.dataset.ok === "true";
-      gate.querySelectorAll("[data-i]").forEach((x) => x.classList.remove("is-picked"));
-      picked.classList.add(ok ? "is-right" : "is-wrong");
-      gate.querySelector(".ch3l-predict").classList.add("is-done");
-      fb.innerHTML = ok
-        ? `✓ 每个点的 ${tex("y")} 坐标加上 ${tex("2x")}，${tex("x")} 坐标不变：竖直方向的剪切。倍加矩阵的行列式为 1，所以面积不变，这正是第二章“倍加不改变行列式”的几何原因。`
-        : `再看看图：${picked.dataset.why}`;
-    };
-    gate.querySelectorAll("[data-i]").forEach((b) => b.addEventListener("click", () => {
-      if (revealed) return;
-      picked = b;
-      gate.querySelectorAll("[data-i]").forEach((x) => x.classList.toggle("is-picked", x === b));
-      fb.hidden = false;
-      fb.textContent = "记下了你的猜测。现在动手操作一次，结论随后出现。";
+      ],
+      key: "visuals/ch4/section6-elementary.js",
+      right: `✓ 每个点的 ${tex("y")} 坐标加上 ${tex("2x")}，${tex("x")} 坐标不变：竖直方向的剪切。倍加矩阵的行列式为 1，所以面积不变，这正是第二章“倍加不改变行列式”的几何原因。`,
+      manual: true,
       // “作用 P” opens once a guess exists
-      if (state.mode === "single") singleInfo();
-    }));
+      onPick: () => {
+        if (state.mode === "single") singleInfo();
+      },
+    });
     /*
      * Only the controls of the single-operation view are actions here (a slider counts on
      * release). The verdict needs the lab on R₂ ← R₂ + 2R₁ with P applied; an action on
      * another operation keeps the guess and says where the asked one is.
      */
     const judge = () => {
-      if (revealed || !picked || state.mode !== "single") return;
+      if (single.revealed || !single.picked || state.mode !== "single") return;
       if (onAsked() && state.applied) {
-        reveal();
+        single.reveal();
         return;
       }
-      fb.hidden = false;
-      fb.innerHTML = `题目问的是 ${tex("P(2,1(2))")}：选“倍加”中的 ${tex("R_2\\leftarrow R_2+cR_1")}，取 ${tex("c=2")}，结论随后出现。`;
+      single.note(`题目问的是 ${tex("P(2,1(2))")}：选“倍加”中的 ${tex("R_2\\leftarrow R_2+cR_1")}，取 ${tex("c=2")}，结论随后出现。`);
     };
     side.addEventListener("change", judge);
     side.addEventListener("click", (e) => { if (e.target.closest("button")) judge(); });
@@ -517,9 +500,8 @@
       right: `✓ 每作用一步，新的初等矩阵就乘在左边。图中的虚线依次是 ${tex("E")}、${tex("P_1")}、${tex("P_2P_1")}、${tex("P_3P_2P_1")} 的像，最后到达 ${tex("A=P_4P_3P_2P_1")}。`,
       root: buildBox,
       manual: true,
+      actHint: "记下了你的猜测。按“作用下一步”走完四步，结论随后出现。",
       onPick: () => {
-        const note = buildBox.querySelector(".ch3l-predict-feedback");
-        if (note) note.textContent = "记下了你的猜测。按“作用下一步”走完四步，结论随后出现。";
         if (state.mode === "build") buildSide();
       },
     }) || null;

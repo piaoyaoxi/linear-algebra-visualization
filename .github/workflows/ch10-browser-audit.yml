@@ -8,6 +8,10 @@ on:
       - "tests/ch10-browser-audit.cjs"
       - "tests/ch10-source-audit.cjs"
       - ".github/workflows/ch10-browser-audit.yml"
+      - "package.json"
+      - "package-lock.json"
+      - ".nvmrc"
+      - ".github/actions/setup-playwright/**"
 
 permissions:
   contents: read
@@ -24,10 +28,8 @@ jobs:
       - name: Check out pull request
         uses: actions/checkout@v4
 
-      - name: Set up Node
-        uses: actions/setup-node@v4
-        with:
-          node-version: "22"
+      - name: Node and the pinned Playwright
+        uses: ./.github/actions/setup-playwright
 
       - name: Check JavaScript syntax
         run: |
@@ -51,14 +53,6 @@ jobs:
             tests/ch10-source-audit.cjs \
             artifacts/ch10-browser-audit/source/
 
-      - name: Install Chromium audit runtime
-        run: |
-          mkdir -p /tmp/ch10-audit
-          cd /tmp/ch10-audit
-          npm init -y
-          npm install playwright@1.55.0
-          ./node_modules/.bin/playwright install --with-deps chromium
-
       - name: Start local learning site
         run: |
           python3 .github/scripts/serve.py 4173 current > /tmp/ch10-server.log 2>&1 &
@@ -74,7 +68,6 @@ jobs:
 
       - name: Audit Chapter 10 in Chromium
         env:
-          NODE_PATH: /tmp/ch10-audit/node_modules
           AUDIT_BASE_URL: http://127.0.0.1:4173/learn.html
           AUDIT_OUTPUT_DIR: artifacts/ch10-browser-audit
         run: node tests/ch10-browser-audit.cjs

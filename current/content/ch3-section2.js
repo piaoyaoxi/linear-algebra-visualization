@@ -13,7 +13,7 @@ defineChapter3Section("n-vector-space", {
   ],
   textbook: { reference: "北大版《高等代数》第三章 §2", items: ["n 维向量及其运算", "线性组合"] },
   interactive: { type: "slot", title: "同一个方程组，两幅图同时成立" },
-  lesson3d: {
+  theory: {
     blocks: [
       {
         title: "向量就是有顺序的一列数",

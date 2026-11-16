@@ -14,7 +14,7 @@ defineChapter8Section("smith-form", {
   ],
   textbook: { reference: "北大版《高等代数》第八章 §2", items: ["初等变换与初等矩阵", "λ-矩阵的等价", "降低左上角次数的引理", "标准形"] },
   interactive: { type: "slot", title: "标准形工作台" },
-  lesson3d: {
+  theory: {
     blocks: [
       {
         title: "初等变换与等价",

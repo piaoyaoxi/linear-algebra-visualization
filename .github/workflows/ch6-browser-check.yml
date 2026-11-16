@@ -7,6 +7,10 @@ on:
       - ".github/scripts/ch6-browser-review.mjs"
       - ".github/scripts/ch6-source-style-check.mjs"
       - ".github/workflows/ch6-browser-check.yml"
+      - "package.json"
+      - "package-lock.json"
+      - ".nvmrc"
+      - ".github/actions/setup-playwright/**"
 
 permissions:
   contents: read
@@ -18,9 +22,8 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - uses: actions/setup-node@v4
-        with:
-          node-version: 20
+      - name: Node and the pinned Playwright
+        uses: ./.github/actions/setup-playwright
 
       - name: Reject off-brand Chapter 6 source styles
         shell: bash
@@ -30,11 +33,6 @@ jobs:
           node .github/scripts/ch6-source-style-check.mjs 2>&1 | tee /tmp/ch6-screenshots/source-style-report.txt
           status=${PIPESTATUS[0]}
           exit "$status"
-
-      - name: Install Playwright
-        run: |
-          npm install --no-save playwright@1.52.0
-          npx playwright install --with-deps chromium
 
       - name: Start static site
         run: |

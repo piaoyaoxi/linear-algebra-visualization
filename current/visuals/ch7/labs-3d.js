@@ -208,6 +208,7 @@
       const { ker } = structure();
       const kerN = ker.map(numVec);
       const xHandle = {
+        name: "x",
         color: "drag",
         snap: 0.5,
         get: () => state.x,
@@ -221,6 +222,7 @@
         end: () => flow?.acted(),
       };
       const xpHandle = {
+        name: "x′",
         color: "drag",
         get: xPrime,
         set: (p) => {
@@ -510,6 +512,9 @@
     function setHandles() {
       scene.setHandles([
         {
+          get name() {
+            return state.kind === "line" ? "u" : "n";
+          },
           color: "drag",
           snap: 0.5,
           get: () => (state.kind === "line" ? state.u : state.n),
@@ -746,6 +751,7 @@
 
     scene.setHandles([
       {
+        name: "v",
         color: "drag",
         snap: 0.5,
         get: () => state.v,

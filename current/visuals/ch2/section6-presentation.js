@@ -257,7 +257,7 @@
                 <div class="ch2-meter-card"><strong>位置符号</strong><span data-sign></span></div>
                 <div class="ch2-meter-card" data-cij-card><strong>${tex("A_{ij}")}</strong><span data-cij></span></div>
               </div>
-              <div class="ch2-note">先在左侧任选元素，读取“余子矩阵 → 余子式 → 代数余子式”的对应关系。</div>
+              <div class="ch2-note">先在矩阵里任选一个元素，读取“余子矩阵 → 余子式 → 代数余子式”的对应关系。</div>
             </div>
           </div>
           <div class="ch2-leibniz" data-leibniz aria-live="polite"></div>

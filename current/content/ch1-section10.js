@@ -11,7 +11,7 @@ defineChapter1Section("multivariate-polynomials", {
     reference: "北大版《高等代数》第一章 §10",
     items: [`${texInline("n")} 元多项式与次数`, "字典排列法", "齐次多项式"],
   },
-  formal: {
+  theory: {
     title: "次数与齐次成分",
     equation: "x^iy^j\\cdot x^ky^\\ell=x^{i+k}y^{j+\\ell}",
     definitions: [

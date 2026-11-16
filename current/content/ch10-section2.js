@@ -14,7 +14,7 @@ defineChapter10Section("dual-space", {
   ],
   textbook: { reference: "北大版《高等代数》第十章 §2", items: ["对偶空间 L(V,P)", "对偶基", "对偶基之间的过渡矩阵", "V 与 V** 的同构"] },
   interactive: { type: "slot", title: "斜基与它的对偶基" },
-  lesson3d: {
+  theory: {
     blocks: [
       {
         title: "对偶空间与对偶基",

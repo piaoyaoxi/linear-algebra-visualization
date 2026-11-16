@@ -14,7 +14,7 @@ defineChapter6Section("vector-space-definition", {
   ],
   textbook: { reference: "北大版《高等代数》第六章 §2", items: ["线性空间的定义", "常见例子", "零元素与负元素的唯一性", "简单性质"] },
   interactive: false,
-  lesson: {
+  theory: {
     figure: "gallery",
     blocks: [
       {

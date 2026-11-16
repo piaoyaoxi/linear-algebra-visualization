@@ -22,6 +22,27 @@
   const FUNC = "的了是在和与对把被为及或等也就都而且向从到由以之其个";
 
   /*
+   * A batch reads each element's computed style once (styleOf): it rewrites the DOM between its
+   * reads, and every read after a change made the browser restyle the page, which was most of
+   * the cost on a phone. The rewrites keep an element's alignment and type size, and its display
+   * with one exception: an item of a flex or grid box is always a block, and it is inline again
+   * once joinRuns moves it into a <la-run> (joinRuns drops its cached style). The elements
+   * typeset.js adds are known: la-run is a block, the others are inline.
+   */
+  const OWN_DISPLAY = { "LA-RUN": "block", "LA-SP": "inline", "LA-W": "inline", "LA-T": "inline", "LA-MG": "inline", "LA-HANG": "inline", "LA-OKEEP": "inline", WBR: "inline" };
+  let styles = null;
+  function styleOf(el) {
+    let style = styles?.get(el);
+    if (!style) {
+      const cs = getComputedStyle(el);
+      style = { display: cs.display, textAlign: cs.textAlign, fontSize: parseFloat(cs.fontSize) };
+      styles?.set(el, style);
+    }
+    return style;
+  }
+  const displayOf = (el) => OWN_DISPLAY[el.nodeName] || styleOf(el).display;
+
+  /*
    * WebKit (Safari, and every browser on iOS) allows no line break on either side of a nowrap
    * box (<la-w>, <la-t>); Chromium breaks there as between any two Chinese characters. Without an
    * explicit <wbr>, a sentence made of kept words could not wrap at all and ran past a phone's
@@ -60,7 +81,7 @@
         continue;
       }
       if (node.matches(SKIP) || node.classList.contains("katex") || node.classList.contains("tex")) return null;
-      const display = getComputedStyle(node).display;
+      const display = displayOf(node);
       if (display === "none") {
         node = node.previousSibling;
         continue;
@@ -103,53 +124,58 @@
     return start >= 0 ? start : -1;
   }
 
-  function keepTail(block) {
-    // a column narrower than about two characters stacks its text on purpose
-    if (block.clientWidth < parseFloat(getComputedStyle(block).fontSize) * 2.5) return;
+  /*
+   * The last words of a block stay together (<la-t>). planTail only reads and returns the
+   * change to make (or null): process() decides for every block first and changes them after,
+   * so measuring one block never waits for the browser to lay out another one's change.
+   * (process() leaves out a column narrower than about two characters: it stacks its text on purpose.)
+   */
+  function planTail(block) {
     const node = tailText(block);
-    if (!node || node.parentElement?.closest("la-t")) return;
+    if (!node || node.parentElement?.closest("la-t")) return null;
     // in a flex or grid box a loose text run is an item of its own: a wrapper would split it
-    if (node.parentElement === block && /flex|grid/.test(getComputedStyle(block).display)) return;
+    if (node.parentElement === block && /flex|grid/.test(displayOf(block))) return null;
     const start = tailStart(node.textContent);
-    if (start < 0) {
-      keepWithFormula(block, node);
-      return;
-    }
-    const tail = start > 0 ? node.splitText(start) : node;
-    const keep = document.createElement("la-t");
-    tail.before(keep);
-    keep.append(tail);
-    allowBreakBefore(keep);
+    if (start < 0) return planWithFormula(block, node);
+    return () => {
+      const tail = start > 0 ? node.splitText(start) : node;
+      const keep = document.createElement("la-t");
+      tail.before(keep);
+      keep.append(tail);
+      allowBreakBefore(keep);
+    };
   }
 
   /* a block that ends “… formula 中。” or “… z 轴。”: the single character stays with the short
      formula, or the short Latin word or number, in front of it */
   const LATIN_WORD = /^[^\u3400-\u9fff\uf900-\ufaff\s]{1,12}$/;
-  function keepWithFormula(block, node) {
+  function planWithFormula(block, node) {
     const text = node.textContent.trim();
     // one character with its marks, or the marks alone (“<span>有解</span>。”)
-    if (!text || text.length > 3 || cjkCount(text) > 1 || (cjkCount(text) === 0 && !PUNCT.test(text))) return;
+    if (!text || text.length > 3 || cjkCount(text) > 1 || (cjkCount(text) === 0 && !PUNCT.test(text))) return null;
     let prev = node.previousSibling;
     while (prev && (prev.nodeName === "LA-SP" || prev.nodeName === "WBR" || (prev.nodeType === Node.TEXT_NODE && !prev.textContent.trim()))) prev = prev.previousSibling;
-    if (!prev) return;
+    if (!prev) return null;
     const latin = prev.nodeType === Node.TEXT_NODE && LATIN_WORD.test(prev.textContent);
     const word = prev.nodeType === Node.ELEMENT_NODE && !prev.matches(SKIP) && !prev.matches(".tex, .katex, .la-keep, la-sp")
-      && getComputedStyle(prev).display === "inline" && prev.textContent.trim().length <= 8;
-    if (!latin && !word && (prev.nodeType !== Node.ELEMENT_NODE || !prev.matches(".tex, .katex, .la-keep"))) return;
-    const em = parseFloat(getComputedStyle(block).fontSize);
-    if (!latin && !word && prev.getBoundingClientRect().width > em * 8) return;
-    const keep = document.createElement("la-t");
-    prev.before(keep);
-    let cur = prev;
-    while (cur) {
-      const next = cur.nextSibling;
-      keep.append(cur);
-      if (cur === node) break;
-      cur = next;
-    }
-    // the kept tail is one unit: no break offered inside it
-    keep.querySelectorAll("wbr").forEach((w) => w.remove());
-    allowBreakBefore(keep);
+      && displayOf(prev) === "inline" && prev.textContent.trim().length <= 8;
+    if (!latin && !word && (prev.nodeType !== Node.ELEMENT_NODE || !prev.matches(".tex, .katex, .la-keep"))) return null;
+    const em = styleOf(block).fontSize;
+    if (!latin && !word && prev.getBoundingClientRect().width > em * 8) return null;
+    return () => {
+      const keep = document.createElement("la-t");
+      prev.before(keep);
+      let cur = prev;
+      while (cur) {
+        const next = cur.nextSibling;
+        keep.append(cur);
+        if (cur === node) break;
+        cur = next;
+      }
+      // the kept tail is one unit: no break offered inside it
+      keep.querySelectorAll("wbr").forEach((w) => w.remove());
+      allowBreakBefore(keep);
+    };
   }
 
   /* short texts (titles, questions, options, captions): a word is never split over two lines */
@@ -165,7 +191,7 @@
     while (walker.nextNode()) nodes.push(walker.currentNode);
     nodes.forEach((node) => {
       // a loose text run in a flex or grid box is an item of its own: wrappers would split it
-      if (/flex|grid/.test(getComputedStyle(node.parentElement).display)) return;
+      if (/flex|grid/.test(displayOf(node.parentElement))) return;
       const parts = [...segmenter.segment(node.textContent)].map((x) => x.segment);
       if (!parts.some((x) => WORD.test(x))) return;
       const frag = document.createDocumentFragment();
@@ -217,13 +243,16 @@
       while (run.length && run[0].nodeType === Node.TEXT_NODE && !run[0].textContent.trim()) run.shift();
       const wrap = document.createElement("la-run");
       run[0].before(wrap);
-      run.forEach((n) => wrap.append(n));
+      run.forEach((n) => {
+        wrap.append(n);
+        styles?.delete(n);
+      });
     });
   }
 
   const isBlock = (el) => {
     if (el.matches(SKIP) || el.closest(".katex, svg, canvas, [hidden]")) return false;
-    const display = getComputedStyle(el).display;
+    const display = displayOf(el);
     return display !== "inline" && display !== "contents" && display !== "none";
   };
 
@@ -240,48 +269,64 @@
     return Boolean(last && !last.classList.contains("mbin"));
   };
 
-  function groupFormula(katex) {
-    const html = katex.querySelector(":scope > .katex-html");
-    if (!html || katex.closest(".katex-display") || html.dataset.laGrouped) return;
-    // a formula not laid out yet (a closed answer) has no widths to judge by: it is grouped
-    // when it is shown (typeset.js sees the open / hidden change)
-    if (!html.getBoundingClientRect().width) return;
-    html.dataset.laGrouped = "1";
-    const bases = [...html.children].filter((c) => c.classList.contains("base") || (c.matches(".la-keep, la-okeep") && c.querySelector(".base")));
-    if (bases.length < 2) return;
-    // a short formula (A=CᵀC) stays whole: broken after its relation it reads as two pieces
-    const em = parseFloat(getComputedStyle(katex.closest(".tex") || katex).fontSize);
-    // the pieces' own widths: a formula already broken over two lines has a box as wide as both
-    const width = bases.reduce((sum, b) => sum + (pieceBase(b)?.getBoundingClientRect().width || 0), 0);
-    const short = width <= 7 * em;
-    const groups = [];
-    let current = [];
-    bases.forEach((base) => {
-      current.push(base);
-      if (!short && endsWithRelation(base)) {
-        groups.push(current);
-        current = [];
-      }
+  /*
+   * All formulas of a change are handled together: first every measurement, then every
+   * regrouping, then the check of the new groups against their lines. Measuring and
+   * regrouping one formula after another made the browser lay the page out again for each
+   * formula (seconds on a slow phone). A piece's width does not depend on the grouping of
+   * other formulas, so the result is the same.
+   */
+  function groupFormulas(list) {
+    const plans = [];
+    list.forEach((katex) => {
+      const html = katex.querySelector(":scope > .katex-html");
+      if (!html || katex.closest(".katex-display") || html.dataset.laGrouped) return;
+      // a formula not laid out yet (a closed answer) has no widths to judge by: it is grouped
+      // when it is shown (typeset.js sees the open / hidden change)
+      if (!html.getBoundingClientRect().width) return;
+      html.dataset.laGrouped = "1";
+      const bases = [...html.children].filter((c) => c.classList.contains("base") || (c.matches(".la-keep, la-okeep") && c.querySelector(".base")));
+      if (bases.length < 2) return;
+      // a short formula (A=CᵀC) stays whole: broken after its relation it reads as two pieces
+      const em = styleOf(katex.closest(".tex") || katex).fontSize;
+      // the pieces' own widths: a formula already broken over two lines has a box as wide as both
+      const width = bases.reduce((sum, b) => sum + (pieceBase(b)?.getBoundingClientRect().width || 0), 0);
+      plans.push({ katex, bases, short: width <= 7 * em, ends: bases.map(endsWithRelation) });
     });
-    if (current.length) groups.push(current);
-    groups.forEach((group) => {
-      if (group.length < 2) return;
-      const wrap = document.createElement("la-mg");
-      group[0].before(wrap);
-      group.forEach((base) => wrap.append(base));
+    plans.forEach(({ bases, short, ends }) => {
+      const groups = [];
+      let current = [];
+      bases.forEach((base, i) => {
+        current.push(base);
+        if (!short && ends[i]) {
+          groups.push(current);
+          current = [];
+        }
+      });
+      if (current.length) groups.push(current);
+      groups.forEach((group) => {
+        if (group.length < 2) return;
+        const wrap = document.createElement("la-mg");
+        group[0].before(wrap);
+        group.forEach((base) => wrap.append(base));
+      });
     });
-    fitGroups(katex);
+    fitGroups(plans.map((plan) => plan.katex));
   }
 
-  /* a group wider than the line cannot stay unbroken: give its pieces back */
-  function fitGroups(katex) {
-    const block = katex.closest("p, li, dd, dt, td, th, div, label, button, figcaption, summary, h1, h2, h3, h4") || katex.parentElement;
-    if (!block) return;
-    const cs = getComputedStyle(block);
-    const room = block.clientWidth - parseFloat(cs.paddingLeft) - parseFloat(cs.paddingRight);
-    katex.querySelectorAll("la-mg").forEach((group) => {
-      if (room > 0 && group.getBoundingClientRect().width > room + 1) group.replaceWith(...group.childNodes);
+  /* a group wider than the line cannot stay unbroken: give its pieces back (all measured first) */
+  function fitGroups(list) {
+    const loose = [];
+    list.forEach((katex) => {
+      const block = katex.closest("p, li, dd, dt, td, th, div, label, button, figcaption, summary, h1, h2, h3, h4") || katex.parentElement;
+      if (!block) return;
+      const cs = getComputedStyle(block);
+      const room = block.clientWidth - parseFloat(cs.paddingLeft) - parseFloat(cs.paddingRight);
+      katex.querySelectorAll("la-mg").forEach((group) => {
+        if (room > 0 && group.getBoundingClientRect().width > room + 1) loose.push(group);
+      });
     });
+    loose.forEach((group) => group.replaceWith(...group.childNodes));
   }
 
   /* an inline formula next to Chinese text: a quarter-em gap instead of a typed space */
@@ -298,7 +343,7 @@
         if (sib.nodeType === Node.TEXT_NODE) {
           if (sib.textContent) return sib;
         } else if (sib.nodeType === Node.ELEMENT_NODE) {
-          if (sib.matches(".tex, .katex, br, la-mg") || getComputedStyle(sib).display !== "inline") return null;
+          if (sib.matches(".tex, .katex, br, la-mg") || displayOf(sib) !== "inline") return null;
           if (sib.firstChild) {
             sib = dir < 0 ? sib.lastChild : sib.firstChild;
             continue;
@@ -307,7 +352,7 @@
         sib = dir < 0 ? sib.previousSibling : sib.nextSibling;
       }
       const up = cur.parentElement;
-      if (!up || getComputedStyle(up).display !== "inline") return null;
+      if (!up || displayOf(up) !== "inline") return null;
       cur = up;
     }
   }
@@ -324,7 +369,7 @@
     const unit = katex.parentElement?.closest(".tex") || katex;
     if (unit.dataset.laSp) return;
     unit.dataset.laSp = "1";
-    if (getComputedStyle(unit).display === "block") return;
+    if (displayOf(unit) === "block") return;
     let before = neighbourText(unit, -1);
     // an opening mark right before the formula (“（det C=1”) goes with its first piece, so a
     // line never ends on “（”: the mirror of the closing marks lab-layout.js glues to the last piece
@@ -374,7 +419,7 @@
      characters instead of opening that space */
   const LATIN_GAP = /([\u3400-\u9fff\uf900-\ufaff]) +(?=[A-Za-z0-9\u0370-\u03ff(])|([A-Za-z0-9\u0370-\u03ff)]) +(?=[\u3400-\u9fff\uf900-\ufaff])/;
   function spaceLatin(block) {
-    if (getComputedStyle(block).textAlign !== "justify") return;
+    if (styleOf(block).textAlign !== "justify") return;
     [...block.childNodes].forEach((node) => {
       if (node.nodeType !== Node.TEXT_NODE || !LATIN_GAP.test(node.textContent)) return;
       let cur = node;
@@ -399,7 +444,8 @@
    * keeps start alignment (data-la-ragged) instead.
    */
   const LOOSE = 0.11;
-  function lineBoxes(block) {
+  // display, read once per element per measurement (a nested block is walked by each block around it)
+  function lineBoxes(block, displayOf) {
     const rects = [];
     const walker = document.createTreeWalker(block, NodeFilter.SHOW_TEXT | NodeFilter.SHOW_ELEMENT, {
       acceptNode: (n) => {
@@ -408,7 +454,7 @@
             [...n.getClientRects()].forEach((r) => r.width && rects.push(r));
             return NodeFilter.FILTER_REJECT;
           }
-          const d = getComputedStyle(n).display;
+          const d = displayOf(n);
           return d === "inline" || d === "contents" ? NodeFilter.FILTER_SKIP : NodeFilter.FILTER_REJECT;
         }
         return n.textContent.trim() ? NodeFilter.FILTER_ACCEPT : NodeFilter.FILTER_REJECT;
@@ -435,20 +481,38 @@
   function settleJustify(blocks) {
     const list = blocks.filter((b) => b.isConnected && ownsText(b) && (b.dataset.laRagged || getComputedStyle(b).textAlign === "justify"));
     if (!list.length) return;
-    // measure the natural (start-aligned) lines of all of them in one layout
-    list.forEach((b) => b.setAttribute("data-la-measure", ""));
-    const verdict = list.map((b) => {
-      const lines = lineBoxes(b);
-      if (lines.length < 2) return false;
+    // A block not tall enough for two lines has no line that could come out loose. Alignment
+    // changes spacing, never where lines break, so heights are read as they stand, and only
+    // the taller blocks are switched to their natural lines (each switch makes the browser lay
+    // the block out twice).
+    const tall = list.filter((b) => {
       const cs = getComputedStyle(b);
-      const em = parseFloat(cs.fontSize);
-      const box = b.getBoundingClientRect();
-      const right = box.right - parseFloat(cs.paddingRight) - parseFloat(cs.borderRightWidth);
-      return lines.slice(0, -1).some((l) => (right - l.right) / Math.max(1, (l.right - l.left) / em) > LOOSE * em);
+      const lineHeight = cs.lineHeight === "normal" ? parseFloat(cs.fontSize) : parseFloat(cs.lineHeight);
+      const inner = b.getBoundingClientRect().height - parseFloat(cs.paddingTop) - parseFloat(cs.paddingBottom) - parseFloat(cs.borderTopWidth) - parseFloat(cs.borderBottomWidth);
+      return !(lineHeight > 0 && inner < 2 * lineHeight - 1);
     });
-    list.forEach((b, i) => {
-      b.removeAttribute("data-la-measure");
-      if (verdict[i]) b.dataset.laRagged = "1";
+    // measure the natural (start-aligned) lines of all of them in one layout
+    tall.forEach((b) => b.setAttribute("data-la-measure", ""));
+    const displays = new Map();
+    const displayOf = (el) => {
+      let d = displays.get(el);
+      if (d === undefined) displays.set(el, (d = getComputedStyle(el).display));
+      return d;
+    };
+    const loose = new Set(
+      tall.filter((b) => {
+        const lines = lineBoxes(b, displayOf);
+        if (lines.length < 2) return false;
+        const cs = getComputedStyle(b);
+        const em = parseFloat(cs.fontSize);
+        const box = b.getBoundingClientRect();
+        const right = box.right - parseFloat(cs.paddingRight) - parseFloat(cs.borderRightWidth);
+        return lines.slice(0, -1).some((l) => (right - l.right) / Math.max(1, (l.right - l.left) / em) > LOOSE * em);
+      }),
+    );
+    tall.forEach((b) => b.removeAttribute("data-la-measure"));
+    list.forEach((b) => {
+      if (loose.has(b)) b.dataset.laRagged = "1";
       else delete b.dataset.laRagged;
     });
   }
@@ -461,7 +525,7 @@
   const END_MARK = /[。，；：！？、]$/;
   function hangEnd(block) {
     if (block.matches("button, [role='button'], label") || block.querySelector("la-hang")) return;
-    if (getComputedStyle(block).textAlign !== "center") return;
+    if (styleOf(block).textAlign !== "center") return;
     let node = tailText(block);
     if (!node || !END_MARK.test(node.textContent.trimEnd())) return;
     const text = node.textContent.trimEnd();
@@ -471,49 +535,126 @@
     hang.append(mark);
   }
 
-  function process(root) {
-    if (!root || !root.isConnected) return;
-    const scope = root.nodeType === Node.ELEMENT_NODE ? root : root.parentElement;
-    if (!scope) return;
-    const main = document.querySelector("main") || document.body;
-    if (!main.contains(scope)) return;
-    // the blocks inside the changed part, and the block that contains it
-    const all = [...scope.querySelectorAll("*")];
-    if (scope.nodeType === Node.ELEMENT_NODE) all.push(scope);
-    all.forEach((el) => {
-      if (/flex|grid/.test(getComputedStyle(el).display)) joinRuns(el);
+  // The elements of a subtree that typeset.js works on. Formulas, drawings and scripts are
+  // skipped whole: nothing in them is ever changed, and the KaTeX markup alone is thousands
+  // of elements on a lesson page.
+  function elementsIn(scope) {
+    const out = [];
+    const walker = document.createTreeWalker(scope, NodeFilter.SHOW_ELEMENT, {
+      acceptNode: (n) => (n.matches(".katex, svg, canvas, script, style") ? NodeFilter.FILTER_REJECT : NodeFilter.FILTER_ACCEPT),
     });
-    const blocks = [...scope.querySelectorAll("*")].filter(isBlock);
-    let up = scope;
-    while (up && up !== main && !isBlock(up)) up = up.parentElement;
-    if (up && up !== main) blocks.push(up);
-    if (isBlock(scope)) blocks.push(scope);
-    const formulas = [...scope.querySelectorAll(".katex")];
-    formulas.forEach(spaceFormula);
-    [...new Set(blocks)].forEach(spaceLatin);
-    [...new Set(blocks)].forEach(keepTail);
-    [...new Set(blocks)].forEach(hangEnd);
-    settleJustify([...new Set(blocks)]);
-    const shorts = [...scope.querySelectorAll(SHORT)];
-    if (scope.matches?.(SHORT)) shorts.push(scope);
-    const near = scope.closest?.(SHORT);
-    if (near) shorts.push(near);
-    [...new Set(shorts)].forEach(keepWords);
-    formulas.forEach(groupFormula);
-    scope.closest?.(".katex") && groupFormula(scope.closest(".katex"));
+    while (walker.nextNode()) out.push(walker.currentNode);
+    return out;
   }
 
+  /*
+   * One batch of changed parts (roots) is typeset phase by phase: the sentences in flex and
+   * grid boxes, then every formula's spacing, every block's Latin spacing, kept tail, centred
+   * end mark, the words of short texts, the formula groups. A part inside another part is
+   * covered by it, and a change inside a formula counts as the formula. Styles are read before
+   * each phase changes anything (styleOf), and the kept tails of all blocks are decided before
+   * any is made. The blocks go to `measured`: flush() measures their lines at the very end.
+   */
+  function process(roots, measured) {
+    const main = document.querySelector("main") || document.body;
+    const scopes = [];
+    roots.forEach((root) => {
+      if (!root || !root.isConnected) return;
+      let scope = root.nodeType === Node.ELEMENT_NODE ? root : root.parentElement;
+      if (!scope || !main.contains(scope)) return;
+      scope = scope.closest(".katex") || scope;
+      if (!scopes.includes(scope)) scopes.push(scope);
+    });
+    const parts = scopes.filter((scope) => !scopes.some((other) => other !== scope && other.contains(scope)));
+    if (!parts.length) return;
+    // sentences in flex and grid boxes flow as text again (their styles read before the first change)
+    const outside = parts.filter((scope) => !scope.closest(".katex, svg"));
+    const boxes = outside.flatMap((scope) => [...elementsIn(scope), scope]);
+    boxes.forEach(styleOf);
+    boxes.forEach((el) => {
+      if (/flex|grid/.test(displayOf(el))) joinRuns(el);
+    });
+    // the blocks inside each part, and the block that contains it
+    const blocks = [];
+    parts.forEach((scope) => {
+      if (!scope.closest(".katex")) blocks.push(...elementsIn(scope).filter(isBlock));
+      let up = scope;
+      while (up && up !== main && !isBlock(up)) up = up.parentElement;
+      if (up && up !== main) blocks.push(up);
+      if (isBlock(scope)) blocks.push(scope);
+    });
+    const unique = [...new Set(blocks)];
+    unique.forEach(styleOf);
+    const formulas = parts.flatMap((scope) => (scope.matches(".katex") ? [] : [...scope.querySelectorAll(".katex")]));
+    formulas.forEach(spaceFormula);
+    unique.forEach(spaceLatin);
+    // a column narrower than about two characters stacks its text on purpose
+    const narrow = new Set(unique.filter((b) => b.clientWidth < styleOf(b).fontSize * 2.5));
+    unique
+      .filter((b) => !narrow.has(b))
+      .map(planTail)
+      .forEach((change) => change?.());
+    unique.forEach(hangEnd);
+    unique.forEach((b) => measured.add(b));
+    const shorts = [];
+    parts.forEach((scope) => {
+      shorts.push(...scope.querySelectorAll(SHORT));
+      if (scope.matches?.(SHORT)) shorts.push(scope);
+      const near = scope.closest?.(SHORT);
+      if (near) shorts.push(near);
+    });
+    [...new Set(shorts)].forEach(keepWords);
+    groupFormulas([...formulas, ...parts.map((scope) => scope.closest(".katex"))].filter(Boolean));
+  }
+
+  /*
+   * The order is fixed, so a page always comes out the same: a batch of changes is typeset
+   * once the fonts it uses have arrived (formula widths and line lengths depend on them);
+   * every change of the batch is rewritten first and the lines are measured last. Measuring
+   * a block before it was rewritten (fonts arriving first) used to mark it ragged, and a
+   * ragged block then kept its typed spaces: the same page came out two ways.
+   */
   let observer = null;
   let pending = new Set();
   let queued = false;
+  let waiting = false;
+  const takeChanges = (records) => {
+    records.forEach((record) => {
+      if (record.type === "characterData") schedule(record.target.parentElement);
+      else if (record.type === "attributes") schedule(record.target);
+      else {
+        record.addedNodes.forEach((n) => schedule(n.nodeType === Node.ELEMENT_NODE ? n : record.target));
+      }
+    });
+  };
   const flush = () => {
+    if (document.fonts?.status === "loading") {
+      if (!waiting) {
+        waiting = true;
+        document.fonts.ready.then(() => {
+          waiting = false;
+          window.setTimeout(flush, 30);
+        });
+      }
+      return;
+    }
+    // changes made earlier in this same task are not delivered yet, and disconnect() below
+    // would drop them (a page drawn again while fonts arrive went untypeset): take them now
+    if (observer) takeChanges(observer.takeRecords());
     queued = false;
     const roots = [...pending];
     pending = new Set();
+    if (!roots.length) return;
     observer?.disconnect();
+    styles = new Map();
     try {
-      roots.forEach(process);
+      const measured = new Set();
+      process(roots, measured);
+      // the lines are measured fresh: the cached styles end with the rewrites
+      styles = null;
+      settleJustify([...measured]);
     } finally {
+      styles = null;
       observer?.observe(document.querySelector("main") || document.body, OBSERVE);
     }
   };
@@ -525,36 +666,47 @@
     requestAnimationFrame(() => setTimeout(flush, 30));
   };
 
+  const allBlocks = () => elementsIn(document.querySelector("main") || document.body).filter(isBlock);
+
+  // after a resize: changes still waiting go first, then every formula and line is checked again
+  const refit = () => {
+    if (document.fonts?.status === "loading") {
+      document.fonts.ready.then(() => window.setTimeout(refit, 30));
+      return;
+    }
+    if (queued) flush();
+    fitGroups([...document.querySelectorAll("main .katex")]);
+    settleJustify(allBlocks());
+  };
+
   let resizeTimer = 0;
+  let lastWidth = window.innerWidth;
   const onResize = () => {
+    // only the width moves line breaks: a phone's toolbar sliding in and out (on every
+    // change of scroll direction) changes the height alone
+    if (window.innerWidth === lastWidth) return;
+    lastWidth = window.innerWidth;
     clearTimeout(resizeTimer);
-    resizeTimer = setTimeout(() => {
-      document.querySelectorAll("main .katex").forEach(fitGroups);
-      settleJustify([...document.querySelectorAll("main *")].filter(isBlock));
-    }, 200);
+    resizeTimer = setTimeout(refit, 200);
   };
 
   const start = () => {
     measureGap();
     // Line measurements depend on the web fonts. A lesson can render after
     // document.fonts.ready (its chapter's labs load first) and pull in fonts of its own
-    // (KaTeX), so measure again whenever a batch of fonts finishes loading.
+    // (KaTeX), so measure again whenever a batch of fonts finishes loading; changes still
+    // waiting to be typeset go first, so no block is measured before it is rewritten.
     const remeasure = () => {
+      // more fonts on the way: they bring a remeasure (and the waiting flush) of their own
+      if (document.fonts?.status === "loading") return;
       measureGap();
-      settleJustify([...document.querySelectorAll("main *")].filter(isBlock));
+      if (queued) flush();
+      settleJustify(allBlocks());
     };
     document.fonts?.ready.then(remeasure);
     document.fonts?.addEventListener?.("loadingdone", remeasure);
     const main = document.querySelector("main") || document.body;
-    observer = new MutationObserver((records) => {
-      records.forEach((record) => {
-        if (record.type === "characterData") schedule(record.target.parentElement);
-        else if (record.type === "attributes") schedule(record.target);
-        else {
-          record.addedNodes.forEach((n) => schedule(n.nodeType === Node.ELEMENT_NODE ? n : record.target));
-        }
-      });
-    });
+    observer = new MutationObserver(takeChanges);
     observer.observe(main, OBSERVE);
     window.addEventListener("resize", onResize, { passive: true });
     schedule(main);

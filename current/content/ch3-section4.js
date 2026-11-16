@@ -14,7 +14,7 @@ defineChapter3Section("matrix-rank", {
   ],
   textbook: { reference: "北大版《高等代数》第三章 §4", items: ["行秩与列秩", "矩阵的秩与子式", "用初等变换求秩"] },
   interactive: { type: "slot", title: "行变换：行空间不动，列空间在动，维数都不变" },
-  lesson3d: {
+  theory: {
     blocks: [
       {
         title: "行变换保持两样东西",

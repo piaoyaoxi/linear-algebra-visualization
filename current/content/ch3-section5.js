@@ -14,7 +14,7 @@ defineChapter3Section("solvability", {
   ],
   textbook: { reference: "北大版《高等代数》第三章 §5", items: ["有解判别定理", "解的个数"] },
   interactive: { type: "slot", title: "把 b 拖离列空间，三个平面失去公共线" },
-  lesson3d: {
+  theory: {
     blocks: [
       {
         title: "有解判别定理",

@@ -172,3 +172,13 @@ docs/                    设计规范和各章制作记录
 章节结构取自北大版《高等代数》。讲法和例子参考了 Gilbert Strang 的 *Introduction to Linear Algebra*、David Lay 的 *Linear Algebra and Its Applications*、Sheldon Axler 的 *Linear Algebra Done Right* 和《线性代数不难》；“先让一个对象连续变形，再把图像落回公式”的叙事方式，很大程度上学自 3Blue1Brown 的 *Essence of Linear Algebra*。网站里所有的图和动画都是重新画的。
 
 公式渲染用的是 [KaTeX](https://katex.org/)（MIT），字体是 [Noto Serif](https://fonts.google.com/noto/specimen/Noto+Serif) 和 [思源宋体](https://github.com/adobe-fonts/source-han-serif)（均为 SIL Open Font License）。
+
+## 许可证
+
+本仓库按内容类型分层授权：
+
+- **原创软件代码 — MIT License**：HTML、CSS、JavaScript、测试代码和项目自有工具，见 [LICENSE](LICENSE)。对同时包含程序与教学文字或视觉作品的文件，程序代码适用 MIT。
+- **原创教学内容与原创视觉作品 — CC BY-SA 4.0**：包括 current/content/ 中的原创教学文字、课程实验中的原创图示与动画，以及项目作者创作的首页水晶背景、主题插画、装饰图形和 Logo 图形等，见 [CONTENT-LICENSE.md](CONTENT-LICENSE.md)。生成视觉内容的程序代码仍适用 MIT。该许可证允许商业使用，但改编后的教学材料和视觉作品须按相同或兼容许可证分享。
+- **第三方组件和字体**：继续适用各自原有许可证，见 [THIRD-PARTY-NOTICES.md](THIRD-PARTY-NOTICES.md)；KaTeX 和字体目录中的许可证文件也予以保留。
+
+数学事实、公式、算法和方法，以及源自教材的章节标题与编排，不因上述许可证而被独占授权。Logo 图形的著作权适用 CC BY-SA 4.0，但项目名称、商标和品牌识别权仍由作者保留；该许可证不授予任何商标或官方背书权利。第三方图片、音频、视频、截图和其他媒体素材仍按各自权利声明处理。

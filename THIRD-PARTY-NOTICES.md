@@ -8,7 +8,7 @@
 - 用途：本地数学公式排版。
 - 位置：current/vendor/katex/
 - 许可证：MIT License
-- 版权声明及许可证全文：current/vendor/katex/LICENSE
+- 版权声明及许可证全文：[current/vendor/katex/LICENSE](current/vendor/katex/LICENSE)
 - 上游项目：https://github.com/KaTeX/KaTeX
 
 KaTeX 的版权声明和许可证文本随仓库保留。
@@ -21,13 +21,13 @@ KaTeX 的版权声明和许可证文本随仓库保留。
 
 - 文件：current/vendor/fonts/noto-serif-sc/NotoSerifSC-*.woff2
 - 许可证：SIL Open Font License 1.1
-- 版权声明及许可证全文：current/vendor/fonts/noto-serif-sc/OFL.txt
+- 版权声明及许可证全文：[current/vendor/fonts/noto-serif-sc/OFL.txt](current/vendor/fonts/noto-serif-sc/OFL.txt)（文件内版权声明：Google Inc., 2012）
 
 ### Noto Serif Latin / Greek
 
 - 文件：current/vendor/fonts/noto-serif-sc/NotoSerif-latin-greek.woff2
 - 许可证：SIL Open Font License 1.1
-- 版权声明及许可证全文：current/vendor/fonts/noto-serif-sc/OFL-NotoSerif.txt
+- 版权声明及许可证全文：[current/vendor/fonts/noto-serif-sc/OFL-NotoSerif.txt](current/vendor/fonts/noto-serif-sc/OFL-NotoSerif.txt)（文件内版权声明：The Noto Project Authors, 2022）
 
 这些字体经过子集化和切片处理。字体软件及其修改版本仍受 OFL 1.1 约束，不适用仓库根目录的 MIT 或 CC BY-SA 许可证。分发字体文件时，应继续保留相应版权声明和 OFL 文本，并遵守 OFL 对保留字体名称等事项的要求。
 
